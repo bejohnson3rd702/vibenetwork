@@ -1,6 +1,6 @@
 export const ASSETS = {
   logo: 'https://vibenetwork.tv/wp-content/uploads/2026/02/white-vibe-black-tv-.png',
-  heroMain: 'https://image.pollinations.ai/prompt/group%20of%20corporate%20executives%20in%20a%20modern%20boardroom%20looking%20at%20glowing%20screens%20cinematic%20lighting%20dark%20technology%20theme?width=1920&height=1080&nologo=true',
+  heroMain: 'https://images.unsplash.com/photo-1556761175-5973dc0f32d7?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80',
   heroAlt: 'https://vibenetwork.tv/wp-content/uploads/2026/02/headphones-displayed-against-dark-background_11zon.jpg',
 };
 
