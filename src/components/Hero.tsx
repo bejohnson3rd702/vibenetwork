@@ -54,16 +54,16 @@ const Hero: React.FC = () => {
             transition={{ delay: 0.5 }}
             style={{ color: 'var(--accent-primary)', textTransform: 'uppercase', letterSpacing: '8px', marginBottom: '24px', fontSize: '13px', fontWeight: 900 }}
           >
-            The Premier Live Stream Platform
+            The Ultimate White Label Architecture
           </motion.h4>
           
           <h1 style={{ fontSize: 'clamp(80px, 8vw, 140px)', lineHeight: 0.9, marginBottom: '24px', letterSpacing: '-4px', fontWeight: 900, textTransform: 'uppercase' }}>
-            Feel the <span style={{ color: 'transparent', WebkitTextStroke: '2px white' }}>Beat.</span><br />
-            Live the <span style={{ color: 'var(--accent-primary)' }}>Vibe.</span>
+            <span style={{ display: 'block', color: 'transparent', WebkitTextStroke: '2px white' }}>VIBE</span>
+            <span style={{ display: 'block', color: 'var(--accent-primary)' }}>NETWORK</span>
           </h1>
           
-          <p style={{ fontSize: '22px', color: 'white', fontWeight: 400, marginBottom: '50px', lineHeight: 1.6, maxWidth: '700px', margin: '0 auto 50px' }}>
-            Exclusive access to the world's finest international DJs, fashion, sports, and lifestyle content. JUST VIBE.
+          <p style={{ fontSize: '22px', color: 'white', fontWeight: 400, marginBottom: '50px', lineHeight: 1.6, maxWidth: '750px', margin: '0 auto 50px' }}>
+            Launch your own fully branded, monetized streaming platform in minutes. Advanced generative AI deployments and global content delivery.
           </p>
           
           <div style={{ display: 'flex', gap: '24px', justifyContent: 'center' }}>
