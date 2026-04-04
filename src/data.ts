@@ -1,73 +1,62 @@
 export const ASSETS = {
   logo: 'https://vibenetwork.tv/wp-content/uploads/2026/02/white-vibe-black-tv-.png',
   heroMain: 'https://images.unsplash.com/photo-1542744173-8e7e53415bb0?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80',
-  heroAlt: 'https://vibenetwork.tv/wp-content/uploads/2026/02/headphones-displayed-against-dark-background_11zon.jpg',
+  heroAlt: 'https://images.unsplash.com/photo-1551434678-e076c223a692?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80',
 };
 
-// Array of actual scraped images from the user's original WordPress deployment
-const REAL_IMAGES = [
-  'https://vibenetwork.tv/wp-content/uploads/2026/02/silhouette-dj-playing-music_1230721-3514.webp',
-  'https://vibenetwork.tv/wp-content/uploads/2026/02/mukap-vibe-tv-networkk_11zon.png',
-  'https://vibenetwork.tv/wp-content/uploads/2026/02/music-background-vector-girl-listens-music-cartoon-illustration-isolated-white.webp',
-  'https://vibenetwork.tv/wp-content/uploads/2026/02/headphones-displayed-against-dark-background_11zon.jpg'
+// Generative AI B2B Images
+const B2B_IMAGES = [
+  'https://image.pollinations.ai/prompt/modern%20corporate%20server%20room%20glowing%20blue%20lights?width=800&height=600&nologo=true',
+  'https://image.pollinations.ai/prompt/business%20executives%20shaking%20hands%20modern%20office?width=800&height=600&nologo=true',
+  'https://image.pollinations.ai/prompt/saas%20dashboard%20analytics%20glowing%20hologram?width=800&height=600&nologo=true',
+  'https://image.pollinations.ai/prompt/corporate%20presentation%20screen%20boardroom%20meeting?width=800&height=600&nologo=true',
+  'https://image.pollinations.ai/prompt/cloud%20architecture%20network%20diagram%20high%20tech?width=800&height=600&nologo=true',
+  'https://image.pollinations.ai/prompt/business%20woman%20smiling%20laptop%20startup?width=800&height=600&nologo=true',
+  'https://image.pollinations.ai/prompt/global%20network%20connection%20earth%20hologram%20corporate?width=800&height=600&nologo=true',
+  'https://image.pollinations.ai/prompt/programmers%20working%20in%20dark%20mode%20office?width=800&height=600&nologo=true'
 ];
 
 // Helper function to cycle through the real images safely
-const getRealImg = (idx: number) => REAL_IMAGES[idx % REAL_IMAGES.length];
+const getRealImg = (idx: number) => B2B_IMAGES[idx % B2B_IMAGES.length];
 
 // Generic placeholder video to demonstrate 45-second hover playback
 export const MOCK_VIDEO = 'http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4';
 
 export const SCHEDULE_ITEMS = [
-  { id: 101, title: 'Mainstage DJ Set - DJ Neon', time: '8:00 PM EST', image: getRealImg(0), tags: ['Live', 'Electronic'] },
-  { id: 102, title: 'Fashion Week Exclusives', time: '9:30 PM EST', image: getRealImg(1), tags: ['Lifestyle', 'Premiere'] },
-  { id: 103, title: 'Midnight Synthwave Mix', time: '11:00 PM EST', image: getRealImg(2), tags: ['Synthwave'] },
-  { id: 104, title: 'After Hours Chill', time: '1:00 AM EST', image: getRealImg(3), tags: ['Lo-Fi', 'Relax'] },
-  { id: 105, title: 'Sunrise Sessions', time: '4:00 AM EST', image: getRealImg(4), tags: ['Deep House'] },
+  { id: 101, title: 'Live Corporate Board Meeting', time: '8:00 AM EST', image: getRealImg(3), tags: ['Live', 'Corporate'] },
+  { id: 102, title: 'Q3 Earnings Call Broadcast', time: '10:30 AM EST', image: getRealImg(1), tags: ['Finance', 'Investor Relations'] },
+  { id: 103, title: 'SaaS Platform 2.0 Unveil', time: '1:00 PM EST', image: getRealImg(2), tags: ['Product Launch'] },
+  { id: 104, title: 'Global All-Hands Meeting', time: '3:00 PM EST', image: getRealImg(5), tags: ['Internal', 'All-Hands'] },
+  { id: 105, title: 'Technical Server Maintenance', time: '11:00 PM EST', image: getRealImg(0), tags: ['Engineering'] },
 ];
 
 export const GENRE_CATEGORIES = [
   {
-    title: 'Vibe Favorites',
+    title: 'Platform Features & Architecture',
     items: [
-      { id: 1, title: 'I Am David Jordan Live Set', image: getRealImg(0), tags: ['Live', 'Las Vegas'], videoUrl: MOCK_VIDEO },
-      { id: 2, title: 'Futuristic DJ Vibes', image: getRealImg(1), tags: ['Electronic'], videoUrl: MOCK_VIDEO },
-      { id: 3, title: 'Virtual Reality Sets', image: getRealImg(2), tags: ['VR', 'Party'], videoUrl: MOCK_VIDEO },
-      { id: 4, title: 'Watch Live Now', image: getRealImg(3), tags: ['Live Stream'], videoUrl: MOCK_VIDEO },
-      { id: 5, title: 'Deep House Flow', image: getRealImg(4), tags: ['Deep House'], videoUrl: MOCK_VIDEO },
-      { id: 51, title: 'Morning Chill Sessions', image: getRealImg(5), tags: ['Chill'], videoUrl: MOCK_VIDEO },
-      { id: 52, title: 'Top 40 Remixes Weekly', image: getRealImg(8), tags: ['Pop', 'Remix'], videoUrl: MOCK_VIDEO },
-      { id: 53, title: 'Sunset Ibiza Mix', image: getRealImg(9), tags: ['Ibiza', 'Live'], videoUrl: MOCK_VIDEO },
-      { id: 54, title: 'Techno Bunker', image: getRealImg(10), tags: ['Techno', 'Underground'], videoUrl: MOCK_VIDEO },
-      { id: 55, title: 'Festival Mainstage', image: getRealImg(11), tags: ['Festival', 'EDM'], videoUrl: MOCK_VIDEO },
+      { id: 1, title: 'Enterprise Streaming Logic', image: getRealImg(4), tags: ['Architecture'], videoUrl: MOCK_VIDEO },
+      { id: 2, title: 'Analytics Dashboard', image: getRealImg(2), tags: ['Data', 'SaaS'], videoUrl: MOCK_VIDEO },
+      { id: 3, title: 'Global CDN Delivery', image: getRealImg(6), tags: ['Network'], videoUrl: MOCK_VIDEO },
+      { id: 4, title: 'White Label Integrations', image: getRealImg(7), tags: ['API'], videoUrl: MOCK_VIDEO },
+      { id: 5, title: 'Server Infrastructure', image: getRealImg(0), tags: ['Ops'], videoUrl: MOCK_VIDEO }
     ]
   },
   {
-    title: 'Vibe Artists & DJs',
+    title: 'Business Use Cases',
     items: [
-      { id: 6, title: 'David Jordan', image: getRealImg(4), tags: ['Featured'], videoUrl: MOCK_VIDEO },
-      { id: 7, title: 'DJ Neon', image: getRealImg(5), tags: ['Resident'], videoUrl: MOCK_VIDEO },
-      { id: 8, title: 'VR Maestro', image: getRealImg(0), tags: ['Exclusive'], videoUrl: MOCK_VIDEO },
-      { id: 9, title: 'Miss Beats', image: getRealImg(1), tags: ['New Artist'], videoUrl: MOCK_VIDEO },
-      { id: 91, title: 'Synthia Core', image: getRealImg(2), tags: ['Synthwave'], videoUrl: MOCK_VIDEO },
-      { id: 92, title: 'Bass Phantom', image: getRealImg(3), tags: ['Dubstep'], videoUrl: MOCK_VIDEO },
-      { id: 93, title: 'DJ Kronic', image: getRealImg(4), tags: ['Hip Hop'], videoUrl: MOCK_VIDEO },
-      { id: 94, title: 'Lumina', image: getRealImg(5), tags: ['Trance'], videoUrl: MOCK_VIDEO },
-      { id: 95, title: 'The Architect', image: getRealImg(6), tags: ['Producer'], videoUrl: MOCK_VIDEO },
+      { id: 6, title: 'Investor Relations Live', image: getRealImg(1), tags: ['Finance'], videoUrl: MOCK_VIDEO },
+      { id: 7, title: 'Corporate Townhalls', image: getRealImg(5), tags: ['Internal'], videoUrl: MOCK_VIDEO },
+      { id: 8, title: 'Product Demos', image: getRealImg(2), tags: ['Sales'], videoUrl: MOCK_VIDEO },
+      { id: 9, title: 'Boardroom Boardcasts', image: getRealImg(3), tags: ['Executive'], videoUrl: MOCK_VIDEO }
     ]
   },
   {
-    title: 'New to the Network',
+    title: 'Success Stories',
     items: [
-      { id: 10, title: 'Global Beats S2', image: getRealImg(7), tags: ['Series'], videoUrl: MOCK_VIDEO },
-      { id: 11, title: 'Fashion & Music', image: getRealImg(8), tags: ['Lifestyle'], videoUrl: MOCK_VIDEO },
-      { id: 12, title: 'I Am David Jordan', image: getRealImg(9), tags: ['Live Set'], videoUrl: MOCK_VIDEO },
-      { id: 13, title: 'Night Life VR', image: getRealImg(10), tags: ['Immersive'], videoUrl: MOCK_VIDEO },
-      { id: 14, title: 'Festival Recaps', image: getRealImg(1), tags: ['Docuseries'], videoUrl: MOCK_VIDEO },
-      { id: 15, title: 'Studio Sessions', image: getRealImg(2), tags: ['Behind The Scenes'], videoUrl: MOCK_VIDEO },
-      { id: 16, title: 'Backstage Pass', image: getRealImg(3), tags: ['Interviews'], videoUrl: MOCK_VIDEO },
-      { id: 17, title: 'DJs In Cars', image: getRealImg(4), tags: ['Comedy'], videoUrl: MOCK_VIDEO },
-      { id: 18, title: 'Beat Making 101', image: getRealImg(5), tags: ['Tutorial'], videoUrl: MOCK_VIDEO },
+      { id: 10, title: 'TechCorp Summit 2026', image: getRealImg(7), tags: ['Case Study'], videoUrl: MOCK_VIDEO },
+      { id: 11, title: 'Global Bank Expansion', image: getRealImg(6), tags: ['Finance'], videoUrl: MOCK_VIDEO },
+      { id: 12, title: 'Startup Pitch Demo', image: getRealImg(5), tags: ['Venture'], videoUrl: MOCK_VIDEO },
+      { id: 13, title: 'Engineering Deep Dive', image: getRealImg(0), tags: ['Technical'], videoUrl: MOCK_VIDEO }
     ]
   }
 ];
