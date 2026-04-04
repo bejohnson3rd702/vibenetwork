@@ -6,16 +6,17 @@ import { ASSETS } from '../data';
 const Hero: React.FC = () => {
   return (
     <div style={{ position: 'relative', width: '100%', height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-      {/* Immersive Parallax Background Image */}
-      <div 
+      <img 
+        src={ASSETS.heroMain}
+        alt="B2B Corporate Master"
         style={{
           position: 'fixed',
           inset: 0,
-          backgroundImage: `url(${ASSETS.heroMain})`,
-          backgroundSize: 'cover',
-          backgroundPosition: 'center',
-          backgroundAttachment: 'fixed',
+          width: '100%',
+          height: '100vh',
+          objectFit: 'cover',
           zIndex: -4,
+          opacity: 0.4
         }}
       />
       
@@ -57,9 +58,9 @@ const Hero: React.FC = () => {
             The Ultimate White Label Architecture
           </motion.h4>
           
-          <h1 style={{ fontSize: 'clamp(80px, 8vw, 140px)', lineHeight: 0.9, marginBottom: '24px', letterSpacing: '-4px', fontWeight: 900, textTransform: 'uppercase' }}>
-            <span style={{ display: 'block', color: 'transparent', WebkitTextStroke: '2px white' }}>VIBE</span>
-            <span style={{ display: 'block', color: 'var(--accent-primary)' }}>NETWORK</span>
+          <h1 style={{ lineHeight: 0.8, marginBottom: '24px', fontWeight: 900, textTransform: 'uppercase' }}>
+            <span style={{ fontSize: 'clamp(140px, 18vw, 240px)', letterSpacing: '4px', display: 'block', color: 'transparent', WebkitTextStroke: '3px white' }}>VIBE</span>
+            <span style={{ fontSize: 'clamp(30px, 4vw, 50px)', letterSpacing: '24px', display: 'block', color: 'var(--accent-primary)', transform: 'translateY(-20px)' }}>NETWORK</span>
           </h1>
           
           <p style={{ fontSize: '22px', color: 'white', fontWeight: 400, marginBottom: '50px', lineHeight: 1.6, maxWidth: '750px', margin: '0 auto 50px' }}>
