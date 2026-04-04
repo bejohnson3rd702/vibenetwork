@@ -16,7 +16,8 @@ const Hero: React.FC = () => {
           height: '100vh',
           objectFit: 'cover',
           zIndex: -4,
-          opacity: 0.4
+          opacity: 0.7,
+          filter: 'brightness(1.3)'
         }}
       />
       
