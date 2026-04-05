@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { X, Upload, Users, Settings, Film, CheckCircle, Layout, Mail, Type, Image as ImageIcon, Sparkles } from 'lucide-react';
 
-const AiInput = ({ defaultValue, label, placeholder, accent }: { defaultValue: string, label: string, placeholder?: string, accent: string }) => {
+const AiInput = ({ defaultValue, label, placeholder, accent, onChange }: { defaultValue: string, label: string, placeholder?: string, accent: string, onChange?: (v: string) => void }) => {
    const [val, setVal] = useState(defaultValue || '');
    const [isAiLoading, setIsAiLoading] = useState(false);
 
@@ -11,10 +11,13 @@ const AiInput = ({ defaultValue, label, placeholder, accent }: { defaultValue: s
          const prompt = `Write a short, punchy, high-converting marketing phrase (3 to 6 words maximum) for a B2B SaaS platform specifically concerning: ${label}. Do not use quotes, do not give an introduction, just the raw phrase.`;
          const res = await fetch(`https://text.pollinations.ai/prompt/${encodeURIComponent(prompt)}`);
          const text = await res.text();
-         setVal(text.trim());
+         const cleanText = text.trim();
+         setVal(cleanText);
+         if (onChange) onChange(cleanText);
       } catch (error) {
          console.error(error);
          setVal("Premium AI Generated Short-Copy");
+         if (onChange) onChange("Premium AI Generated Short-Copy");
       }
       setIsAiLoading(false);
    };
@@ -27,12 +30,12 @@ const AiInput = ({ defaultValue, label, placeholder, accent }: { defaultValue: s
                 <Sparkles size={14} /> {isAiLoading ? 'Synthesizing...' : 'AI Enhance'}
              </button>
           </div>
-          <input type="text" value={val} onChange={e=>setVal(e.target.value)} placeholder={placeholder || "Type here..."} style={{ width: '100%', background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.1)', color: '#fff', padding: '16px', borderRadius: '12px', fontSize: '16px', outline: 'none' }} />
+          <input type="text" value={val} onChange={e=>{setVal(e.target.value); if(onChange) onChange(e.target.value);}} placeholder={placeholder || "Type here..."} style={{ width: '100%', background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.1)', color: '#fff', padding: '16px', borderRadius: '12px', fontSize: '16px', outline: 'none' }} />
        </div>
    )
 }
 
-const AiTextArea = ({ defaultValue, label, rows=4, accent }: { defaultValue: string, label?: string, rows?: number, accent: string }) => {
+const AiTextArea = ({ defaultValue, label, rows=4, accent, onChange }: { defaultValue: string, label?: string, rows?: number, accent: string, onChange?: (v: string) => void }) => {
    const [val, setVal] = useState(defaultValue || '');
    const [isAiLoading, setIsAiLoading] = useState(false);
 
@@ -42,10 +45,13 @@ const AiTextArea = ({ defaultValue, label, rows=4, accent }: { defaultValue: str
          const prompt = `Write a highly optimized, conversion-driven marketing paragraph (exactly 2 sentences) for an enterprise B2B SaaS platform related to: ${label || 'The core value proposition'}. Make it sound incredibly professional, cutting-edge, and engaging. Do not use quotes, do not give an introduction.`;
          const res = await fetch(`https://text.pollinations.ai/prompt/${encodeURIComponent(prompt)}`);
          const text = await res.text();
-         setVal(text.trim());
+         const cleanText = text.trim();
+         setVal(cleanText);
+         if (onChange) onChange(cleanText);
       } catch (error) {
          console.error(error);
          setVal("This is highly optimized AI generated long-form copy designed to maximize conversion rates and precisely articulate your brand's core value proposition to your target audience.");
+         if (onChange) onChange("This is highly optimized AI generated long-form copy designed to maximize conversion rates and precisely articulate your brand's core value proposition to your target audience.");
       }
       setIsAiLoading(false);
    };
@@ -58,7 +64,7 @@ const AiTextArea = ({ defaultValue, label, rows=4, accent }: { defaultValue: str
                 <Sparkles size={14} /> {isAiLoading ? 'Synthesizing...' : 'AI Re-Write'}
              </button>
           </div>
-          <textarea rows={rows} value={val} onChange={e=>setVal(e.target.value)} placeholder="Type here..." style={{ width: '100%', background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.1)', color: '#fff', padding: '20px', borderRadius: '12px', fontSize: '16px', outline: 'none' }} />
+          <textarea rows={rows} value={val} onChange={e=>{setVal(e.target.value); if(onChange) onChange(e.target.value);}} placeholder="Type here..." style={{ width: '100%', background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.1)', color: '#fff', padding: '20px', borderRadius: '12px', fontSize: '16px', outline: 'none' }} />
        </div>
    )
 }
@@ -66,6 +72,20 @@ const AiTextArea = ({ defaultValue, label, rows=4, accent }: { defaultValue: str
 export default function BusinessAdminDashboard({ wlConfig, onClose }: { wlConfig: any; onClose: () => void }) {
   const [activeTab, setActiveTab] = useState('hero');
   const [uploadStatus, setUploadStatus] = useState<string | null>(null);
+
+  const [heroCopy, setHeroCopy] = useState(wlConfig.heroCopy || '');
+  const [btnPrimary, setBtnPrimary] = useState('Access Admin Dashboard');
+
+  const executeHeroSaveDeploy = () => {
+     window.dispatchEvent(new CustomEvent('whitelabel_commit', {
+        detail: {
+           ...wlConfig,
+           heroCopy: heroCopy,
+           btnPrimary: btnPrimary
+        }
+     }));
+     alert("Live Architecture Successfully Deployed to Master Server!");
+  };
 
   return (
      <div style={{ position: 'fixed', inset: 0, background: '#0b0b0b', color: '#fff', zIndex: 999999, display: 'flex', flexDirection: 'column' }}>
@@ -120,15 +140,15 @@ export default function BusinessAdminDashboard({ wlConfig, onClose }: { wlConfig
                   <p style={{ color: '#888', fontSize: '18px', lineHeight: 1.5 }}>Tune the primary verbiage, dynamic CTA buttons, and background master layers of the main site entry point.</p>
                 </div>
                 
-                <AiTextArea label="Hero Marketing Verbiage" defaultValue={wlConfig.heroCopy} accent={wlConfig.accent} />
+                <AiTextArea label="Hero Marketing Verbiage" defaultValue={wlConfig.heroCopy} accent={wlConfig.accent} onChange={(v) => setHeroCopy(v)} />
 
                 <div style={{ display: 'flex', gap: '20px' }}>
-                   <AiInput label="Primary Button Text" defaultValue="Access Admin Dashboard" accent={wlConfig.accent} />
+                   <AiInput label="Primary Button Text" defaultValue="Access Admin Dashboard" accent={wlConfig.accent} onChange={(v) => setBtnPrimary(v)} />
                    <AiInput label="Secondary Button (+ Add)" defaultValue="" placeholder="e.g. Subscribe Now" accent={wlConfig.accent} />
                 </div>
 
                 <div style={{ height: '2px', background: 'rgba(255,255,255,0.05)' }} />
-                <button style={{ padding: '18px 40px', background: wlConfig.accent, color: '#fff', fontWeight: 'bold', border: 'none', borderRadius: '12px', fontSize: '16px', cursor: 'pointer', maxWidth: '250px' }}>Save Hero Config</button>
+                <button onClick={executeHeroSaveDeploy} style={{ padding: '18px 40px', background: wlConfig.accent, color: '#fff', fontWeight: 'bold', border: 'none', borderRadius: '12px', fontSize: '16px', cursor: 'pointer', maxWidth: '300px', boxShadow: `0 8px 30px ${wlConfig.accent}44` }}>Save & Deploy to Live Site</button>
               </div>
             )}
 
