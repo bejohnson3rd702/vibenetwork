@@ -8,6 +8,7 @@ import AuthModal from './components/AuthModal';
 import ProfileDashboard from './components/ProfileDashboard';
 import BusinessAdminDashboard from './components/BusinessAdminDashboard';
 import EndUserAuthModal from './components/EndUserAuthModal';
+import MasterAdminDashboard from './components/MasterAdminDashboard';
 import { BrowserRouter as Router, Routes, Route, useNavigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import { supabase } from './supabaseClient';
@@ -143,6 +144,7 @@ function App() {
           <Route path="/" element={<Home categories={categories} activeVideo={activeVideo} setActiveVideo={setActiveVideo} />} />
           <Route path="/profile" element={<ProfileDashboard user={user} />} />
           <Route path="/profile/:creatorId" element={<ProfileDashboard user={user} />} />
+          <Route path="/master-admin" element={<MasterAdminDashboard />} />
         </Routes>
       </div>
     </Router>
