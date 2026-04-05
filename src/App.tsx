@@ -36,7 +36,7 @@ function App() {
     async function fetchDB() {
       const data = await getCategoriesWithVideos();
       if (data && data.length > 0) {
-        // setCategories(data); // Temporarily bypass database to force B2B mock UI presentation
+        setCategories(data);
       }
     }
     fetchDB();
