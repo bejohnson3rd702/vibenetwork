@@ -7,6 +7,7 @@ import SliderSection from './components/SliderSection';
 import AuthModal from './components/AuthModal';
 import ProfileDashboard from './components/ProfileDashboard';
 import BusinessAdminDashboard from './components/BusinessAdminDashboard';
+import EndUserAuthModal from './components/EndUserAuthModal';
 import { BrowserRouter as Router, Routes, Route, useNavigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import { supabase } from './supabaseClient';
@@ -50,12 +51,13 @@ function App() {
 
   const [wlConfig, setWlConfig] = useState<any>(null);
   const [showAdminPanel, setShowAdminPanel] = useState(false);
+  const [showEndUserAuthModal, setShowEndUserAuthModal] = useState(false);
 
   if (wlConfig) {
     return (
       <Router>
         <div style={{ background: wlConfig.bg, minHeight: '100vh', color: '#fff', overflowX: 'hidden' }}>
-          <Navbar user={user} onLoginClick={() => {}} wlConfig={wlConfig} />
+          <Navbar user={user} onLoginClick={() => setShowEndUserAuthModal(true)} wlConfig={wlConfig} />
           
           <div style={{
              width: '100%', height: '80vh', 
@@ -112,6 +114,12 @@ function App() {
           {showAdminPanel && (
             <BusinessAdminDashboard wlConfig={wlConfig} onClose={() => setShowAdminPanel(false)} />
           )}
+
+          <AnimatePresence>
+             {showEndUserAuthModal && (
+               <EndUserAuthModal wlConfig={wlConfig} onClose={() => setShowEndUserAuthModal(false)} />
+             )}
+          </AnimatePresence>
         </div>
       </Router>
     );
