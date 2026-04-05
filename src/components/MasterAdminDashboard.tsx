@@ -3,19 +3,47 @@ import { motion } from 'framer-motion';
 import { 
   Globe, Users, Activity, Settings, Database, 
   ShieldAlert, Terminal, ChevronRight, BarChart3, 
-  Network, Server, Play, StopCircle 
+  Network, Server, Play, StopCircle, CheckCircle 
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { supabase } from '../supabaseClient';
+import { useEffect } from 'react';
 
 export default function MasterAdminDashboard() {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('overview');
 
+  const [dbStats, setDbStats] = useState({
+      whitelabels: 0,
+      nodes: 0,
+      revenue: '$1.2M',
+      load: '42%'
+  });
+  
+  const [whitelabelsList, setWhitelabelsList] = useState<any[]>([]);
+  const [isRestarting, setIsRestarting] = useState(false);
+
+  useEffect(() => {
+     async function fetchGlobalMetrics() {
+        const { count: usersCount } = await supabase!.from('profiles').select('*', { count: 'exact', head: true });
+        const { data: configs } = await supabase!.from('whitelabel_configs').select('*');
+        
+        setWhitelabelsList(configs || []);
+        
+        setDbStats(prev => ({
+           ...prev,
+           nodes: usersCount || 0,
+           whitelabels: configs?.length || 0,
+        }));
+     }
+     fetchGlobalMetrics();
+  }, []);
+
   const stats = [
-    { label: 'Active Whitelabels', value: '142', icon: <Network />, color: '#0055ff' },
-    { label: 'Global Registered Nodes', value: '8,439', icon: <Users />, color: '#00ff88' },
-    { label: 'Monthly Sustained MRR', value: '$1.2M', icon: <BarChart3 />, color: '#FFD700' },
-    { label: 'Server Fleet Load', value: '42%', icon: <Activity />, color: '#ff4d85' }
+    { label: 'Active Whitelabels', value: dbStats.whitelabels.toString(), icon: <Network />, color: '#0055ff' },
+    { label: 'Global Registered Nodes', value: dbStats.nodes.toString(), icon: <Users />, color: '#00ff88' },
+    { label: 'Monthly Sustained MRR', value: dbStats.revenue, icon: <BarChart3 />, color: '#FFD700' },
+    { label: 'Server Fleet Load', value: dbStats.load, icon: <Activity />, color: '#ff4d85' }
   ];
 
   return (
@@ -119,13 +147,20 @@ export default function MasterAdminDashboard() {
                </div>
 
                <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                 {['Acme Cloud Infrastructure', 'Global Logistics Net', 'Secure Fintech Platforms'].map((brand, i) => (
-                   <div key={i} style={{ background: '#111', padding: '24px', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                 {whitelabelsList.length === 0 ? (
+                    <div style={{ background: '#111', padding: '40px', borderRadius: '16px', border: '1px dashed rgba(255,255,255,0.1)', textAlign: 'center', color: '#888' }}>
+                       No active tenants detected in the database. 
+                       <br/>Did you run the <b>create_whitelabels_table.sql</b> script?
+                    </div>
+                 ) : whitelabelsList.map((brandConfig, i) => (
+                   <div key={brandConfig.id || i} style={{ background: '#111', padding: '24px', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
-                         <div style={{ width: '60px', height: '60px', background: `linear-gradient(135deg, #005${i}ff, #ff${i}0ff)`, borderRadius: '12px' }} />
+                         <div style={{ width: '60px', height: '60px', background: brandConfig.accent || `linear-gradient(135deg, #005${i}ff, #ff${i}0ff)`, borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontWeight: 'bold' }}>
+                            {brandConfig.name?.substring(0,2).toUpperCase() || 'WL'}
+                         </div>
                          <div>
-                           <h4 style={{ margin: '0 0 8px 0', fontSize: '18px' }}>{brand}</h4>
-                           <span style={{ color: '#0055ff', fontSize: '13px', background: 'rgba(0,85,255,0.1)', padding: '4px 10px', borderRadius: '12px', fontWeight: 'bold' }}>{brand.replace(' ', '').toLowerCase() + '.vibenetwork.tv'}</span>
+                           <h4 style={{ margin: '0 0 8px 0', fontSize: '18px' }}>{brandConfig.name}</h4>
+                           <span style={{ color: brandConfig.accent || '#0055ff', fontSize: '13px', background: `${brandConfig.accent}11` || 'rgba(0,85,255,0.1)', padding: '4px 10px', borderRadius: '12px', fontWeight: 'bold' }}>{brandConfig.domain}</span>
                          </div>
                       </div>
                       <div style={{ display: 'flex', gap: '12px' }}>
@@ -148,10 +183,12 @@ export default function MasterAdminDashboard() {
                   <p style={{ color: '#888', marginBottom: '32px', fontSize: '16px', lineHeight: 1.6 }}>Direct connection established to the primary Supabase cluster. Use caution when executing raw SQL directives against the production fleet.</p>
                   
                   <div style={{ background: '#000', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px', padding: '20px', fontFamily: 'monospace', color: '#4CAF50', height: '200px' }}>
-                     root@vibe-network-db:~# _
+                     root@vibe-network-db:~# _<br/>
+                     {isRestarting && <span style={{ color: '#ffaa00' }}>{">>>"} SYSTEM RESTART INITIATED...</span>}
                   </div>
-                  <button style={{ marginTop: '20px', padding: '16px 32px', background: '#ff0000', color: '#fff', fontWeight: 'bold', border: 'none', borderRadius: '12px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                     <StopCircle size={20} /> Force Cluster Restart
+                  <button onClick={() => setIsRestarting(true)} style={{ marginTop: '20px', padding: '16px 32px', background: isRestarting ? '#333' : '#ff0000', color: '#fff', fontWeight: 'bold', border: 'none', borderRadius: '12px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                     {isRestarting ? <CheckCircle size={20} /> : <StopCircle size={20} />} 
+                     {isRestarting ? 'Cluster Queued for Restart' : 'Force Cluster Restart'}
                   </button>
                </div>
              </motion.div>

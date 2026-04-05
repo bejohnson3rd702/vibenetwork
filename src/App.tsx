@@ -43,8 +43,25 @@ function App() {
     }
     fetchDB();
 
-    const handleCommit = (e: any) => {
+    const handleCommit = async (e: any) => {
        setWlConfig(e.detail);
+       // Persist to database
+       try {
+         await supabase!.from('whitelabel_configs').upsert({
+           id: e.detail.id,
+           name: e.detail.name,
+           domain: e.detail.domain,
+           accent: e.detail.accent,
+           bg: e.detail.bg,
+           hero_copy: e.detail.heroCopy,
+           btn_primary: e.detail.btnPrimary,
+           slider_count: e.detail.sliderCount,
+           custom_sections: e.detail.customSections,
+           hero_image: e.detail.heroImage
+         });
+       } catch (err) {
+         console.error('Failed to sync whitelabel config', err);
+       }
     };
     window.addEventListener('whitelabel_commit', handleCommit);
     return () => window.removeEventListener('whitelabel_commit', handleCommit);
@@ -53,6 +70,29 @@ function App() {
   const [wlConfig, setWlConfig] = useState<any>(null);
   const [showAdminPanel, setShowAdminPanel] = useState(false);
   const [showEndUserAuthModal, setShowEndUserAuthModal] = useState(false);
+
+  // Load latest whitelabel config from DB on load
+  useEffect(() => {
+    async function fetchConfig() {
+      const { data } = await supabase!.from('whitelabel_configs').select('*').limit(1);
+      if (data && data.length > 0) {
+        const dbConf = data[0];
+        setWlConfig({
+           id: dbConf.id,
+           name: dbConf.name || 'Vibe B2B Enterprise',
+           domain: dbConf.domain || 'vibenetwork.tv',
+           accent: dbConf.accent || '#0055ff',
+           bg: dbConf.bg || '#050505',
+           heroCopy: dbConf.hero_copy,
+           btnPrimary: dbConf.btn_primary,
+           sliderCount: dbConf.slider_count || 4,
+           customSections: dbConf.custom_sections || 'Platform Architecture,Success Stories',
+           heroImage: dbConf.hero_image
+        });
+      }
+    }
+    fetchConfig();
+  }, []);
 
   if (wlConfig) {
     return (
