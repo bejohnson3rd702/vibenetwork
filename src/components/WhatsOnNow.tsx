@@ -156,8 +156,8 @@ const WhatsOnNow: React.FC = () => {
             borderBottom: '1px solid rgba(255,255,255,0.05)',
             background: 'rgba(255,255,255,0.02)'
           }}>
-            <h3 style={{ fontSize: '18px', margin: 0, fontWeight: 700, letterSpacing: '1px' }}>Programming</h3>
-            <p style={{ margin: '6px 0 0', fontSize: '13px', color: 'var(--text-secondary)' }}>Today's Live Schedule</p>
+            <h3 style={{ fontSize: '18px', margin: 0, fontWeight: 700, letterSpacing: '1px' }}>Global Schedule</h3>
+            <p style={{ margin: '6px 0 0', fontSize: '13px', color: 'var(--text-secondary)' }}>Live Enterprise Broadcasts</p>
           </div>
           
           {/* Guide List */}

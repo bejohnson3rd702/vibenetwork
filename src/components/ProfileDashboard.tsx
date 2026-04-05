@@ -37,10 +37,10 @@ const ProfileDashboard: React.FC<{ user: any }> = ({ user }) => {
   
   // Scheduler State & DnD Handlers
   const [scheduledPosts, setScheduledPosts] = useState<any[]>([
-    { id: '1', content: 'Preview of my upcoming festival set mix. Need to color grade the intro before posting...', status: 'draft', date: 'Edited 2 hrs ago', type: 'Exclusive Video', color: '#8A2BE2' },
-    { id: '2', content: 'Drafting the announcement for the new cyber-glasses bundle. Still need the product shots.', status: 'draft', date: 'Edited yesterday', type: 'Merch Drop', color: '#ff4d85' },
-    { id: '3', content: 'The Studio Deep Dive Masterclass is officially going live! Make sure you are subscribed to get the early bird discount. 🚀', status: 'scheduled', date: 'TOMORROW, 10:00 AM', type: 'Scheduled', color: '#FFD700', image: 'https://picsum.photos/seed/beatsurl/400/200' },
-    { id: '4', content: "Live stream announcement up and running! Don't miss tonight's broadcast.", status: 'published', date: 'POSTED TODAY, 9:00 AM', type: 'Published', color: '#00ff88', likes: '4.2k', comments: '128' }
+    { id: '1', content: 'Finalizing the Q4 Roadmap rollout presentation. Need marketing signoff on the slide deck.', status: 'draft', date: 'Edited 2 hrs ago', type: 'Executive Update', color: '#0055ff' },
+    { id: '2', content: 'Drafting the release notes for the new multi-tenant API update.', status: 'draft', date: 'Edited yesterday', type: 'Product Release', color: '#ff4d85' },
+    { id: '3', content: 'The Enterprise Developer Conference is officially live! Access the remote broadcast now. 🚀', status: 'scheduled', date: 'TOMORROW, 10:00 AM', type: 'Scheduled', color: '#FFD700', image: 'https://image.pollinations.ai/prompt/corporate%20presentation%20screen%20boardroom%20meeting' },
+    { id: '4', content: "Our SOC-2 Compliance audit has been published successfully.", status: 'published', date: 'POSTED TODAY, 9:00 AM', type: 'Published', color: '#00ff88', likes: '1.2k', comments: '56' }
   ]);
 
   const handleDragStart = (e: React.DragEvent, id: string) => {
@@ -86,8 +86,8 @@ const ProfileDashboard: React.FC<{ user: any }> = ({ user }) => {
 
   // Mock Feed Data
   const [feed, setFeed] = useState([
-    { id: 1, title: 'Live from EDC Las Vegas 2026', locked: true, likes: 342, date: '2 hours ago', img: 'https://vibenetwork.tv/wp-content/uploads/2026/02/silhouette-dj-playing-music_1230721-3514.webp' },
-    { id: 2, title: 'My New Studio Setup Tour', locked: false, likes: 89, date: '1 day ago', img: 'https://vibenetwork.tv/wp-content/uploads/2026/02/headphones-displayed-against-dark-background_11zon.jpg' },
+    { id: 1, title: 'Live from the Global Tech Alliance Summit', locked: true, likes: 304, date: '2 hours ago', img: 'https://image.pollinations.ai/prompt/business%20executives%20shaking%20hands%20modern%20office' },
+    { id: 2, title: 'Scaling Your SaaS Infrastructure', locked: false, likes: 112, date: '1 day ago', img: 'https://image.pollinations.ai/prompt/modern%20corporate%20server%20room%20glowing%20blue%20lights' },
   ]);
 
   useEffect(() => {
@@ -122,36 +122,11 @@ const ProfileDashboard: React.FC<{ user: any }> = ({ user }) => {
         } else {
           // Provide 10 premium mock products to instantly showcase the storefront UI
           setProducts([
-            { id: 'm1', title: 'Signature Video LUTs Pack Vol 1', price: '29.99', type: 'digital', image_url: 'https://vibenetwork.tv/wp-content/uploads/2026/02/silhouette-dj-playing-music_1230721-3514.webp' },
-            { id: 'm2', title: 'Official Original Logo Hoodie (Black)', price: '59.99', type: 'physical', image_url: 'https://picsum.photos/seed/hoodie/400/400' },
-            { id: 'm3', title: 'Exclusive Studio Session Behind-The-Scenes', price: '14.99', type: 'digital', image_url: 'https://vibenetwork.tv/wp-content/uploads/2026/02/headphones-displayed-against-dark-background_11zon.jpg' },
-            { id: 'm4', title: 'Sample Pack: Organic Drum Breaks', price: '19.99', type: 'digital', image_url: 'https://picsum.photos/seed/drums/400/400' },
-            { id: 'm5', title: 'Limited Edition Vinyl Box Set', price: '89.99', type: 'physical', image_url: 'https://picsum.photos/seed/vinyl/400/400' },
-            { id: 'm6', title: '1-on-1 Mentorship Zoom Call (30 Min)', price: '149.99', type: 'digital', image_url: 'https://picsum.photos/seed/laptop/400/400' },
-            { id: 'm7', title: 'Vibe Network Premium Snapback', price: '34.99', type: 'physical', image_url: 'https://picsum.photos/seed/snapback/400/400' },
-            { id: 'm8', title: 'Ableton Live Project File: "Neon Lights"', price: '49.99', type: 'digital', image_url: 'https://picsum.photos/seed/ableton/400/400' },
-            { id: 'm9', title: 'Signed Tour Poster (24x36)', price: '24.99', type: 'physical', image_url: 'https://picsum.photos/seed/poster/400/400' },
-            { id: 'm10', title: 'Creator Growth Blueprint E-Book', price: '9.99', type: 'digital', image_url: 'https://picsum.photos/seed/book/400/400' },
-            { id: 'm11', title: 'Custom DJ Mix (1 Hour)', price: '24.99', type: 'digital', image_url: 'https://picsum.photos/seed/djmix/400/400' },
-            { id: 'm12', title: 'Neon Channel Logo Desk Mat', price: '34.99', type: 'physical', image_url: 'https://picsum.photos/seed/deskmat/400/400' },
-            { id: 'm13', title: 'Exclusive Subscriber Discord Role', price: '4.99', type: 'digital', image_url: 'https://picsum.photos/seed/discord/400/400' },
-            { id: 'm14', title: 'Heavyweight Premium Tracksuit (Red)', price: '119.99', type: 'physical', image_url: 'https://picsum.photos/seed/tracksuit/400/400' },
-            { id: 'm15', title: 'Professional Beat Mixing & Mastering', price: '199.99', type: 'digital', image_url: 'https://picsum.photos/seed/mixing/400/400' },
-            { id: 'm16', title: 'Acoustic Live Performance (Unreleased)', price: '12.99', type: 'digital', image_url: 'https://picsum.photos/seed/live/400/400' },
-            { id: 'm17', title: 'Distressed "Tour 2026" Graphic Tee', price: '45.00', type: 'physical', image_url: 'https://picsum.photos/seed/tee/400/400' },
-            { id: 'm18', title: 'Unlocked Patreon Video Vault', price: '19.99', type: 'digital', image_url: 'https://picsum.photos/seed/vault/400/400' },
-            { id: 'm19', title: 'Signature "Vibe" Enamel Pin Set', price: '15.00', type: 'physical', image_url: 'https://picsum.photos/seed/pins/400/400' },
-            { id: 'm20', title: 'Custom 808 & Bass Synthesis Masterclass', price: '59.99', type: 'digital', image_url: 'https://picsum.photos/seed/synth/400/400' },
-            { id: 'm21', title: 'Channel Mascot Plushie Toy', price: '39.99', type: 'physical', image_url: 'https://picsum.photos/seed/plushie/400/400' },
-            { id: 'm22', title: 'VIP Backstage Pass (Virtual Access)', price: '29.99', type: 'digital', image_url: 'https://picsum.photos/seed/vip/400/400' },
-            { id: 'm23', title: '"In the Studio" 4k Documentary', price: '14.99', type: 'digital', image_url: 'https://picsum.photos/seed/doc/400/400' },
-            { id: 'm24', title: 'Embroidered Beanie (Limited Drop)', price: '28.00', type: 'physical', image_url: 'https://picsum.photos/seed/beanie/400/400' },
-            { id: 'm25', title: 'Personal Shoutout / Track Review', price: '49.99', type: 'digital', image_url: 'https://picsum.photos/seed/review/400/400' },
-            { id: 'm26', title: 'Authentic Stage-Worn Signed Hat', price: '250.00', type: 'physical', image_url: 'https://picsum.photos/seed/signedhat/400/400' },
-            { id: 'm27', title: 'Mobile Wallpaper & Widget Pack', price: '4.99', type: 'digital', image_url: 'https://picsum.photos/seed/wallpaper/400/400' },
-            { id: 'm28', title: 'Early Access Ticket: Global Stream', price: '15.00', type: 'digital', image_url: 'https://picsum.photos/seed/ticket/400/400' },
-            { id: 'm29', title: 'Lofi Hip-Hop Chill Beats Stems', price: '34.99', type: 'digital', image_url: 'https://picsum.photos/seed/stems/400/400' },
-            { id: 'm30', title: 'Official Channel Skate Deck', price: '85.00', type: 'physical', image_url: 'https://picsum.photos/seed/deck/400/400' }
+            { id: 'm1', title: 'Priority API Access (1M Calls)', price: '299.99', type: 'digital', image_url: 'https://image.pollinations.ai/prompt/hologram%20api%20keys' },
+            { id: 'm2', title: 'White-glove Onboarding Call', price: '499.00', type: 'digital', image_url: 'https://image.pollinations.ai/prompt/business%20zoom%20call' },
+            { id: 'm3', title: 'Dedicated Support Account Manager', price: '1499.00', type: 'digital', image_url: 'https://image.pollinations.ai/prompt/customer%20support%20agent%20headset' },
+            { id: 'm4', title: 'Custom Analytics Dashboard Add-on', price: '500.00', type: 'digital', image_url: 'https://image.pollinations.ai/prompt/data%20analytics%20dashboard' },
+            { id: 'm5', title: 'Enterprise SLA Contract Upgrades', price: '2500.00', type: 'digital', image_url: 'https://image.pollinations.ai/prompt/legal%20contract%20signature' },
           ]);
         }
       }
@@ -380,15 +355,15 @@ const ProfileDashboard: React.FC<{ user: any }> = ({ user }) => {
               {isInfluencer ? (
                 <>
                   <div style={{ display: 'flex', gap: '10px', marginBottom: '20px', flexWrap: 'wrap' }}>
-                    <span style={{ padding: '6px 14px', background: 'rgba(255,0,85,0.2)', color: '#ff4d85', borderRadius: '20px', fontSize: '12px', fontWeight: 'bold', textTransform: 'uppercase' }}>Influencer Channel</span>
+                    <span style={{ padding: '6px 14px', background: 'rgba(0,85,255,0.2)', color: '#0055ff', borderRadius: '20px', fontSize: '12px', fontWeight: 'bold', textTransform: 'uppercase' }}>Enterprise Account Node</span>
                     
                     {viewMode === 'edit' ? (
                       <>
                         <select aria-label="genre selector" value={selectedGenre} onChange={(e) => setSelectedGenre(e.target.value)} style={{ padding: '6px 14px', background: 'rgba(255,255,255,0.1)', color: '#fff', border: 'none', borderRadius: '20px', fontSize: '12px', outline: 'none', cursor: 'pointer' }}>
-                          <option>Electronic</option>
-                          <option>Hip Hop</option>
-                          <option>Lifestyle & Fashion</option>
-                          <option>Sports</option>
+                          <option>SaaS Platform</option>
+                          <option>Fintech API</option>
+                          <option>AI Automation</option>
+                          <option>B2B Marketplace</option>
                         </select>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '6px 14px', background: 'rgba(255,215,0,0.1)', color: '#FFD700', borderRadius: '20px', fontSize: '12px', fontWeight: 'bold' }}>
                           $<input type="number" value={subPrice} step="0.50" onChange={(e) => setSubPrice(parseFloat(e.target.value))} style={{ width: '40px', background: 'none', border: 'none', color: '#FFD700', outline: 'none', fontWeight: 'bold' }} />/month
