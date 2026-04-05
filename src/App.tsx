@@ -176,11 +176,9 @@ function Home({ categories, activeVideo, setActiveVideo }: any) {
               aspectRatio={ratio}
               sizeMultiplier={multiplier}
               onItemClick={(item) => {
-                alert(`App.tsx router received click payload for: ${item.title}`);
                 if (item.tags && item.tags.includes('Influencer Channel')) {
                   // Force a hard redirect specifically for Influencer profiles from the Swiper slider
                   // This entirely bypasses any nested DOM event swallowing bugs from swiper/react wrapper
-                  alert(`Navigating directly to /profile/${item.id}`);
                   window.location.href = `/profile/${item.id}`;
                 } else {
                   setActiveVideo(item);
@@ -199,15 +197,17 @@ function Home({ categories, activeVideo, setActiveVideo }: any) {
             alignItems: 'center', 
             textAlign: 'center',
             padding: '60px 20px',
-            background: 'linear-gradient(135deg, rgba(255,0,85,0.05), rgba(138,43,226,0.1))'
+            background: 'linear-gradient(135deg, rgba(0, 100, 255, 0.05), rgba(0, 200, 255, 0.1))',
+            border: '1px solid rgba(255,255,255,0.05)',
+            boxShadow: '0 20px 40px rgba(0,0,0,0.5)'
           }}>
-            <h2 style={{ fontSize: '36px', marginBottom: '16px' }}>Ready to <span className="gradient-text">Vibe</span> With Us?</h2>
+            <h2 style={{ fontSize: '36px', marginBottom: '16px' }}>Ready to Scale Your <span className="gradient-text">Enterprise</span>?</h2>
             <p style={{ color: 'var(--text-secondary)', maxWidth: '600px', marginBottom: '32px', fontSize: '18px', lineHeight: 1.6 }}>
-              Create a free account today to get exclusive access to live DJ sets, immersive VR experiences, and behind-the-scenes content from your favorite international artists.
+              Create an administrative account today to instantly provision high-end corporate streaming nodes, global architecture networks, and executive live-broadcast tools.
             </p>
             <div style={{ display: 'flex', gap: '16px' }}>
-              <button className="btn-primary" style={{ padding: '14px 40px' }}>Join the Network</button>
-              <button className="btn-secondary" style={{ padding: '14px 40px' }}>View Schedule</button>
+              <button className="btn-primary" style={{ padding: '14px 40px', background: '#0055ff' }}>Deploy Network Workspace</button>
+              <button className="btn-secondary" style={{ padding: '14px 40px' }}>View Case Studies</button>
             </div>
           </div>
         </section>

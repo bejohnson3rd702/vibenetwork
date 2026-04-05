@@ -93,8 +93,8 @@ const SlideItem: React.FC<{ item: Item, aspectRatio: string, onClick?: () => voi
         </div>
         <h3 style={{ fontSize: '16px', margin: 0 }}>{item.title}</h3>
         {isInfluencer && (
-          <div style={{ marginTop: '8px', fontSize: '12px', color: '#ff4d85', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '4px' }}>
-            <span>View Creator Profile</span> <Play size={10} fill="#ff4d85" />
+          <div style={{ marginTop: '8px', fontSize: '12px', color: '#00aaff', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '4px' }}>
+            <span>View Architecture</span> <Play size={10} fill="#00aaff" />
           </div>
         )}
       </div>
