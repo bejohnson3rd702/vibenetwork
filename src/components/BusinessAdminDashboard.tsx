@@ -5,12 +5,18 @@ const AiInput = ({ defaultValue, label, placeholder, accent }: { defaultValue: s
    const [val, setVal] = useState(defaultValue || '');
    const [isAiLoading, setIsAiLoading] = useState(false);
 
-   const triggerAi = () => {
+   const triggerAi = async () => {
       setIsAiLoading(true);
-      setTimeout(() => {
+      try {
+         const prompt = `Write a short, punchy, high-converting marketing phrase (3 to 6 words maximum) for a B2B SaaS platform specifically concerning: ${label}. Do not use quotes, do not give an introduction, just the raw phrase.`;
+         const res = await fetch(`https://text.pollinations.ai/prompt/${encodeURIComponent(prompt)}`);
+         const text = await res.text();
+         setVal(text.trim());
+      } catch (error) {
+         console.error(error);
          setVal("Premium AI Generated Short-Copy");
-         setIsAiLoading(false);
-      }, 1200);
+      }
+      setIsAiLoading(false);
    };
 
    return (
@@ -30,12 +36,18 @@ const AiTextArea = ({ defaultValue, label, rows=4, accent }: { defaultValue: str
    const [val, setVal] = useState(defaultValue || '');
    const [isAiLoading, setIsAiLoading] = useState(false);
 
-   const triggerAi = () => {
+   const triggerAi = async () => {
       setIsAiLoading(true);
-      setTimeout(() => {
+      try {
+         const prompt = `Write a highly optimized, conversion-driven marketing paragraph (exactly 2 sentences) for an enterprise B2B SaaS platform related to: ${label || 'The core value proposition'}. Make it sound incredibly professional, cutting-edge, and engaging. Do not use quotes, do not give an introduction.`;
+         const res = await fetch(`https://text.pollinations.ai/prompt/${encodeURIComponent(prompt)}`);
+         const text = await res.text();
+         setVal(text.trim());
+      } catch (error) {
+         console.error(error);
          setVal("This is highly optimized AI generated long-form copy designed to maximize conversion rates and precisely articulate your brand's core value proposition to your target audience.");
-         setIsAiLoading(false);
-      }, 1500);
+      }
+      setIsAiLoading(false);
    };
 
    return (
