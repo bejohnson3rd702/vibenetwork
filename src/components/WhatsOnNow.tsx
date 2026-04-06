@@ -50,9 +50,22 @@ const ScheduleRow: React.FC<{ item: any, isActive: boolean, onClick: () => void 
   );
 };
 
+const FALLBACK_10_YOUTUBE = [
+  { id: 'fb1', title: 'NASA Earth from Space', time: 'LIVE', image: 'https://images.unsplash.com/photo-1451187580459-43490279c0fa?q=80&w=800', video_url: 'https://www.youtube.com/watch?v=DpJ4m1S4nIM', tags: ['Space', 'Science'] },
+  { id: 'fb2', title: 'Lofi Girl Live Radio', time: 'UP NEXT', image: 'https://images.unsplash.com/photo-1518609878373-06d740f60d8b?q=80&w=800', video_url: 'https://www.youtube.com/watch?v=jfKfPfyJRdk', tags: ['Music', 'Chill'] },
+  { id: 'fb3', title: '4K Costa Rica Wildlife', time: '1:00 PM EST', image: 'https://images.unsplash.com/photo-1518182170546-076616fdcd81?q=80&w=800', video_url: 'https://www.youtube.com/watch?v=LXb3EKWsInQ', tags: ['Nature', '4K'] },
+  { id: 'fb4', title: 'SpaceX Starship Launch', time: '2:30 PM EST', image: 'https://images.unsplash.com/photo-1541185933-ef5d8ed016c2?q=80&w=800', video_url: 'https://www.youtube.com/watch?v=-1wcilQ58hI', tags: ['Aero', 'Live'] },
+  { id: 'fb5', title: 'Relaxing Aquarium 4K', time: '4:00 PM EST', image: 'https://images.unsplash.com/photo-1524704796725-9fc3044a58b2?q=80&w=800', video_url: 'https://www.youtube.com/watch?v=WeVRsGBZ2KM', tags: ['Relax', 'Ocean'] },
+  { id: 'fb6', title: 'Cyberpunk Night City', time: '5:30 PM EST', image: 'https://images.unsplash.com/photo-1550751827-4bd374c3f58b?q=80&w=800', video_url: 'https://www.youtube.com/watch?v=8X2kIfS6fb8', tags: ['Gaming', 'Scenery'] },
+  { id: 'fb7', title: 'DJI Mavic Drone Focus', time: '7:00 PM EST', image: 'https://images.unsplash.com/photo-1508614589041-895b66d98ae2?q=80&w=800', video_url: 'https://www.youtube.com/watch?v=3-s1-J8b2I8', tags: ['Travel', 'Drone'] },
+  { id: 'fb8', title: 'Tokyo Walking Tour', time: '8:30 PM EST', image: 'https://images.unsplash.com/photo-1542051841857-5f90071e7989?q=80&w=800', video_url: 'https://www.youtube.com/watch?v=0nTOJHQDoK0', tags: ['Travel', 'Vlog'] },
+  { id: 'fb9', title: 'Rain Sounds & Thunder', time: '10:00 PM EST', image: 'https://images.unsplash.com/photo-1515694346937-94d85e41e6f0?q=80&w=800', video_url: 'https://www.youtube.com/watch?v=mPZkdNFkNps', tags: ['Sleep', 'ASMR'] },
+  { id: 'fb10', title: 'Blender Foundation Art', time: '11:00 PM EST', image: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=800', video_url: 'https://www.youtube.com/watch?v=WhWc3b3KhnY', tags: ['Animation', 'Short'] }
+];
+
 const WhatsOnNow: React.FC = () => {
   const [activeIndex, setActiveIndex] = useState(0);
-  const [scheduleItems, setScheduleItems] = useState<any[]>(LOCAL_SCHEDULE_ITEMS);
+  const [scheduleItems, setScheduleItems] = useState<any[]>(FALLBACK_10_YOUTUBE);
 
   React.useEffect(() => {
     async function loadSchedule() {
@@ -86,7 +99,7 @@ const WhatsOnNow: React.FC = () => {
             boxShadow: '0 0 15px var(--accent-primary)',
             animation: 'pulse 2s infinite'
           }} />
-          <span style={{ color: 'white', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '2px' }}>Live Network</span>
+          <span style={{ color: 'white', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '2px' }}>LIVE NOW</span>
         </h2>
       </div>
 
@@ -107,18 +120,40 @@ const WhatsOnNow: React.FC = () => {
           boxShadow: '0 40px 100px rgba(0,0,0,0.8)'
         }}
       >
-        {/* Left Side: Video Player */}
         <div style={{ flex: '1 1 auto', position: 'relative', background: '#000' }}>
-          <video 
-            src={MOCK_VIDEO}
-            poster={scheduleItems[activeIndex]?.image}
-            muted 
-            controls
-            autoPlay={activeIndex === 0}
-            loop 
-            playsInline
-            style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
-          />
+          {(() => {
+             const activeItem = scheduleItems[activeIndex];
+             const activeUrl = activeItem?.video_url || MOCK_VIDEO;
+             const youtubeMatch = activeUrl.match(/^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/);
+             const youtubeId = (youtubeMatch && youtubeMatch[2].length === 11) ? youtubeMatch[2] : null;
+             
+             if (youtubeId) {
+               return (
+                  <iframe 
+                    width="100%" 
+                    height="100%" 
+                    src={`https://www.youtube.com/embed/${youtubeId}?autoplay=${activeIndex === 0 ? 1 : 1}&mute=1&loop=1&playlist=${youtubeId}&controls=1`} 
+                    title="YouTube video player" 
+                    frameBorder="0" 
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                    allowFullScreen
+                    style={{ border: 'none', background: '#000' }}
+                  ></iframe>
+               );
+             }
+             return (
+               <video 
+                 src={activeUrl}
+                 poster={activeItem?.image}
+                 muted 
+                 controls
+                 autoPlay={activeIndex === 0}
+                 loop 
+                 playsInline
+                 style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
+               />
+             );
+          })()}
           {/* Subtle Live Badge Overlay */}
           <div style={{ 
               position: 'absolute', 

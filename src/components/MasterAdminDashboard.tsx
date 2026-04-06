@@ -67,6 +67,7 @@ export default function MasterAdminDashboard() {
         <nav style={{ padding: '24px 12px', flex: 1, display: 'flex', flexDirection: 'column', gap: '8px' }}>
           {[
             { id: 'overview', icon: <Globe size={18} />, label: 'Global Overview' },
+            { id: 'live-now', icon: <Play size={18} />, label: 'Live Now TV' },
             { id: 'networks', icon: <Network size={18} />, label: 'Whitelabel Fleet' },
             { id: 'users', icon: <Users size={18} />, label: 'Node Directory' },
             { id: 'database', icon: <Database size={18} />, label: 'Data Clusters' },
@@ -190,6 +191,40 @@ export default function MasterAdminDashboard() {
                      {isRestarting ? <CheckCircle size={20} /> : <StopCircle size={20} />} 
                      {isRestarting ? 'Cluster Queued for Restart' : 'Force Cluster Restart'}
                   </button>
+               </div>
+             </motion.div>
+          )}
+
+          {activeTab === 'live-now' && (
+             <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
+               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '30px' }}>
+                 <h3 style={{ margin: 0, fontSize: '24px' }}>Live Now TV Programming</h3>
+               </div>
+               <div style={{ background: '#111', padding: '30px', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.05)' }}>
+                 <h4 style={{ margin: '0 0 20px 0', fontSize: '18px' }}>Inject YouTube Broadcast</h4>
+                 <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                    <input type="text" placeholder="YouTube Video URL (e.g. https://youtube.com/watch...)" style={{ background: '#000', border: '1px solid #333', padding: '16px', borderRadius: '8px', color: '#fff', fontSize: '15px' }} id="yt-url" />
+                    <input type="text" placeholder="Broadcast Title" style={{ background: '#000', border: '1px solid #333', padding: '16px', borderRadius: '8px', color: '#fff', fontSize: '15px' }} id="yt-title" />
+                    <input type="text" placeholder="Broadcast Time (e.g. LIVE, UP NEXT, 2:00 PM)" style={{ background: '#000', border: '1px solid #333', padding: '16px', borderRadius: '8px', color: '#fff', fontSize: '15px' }} id="yt-time" />
+                    <button onClick={async () => {
+                       const url = (document.getElementById('yt-url') as HTMLInputElement).value;
+                       const title = (document.getElementById('yt-title') as HTMLInputElement).value;
+                       const time = (document.getElementById('yt-time') as HTMLInputElement).value;
+                       if(!url || !title) return alert('Enter URL and Title');
+                       const { data: cat } = await supabase!.from('categories').select('id').eq('title', 'Live Network Schedule').single();
+                       if (!cat) return alert('Live Network Schedule category not found in DB!');
+                       await supabase!.from('videos').insert({
+                         title, video_url: url, stream_time: time || 'LIVE', category_id: cat.id,
+                         image_url: `https://images.unsplash.com/photo-1550751827-4bd374c3f58b?auto=format&fit=crop&q=80&w=800`
+                       });
+                       alert('Successfully injected broadcast into global live slate!');
+                       (document.getElementById('yt-url') as HTMLInputElement).value = '';
+                       (document.getElementById('yt-title') as HTMLInputElement).value = '';
+                       (document.getElementById('yt-time') as HTMLInputElement).value = '';
+                    }} style={{ background: 'var(--accent-primary)', color: '#fff', border: 'none', padding: '16px', borderRadius: '8px', fontWeight: 'bold', cursor: 'pointer', fontSize: '15px' }}>
+                       Deploy Broadcast
+                    </button>
+                 </div>
                </div>
              </motion.div>
           )}

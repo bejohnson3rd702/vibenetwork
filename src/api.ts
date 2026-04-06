@@ -90,8 +90,9 @@ export async function getLiveSchedule() {
   return videos.map(vid => ({
     id: vid.id,
     title: vid.title,
-    time: vid.stream_time,
+    time: vid.stream_time || 'Just Added',
     image: vid.image_url,
-    tags: vid.tags || []
+    tags: vid.tags || [],
+    video_url: vid.video_url
   }));
 }
