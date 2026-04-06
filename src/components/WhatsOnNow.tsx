@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Play } from 'lucide-react';
+import ReactPlayer from 'react-player';
 import { SCHEDULE_ITEMS as LOCAL_SCHEDULE_ITEMS, MOCK_VIDEO } from '../data';
 import { getLiveSchedule } from '../api';
 
@@ -133,40 +134,22 @@ const WhatsOnNow: React.FC = () => {
         }}
       >
         <div style={{ flex: '1 1 auto', position: 'relative', background: '#000' }}>
-          {(() => {
-             const activeItem = scheduleItems[activeIndex];
-             const activeUrl = activeItem?.video_url || MOCK_VIDEO;
-             const youtubeMatch = activeUrl.match(/^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/);
-             const youtubeId = (youtubeMatch && youtubeMatch[2].length === 11) ? youtubeMatch[2] : null;
-             
-             if (youtubeId) {
-               return (
-                  <iframe 
-                    key={activeUrl}
-                    width="100%" 
-                    height="100%" 
-                    src={`https://www.youtube.com/embed/${youtubeId}?autoplay=1&mute=1&playsinline=1&loop=1&playlist=${youtubeId}&controls=1`} 
-                    title="YouTube video player" 
-                    frameBorder="0" 
-                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
-                    allowFullScreen
-                    style={{ border: 'none', background: '#000' }}
-                  ></iframe>
-               );
-             }
-             return (
-               <video 
-                 src={activeUrl}
-                 poster={activeItem?.image}
-                 muted 
-                 controls
-                 autoPlay={activeIndex === 0}
-                 loop 
-                 playsInline
-                 style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
-               />
-             );
-          })()}
+          <ReactPlayer 
+            url={scheduleItems[activeIndex]?.video_url || MOCK_VIDEO}
+            playing={true} 
+            muted={true}
+            loop={true}
+            controls={true}
+            width="100%"
+            height="100%"
+            playsinline={true}
+            config={{
+               youtube: {
+                 playerVars: { showinfo: 0, autoPlay: 1, rel: 0, modestbranding: 1 }
+               }
+            }}
+            style={{ position: 'absolute', top: 0, left: 0 }}
+          />
           {/* Subtle Live Badge Overlay */}
           <div style={{ 
               position: 'absolute', 
