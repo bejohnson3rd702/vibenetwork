@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Play } from 'lucide-react';
 import ReactPlayer from 'react-player';
-import { SCHEDULE_ITEMS as LOCAL_SCHEDULE_ITEMS, MOCK_VIDEO } from '../data';
+import { MOCK_VIDEO } from '../data';
 import { getLiveSchedule } from '../api';
 
 const ScheduleRow: React.FC<{ item: any, isActive: boolean, onClick: () => void }> = ({ item, isActive, onClick }) => {
@@ -145,6 +145,7 @@ const WhatsOnNow: React.FC = () => {
             playsinline={true}
             config={{
                youtube: {
+                 // @ts-ignore
                  playerVars: { showinfo: 0, autoPlay: 1, rel: 0, modestbranding: 1 }
                }
             }}
