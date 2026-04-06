@@ -113,7 +113,7 @@ function App() {
     return (
       <Router>
         <div style={{ background: wlConfig.bg, minHeight: '100vh', color: '#fff', overflowX: 'hidden' }}>
-          <Navbar user={user} onLoginClick={() => setShowEndUserAuthModal(true)} wlConfig={wlConfig} />
+          <Navbar user={user} onLoginClick={() => setShowEndUserAuthModal(true)} onAdminClick={() => setShowAdminPanel(true)} wlConfig={wlConfig} />
           
           <div style={{
              width: '100%', height: '80vh', 
@@ -131,13 +131,6 @@ function App() {
                </span>
                <h1 style={{ fontSize: '80px', fontWeight: '900', margin: 0, letterSpacing: '-2px', textShadow: '0 10px 30px rgba(0,0,0,0.5)' }}>{wlConfig.name}</h1>
                <p style={{ fontSize: '24px', opacity: 0.9, maxWidth: '750px', fontWeight: '500', textShadow: '0 4px 10px rgba(0,0,0,0.5)', lineHeight: 1.5 }}>{wlConfig.heroCopy || 'The premiere destination for high quality digital content.'}</p>
-               <button onClick={() => {
-                 if (!user) {
-                   setShowEndUserAuthModal(true);
-                 } else {
-                   setShowAdminPanel(true);
-                 }
-               }} style={{ padding: '16px 36px', background: '#fff', color: '#000', fontSize: '18px', fontWeight: 'bold', border: 'none', borderRadius: '12px', marginTop: '20px', cursor: 'pointer', transition: '0.2s', boxShadow: `0 10px 30px ${wlConfig.accent}44` }} onMouseOver={e=>e.currentTarget.style.transform='scale(1.05)'} onMouseOut={e=>e.currentTarget.style.transform='scale(1)'}>{wlConfig.btnPrimary || 'Access Admin Dashboard'}</button>
              </div>
           </div>
 
@@ -203,7 +196,11 @@ function App() {
           <Route path="/master-admin" element={<MasterAdminDashboard />} />
           <Route path="*" element={
             <>
-              <Navbar user={user} onLoginClick={() => setShowAuthModal(true)} />
+              <Navbar 
+                user={user} 
+                onLoginClick={() => setShowAuthModal(true)} 
+                onAdminClick={() => window.location.href = '/master-admin'}
+              />
               <Routes>
                 <Route path="/" element={<Home categories={categories} activeVideo={activeVideo} setActiveVideo={setActiveVideo} />} />
                 <Route path="/profile" element={<ProfileDashboard user={user} />} />

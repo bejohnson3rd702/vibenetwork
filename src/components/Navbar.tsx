@@ -6,10 +6,11 @@ import { Link } from 'react-router-dom';
 interface NavbarProps {
   user: any;
   onLoginClick: () => void;
+  onAdminClick?: () => void;
   wlConfig?: any;
 }
 
-const Navbar: React.FC<NavbarProps> = ({ user, onLoginClick, wlConfig }) => {
+const Navbar: React.FC<NavbarProps> = ({ user, onLoginClick, onAdminClick, wlConfig }) => {
   const [scrolled, setScrolled] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [theme, setTheme] = useState('dark');
@@ -116,14 +117,26 @@ const Navbar: React.FC<NavbarProps> = ({ user, onLoginClick, wlConfig }) => {
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px', borderLeft: '1px solid rgba(255,255,255,0.2)', paddingLeft: '24px' }}>
           {user ? (
-            <Link to="/profile" style={{ display: 'flex', alignItems: 'center', gap: '12px', cursor: 'pointer', textDecoration: 'none' }}>
-              <div style={{ width: '30px', height: '30px', borderRadius: '50%', background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <span style={{ color: '#000', fontWeight: 'bold' }}>{user.email?.[0].toUpperCase()}</span>
-              </div>
-              <span style={{ fontFamily: 'var(--font-heading)', fontWeight: 600, fontSize: '12px', color: 'white', letterSpacing: '1px' }}>
-                Profile
-              </span>
-            </Link>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
+              {(user?.email?.includes('admin') || user?.user_metadata?.role === 'admin') && onAdminClick && (
+                <div 
+                  onClick={onAdminClick}
+                  style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', background: wlConfig?.accent || '#b829ea', padding: '6px 14px', borderRadius: '8px' }}
+                >
+                  <span style={{ fontFamily: 'var(--font-heading)', fontWeight: 600, fontSize: '12px', color: 'white', letterSpacing: '1px' }}>
+                    Dashboard
+                  </span>
+                </div>
+              )}
+              <Link to="/profile" style={{ display: 'flex', alignItems: 'center', gap: '12px', cursor: 'pointer', textDecoration: 'none' }}>
+                <div style={{ width: '30px', height: '30px', borderRadius: '50%', background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <span style={{ color: '#000', fontWeight: 'bold' }}>{user.email?.[0].toUpperCase()}</span>
+                </div>
+                <span style={{ fontFamily: 'var(--font-heading)', fontWeight: 600, fontSize: '12px', color: 'white', letterSpacing: '1px' }}>
+                  Profile
+                </span>
+              </Link>
+            </div>
           ) : (
             <div style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px' }} onClick={onLoginClick}>
               <User size={20} color="white" />
