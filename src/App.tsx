@@ -131,7 +131,13 @@ function App() {
                </span>
                <h1 style={{ fontSize: '80px', fontWeight: '900', margin: 0, letterSpacing: '-2px', textShadow: '0 10px 30px rgba(0,0,0,0.5)' }}>{wlConfig.name}</h1>
                <p style={{ fontSize: '24px', opacity: 0.9, maxWidth: '750px', fontWeight: '500', textShadow: '0 4px 10px rgba(0,0,0,0.5)', lineHeight: 1.5 }}>{wlConfig.heroCopy || 'The premiere destination for high quality digital content.'}</p>
-               <button onClick={() => setShowAdminPanel(true)} style={{ padding: '16px 36px', background: '#fff', color: '#000', fontSize: '18px', fontWeight: 'bold', border: 'none', borderRadius: '12px', marginTop: '20px', cursor: 'pointer', transition: '0.2s', boxShadow: `0 10px 30px ${wlConfig.accent}44` }} onMouseOver={e=>e.currentTarget.style.transform='scale(1.05)'} onMouseOut={e=>e.currentTarget.style.transform='scale(1)'}>{wlConfig.btnPrimary || 'Access Admin Dashboard'}</button>
+               <button onClick={() => {
+                 if (!user) {
+                   setShowEndUserAuthModal(true);
+                 } else {
+                   setShowAdminPanel(true);
+                 }
+               }} style={{ padding: '16px 36px', background: '#fff', color: '#000', fontSize: '18px', fontWeight: 'bold', border: 'none', borderRadius: '12px', marginTop: '20px', cursor: 'pointer', transition: '0.2s', boxShadow: `0 10px 30px ${wlConfig.accent}44` }} onMouseOver={e=>e.currentTarget.style.transform='scale(1.05)'} onMouseOut={e=>e.currentTarget.style.transform='scale(1)'}>{wlConfig.btnPrimary || 'Access Admin Dashboard'}</button>
              </div>
           </div>
 
@@ -167,7 +173,7 @@ function App() {
              
           </div>
           
-          {showAdminPanel && (
+          {showAdminPanel && user && (
             <BusinessAdminDashboard wlConfig={wlConfig} onClose={() => setShowAdminPanel(false)} />
           )}
 
