@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Play } from 'lucide-react';
-import ReactPlayer from 'react-player';
 import { MOCK_VIDEO } from '../data';
 import { getLiveSchedule } from '../api';
 
@@ -139,24 +138,46 @@ const WhatsOnNow: React.FC = () => {
           boxShadow: '0 40px 100px rgba(0,0,0,0.8)'
         }}
       >
-        <div style={{ flex: '1 1 auto', position: 'relative', background: '#000' }}>
-          <ReactPlayer 
-            url={scheduleItems[activeIndex]?.video_url || MOCK_VIDEO}
-            playing={true} 
-            muted={true}
-            loop={true}
-            controls={true}
-            width="100%"
-            height="100%"
-            playsinline={true}
-            config={{
-               youtube: {
-                 // @ts-ignore
-                 playerVars: { showinfo: 0, autoPlay: 1, rel: 0, modestbranding: 1 }
-               }
-            }}
-            style={{ position: 'absolute', top: 0, left: 0 }}
-          />
+        <div style={{ flex: '1 1 auto', position: 'relative', background: '#000', pointerEvents: 'auto' }}>
+          {(() => {
+             const activeItem = scheduleItems[activeIndex];
+             const activeUrl = activeItem?.video_url || 'https://www.youtube.com/watch?v=u4ZoJKF_VuA';
+             
+             // Extract YouTube ID reliably
+             const youtubeMatch = activeUrl.match(/^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/);
+             const youtubeId = (youtubeMatch && youtubeMatch[2].length === 11) ? youtubeMatch[2] : null;
+
+             if (youtubeId) {
+                return (
+                   <iframe 
+                     key={youtubeId}
+                     width="100%" 
+                     height="100%" 
+                     src={`https://www.youtube.com/embed/${youtubeId}?autoplay=1&mute=1&playsinline=1&loop=1&playlist=${youtubeId}&controls=1`} 
+                     title={`${activeItem?.title || 'YouTube Player'}`} 
+                     frameBorder="0" 
+                     allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
+                     allowFullScreen
+                     style={{ border: 'none', background: '#000', position: 'absolute', top: 0, left: 0, width: '100%', height: '100%' }}
+                   />
+                );
+             }
+
+             // If not YouTube, assume native MP4. Use HTTPS universally to avoid Mixed Content blocks on Vercel
+             return (
+               <video 
+                 key={activeUrl}
+                 src={activeUrl.replace('http://', 'https://')}
+                 poster={activeItem?.image}
+                 muted 
+                 controls
+                 autoPlay
+                 loop 
+                 playsInline
+                 style={{ width: '100%', height: '100%', objectFit: 'cover', position: 'absolute', top: 0, left: 0 }} 
+               />
+             );
+          })()}
           {/* Subtle Live Badge Overlay */}
           <div style={{ 
               position: 'absolute', 
