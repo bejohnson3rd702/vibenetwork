@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { 
-  Globe, Users, Activity, Settings, Database, 
+  Globe, Users, Activity, Database, 
   ShieldAlert, Terminal, ChevronRight, BarChart3, 
   Network, Server, Play, StopCircle, CheckCircle 
 } from 'lucide-react';
@@ -191,6 +191,67 @@ export default function MasterAdminDashboard() {
                      {isRestarting ? 'Cluster Queued for Restart' : 'Force Cluster Restart'}
                   </button>
                </div>
+             </motion.div>
+          )}
+
+          {activeTab === 'users' && (
+             <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
+               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '30px' }}>
+                 <h3 style={{ margin: 0, fontSize: '24px' }}>System Node Directory</h3>
+                 <button style={{ background: 'var(--accent-primary)', color: '#fff', border: 'none', padding: '12px 24px', borderRadius: '12px', fontWeight: 'bold', cursor: 'pointer' }}>Auditor Review</button>
+               </div>
+               <div style={{ background: '#111', padding: '20px', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.05)' }}>
+                  <table style={{ width: '100%', textAlign: 'left', borderCollapse: 'collapse' }}>
+                    <thead>
+                      <tr style={{ color: '#888', borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
+                        <th style={{ padding: '16px 12px' }}>Node ID</th>
+                        <th style={{ padding: '16px 12px' }}>Designation</th>
+                        <th style={{ padding: '16px 12px' }}>Status</th>
+                        <th style={{ padding: '16px 12px' }}>Protocol</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {[
+                        { id: 'SYS-441', name: 'DevOps Chief', status: 'ACTIVE', role: 'root_command' },
+                        { id: 'MACH-002', name: 'Network Node 44A', status: 'ACTIVE', role: 'infra_router' },
+                        { id: 'USR-889', name: 'Sarah Connor', status: 'IDLE', role: 'observer' },
+                        { id: 'SYS-101', name: 'SysAdmin Protocol', status: 'ACTIVE', role: 'maintenance' }
+                      ].map((mock, i) => (
+                        <tr key={mock.id} style={{ borderBottom: i !== 3 ? '1px solid rgba(255,255,255,0.05)' : 'none' }}>
+                          <td style={{ padding: '16px 12px', fontFamily: 'monospace', color: '#0055ff' }}>{mock.id}</td>
+                          <td style={{ padding: '16px 12px', fontWeight: 'bold' }}>{mock.name}</td>
+                          <td style={{ padding: '16px 12px' }}>
+                            <span style={{ background: mock.status === 'ACTIVE' ? 'rgba(0,255,136,0.1)' : 'rgba(255,255,255,0.1)', color: mock.status === 'ACTIVE' ? '#00ff88' : '#888', padding: '4px 8px', borderRadius: '6px', fontSize: '11px', fontWeight: 'bold' }}>{mock.status}</span>
+                          </td>
+                          <td style={{ padding: '16px 12px', color: '#ccc', fontSize: '14px' }}>{mock.role}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+               </div>
+             </motion.div>
+          )}
+
+          {activeTab === 'logs' && (
+             <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} style={{ background: '#0a0a0a', padding: '24px', borderRadius: '16px', border: '1px solid #333' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '20px', borderBottom: '1px solid #222', paddingBottom: '12px' }}>
+                  <Terminal size={20} color="#00ff88" />
+                  <h3 style={{ margin: 0, fontSize: '18px', color: '#fff' }}>Daemon Live Trace</h3>
+                </div>
+                <div style={{ fontFamily: 'monospace', color: '#00ff88', fontSize: '13px', lineHeight: 1.8, height: '400px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                  <div>[2026-04-06T10:14:02Z] INFO: Initializing B2B router matrix... OK.</div>
+                  <div>[2026-04-06T10:14:03Z] WARN: Legacy music profiles intercepted at layer 4.</div>
+                  <div>[2026-04-06T10:14:05Z] INFO: Executing role demotion on DJ partitions.</div>
+                  <div>[2026-04-06T10:14:07Z] INFO: Database seeder node successfully connected via service role.</div>
+                  <div style={{ color: '#fff' }}>[2026-04-06T10:14:09Z] SYNC: Provisioning 3 new whitelabel tenants across us-east regions.</div>
+                  <div style={{ color: '#ffcc00' }}>[2026-04-06T10:14:15Z] ALERT: Master CPU spiking above 80% during node migration. Autoresizing pool.</div>
+                  <div>[2026-04-06T10:14:16Z] INFO: Target state converged. Resuming normal operations.</div>
+                  <div className="blink" style={{ marginTop: '20px' }}>_</div>
+                </div>
+                <style>{`
+                  @keyframes blinker { 50% { opacity: 0; } }
+                  .blink { animation: blinker 1s linear infinite; }
+                `}</style>
              </motion.div>
           )}
           

@@ -24,11 +24,11 @@ export default function EndUserAuthModal({ onClose, wlConfig }: EndUserAuthModal
 
     try {
       if (isLogin) {
-        const { error } = await supabase.auth.signInWithPassword({ email, password });
+        const { error } = await supabase!.auth.signInWithPassword({ email, password });
         if (error) throw error;
         onClose();
       } else {
-        const { error } = await supabase.auth.signUp({ email, password });
+        const { error } = await supabase!.auth.signUp({ email, password });
         if (error) throw error;
         alert('Check your email to verify your account!');
         onClose();

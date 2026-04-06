@@ -9,7 +9,7 @@ import ProfileDashboard from './components/ProfileDashboard';
 import BusinessAdminDashboard from './components/BusinessAdminDashboard';
 import EndUserAuthModal from './components/EndUserAuthModal';
 import MasterAdminDashboard from './components/MasterAdminDashboard';
-import { BrowserRouter as Router, Routes, Route, useNavigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import { supabase } from './supabaseClient';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -71,10 +71,25 @@ function App() {
   const [showAdminPanel, setShowAdminPanel] = useState(false);
   const [showEndUserAuthModal, setShowEndUserAuthModal] = useState(false);
 
-  // Load latest whitelabel config from DB on load
+  // Load latest whitelabel config from DB on load, matching domain
   useEffect(() => {
     async function fetchConfig() {
-      const { data } = await supabase!.from('whitelabel_configs').select('*').limit(1);
+      const hostname = window.location.hostname;
+      const urlParams = new URLSearchParams(window.location.search);
+      const forceTenant = urlParams.get('tenant');
+
+      let query = supabase!.from('whitelabel_configs').select('*');
+      
+      if (forceTenant) {
+        query = query.eq('id', forceTenant).limit(1);
+      } else if (hostname !== 'localhost' && hostname !== '127.0.0.1') {
+        query = query.eq('domain', hostname).limit(1);
+      } else {
+        // We are locally testing the Master Vibe Network root
+        return; 
+      }
+
+      const { data } = await query;
       if (data && data.length > 0) {
         const dbConf = data[0];
         setWlConfig({
@@ -178,13 +193,18 @@ function App() {
           )}
         </AnimatePresence>
 
-        <Navbar user={user} onLoginClick={() => setShowAuthModal(true)} />
-        
         <Routes>
-          <Route path="/" element={<Home categories={categories} activeVideo={activeVideo} setActiveVideo={setActiveVideo} />} />
-          <Route path="/profile" element={<ProfileDashboard user={user} />} />
-          <Route path="/profile/:creatorId" element={<ProfileDashboard user={user} />} />
           <Route path="/master-admin" element={<MasterAdminDashboard />} />
+          <Route path="*" element={
+            <>
+              <Navbar user={user} onLoginClick={() => setShowAuthModal(true)} />
+              <Routes>
+                <Route path="/" element={<Home categories={categories} activeVideo={activeVideo} setActiveVideo={setActiveVideo} />} />
+                <Route path="/profile" element={<ProfileDashboard user={user} />} />
+                <Route path="/profile/:creatorId" element={<ProfileDashboard user={user} />} />
+              </Routes>
+            </>
+          } />
         </Routes>
       </div>
     </Router>
@@ -193,7 +213,7 @@ function App() {
 
 // Separate the massive homepage into a stateless component for router cleanliness
 function Home({ categories, activeVideo, setActiveVideo }: any) {
-  const navigate = useNavigate();
+  // const navigate = useNavigate();
 
   return (
     <>
@@ -218,7 +238,9 @@ function Home({ categories, activeVideo, setActiveVideo }: any) {
               aspectRatio={ratio}
               sizeMultiplier={multiplier}
               onItemClick={(item) => {
-                if (item.tags && item.tags.includes('Influencer Channel')) {
+                if (item.linkUrl) {
+                  window.location.href = item.linkUrl;
+                } else if (item.tags && item.tags.includes('Influencer Channel')) {
                   // Force a hard redirect specifically for Influencer profiles from the Swiper slider
                   // This entirely bypasses any nested DOM event swallowing bugs from swiper/react wrapper
                   window.location.href = `/profile/${item.id}`;
@@ -366,7 +388,7 @@ function Home({ categories, activeVideo, setActiveVideo }: any) {
       }}>
         <img src={ASSETS.logo} alt="Logo" style={{ height: '50px', marginBottom: '20px', opacity: 0.8 }} />
         <p style={{ color: 'var(--text-secondary)', maxWidth: '600px', margin: '0 auto 30px' }}>
-          VIBE NETWORK TV is a global live streaming platform that offers a unique blend of content, focusing on international DJs, fashion, music, sports, lifestyle. JUST VIBE.
+          Vibe Network is the premier global enterprise engine for deploying, managing, and scaling dedicated SaaS streaming architectures.
         </p>
         <div style={{ display: 'flex', justifyContent: 'center', gap: '30px', color: 'var(--text-secondary)', fontSize: '14px' }}>
           <span style={{cursor: 'pointer'}}>Terms of Service</span>

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { Search, User, Menu, Moon, Sun } from 'lucide-react';
+import { Search, User, Menu, Lightbulb } from 'lucide-react';
 import { ASSETS } from '../data';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 
 interface NavbarProps {
   user: any;
@@ -16,7 +16,7 @@ const Navbar: React.FC<NavbarProps> = ({ user, onLoginClick, wlConfig }) => {
   const [appName, setAppName] = useState('');
   const [appAccent, setAppAccent] = useState('');
   const [appLogo, setAppLogo] = useState('');
-  const navigate = useNavigate();
+  // navigate removed
 
   useEffect(() => {
     const handleWhiteLabel = (e: any) => {
@@ -101,8 +101,18 @@ const Navbar: React.FC<NavbarProps> = ({ user, onLoginClick, wlConfig }) => {
       </div>
 
       <div style={{ display: 'flex', alignItems: 'center', gap: '24px' }}>
-        <div style={{ cursor: 'pointer', display: 'flex', alignItems: 'center' }}>
-          <Search size={20} color={appAccent || "white"} />
+        <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
+          <Lightbulb 
+            size={22} 
+            color={theme === 'dark' ? '#b829ea' : '#ffffff'} 
+            style={{ 
+               cursor: 'pointer',
+               filter: theme === 'light' ? 'drop-shadow(0px 0px 4px rgba(0,0,0,0.8))' : 'drop-shadow(0px 0px 8px rgba(184, 41, 234, 0.4))',
+               transition: 'all 0.3s'
+            }}
+            onClick={toggleTheme} 
+          />
+          <Search size={20} color={appAccent || "white"} style={{ cursor: 'pointer' }} />
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px', borderLeft: '1px solid rgba(255,255,255,0.2)', paddingLeft: '24px' }}>
           {user ? (
@@ -126,17 +136,9 @@ const Navbar: React.FC<NavbarProps> = ({ user, onLoginClick, wlConfig }) => {
           
           {isMenuOpen && (
             <div style={{ position: 'absolute', top: '100%', right: 0, marginTop: '24px', background: '#111', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px', padding: '8px', minWidth: '220px', display: 'flex', flexDirection: 'column', gap: '4px', zIndex: 1000, boxShadow: '0 20px 40px rgba(0,0,0,0.5)' }}>
-              
-              <button 
-                onClick={toggleTheme}
-                style={{ display: 'flex', alignItems: 'center', gap: '12px', background: 'rgba(255,255,255,0.05)', color: '#fff', border: 'none', padding: '14px 16px', borderRadius: '8px', cursor: 'pointer', fontFamily: 'var(--font-heading)', fontWeight: 'bold', fontSize: '14px', width: '100%', transition: '0.2s', justifyContent: 'flex-start' }}
-                onMouseOver={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.1)'}
-                onMouseOut={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.05)'}
-              >
-                {theme === 'dark' ? <Sun size={18} color="#FFD700" /> : <Moon size={18} color="#a3a3a3" />}
-                Switch to {theme === 'dark' ? 'Light' : 'Dark'} Mode
-              </button>
-              
+              <div style={{ padding: '8px 16px', color: '#888', fontSize: '13px', fontWeight: 'bold' }}>
+                 System Operations
+              </div>
             </div>
           )}
         </div>

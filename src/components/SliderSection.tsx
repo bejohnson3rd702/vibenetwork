@@ -1,21 +1,14 @@
-import React, { useState } from 'react';
-import { Swiper, SwiperSlide } from 'swiper/react';
-import { Navigation, A11y, EffectCoverflow } from 'swiper/modules';
+import React, { useState, useRef } from 'react';
 import { Play } from 'lucide-react';
 import { motion } from 'framer-motion';
-// @ts-ignore
-import 'swiper/css';
-// @ts-ignore
-import 'swiper/css/navigation';
-// @ts-ignore
-import 'swiper/css/effect-coverflow';
 
 interface Item {
-  id: number;
+  id: number | string;
   title: string;
   image: string;
   tags: string[];
   videoUrl?: string;
+  linkUrl?: string;
 }
 
 interface SliderSectionProps {
@@ -27,9 +20,8 @@ interface SliderSectionProps {
   onItemClick?: (item: Item) => void;
 }
 
-const SlideItem: React.FC<{ item: Item, aspectRatio: string, onClick?: () => void }> = ({ item, aspectRatio, onClick }) => {
+const SlideItem: React.FC<{ item: Item, aspectRatio: string, onClick?: () => void }> = ({ item, aspectRatio }) => {
   const [isHovered, setIsHovered] = useState(false);
-  
   const isInfluencer = !item.videoUrl || (item.tags && item.tags.includes('Influencer Channel'));
 
   const innerContent = (
@@ -41,12 +33,11 @@ const SlideItem: React.FC<{ item: Item, aspectRatio: string, onClick?: () => voi
           backgroundImage: `url("${item.image}")`,
           backgroundSize: 'cover',
           backgroundPosition: 'center',
-          transition: 'opacity 0.5s ease',
-          opacity: isHovered ? 0 : 1,
+          transition: 'transform 0.5s ease',
+          transform: isHovered ? 'scale(1.05)' : 'scale(1)',
         }}
       />
       
-      {/* Video element that plays only on hover */}
       {isHovered && item.videoUrl && (
         <video 
           style={{
@@ -91,7 +82,7 @@ const SlideItem: React.FC<{ item: Item, aspectRatio: string, onClick?: () => voi
             </span>
           ))}
         </div>
-        <h3 style={{ fontSize: '16px', margin: 0 }}>{item.title}</h3>
+        <h3 style={{ fontSize: '16px', margin: 0, color: '#fff', textShadow: '0 2px 4px rgba(0,0,0,0.8)' }}>{item.title}</h3>
         {isInfluencer && (
           <div style={{ marginTop: '8px', fontSize: '12px', color: '#00aaff', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '4px' }}>
             <span>View Architecture</span> <Play size={10} fill="#00aaff" />
@@ -118,7 +109,7 @@ const SlideItem: React.FC<{ item: Item, aspectRatio: string, onClick?: () => voi
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            boxShadow: '0 0 20px rgba(229,9,20,0.4)'
+            boxShadow: '0 0 20px rgba(0,85,255,0.4)'
           }}>
             <Play fill="white" size={24} style={{ marginLeft: '4px' }} />
           </div>
@@ -127,47 +118,67 @@ const SlideItem: React.FC<{ item: Item, aspectRatio: string, onClick?: () => voi
     </>
   );
 
-  const containerStyle = { 
-    borderRadius: '8px', 
-    overflow: 'hidden', 
-    position: 'relative',
-    height: '100%',
-    width: '100%',
-    aspectRatio: aspectRatio,
-    cursor: 'pointer',
-    transform: isHovered ? 'scale(1.05)' : 'scale(1)',
-    transition: 'all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1)',
-    zIndex: isHovered ? 10 : 1,
-    display: 'block',
-    textDecoration: 'none',
-    color: 'inherit'
-  };
-
   return (
     <div 
       className="media-card slide-container"
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
-      style={containerStyle as any}
+      style={{
+        borderRadius: '16px',
+        overflow: 'hidden',
+        position: 'relative',
+        flexShrink: 0,
+        height: '100%',
+        aspectRatio: aspectRatio,
+        cursor: 'pointer',
+        boxShadow: '0 10px 30px rgba(0,0,0,0.5)',
+        border: '1px solid rgba(255,255,255,0.05)',
+      }}
     >
       {innerContent}
     </div>
   );
 };
 
-const SliderSection: React.FC<SliderSectionProps> = ({ title, items, delay = 0, aspectRatio = '16/9', sizeMultiplier = 1, onItemClick }) => {
+const SliderSection: React.FC<SliderSectionProps> = ({ title, items, delay = 0, aspectRatio = '16/9', onItemClick }) => {
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const [isDragging, setIsDragging] = useState(false);
+  const [startX, setStartX] = useState(0);
+  const [scrollLeft, setScrollLeft] = useState(0);
+
+  const startDrag = (e: React.MouseEvent) => {
+    setIsDragging(true);
+    setStartX(e.pageX - (scrollRef.current?.offsetLeft || 0));
+    setScrollLeft(scrollRef.current?.scrollLeft || 0);
+  };
+
+  const onDrag = (e: React.MouseEvent) => {
+    if (!isDragging || !scrollRef.current) return;
+    e.preventDefault();
+    const x = e.pageX - scrollRef.current.offsetLeft;
+    const walk = (x - startX) * 2; // scroll-fast multiplier
+    scrollRef.current.scrollLeft = scrollLeft - walk;
+  };
+
+  const endDrag = () => {
+    setIsDragging(false);
+  };
+
+  // Determine width based on aspect ratio
+  const widthVal = aspectRatio === '1/1' ? '280px' : aspectRatio === '3/4' ? '280px' : '380px';
+
   return (
     <motion.section 
       initial={{ opacity: 0, y: 30 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true }}
       transition={{ duration: 0.6, delay }}
-      style={{ padding: '0px 0 16px', width: '100%', overflow: 'hidden' }}
+      style={{ padding: '0px 0 24px', width: '100%', overflow: 'hidden' }}
     >
       <div style={{ maxWidth: '1400px', margin: '0 auto', padding: '0 40px' }}>
         <h2 style={{ 
           fontSize: '22px', 
-          marginBottom: '12px', 
+          marginBottom: '20px', 
           display: 'flex',
           alignItems: 'center',
           gap: '12px'
@@ -175,48 +186,48 @@ const SliderSection: React.FC<SliderSectionProps> = ({ title, items, delay = 0, 
           <span style={{ color: 'white' }}>{title}</span>
         </h2>
         
-        <Swiper
-          modules={[Navigation, A11y, EffectCoverflow]}
-          spaceBetween={16}
-          slidesPerView={1.1}
-          navigation
-          effect="coverflow"
-          grabCursor={false}
-          centeredSlides={false}
-          preventClicks={false}
-          preventClicksPropagation={false}
-          simulateTouch={true}
-          coverflowEffect={{
-            rotate: 0,
-            stretch: 0,
-            depth: 100,
-            modifier: 1,
-            slideShadows: false,
+        <div 
+          ref={scrollRef}
+          onMouseDown={startDrag}
+          onMouseMove={onDrag}
+          onMouseUp={endDrag}
+          onMouseLeave={endDrag}
+          style={{
+            display: 'flex',
+            gap: '20px',
+            overflowX: 'auto',
+            paddingBottom: '20px',
+            cursor: isDragging ? 'grabbing' : 'grab',
+            scrollBehavior: isDragging ? 'auto' : 'smooth',
+            WebkitOverflowScrolling: 'touch',
+            scrollbarWidth: 'none', // hide scrollbar for firefox
           }}
-          breakpoints={{
-            640: { slidesPerView: 1.5 * sizeMultiplier },
-            1024: { slidesPerView: 2.8 * sizeMultiplier },
-            1280: { slidesPerView: 3.5 * sizeMultiplier },
-          }}
-          style={{ overflow: 'visible', paddingBottom: '10px' }}
+          className="hide-scrollbar"
         >
           {items.map((item) => (
-            <SwiperSlide 
+            <div 
               key={item.id} 
-              style={{ transition: 'transform 0.3s ease', cursor: 'pointer' }}
-              onClick={() => {
-                // Official Swiper React implementation guarantees dragging physics vs click resolution here!
+              style={{ width: widthVal, height: aspectRatio === '1/1' ? widthVal : 'auto' }}
+              onClick={(e) => {
+                // Ignore click if user was dragging
+                if (isDragging && Math.abs(scrollRef.current!.scrollLeft - scrollLeft) > 10) {
+                   e.preventDefault();
+                   return;
+                }
                 if (onItemClick) onItemClick(item);
               }}
             >
               <SlideItem item={item} aspectRatio={aspectRatio} />
-            </SwiperSlide>
+            </div>
           ))}
-        </Swiper>
+        </div>
       </div>
       <style>{`
         .slide-container:hover .play-overlay {
           opacity: 1 !important;
+        }
+        .hide-scrollbar::-webkit-scrollbar {
+          display: none;
         }
       `}</style>
     </motion.section>

@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { X, Upload, Users, Settings, Film, CheckCircle, Layout, Mail, Type, Image as ImageIcon, Sparkles } from 'lucide-react';
+import { useState } from 'react';
+import { X, Upload, Users, Film, CheckCircle, Layout, Mail, Type, Sparkles } from 'lucide-react';
 
 const AiInput = ({ defaultValue, label, placeholder, accent, onChange }: { defaultValue: string, label: string, placeholder?: string, accent: string, onChange?: (v: string) => void }) => {
    const [val, setVal] = useState(defaultValue || '');
@@ -75,6 +75,8 @@ export default function BusinessAdminDashboard({ wlConfig, onClose }: { wlConfig
 
   const [heroCopy, setHeroCopy] = useState(wlConfig.heroCopy || '');
   const [btnPrimary, setBtnPrimary] = useState('Access Admin Dashboard');
+  
+  const [selectedLead, setSelectedLead] = useState<{email: string, date: string, full: string} | null>(null);
 
   const executeHeroSaveDeploy = () => {
      window.dispatchEvent(new CustomEvent('whitelabel_commit', {
@@ -240,34 +242,49 @@ export default function BusinessAdminDashboard({ wlConfig, onClose }: { wlConfig
                 <h1 style={{ fontSize: '36px', marginBottom: '12px', fontWeight: '900', letterSpacing: '-1px' }}>Contact Lead Triage</h1>
                 <p style={{ color: '#888', fontSize: '18px', marginBottom: '40px', lineHeight: 1.5 }}>View encrypted payloads transmitted directly from your network's Contact Us nodes.</p>
                 
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                   <div style={{ display: 'table', width: '100%', background: 'rgba(255,255,255,0.05)', borderRadius: '12px', overflow: 'hidden' }}>
-                      <div style={{ display: 'table-row', background: 'rgba(255,255,255,0.05)', fontWeight: 'bold' }}>
-                         <div style={{ display: 'table-cell', padding: '16px 20px' }}>Date</div>
-                         <div style={{ display: 'table-cell', padding: '16px 20px' }}>Entity</div>
-                         <div style={{ display: 'table-cell', padding: '16px 20px' }}>Payload Preview</div>
-                         <div style={{ display: 'table-cell', padding: '16px 20px' }}>Action</div>
+                {selectedLead ? (
+                   <div style={{ background: 'rgba(255,255,255,0.05)', padding: '40px', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.1)' }}>
+                      <button onClick={() => setSelectedLead(null)} style={{ background: 'none', border: 'none', color: '#888', cursor: 'pointer', marginBottom: '20px', fontWeight: 'bold' }}>← Back to Triage</button>
+                      <h2 style={{ margin: '0 0 8px 0', fontSize: '24px' }}>Sender: {selectedLead.email}</h2>
+                      <p style={{ color: '#888', margin: '0 0 30px 0' }}>Received: {selectedLead.date}</p>
+                      <div style={{ background: '#000', padding: '24px', borderRadius: '12px', color: '#ccc', lineHeight: 1.6, fontSize: '16px', border: '1px solid rgba(255,255,255,0.05)' }}>
+                         {selectedLead.full}
                       </div>
-                      
-                      <div style={{ display: 'table-row', borderTop: '1px solid rgba(255,255,255,0.05)' }}>
-                         <div style={{ display: 'table-cell', padding: '16px 20px', color: '#888' }}>2 minutes ago</div>
-                         <div style={{ display: 'table-cell', padding: '16px 20px', fontWeight: 'bold' }}>jordan@invest.com</div>
-                         <div style={{ display: 'table-cell', padding: '16px 20px', color: '#ccc' }}>"We love the white label structure..."</div>
-                         <div style={{ display: 'table-cell', padding: '16px 20px' }}>
-                            <button style={{ padding: '8px 16px', background: wlConfig.accent, color: '#fff', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold' }}>View Full</button>
+                      <div style={{ display: 'flex', gap: '16px', marginTop: '30px' }}>
+                         <button style={{ padding: '12px 24px', background: wlConfig.accent, color: '#fff', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold' }}>Forward to Sales CRM</button>
+                         <button style={{ padding: '12px 24px', background: 'rgba(255,0,0,0.1)', color: '#ff0000', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold' }}>Archive Lead</button>
+                      </div>
+                   </div>
+                ) : (
+                   <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                      <div style={{ display: 'table', width: '100%', background: 'rgba(255,255,255,0.05)', borderRadius: '12px', overflow: 'hidden' }}>
+                         <div style={{ display: 'table-row', background: 'rgba(255,255,255,0.05)', fontWeight: 'bold' }}>
+                            <div style={{ display: 'table-cell', padding: '16px 20px' }}>Date</div>
+                            <div style={{ display: 'table-cell', padding: '16px 20px' }}>Entity</div>
+                            <div style={{ display: 'table-cell', padding: '16px 20px' }}>Payload Preview</div>
+                            <div style={{ display: 'table-cell', padding: '16px 20px' }}>Action</div>
                          </div>
-                      </div>
+                         
+                         <div style={{ display: 'table-row', borderTop: '1px solid rgba(255,255,255,0.05)' }}>
+                            <div style={{ display: 'table-cell', padding: '16px 20px', color: '#888' }}>2 minutes ago</div>
+                            <div style={{ display: 'table-cell', padding: '16px 20px', fontWeight: 'bold' }}>jordan@invest.com</div>
+                            <div style={{ display: 'table-cell', padding: '16px 20px', color: '#ccc' }}>"We love the white label structure..."</div>
+                            <div style={{ display: 'table-cell', padding: '16px 20px' }}>
+                               <button onClick={() => setSelectedLead({email: 'jordan@invest.com', date: '2 minutes ago', full: 'We love the white label structure. We are looking to deploy 400 nodes globally for our enterprise suite. What is your volume pricing?'})} style={{ padding: '8px 16px', background: wlConfig.accent, color: '#fff', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold' }}>View Full</button>
+                            </div>
+                         </div>
 
-                      <div style={{ display: 'table-row', borderTop: '1px solid rgba(255,255,255,0.05)' }}>
-                         <div style={{ display: 'table-cell', padding: '16px 20px', color: '#888' }}>1 hour ago</div>
-                         <div style={{ display: 'table-cell', padding: '16px 20px', fontWeight: 'bold' }}>support@local.com</div>
-                         <div style={{ display: 'table-cell', padding: '16px 20px', color: '#ccc' }}>"Can I get a refund on the merch..."</div>
-                         <div style={{ display: 'table-cell', padding: '16px 20px' }}>
-                            <button style={{ padding: '8px 16px', background: wlConfig.accent, color: '#fff', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold' }}>View Full</button>
+                         <div style={{ display: 'table-row', borderTop: '1px solid rgba(255,255,255,0.05)' }}>
+                            <div style={{ display: 'table-cell', padding: '16px 20px', color: '#888' }}>1 hour ago</div>
+                            <div style={{ display: 'table-cell', padding: '16px 20px', fontWeight: 'bold' }}>support@local.com</div>
+                            <div style={{ display: 'table-cell', padding: '16px 20px', color: '#ccc' }}>"Can I get a custom SLA for..."</div>
+                            <div style={{ display: 'table-cell', padding: '16px 20px' }}>
+                               <button onClick={() => setSelectedLead({email: 'support@local.com', date: '1 hour ago', full: 'Can I get a custom SLA for API downtime guarantees? Our platform requires 99.999% uptime.'})} style={{ padding: '8px 16px', background: wlConfig.accent, color: '#fff', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold' }}>View Full</button>
+                            </div>
                          </div>
                       </div>
                    </div>
-                </div>
+                )}
               </div>
             )}
 

@@ -278,7 +278,6 @@ const AuthModal: React.FC<AuthModalProps> = ({ onClose, onSuccess }) => {
                   <button onClick={(e) => {
                      e.preventDefault();
                      const finalStr = selectedSections.length > 0 ? selectedSections.join(', ') : 'None';
-                     const eObj = { preventDefault: () => {} } as React.FormEvent;
                      setChatInput(finalStr);
                      // Set a fast timeout so the state catches up before the main form handler triggers
                      setTimeout(() => {

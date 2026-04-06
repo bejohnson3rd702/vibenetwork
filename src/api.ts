@@ -2,52 +2,57 @@ import { supabase } from './supabaseClient';
 
 export async function getCategoriesWithVideos() {
   if (!supabase) return [];
-  
-  const { data: categories, error } = await supabase
-    .from('categories')
-    .select(`
-      *,
-      videos (*)
-    `)
-    .neq('title', 'Live Network Schedule')
-    .order('sort_order', { ascending: true });
-    
-  if (error) {
-    console.error('Error fetching categories:', error);
-    return [];
-  }
-  const { data: profiles } = await supabase
-    .from('profiles')
-    .select('*')
-    .eq('role', 'influencer');
 
-  const mappedCreators = (profiles || []).map((inf: any) => ({
-    id: inf.id,      // UUID
-    title: inf.username || 'Creator', // If username is bjohnson3rd, it shows as title!
-    image: inf.homepage_image_url || inf.avatar_url || `https://picsum.photos/seed/${inf.username || 'default'}/512/512`,
-    tags: ['Influencer Channel'],
-    videoUrl: '' 
+  // Fetch Whitelabels for New Networks
+  const { data: whitelabels } = await supabase.from('whitelabel_configs').select('*').limit(7);
+  
+  // Fetch Profiles for New Profiles
+  const { data: profiles } = await supabase.from('profiles').select('*').order('created_at', { ascending: false }).limit(7);
+
+  // Fetch Videos for New Content
+  const { data: videos } = await supabase.from('videos').select('*').limit(7);
+
+  const mappedNetworks = (whitelabels || []).map((wl: any) => ({
+    id: 'wl_' + wl.id,
+    title: wl.name || wl.domain || 'Tenant Node',
+    image: wl.logo || `https://ui-avatars.com/api/?name=${encodeURIComponent(wl.name || 'W')}&background=0D8ABC&color=fff`,
+    tags: ['Enterprise Node'],
+    linkUrl: wl.domain ? (wl.domain.startsWith('http') ? wl.domain : `https://${wl.domain}`) : null
   }));
 
-  return categories.map(cat => {
-    let items = cat.videos.map((vid: any) => ({
-      id: vid.id,
-      title: vid.title,
-      image: vid.image_url,
-      tags: vid.tags || [],
-      videoUrl: vid.video_url
-    }));
+  const mappedProfiles = (profiles || []).map((p: any) => ({
+    id: p.id,
+    title: p.username || 'Creator Profile',
+    image: p.avatar_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(p.username || 'U')}`,
+    tags: [p.role === 'influencer' ? 'Creator' : 'Member'],
+    linkUrl: `/profile/${p.id}`
+  }));
 
-    if (cat.title === 'New to the Network') {
-      items = [...mappedCreators, ...items];
+  const mappedContent = (videos || []).map((vid: any) => ({
+    id: vid.id,
+    title: vid.title,
+    image: vid.image_url,
+    tags: vid.tags || [],
+    videoUrl: vid.video_url
+  }));
+
+  return [
+    {
+      title: 'New Networks',
+      aspectRatio: '16/9',
+      items: mappedNetworks
+    },
+    {
+      title: 'New Profiles',
+      aspectRatio: '1/1',
+      items: mappedProfiles
+    },
+    {
+      title: 'New Content',
+      aspectRatio: '16/9',
+      items: mappedContent
     }
-
-    return {
-      title: cat.title,
-      aspectRatio: cat.aspect_ratio,
-      items: items
-    };
-  });
+  ];
 }
 
 export async function getLiveSchedule() {

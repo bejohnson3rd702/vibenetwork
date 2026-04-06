@@ -34,6 +34,36 @@ const ProfileDashboard: React.FC<{ user: any }> = ({ user }) => {
   // Live Stream State
   const [isPlayingLive, setIsPlayingLive] = useState(false);
   const [liveEmbedUrl, setLiveEmbedUrl] = useState('https://www.youtube.com/embed/jfKfPfyJRdk?autoplay=1&mute=0');
+  const [streamSource, setStreamSource] = useState<'url' | 'camera'>('url');
+  const videoRef = useRef<HTMLVideoElement>(null);
+  
+  useEffect(() => {
+     let currentStream: MediaStream | null = null;
+
+     if (isPlayingLive && streamSource === 'camera') {
+        navigator.mediaDevices.getUserMedia({ video: true, audio: true })
+           .then(stream => {
+              currentStream = stream;
+              if (videoRef.current) {
+                 videoRef.current.srcObject = stream;
+                 // Explicitly fire play in case autoPlay fails on dynamic srcObject
+                 videoRef.current.play().catch(e => console.warn("Video play interrupted:", e));
+              }
+           })
+           .catch(err => {
+              console.error("Camera access denied or unavailable", err);
+              alert("Could not access camera/microphone.");
+              setIsPlayingLive(false);
+           });
+     }
+     
+     // Cleanup function to strictly stop hardware tracks
+     return () => {
+        if (currentStream) {
+           currentStream.getTracks().forEach(track => track.stop());
+        }
+     };
+  }, [isPlayingLive, streamSource]);
   
   // Scheduler State & DnD Handlers
   const [scheduledPosts, setScheduledPosts] = useState<any[]>([
@@ -657,15 +687,25 @@ const ProfileDashboard: React.FC<{ user: any }> = ({ user }) => {
                   </div>
                   
                   {isPlayingLive ? (
-                    <iframe 
-                      src={liveEmbedUrl} 
-                      title="Live Stream Broadcast"
-                      frameBorder="0" 
-                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
-                      referrerPolicy="strict-origin-when-cross-origin" 
-                      allowFullScreen
-                      style={{ width: '100%', height: '100%', position: 'absolute', inset: 0, zIndex: 5 }}
-                    />
+                     streamSource === 'url' ? (
+                       <iframe 
+                         src={liveEmbedUrl} 
+                         title="Live Stream Broadcast"
+                         frameBorder="0" 
+                         allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
+                         referrerPolicy="strict-origin-when-cross-origin" 
+                         allowFullScreen
+                         style={{ width: '100%', height: '100%', position: 'absolute', inset: 0, zIndex: 5 }}
+                       />
+                     ) : (
+                       <video 
+                         ref={videoRef} 
+                         autoPlay 
+                         playsInline 
+                         muted // Mute locally to prevent feedback loop
+                         style={{ width: '100%', height: '100%', position: 'absolute', inset: 0, zIndex: 5, objectFit: 'cover' }} 
+                       />
+                     )
                   ) : (
                     <>
                       <img src={homepageImageUrl || "https://vibenetwork.tv/wp-content/uploads/2026/02/silhouette-dj-playing-music_1230721-3514.webp"} alt="Live Stream Thumbnail" style={{ position: 'absolute', width: '100%', height: '100%', objectFit: 'cover', opacity: 0.5, filter: 'blur(2px)' }} />
@@ -684,11 +724,28 @@ const ProfileDashboard: React.FC<{ user: any }> = ({ user }) => {
                   {isOwnProfile && viewMode === 'edit' && (
                     <div style={{ marginTop: '24px', background: 'rgba(255,255,255,0.03)', padding: '20px', borderRadius: '16px', border: '1px dashed rgba(255,255,255,0.2)' }}>
                       <label style={{ display: 'block', marginBottom: '12px', color: '#ff4d85', fontWeight: 'bold', fontSize: '15px' }}>Configure Live Stream Origin</label>
-                      <div style={{ display: 'flex', gap: '12px' }}>
-                        <input type="text" value={liveEmbedUrl} onChange={e => setLiveEmbedUrl(e.target.value)} placeholder="Embed URL (e.g. YouTube, Twitch)" style={{ flex: 1, padding: '14px', borderRadius: '10px', background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.1)', color: '#fff', fontSize: '15px', outline: 'none' }}/>
-                        <button onClick={() => { setIsPlayingLive(false); setTimeout(() => setIsPlayingLive(true), 300); }} style={{ padding: '14px 24px', background: '#fff', color: '#000', border: 'none', borderRadius: '10px', fontWeight: 'bold', fontSize: '15px', cursor: 'pointer', transition: '0.2s' }}>Update Stream</button>
+                      <div style={{ display: 'flex', gap: '12px', marginBottom: '16px' }}>
+                         <button onClick={() => { setStreamSource('url'); setIsPlayingLive(false); }} style={{ padding: '10px 20px', background: streamSource === 'url' ? '#0055ff' : 'rgba(255,255,255,0.05)', color: streamSource === 'url' ? '#fff' : '#888', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold' }}>External URL / RTMP</button>
+                         <button onClick={() => { setStreamSource('camera'); setIsPlayingLive(false); }} style={{ padding: '10px 20px', background: streamSource === 'camera' ? '#0055ff' : 'rgba(255,255,255,0.05)', color: streamSource === 'camera' ? '#fff' : '#888', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '8px' }}><Camera size={16}/> Direct Webcam</button>
                       </div>
-                      <p style={{ margin: '10px 0 0 0', color: '#666', fontSize: '12px' }}>This URL dictates what your active subscribers consume during live events. RTMP/HLS integrations available in Vibe Network 2.0.</p>
+                      
+                      {streamSource === 'url' ? (
+                        <div style={{ display: 'flex', gap: '12px' }}>
+                          <input type="text" value={liveEmbedUrl} onChange={e => setLiveEmbedUrl(e.target.value)} placeholder="Embed URL (e.g. YouTube, Twitch)" style={{ flex: 1, padding: '14px', borderRadius: '10px', background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.1)', color: '#fff', fontSize: '15px', outline: 'none' }}/>
+                          <button onClick={() => { setIsPlayingLive(false); setTimeout(() => setIsPlayingLive(true), 300); }} style={{ padding: '14px 24px', background: '#fff', color: '#000', border: 'none', borderRadius: '10px', fontWeight: 'bold', fontSize: '15px', cursor: 'pointer', transition: '0.2s' }}>Update Stream</button>
+                        </div>
+                      ) : (
+                        <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+                          <p style={{ margin: 0, color: '#aaa', flex: 1 }}>Using your local hardware as the broadcast origin server. Press "Start Streaming" to ignite the feed.</p>
+                          {isPlayingLive ? (
+                             <button onClick={() => setIsPlayingLive(false)} style={{ padding: '14px 24px', background: 'rgba(229, 9, 20, 0.1)', color: '#e50914', border: '1px solid #e50914', borderRadius: '10px', fontWeight: 'bold', fontSize: '15px', cursor: 'pointer', transition: '0.2s', display: 'flex', alignItems: 'center', gap: '8px' }}>Stop Streaming</button>
+                          ) : (
+                             <button onClick={() => setIsPlayingLive(true)} style={{ padding: '14px 24px', background: '#e50914', color: '#fff', border: 'none', borderRadius: '10px', fontWeight: 'bold', fontSize: '15px', cursor: 'pointer', transition: '0.2s', display: 'flex', alignItems: 'center', gap: '8px' }}><Camera size={18}/> Start Streaming</button>
+                          )}
+                        </div>
+                      )}
+                      
+                      <p style={{ margin: '15px 0 0 0', color: '#666', fontSize: '12px' }}>This feed dictates what your active subscribers consume during live events in real-time.</p>
                     </div>
                   )}
                 </div>
