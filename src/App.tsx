@@ -35,13 +35,7 @@ function App() {
       }
     );
 
-    async function fetchDB() {
-      const data = await getCategoriesWithVideos();
-      if (data && data.length > 0) {
-        setCategories(data);
-      }
-    }
-    fetchDB();
+
 
     const handleCommit = async (e: any) => {
        setWlConfig(e.detail);
@@ -73,40 +67,49 @@ function App() {
 
   // Load latest whitelabel config from DB on load, matching domain
   useEffect(() => {
-    async function fetchConfig() {
+    async function initPlatform() {
       const hostname = window.location.hostname;
       const urlParams = new URLSearchParams(window.location.search);
       const forceTenant = urlParams.get('tenant');
 
       let query = supabase!.from('whitelabel_configs').select('*');
-      
+      let isTenant = false;
+      let loadedTenantId = undefined;
+
       if (forceTenant) {
         query = query.eq('id', forceTenant).limit(1);
+        isTenant = true;
       } else if (hostname !== 'localhost' && hostname !== '127.0.0.1') {
         query = query.eq('domain', hostname).limit(1);
-      } else {
-        // We are locally testing the Master Vibe Network root
-        return; 
+        isTenant = true;
       }
 
-      const { data } = await query;
-      if (data && data.length > 0) {
-        const dbConf = data[0];
-        setWlConfig({
-           id: dbConf.id,
-           name: dbConf.name || 'Vibe B2B Enterprise',
-           domain: dbConf.domain || 'vibenetwork.tv',
-           accent: dbConf.accent || '#0055ff',
-           bg: dbConf.bg || '#050505',
-           heroCopy: dbConf.hero_copy,
-           btnPrimary: dbConf.btn_primary,
-           sliderCount: dbConf.slider_count || 4,
-           customSections: dbConf.custom_sections || 'Platform Architecture,Success Stories',
-           heroImage: dbConf.hero_image
-        });
+      if (isTenant) {
+        const { data } = await query;
+        if (data && data.length > 0) {
+          const dbConf = data[0];
+          loadedTenantId = dbConf.id;
+          setWlConfig({
+             id: dbConf.id,
+             name: dbConf.name || 'Vibe B2B Enterprise',
+             domain: dbConf.domain || 'vibenetwork.tv',
+             accent: dbConf.accent || '#0055ff',
+             bg: dbConf.bg || '#050505',
+             heroCopy: dbConf.hero_copy,
+             btnPrimary: dbConf.btn_primary,
+             sliderCount: dbConf.slider_count || 4,
+             customSections: dbConf.custom_sections || 'Platform Architecture,Success Stories',
+             heroImage: dbConf.hero_image
+          });
+        }
+      }
+
+      const freshCategories = await getCategoriesWithVideos(loadedTenantId);
+      if (freshCategories && freshCategories.length > 0) {
+        setCategories(freshCategories);
       }
     }
-    fetchConfig();
+    initPlatform();
   }, []);
 
   if (wlConfig) {
