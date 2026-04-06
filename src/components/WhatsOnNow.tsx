@@ -71,7 +71,19 @@ const WhatsOnNow: React.FC = () => {
     async function loadSchedule() {
       const data = await getLiveSchedule();
       if (data && data.length > 0) {
-        setScheduleItems(data);
+        // Filter out legacy Seed/Mock streams using strict matching
+        const genuineInjections = data.filter((v: any) => 
+          v.video_url && 
+          !v.video_url.includes('bbb.mp4') && 
+          !v.video_url.includes('w3schools') &&
+          !v.video_url.includes('.mp4')
+        );
+        
+        if (genuineInjections.length > 0) {
+          setScheduleItems(genuineInjections);
+        } else {
+          setScheduleItems(FALLBACK_10_YOUTUBE);
+        }
       }
     }
     loadSchedule();
