@@ -17,7 +17,7 @@ export async function getCategoriesWithVideos() {
     title: wl.name || wl.domain || 'Tenant Node',
     image: wl.logo || `https://ui-avatars.com/api/?name=${encodeURIComponent(wl.name || 'W')}&background=0D8ABC&color=fff`,
     tags: ['Enterprise Node'],
-    linkUrl: wl.domain ? (wl.domain.startsWith('http') ? wl.domain : `https://${wl.domain}`) : null
+    linkUrl: `/?tenant=${wl.id}`
   }));
 
   const mappedProfiles = (profiles || []).map((p: any) => ({
