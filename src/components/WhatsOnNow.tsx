@@ -72,13 +72,19 @@ const WhatsOnNow: React.FC = () => {
     async function loadSchedule() {
       const data = await getLiveSchedule();
       if (data && data.length > 0) {
-        // Filter out legacy Seed/Mock streams using strict matching
+        // Filter and remap the database payload dynamically
         const genuineInjections = data.filter((v: any) => 
           v.video_url && 
           !v.video_url.includes('bbb.mp4') && 
           !v.video_url.includes('w3schools') &&
           !v.video_url.includes('.mp4')
-        );
+        ).map((v: any) => {
+          // If the DB has the old Unsplash image, hot-swap it for Pollinations to bypass CORS blocks!
+          if (v.image && v.image.includes('unsplash.com')) {
+             return { ...v, image: `https://image.pollinations.ai/prompt/corporate%20boardroom%20presentation%20cinematic?width=800&height=600&nologo=true` };
+          }
+          return v;
+        });
         
         if (genuineInjections.length > 0) {
           setScheduleItems(genuineInjections);
