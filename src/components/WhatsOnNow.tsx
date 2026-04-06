@@ -51,16 +51,16 @@ const ScheduleRow: React.FC<{ item: any, isActive: boolean, onClick: () => void 
 };
 
 const FALLBACK_10_YOUTUBE = [
-  { id: 'fb1', title: 'NASA Earth from Space', time: 'LIVE', image: 'https://images.unsplash.com/photo-1451187580459-43490279c0fa?q=80&w=800', video_url: 'https://www.youtube.com/watch?v=DpJ4m1S4nIM', tags: ['Space', 'Science'] },
-  { id: 'fb2', title: 'Lofi Girl Live Radio', time: 'UP NEXT', image: 'https://images.unsplash.com/photo-1518609878373-06d740f60d8b?q=80&w=800', video_url: 'https://www.youtube.com/watch?v=jfKfPfyJRdk', tags: ['Music', 'Chill'] },
-  { id: 'fb3', title: '4K Costa Rica Wildlife', time: '1:00 PM EST', image: 'https://images.unsplash.com/photo-1518182170546-076616fdcd81?q=80&w=800', video_url: 'https://www.youtube.com/watch?v=LXb3EKWsInQ', tags: ['Nature', '4K'] },
-  { id: 'fb4', title: 'SpaceX Starship Launch', time: '2:30 PM EST', image: 'https://images.unsplash.com/photo-1541185933-ef5d8ed016c2?q=80&w=800', video_url: 'https://www.youtube.com/watch?v=-1wcilQ58hI', tags: ['Aero', 'Live'] },
-  { id: 'fb5', title: 'Relaxing Aquarium 4K', time: '4:00 PM EST', image: 'https://images.unsplash.com/photo-1524704796725-9fc3044a58b2?q=80&w=800', video_url: 'https://www.youtube.com/watch?v=WeVRsGBZ2KM', tags: ['Relax', 'Ocean'] },
-  { id: 'fb6', title: 'Cyberpunk Night City', time: '5:30 PM EST', image: 'https://images.unsplash.com/photo-1550751827-4bd374c3f58b?q=80&w=800', video_url: 'https://www.youtube.com/watch?v=8X2kIfS6fb8', tags: ['Gaming', 'Scenery'] },
-  { id: 'fb7', title: 'DJI Mavic Drone Focus', time: '7:00 PM EST', image: 'https://images.unsplash.com/photo-1508614589041-895b66d98ae2?q=80&w=800', video_url: 'https://www.youtube.com/watch?v=3-s1-J8b2I8', tags: ['Travel', 'Drone'] },
-  { id: 'fb8', title: 'Tokyo Walking Tour', time: '8:30 PM EST', image: 'https://images.unsplash.com/photo-1542051841857-5f90071e7989?q=80&w=800', video_url: 'https://www.youtube.com/watch?v=0nTOJHQDoK0', tags: ['Travel', 'Vlog'] },
-  { id: 'fb9', title: 'Rain Sounds & Thunder', time: '10:00 PM EST', image: 'https://images.unsplash.com/photo-1515694346937-94d85e41e6f0?q=80&w=800', video_url: 'https://www.youtube.com/watch?v=mPZkdNFkNps', tags: ['Sleep', 'ASMR'] },
-  { id: 'fb10', title: 'Blender Foundation Art', time: '11:00 PM EST', image: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=800', video_url: 'https://www.youtube.com/watch?v=WhWc3b3KhnY', tags: ['Animation', 'Short'] }
+  { id: 'fb1', title: 'Start with Why - Simon Sinek', time: 'LIVE', image: 'https://images.unsplash.com/photo-1552581234-26160f608093?q=80&w=800', video_url: 'https://www.youtube.com/watch?v=u4ZoJKF_VuA', tags: ['Leadership', 'Business'] },
+  { id: 'fb2', title: 'Warren Buffett: Best Investing Advice', time: 'UP NEXT', image: 'https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?q=80&w=800', video_url: 'https://www.youtube.com/watch?v=SjB-Bf3g-A0', tags: ['Finance', 'Markets'] },
+  { id: 'fb3', title: 'Peter Thiel: Competition is for Losers', time: '1:00 PM EST', image: 'https://images.unsplash.com/photo-1553729459-efe14ef6055d?q=80&w=800', video_url: 'https://www.youtube.com/watch?v=3Fx5Q8xGU8k', tags: ['Startups', 'Strategy'] },
+  { id: 'fb4', title: 'Steve Jobs 2007 iPhone Keynote', time: '2:30 PM EST', image: 'https://images.unsplash.com/photo-1512295767273-ac109cb36686?q=80&w=800', video_url: 'https://www.youtube.com/watch?v=VQKMoT-6P4s', tags: ['Keynote', 'Tech'] },
+  { id: 'fb5', title: 'How to Pitch a VC - Y Combinator', time: '4:00 PM EST', image: 'https://images.unsplash.com/photo-1556761175-5973dc0f32b7?q=80&w=800', video_url: 'https://www.youtube.com/watch?v=pDJaT69p5pY', tags: ['Venture', 'Pitching'] },
+  { id: 'fb6', title: 'Ray Dalio: Principles for Success', time: '5:30 PM EST', image: 'https://images.unsplash.com/photo-1590283603385-17ffb3a7f29f?q=80&w=800', video_url: 'https://www.youtube.com/watch?v=B9XGUpQZY38', tags: ['Economy', 'Success'] },
+  { id: 'fb7', title: 'Elon Musk: Advice to Entrepreneurs', time: '7:00 PM EST', image: 'https://images.unsplash.com/photo-1519389950473-47ba0277781c?q=80&w=800', video_url: 'https://www.youtube.com/watch?v=cK2gO5LzEGE', tags: ['Innovation', 'Founder'] },
+  { id: 'fb8', title: 'Bill Gates & Warren Buffett', time: '8:30 PM EST', image: 'https://images.unsplash.com/photo-1573164713988-8665fc963095?q=80&w=800', video_url: 'https://www.youtube.com/watch?v=iE1hGzO6y2I', tags: ['Business', 'Wealth'] },
+  { id: 'fb9', title: 'Naval Ravikant: How to get rich', time: '10:00 PM EST', image: 'https://images.unsplash.com/photo-1554224155-6726b3ff858f?q=80&w=800', video_url: 'https://www.youtube.com/watch?v=1-TZqOsVCNM', tags: ['Mindset', 'Growth'] },
+  { id: 'fb10', title: 'Steve Jobs: Stanford Commencement', time: '11:00 PM EST', image: 'https://images.unsplash.com/photo-1521737711867-e3b97375f902?q=80&w=800', video_url: 'https://www.youtube.com/watch?v=UF8uR6Z6KLc', tags: ['Motivation', 'Career'] }
 ];
 
 const WhatsOnNow: React.FC = () => {
