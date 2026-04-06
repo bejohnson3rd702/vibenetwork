@@ -121,14 +121,9 @@ function App() {
              display:'flex', flexDirection: 'column', alignItems:'center', justifyContent:'center', position: 'relative',
              textAlign: 'center', overflow: 'hidden'
           }}>
-             {wlConfig.heroImage && (
-               <img src={wlConfig.heroImage} alt="Generative Hero Base" style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', objectFit: 'cover', zIndex: 0 }} />
-             )}
-             <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to bottom, rgba(0,0,0,0.4), rgba(0,0,0,0.8))', zIndex: 1 }} />
+             <img src={wlConfig.heroImage || `https://images.unsplash.com/photo-1550751827-4bd374c3f58b?auto=format&fit=crop&q=80&w=2000`} alt="Generative Hero Base" style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', objectFit: 'cover', zIndex: 0, filter: 'brightness(0.6)' }} />
+             <div style={{ position: 'absolute', inset: 0, background: `linear-gradient(to bottom, rgba(0,0,0,0.4), ${wlConfig.bg || '#050505'})`, zIndex: 1 }} />
              <div style={{ zIndex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '24px' }}>
-               <span style={{ background: wlConfig.accent, color: '#fff', padding: '6px 16px', borderRadius: '20px', fontSize: '14px', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '1px' }}>
-                 LIVE ON {wlConfig.domain}
-               </span>
                <h1 style={{ fontSize: '80px', fontWeight: '900', margin: 0, letterSpacing: '-2px', textShadow: '0 10px 30px rgba(0,0,0,0.5)' }}>{wlConfig.name}</h1>
                <p style={{ fontSize: '24px', opacity: 0.9, maxWidth: '750px', fontWeight: '500', textShadow: '0 4px 10px rgba(0,0,0,0.5)', lineHeight: 1.5 }}>{wlConfig.heroCopy || 'The premiere destination for high quality digital content.'}</p>
              </div>
@@ -136,18 +131,52 @@ function App() {
 
           <div style={{ padding: '80px 10%', display: 'flex', flexDirection: 'column', gap: '60px', background: 'linear-gradient(to bottom, rgba(0,0,0,0), rgba(0,0,0,0.5))' }}>
              
-             {Array.from({ length: wlConfig.sliderCount || 4 }).map((_, slotIndex) => (
-               <div key={slotIndex} style={{ display: 'flex', flexDirection: 'column', gap: '20px'}}>
-                 <h2 style={{ fontSize: '32px', borderLeft: `6px solid ${wlConfig.accent}`, paddingLeft: '16px' }}>{wlConfig.name} Content Roll {slotIndex + 1}</h2>
-                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '24px' }}>
-                    {[1,2,3,4].map(i => (
-                       <div key={i} style={{ aspectRatio: '16/9', background: 'rgba(255,255,255,0.02)', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: '0.2s', cursor: 'pointer' }} onMouseOver={e=>e.currentTarget.style.background='rgba(255,255,255,0.05)'} onMouseOut={e=>e.currentTarget.style.background='rgba(255,255,255,0.02)'}>
-                          <span style={{ opacity: 0.3, fontWeight: 'bold' }}>Empty Video Slot {i}</span>
-                       </div>
-                    ))}
-                 </div>
-               </div>
-             ))}
+             <div style={{ position: 'relative', width: '100vw', marginLeft: 'calc(-50vw + 50%)' }}>
+               {categories.map((category: any, index: number) => {
+                 const isArtist = category.aspectRatio === '3/4' || (category.title && category.title.includes('Artist'));
+                 const ratio = isArtist ? '3/4' : '16/9';
+                 return (
+                   <div key={category.title} style={{ padding: '0 10%', margin: '0 auto 60px' }}>
+                     <SliderSection 
+                       title={category.title} 
+                       items={category.items} 
+                       delay={index * 0.2}
+                       aspectRatio={ratio}
+                       sizeMultiplier={1}
+                       onItemClick={(item) => {
+                         if (item.linkUrl) {
+                           window.location.href = item.linkUrl;
+                         } else if (item.tags && item.tags.includes('Influencer Channel')) {
+                           window.location.href = `/profile/${item.id}`;
+                         } else {
+                           setActiveVideo(item);
+                         }
+                       }}
+                     />
+                   </div>
+                 );
+               })}
+             </div>
+             
+             {/* Embed the standard VideoOverlay conditionally */}
+             <AnimatePresence>
+               {activeVideo && (
+                 <motion.div 
+                   initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+                   onClick={() => setActiveVideo(null)}
+                   style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.95)', zIndex: 1000, display: 'flex', flexDirection: 'column' }}
+                 >
+                   <div style={{ padding: '24px 40px', display: 'flex', justifyContent: 'flex-end' }}>
+                     <button onClick={() => setActiveVideo(null)} style={{ background: 'none', border: 'none', color: '#fff', cursor: 'pointer', opacity: 0.7, padding: '8px' }} onMouseOver={e=>e.currentTarget.style.opacity='1'} onMouseOut={e=>e.currentTarget.style.opacity='0.7'}><X size={32} /></button>
+                   </div>
+                   <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '0 40px 40px' }} onClick={e => e.stopPropagation()}>
+                     <div style={{ width: '100%', maxWidth: '1600px', aspectRatio: '16/9', background: '#000', borderRadius: '16px', overflow: 'hidden', boxShadow: '0 20px 40px rgba(0,0,0,0.5)' }}>
+                       <video src={activeVideo.videoUrl} poster={activeVideo.image} autoPlay controls style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+                     </div>
+                   </div>
+                 </motion.div>
+               )}
+             </AnimatePresence>
              
              {wlConfig.customSections && wlConfig.customSections.toLowerCase() !== 'none' && (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '40px', marginTop: '40px' }}>
