@@ -23,9 +23,23 @@ export async function getCategoriesWithVideos(tenantId?: string) {
     id: 'wl_' + wl.id,
     title: wl.name || wl.domain || 'Tenant Node',
     image: wl.logo || `https://ui-avatars.com/api/?name=${encodeURIComponent(wl.name || 'W')}&background=0D8ABC&color=fff`,
-    tags: ['Enterprise Node'],
+    tags: ['Firm'],
     linkUrl: `/?tenant=${wl.id}`
   }));
+
+  // Backfill with incredibly premium AI generative logos to complete a 6-tile slider
+  const mockWhitelabels = [
+      { id: 'mock_wl1', title: 'Nexus Tech Global', image: 'https://image.pollinations.ai/prompt/blue%20neon%20nexus%20tech%20logo%20cinematic?width=800&height=600&nologo=true', tags: ['Tech'], linkUrl: '#' },
+      { id: 'mock_wl2', title: 'Acme Corp Systems', image: 'https://image.pollinations.ai/prompt/red%20acme%20corp%20logo%20modern%20building%20glass?width=800&height=600&nologo=true', tags: ['Industrial'], linkUrl: '#' },
+      { id: 'mock_wl3', title: 'Horizon Cloud', image: 'https://image.pollinations.ai/prompt/horizon%20cloud%20sky%20logo%20minimalist%20blue?width=800&height=600&nologo=true', tags: ['SaaS'], linkUrl: '#' },
+      { id: 'mock_wl4', title: 'Quantum Logistics', image: 'https://image.pollinations.ai/prompt/quantum%20logistics%20modern%20truck%20hologram%20logo?width=800&height=600&nologo=true', tags: ['Logistics'], linkUrl: '#' },
+      { id: 'mock_wl5', title: 'Aegis Security', image: 'https://image.pollinations.ai/prompt/aegis%20security%20shield%20logo%20silver%203d?width=800&height=600&nologo=true', tags: ['Cyber'], linkUrl: '#' },
+      { id: 'mock_wl6', title: 'Vertex Media', image: 'https://image.pollinations.ai/prompt/purple%20vertex%20media%20play%20button%20glow%20logo?width=800&height=600&nologo=true', tags: ['Agency'], linkUrl: '#' }
+  ];
+
+  while (mappedNetworks.length < 6) {
+    mappedNetworks.push(mockWhitelabels[mappedNetworks.length]);
+  }
 
   const mappedProfiles = (profiles || []).map((p: any) => ({
     id: p.id,
