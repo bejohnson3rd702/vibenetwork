@@ -39,21 +39,37 @@ const SlideItem: React.FC<{ item: Item, aspectRatio: string, onClick?: () => voi
       />
       
       {isHovered && item.videoUrl && (
-        <video 
-          style={{
-            position: 'absolute',
-            inset: 0,
-            width: '100%',
-            height: '100%',
-            objectFit: 'cover'
-          }}
-          autoPlay
-          muted
-          loop
-          playsInline
-        >
-          <source src={item.videoUrl} type="video/mp4" />
-        </video>
+        (() => {
+          const match = item.videoUrl.match(/^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/);
+          const ytId = (match && match[2].length === 11) ? match[2] : null;
+          if (ytId) {
+            return (
+              <iframe 
+                src={`https://www.youtube.com/embed/${ytId}?autoplay=1&mute=1&playsinline=1&controls=0&disablekb=1&loop=1&playlist=${ytId}`}
+                style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', pointerEvents: 'none', border: 'none' }}
+                allow="autoplay; encrypted-media"
+                title={item.title}
+              />
+            );
+          }
+          return (
+            <video 
+              style={{
+                position: 'absolute',
+                inset: 0,
+                width: '100%',
+                height: '100%',
+                objectFit: 'cover'
+              }}
+              autoPlay
+              muted
+              loop
+              playsInline
+            >
+              <source src={item.videoUrl} type="video/mp4" />
+            </video>
+          );
+        })()
       )}
 
       <div style={{

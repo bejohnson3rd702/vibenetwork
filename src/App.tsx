@@ -174,7 +174,24 @@ function App() {
                    </div>
                    <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '0 40px 40px' }} onClick={e => e.stopPropagation()}>
                      <div style={{ width: '100%', maxWidth: '1600px', aspectRatio: '16/9', background: '#000', borderRadius: '16px', overflow: 'hidden', boxShadow: '0 20px 40px rgba(0,0,0,0.5)' }}>
-                       <video src={activeVideo.videoUrl} poster={activeVideo.image} autoPlay controls style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+                       {(() => {
+                         const match = activeVideo.videoUrl.match(/^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/);
+                         const ytId = (match && match[2].length === 11) ? match[2] : null;
+                         if (ytId) {
+                           return (
+                             <iframe 
+                               src={`https://www.youtube.com/embed/${ytId}?autoplay=1`}
+                               title={activeVideo.title}
+                               style={{ width: '100%', height: '100%', border: 'none' }}
+                               allow="autoplay; encrypted-media; fullscreen"
+                               allowFullScreen
+                             />
+                           );
+                         }
+                         return (
+                           <video src={activeVideo.videoUrl} poster={activeVideo.image} autoPlay controls style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+                         );
+                       })()}
                      </div>
                    </div>
                  </motion.div>
@@ -359,12 +376,29 @@ function Home({ categories, activeVideo, setActiveVideo }: any) {
               exit={{ scale: 0.9, y: 20 }}
               style={{ width: '90%', maxWidth: '1200px', aspectRatio: '16/9', position: 'relative', borderRadius: '16px', overflow: 'hidden', boxShadow: '0 20px 50px rgba(0,0,0,0.5)' }}
             >
-              <video 
-                src={activeVideo.videoUrl} 
-                autoPlay 
-                controls 
-                style={{ width: '100%', height: '100%', objectFit: 'contain', background: 'black' }} 
-              />
+              {(() => {
+                const match = activeVideo.videoUrl.match(/^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/);
+                const ytId = (match && match[2].length === 11) ? match[2] : null;
+                if (ytId) {
+                  return (
+                    <iframe 
+                      src={`https://www.youtube.com/embed/${ytId}?autoplay=1`}
+                      title={activeVideo.title}
+                      style={{ width: '100%', height: '100%', border: 'none' }}
+                      allow="autoplay; encrypted-media; fullscreen"
+                      allowFullScreen
+                    />
+                  );
+                }
+                return (
+                  <video 
+                    src={activeVideo.videoUrl} 
+                    autoPlay 
+                    controls 
+                    style={{ width: '100%', height: '100%', objectFit: 'contain', background: 'black' }} 
+                  />
+                );
+              })()}
             </motion.div>
             
             <motion.div 
