@@ -17,7 +17,7 @@ export async function getCategoriesWithVideos(tenantId?: string) {
   const { data: profiles } = await profilesQuery;
 
   // Fetch Videos (In a full scale platform, we would scope videos to tenantId too!)
-  const { data: videos } = await supabase.from('videos').select('*').limit(7);
+  const { data: videos } = await supabase.from('videos').select('*').order('created_at', { ascending: false }).limit(7);
 
   const mappedNetworks = (whitelabels || []).map((wl: any) => ({
     id: 'wl_' + wl.id,

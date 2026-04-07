@@ -106,7 +106,7 @@ function App() {
 
       const freshCategories = await getCategoriesWithVideos(loadedTenantId);
       if (freshCategories && freshCategories.length > 0) {
-        setCategories([...MOCK_CATEGORIES, ...freshCategories]);
+        setCategories(freshCategories);
       }
     }
     initPlatform();
