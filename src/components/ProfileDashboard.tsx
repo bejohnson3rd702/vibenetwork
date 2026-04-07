@@ -25,7 +25,7 @@ const ProfileDashboard: React.FC<{ user: any }> = ({ user }) => {
   const [avatarUrl, setAvatarUrl] = useState('');
   const [homepageImageUrl, setHomepageImageUrl] = useState('');
   const [saving, setSaving] = useState(false);
-  const [activeTab, setActiveTab] = useState<'feed' | 'store' | 'live' | 'booking' | 'series' | 'courses' | 'scheduler'>('feed');
+  const [activeTab, setActiveTab] = useState<'feed' | 'store' | 'live' | 'booking' | 'series' | 'courses' | 'vibe_agency' | 'scheduler'>('feed');
   const [isSubscribed, setIsSubscribed] = useState(false);
   const [products, setProducts] = useState<any[]>([]);
   const [selectedDate, setSelectedDate] = useState<number | null>(null);
@@ -504,6 +504,13 @@ const ProfileDashboard: React.FC<{ user: any }> = ({ user }) => {
             Masterclasses
             {activeTab === 'courses' && <motion.div layoutId="activetab" style={{ position: 'absolute', bottom: '-17px', left: 0, right: 0, height: '3px', background: '#ff4d85', borderRadius: '3px' }} />}
           </button>
+          <button 
+            onClick={() => setActiveTab('vibe_agency')}
+            style={{ background: 'none', border: 'none', color: activeTab === 'vibe_agency' ? '#fff' : '#888', fontSize: '18px', fontWeight: 'bold', cursor: 'pointer', position: 'relative', display: 'flex', alignItems: 'center', gap: '6px' }}
+          >
+            Vibe Agency
+            {activeTab === 'vibe_agency' && <motion.div layoutId="activetab" style={{ position: 'absolute', bottom: '-17px', left: 0, right: 0, height: '3px', background: '#ff4d85', borderRadius: '3px' }} />}
+          </button>
           
           {isOwnProfile && (
             <button 
@@ -922,6 +929,21 @@ const ProfileDashboard: React.FC<{ user: any }> = ({ user }) => {
               </motion.div>
             ))}
           </div>
+        )}
+
+        {activeTab === 'vibe_agency' && (
+        /* ----------- VIBE AGENCY TAB ----------- */
+          <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+            <div style={{ padding: '40px', background: 'rgba(255,255,255,0.02)', borderRadius: '24px', border: '1px solid rgba(255,255,255,0.05)', textAlign: 'center' }}>
+              <h3 style={{ fontSize: '28px', marginBottom: '16px', color: '#fff' }}>Vibe Agency Services</h3>
+              <p style={{ color: '#888', fontSize: '16px', maxWidth: '600px', margin: '0 auto 30px' }}>
+                Partner with our dedicated team of creative professionals. We offer full-service production, branding, and career management for elite creators.
+              </p>
+              <button style={{ padding: '14px 32px', background: 'linear-gradient(135deg, #0055ff, #00d2ff)', color: '#fff', border: 'none', borderRadius: '30px', fontWeight: 'bold', fontSize: '16px', cursor: 'pointer', transition: 'transform 0.2s' }} onMouseOver={e=>e.currentTarget.style.transform='scale(1.05)'} onMouseOut={e=>e.currentTarget.style.transform='scale(1)'}>
+                Inquire for Management
+              </button>
+            </div>
+          </motion.div>
         )}
 
         {activeTab === 'scheduler' && isOwnProfile && (
