@@ -86,7 +86,7 @@ const Navbar: React.FC<NavbarProps> = ({ user, onLoginClick, onAdminClick, wlCon
           textTransform: 'uppercase',
           letterSpacing: '1px'
         }}>
-          {['Home', 'About Us', 'Video On Demand', 'Watch Live', 'Contact'].map((item, i) => (
+          {['Home', 'About Us', 'Vibe Agency', 'Watch Live', 'Contact'].map((item, i) => (
             <li key={item} style={{ 
               cursor: 'pointer',
               color: i === 0 ? 'white' : 'rgba(255,255,255,0.6)',
