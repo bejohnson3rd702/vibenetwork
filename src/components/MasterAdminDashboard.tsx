@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 import { 
   Globe, Users, Activity, Database, 
   ShieldAlert, Terminal, ChevronRight, BarChart3, 
-  Network, Server, Play, StopCircle, CheckCircle 
+  Network, Server, Play, StopCircle, CheckCircle, Wallet
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../supabaseClient';
@@ -73,6 +73,7 @@ export default function MasterAdminDashboard() {
             { id: 'networks', icon: <Network size={18} />, label: 'Whitelabel Fleet' },
             { id: 'users', icon: <Users size={18} />, label: 'Node Directory' },
             { id: 'database', icon: <Database size={18} />, label: 'Data Clusters' },
+            { id: 'accounting', icon: <Wallet size={18} />, label: 'Global Ledger' },
             { id: 'logs', icon: <Terminal size={18} />, label: 'System Logs' },
           ].map(tab => (
             <button
@@ -308,6 +309,59 @@ export default function MasterAdminDashboard() {
                   @keyframes blinker { 50% { opacity: 0; } }
                   .blink { animation: blinker 1s linear infinite; }
                 `}</style>
+             </motion.div>
+          {activeTab === 'accounting' && (
+             <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} style={{ display: 'flex', flexDirection: 'column', gap: '30px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <h3 style={{ margin: 0, fontSize: '24px' }}>Automated Global Ledger & Payout Splits</h3>
+                  <button style={{ background: '#FFD700', color: '#000', border: 'none', padding: '12px 24px', borderRadius: '12px', fontWeight: 'bold', cursor: 'pointer' }}>Commit Ledger Sync</button>
+                </div>
+
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
+                   
+                   {/* Direct Node Tier */}
+                   <div style={{ background: '#111', padding: '30px', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.05)' }}>
+                     <h4 style={{ margin: '0 0 10px 0', fontSize: '18px', color: '#fff' }}>1. Main Root Node Architecture</h4>
+                     <p style={{ color: '#888', margin: '0 0 24px 0', fontSize: '14px', lineHeight: 1.5 }}>
+                       For all creators directly registered and transacting on the core Vibe Network. No intermediaries.
+                     </p>
+                     
+                     <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                        <div style={{ background: 'rgba(0,255,136,0.05)', border: '1px solid rgba(0,255,136,0.2)', padding: '16px', borderRadius: '12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                           <span style={{ color: '#aaa', fontWeight: 'bold' }}>Creator / Profile Split</span>
+                           <span style={{ fontSize: '24px', color: '#00ff88', fontWeight: 900 }}>70%</span>
+                        </div>
+                        <div style={{ background: 'rgba(255,215,0,0.05)', border: '1px solid rgba(255,215,0,0.2)', padding: '16px', borderRadius: '12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                           <span style={{ color: '#aaa', fontWeight: 'bold' }}>Vibe Network (Platform Fee)</span>
+                           <span style={{ fontSize: '24px', color: '#FFD700', fontWeight: 900 }}>30%</span>
+                        </div>
+                     </div>
+                   </div>
+
+                   {/* Whitelabel Tenant Tier */}
+                   <div style={{ background: '#111', padding: '30px', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.05)' }}>
+                     <h4 style={{ margin: '0 0 10px 0', fontSize: '18px', color: '#fff' }}>2. Distributive Whitelabel Architecture</h4>
+                     <p style={{ color: '#888', margin: '0 0 24px 0', fontSize: '14px', lineHeight: 1.5 }}>
+                       For transactions occurring inside a leased Enterprise Tenant. Vibe processes the payment and automatically distributes tripartite splits.
+                     </p>
+                     
+                     <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                        <div style={{ background: 'rgba(0,255,136,0.05)', border: '1px solid rgba(0,255,136,0.2)', padding: '16px', borderRadius: '12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                           <span style={{ color: '#aaa', fontWeight: 'bold' }}>Creator / Profile Split</span>
+                           <span style={{ fontSize: '24px', color: '#00ff88', fontWeight: 900 }}>70%</span>
+                        </div>
+                        <div style={{ background: 'rgba(0,85,255,0.05)', border: '1px solid rgba(0,85,255,0.2)', padding: '16px', borderRadius: '12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                           <span style={{ color: '#aaa', fontWeight: 'bold' }}>Enterprise Whitelabel Fee</span>
+                           <span style={{ fontSize: '24px', color: '#0055ff', fontWeight: 900 }}>15%</span>
+                        </div>
+                        <div style={{ background: 'rgba(255,215,0,0.05)', border: '1px solid rgba(255,215,0,0.2)', padding: '16px', borderRadius: '12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                           <span style={{ color: '#aaa', fontWeight: 'bold' }}>Vibe Network (Gateway Fee)</span>
+                           <span style={{ fontSize: '24px', color: '#FFD700', fontWeight: 900 }}>15%</span>
+                        </div>
+                     </div>
+                   </div>
+                   
+                </div>
              </motion.div>
           )}
           
