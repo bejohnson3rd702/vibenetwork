@@ -541,7 +541,7 @@ const ProfileDashboard: React.FC<{ user: any }> = ({ user }) => {
             {activeTab === 'vibe_agency' && <motion.div layoutId="activetab" style={{ position: 'absolute', bottom: '-17px', left: 0, right: 0, height: '3px', background: '#ff4d85', borderRadius: '3px' }} />}
           </button>
           
-          {isOwnProfile && (
+          {isOwnProfile && viewMode === 'edit' && (
             <>
               <button 
                 onClick={() => setActiveTab('scheduler')}
@@ -1000,7 +1000,7 @@ const ProfileDashboard: React.FC<{ user: any }> = ({ user }) => {
           </motion.div>
         )}
 
-        {activeTab === 'scheduler' && isOwnProfile && (
+        {activeTab === 'scheduler' && isOwnProfile && viewMode === 'edit' && (
         /* ----------- SCHEDULER TAB ----------- */
           <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '16px' }}>
@@ -1088,7 +1088,7 @@ const ProfileDashboard: React.FC<{ user: any }> = ({ user }) => {
         )}
 
         {/* --- WALLET SUBSCRIPTION & EARNINGS TAB --- */}
-        {activeTab === 'wallet' && isOwnProfile && (
+        {activeTab === 'wallet' && isOwnProfile && viewMode === 'edit' && (
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
             
             {/* Top Balance Row */}
