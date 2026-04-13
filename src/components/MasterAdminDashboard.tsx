@@ -21,14 +21,16 @@ export default function MasterAdminDashboard() {
   });
   
   const [whitelabelsList, setWhitelabelsList] = useState<any[]>([]);
+  const [usersList, setUsersList] = useState<any[]>([]);
   const [isRestarting, setIsRestarting] = useState(false);
 
   useEffect(() => {
      async function fetchGlobalMetrics() {
-        const { count: usersCount } = await supabase!.from('profiles').select('*', { count: 'exact', head: true });
+        const { data: usersData, count: usersCount } = await supabase!.from('profiles').select('*', { count: 'exact' }).limit(50);
         const { data: configs } = await supabase!.from('whitelabel_configs').select('*');
         
         setWhitelabelsList(configs || []);
+        setUsersList(usersData || []);
         
         setDbStats(prev => ({
            ...prev,
@@ -165,8 +167,17 @@ export default function MasterAdminDashboard() {
                          </div>
                       </div>
                       <div style={{ display: 'flex', gap: '12px' }}>
+                         <button onClick={(e) => {
+                            const btn = e.currentTarget;
+                            const isAllowed = btn.innerText.includes('Allowed');
+                            btn.innerText = isAllowed ? 'Block Global' : 'Allowed Global';
+                            btn.style.background = isAllowed ? 'rgba(255,255,255,0.05)' : 'rgba(0,85,255,0.2)';
+                            btn.style.color = isAllowed ? '#fff' : '#0055ff';
+                            alert(`Whitelabel Global Directory Access has been ${isAllowed ? 'Disabled' : 'Granted'}.`);
+                         }} style={{ padding: '10px 20px', background: 'rgba(255,255,255,0.05)', color: '#fff', border: 'none', borderRadius: '8px', fontWeight: 'bold', cursor: 'pointer', transition: '0.2s' }}>
+                            Allow Global
+                         </button>
                          <button style={{ padding: '10px 20px', background: 'rgba(0,255,136,0.1)', color: '#00ff88', border: 'none', borderRadius: '8px', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px' }}><Play size={16}/> Active</button>
-                         <button style={{ padding: '10px 20px', background: 'rgba(255,255,255,0.05)', color: '#fff', border: 'none', borderRadius: '8px', fontWeight: 'bold', cursor: 'pointer' }}>Manage Config</button>
                       </div>
                    </div>
                  ))}
@@ -242,23 +253,33 @@ export default function MasterAdminDashboard() {
                         <th style={{ padding: '16px 12px' }}>Node ID</th>
                         <th style={{ padding: '16px 12px' }}>Designation</th>
                         <th style={{ padding: '16px 12px' }}>Status</th>
-                        <th style={{ padding: '16px 12px' }}>Protocol</th>
+                        <th style={{ padding: '16px 12px' }}>Role</th>
+                        <th style={{ padding: '16px 12px' }}>Vibe Indexing</th>
                       </tr>
                     </thead>
                     <tbody>
-                      {[
-                        { id: 'SYS-441', name: 'DevOps Chief', status: 'ACTIVE', role: 'root_command' },
-                        { id: 'MACH-002', name: 'Network Node 44A', status: 'ACTIVE', role: 'infra_router' },
-                        { id: 'USR-889', name: 'Sarah Connor', status: 'IDLE', role: 'observer' },
-                        { id: 'SYS-101', name: 'SysAdmin Protocol', status: 'ACTIVE', role: 'maintenance' }
-                      ].map((mock, i) => (
-                        <tr key={mock.id} style={{ borderBottom: i !== 3 ? '1px solid rgba(255,255,255,0.05)' : 'none' }}>
-                          <td style={{ padding: '16px 12px', fontFamily: 'monospace', color: '#0055ff' }}>{mock.id}</td>
-                          <td style={{ padding: '16px 12px', fontWeight: 'bold' }}>{mock.name}</td>
+                      {usersList.length === 0 ? (
+                        <tr><td colSpan={5} style={{ padding: '20px', textAlign: 'center', color: '#888' }}>Initializing node fetch pattern...</td></tr>
+                      ) : usersList.map((user, i) => (
+                        <tr key={user.id} style={{ borderBottom: i !== usersList.length - 1 ? '1px solid rgba(255,255,255,0.05)' : 'none' }}>
+                          <td style={{ padding: '16px 12px', fontFamily: 'monospace', color: '#0055ff', fontSize: '12px' }}>{user.id.split('-')[0]}</td>
+                          <td style={{ padding: '16px 12px', fontWeight: 'bold' }}>{user.username || 'Unassigned User'}</td>
                           <td style={{ padding: '16px 12px' }}>
-                            <span style={{ background: mock.status === 'ACTIVE' ? 'rgba(0,255,136,0.1)' : 'rgba(255,255,255,0.1)', color: mock.status === 'ACTIVE' ? '#00ff88' : '#888', padding: '4px 8px', borderRadius: '6px', fontSize: '11px', fontWeight: 'bold' }}>{mock.status}</span>
+                            <span style={{ background: 'rgba(0,255,136,0.1)', color: '#00ff88', padding: '4px 8px', borderRadius: '6px', fontSize: '11px', fontWeight: 'bold' }}>ACTIVE</span>
                           </td>
-                          <td style={{ padding: '16px 12px', color: '#ccc', fontSize: '14px' }}>{mock.role}</td>
+                          <td style={{ padding: '16px 12px', color: '#ccc', fontSize: '14px', textTransform: 'capitalize' }}>{user.role || 'Member'}</td>
+                          <td style={{ padding: '16px 12px' }}>
+                             <button onClick={(e) => {
+                                const btn = e.currentTarget;
+                                const isGlobal = btn.innerText === 'Global';
+                                btn.innerText = isGlobal ? 'Hidden' : 'Global';
+                                btn.style.background = isGlobal ? 'rgba(255,255,255,0.05)' : 'rgba(255,215,0,0.1)';
+                                btn.style.color = isGlobal ? '#888' : '#FFD700';
+                                alert(`Profile global indexing visibility has been ${isGlobal ? 'revoked' : 'granted'}.`);
+                             }} style={{ padding: '6px 12px', background: 'rgba(255,255,255,0.05)', color: '#888', border: 'none', borderRadius: '8px', fontWeight: 'bold', fontSize: '12px', cursor: 'pointer', transition: '0.2s' }}>
+                                Hidden
+                             </button>
+                          </td>
                         </tr>
                       ))}
                     </tbody>
