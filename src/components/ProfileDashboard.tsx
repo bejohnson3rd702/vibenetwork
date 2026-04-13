@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { supabase } from '../supabaseClient';
 import { motion, AnimatePresence } from 'framer-motion';
-import { LogOut, Camera, Lock, Unlock, Image as ImageIcon, Star, ShieldCheck, Eye, Edit2, Wand, Calendar, Edit3, Clock, CheckCircle, Heart, MessageCircle } from 'lucide-react';
+import { LogOut, Camera, Lock, Unlock, Image as ImageIcon, Star, ShieldCheck, Eye, Edit2, Wand, Calendar, Edit3, Clock, CheckCircle, Heart, MessageCircle, Wallet, ArrowUpRight, ArrowDownLeft, Activity } from 'lucide-react';
 import { useNavigate, useParams } from 'react-router-dom';
 
 const ProfileDashboard: React.FC<{ user: any }> = ({ user }) => {
@@ -25,7 +25,9 @@ const ProfileDashboard: React.FC<{ user: any }> = ({ user }) => {
   const [avatarUrl, setAvatarUrl] = useState('');
   const [homepageImageUrl, setHomepageImageUrl] = useState('');
   const [saving, setSaving] = useState(false);
-  const [activeTab, setActiveTab] = useState<'feed' | 'store' | 'live' | 'booking' | 'series' | 'courses' | 'vibe_agency' | 'scheduler'>('feed');
+  const [activeTab, setActiveTab] = useState<'feed' | 'store' | 'live' | 'booking' | 'series' | 'courses' | 'vibe_agency' | 'scheduler' | 'wallet'>('feed');
+  const [walletBalance, setWalletBalance] = useState(1250.00);
+  const [paySubsWithWallet, setPaySubsWithWallet] = useState(true);
   const [isSubscribed, setIsSubscribed] = useState(false);
   const [products, setProducts] = useState<any[]>([]);
   const [selectedDate, setSelectedDate] = useState<number | null>(null);
@@ -513,13 +515,22 @@ const ProfileDashboard: React.FC<{ user: any }> = ({ user }) => {
           </button>
           
           {isOwnProfile && (
-            <button 
-              onClick={() => setActiveTab('scheduler')}
-              style={{ background: 'none', border: 'none', color: activeTab === 'scheduler' ? '#ff4d85' : '#888', fontSize: '18px', fontWeight: 'bold', cursor: 'pointer', position: 'relative', display: 'flex', alignItems: 'center', gap: '6px' }}
-            >
-              <Calendar size={18} /> Scheduler
-              {activeTab === 'scheduler' && <motion.div layoutId="activetab" style={{ position: 'absolute', bottom: '-17px', left: 0, right: 0, height: '3px', background: '#ff4d85', borderRadius: '3px' }} />}
-            </button>
+            <>
+              <button 
+                onClick={() => setActiveTab('scheduler')}
+                style={{ background: 'none', border: 'none', color: activeTab === 'scheduler' ? '#ff4d85' : '#888', fontSize: '18px', fontWeight: 'bold', cursor: 'pointer', position: 'relative', display: 'flex', alignItems: 'center', gap: '6px' }}
+              >
+                <Calendar size={18} /> Scheduler
+                {activeTab === 'scheduler' && <motion.div layoutId="activetab" style={{ position: 'absolute', bottom: '-17px', left: 0, right: 0, height: '3px', background: '#ff4d85', borderRadius: '3px' }} />}
+              </button>
+              <button 
+                onClick={() => setActiveTab('wallet')}
+                style={{ background: 'none', border: 'none', color: activeTab === 'wallet' ? '#00ff88' : '#888', fontSize: '18px', fontWeight: 'bold', cursor: 'pointer', position: 'relative', display: 'flex', alignItems: 'center', gap: '6px' }}
+              >
+                <Wallet size={18} /> Wallet
+                {activeTab === 'wallet' && <motion.div layoutId="activetab" style={{ position: 'absolute', bottom: '-17px', left: 0, right: 0, height: '3px', background: '#00ff88', borderRadius: '3px' }} />}
+              </button>
+            </>
           )}
         </div>
 
@@ -1030,6 +1041,94 @@ const ProfileDashboard: React.FC<{ user: any }> = ({ user }) => {
                 </div>
               </div>
             </div>
+          </motion.div>
+        )}
+
+        {/* --- WALLET SUBSCRIPTION & EARNINGS TAB --- */}
+        {activeTab === 'wallet' && isOwnProfile && (
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+            
+            {/* Top Balance Row */}
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '20px' }}>
+              
+              <div style={{ background: 'rgba(0, 255, 136, 0.05)', borderRadius: '24px', padding: '30px', border: '1px solid rgba(0, 255, 136, 0.2)', gridColumn: 'span 2', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <div>
+                  <h3 style={{ margin: '0 0 8px 0', fontSize: '18px', color: '#00ff88', display: 'flex', alignItems: 'center', gap: '8px' }}><Wallet size={20}/> Available Network Balance</h3>
+                  <div style={{ fontSize: '48px', fontWeight: 900, color: '#fff' }}>
+                    ${walletBalance.toFixed(2)}
+                  </div>
+                  <p style={{ margin: '8px 0 0 0', color: '#888', fontSize: '14px' }}>Available to withdraw, or use for platform subscriptions.</p>
+                </div>
+                <div style={{ display: 'flex', gap: '16px', flexDirection: 'column' }}>
+                  <button style={{ padding: '14px 24px', borderRadius: '12px', background: '#00ff88', color: '#000', fontWeight: 'bold', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px', fontSize: '15px', transition: 'all 0.2s' }} onClick={() => { alert('Funds securely routed to your connected bank account.'); setWalletBalance(0); }}>
+                    <ArrowUpRight size={18}/> Withdraw Funds
+                  </button>
+                  <button style={{ padding: '14px 24px', borderRadius: '12px', background: 'rgba(255,255,255,0.1)', color: '#fff', fontWeight: 'bold', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px', fontSize: '15px' }} onClick={() => setWalletBalance(prev => prev + 100)}>
+                    <ArrowDownLeft size={18}/> Deposit $100
+                  </button>
+                </div>
+              </div>
+
+              <div style={{ background: 'rgba(255,255,255,0.03)', borderRadius: '24px', padding: '30px', border: '1px solid rgba(255,255,255,0.05)', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+                <h4 style={{ margin: '0 0 16px 0', fontSize: '16px', color: '#fff' }}>Autopay Subscriptions</h4>
+                <div style={{ color: '#888', fontSize: '14px', lineHeight: 1.5, marginBottom: '20px' }}>
+                  Use your network earnings automatically to pay for your recurring creator subscriptions.
+                </div>
+                <label style={{ display: 'flex', alignItems: 'center', gap: '12px', cursor: 'pointer', background: 'rgba(0,0,0,0.4)', padding: '16px', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.1)' }}>
+                  <input type="checkbox" checked={paySubsWithWallet} onChange={(e) => setPaySubsWithWallet(e.target.checked)} style={{ width: '20px', height: '20px', accentColor: '#ff4d85' }} />
+                  <span style={{ color: '#fff', fontWeight: 'bold' }}>Pay Subs from Wallet</span>
+                </label>
+              </div>
+
+            </div>
+
+            {/* Income Streams */}
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
+              
+              <div style={{ background: 'rgba(255,255,255,0.03)', borderRadius: '24px', padding: '30px', border: '1px solid rgba(255,255,255,0.05)' }}>
+                <h3 style={{ margin: '0 0 20px 0', fontSize: '20px', color: '#fff', display: 'flex', alignItems: 'center', gap: '8px' }}><Activity size={20} color="#ff4d85"/> Recent Collections</h3>
+                
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                  {[
+                    { id: 1, title: 'Subscriber Payment (John Doe)', amount: '+$4.99', type: 'Subscription', color: '#00ff88' },
+                    { id: 2, title: 'Store Sale (White-Glove Onboarding)', amount: '+$499.00', type: 'Sale', color: '#0055ff' },
+                    { id: 3, title: 'Remote Broadcast Tip', amount: '+$50.00', type: 'Tip', color: '#FFD700' },
+                    { id: 4, title: 'Subscriber Payment (Alice V.)', amount: '+$4.99', type: 'Subscription', color: '#00ff88' }
+                  ].map(tx => (
+                    <div key={tx.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingBottom: '16px', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+                      <div>
+                        <div style={{ fontWeight: 'bold', color: '#fff', fontSize: '15px' }}>{tx.title}</div>
+                        <div style={{ color: '#888', fontSize: '13px', marginTop: '4px' }}>{tx.type}</div>
+                      </div>
+                      <div style={{ color: tx.color, fontWeight: 'bold', fontSize: '16px' }}>{tx.amount}</div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div style={{ background: 'rgba(255,255,255,0.03)', borderRadius: '24px', padding: '30px', border: '1px solid rgba(255,255,255,0.05)' }}>
+                <h3 style={{ margin: '0 0 20px 0', fontSize: '20px', color: '#fff', display: 'flex', alignItems: 'center', gap: '8px' }}><ArrowUpRight size={20} color="#ff4d85"/> Payable Subscriptions</h3>
+                
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                  {[
+                    { id: 1, creator: 'Acme SaaS Engineering', amount: '-$14.99/mo', due: 'Due in 3 days', status: paySubsWithWallet ? 'Covered by Wallet' : 'Card ending in 4242' },
+                    { id: 2, creator: 'Global Network Board', amount: '-$9.99/mo', due: 'Due next week', status: paySubsWithWallet ? 'Covered by Wallet' : 'Card ending in 4242' },
+                  ].map(sub => (
+                    <div key={sub.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '16px', background: 'rgba(0,0,0,0.4)', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.02)' }}>
+                      <div>
+                        <div style={{ fontWeight: 'bold', color: '#fff', fontSize: '15px' }}>{sub.creator}</div>
+                        <div style={{ color: '#888', fontSize: '13px', marginTop: '6px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                          <span style={{ color: paySubsWithWallet ? '#00ff88' : '#888' }}>{sub.status}</span> • {sub.due}
+                        </div>
+                      </div>
+                      <div style={{ color: '#fff', fontWeight: 'bold', fontSize: '16px' }}>{sub.amount}</div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+            </div>
+
           </motion.div>
         )}
 
