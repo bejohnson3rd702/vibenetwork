@@ -310,6 +310,8 @@ export default function MasterAdminDashboard() {
                   .blink { animation: blinker 1s linear infinite; }
                 `}</style>
              </motion.div>
+          )}
+
           {activeTab === 'accounting' && (
              <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} style={{ display: 'flex', flexDirection: 'column', gap: '30px' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -361,6 +363,51 @@ export default function MasterAdminDashboard() {
                      </div>
                    </div>
                    
+                </div>
+
+                <h4 style={{ margin: '20px 0 0 0', fontSize: '20px' }}>Global Revenue Rollup</h4>
+                <div style={{ background: '#111', padding: '20px', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.05)' }}>
+                  <table style={{ width: '100%', textAlign: 'left', borderCollapse: 'collapse' }}>
+                    <thead>
+                      <tr style={{ color: '#888', borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
+                        <th style={{ padding: '16px 12px' }}>Timestamp</th>
+                        <th style={{ padding: '16px 12px' }}>Source Node</th>
+                        <th style={{ padding: '16px 12px' }}>Type</th>
+                        <th style={{ padding: '16px 12px' }}>Gross Sub</th>
+                        <th style={{ padding: '16px 12px', color: '#0055ff' }}>WL Cut (15%)</th>
+                        <th style={{ padding: '16px 12px', color: '#FFD700' }}>Vibe Cut (15-30%)</th>
+                        <th style={{ padding: '16px 12px', color: '#00ff88' }}>Creator (70%)</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {[
+                        { time: 'Just now', source: 'Acme Corp Systems', origin: 'Whitelabel', gross: 49.99 },
+                        { time: '2 min ago', source: 'Nexus Tech Global', origin: 'Whitelabel', gross: 9.99 },
+                        { time: '14 min ago', source: 'DJ Tech Live', origin: 'Direct Vibe', gross: 14.99 },
+                        { time: '1 hr ago', source: 'Vertex Media', origin: 'Whitelabel', gross: 199.99 },
+                        { time: '2 hrs ago', source: 'SaaS Innovators', origin: 'Direct Vibe', gross: 29.99 },
+                      ].map((tx, i) => {
+                         const creatorCut = (tx.gross * 0.70).toFixed(2);
+                         const isDirect = tx.origin === 'Direct Vibe';
+                         const vibeCut = isDirect ? (tx.gross * 0.30).toFixed(2) : (tx.gross * 0.15).toFixed(2);
+                         const wlCut = isDirect ? 'N/A' : '$' + (tx.gross * 0.15).toFixed(2);
+                         
+                         return (
+                           <tr key={i} style={{ borderBottom: i !== 4 ? '1px solid rgba(255,255,255,0.05)' : 'none' }}>
+                             <td style={{ padding: '16px 12px', color: '#888', fontSize: '13px' }}>{tx.time}</td>
+                             <td style={{ padding: '16px 12px', fontWeight: 'bold' }}>{tx.source}</td>
+                             <td style={{ padding: '16px 12px' }}>
+                               <span style={{ padding: '4px 8px', borderRadius: '6px', fontSize: '11px', fontWeight: 'bold', background: isDirect ? 'rgba(255,215,0,0.1)' : 'rgba(0,85,255,0.1)', color: isDirect ? '#FFD700' : '#0055ff' }}>{tx.origin}</span>
+                             </td>
+                             <td style={{ padding: '16px 12px', fontWeight: 'bold' }}>${tx.gross}</td>
+                             <td style={{ padding: '16px 12px', color: '#888' }}>{wlCut}</td>
+                             <td style={{ padding: '16px 12px', color: '#FFD700', fontWeight: 'bold' }}>+${vibeCut}</td>
+                             <td style={{ padding: '16px 12px', color: '#00ff88', fontWeight: 'bold' }}>${creatorCut}</td>
+                           </tr>
+                         )
+                      })}
+                    </tbody>
+                  </table>
                 </div>
              </motion.div>
           )}
