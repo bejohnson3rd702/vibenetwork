@@ -174,7 +174,7 @@ const ProfileDashboard: React.FC<{ user: any }> = ({ user }) => {
     </div>
   );
 
-  const isInfluencer = profile?.role === 'influencer';
+  const isInfluencer = profile?.role === 'influencer' || profile?.role === 'business';
 
   const handleImageClick = async () => {
     setImageTarget('avatar');
@@ -323,7 +323,7 @@ const ProfileDashboard: React.FC<{ user: any }> = ({ user }) => {
     <div style={{ paddingTop: '80px', minHeight: '100vh', background: '#050505', color: '#fff' }}>
       
       {/* View Toggle Bar (Only for account owner) */}
-      {isOwnProfile && profile?.role === 'influencer' && (
+      {isOwnProfile && isInfluencer && (
         <div style={{ background: '#111', padding: '12px', display: 'flex', justifyContent: 'center', position: 'sticky', top: '80px', zIndex: 100, borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
           <div style={{ display: 'flex', background: 'rgba(0,0,0,0.5)', borderRadius: '30px', padding: '4px' }}>
             <button 
