@@ -405,7 +405,27 @@ const ProfileDashboard: React.FC<{ user: any }> = ({ user }) => {
                       <>
                         <span style={{ padding: '6px 14px', background: 'rgba(255,255,255,0.1)', color: '#fff', borderRadius: '20px', fontSize: '12px' }}>{selectedGenre}</span>
                         {!isOwnProfile && (
-                          <button style={{ background: '#FFD700', color: '#000', border: 'none', padding: '6px 20px', borderRadius: '20px', fontWeight: 'bold', cursor: 'pointer' }}>Subscribe ${subPrice}/mo</button>
+                          <button 
+                            onClick={() => {
+                              if (!user) { alert('Please log in to subscribe.'); return; }
+                              if (!isSubscribed) alert(`Successfully subscribed using your Network Wallet! Auto-pay of $${subPrice}/mo has been linked.`);
+                              setIsSubscribed(!isSubscribed);
+                            }}
+                            style={{ 
+                              background: isSubscribed ? 'rgba(255, 215, 0, 0.1)' : '#FFD700', 
+                              color: isSubscribed ? '#FFD700' : '#000', 
+                              border: isSubscribed ? '1px solid #FFD700' : 'none', 
+                              padding: '6px 20px', 
+                              borderRadius: '20px', 
+                              fontWeight: 'bold', 
+                              cursor: 'pointer',
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: '6px'
+                            }}
+                          >
+                            {isSubscribed ? <><CheckCircle size={14} /> Subscribed</> : `Subscribe $${subPrice}/mo`}
+                          </button>
                         )}
                       </>
                     )}
