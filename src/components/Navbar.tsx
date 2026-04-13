@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { Search, User, Menu, Lightbulb } from 'lucide-react';
+import { Search, User, Menu, Lightbulb, Wallet, Settings, LogOut } from 'lucide-react';
 import { ASSETS } from '../data';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import { supabase } from '../supabaseClient';
 
 interface NavbarProps {
   user: any;
@@ -149,9 +150,31 @@ const Navbar: React.FC<NavbarProps> = ({ user, onLoginClick, onAdminClick, wlCon
           
           {isMenuOpen && (
             <div style={{ position: 'absolute', top: '100%', right: 0, marginTop: '24px', background: '#111', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px', padding: '8px', minWidth: '220px', display: 'flex', flexDirection: 'column', gap: '4px', zIndex: 1000, boxShadow: '0 20px 40px rgba(0,0,0,0.5)' }}>
-              <div style={{ padding: '8px 16px', color: '#888', fontSize: '13px', fontWeight: 'bold' }}>
-                 System Operations
+              <div style={{ padding: '8px 16px', color: '#888', fontSize: '13px', fontWeight: 'bold', textTransform: 'uppercase' }}>
+                 System Options
               </div>
+              
+              {user ? (
+                <>
+                  <Link to="/profile?tab=wallet" onClick={() => setIsMenuOpen(false)} style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '12px 16px', color: '#fff', textDecoration: 'none', fontSize: '14px', borderRadius: '8px', cursor: 'pointer', transition: 'background 0.2s' }} onMouseOver={e => e.currentTarget.style.background='rgba(255,255,255,0.1)'} onMouseOut={e => e.currentTarget.style.background='transparent'}>
+                    <Wallet size={16} /> Digital Wallet
+                  </Link>
+
+                  <Link to="/profile" onClick={() => setIsMenuOpen(false)} style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '12px 16px', color: '#fff', textDecoration: 'none', fontSize: '14px', borderRadius: '8px', cursor: 'pointer', transition: 'background 0.2s' }} onMouseOver={e => e.currentTarget.style.background='rgba(255,255,255,0.1)'} onMouseOut={e => e.currentTarget.style.background='transparent'}>
+                    <Settings size={16} /> Account Settings
+                  </Link>
+                  
+                  <div style={{ height: '1px', background: 'rgba(255,255,255,0.1)', margin: '4px 0' }} />
+
+                  <div onClick={async () => { await supabase.auth.signOut(); window.location.href = '/'; }} style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '12px 16px', color: '#ff4444', textDecoration: 'none', fontSize: '14px', borderRadius: '8px', cursor: 'pointer', transition: 'background 0.2s' }} onMouseOver={e => e.currentTarget.style.background='rgba(255,68,68,0.1)'} onMouseOut={e => e.currentTarget.style.background='transparent'}>
+                    <LogOut size={16} /> Disconnect
+                  </div>
+                </>
+              ) : (
+                <div onClick={() => { setIsMenuOpen(false); onLoginClick(); }} style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '12px 16px', color: '#fff', textDecoration: 'none', fontSize: '14px', borderRadius: '8px', cursor: 'pointer', transition: 'background 0.2s' }} onMouseOver={e => e.currentTarget.style.background='rgba(255,255,255,0.1)'} onMouseOut={e => e.currentTarget.style.background='transparent'}>
+                  <User size={16} /> Sign In to Access
+                </div>
+              )}
             </div>
           )}
         </div>

@@ -2,11 +2,12 @@ import React, { useEffect, useState, useRef } from 'react';
 import { supabase } from '../supabaseClient';
 import { motion, AnimatePresence } from 'framer-motion';
 import { LogOut, Camera, Lock, Unlock, Image as ImageIcon, Star, ShieldCheck, Eye, Edit2, Wand, Calendar, Edit3, Clock, CheckCircle, Heart, MessageCircle, Wallet, ArrowUpRight, ArrowDownLeft, Activity } from 'lucide-react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams, useLocation } from 'react-router-dom';
 
 const ProfileDashboard: React.FC<{ user: any }> = ({ user }) => {
   const navigate = useNavigate();
   const { creatorId } = useParams();
+  const location = useLocation();
   const fileInputRef = useRef<HTMLInputElement>(null);
   
   const targetProfileId = creatorId || user?.id; // Determine which profile to load
@@ -39,6 +40,12 @@ const ProfileDashboard: React.FC<{ user: any }> = ({ user }) => {
   const [streamSource, setStreamSource] = useState<'url' | 'camera'>('url');
   const videoRef = useRef<HTMLVideoElement>(null);
   
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const tabParam = params.get('tab');
+    if (tabParam === 'wallet') setActiveTab('wallet');
+  }, [location.search]);
+
   useEffect(() => {
      let currentStream: MediaStream | null = null;
 
