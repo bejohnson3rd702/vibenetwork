@@ -23,6 +23,7 @@ export default function MasterAdminDashboard() {
   const [whitelabelsList, setWhitelabelsList] = useState<any[]>([]);
   const [usersList, setUsersList] = useState<any[]>([]);
   const [isRestarting, setIsRestarting] = useState(false);
+  const [ledgerFilter, setLedgerFilter] = useState('ALL');
 
   useEffect(() => {
      async function fetchGlobalMetrics() {
@@ -365,7 +366,14 @@ export default function MasterAdminDashboard() {
                    
                 </div>
 
-                <h4 style={{ margin: '20px 0 0 0', fontSize: '20px' }}>Global Revenue Rollup</h4>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', margin: '20px 0 16px 0' }}>
+                  <h4 style={{ margin: 0, fontSize: '20px' }}>Global Revenue Rollup</h4>
+                  <div style={{ display: 'flex', gap: '8px', background: '#111', padding: '4px', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.05)' }}>
+                    <button onClick={() => setLedgerFilter('ALL')} style={{ padding: '8px 16px', background: ledgerFilter === 'ALL' ? 'rgba(255,255,255,0.1)' : 'transparent', color: ledgerFilter === 'ALL' ? '#fff' : '#888', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold', fontSize: '13px' }}>All Traffic</button>
+                    <button onClick={() => setLedgerFilter('Direct Vibe')} style={{ padding: '8px 16px', background: ledgerFilter === 'Direct Vibe' ? 'rgba(255,215,0,0.1)' : 'transparent', color: ledgerFilter === 'Direct Vibe' ? '#FFD700' : '#888', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold', fontSize: '13px' }}>Direct Vibe Only</button>
+                    <button onClick={() => setLedgerFilter('Whitelabel')} style={{ padding: '8px 16px', background: ledgerFilter === 'Whitelabel' ? 'rgba(0,85,255,0.1)' : 'transparent', color: ledgerFilter === 'Whitelabel' ? '#0055ff' : '#888', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold', fontSize: '13px' }}>Whitelabels Only</button>
+                  </div>
+                </div>
                 <div style={{ background: '#111', padding: '20px', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.05)' }}>
                   <table style={{ width: '100%', textAlign: 'left', borderCollapse: 'collapse' }}>
                     <thead>
@@ -386,14 +394,14 @@ export default function MasterAdminDashboard() {
                         { time: '14 min ago', source: 'DJ Tech Live', origin: 'Direct Vibe', gross: 14.99 },
                         { time: '1 hr ago', source: 'Vertex Media', origin: 'Whitelabel', gross: 199.99 },
                         { time: '2 hrs ago', source: 'SaaS Innovators', origin: 'Direct Vibe', gross: 29.99 },
-                      ].map((tx, i) => {
+                      ].filter(tx => ledgerFilter === 'ALL' || tx.origin === ledgerFilter).map((tx, i, arr) => {
                          const creatorCut = (tx.gross * 0.70).toFixed(2);
                          const isDirect = tx.origin === 'Direct Vibe';
                          const vibeCut = isDirect ? (tx.gross * 0.30).toFixed(2) : (tx.gross * 0.15).toFixed(2);
                          const wlCut = isDirect ? 'N/A' : '$' + (tx.gross * 0.15).toFixed(2);
                          
                          return (
-                           <tr key={i} style={{ borderBottom: i !== 4 ? '1px solid rgba(255,255,255,0.05)' : 'none' }}>
+                           <tr key={i} style={{ borderBottom: i !== arr.length - 1 ? '1px solid rgba(255,255,255,0.05)' : 'none' }}>
                              <td style={{ padding: '16px 12px', color: '#888', fontSize: '13px' }}>{tx.time}</td>
                              <td style={{ padding: '16px 12px', fontWeight: 'bold' }}>{tx.source}</td>
                              <td style={{ padding: '16px 12px' }}>
@@ -405,6 +413,15 @@ export default function MasterAdminDashboard() {
                              <td style={{ padding: '16px 12px', color: '#00ff88', fontWeight: 'bold' }}>${creatorCut}</td>
                            </tr>
                          )
+                      })}
+                      {ledgerFilter !== 'ALL' && [1].map(() => {
+                         const matchCount = [
+                           { origin: 'Whitelabel' }, { origin: 'Whitelabel' }, { origin: 'Direct Vibe' }, { origin: 'Whitelabel' }, { origin: 'Direct Vibe' }
+                         ].filter(tx => tx.origin === ledgerFilter).length;
+                         if (matchCount === 0) return (
+                            <tr><td colSpan={7} style={{ padding: '30px', textAlign: 'center', color: '#888' }}>No recent traffic detected for this filter tier.</td></tr>
+                         );
+                         return null;
                       })}
                     </tbody>
                   </table>
