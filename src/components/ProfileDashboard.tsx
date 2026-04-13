@@ -627,10 +627,17 @@ const ProfileDashboard: React.FC<{ user: any }> = ({ user }) => {
 
               {/* Post Payload (Image/Video) */}
               <div style={{ width: '100%', aspectRatio: '16/9', background: `url(${post.img})`, backgroundSize: 'cover', backgroundPosition: 'center', position: 'relative' }}>
-                {post.locked && !isOwnProfile && (
+                {post.locked && !isOwnProfile && !isSubscribed && (
                   <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(10px)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
                     <Lock size={48} color="#FFD700" style={{ marginBottom: '16px' }} />
-                    <button style={{ padding: '12px 30px', background: '#FFD700', border: 'none', borderRadius: '20px', color: '#000', fontWeight: 'bold', cursor: 'pointer', fontSize: '16px' }}>
+                    <button 
+                      onClick={() => {
+                        if (!user) { alert('Please log in to subscribe.'); return; }
+                        setIsSubscribed(true);
+                        alert(`Successfully subscribed using your Network Wallet! Auto-pay of $${subPrice}/mo has been linked.`);
+                      }}
+                      style={{ padding: '12px 30px', background: '#FFD700', border: 'none', borderRadius: '20px', color: '#000', fontWeight: 'bold', cursor: 'pointer', fontSize: '16px' }}
+                    >
                       Subscribe for ${subPrice}/mo to unlock
                     </button>
                   </div>
@@ -793,7 +800,16 @@ const ProfileDashboard: React.FC<{ user: any }> = ({ user }) => {
                 <Lock size={56} color="#FFD700" style={{ marginBottom: '24px' }} />
                 <h3 style={{ fontSize: '28px', margin: '0 0 16px 0', color: '#fff' }}>Exclusive Live Broadcast</h3>
                 <p style={{ color: '#aaa', fontSize: '18px', maxWidth: '450px', margin: '0 auto 40px', lineHeight: 1.5 }}>Subscribe to {profile.username || 'this creator'} to instantly unlock their live streams and premium restricted vault content.</p>
-                <button onClick={() => { alert('Stripe Checkout Flow Initiated for $' + subPrice + '/mo!'); setIsSubscribed(true); }} style={{ padding: '16px 40px', background: 'linear-gradient(135deg, #ff4d85, #8A2BE2)', color: '#fff', border: 'none', borderRadius: '30px', fontWeight: 'bold', fontSize: '18px', cursor: 'pointer', boxShadow: '0 10px 20px rgba(255,77,133,0.3)', transition: 'transform 0.2s' }} onMouseOver={e=>e.currentTarget.style.transform='scale(1.05)'} onMouseOut={e=>e.currentTarget.style.transform='scale(1)'}>
+                <button 
+                  onClick={() => {
+                    if (!user) { alert('Please log in to subscribe.'); return; }
+                    setIsSubscribed(true);
+                    alert(`Successfully subscribed using your Network Wallet! Auto-pay of $${subPrice}/mo has been linked.`);
+                  }} 
+                  style={{ padding: '16px 40px', background: 'linear-gradient(135deg, #ff4d85, #8A2BE2)', color: '#fff', border: 'none', borderRadius: '30px', fontWeight: 'bold', fontSize: '18px', cursor: 'pointer', boxShadow: '0 10px 20px rgba(255,77,133,0.3)', transition: 'transform 0.2s' }} 
+                  onMouseOver={e=>e.currentTarget.style.transform='scale(1.05)'} 
+                  onMouseOut={e=>e.currentTarget.style.transform='scale(1)'}
+                >
                   Subscribe for ${subPrice}/mo
                 </button>
               </motion.div>
