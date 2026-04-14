@@ -734,8 +734,8 @@ const ProfileDashboard: React.FC<{ user: any }> = ({ user }) => {
           <div style={{ display: 'flex', flexDirection: 'column', gap: '30px' }}>
             {isSubscribed || isOwnProfile ? (
               <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} style={{ background: '#111', borderRadius: '24px', overflow: 'hidden', border: '1px solid rgba(255,255,255,0.05)' }}>
-                <div style={{ display: 'flex', width: '100%', aspectRatio: '16/9', background: '#000', position: 'relative' }}>
-                   <div style={{ flex: 1, position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <div style={{ display: 'flex', width: '100%', background: '#000', position: 'relative' }}>
+                   <div style={{ flex: 1, position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center', aspectRatio: '16/9' }}>
                   <div style={{ position: 'absolute', top: 20, left: 20, background: '#ff0055', color: '#fff', padding: '6px 14px', borderRadius: '12px', fontWeight: 'bold', fontSize: '14px', display: 'flex', alignItems: 'center', gap: '8px', zIndex: 10 }}>
                     <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#fff', animation: 'pulse 1.5s infinite' }}/> LIVE
                   </div>
