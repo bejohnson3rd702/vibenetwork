@@ -745,7 +745,7 @@ const ProfileDashboard: React.FC<{ user: any }> = ({ user }) => {
         {activeTab === 'live' && (
         /* ----------- LIVE STREAM TAB ----------- */
           <div style={{ display: 'flex', flexDirection: 'column', gap: '30px' }}>
-            {isSubscribed || isOwnProfile ? (
+            {isSubscribed || isOwnProfile || localGuestData !== null ? (
               <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} style={{ background: '#111', borderRadius: '24px', overflow: 'hidden', border: '1px solid rgba(255,255,255,0.05)' }}>
                 <div style={{ display: 'flex', width: '100%', background: '#000', position: 'relative' }}>
                    <div style={{ flex: 1, position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center', aspectRatio: '16/9' }}>
@@ -880,10 +880,11 @@ const ProfileDashboard: React.FC<{ user: any }> = ({ user }) => {
                                   </button>
                                 )}
                                 <button onClick={() => {
-                                  navigator.clipboard.writeText(window.location.href + (window.location.href.includes('?') ? '&' : '?') + 'guest_invite=true');
-                                  alert('Guest Invite Link copied to clipboard! Share this URL to invite up to 4 guests into your streaming grid.');
+                                  const guestUrl = window.location.href.split('?')[0] + '?guest_invite=true';
+                                  navigator.clipboard.writeText(guestUrl).catch(()=>console.log('Clipboard skipped'));
+                                  window.open(guestUrl, '_blank');
                                 }} style={{ padding: '8px 14px', background: '#0055ff', color: '#fff', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold', fontSize: '13px' }}>
-                                  🔗 Copy Guest Link
+                                  🔗 Open & Copy Guest Link
                                 </button>
                                 <button onClick={() => {
                                   if (guests.length < 4) {
