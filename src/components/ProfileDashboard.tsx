@@ -783,7 +783,7 @@ const ProfileDashboard: React.FC<{ user: any }> = ({ user }) => {
                        <button onClick={() => {
                           if (typeof window !== 'undefined') {
                             const current = JSON.parse(localStorage.getItem('vibe_host_guests_session') || '[]');
-                            const updated = current.filter((g: any) => g.id !== localGuestData.id);
+                            const updated = current.filter((g: {id: string}) => g.id !== localGuestData.id);
                             localStorage.setItem('vibe_host_guests_session', JSON.stringify(updated));
                             window.dispatchEvent(new Event('vibe_guests_updated'));
                           }
