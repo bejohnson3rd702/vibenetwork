@@ -22,6 +22,9 @@ function App() {
   
   const [user, setUser] = useState<any>(null);
   const [showAuthModal, setShowAuthModal] = useState(false);
+  const [wlConfig, setWlConfig] = useState<any>(null);
+  const [showAdminPanel, setShowAdminPanel] = useState(false);
+  const [showEndUserAuthModal, setShowEndUserAuthModal] = useState(false);
 
   useEffect(() => {
     // Check Active Session
@@ -61,10 +64,6 @@ function App() {
     window.addEventListener('whitelabel_commit', handleCommit);
     return () => window.removeEventListener('whitelabel_commit', handleCommit);
   }, []);
-
-  const [wlConfig, setWlConfig] = useState<any>(null);
-  const [showAdminPanel, setShowAdminPanel] = useState(false);
-  const [showEndUserAuthModal, setShowEndUserAuthModal] = useState(false);
 
   // Load latest whitelabel config from DB on load, matching domain
   useEffect(() => {

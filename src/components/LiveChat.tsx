@@ -18,6 +18,7 @@ const MOCK_MESSAGES = [
 
 export default function LiveChat({ streamId }: { streamId: string }) {
   const [messages, setMessages] = useState<{id: string, user: string, text: string, time: string}[]>([]);
+  const [viewersCount] = useState(() => Math.floor(Math.random() * 5000 + 1000).toLocaleString());
   const [input, setInput] = useState("");
   const autoScrollRef = useRef<HTMLDivElement>(null);
   
@@ -154,7 +155,7 @@ export default function LiveChat({ streamId }: { streamId: string }) {
         <h3 style={{ margin: 0, fontSize: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
           Live Chat <span style={{ width: '8px', height: '8px', background: '#ff0055', borderRadius: '50%', display: 'inline-block' }}></span>
         </h3>
-        <span style={{ fontSize: '12px', color: '#888' }}>{Math.floor(Math.random() * 5000 + 1000).toLocaleString()} watching</span>
+        <span style={{ fontSize: '12px', color: '#888' }}>{viewersCount} watching</span>
       </div>
 
       <div ref={autoScrollRef} style={{ flex: 1, overflowY: 'auto', overflowX: 'hidden', padding: '16px', display: 'flex', flexDirection: 'column', gap: '12px', scrollBehavior: 'smooth', maxHeight: '450px' }}>
