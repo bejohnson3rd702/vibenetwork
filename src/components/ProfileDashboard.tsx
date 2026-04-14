@@ -880,11 +880,12 @@ const ProfileDashboard: React.FC<{ user: any }> = ({ user }) => {
                                   </button>
                                 )}
                                 <button onClick={() => {
-                                  const guestUrl = window.location.href.split('?')[0] + '?guest_invite=true';
+                                  const profileIdPath = creatorId || profile?.id || user?.id || 'public';
+                                  const guestUrl = `${window.location.origin}/profile/${profileIdPath}?guest_invite=true`;
                                   navigator.clipboard.writeText(guestUrl).catch(()=>console.log('Clipboard skipped'));
-                                  window.open(guestUrl, '_blank');
+                                  alert('Guest Invite Link copied: ' + guestUrl);
                                 }} style={{ padding: '8px 14px', background: '#0055ff', color: '#fff', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold', fontSize: '13px' }}>
-                                  🔗 Open & Copy Guest Link
+                                  🔗 Copy Guest Link
                                 </button>
                                 <button onClick={() => {
                                   if (guests.length < 4) {
