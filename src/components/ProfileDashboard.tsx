@@ -206,7 +206,8 @@ const ProfileDashboard: React.FC<{ user: any }> = ({ user }) => {
   }, [user, creatorId, navigate, isOwnProfile]);
 
   if (loading) return <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff' }}>Loading Profile...</div>;
-  if (!profile) return (
+  const isGuestInvite = new URLSearchParams(location.search).get('guest_invite') === 'true';
+  if (!profile && !isGuestInvite) return (
     <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', color: '#fff', background: '#050505' }}>
       <h2 style={{ fontSize: '32px', marginBottom: '10px' }}>Profile Not Found</h2>
       <p style={{ color: '#888', marginBottom: '30px' }}>This channel doesn't exist, or the user hasn't set up their profile yet.</p>
