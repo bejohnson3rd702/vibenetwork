@@ -40,6 +40,7 @@ const ProfileDashboard: React.FC<{ user: any }> = ({ user }) => {
   const [isPlayingLive, setIsPlayingLive] = useState(false);
   const [isPubliclyLive, setIsPubliclyLive] = useState(false);
   const [cameraStatus, setCameraStatus] = useState<'idle'|'loading'|'active'|'error'>('idle');
+  const [cameraDebugData, setCameraDebugData] = useState<string>('');
   const [liveCountdown, setLiveCountdown] = useState<number | null>(null);
   const [liveEmbedUrl, setLiveEmbedUrl] = useState('https://www.youtube.com/embed/jfKfPfyJRdk?autoplay=1&mute=0');
   const [streamSource, setStreamSource] = useState<'url' | 'camera'>('url');
@@ -202,15 +203,29 @@ const ProfileDashboard: React.FC<{ user: any }> = ({ user }) => {
      let currentStream: MediaStream | null = null;
 
      if (isPlayingLive && (streamSource === 'camera' || presenterMode || guests.length > 0)) {
-        if (streamSource === 'camera') setCameraStatus('loading');
+        if (streamSource === 'camera') {
+           setCameraStatus('loading');
+           setCameraDebugData('Awaiting OS permission...');
+        }
         navigator.mediaDevices.getUserMedia({ video: true, audio: true })
            .then(stream => {
               setCameraStatus('active');
               currentStream = stream;
+              const videoTrack = stream.getVideoTracks()[0];
+              const dimensions = videoTrack ? `${videoTrack.getSettings().width}x${videoTrack.getSettings().height}` : 'No Video Track';
+              setCameraDebugData(`Stream Mounted: ${dimensions} | Audio Tracks: ${stream.getAudioTracks().length}`);
+              
               if (videoRef.current) {
                  videoRef.current.srcObject = stream;
+                 videoRef.current.defaultMuted = true;
+                 videoRef.current.muted = true;
                  // Explicitly fire play in case autoPlay fails on dynamic srcObject
-                 videoRef.current.play().catch(e => console.warn("Video play interrupted:", e));
+                 videoRef.current.play().then(() => {
+                    setCameraDebugData(prev => prev + ' | Playing natively');
+                 }).catch(e => {
+                    console.warn("Video play interrupted:", e);
+                    setCameraDebugData(prev => prev + ` | PLAYBACK ERROR: ${e.message}`);
+                 });
               
                  // Wire up WebRTC signaling so the director can fetch our feed
                  const streamId = targetProfileId || profile?.username || profile?.id;
@@ -238,10 +253,12 @@ const ProfileDashboard: React.FC<{ user: any }> = ({ user }) => {
            .catch(err => {
               console.error("Camera access denied or unavailable", err);
               setCameraStatus('error');
+              setCameraDebugData(`GUM Error: ${err.name} - ${err.message}`);
               // Don't auto-stop playing live so they can read the error message
            });
      } else {
         setCameraStatus('idle');
+        setCameraDebugData('Idle State');
      }
      
      // Cleanup function to strictly stop hardware tracks
@@ -1014,6 +1031,12 @@ const ProfileDashboard: React.FC<{ user: any }> = ({ user }) => {
                                     <p style={{ margin: 0, color: '#fff', fontSize: '14px', fontWeight: 'bold' }}>CAMERA ACCESS DENIED</p>
                                     <p style={{ margin: '5px 0 0 0', color: '#888', fontSize: '12px', maxWidth: '300px', textAlign: 'center' }}>Check your browser settings to ensure Vibe Network has hardware permissions.</p>
                                     <button onClick={() => setIsPlayingLive(false)} style={{ marginTop: '15px', padding: '8px 20px', background: 'transparent', border: '1px solid #333', color: '#fff', borderRadius: '20px', cursor: 'pointer' }}>Close Mode</button>
+                                 </div>
+                               )}
+
+                               {cameraStatus === 'active' && cameraDebugData && (
+                                 <div style={{ position: 'absolute', top: 50, left: 10, background: 'rgba(0,0,0,0.8)', color: '#00ff88', fontSize: '10px', padding: '4px 8px', borderRadius: '4px', zIndex: 20, fontFamily: 'monospace' }}>
+                                    DEBUG: {cameraDebugData}
                                  </div>
                                )}
 
