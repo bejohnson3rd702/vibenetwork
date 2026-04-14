@@ -207,55 +207,57 @@ const ProfileDashboard: React.FC<{ user: any }> = ({ user }) => {
            setCameraStatus('loading');
            setCameraDebugData('Awaiting OS permission...');
         }
-        navigator.mediaDevices.getUserMedia({ video: true, audio: true })
-           .then(stream => {
-              setCameraStatus('active');
-              currentStream = stream;
-              const videoTrack = stream.getVideoTracks()[0];
-              const dimensions = videoTrack ? `${videoTrack.getSettings().width}x${videoTrack.getSettings().height}` : 'No Video Track';
-              setCameraDebugData(`Stream Mounted: ${dimensions} | Audio Tracks: ${stream.getAudioTracks().length}`);
-              
-              if (videoRef.current) {
-                 videoRef.current.srcObject = stream;
-                 videoRef.current.defaultMuted = true;
-                 videoRef.current.muted = true;
-                 // Explicitly fire play in case autoPlay fails on dynamic srcObject
-                 videoRef.current.play().then(() => {
-                    setCameraDebugData(prev => prev + ' | Playing natively');
-                 }).catch(e => {
-                    console.warn("Video play interrupted:", e);
-                    setCameraDebugData(prev => prev + ` | PLAYBACK ERROR: ${e.message}`);
-                 });
-              
-                 // Wire up WebRTC signaling so the director can fetch our feed
-                 const streamId = targetProfileId || profile?.username || profile?.id;
-                 if (streamId && typeof window !== 'undefined') {
-                    // Create peer with deterministic ID
-                    const peerId = `vibe-host-${streamId}`;
-                    console.log("[WebRTC] Creating Host Peer Node:", peerId);
-                    const peer = new Peer(peerId);
-                    peer.on('call', (call) => {
-                       console.log("[WebRTC] Director is calling! Answering with local stream...");
-                       call.answer(stream);
-                    });
-                    peer.on('open', () => {
-                       // Tell anyone listening that the pipeline is open!
-                       console.log("[WebRTC] Host node ready, broadcasting ping...");
-                       if (channelRef.current) {
-                          channelRef.current.send({ type: 'broadcast', event: 'webrtc_host_ready', payload: { streamId } });
-                       }
-                    });
-                    // Store on window so we can clean it up
-                    (window as any)._vibeHostPeer = peer;
+        
+        try {
+           if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+               throw new Error("navigator.mediaDevices.getUserMedia is utterly undefined! Browser locked it out (HTTP or permission block).");
+           }
+           
+           navigator.mediaDevices.getUserMedia({ video: true, audio: true })
+              .then(stream => {
+                 try {
+                    setCameraStatus('active');
+                    currentStream = stream;
+                    const videoTrack = stream.getVideoTracks()[0];
+                    const dimensions = videoTrack && videoTrack.getSettings ? `${videoTrack.getSettings().width}x${videoTrack.getSettings().height}` : 'No Track/Settings';
+                    setCameraDebugData(`Stream Mounted: ${dimensions} | Au: ${stream.getAudioTracks().length}`);
+                    
+                    if (videoRef.current) {
+                       videoRef.current.srcObject = stream;
+                       videoRef.current.defaultMuted = true;
+                       videoRef.current.muted = true;
+                       videoRef.current.play().then(() => {
+                          setCameraDebugData(prev => prev + ' | Play:OK');
+                       }).catch(e => {
+                          setCameraDebugData(prev => prev + ` | PlayErr: ${e.message}`);
+                       });
+                    }
+                    
+                    const streamId = targetProfileId || profile?.username || profile?.id;
+                    if (streamId && typeof window !== 'undefined') {
+                       const peerId = `vibe-host-${streamId}`;
+                       const peer = new Peer(peerId);
+                       peer.on('call', (call) => { call.answer(stream); });
+                       peer.on('open', () => {
+                          if (channelRef.current) {
+                             channelRef.current.send({ type: 'broadcast', event: 'webrtc_host_ready', payload: { streamId } });
+                          }
+                       });
+                       (window as any)._vibeHostPeer = peer;
+                    }
+                 } catch (innerErr: any) {
+                    setCameraStatus('error');
+                    setCameraDebugData(`Inner Crash: ${innerErr.message}`);
                  }
-              }
-           })
-           .catch(err => {
-              console.error("Camera access denied or unavailable", err);
-              setCameraStatus('error');
-              setCameraDebugData(`GUM Error: ${err.name} - ${err.message}`);
-              // Don't auto-stop playing live so they can read the error message
-           });
+              })
+              .catch(err => {
+                 setCameraStatus('error');
+                 setCameraDebugData(`GUM Error: ${err.name} - ${err.message}`);
+              });
+        } catch (outerErr: any) {
+             setCameraStatus('error');
+             setCameraDebugData(`Outer Crash: ${outerErr.message}`);
+        }
      } else {
         setCameraStatus('idle');
         setCameraDebugData('Idle State');
