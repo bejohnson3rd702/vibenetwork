@@ -86,6 +86,11 @@ export default function EndUserAuthModal({ onClose, wlConfig }: EndUserAuthModal
                    <ShieldCheck size={28} color="#fff" />
                 </div>
              )}
+             {wlConfig?.name && (
+                <span style={{ fontSize: '24px', fontWeight: 900, color: '#fff', letterSpacing: '1px' }}>
+                   {wlConfig.name}
+                </span>
+             )}
           </div>
           <h2 style={{ margin: 0, fontSize: '28px', color: '#fff', fontWeight: 900 }}>
              {isLogin ? 'Access Portal' : 'Register Account'}

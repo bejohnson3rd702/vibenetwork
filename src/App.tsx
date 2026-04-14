@@ -100,7 +100,8 @@ function App() {
              btnPrimary: dbConf.btn_primary,
              sliderCount: dbConf.slider_count || 4,
              customSections: dbConf.custom_sections || 'Platform Architecture,Success Stories',
-             heroImage: dbConf.hero_image
+             heroImage: dbConf.hero_image,
+             logoImage: dbConf.logo_url || dbConf.navbar_logo || dbConf.logo_image || null
           });
         }
       }
