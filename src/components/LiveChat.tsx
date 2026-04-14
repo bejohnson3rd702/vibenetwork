@@ -19,6 +19,29 @@ export default function LiveChat({ streamId }: { streamId: string }) {
   const [messages, setMessages] = useState<{id: string, user: string, text: string, time: string}[]>([]);
   const [input, setInput] = useState("");
   const autoScrollRef = useRef<HTMLDivElement>(null);
+  
+  const [isActive, setIsActive] = useState(true);
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  const resetTimer = () => {
+    setIsActive(true);
+    if (timeoutRef.current) clearTimeout(timeoutRef.current);
+    timeoutRef.current = setTimeout(() => {
+      setIsActive(false);
+    }, 10000);
+  };
+
+  useEffect(() => {
+    resetTimer();
+    const handleActivity = () => resetTimer();
+    window.addEventListener('mousemove', handleActivity);
+    window.addEventListener('keydown', handleActivity);
+    return () => {
+      window.removeEventListener('mousemove', handleActivity);
+      window.removeEventListener('keydown', handleActivity);
+      if (timeoutRef.current) clearTimeout(timeoutRef.current);
+    };
+  }, []);
 
   useEffect(() => {
     // Generate initial messages
@@ -74,8 +97,11 @@ export default function LiveChat({ streamId }: { streamId: string }) {
   return (
     <div style={{
       display: 'flex', flexDirection: 'column', height: '100%', 
-      background: 'rgba(0,0,0,0.8)', borderLeft: '1px solid rgba(255,255,255,0.1)',
-      overflow: 'hidden'
+      background: 'rgba(0,0,0,0.8)', borderLeft: isActive ? '1px solid rgba(255,255,255,0.1)' : 'none',
+      overflow: 'hidden',
+      width: isActive ? '350px' : '0px',
+      opacity: isActive ? 1 : 0,
+      transition: 'width 0.4s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s ease-out'
     }}>
       <div style={{ padding: '16px', borderBottom: '1px solid rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <h3 style={{ margin: 0, fontSize: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}>

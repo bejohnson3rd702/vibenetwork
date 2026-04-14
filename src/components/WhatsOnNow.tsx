@@ -202,7 +202,7 @@ const WhatsOnNow: React.FC = () => {
         </div>
 
         {/* Middle Pane: Live Chat */}
-        <div style={{ width: '380px', flexShrink: 0, borderLeft: '1px solid rgba(255,255,255,0.05)', background: '#050505', display: 'flex', flexDirection: 'column' }}>
+        <div style={{ flexShrink: 0, background: '#050505', display: 'flex', flexDirection: 'column' }}>
           <LiveChat streamId={scheduleItems[activeIndex]?.id || 'main-stage'} />
         </div>
 

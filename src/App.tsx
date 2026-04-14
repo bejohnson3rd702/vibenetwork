@@ -403,7 +403,7 @@ function Home({ categories, activeVideo, setActiveVideo }: any) {
               })()}
               </div>
               {/* Chat Pane */}
-              <div style={{ flexShrink: 0, width: '350px', background: '#050505', borderRadius: '0 16px 16px 0', overflow: 'hidden' }}>
+              <div style={{ flexShrink: 0, background: '#050505', borderRadius: '0 16px 16px 0', overflow: 'hidden' }}>
                  <LiveChat streamId={activeVideo.id || 'global'} />
               </div>
             </motion.div>

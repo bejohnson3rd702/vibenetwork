@@ -771,8 +771,8 @@ const ProfileDashboard: React.FC<{ user: any }> = ({ user }) => {
                     </>
                   )}
                 </div>
-                 <div style={{ width: '350px', flexShrink: 0, borderLeft: '1px solid rgba(255,255,255,0.05)' }}>
-                    <LiveChat streamId={username || 'profile'} />
+                 <div style={{ flexShrink: 0 }}>
+                    <LiveChat streamId={profile?.username || 'profile'} />
                  </div>
               </div>
               <div style={{ padding: '24px' }}>
