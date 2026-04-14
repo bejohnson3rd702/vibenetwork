@@ -269,8 +269,8 @@ const WhatsOnNow: React.FC = () => {
           <div style={{ position: 'fixed', inset: 0, zIndex: 99999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }}>
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.8)', backdropFilter: 'blur(5px)' }} onClick={() => setShowTipModal(false)} />
             <motion.div initial={{ scale: 0.9, opacity: 0, y: 20 }} animate={{ scale: 1, opacity: 1, y: 0 }} exit={{ scale: 0.9, opacity: 0, y: 20 }} style={{ position: 'relative', background: '#111', border: '1px solid rgba(255,255,255,0.1)', padding: '30px', borderRadius: '24px', width: '100%', maxWidth: '400px', display: 'flex', flexDirection: 'column', gap: '20px', boxShadow: '0 20px 40px rgba(0,0,0,0.5)' }}>
-              <h2 style={{ margin: 0, fontSize: '24px', display: 'flex', alignItems: 'center', gap: '8px' }}>💰 Send a Tip</h2>
-              <p style={{ margin: 0, color: '#aaa', fontSize: '14px' }}>Support the live stream. Tokens are transferred via your internal active wallet balance.</p>
+              <h2 style={{ margin: 0, fontSize: '24px', display: 'flex', alignItems: 'center', gap: '8px' }}>💰 Support Vibe Network</h2>
+              <p style={{ margin: 0, color: '#aaa', fontSize: '14px' }}>100% of the tips on the Live Now stage go directly to Vibe Network.</p>
               
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
                 {[5, 10, 20, 50].map(amt => (
@@ -283,13 +283,10 @@ const WhatsOnNow: React.FC = () => {
               
               <button onClick={() => {
                 const stored = JSON.parse(localStorage.getItem('vibe_network_ledger') || '[]');
-                stored.unshift({ time: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}), source: 'Audience Tipping Gateway', origin: 'Direct Vibe', gross: Number(tipAmount) });
+                stored.unshift({ time: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}), source: 'Platform Support Tip', origin: 'Vibe Network 100%', gross: Number(tipAmount) });
                 localStorage.setItem('vibe_network_ledger', JSON.stringify(stored));
-                
-                const hostWallet = Number(localStorage.getItem('vibe_host_wallet') || 1250);
-                localStorage.setItem('vibe_host_wallet', String(hostWallet + Number(tipAmount)));
 
-                alert(`Successfully tipped $${tipAmount}!`);
+                alert(`Successfully supported Vibe Network with $${tipAmount}!`);
                 setShowTipModal(false);
                 setTipAmount('');
               }} style={{ padding: '16px', background: 'linear-gradient(45deg, #00ff88, #00bbff)', color: '#000', border: 'none', borderRadius: '12px', fontWeight: '900', fontSize: '16px', cursor: 'pointer' }} disabled={!tipAmount}>
