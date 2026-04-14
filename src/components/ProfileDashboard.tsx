@@ -39,6 +39,7 @@ const ProfileDashboard: React.FC<{ user: any }> = ({ user }) => {
   // Live Stream State
   const [isPlayingLive, setIsPlayingLive] = useState(false);
   const [isPubliclyLive, setIsPubliclyLive] = useState(false);
+  const [cameraStatus, setCameraStatus] = useState<'idle'|'loading'|'active'|'error'>('idle');
   const [liveCountdown, setLiveCountdown] = useState<number | null>(null);
   const [liveEmbedUrl, setLiveEmbedUrl] = useState('https://www.youtube.com/embed/jfKfPfyJRdk?autoplay=1&mute=0');
   const [streamSource, setStreamSource] = useState<'url' | 'camera'>('url');
@@ -182,6 +183,9 @@ const ProfileDashboard: React.FC<{ user: any }> = ({ user }) => {
            clearInterval(interval);
            setLiveCountdown(null);
            setIsPlayingLive(true);
+           if (streamSource === 'camera') {
+              setCameraStatus('loading');
+           }
            // If using external URL, bypass studio mode and go straight to live
            if (streamSource === 'url') {
               setIsPubliclyLive(true);
@@ -198,14 +202,16 @@ const ProfileDashboard: React.FC<{ user: any }> = ({ user }) => {
      let currentStream: MediaStream | null = null;
 
      if (isPlayingLive && (streamSource === 'camera' || presenterMode || guests.length > 0)) {
+        if (streamSource === 'camera') setCameraStatus('loading');
         navigator.mediaDevices.getUserMedia({ video: true, audio: true })
            .then(stream => {
+              setCameraStatus('active');
               currentStream = stream;
               if (videoRef.current) {
                  videoRef.current.srcObject = stream;
                  // Explicitly fire play in case autoPlay fails on dynamic srcObject
                  videoRef.current.play().catch(e => console.warn("Video play interrupted:", e));
-                 
+              
                  // Wire up WebRTC signaling so the director can fetch our feed
                  const streamId = targetProfileId || profile?.username || profile?.id;
                  if (streamId && typeof window !== 'undefined') {
@@ -231,9 +237,11 @@ const ProfileDashboard: React.FC<{ user: any }> = ({ user }) => {
            })
            .catch(err => {
               console.error("Camera access denied or unavailable", err);
-              alert("Could not access camera/microphone.");
-              setIsPlayingLive(false);
+              setCameraStatus('error');
+              // Don't auto-stop playing live so they can read the error message
            });
+     } else {
+        setCameraStatus('idle');
      }
      
      // Cleanup function to strictly stop hardware tracks
@@ -990,12 +998,31 @@ const ProfileDashboard: React.FC<{ user: any }> = ({ user }) => {
                            {/* Main Host Webcam Slot */}
                            {showHost && (
                              <div style={{ position: 'relative', background: '#111', flexShrink: 0, pointerEvents: 'auto', ...(streamSource === 'url' ? { width: 'min(20%, 200px)', aspectRatio: '16/9', borderRadius: '12px', border: '2px solid rgba(255,255,255,0.2)', overflow: 'hidden', boxShadow: '0 4px 20px rgba(0,0,0,0.5)' } : { width: '100%', height: '100%' }) }}>
+                               
+                               {cameraStatus === 'loading' && (
+                                 <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: '#111', zIndex: 5 }}>
+                                    <div style={{ width: 40, height: 40, border: '3px solid rgba(255,255,255,0.1)', borderTopColor: '#00ff88', borderRadius: '50%', animation: 'spin 1s linear infinite', marginBottom: 15 }} />
+                                    <p style={{ margin: 0, color: '#fff', fontSize: '14px', fontWeight: 'bold', letterSpacing: '1px' }}>INITIALIZING HARDWARE...</p>
+                                    <p style={{ margin: '5px 0 0 0', color: '#888', fontSize: '12px' }}>Please allow access to your camera and microphone</p>
+                                 </div>
+                               )}
+                               {cameraStatus === 'error' && (
+                                 <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: '#111', zIndex: 5 }}>
+                                    <div style={{ padding: '15px', borderRadius: '50%', background: 'rgba(255,0,85,0.1)', color: '#ff0055', marginBottom: 15 }}>
+                                       <Video size={30} />
+                                    </div>
+                                    <p style={{ margin: 0, color: '#fff', fontSize: '14px', fontWeight: 'bold' }}>CAMERA ACCESS DENIED</p>
+                                    <p style={{ margin: '5px 0 0 0', color: '#888', fontSize: '12px', maxWidth: '300px', textAlign: 'center' }}>Check your browser settings to ensure Vibe Network has hardware permissions.</p>
+                                    <button onClick={() => setIsPlayingLive(false)} style={{ marginTop: '15px', padding: '8px 20px', background: 'transparent', border: '1px solid #333', color: '#fff', borderRadius: '20px', cursor: 'pointer' }}>Close Mode</button>
+                                 </div>
+                               )}
+
                                <video 
                                  ref={videoRef} 
                                  autoPlay 
                                  playsInline 
                                  muted 
-                                 style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
+                                 style={{ width: '100%', height: '100%', objectFit: 'cover', opacity: cameraStatus === 'active' ? 1 : 0, transition: 'opacity 0.3s' }} 
                                />
                                <div style={{ position: 'absolute', bottom: streamSource==='url'?4:10, right: streamSource==='url'?4:10, background: 'rgba(0,0,0,0.7)', padding: streamSource==='url'?'4px 8px':'6px 12px', borderRadius: '8px', textAlign: 'right', border: '1px solid rgba(255,255,255,0.1)', backdropFilter: 'blur(10px)' }}>
                                  <div style={{ fontWeight: 'bold', fontSize: streamSource==='url'?'11px':'14px', color: '#fff' }}>{localGuestData ? localGuestData.name : profile?.username || 'Host'}</div>
