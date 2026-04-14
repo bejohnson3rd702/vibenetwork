@@ -40,7 +40,7 @@ export default function LiveChat({ streamId }: { streamId: string }) {
           time: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})
         };
         const next = [...prev, newMsg];
-        if (next.length > 50) next.shift(); // Keep bounded
+        if (next.length > 15) next.shift(); // Keep bounded
         return next;
       });
     }, 4500);
@@ -58,12 +58,16 @@ export default function LiveChat({ streamId }: { streamId: string }) {
     e.preventDefault();
     if (!input.trim()) return;
     
-    setMessages(prev => [...prev, {
-      id: Math.random().toString(),
-      user: "You",
-      text: input,
-      time: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})
-    }]);
+    setMessages(prev => {
+      const next = [...prev, {
+        id: Math.random().toString(),
+        user: "You",
+        text: input,
+        time: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})
+      }];
+      if (next.length > 15) next.shift();
+      return next;
+    });
     setInput("");
   };
 
