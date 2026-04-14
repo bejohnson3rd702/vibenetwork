@@ -203,24 +203,7 @@ const WhatsOnNow: React.FC = () => {
             </button>
           </div>
           
-          <div style={{ position: 'absolute', bottom: 30, left: 30, right: 30, display: 'flex', gap: '10px', justifyContent: 'flex-start', alignItems: 'flex-end', pointerEvents: 'none', zIndex: 20 }}>
-            <div style={{ position: 'relative', background: '#111', flexShrink: 0, pointerEvents: 'auto', width: 'min(20%, 200px)', aspectRatio: '16/9', borderRadius: '12px', border: '2px solid rgba(255,255,255,0.2)', overflow: 'hidden', boxShadow: '0 4px 20px rgba(0,0,0,0.5)' }}>
-              <img src={`https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=400&q=80`} style={{ width: '100%', height: '100%', objectFit: 'cover' }} alt="Host" />
-              <div style={{ position: 'absolute', bottom: 4, right: 4, background: 'rgba(0,0,0,0.7)', padding: '4px 8px', borderRadius: '8px', textAlign: 'right', border: '1px solid rgba(255,255,255,0.1)', backdropFilter: 'blur(10px)' }}>
-                <div style={{ fontWeight: 'bold', fontSize: '11px', color: '#fff' }}>Emily Chen</div>
-                <div style={{ fontSize: '9px', color: '#00ff88', textTransform: 'uppercase', letterSpacing: '1px', marginTop: '2px' }}>Executive Host</div>
-              </div>
-            </div>
-            {[1, 2].map((g) => (
-              <div key={g} style={{ position: 'relative', background: '#222', flexShrink: 0, pointerEvents: 'auto', width: 'min(20%, 200px)', aspectRatio: '16/9', borderRadius: '12px', border: '2px solid rgba(255,255,255,0.2)', overflow: 'hidden', boxShadow: '0 4px 20px rgba(0,0,0,0.5)' }}>
-                <img src={`https://images.unsplash.com/photo-${1550000000000 + (g * 1000)}?auto=format&fit=crop&w=400&q=80`} style={{ width: '100%', height: '100%', objectFit: 'cover', filter: 'grayscale(0.3)' }} alt="Guest" />
-                <div style={{ position: 'absolute', bottom: 4, right: 4, background: 'rgba(0,0,0,0.7)', padding: '4px 8px', borderRadius: '8px', textAlign: 'right', border: '1px solid rgba(255,255,255,0.1)', backdropFilter: 'blur(10px)' }}>
-                  <div style={{ fontWeight: 'bold', fontSize: '11px', color: '#fff' }}>Guest 0{g}</div>
-                  <div style={{ fontSize: '9px', color: '#00ff88', textTransform: 'uppercase', letterSpacing: '1px', marginTop: '2px' }}>Live Feed</div>
-                </div>
-              </div>
-            ))}
-          </div>
+
         </div>
 
         <div className="tv-chat-mobile" style={{ flexShrink: 0, background: '#050505', display: 'flex', flexDirection: 'column' }}>
