@@ -6,6 +6,7 @@ import WhatsOnNow from './components/WhatsOnNow';
 import SliderSection from './components/SliderSection';
 import AuthModal from './components/AuthModal';
 import ProfileDashboard from './components/ProfileDashboard';
+import DirectorStudio from './components/DirectorStudio';
 import BusinessAdminDashboard from './components/BusinessAdminDashboard';
 import EndUserAuthModal from './components/EndUserAuthModal';
 import MasterAdminDashboard from './components/MasterAdminDashboard';
@@ -244,6 +245,7 @@ function App() {
 
         <Routes>
           <Route path="/master-admin" element={<MasterAdminDashboard />} />
+          <Route path="/director" element={<DirectorStudio />} />
           <Route path="*" element={
             <>
               <Navbar 

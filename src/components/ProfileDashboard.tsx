@@ -977,6 +977,15 @@ const ProfileDashboard: React.FC<{ user: any }> = ({ user }) => {
                       <div style={{ display: 'flex', gap: '12px', marginBottom: '16px' }}>
                          <button onClick={() => { setStreamSource('url'); setIsPlayingLive(false); }} style={{ padding: '10px 20px', background: streamSource === 'url' ? '#0055ff' : 'rgba(255,255,255,0.05)', color: streamSource === 'url' ? '#fff' : '#888', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold' }}>External URL / RTMP</button>
                          <button onClick={() => { setStreamSource('camera'); setIsPlayingLive(false); }} style={{ padding: '10px 20px', background: streamSource === 'camera' ? '#0055ff' : 'rgba(255,255,255,0.05)', color: streamSource === 'camera' ? '#fff' : '#888', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '8px' }}><Camera size={16}/> Direct Webcam</button>
+                         
+                         <div style={{ flex: 1 }} />
+                         <button onClick={() => {
+                            const inviteUrl = `${window.location.origin}/director?stream=${targetProfileId}`;
+                            navigator.clipboard.writeText(inviteUrl);
+                            alert('Director Protocol Activated! The Director Studio URL has been copied to your clipboard. Send this to your producer.');
+                         }} style={{ padding: '10px 20px', background: 'rgba(0, 255, 136, 0.1)', color: '#00ff88', border: '1px solid currentColor', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                            <Monitor size={16} /> Hire Director
+                         </button>
                       </div>
                       
                       <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
