@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Search, User, Menu, Lightbulb, Wallet, Settings, LogOut } from 'lucide-react';
 import { ASSETS } from '../data';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { supabase } from '../supabaseClient';
 
 interface NavbarProps {
@@ -166,7 +166,7 @@ const Navbar: React.FC<NavbarProps> = ({ user, onLoginClick, onAdminClick, wlCon
                   
                   <div style={{ height: '1px', background: 'rgba(255,255,255,0.1)', margin: '4px 0' }} />
 
-                  <div onClick={async () => { await supabase.auth.signOut(); window.location.href = '/'; }} style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '12px 16px', color: '#ff4444', textDecoration: 'none', fontSize: '14px', borderRadius: '8px', cursor: 'pointer', transition: 'background 0.2s' }} onMouseOver={e => e.currentTarget.style.background='rgba(255,68,68,0.1)'} onMouseOut={e => e.currentTarget.style.background='transparent'}>
+                  <div onClick={async () => { await supabase?.auth?.signOut(); window.location.href = '/'; }} style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '12px 16px', color: '#ff4444', textDecoration: 'none', fontSize: '14px', borderRadius: '8px', cursor: 'pointer', transition: 'background 0.2s' }} onMouseOver={e => e.currentTarget.style.background='rgba(255,68,68,0.1)'} onMouseOut={e => e.currentTarget.style.background='transparent'}>
                     <LogOut size={16} /> Disconnect
                   </div>
                 </>
