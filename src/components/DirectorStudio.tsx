@@ -30,9 +30,13 @@ export default function DirectorStudio() {
      const connectToHost = (peerInstance: any) => {
         if (!streamId) return;
         console.log("[WebRTC] Dialing host:", streamId);
-        const ctx = new AudioContext();
-        const dest = ctx.createMediaStreamDestination();
-        const call = peerInstance.call(`vibe-host-${streamId}`, dest.stream);
+        
+        // Use a dummy canvas stream to ensure PeerJS sets SDP offerToReceiveVideo flag
+        const canvas = document.createElement('canvas');
+        canvas.width = 1; canvas.height = 1;
+        const dummyStream = canvas.captureStream();
+
+        const call = peerInstance.call(`vibe-host-${streamId}`, dummyStream);
         
         if (call) {
           call.on('stream', (remoteStream: any) => {

@@ -38,6 +38,7 @@ const ProfileDashboard: React.FC<{ user: any }> = ({ user }) => {
   
   // Live Stream State
   const [isPlayingLive, setIsPlayingLive] = useState(false);
+  const [liveCountdown, setLiveCountdown] = useState<number | null>(null);
   const [liveEmbedUrl, setLiveEmbedUrl] = useState('https://www.youtube.com/embed/jfKfPfyJRdk?autoplay=1&mute=0');
   const [streamSource, setStreamSource] = useState<'url' | 'camera'>('url');
   const [guests, setGuests] = useState<{id: string, name: string, title: string, isLive: boolean}[]>([]);
@@ -167,6 +168,21 @@ const ProfileDashboard: React.FC<{ user: any }> = ({ user }) => {
       supabase.removeChannel(channel);
     };
   }, [targetProfileId, user, location.search]);
+
+  const startLiveStream = () => {
+     setLiveCountdown(3);
+     let ticker = 3;
+     const interval = setInterval(() => {
+        ticker -= 1;
+        if (ticker <= 0) {
+           clearInterval(interval);
+           setLiveCountdown(null);
+           setIsPlayingLive(true);
+        } else {
+           setLiveCountdown(ticker);
+        }
+     }, 1000);
+  };
 
   useEffect(() => {
      let currentStream: MediaStream | null = null;
@@ -1064,8 +1080,10 @@ const ProfileDashboard: React.FC<{ user: any }> = ({ user }) => {
                             <input type="text" value={liveEmbedUrl} onChange={e => setLiveEmbedUrl(e.target.value)} placeholder="Embed URL (e.g. YouTube, Twitch)" style={{ flex: 1, padding: '14px', borderRadius: '10px', background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.1)', color: '#fff', fontSize: '15px', outline: 'none' }}/>
                             {isPlayingLive ? (
                               <button onClick={() => setIsPlayingLive(false)} style={{ padding: '14px 24px', background: 'rgba(229, 9, 20, 0.1)', color: '#e50914', border: '1px solid #e50914', borderRadius: '10px', fontWeight: 'bold', fontSize: '15px', cursor: 'pointer', transition: '0.2s', display: 'flex', alignItems: 'center', gap: '8px' }}>Stop Streaming</button>
+                            ) : liveCountdown !== null ? (
+                              <button disabled style={{ padding: '14px 24px', background: '#e50914', color: '#fff', border: 'none', borderRadius: '10px', fontWeight: 'bold', fontSize: '15px', cursor: 'not-allowed', display: 'flex', alignItems: 'center', gap: '8px' }}>Going Live in {liveCountdown}...</button>
                             ) : (
-                              <button onClick={() => setIsPlayingLive(true)} style={{ padding: '14px 24px', background: '#e50914', color: '#fff', border: 'none', borderRadius: '10px', fontWeight: 'bold', fontSize: '15px', cursor: 'pointer', transition: '0.2s', display: 'flex', alignItems: 'center', gap: '8px' }}><Camera size={18}/> Start Streaming</button>
+                              <button onClick={startLiveStream} style={{ padding: '14px 24px', background: '#e50914', color: '#fff', border: 'none', borderRadius: '10px', fontWeight: 'bold', fontSize: '15px', cursor: 'pointer', transition: '0.2s', display: 'flex', alignItems: 'center', gap: '8px' }}><Camera size={18}/> Start Streaming</button>
                             )}
                           </div>
                         )}
@@ -1075,8 +1093,10 @@ const ProfileDashboard: React.FC<{ user: any }> = ({ user }) => {
                              <p style={{ margin: 0, color: '#aaa', flex: 1, minWidth: '200px' }}>Using your local hardware as the broadcast origin server. Press "Start Streaming" to ignite the feed.</p>
                              {isPlayingLive ? (
                                <button onClick={() => setIsPlayingLive(false)} style={{ padding: '14px 24px', background: 'rgba(229, 9, 20, 0.1)', color: '#e50914', border: '1px solid #e50914', borderRadius: '10px', fontWeight: 'bold', fontSize: '15px', cursor: 'pointer', transition: '0.2s', display: 'flex', alignItems: 'center', gap: '8px' }}>Stop Streaming</button>
+                             ) : liveCountdown !== null ? (
+                               <button disabled style={{ padding: '14px 24px', background: '#e50914', color: '#fff', border: 'none', borderRadius: '10px', fontWeight: 'bold', fontSize: '15px', cursor: 'not-allowed', display: 'flex', alignItems: 'center', gap: '8px' }}>Going Live in {liveCountdown}...</button>
                              ) : (
-                               <button onClick={() => setIsPlayingLive(true)} style={{ padding: '14px 24px', background: '#e50914', color: '#fff', border: 'none', borderRadius: '10px', fontWeight: 'bold', fontSize: '15px', cursor: 'pointer', transition: '0.2s', display: 'flex', alignItems: 'center', gap: '8px' }}><Camera size={18}/> Start Streaming</button>
+                               <button onClick={startLiveStream} style={{ padding: '14px 24px', background: '#e50914', color: '#fff', border: 'none', borderRadius: '10px', fontWeight: 'bold', fontSize: '15px', cursor: 'pointer', transition: '0.2s', display: 'flex', alignItems: 'center', gap: '8px' }}><Camera size={18}/> Start Streaming</button>
                              )}
                           </div>
                         )}
