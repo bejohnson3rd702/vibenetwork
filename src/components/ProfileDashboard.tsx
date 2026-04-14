@@ -39,9 +39,9 @@ const ProfileDashboard: React.FC<{ user: any }> = ({ user }) => {
   const [isPlayingLive, setIsPlayingLive] = useState(false);
   const [liveEmbedUrl, setLiveEmbedUrl] = useState('https://www.youtube.com/embed/jfKfPfyJRdk?autoplay=1&mute=0');
   const [streamSource, setStreamSource] = useState<'url' | 'camera'>('url');
-  const [guests, setGuests] = useState<{name: string, title: string}[]>([]);
+  const [guests, setGuests] = useState<{id: string, name: string, title: string, isLive: boolean}[]>([]);
   const [guestSetup, setGuestSetup] = useState<{show: boolean, name: string, title: string}>({show: false, name: '', title: ''});
-  const [localGuestData, setLocalGuestData] = useState<{name: string, title: string} | null>(null);
+  const [localGuestData, setLocalGuestData] = useState<{id: string, name: string, title: string, isLive: boolean} | null>(null);
   const [showTipModal, setShowTipModal] = useState(false);
   const [tipAmount, setTipAmount] = useState<number | ''>('');
   const [presenterMode, setPresenterMode] = useState(false);
@@ -360,6 +360,7 @@ const ProfileDashboard: React.FC<{ user: any }> = ({ user }) => {
   }
 
   const isGuestMode = new URLSearchParams(location.search).get('guest_invite') === 'true' || localGuestData !== null;
+  const activeGuests = guests.filter(g => g.isLive);
   
   return (
     <div style={{ paddingTop: '80px', minHeight: '100vh', background: '#050505', color: '#fff' }}>
@@ -777,10 +778,26 @@ const ProfileDashboard: React.FC<{ user: any }> = ({ user }) => {
                     <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#fff', animation: 'pulse 1.5s infinite' }}/> LIVE
                   </div>
                   
-                  <div style={{ position: 'absolute', top: 20, right: 20, zIndex: 10 }}>
-                     <button onClick={() => setShowTipModal(true)} style={{ padding: '8px 16px', background: 'linear-gradient(45deg, #00ff88, #00bbff)', color: '#000', border: 'none', borderRadius: '20px', fontWeight: '900', display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', boxShadow: '0 4px 15px rgba(0,255,136,0.3)', textTransform: 'uppercase', fontSize: '13px', letterSpacing: '1px' }}>
-                        💰 Support Stream
-                     </button>
+                  <div style={{ position: 'absolute', top: 20, right: 20, zIndex: 10, display: 'flex', gap: '10px' }}>
+                    {localGuestData ? (
+                       <button onClick={() => {
+                          if (typeof window !== 'undefined') {
+                            const current = JSON.parse(localStorage.getItem('vibe_host_guests_session') || '[]');
+                            const updated = current.filter((g: any) => g.id !== localGuestData.id);
+                            localStorage.setItem('vibe_host_guests_session', JSON.stringify(updated));
+                            window.dispatchEvent(new Event('vibe_guests_updated'));
+                          }
+                          setLocalGuestData(null);
+                          setIsPlayingLive(false);
+                          window.location.href = '/';
+                       }} style={{ padding: '8px 16px', background: 'rgba(229,9,20,0.9)', color: '#fff', border: 'none', borderRadius: '20px', fontWeight: '900', display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', textTransform: 'uppercase', fontSize: '13px', letterSpacing: '1px' }}>
+                          🛑 Leave Stream
+                       </button>
+                    ) : (
+                       <button onClick={() => setShowTipModal(true)} style={{ padding: '8px 16px', background: 'linear-gradient(45deg, #00ff88, #00bbff)', color: '#000', border: 'none', borderRadius: '20px', fontWeight: '900', display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', boxShadow: '0 4px 15px rgba(0,255,136,0.3)', textTransform: 'uppercase', fontSize: '13px', letterSpacing: '1px' }}>
+                          💰 Support Stream
+                       </button>
+                    )}
                   </div>
                   
                   {isPlayingLive ? (
@@ -798,15 +815,15 @@ const ProfileDashboard: React.FC<{ user: any }> = ({ user }) => {
                        )}
                        
                        {/* Host AND Guest PIP/Grid Layer */}
-                       {(streamSource === 'camera' || presenterMode || guests.length > 0) && (
+                       {(streamSource === 'camera' || presenterMode || activeGuests.length > 0) && (
                          <div style={{
                            position: 'absolute', zIndex: 15,
                            ...(streamSource === 'url' ? {
                               bottom: 20, left: 20, right: 20, display: 'flex', gap: '10px', justifyContent: 'flex-start', alignItems: 'flex-end', pointerEvents: 'none'
                            } : {
                              inset: 0, background: '#000', display: 'grid', gap: '2px',
-                             gridTemplateColumns: (guests.length + 1 === 1) ? '1fr' : (guests.length + 1 <= 4) ? '1fr 1fr' : '1fr 1fr 1fr',
-                             gridTemplateRows: (guests.length + 1 <= 2) ? '1fr' : '1fr 1fr'
+                             gridTemplateColumns: (activeGuests.length + 1 === 1) ? '1fr' : (activeGuests.length + 1 <= 4) ? '1fr 1fr' : '1fr 1fr 1fr',
+                             gridTemplateRows: (activeGuests.length + 1 <= 2) ? '1fr' : '1fr 1fr'
                            })
                          }}>
                            {/* Main Host Webcam Slot */}
@@ -825,7 +842,7 @@ const ProfileDashboard: React.FC<{ user: any }> = ({ user }) => {
                            </div>
                            
                            {/* Simulated Guests Webcams Slot */}
-                           {guests.map((g, i) => (
+                           {activeGuests.map((g, i) => (
                              <div key={i} style={{ position: 'relative', background: '#222', flexShrink: 0, pointerEvents: 'auto', ...(streamSource === 'url' ? { width: 'min(20%, 200px)', aspectRatio: '16/9', borderRadius: '12px', border: '2px solid rgba(255,255,255,0.2)', overflow: 'hidden', boxShadow: '0 4px 20px rgba(0,0,0,0.5)' } : { width: '100%', height: '100%' }) }}>
                                <img src={`https://images.unsplash.com/photo-${1550000000000 + (i * 1000)}?auto=format&fit=crop&w=800&q=80`} style={{ width: '100%', height: '100%', objectFit: 'cover', filter: 'grayscale(0.5)' }} alt="Guest Feed" />
                                <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -897,6 +914,7 @@ const ProfileDashboard: React.FC<{ user: any }> = ({ user }) => {
                                <p style={{ margin: '4px 0 0 0', color: '#aaa', fontSize: '12px' }}>Enable your webcam and invite up to 4 guests {streamSource === 'url' ? 'over your broadcast frame' : 'to join the primary grid'}.</p>
                             </div>
                             {isPlayingLive && (
+                              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                               <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
                                 {streamSource === 'url' && (
                                   <button onClick={() => setPresenterMode(!presenterMode)} style={{ padding: '8px 14px', background: presenterMode ? '#ff0055' : 'rgba(255,255,255,0.1)', color: '#fff', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold', fontSize: '13px' }}>
@@ -916,11 +934,41 @@ const ProfileDashboard: React.FC<{ user: any }> = ({ user }) => {
                                     const MOCK_TITLES = ['Creative Director', 'VP of Ops', 'Senior Engineer', 'Chief Marketing Officer'];
                                     const MOCK_NAMES = ['Sarah Jenkins', 'Mike Ross', 'Alex Mercer', 'David Chen'];
                                     const rn = Math.floor(Math.random()*4);
-                                    setGuests([...guests, { name: MOCK_NAMES[rn], title: MOCK_TITLES[rn] }]);
+                                    setGuests([...guests, { id: Math.random().toString(), name: MOCK_NAMES[rn], title: MOCK_TITLES[rn], isLive: false }]);
                                   }
                                 }} style={{ padding: '8px 14px', background: 'rgba(255,255,255,0.1)', color: '#fff', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold', fontSize: '13px' }}>
                                   + [Demo] Add Guest
                                 </button>
+                              </div>
+
+                              {guests.length > 0 && (
+                                <div style={{ marginTop: '16px', background: 'rgba(0,0,0,0.5)', padding: '12px', borderRadius: '8px' }}>
+                                   {guests.map((g, i) => (
+                                     <div key={g.id || i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px', borderBottom: '1px solid rgba(255,255,255,0.05)', paddingBottom: '8px' }}>
+                                       <div>
+                                         <div style={{color: '#fff', fontSize: '13px'}}>{g.name} <span style={{color: '#00ff88', fontSize: '10px'}}>{g.title}</span></div>
+                                       </div>
+                                       <div style={{ display: 'flex', gap: '8px' }}>
+                                         <button onClick={() => {
+                                            const newG = [...guests];
+                                            newG[i].isLive = !newG[i].isLive;
+                                            setGuests(newG);
+                                            localStorage.setItem('vibe_host_guests_session', JSON.stringify(newG));
+                                            window.dispatchEvent(new Event('vibe_guests_updated'));
+                                         }} style={{ padding: '4px 10px', background: g.isLive ? '#ff0055' : '#0055ff', color: '#fff', borderRadius: '6px', fontSize: '11px', border: 'none', cursor: 'pointer' }}>
+                                           {g.isLive ? 'Remove from Stream' : 'Allow in Stream'}
+                                         </button>
+                                         <button onClick={() => {
+                                            const newG = guests.filter((_, idx) => idx !== i);
+                                            setGuests(newG);
+                                            localStorage.setItem('vibe_host_guests_session', JSON.stringify(newG));
+                                            window.dispatchEvent(new Event('vibe_guests_updated'));
+                                         }} style={{ padding: '4px 10px', background: 'transparent', border: '1px solid #888', color: '#888', borderRadius: '6px', fontSize: '11px', cursor: 'pointer' }}>Disconnect</button>
+                                       </div>
+                                     </div>
+                                   ))}
+                                </div>
+                              )}
                               </div>
                             )}
                           </div>
