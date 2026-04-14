@@ -333,6 +333,7 @@ export default function DirectorStudio() {
                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px', fontSize: '12px', color: '#aaa', fontWeight: 'bold' }}>
                     <span style={{ display: 'flex', gap: '6px', alignItems: 'center' }}><Type size={14}/> Lower Thirds</span>
                  </div>
+                 <div style={{ background: '#1a1a1a', padding: '15px', borderRadius: '8px', border: '1px solid #333' }}>
                     <input 
                       type="text" 
                       value={lowerThirds.text} 
