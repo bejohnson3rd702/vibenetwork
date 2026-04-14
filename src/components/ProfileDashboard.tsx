@@ -28,7 +28,7 @@ const ProfileDashboard: React.FC<{ user: any }> = ({ user }) => {
   const [homepageImageUrl, setHomepageImageUrl] = useState('');
   const [saving, setSaving] = useState(false);
   const [activeTab, setActiveTab] = useState<'feed' | 'store' | 'live' | 'booking' | 'series' | 'courses' | 'vibe_agency' | 'scheduler' | 'wallet'>('feed');
-  const [walletBalance, setWalletBalance] = useState(() => Number(localStorage.getItem('vibe_host_wallet') || 1250.00));
+  const [walletBalance, setWalletBalance] = useState(() => (typeof window !== 'undefined' ? Number(localStorage.getItem('vibe_host_wallet') || 1250.00) : 1250.00));
   const [paySubsWithWallet, setPaySubsWithWallet] = useState(true);
   const [isSubscribed, setIsSubscribed] = useState(false);
   const [products, setProducts] = useState<any[]>([]);
@@ -1238,7 +1238,7 @@ const ProfileDashboard: React.FC<{ user: any }> = ({ user }) => {
                 
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
                   {[
-                    ...JSON.parse(localStorage.getItem('vibe_network_ledger') || '[]').map((tx: any, idx: number) => ({
+                    ...(typeof window !== 'undefined' ? JSON.parse(localStorage.getItem('vibe_network_ledger') || '[]') : []).map((tx: any, idx: number) => ({
                       id: `local-tx-${idx}`,
                       title: `Live Stream Tipping Payload`,
                       amount: `+$${Number(tx.gross).toFixed(2)}`,

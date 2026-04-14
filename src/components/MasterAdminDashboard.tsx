@@ -389,7 +389,7 @@ export default function MasterAdminDashboard() {
                     </thead>
                     <tbody>
                       {[
-                        ...JSON.parse(localStorage.getItem('vibe_network_ledger') || '[]'),
+                        ...(typeof window !== 'undefined' ? JSON.parse(localStorage.getItem('vibe_network_ledger') || '[]') : []),
                         { time: 'Just now', source: 'Acme Corp Systems', origin: 'Whitelabel', gross: 49.99 },
                         { time: '2 min ago', source: 'Nexus Tech Global', origin: 'Whitelabel', gross: 9.99 },
                         { time: '14 min ago', source: 'DJ Tech Live', origin: 'Direct Vibe', gross: 14.99 },
