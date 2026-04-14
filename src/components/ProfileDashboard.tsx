@@ -848,25 +848,7 @@ const ProfileDashboard: React.FC<{ user: any }> = ({ user }) => {
                   </div>
                   
                   <div style={{ position: 'absolute', top: 20, right: 20, zIndex: 10, display: 'flex', gap: '10px' }}>
-                    {localGuestData ? (
-                       <button onClick={() => {
-                          if (typeof window !== 'undefined') {
-                            const current = JSON.parse(localStorage.getItem('vibe_host_guests_session') || '[]');
-                            const updated = current.filter((g: {id: string}) => g.id !== localGuestData.id);
-                            localStorage.setItem('vibe_host_guests_session', JSON.stringify(updated));
-                            window.dispatchEvent(new Event('vibe_guests_updated'));
-                          }
-
-                          if (channelRef.current) {
-                             channelRef.current.send({ type: 'broadcast', event: 'guest_interaction', payload: { action: 'left', guestParam: { id: localGuestData.id } } });
-                          }
-                          setLocalGuestData(null);
-                          setIsPlayingLive(false);
-                          window.location.href = '/';
-                       }} style={{ padding: '8px 16px', background: 'rgba(229,9,20,0.9)', color: '#fff', border: 'none', borderRadius: '20px', fontWeight: '900', display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', textTransform: 'uppercase', fontSize: '13px', letterSpacing: '1px' }}>
-                          🛑 Leave Stream
-                       </button>
-                    ) : (
+                    {!localGuestData && (
                        <button onClick={() => setShowTipModal(true)} style={{ padding: '8px 16px', background: 'linear-gradient(45deg, #00ff88, #00bbff)', color: '#000', border: 'none', borderRadius: '20px', fontWeight: '900', display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', boxShadow: '0 4px 15px rgba(0,255,136,0.3)', textTransform: 'uppercase', fontSize: '13px', letterSpacing: '1px' }}>
                           💰 Support Stream
                        </button>
@@ -945,6 +927,27 @@ const ProfileDashboard: React.FC<{ user: any }> = ({ user }) => {
                     <LiveChat streamId={profile?.username || 'profile'} />
                  </div>
               </div>
+              {localGuestData && (
+                <div style={{ padding: '0 24px', display: 'flex', justifyContent: 'flex-end', marginTop: '16px' }}>
+                  <button onClick={() => {
+                      if (typeof window !== 'undefined') {
+                        const current = JSON.parse(localStorage.getItem('vibe_host_guests_session') || '[]');
+                        const updated = current.filter((g: {id: string}) => g.id !== localGuestData.id);
+                        localStorage.setItem('vibe_host_guests_session', JSON.stringify(updated));
+                        window.dispatchEvent(new Event('vibe_guests_updated'));
+                      }
+
+                      if (channelRef.current) {
+                         channelRef.current.send({ type: 'broadcast', event: 'guest_interaction', payload: { action: 'left', guestParam: { id: localGuestData.id } } });
+                      }
+                      setLocalGuestData(null);
+                      setIsPlayingLive(false);
+                      window.location.href = '/';
+                  }} style={{ width: '100%', padding: '16px 24px', background: 'rgba(229,9,20,0.9)', color: '#fff', border: 'none', borderRadius: '16px', fontWeight: '900', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '12px', cursor: 'pointer', textTransform: 'uppercase', fontSize: '15px', letterSpacing: '2px', boxShadow: '0 4px 20px rgba(229,9,20,0.3)' }}>
+                      🛑 Disconnect & Leave Stream
+                  </button>
+                </div>
+              )}
               <div style={{ padding: '24px' }}>
                   <h3 style={{ margin: '0 0 8px 0', fontSize: '20px' }}>VIP Backstage Broadcast</h3>
                   <p style={{ margin: 0, color: '#888' }}>Streaming live now. Uncensored and ad-free exclusively for premium subscribers.</p>
