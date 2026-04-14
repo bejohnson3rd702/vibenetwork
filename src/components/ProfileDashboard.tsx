@@ -38,6 +38,7 @@ const ProfileDashboard: React.FC<{ user: any }> = ({ user }) => {
   
   // Live Stream State
   const [isPlayingLive, setIsPlayingLive] = useState(false);
+  const [isPubliclyLive, setIsPubliclyLive] = useState(false);
   const [liveCountdown, setLiveCountdown] = useState<number | null>(null);
   const [liveEmbedUrl, setLiveEmbedUrl] = useState('https://www.youtube.com/embed/jfKfPfyJRdk?autoplay=1&mute=0');
   const [streamSource, setStreamSource] = useState<'url' | 'camera'>('url');
@@ -96,8 +97,7 @@ const ProfileDashboard: React.FC<{ user: any }> = ({ user }) => {
     });
 
     // Listen for direct structural overrides from Director Studio
-    channel.on('broadcast', { event: 'director_command' }, (payload) => {
-        const { action, guestId, layout, lowerThirds } = payload.payload;
+        const { action, guestId, layout, lowerThirds, status } = payload.payload;
         if (action === 'toggle_guest') {
             setGuests(current => {
                const updated = current.map((g: any) => g.id === guestId ? { ...g, isLive: !g.isLive } : g);
@@ -111,6 +111,9 @@ const ProfileDashboard: React.FC<{ user: any }> = ({ user }) => {
         }
         if (action === 'update_lower_thirds') {
             setDirectorLowerThirds(lowerThirds);
+        }
+        if (action === 'set_live_status') {
+            setIsPubliclyLive(status);
         }
     });
 
@@ -178,6 +181,9 @@ const ProfileDashboard: React.FC<{ user: any }> = ({ user }) => {
            clearInterval(interval);
            setLiveCountdown(null);
            setIsPlayingLive(true);
+           // Initially auto-go live, the Director can override this if they connect.
+           // In a real topology we would block this if director mode was requested.
+           setIsPubliclyLive(true);
         } else {
            setLiveCountdown(ticker);
         }
@@ -929,9 +935,19 @@ const ProfileDashboard: React.FC<{ user: any }> = ({ user }) => {
               <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} style={{ background: '#111', borderRadius: '24px', overflow: 'hidden', border: '1px solid rgba(255,255,255,0.05)' }}>
                 <div style={{ display: 'flex', width: '100%', background: '#000', position: 'relative' }}>
                    <div style={{ flex: 1, position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center', aspectRatio: '16/9' }}>
-                  <div style={{ position: 'absolute', top: 20, left: 20, background: '#ff0055', color: '#fff', padding: '6px 14px', borderRadius: '12px', fontWeight: 'bold', fontSize: '14px', display: 'flex', alignItems: 'center', gap: '8px', zIndex: 10 }}>
-                    <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#fff', animation: 'pulse 1.5s infinite' }}/> LIVE
-                  </div>
+                  {isPlayingLive && (
+                     <>
+                        {isPubliclyLive ? (
+                           <div style={{ position: 'absolute', top: 20, left: 20, background: '#ff0055', color: '#fff', padding: '6px 14px', borderRadius: '12px', fontWeight: 'bold', fontSize: '14px', display: 'flex', alignItems: 'center', gap: '8px', zIndex: 10, textTransform: 'uppercase', boxShadow: '0 4px 15px rgba(255,0,85,0.4)' }}>
+                             <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#fff', animation: 'pulse 1.5s infinite' }}/> LIVE
+                           </div>
+                        ) : (
+                           <div style={{ position: 'absolute', top: 20, left: 20, background: '#0055ff', color: '#fff', padding: '6px 14px', borderRadius: '12px', fontWeight: 'bold', fontSize: '14px', display: 'flex', alignItems: 'center', gap: '8px', zIndex: 10, textTransform: 'uppercase', boxShadow: '0 4px 15px rgba(0,85,255,0.4)' }}>
+                             <Settings size={18} /> STUDIO PREVIEW
+                           </div>
+                        )}
+                     </>
+                   )}
                   
                   <div style={{ position: 'absolute', top: 20, right: 20, zIndex: 10, display: 'flex', gap: '10px' }}>
                     {!localGuestData && (

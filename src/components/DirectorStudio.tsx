@@ -222,7 +222,13 @@ export default function DirectorStudio() {
               {copied ? <Check size={14} color="#00ff88"/> : <Copy size={14} />} {copied ? 'Copied URL' : 'Copy Director URL'}
            </button>
            <div style={{ width: '1px', height: '30px', background: '#333' }} />
-           <button onClick={() => setIsLive(!isLive)} style={{ background: isLive ? '#ff0055' : '#00ff88', color: isLive ? '#fff' : '#000', border: 'none', padding: '8px 20px', borderRadius: '6px', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', transition: '0.2s', boxShadow: isLive ? '0 0 15px rgba(255,0,85,0.4)' : '0 0 15px rgba(0,255,136,0.2)' }}>
+           <button onClick={() => {
+              const nextStatus = !isLive;
+              setIsLive(nextStatus);
+              if (channelRef.current) {
+                 channelRef.current.send({ type: 'broadcast', event: 'director_command', payload: { action: 'set_live_status', status: nextStatus } });
+              }
+           }} style={{ background: isLive ? '#ff0055' : '#00ff88', color: isLive ? '#fff' : '#000', border: 'none', padding: '8px 20px', borderRadius: '6px', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', transition: '0.2s', boxShadow: isLive ? '0 0 15px rgba(255,0,85,0.4)' : '0 0 15px rgba(0,255,136,0.2)' }}>
               {isLive ? <Square size={16} fill="currentColor" /> : <Play size={16} fill="currentColor" />}
               {isLive ? 'END BROADCAST' : 'GO LIVE'}
            </button>
