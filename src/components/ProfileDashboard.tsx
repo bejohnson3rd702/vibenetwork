@@ -1479,7 +1479,7 @@ const ProfileDashboard: React.FC<{ user: any }> = ({ user }) => {
 
               <button onClick={() => {
                 if (guestSetup.name.trim() && guestSetup.title.trim()) {
-                  const payload = { name: guestSetup.name, title: guestSetup.title };
+                  const payload = { id: Math.random().toString(36).substr(2, 9), name: guestSetup.name, title: guestSetup.title, isLive: false };
                   setLocalGuestData(payload);
                   
                   // Publish to local storage ring for the Host to pick up instantly
