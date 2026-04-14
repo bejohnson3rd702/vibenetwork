@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { supabase } from '../supabaseClient';
-import { X, Mail, Lock, ShieldCheck, ArrowRight, Loader } from 'lucide-react';
+import { X, Mail, Lock, ShieldCheck, ArrowRight, Loader, AtSign } from 'lucide-react';
 
 interface EndUserAuthModalProps {
   onClose: () => void;
@@ -13,6 +13,8 @@ export default function EndUserAuthModal({ onClose, wlConfig }: EndUserAuthModal
   const [isLogin, setIsLogin] = useState(true);
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
+  const [username, setUsername] = useState('');
+  const [role, setRole] = useState<'viewer' | 'influencer'>('viewer');
 
   // Use the whitelabel primary color, fallback to a standard B2B blue
   const accentColor = wlConfig?.accent || '#0055ff';
@@ -28,7 +30,17 @@ export default function EndUserAuthModal({ onClose, wlConfig }: EndUserAuthModal
         if (error) throw error;
         onClose();
       } else {
-        const { error } = await supabase!.auth.signUp({ email, password });
+        const { error } = await supabase!.auth.signUp({ 
+          email, 
+          password,
+          options: {
+            data: {
+              username,
+              role,
+              whitelabel_id: wlConfig?.id
+            }
+          }
+        });
         if (error) throw error;
         alert('Check your email to verify your account!');
         onClose();
@@ -108,6 +120,24 @@ export default function EndUserAuthModal({ onClose, wlConfig }: EndUserAuthModal
               </div>
            )}
 
+           {!isLogin && (
+             <div>
+               <div style={{ position: 'relative' }}>
+                 <AtSign size={20} color="#666" style={{ position: 'absolute', left: '16px', top: '50%', transform: 'translateY(-50%)' }} />
+                 <input 
+                   type="text" 
+                   value={username}
+                   onChange={e=>setUsername(e.target.value)}
+                   required
+                   placeholder="Choose a Username" 
+                   style={{ width: '100%', background: '#050505', border: '1px solid rgba(255,255,255,0.1)', color: '#fff', padding: '16px 16px 16px 48px', borderRadius: '12px', fontSize: '16px', outline: 'none', transition: 'border-color 0.2s', boxSizing: 'border-box' }} 
+                   onFocus={e=>e.currentTarget.style.borderColor = accentColor}
+                   onBlur={e=>e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)'}
+                 />
+               </div>
+             </div>
+           )}
+
            <div>
               <label style={{ display: 'block', color: '#888', fontSize: '13px', fontWeight: 'bold', textTransform: 'uppercase', marginBottom: '8px', letterSpacing: '1px' }}>Global Credentials</label>
               <div style={{ position: 'relative' }}>
@@ -140,6 +170,40 @@ export default function EndUserAuthModal({ onClose, wlConfig }: EndUserAuthModal
                  />
               </div>
            </div>
+
+           {!isLogin && (
+             <div style={{ marginTop: '5px' }}>
+               <p style={{ color: '#ccc', fontSize: '14px', marginBottom: '10px' }}>Account Type</p>
+               <div style={{ display: 'flex', gap: '8px' }}>
+                 <button 
+                   type="button" 
+                   onClick={() => setRole('viewer')}
+                   style={{
+                     flex: 1, padding: '10px', borderRadius: '12px', fontWeight: 'bold', fontSize: '13px',
+                     background: role === 'viewer' ? '#fff' : 'rgba(255,255,255,0.05)',
+                     color: role === 'viewer' ? '#000' : '#888',
+                     border: '1px solid', borderColor: role === 'viewer' ? '#fff' : 'rgba(255,255,255,0.1)',
+                     cursor: 'pointer', transition: 'all 0.2s'
+                   }}
+                 >
+                   Viewer
+                 </button>
+                 <button 
+                   type="button" 
+                   onClick={() => setRole('influencer')}
+                   style={{
+                     flex: 1, padding: '10px', borderRadius: '12px', fontWeight: 'bold', fontSize: '13px',
+                     background: role === 'influencer' ? accentColor : 'rgba(255,255,255,0.05)',
+                     color: role === 'influencer' ? '#fff' : '#888',
+                     border: '1px solid', borderColor: role === 'influencer' ? accentColor : 'rgba(255,255,255,0.1)',
+                     cursor: 'pointer', transition: 'all 0.2s'
+                   }}
+                 >
+                   Creator
+                 </button>
+               </div>
+             </div>
+           )}
 
            <button 
              type="submit" 

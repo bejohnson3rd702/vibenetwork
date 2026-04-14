@@ -44,7 +44,7 @@ const Hero: React.FC = () => {
         }}
       />
       
-      <div style={{ width: '100%', maxWidth: '1200px', padding: '0 40px', textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+      <div className="px-mobile-sm" style={{ width: '100%', maxWidth: '1200px', padding: '0 40px', textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
         <motion.div 
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
@@ -68,7 +68,7 @@ const Hero: React.FC = () => {
             Launch your own fully branded, monetized streaming platform in minutes. Advanced generative AI deployments and global content delivery.
           </p>
           
-          <div style={{ display: 'flex', gap: '24px', justifyContent: 'center' }}>
+          <div className="flex-col-mobile gap-mobile-sm" style={{ display: 'flex', gap: '24px', justifyContent: 'center' }}>
             <motion.button 
               onClick={() => document.getElementById('whats-on-now')?.scrollIntoView({ behavior: 'smooth' })}
               whileHover={{ scale: 1.05, backgroundColor: '#f0f0f0' }}

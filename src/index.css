@@ -155,3 +155,58 @@ html[data-theme="light"] .btn-primary {
   color: #fff;
   background: #000;
 }
+
+/* Mobile Responsive Engine */
+@media (max-width: 768px) {
+  .hide-on-mobile {
+    display: none !important;
+  }
+  .px-mobile-sm {
+    padding-left: 20px !important;
+    padding-right: 20px !important;
+  }
+  .py-mobile-sm {
+    padding-top: 20px !important;
+    padding-bottom: 20px !important;
+  }
+  .hero-title-mobile {
+    font-size: 40px !important;
+  }
+  .hero-sub-mobile {
+    font-size: 16px !important;
+  }
+  .flex-col-mobile {
+    flex-direction: column !important;
+    height: auto !important;
+  }
+  .tv-dashboard-mobile {
+    flex-direction: column !important;
+    height: auto !important;
+  }
+  .tv-video-mobile {
+    height: 250px !important;
+    flex: none !important;
+  }
+  .tv-chat-mobile {
+    height: 350px !important;
+    flex: none !important;
+  }
+  .tv-guide-mobile {
+    width: 100% !important;
+    border-left: none !important;
+    border-top: 1px solid rgba(255,255,255,0.05);
+    height: 350px !important;
+  }
+  .slider-item-mobile {
+    max-width: 85vw !important;
+  }
+  .text-xs-mobile {
+    font-size: 10px !important;
+  }
+  .gap-mobile-sm {
+    gap: 10px !important;
+  }
+  .mobile-w-full {
+    width: 100% !important;
+  }
+}

@@ -28,7 +28,7 @@ const ProfileDashboard: React.FC<{ user: any }> = ({ user }) => {
   const [homepageImageUrl, setHomepageImageUrl] = useState('');
   const [saving, setSaving] = useState(false);
   const [activeTab, setActiveTab] = useState<'feed' | 'store' | 'live' | 'booking' | 'series' | 'courses' | 'vibe_agency' | 'scheduler' | 'wallet'>('feed');
-  const [walletBalance, setWalletBalance] = useState(1250.00);
+  const [walletBalance, setWalletBalance] = useState(() => Number(localStorage.getItem('vibe_host_wallet') || 1250.00));
   const [paySubsWithWallet, setPaySubsWithWallet] = useState(true);
   const [isSubscribed, setIsSubscribed] = useState(false);
   const [products, setProducts] = useState<any[]>([]);
@@ -39,18 +39,31 @@ const ProfileDashboard: React.FC<{ user: any }> = ({ user }) => {
   const [isPlayingLive, setIsPlayingLive] = useState(false);
   const [liveEmbedUrl, setLiveEmbedUrl] = useState('https://www.youtube.com/embed/jfKfPfyJRdk?autoplay=1&mute=0');
   const [streamSource, setStreamSource] = useState<'url' | 'camera'>('url');
+  const [guests, setGuests] = useState<{name: string, title: string}[]>([]);
+  const [guestSetup, setGuestSetup] = useState<{show: boolean, name: string, title: string}>({show: false, name: '', title: ''});
+  const [localGuestData, setLocalGuestData] = useState<{name: string, title: string} | null>(null);
+  const [showTipModal, setShowTipModal] = useState(false);
+  const [tipAmount, setTipAmount] = useState<number | ''>('');
+  const [presenterMode, setPresenterMode] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
   
   useEffect(() => {
     const params = new URLSearchParams(location.search);
     const tabParam = params.get('tab');
     if (tabParam === 'wallet') setActiveTab('wallet');
+    
+    // Auto-mount as guest from invite links
+    if (params.get('guest_invite') === 'true') {
+      setActiveTab('live');
+      setStreamSource('camera');
+      setGuestSetup({ show: true, name: '', title: '' }); // Show Green Room Prompt
+    }
   }, [location.search]);
 
   useEffect(() => {
      let currentStream: MediaStream | null = null;
 
-     if (isPlayingLive && streamSource === 'camera') {
+     if (isPlayingLive && (streamSource === 'camera' || presenterMode || guests.length > 0)) {
         navigator.mediaDevices.getUserMedia({ video: true, audio: true })
            .then(stream => {
               currentStream = stream;
@@ -73,7 +86,7 @@ const ProfileDashboard: React.FC<{ user: any }> = ({ user }) => {
            currentStream.getTracks().forEach(track => track.stop());
         }
      };
-  }, [isPlayingLive, streamSource]);
+  }, [isPlayingLive, streamSource, presenterMode, guests.length]);
   
   // Scheduler State & DnD Handlers
   const [scheduledPosts, setScheduledPosts] = useState<any[]>([
@@ -132,7 +145,7 @@ const ProfileDashboard: React.FC<{ user: any }> = ({ user }) => {
 
   useEffect(() => {
     if (!targetProfileId) {
-      navigate('/');
+      navigate({ pathname: '/', search: location.search });
       return;
     }
 
@@ -180,7 +193,7 @@ const ProfileDashboard: React.FC<{ user: any }> = ({ user }) => {
     <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', color: '#fff', background: '#050505' }}>
       <h2 style={{ fontSize: '32px', marginBottom: '10px' }}>Profile Not Found</h2>
       <p style={{ color: '#888', marginBottom: '30px' }}>This channel doesn't exist, or the user hasn't set up their profile yet.</p>
-      <button onClick={() => navigate('/')} style={{ padding: '12px 30px', background: '#ff4d85', color: '#fff', border: 'none', borderRadius: '24px', fontWeight: 'bold', cursor: 'pointer' }}>Return to Home</button>
+      <button onClick={() => navigate({ pathname: '/', search: location.search })} style={{ padding: '12px 30px', background: '#ff4d85', color: '#fff', border: 'none', borderRadius: '24px', fontWeight: 'bold', cursor: 'pointer' }}>Return to Home</button>
     </div>
   );
 
@@ -359,7 +372,7 @@ const ProfileDashboard: React.FC<{ user: any }> = ({ user }) => {
         <div style={{ background: 'rgba(15,15,15,0.8)', padding: '40px', borderRadius: '24px', border: '1px solid rgba(255,255,255,0.05)', position: 'relative' }}>
           
           {isOwnProfile && (
-            <button onClick={() => { supabase!.auth.signOut(); navigate('/'); }} style={{ position: 'absolute', top: 30, right: 30, background: 'none', border: 'none', color: '#888', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <button onClick={async () => { await supabase!.auth.signOut(); window.location.href = '/' + window.location.search; }} style={{ position: 'absolute', top: 30, right: 30, background: 'none', border: 'none', color: '#888', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px' }}>
               <LogOut size={16} /> Logout
             </button>
           )}
@@ -740,26 +753,69 @@ const ProfileDashboard: React.FC<{ user: any }> = ({ user }) => {
                     <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#fff', animation: 'pulse 1.5s infinite' }}/> LIVE
                   </div>
                   
+                  <div style={{ position: 'absolute', top: 20, right: 20, zIndex: 10 }}>
+                     <button onClick={() => setShowTipModal(true)} style={{ padding: '8px 16px', background: 'linear-gradient(45deg, #00ff88, #00bbff)', color: '#000', border: 'none', borderRadius: '20px', fontWeight: '900', display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', boxShadow: '0 4px 15px rgba(0,255,136,0.3)', textTransform: 'uppercase', fontSize: '13px', letterSpacing: '1px' }}>
+                        💰 Support Stream
+                     </button>
+                  </div>
+                  
                   {isPlayingLive ? (
-                     streamSource === 'url' ? (
-                       <iframe 
-                         src={liveEmbedUrl} 
-                         title="Live Stream Broadcast"
-                         frameBorder="0" 
-                         allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
-                         referrerPolicy="strict-origin-when-cross-origin" 
-                         allowFullScreen
-                         style={{ width: '100%', height: '100%', position: 'absolute', inset: 0, zIndex: 5 }}
-                       />
-                     ) : (
-                       <video 
-                         ref={videoRef} 
-                         autoPlay 
-                         playsInline 
-                         muted // Mute locally to prevent feedback loop
-                         style={{ width: '100%', height: '100%', position: 'absolute', inset: 0, zIndex: 5, objectFit: 'cover' }} 
-                       />
-                     )
+                     <>
+                       {streamSource === 'url' && (
+                         <iframe 
+                           src={liveEmbedUrl} 
+                           title="Live Stream Broadcast"
+                           frameBorder="0" 
+                           allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
+                           referrerPolicy="strict-origin-when-cross-origin" 
+                           allowFullScreen
+                           style={{ width: '100%', height: '100%', position: 'absolute', inset: 0, zIndex: 5 }}
+                         />
+                       )}
+                       
+                       {/* Host AND Guest PIP/Grid Layer */}
+                       {(streamSource === 'camera' || presenterMode || guests.length > 0) && (
+                         <div style={{
+                           position: 'absolute', zIndex: 15,
+                           ...(streamSource === 'url' ? {
+                              bottom: 20, left: 20, right: 20, display: 'flex', gap: '10px', justifyContent: 'flex-start', alignItems: 'flex-end', pointerEvents: 'none'
+                           } : {
+                             inset: 0, background: '#000', display: 'grid', gap: '2px',
+                             gridTemplateColumns: (guests.length + 1 === 1) ? '1fr' : (guests.length + 1 <= 4) ? '1fr 1fr' : '1fr 1fr 1fr',
+                             gridTemplateRows: (guests.length + 1 <= 2) ? '1fr' : '1fr 1fr'
+                           })
+                         }}>
+                           {/* Main Host Webcam Slot */}
+                           <div style={{ position: 'relative', background: '#111', flexShrink: 0, pointerEvents: 'auto', ...(streamSource === 'url' ? { width: 'min(20%, 200px)', aspectRatio: '16/9', borderRadius: '12px', border: '2px solid rgba(255,255,255,0.2)', overflow: 'hidden', boxShadow: '0 4px 20px rgba(0,0,0,0.5)' } : { width: '100%', height: '100%' }) }}>
+                             <video 
+                               ref={videoRef} 
+                               autoPlay 
+                               playsInline 
+                               muted 
+                               style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
+                             />
+                             <div style={{ position: 'absolute', bottom: streamSource==='url'?4:10, right: streamSource==='url'?4:10, background: 'rgba(0,0,0,0.7)', padding: streamSource==='url'?'4px 8px':'6px 12px', borderRadius: '8px', textAlign: 'right', border: '1px solid rgba(255,255,255,0.1)', backdropFilter: 'blur(10px)' }}>
+                               <div style={{ fontWeight: 'bold', fontSize: streamSource==='url'?'11px':'14px', color: '#fff' }}>{localGuestData ? localGuestData.name : profile?.username || 'Host'}</div>
+                               <div style={{ fontSize: streamSource==='url'?'9px':'11px', color: '#00ff88', textTransform: 'uppercase', letterSpacing: '1px', marginTop: '2px' }}>{localGuestData ? localGuestData.title : 'Executive Streamer'}</div>
+                             </div>
+                           </div>
+                           
+                           {/* Simulated Guests Webcams Slot */}
+                           {guests.map((g, i) => (
+                             <div key={i} style={{ position: 'relative', background: '#222', flexShrink: 0, pointerEvents: 'auto', ...(streamSource === 'url' ? { width: 'min(20%, 200px)', aspectRatio: '16/9', borderRadius: '12px', border: '2px solid rgba(255,255,255,0.2)', overflow: 'hidden', boxShadow: '0 4px 20px rgba(0,0,0,0.5)' } : { width: '100%', height: '100%' }) }}>
+                               <img src={`https://images.unsplash.com/photo-${1550000000000 + (i * 1000)}?auto=format&fit=crop&w=800&q=80`} style={{ width: '100%', height: '100%', objectFit: 'cover', filter: 'grayscale(0.5)' }} alt="Guest Feed" />
+                               <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                 <span style={{ background: 'rgba(0,0,0,0.5)', padding: '4px 10px', borderRadius: '20px', fontSize: '10px' }}>Guest Feed</span>
+                               </div>
+                               <div style={{ position: 'absolute', bottom: streamSource==='url'?4:10, right: streamSource==='url'?4:10, background: 'rgba(0,0,0,0.7)', padding: streamSource==='url'?'4px 8px':'6px 12px', borderRadius: '8px', textAlign: 'right', border: '1px solid rgba(255,255,255,0.1)', backdropFilter: 'blur(10px)' }}>
+                                 <div style={{ fontWeight: 'bold', fontSize: streamSource==='url'?'11px':'14px', color: '#fff' }}>{g.name}</div>
+                                 <div style={{ fontSize: streamSource==='url'?'9px':'11px', color: '#00ff88', textTransform: 'uppercase', letterSpacing: '1px', marginTop: '2px' }}>{g.title}</div>
+                               </div>
+                             </div>
+                           ))}
+                         </div>
+                       )}
+                     </>
                   ) : (
                     <>
                       <img src={homepageImageUrl || "https://vibenetwork.tv/wp-content/uploads/2026/02/silhouette-dj-playing-music_1230721-3514.webp"} alt="Live Stream Thumbnail" style={{ position: 'absolute', width: '100%', height: '100%', objectFit: 'cover', opacity: 0.5, filter: 'blur(2px)' }} />
@@ -787,21 +843,64 @@ const ProfileDashboard: React.FC<{ user: any }> = ({ user }) => {
                          <button onClick={() => { setStreamSource('camera'); setIsPlayingLive(false); }} style={{ padding: '10px 20px', background: streamSource === 'camera' ? '#0055ff' : 'rgba(255,255,255,0.05)', color: streamSource === 'camera' ? '#fff' : '#888', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '8px' }}><Camera size={16}/> Direct Webcam</button>
                       </div>
                       
-                      {streamSource === 'url' ? (
-                        <div style={{ display: 'flex', gap: '12px' }}>
-                          <input type="text" value={liveEmbedUrl} onChange={e => setLiveEmbedUrl(e.target.value)} placeholder="Embed URL (e.g. YouTube, Twitch)" style={{ flex: 1, padding: '14px', borderRadius: '10px', background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.1)', color: '#fff', fontSize: '15px', outline: 'none' }}/>
-                          <button onClick={() => { setIsPlayingLive(false); setTimeout(() => setIsPlayingLive(true), 300); }} style={{ padding: '14px 24px', background: '#fff', color: '#000', border: 'none', borderRadius: '10px', fontWeight: 'bold', fontSize: '15px', cursor: 'pointer', transition: '0.2s' }}>Update Stream</button>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                        {streamSource === 'url' && (
+                          <div style={{ display: 'flex', gap: '12px' }}>
+                            <input type="text" value={liveEmbedUrl} onChange={e => setLiveEmbedUrl(e.target.value)} placeholder="Embed URL (e.g. YouTube, Twitch)" style={{ flex: 1, padding: '14px', borderRadius: '10px', background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.1)', color: '#fff', fontSize: '15px', outline: 'none' }}/>
+                            {isPlayingLive ? (
+                              <button onClick={() => setIsPlayingLive(false)} style={{ padding: '14px 24px', background: 'rgba(229, 9, 20, 0.1)', color: '#e50914', border: '1px solid #e50914', borderRadius: '10px', fontWeight: 'bold', fontSize: '15px', cursor: 'pointer', transition: '0.2s', display: 'flex', alignItems: 'center', gap: '8px' }}>Stop Streaming</button>
+                            ) : (
+                              <button onClick={() => setIsPlayingLive(true)} style={{ padding: '14px 24px', background: '#e50914', color: '#fff', border: 'none', borderRadius: '10px', fontWeight: 'bold', fontSize: '15px', cursor: 'pointer', transition: '0.2s', display: 'flex', alignItems: 'center', gap: '8px' }}><Camera size={18}/> Start Streaming</button>
+                            )}
+                          </div>
+                        )}
+                        
+                        {streamSource === 'camera' && (
+                          <div style={{ display: 'flex', gap: '12px', alignItems: 'center', flexWrap: 'wrap' }}>
+                             <p style={{ margin: 0, color: '#aaa', flex: 1, minWidth: '200px' }}>Using your local hardware as the broadcast origin server. Press "Start Streaming" to ignite the feed.</p>
+                             {isPlayingLive ? (
+                               <button onClick={() => setIsPlayingLive(false)} style={{ padding: '14px 24px', background: 'rgba(229, 9, 20, 0.1)', color: '#e50914', border: '1px solid #e50914', borderRadius: '10px', fontWeight: 'bold', fontSize: '15px', cursor: 'pointer', transition: '0.2s', display: 'flex', alignItems: 'center', gap: '8px' }}>Stop Streaming</button>
+                             ) : (
+                               <button onClick={() => setIsPlayingLive(true)} style={{ padding: '14px 24px', background: '#e50914', color: '#fff', border: 'none', borderRadius: '10px', fontWeight: 'bold', fontSize: '15px', cursor: 'pointer', transition: '0.2s', display: 'flex', alignItems: 'center', gap: '8px' }}><Camera size={18}/> Start Streaming</button>
+                             )}
+                          </div>
+                        )}
+
+                        <div style={{ background: 'rgba(0,0,0,0.3)', padding: '16px', borderRadius: '12px', border: '1px dashed rgba(255,255,255,0.1)' }}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px' }}>
+                            <div>
+                               <p style={{ margin: 0, color: '#fff', fontWeight: 'bold', fontSize: '14px' }}>WebRTC Overlays & Guests</p>
+                               <p style={{ margin: '4px 0 0 0', color: '#aaa', fontSize: '12px' }}>Enable your webcam and invite up to 4 guests {streamSource === 'url' ? 'over your broadcast frame' : 'to join the primary grid'}.</p>
+                            </div>
+                            {isPlayingLive && (
+                              <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                                {streamSource === 'url' && (
+                                  <button onClick={() => setPresenterMode(!presenterMode)} style={{ padding: '8px 14px', background: presenterMode ? '#ff0055' : 'rgba(255,255,255,0.1)', color: '#fff', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold', fontSize: '13px' }}>
+                                    {presenterMode ? 'Stop Presenting' : 'Show My Webcam'}
+                                  </button>
+                                )}
+                                <button onClick={() => {
+                                  navigator.clipboard.writeText(window.location.href + (window.location.href.includes('?') ? '&' : '?') + 'guest_invite=true');
+                                  alert('Guest Invite Link copied to clipboard! Share this URL to invite up to 4 guests into your streaming grid.');
+                                }} style={{ padding: '8px 14px', background: '#0055ff', color: '#fff', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold', fontSize: '13px' }}>
+                                  🔗 Copy Guest Link
+                                </button>
+                                <button onClick={() => {
+                                  if (guests.length < 4) {
+                                    const MOCK_TITLES = ['Creative Director', 'VP of Ops', 'Senior Engineer', 'Chief Marketing Officer'];
+                                    const MOCK_NAMES = ['Sarah Jenkins', 'Mike Ross', 'Alex Mercer', 'David Chen'];
+                                    const rn = Math.floor(Math.random()*4);
+                                    setGuests([...guests, { name: MOCK_NAMES[rn], title: MOCK_TITLES[rn] }]);
+                                  }
+                                }} style={{ padding: '8px 14px', background: 'rgba(255,255,255,0.1)', color: '#fff', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold', fontSize: '13px' }}>
+                                  + [Demo] Add Guest
+                                </button>
+                              </div>
+                            )}
+                          </div>
                         </div>
-                      ) : (
-                        <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
-                          <p style={{ margin: 0, color: '#aaa', flex: 1 }}>Using your local hardware as the broadcast origin server. Press "Start Streaming" to ignite the feed.</p>
-                          {isPlayingLive ? (
-                             <button onClick={() => setIsPlayingLive(false)} style={{ padding: '14px 24px', background: 'rgba(229, 9, 20, 0.1)', color: '#e50914', border: '1px solid #e50914', borderRadius: '10px', fontWeight: 'bold', fontSize: '15px', cursor: 'pointer', transition: '0.2s', display: 'flex', alignItems: 'center', gap: '8px' }}>Stop Streaming</button>
-                          ) : (
-                             <button onClick={() => setIsPlayingLive(true)} style={{ padding: '14px 24px', background: '#e50914', color: '#fff', border: 'none', borderRadius: '10px', fontWeight: 'bold', fontSize: '15px', cursor: 'pointer', transition: '0.2s', display: 'flex', alignItems: 'center', gap: '8px' }}><Camera size={18}/> Start Streaming</button>
-                          )}
-                        </div>
-                      )}
+
+                      </div>
                       
                       <p style={{ margin: '15px 0 0 0', color: '#666', fontSize: '12px' }}>This feed dictates what your active subscribers consume during live events in real-time.</p>
                     </div>
@@ -1139,6 +1238,13 @@ const ProfileDashboard: React.FC<{ user: any }> = ({ user }) => {
                 
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
                   {[
+                    ...JSON.parse(localStorage.getItem('vibe_network_ledger') || '[]').map((tx: any, idx: number) => ({
+                      id: `local-tx-${idx}`,
+                      title: `Live Stream Tipping Payload`,
+                      amount: `+$${Number(tx.gross).toFixed(2)}`,
+                      type: 'Dynamic Tip',
+                      color: '#FFD700'
+                    })),
                     { id: 1, title: 'Subscriber Payment (John Doe)', amount: '+$4.99', type: 'Subscription', color: '#00ff88' },
                     { id: 2, title: 'Store Sale (White-Glove Onboarding)', amount: '+$499.00', type: 'Sale', color: '#0055ff' },
                     { id: 3, title: 'Remote Broadcast Tip', amount: '+$50.00', type: 'Tip', color: '#FFD700' },
@@ -1235,6 +1341,83 @@ const ProfileDashboard: React.FC<{ user: any }> = ({ user }) => {
       <style>{`
         .camera-overlay:hover { opacity: 1 !important; }
       `}</style>
+      
+      {/* TIP MODAL */}
+      <AnimatePresence>
+        {showTipModal && (
+          <div style={{ position: 'fixed', inset: 0, zIndex: 99999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }}>
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.8)', backdropFilter: 'blur(5px)' }} onClick={() => setShowTipModal(false)} />
+            <motion.div initial={{ scale: 0.9, opacity: 0, y: 20 }} animate={{ scale: 1, opacity: 1, y: 0 }} exit={{ scale: 0.9, opacity: 0, y: 20 }} style={{ position: 'relative', background: '#111', border: '1px solid rgba(255,255,255,0.1)', padding: '30px', borderRadius: '24px', width: '100%', maxWidth: '400px', display: 'flex', flexDirection: 'column', gap: '20px', boxShadow: '0 20px 40px rgba(0,0,0,0.5)' }}>
+              <h2 style={{ margin: 0, fontSize: '24px', display: 'flex', alignItems: 'center', gap: '8px' }}>💰 Send a Tip</h2>
+              <p style={{ margin: 0, color: '#aaa', fontSize: '14px' }}>Support the live stream. Tokens are transferred via your internal active wallet balance.</p>
+              
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+                {[5, 10, 20, 50].map(amt => (
+                  <button key={amt} onClick={() => setTipAmount(amt)} style={{ padding: '12px', background: tipAmount === amt ? '#00ff88' : 'rgba(255,255,255,0.05)', color: tipAmount === amt ? '#000' : '#fff', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px', cursor: 'pointer', fontWeight: 'bold', fontSize: '16px' }}>
+                    ${amt}
+                  </button>
+                ))}
+              </div>
+              <input type="number" placeholder="Custom Amount" value={tipAmount} onChange={e => setTipAmount(Number(e.target.value))} style={{ width: '100%', padding: '14px', background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.1)', color: '#fff', borderRadius: '12px', fontSize: '16px', outline: 'none' }} />
+              
+              <button onClick={() => {
+                const stored = JSON.parse(localStorage.getItem('vibe_network_ledger') || '[]');
+                stored.unshift({ time: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}), source: 'Host Streamer Dashboard', origin: 'Direct Vibe', gross: Number(tipAmount) });
+                localStorage.setItem('vibe_network_ledger', JSON.stringify(stored));
+                
+                const newBalance = walletBalance + Number(tipAmount);
+                setWalletBalance(newBalance);
+                localStorage.setItem('vibe_host_wallet', String(newBalance));
+
+                alert(`Successfully tipped $${tipAmount}! View progress in Wallet.`);
+                setShowTipModal(false);
+                setTipAmount('');
+              }} style={{ padding: '16px', background: 'linear-gradient(45deg, #00ff88, #00bbff)', color: '#000', border: 'none', borderRadius: '12px', fontWeight: '900', fontSize: '16px', cursor: 'pointer' }} disabled={!tipAmount}>
+                Confirm Tip &rarr;
+              </button>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* GUEST GREEN ROOM MODAL */}
+      <AnimatePresence>
+        {guestSetup.show && (
+          <div style={{ position: 'fixed', inset: 0, zIndex: 99999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }}>
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.95)', backdropFilter: 'blur(20px)' }} />
+            <motion.div initial={{ scale: 0.9, opacity: 0, y: 20 }} animate={{ scale: 1, opacity: 1, y: 0 }} exit={{ scale: 0.9, opacity: 0, y: 20 }} style={{ position: 'relative', background: '#0a0a0a', border: '1px solid rgba(255,255,255,0.1)', padding: '40px', borderRadius: '30px', width: '100%', maxWidth: '440px', display: 'flex', flexDirection: 'column', gap: '24px', boxShadow: '0 20px 100px rgba(0,0,255,0.1)' }}>
+              <div style={{ textAlign: 'center' }}>
+                <div style={{ width: 60, height: 60, borderRadius: '50%', background: 'rgba(0,85,255,0.2)', color: '#0055ff', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px' }}><Camera size={30} /></div>
+                <h2 style={{ margin: '0 0 8px 0', fontSize: '24px' }}>Join the Stream</h2>
+                <p style={{ margin: 0, color: '#aaa', fontSize: '14px', lineHeight: 1.5 }}>You've been invited to join the broadcast. Please enter your display info so the audience knows who you are.</p>
+              </div>
+              
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                <div>
+                  <label style={{ display: 'block', marginBottom: '8px', color: '#fff', fontSize: '14px', fontWeight: 'bold' }}>Your Full Name</label>
+                  <input type="text" placeholder="e.g. Jane Doe" value={guestSetup.name} onChange={e => setGuestSetup({...guestSetup, name: e.target.value})} style={{ width: '100%', padding: '14px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: '#fff', borderRadius: '12px', fontSize: '15px', outline: 'none' }} />
+                </div>
+                <div>
+                  <label style={{ display: 'block', marginBottom: '8px', color: '#fff', fontSize: '14px', fontWeight: 'bold' }}>Professional Title</label>
+                  <input type="text" placeholder="e.g. Chief Marketing Officer" value={guestSetup.title} onChange={e => setGuestSetup({...guestSetup, title: e.target.value})} style={{ width: '100%', padding: '14px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: '#fff', borderRadius: '12px', fontSize: '15px', outline: 'none' }} />
+                </div>
+              </div>
+
+              <button onClick={() => {
+                if (guestSetup.name.trim() && guestSetup.title.trim()) {
+                  setLocalGuestData({ name: guestSetup.name, title: guestSetup.title });
+                  setIsPlayingLive(true); // Ignite local stream 
+                  setGuestSetup({ show: false, name: '', title: '' });
+                } else {
+                  alert('Please fill out both your Name and Title to join.');
+                }
+              }} style={{ padding: '16px', background: '#0055ff', color: '#fff', border: 'none', borderRadius: '12px', fontWeight: '900', fontSize: '16px', cursor: 'pointer', transition: '0.2s', marginTop: '10px' }} onMouseOver={e=>e.currentTarget.style.transform='scale(1.02)'} onMouseOut={e=>e.currentTarget.style.transform='scale(1)'}>
+                Connect Audio & Video &rarr;
+              </button>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };

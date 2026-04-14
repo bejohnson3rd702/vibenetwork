@@ -46,7 +46,7 @@ const Navbar: React.FC<NavbarProps> = ({ user, onLoginClick, onAdminClick, wlCon
   }, []);
 
   return (
-    <nav style={{
+    <nav className="px-mobile-sm gap-mobile-sm" style={{
       position: 'fixed',
       top: 0,
       left: 0,
@@ -60,8 +60,8 @@ const Navbar: React.FC<NavbarProps> = ({ user, onLoginClick, onAdminClick, wlCon
       borderBottom: scrolled ? '1px solid rgba(255,255,255,0.05)' : '1px solid transparent',
       transition: 'all 0.4s ease'
     }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: '60px' }}>
-        <Link to="/" style={{ textDecoration: 'none' }}>
+      <div className="gap-mobile-sm" style={{ display: 'flex', alignItems: 'center', gap: '60px' }}>
+        <Link to={`/${window.location.search}`} style={{ textDecoration: 'none' }}>
           {(wlConfig?.logoImage || appLogo) ? (
             <img src={wlConfig?.logoImage || appLogo} alt={wlConfig?.name || appName} style={{ height: '36px', objectFit: 'contain', cursor: 'pointer', borderRadius: '4px' }} />
           ) : (wlConfig?.name || appName) ? (
@@ -75,7 +75,7 @@ const Navbar: React.FC<NavbarProps> = ({ user, onLoginClick, onAdminClick, wlCon
           )}
         </Link>
         
-        <ul style={{ 
+        <ul className="hide-on-mobile" style={{ 
           display: 'flex', 
           listStyle: 'none', 
           gap: '32px',
@@ -116,7 +116,7 @@ const Navbar: React.FC<NavbarProps> = ({ user, onLoginClick, onAdminClick, wlCon
           />
           <Search size={20} color={appAccent || "white"} style={{ cursor: 'pointer' }} />
         </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', borderLeft: '1px solid rgba(255,255,255,0.2)', paddingLeft: '24px' }}>
+        <div className="hide-on-mobile" style={{ display: 'flex', alignItems: 'center', gap: '8px', borderLeft: '1px solid rgba(255,255,255,0.2)', paddingLeft: '24px' }}>
           {user ? (
             <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
               {(user?.email?.includes('admin') || user?.user_metadata?.role === 'admin') && onAdminClick && (
@@ -129,7 +129,7 @@ const Navbar: React.FC<NavbarProps> = ({ user, onLoginClick, onAdminClick, wlCon
                   </span>
                 </div>
               )}
-              <Link to="/profile" style={{ display: 'flex', alignItems: 'center', gap: '12px', cursor: 'pointer', textDecoration: 'none' }}>
+              <Link to={`/profile${window.location.search}`} style={{ display: 'flex', alignItems: 'center', gap: '12px', cursor: 'pointer', textDecoration: 'none' }}>
                 <div style={{ width: '30px', height: '30px', borderRadius: '50%', background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                   <span style={{ color: '#000', fontWeight: 'bold' }}>{user.email?.[0].toUpperCase()}</span>
                 </div>
@@ -156,17 +156,17 @@ const Navbar: React.FC<NavbarProps> = ({ user, onLoginClick, onAdminClick, wlCon
               
               {user ? (
                 <>
-                  <Link to="/profile?tab=wallet" onClick={() => setIsMenuOpen(false)} style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '12px 16px', color: '#fff', textDecoration: 'none', fontSize: '14px', borderRadius: '8px', cursor: 'pointer', transition: 'background 0.2s' }} onMouseOver={e => e.currentTarget.style.background='rgba(255,255,255,0.1)'} onMouseOut={e => e.currentTarget.style.background='transparent'}>
+                  <Link to={`/profile${window.location.search}${window.location.search ? '&' : '?'}tab=wallet`} onClick={() => setIsMenuOpen(false)} style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '12px 16px', color: '#fff', textDecoration: 'none', fontSize: '14px', borderRadius: '8px', cursor: 'pointer', transition: 'background 0.2s' }} onMouseOver={e => e.currentTarget.style.background='rgba(255,255,255,0.1)'} onMouseOut={e => e.currentTarget.style.background='transparent'}>
                     <Wallet size={16} /> Digital Wallet
                   </Link>
 
-                  <Link to="/profile" onClick={() => setIsMenuOpen(false)} style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '12px 16px', color: '#fff', textDecoration: 'none', fontSize: '14px', borderRadius: '8px', cursor: 'pointer', transition: 'background 0.2s' }} onMouseOver={e => e.currentTarget.style.background='rgba(255,255,255,0.1)'} onMouseOut={e => e.currentTarget.style.background='transparent'}>
+                  <Link to={`/profile${window.location.search}`} onClick={() => setIsMenuOpen(false)} style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '12px 16px', color: '#fff', textDecoration: 'none', fontSize: '14px', borderRadius: '8px', cursor: 'pointer', transition: 'background 0.2s' }} onMouseOver={e => e.currentTarget.style.background='rgba(255,255,255,0.1)'} onMouseOut={e => e.currentTarget.style.background='transparent'}>
                     <Settings size={16} /> Account Settings
                   </Link>
                   
                   <div style={{ height: '1px', background: 'rgba(255,255,255,0.1)', margin: '4px 0' }} />
 
-                  <div onClick={async () => { await supabase?.auth?.signOut(); window.location.href = '/'; }} style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '12px 16px', color: '#ff4444', textDecoration: 'none', fontSize: '14px', borderRadius: '8px', cursor: 'pointer', transition: 'background 0.2s' }} onMouseOver={e => e.currentTarget.style.background='rgba(255,68,68,0.1)'} onMouseOut={e => e.currentTarget.style.background='transparent'}>
+                  <div onClick={async () => { await supabase?.auth?.signOut(); window.location.reload(); }} style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '12px 16px', color: '#ff4444', textDecoration: 'none', fontSize: '14px', borderRadius: '8px', cursor: 'pointer', transition: 'background 0.2s' }} onMouseOver={e => e.currentTarget.style.background='rgba(255,68,68,0.1)'} onMouseOut={e => e.currentTarget.style.background='transparent'}>
                     <LogOut size={16} /> Disconnect
                   </div>
                 </>

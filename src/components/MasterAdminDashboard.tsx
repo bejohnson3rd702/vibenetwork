@@ -389,16 +389,17 @@ export default function MasterAdminDashboard() {
                     </thead>
                     <tbody>
                       {[
+                        ...JSON.parse(localStorage.getItem('vibe_network_ledger') || '[]'),
                         { time: 'Just now', source: 'Acme Corp Systems', origin: 'Whitelabel', gross: 49.99 },
                         { time: '2 min ago', source: 'Nexus Tech Global', origin: 'Whitelabel', gross: 9.99 },
                         { time: '14 min ago', source: 'DJ Tech Live', origin: 'Direct Vibe', gross: 14.99 },
                         { time: '1 hr ago', source: 'Vertex Media', origin: 'Whitelabel', gross: 199.99 },
                         { time: '2 hrs ago', source: 'SaaS Innovators', origin: 'Direct Vibe', gross: 29.99 },
                       ].filter(tx => ledgerFilter === 'ALL' || tx.origin === ledgerFilter).map((tx, i, arr) => {
-                         const creatorCut = (tx.gross * 0.70).toFixed(2);
+                         const creatorCut = (Number(tx.gross) * 0.70).toFixed(2);
                          const isDirect = tx.origin === 'Direct Vibe';
-                         const vibeCut = isDirect ? (tx.gross * 0.30).toFixed(2) : (tx.gross * 0.15).toFixed(2);
-                         const wlCut = isDirect ? 'N/A' : '$' + (tx.gross * 0.15).toFixed(2);
+                         const vibeCut = isDirect ? (Number(tx.gross) * 0.30).toFixed(2) : (Number(tx.gross) * 0.15).toFixed(2);
+                         const wlCut = isDirect ? 'N/A' : '$' + (Number(tx.gross) * 0.15).toFixed(2);
                          
                          return (
                            <tr key={i} style={{ borderBottom: i !== arr.length - 1 ? '1px solid rgba(255,255,255,0.05)' : 'none' }}>
@@ -407,7 +408,7 @@ export default function MasterAdminDashboard() {
                              <td style={{ padding: '16px 12px' }}>
                                <span style={{ padding: '4px 8px', borderRadius: '6px', fontSize: '11px', fontWeight: 'bold', background: isDirect ? 'rgba(255,215,0,0.1)' : 'rgba(0,85,255,0.1)', color: isDirect ? '#FFD700' : '#0055ff' }}>{tx.origin}</span>
                              </td>
-                             <td style={{ padding: '16px 12px', fontWeight: 'bold' }}>${tx.gross}</td>
+                             <td style={{ padding: '16px 12px', fontWeight: 'bold' }}>${Number(tx.gross).toFixed(2)}</td>
                              <td style={{ padding: '16px 12px', color: '#888' }}>{wlCut}</td>
                              <td style={{ padding: '16px 12px', color: '#FFD700', fontWeight: 'bold' }}>+${vibeCut}</td>
                              <td style={{ padding: '16px 12px', color: '#00ff88', fontWeight: 'bold' }}>${creatorCut}</td>

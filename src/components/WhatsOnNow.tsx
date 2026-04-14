@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Play } from 'lucide-react';
 import LiveChat from './LiveChat';
 
@@ -28,7 +28,7 @@ const ScheduleRow: React.FC<{ item: any, isActive: boolean, onClick: () => void 
       }}
     >
       <div style={{ width: '60px', height: '60px', borderRadius: '8px', overflow: 'hidden', flexShrink: 0, position: 'relative' }}>
-        <img src={item.image} alt={item.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+        <img src={item.image} alt={item.title} loading="lazy" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
         {isActive && (
           <div style={{ position: 'absolute', inset: 0, background: 'rgba(229,9,20,0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <Play fill="white" size={20} />
@@ -67,19 +67,19 @@ const FALLBACK_10_YOUTUBE = [
 const WhatsOnNow: React.FC = () => {
   const [activeIndex, setActiveIndex] = useState(0);
   const [scheduleItems, setScheduleItems] = useState<any[]>(FALLBACK_10_YOUTUBE);
+  const [showTipModal, setShowTipModal] = useState(false);
+  const [tipAmount, setTipAmount] = useState<number | ''>('');
 
   React.useEffect(() => {
     async function loadSchedule() {
       const data = await getLiveSchedule();
       if (data && data.length > 0) {
-        // Filter and remap the database payload dynamically
         const genuineInjections = data.filter((v: any) => 
           v.video_url && 
           !v.video_url.includes('bbb.mp4') && 
           !v.video_url.includes('w3schools') &&
           !v.video_url.includes('.mp4')
         ).map((v: any) => {
-          // If the DB has the old Unsplash image, hot-swap it for Pollinations to bypass CORS blocks!
           if (v.image && v.image.includes('unsplash.com')) {
              return { ...v, image: `https://image.pollinations.ai/prompt/corporate%20boardroom%20presentation%20cinematic?width=800&height=600&nologo=true` };
           }
@@ -99,9 +99,8 @@ const WhatsOnNow: React.FC = () => {
   if (scheduleItems.length === 0) return null;
 
   return (
-    <section style={{ maxWidth: '1400px', margin: '80px auto 40px', padding: '0 40px' }}>
+    <section className="px-mobile-sm py-mobile-sm" style={{ maxWidth: '1400px', margin: '80px auto 40px', padding: '0 40px' }}>
       
-      {/* Sleek Subdued Header */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '30px' }}>
         <h2 style={{ 
           fontSize: '24px', 
@@ -122,12 +121,12 @@ const WhatsOnNow: React.FC = () => {
         </h2>
       </div>
 
-      {/* Unified TV Dashboard Console */}
       <motion.div 
         initial={{ opacity: 0, y: 30 }}
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true }}
         transition={{ duration: 0.8 }}
+        className="tv-dashboard-mobile"
         style={{ 
           display: 'flex', 
           width: '100%', 
@@ -139,12 +138,10 @@ const WhatsOnNow: React.FC = () => {
           boxShadow: '0 40px 100px rgba(0,0,0,0.8)'
         }}
       >
-        <div style={{ flex: '1 1 auto', position: 'relative', background: '#000', pointerEvents: 'auto' }}>
+        <div className="tv-video-mobile" style={{ flex: '1 1 auto', position: 'relative', background: '#000', pointerEvents: 'auto' }}>
           {(() => {
              const activeItem = scheduleItems[activeIndex];
              const activeUrl = activeItem?.video_url || 'https://www.youtube.com/watch?v=u4ZoJKF_VuA';
-             
-             // Extract YouTube ID reliably
              const youtubeMatch = activeUrl.match(/^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/);
              const youtubeId = (youtubeMatch && youtubeMatch[2].length === 11) ? youtubeMatch[2] : null;
 
@@ -164,7 +161,6 @@ const WhatsOnNow: React.FC = () => {
                 );
              }
 
-             // If not YouTube, assume native MP4. Use HTTPS universally to avoid Mixed Content blocks on Vercel
              return (
                <video 
                  key={activeUrl}
@@ -179,7 +175,7 @@ const WhatsOnNow: React.FC = () => {
                />
              );
           })()}
-          {/* Subtle Live Badge Overlay */}
+          
           <div style={{ 
               position: 'absolute', 
               top: '30px', 
@@ -194,20 +190,44 @@ const WhatsOnNow: React.FC = () => {
               display: 'flex',
               alignItems: 'center',
               gap: '8px',
-              border: '1px solid rgba(255,255,255,0.1)'
+              border: '1px solid rgba(255,255,255,0.1)',
+              zIndex: 20
           }}>
             <span style={{ width: '8px', height: '8px', background: 'var(--accent-primary)', borderRadius: '50%' }}></span>
             ON AIR
           </div>
+
+          <div style={{ position: 'absolute', top: 30, right: 30, zIndex: 20 }}>
+            <button onClick={() => setShowTipModal(true)} style={{ padding: '8px 16px', background: 'linear-gradient(45deg, #00ff88, #00bbff)', color: '#000', border: 'none', borderRadius: '20px', fontWeight: '900', display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', boxShadow: '0 4px 15px rgba(0,255,136,0.3)', textTransform: 'uppercase', fontSize: '13px', letterSpacing: '1px' }}>
+               💰 Support Stream
+            </button>
+          </div>
+          
+          <div style={{ position: 'absolute', bottom: 30, left: 30, right: 30, display: 'flex', gap: '10px', justifyContent: 'flex-start', alignItems: 'flex-end', pointerEvents: 'none', zIndex: 20 }}>
+            <div style={{ position: 'relative', background: '#111', flexShrink: 0, pointerEvents: 'auto', width: 'min(20%, 200px)', aspectRatio: '16/9', borderRadius: '12px', border: '2px solid rgba(255,255,255,0.2)', overflow: 'hidden', boxShadow: '0 4px 20px rgba(0,0,0,0.5)' }}>
+              <img src={`https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=400&q=80`} style={{ width: '100%', height: '100%', objectFit: 'cover' }} alt="Host" />
+              <div style={{ position: 'absolute', bottom: 4, right: 4, background: 'rgba(0,0,0,0.7)', padding: '4px 8px', borderRadius: '8px', textAlign: 'right', border: '1px solid rgba(255,255,255,0.1)', backdropFilter: 'blur(10px)' }}>
+                <div style={{ fontWeight: 'bold', fontSize: '11px', color: '#fff' }}>Emily Chen</div>
+                <div style={{ fontSize: '9px', color: '#00ff88', textTransform: 'uppercase', letterSpacing: '1px', marginTop: '2px' }}>Executive Host</div>
+              </div>
+            </div>
+            {[1, 2].map((g) => (
+              <div key={g} style={{ position: 'relative', background: '#222', flexShrink: 0, pointerEvents: 'auto', width: 'min(20%, 200px)', aspectRatio: '16/9', borderRadius: '12px', border: '2px solid rgba(255,255,255,0.2)', overflow: 'hidden', boxShadow: '0 4px 20px rgba(0,0,0,0.5)' }}>
+                <img src={`https://images.unsplash.com/photo-${1550000000000 + (g * 1000)}?auto=format&fit=crop&w=400&q=80`} style={{ width: '100%', height: '100%', objectFit: 'cover', filter: 'grayscale(0.3)' }} alt="Guest" />
+                <div style={{ position: 'absolute', bottom: 4, right: 4, background: 'rgba(0,0,0,0.7)', padding: '4px 8px', borderRadius: '8px', textAlign: 'right', border: '1px solid rgba(255,255,255,0.1)', backdropFilter: 'blur(10px)' }}>
+                  <div style={{ fontWeight: 'bold', fontSize: '11px', color: '#fff' }}>Guest 0{g}</div>
+                  <div style={{ fontSize: '9px', color: '#00ff88', textTransform: 'uppercase', letterSpacing: '1px', marginTop: '2px' }}>Live Feed</div>
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
 
-        {/* Middle Pane: Live Chat */}
-        <div style={{ flexShrink: 0, background: '#050505', display: 'flex', flexDirection: 'column' }}>
+        <div className="tv-chat-mobile" style={{ flexShrink: 0, background: '#050505', display: 'flex', flexDirection: 'column' }}>
           <LiveChat streamId={scheduleItems[activeIndex]?.id || 'main-stage'} />
         </div>
 
-        {/* Right Side: Channel Guide / Up Next */}
-        <div style={{ 
+        <div className="tv-guide-mobile" style={{ 
           width: '380px', 
           flexShrink: 0, 
           background: '#0a0a0a', 
@@ -215,7 +235,6 @@ const WhatsOnNow: React.FC = () => {
           display: 'flex',
           flexDirection: 'column'
         }}>
-          {/* Guide Header */}
           <div style={{ 
             padding: '30px 24px', 
             borderBottom: '1px solid rgba(255,255,255,0.05)',
@@ -225,7 +244,6 @@ const WhatsOnNow: React.FC = () => {
             <p style={{ margin: '6px 0 0', fontSize: '13px', color: 'var(--text-secondary)' }}>Live Enterprise Broadcasts</p>
           </div>
           
-          {/* Guide List */}
           <div className="custom-schedule-scroll" style={{ 
             flex: 1, 
             overflowY: 'auto'
@@ -262,6 +280,42 @@ const WhatsOnNow: React.FC = () => {
           background: rgba(255, 255, 255, 0.2);
         }
       `}</style>
+
+      <AnimatePresence>
+        {showTipModal && (
+          <div style={{ position: 'fixed', inset: 0, zIndex: 99999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }}>
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.8)', backdropFilter: 'blur(5px)' }} onClick={() => setShowTipModal(false)} />
+            <motion.div initial={{ scale: 0.9, opacity: 0, y: 20 }} animate={{ scale: 1, opacity: 1, y: 0 }} exit={{ scale: 0.9, opacity: 0, y: 20 }} style={{ position: 'relative', background: '#111', border: '1px solid rgba(255,255,255,0.1)', padding: '30px', borderRadius: '24px', width: '100%', maxWidth: '400px', display: 'flex', flexDirection: 'column', gap: '20px', boxShadow: '0 20px 40px rgba(0,0,0,0.5)' }}>
+              <h2 style={{ margin: 0, fontSize: '24px', display: 'flex', alignItems: 'center', gap: '8px' }}>💰 Send a Tip</h2>
+              <p style={{ margin: 0, color: '#aaa', fontSize: '14px' }}>Support the live stream. Tokens are transferred via your internal active wallet balance.</p>
+              
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+                {[5, 10, 20, 50].map(amt => (
+                  <button key={amt} onClick={() => setTipAmount(amt)} style={{ padding: '12px', background: tipAmount === amt ? '#00ff88' : 'rgba(255,255,255,0.05)', color: tipAmount === amt ? '#000' : '#fff', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px', cursor: 'pointer', fontWeight: 'bold', fontSize: '16px' }}>
+                    ${amt}
+                  </button>
+                ))}
+              </div>
+              <input type="number" placeholder="Custom Amount" value={tipAmount} onChange={e => setTipAmount(Number(e.target.value))} style={{ width: '100%', padding: '14px', background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.1)', color: '#fff', borderRadius: '12px', fontSize: '16px', outline: 'none' }} />
+              
+              <button onClick={() => {
+                const stored = JSON.parse(localStorage.getItem('vibe_network_ledger') || '[]');
+                stored.unshift({ time: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}), source: 'Audience Tipping Gateway', origin: 'Direct Vibe', gross: Number(tipAmount) });
+                localStorage.setItem('vibe_network_ledger', JSON.stringify(stored));
+                
+                const hostWallet = Number(localStorage.getItem('vibe_host_wallet') || 1250);
+                localStorage.setItem('vibe_host_wallet', String(hostWallet + Number(tipAmount)));
+
+                alert(`Successfully tipped $${tipAmount}!`);
+                setShowTipModal(false);
+                setTipAmount('');
+              }} style={{ padding: '16px', background: 'linear-gradient(45deg, #00ff88, #00bbff)', color: '#000', border: 'none', borderRadius: '12px', fontWeight: '900', fontSize: '16px', cursor: 'pointer' }} disabled={!tipAmount}>
+                Confirm Tip &rarr;
+              </button>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </section>
   );
 };

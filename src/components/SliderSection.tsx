@@ -191,7 +191,7 @@ const SliderSection: React.FC<SliderSectionProps> = ({ title, items, delay = 0, 
       transition={{ duration: 0.6, delay }}
       style={{ padding: '0px 0 24px', width: '100%', overflow: 'hidden' }}
     >
-      <div style={{ maxWidth: '1400px', margin: '0 auto', padding: '0 40px' }}>
+      <div className="px-mobile-sm" style={{ maxWidth: '1400px', margin: '0 auto', padding: '0 40px' }}>
         <h2 style={{ 
           fontSize: '22px', 
           marginBottom: '20px', 
@@ -222,6 +222,7 @@ const SliderSection: React.FC<SliderSectionProps> = ({ title, items, delay = 0, 
         >
           {items.map((item) => (
             <div 
+              className="slider-item-mobile"
               key={item.id} 
               style={{ width: widthVal, height: aspectRatio === '1/1' ? widthVal : 'auto' }}
               onClick={(e) => {

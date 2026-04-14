@@ -3,9 +3,6 @@ import { supabase } from './supabaseClient';
 export async function getCategoriesWithVideos(tenantId?: string) {
   if (!supabase) return [];
 
-  // Fetch Whitelabels for New Networks (Existent only on root, or sibling networks)
-  const { data: whitelabels } = await supabase.from('whitelabel_configs').select('*').limit(7);
-  
   // Fetch Profiles dynamically scoped by tenant
   let profilesQuery = supabase.from('profiles').select('*').order('created_at', { ascending: false }).limit(7);
   if (tenantId) {
@@ -14,10 +11,17 @@ export async function getCategoriesWithVideos(tenantId?: string) {
     // Vibe Root sees only unassigned profiles and parent users
     profilesQuery = profilesQuery.is('whitelabel_id', null);
   }
-  const { data: profiles } = await profilesQuery;
 
-  // Fetch Videos (In a full scale platform, we would scope videos to tenantId too!)
-  const { data: videos } = await supabase.from('videos').select('*').order('created_at', { ascending: false }).limit(7);
+  // Fetch all core domain objects concurrently to maximize network efficiency
+  const [
+    { data: whitelabels },
+    { data: profiles },
+    { data: videos }
+  ] = await Promise.all([
+    supabase.from('whitelabel_configs').select('id, name, domain, logo').limit(7),
+    profilesQuery,
+    supabase.from('videos').select('id, title, image_url, tags, video_url').order('created_at', { ascending: false }).limit(7)
+  ]);
 
   const mappedNetworks = (whitelabels || []).map((wl: any) => ({
     id: 'wl_' + wl.id,
@@ -95,7 +99,7 @@ export async function getLiveSchedule() {
 
   const { data: videos, error: vidError } = await supabase
     .from('videos')
-    .select('*')
+    .select('id, title, stream_time, image_url, tags, video_url')
     .eq('category_id', category.id)
     .order('stream_time', { ascending: true }); // Can sort chronologically in real apps
 
