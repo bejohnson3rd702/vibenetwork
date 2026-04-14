@@ -47,6 +47,8 @@ const ProfileDashboard: React.FC<{ user: any }> = ({ user }) => {
   const [presenterMode, setPresenterMode] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
   
+  const channelRef = useRef<any>(null);
+
   useEffect(() => {
     const params = new URLSearchParams(location.search);
     const tabParam = params.get('tab');
@@ -58,24 +60,90 @@ const ProfileDashboard: React.FC<{ user: any }> = ({ user }) => {
       setStreamSource('camera');
       setGuestSetup({ show: true, name: '', title: '' }); // Show Green Room Prompt
     }
+  }, [location.search]);
+
+  useEffect(() => {
+    if (!supabase || !targetProfileId) return;
+    
+    const channel = supabase.channel(`stream-room-${targetProfileId}`);
+    channelRef.current = channel;
+
+    // Listen for master host sync
+    channel.on('broadcast', { event: 'host_sync_guests' }, (payload) => {
+        const guestList = payload.payload;
+        setGuests(guestList);
+        
+        // Always bounce to local cache for reliability fallback
+        if (typeof window !== 'undefined') {
+            localStorage.setItem('vibe_host_guests_session', JSON.stringify(guestList));
+        }
+
+        // Auto-update Guest UI if they were added to Live Stream by Host
+        setLocalGuestData(currentLocalGuest => {
+           if (currentLocalGuest) {
+               const myState = guestList.find((g: any) => g.id === currentLocalGuest.id);
+               if (myState && myState.isLive !== currentLocalGuest.isLive) {
+                   return { ...currentLocalGuest, isLive: myState.isLive };
+               }
+           }
+           return currentLocalGuest;
+        });
+    });
+
+    // Listen for guests requesting to join
+    channel.on('broadcast', { event: 'guest_interaction' }, (payload) => {
+        const { action, guestParam } = payload.payload;
+        const isHost = user?.id === targetProfileId;
+        if (isHost && typeof window !== 'undefined') {
+            const current = JSON.parse(localStorage.getItem('vibe_host_guests_session') || '[]');
+            let updated = [...current];
+            if (action === 'joined') {
+               if (!updated.find((g: any) => g.id === guestParam.id)) {
+                   updated.push(guestParam);
+               }
+            } else if (action === 'left') {
+               updated = updated.filter((g: any) => g.id !== guestParam.id);
+            }
+            localStorage.setItem('vibe_host_guests_session', JSON.stringify(updated));
+            window.dispatchEvent(new Event('vibe_guests_updated'));
+        }
+    });
+
+    channel.subscribe((status) => {
+       if (status === 'SUBSCRIBED') {
+           // Host announces initial cache
+           if (user?.id === targetProfileId && typeof window !== 'undefined') {
+               const current = JSON.parse(localStorage.getItem('vibe_host_guests_session') || '[]');
+               if (current.length > 0) {
+                   channel.send({ type: 'broadcast', event: 'host_sync_guests', payload: current });
+               }
+           }
+       }
+    });
 
     const handleGuestSync = () => {
       if (typeof window !== 'undefined') {
          try {
            const gInfo = JSON.parse(localStorage.getItem('vibe_host_guests_session') || '[]');
            setGuests(gInfo);
+           // Host syncs globally
+           if (user?.id === targetProfileId) {
+               channel.send({ type: 'broadcast', event: 'host_sync_guests', payload: gInfo });
+           }
          } catch (e) {}
       }
     };
     handleGuestSync();
+    
     window.addEventListener('storage', handleGuestSync);
     window.addEventListener('vibe_guests_updated', handleGuestSync);
 
     return () => {
       window.removeEventListener('storage', handleGuestSync);
       window.removeEventListener('vibe_guests_updated', handleGuestSync);
+      supabase.removeChannel(channel);
     };
-  }, [location.search]);
+  }, [targetProfileId, user, location.search]);
 
   useEffect(() => {
      let currentStream: MediaStream | null = null;
@@ -788,6 +856,10 @@ const ProfileDashboard: React.FC<{ user: any }> = ({ user }) => {
                             localStorage.setItem('vibe_host_guests_session', JSON.stringify(updated));
                             window.dispatchEvent(new Event('vibe_guests_updated'));
                           }
+
+                          if (channelRef.current) {
+                             channelRef.current.send({ type: 'broadcast', event: 'guest_interaction', payload: { action: 'left', guestParam: { id: localGuestData.id } } });
+                          }
                           setLocalGuestData(null);
                           setIsPlayingLive(false);
                           window.location.href = '/';
@@ -1489,6 +1561,11 @@ const ProfileDashboard: React.FC<{ user: any }> = ({ user }) => {
                     const updated = [...current, payload];
                     localStorage.setItem('vibe_host_guests_session', JSON.stringify(updated));
                     window.dispatchEvent(new Event('vibe_guests_updated'));
+                  }
+
+                  // Broadcast globally cross-device to Host
+                  if (channelRef.current) {
+                      channelRef.current.send({ type: 'broadcast', event: 'guest_interaction', payload: { action: 'joined', guestParam: payload } });
                   }
 
                   setIsPlayingLive(true); // Ignite local stream 
