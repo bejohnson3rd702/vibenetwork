@@ -77,9 +77,105 @@ export default function DirectorStudio() {
   return (
     <div style={{ height: '100vh', background: '#0a0a0a', color: '#fff', display: 'flex', flexDirection: 'column', overflow: 'hidden', fontFamily: 'system-ui, -apple-system, sans-serif' }}>
       
+      <style>{`
+        .director-navbar {
+          height: 60px;
+          background: #111;
+          border-bottom: 1px solid #222;
+          display: flex;
+          align-items: center;
+          padding: 0 20px;
+          justify-content: space-between;
+        }
+        .director-nav-left { display: flex; align-items: center; gap: 15px; }
+        .director-nav-right { display: flex; align-items: center; gap: 15px; }
+
+        .director-workspace {
+          flex: 1;
+          display: flex;
+          overflow: hidden;
+        }
+        
+        .director-panel-left {
+          width: 300px;
+          background: #0d0d0d;
+          border-right: 1px solid #222;
+          display: flex;
+          flex-direction: column;
+        }
+        
+        .director-center {
+          flex: 1;
+          display: flex;
+          flex-direction: column;
+          background: #000;
+          position: relative;
+        }
+        
+        .director-panel-right {
+          width: 300px;
+          background: #0d0d0d;
+          border-left: 1px solid #222;
+          display: flex;
+          flex-direction: column;
+        }
+
+        .scene-controls {
+          position: absolute;
+          top: 20px; left: 20px; right: 20px;
+          z-index: 50;
+          display: flex;
+          justify-content: center;
+          gap: 10px;
+        }
+
+        @media (max-width: 1024px) {
+          .director-navbar {
+            flex-direction: column;
+            height: auto;
+            padding: 15px;
+            gap: 15px;
+          }
+          .director-nav-left h1 { font-size: 16px !important; }
+          .director-nav-right button { font-size: 11px !important; padding: 6px 12px !important; }
+          
+          .director-workspace {
+            flex-direction: column;
+            overflow-y: auto;
+            position: relative;
+          }
+          
+          .director-center {
+            order: 1;
+            min-height: 500px;
+            overflow: visible;
+          }
+          
+          .director-panel-left {
+            order: 2;
+            width: 100%;
+            height: 400px;
+            border-right: none;
+            border-bottom: 1px solid #222;
+          }
+          
+          .director-panel-right {
+            order: 3;
+            width: 100%;
+            height: auto;
+            min-height: 300px;
+            border-left: none;
+          }
+
+          .scene-controls {
+            flex-wrap: wrap;
+          }
+        }
+      `}</style>
+      
       {/* Top Navbar */}
-      <div style={{ height: '60px', background: '#111', borderBottom: '1px solid #222', display: 'flex', alignItems: 'center', padding: '0 20px', justifyContent: 'space-between' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+      <div className="director-navbar">
+        <div className="director-nav-left">
            <Monitor size={24} color="#00ff88" />
            <h1 style={{ margin: 0, fontSize: '18px', fontWeight: 'bold', letterSpacing: '1px' }}>VIBE DIRECTOR STUDIO</h1>
            <div style={{ padding: '4px 10px', background: 'rgba(255,255,255,0.05)', borderRadius: '20px', fontSize: '12px', display: 'flex', alignItems: 'center', gap: '6px', marginLeft: '20px' }}>
@@ -87,7 +183,7 @@ export default function DirectorStudio() {
            </div>
         </div>
         
-        <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+        <div className="director-nav-right">
            <button onClick={handleCopyLink} style={{ background: 'transparent', border: '1px solid #333', color: '#fff', padding: '6px 12px', borderRadius: '6px', fontSize: '12px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px' }}>
               {copied ? <Check size={14} color="#00ff88"/> : <Copy size={14} />} {copied ? 'Copied URL' : 'Copy Director URL'}
            </button>
@@ -100,10 +196,10 @@ export default function DirectorStudio() {
       </div>
 
       {/* Main Workspace */}
-      <div style={{ flex: 1, display: 'flex', overflow: 'hidden' }}>
+      <div className="director-workspace">
         
         {/* Left Column: Guest Management & Green Room */}
-        <div style={{ width: '300px', background: '#0d0d0d', borderRight: '1px solid #222', display: 'flex', flexDirection: 'column' }}>
+        <div className="director-panel-left">
            <div style={{ padding: '15px', borderBottom: '1px solid #222', fontWeight: 'bold', display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '14px' }}>
              <span>Green Room ({guests.length})</span>
              <Mic size={16} color="#888" />
@@ -151,10 +247,10 @@ export default function DirectorStudio() {
         </div>
 
         {/* Center Canvas: Program Output */}
-        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', background: '#000', position: 'relative' }}>
+        <div className="director-center">
            
            {/* Scene Controls */}
-           <div style={{ position: 'absolute', top: 20, left: 20, right: 20, zIndex: 50, display: 'flex', justifyContent: 'center', gap: '10px' }}>
+           <div className="scene-controls">
               <button onClick={() => {
                 setLayoutStyle('split');
                 if (channelRef.current) channelRef.current.send({ type: 'broadcast', event: 'director_command', payload: { action: 'update_layout', layout: 'split' } });
@@ -225,7 +321,7 @@ export default function DirectorStudio() {
         </div>
 
         {/* Right Column: Assets & Graphics */}
-        <div style={{ width: '300px', background: '#0d0d0d', borderLeft: '1px solid #222', display: 'flex', flexDirection: 'column' }}>
+        <div className="director-panel-right">
            <div style={{ padding: '15px', borderBottom: '1px solid #222', fontWeight: 'bold', display: 'flex', gap: '10px', alignItems: 'center', fontSize: '14px' }}>
              <Layers size={16} /> Graphics & Media
            </div>
