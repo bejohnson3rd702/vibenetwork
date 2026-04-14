@@ -9,6 +9,7 @@ import ProfileDashboard from './components/ProfileDashboard';
 import BusinessAdminDashboard from './components/BusinessAdminDashboard';
 import EndUserAuthModal from './components/EndUserAuthModal';
 import MasterAdminDashboard from './components/MasterAdminDashboard';
+import LiveChat from './components/LiveChat';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import { supabase } from './supabaseClient';
@@ -172,8 +173,8 @@ function App() {
                    <div style={{ padding: '24px 40px', display: 'flex', justifyContent: 'flex-end' }}>
                      <button onClick={() => setActiveVideo(null)} style={{ background: 'none', border: 'none', color: '#fff', cursor: 'pointer', opacity: 0.7, padding: '8px' }} onMouseOver={e=>e.currentTarget.style.opacity='1'} onMouseOut={e=>e.currentTarget.style.opacity='0.7'}><X size={32} /></button>
                    </div>
-                   <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '0 40px 40px' }} onClick={e => e.stopPropagation()}>
-                     <div style={{ width: '100%', maxWidth: '1600px', aspectRatio: '16/9', background: '#000', borderRadius: '16px', overflow: 'hidden', boxShadow: '0 20px 40px rgba(0,0,0,0.5)' }}>
+                   <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '0 40px 40px', gap: '20px' }} onClick={e => e.stopPropagation()}>
+                     <div style={{ flex: 1, maxWidth: '1200px', height: '100%', background: '#000', borderRadius: '16px', overflow: 'hidden', boxShadow: '0 20px 40px rgba(0,0,0,0.5)' }}>
                        {(() => {
                          const match = activeVideo.videoUrl.match(/^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/);
                          const ytId = (match && match[2].length === 11) ? match[2] : null;
@@ -374,8 +375,9 @@ function Home({ categories, activeVideo, setActiveVideo }: any) {
               initial={{ scale: 0.9, y: 20 }}
               animate={{ scale: 1, y: 0 }}
               exit={{ scale: 0.9, y: 20 }}
-              style={{ width: '90%', maxWidth: '1200px', aspectRatio: '16/9', position: 'relative', borderRadius: '16px', overflow: 'hidden', boxShadow: '0 20px 50px rgba(0,0,0,0.5)' }}
+              style={{ width: '90%', maxWidth: '1400px', height: '70vh', position: 'relative', borderRadius: '16px', overflow: 'hidden', boxShadow: '0 20px 50px rgba(0,0,0,0.5)', display: 'flex' }}
             >
+              <div style={{ flex: 1, height: '100%' }}>
               {(() => {
                 const match = activeVideo.videoUrl.match(/^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/);
                 const ytId = (match && match[2].length === 11) ? match[2] : null;
@@ -399,6 +401,11 @@ function Home({ categories, activeVideo, setActiveVideo }: any) {
                   />
                 );
               })()}
+              </div>
+              {/* Chat Pane */}
+              <div style={{ flexShrink: 0, width: '350px', background: '#050505', borderRadius: '0 16px 16px 0', overflow: 'hidden' }}>
+                 <LiveChat streamId={activeVideo.id || 'global'} />
+              </div>
             </motion.div>
             
             <motion.div 
