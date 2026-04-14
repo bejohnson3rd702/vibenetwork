@@ -58,6 +58,23 @@ const ProfileDashboard: React.FC<{ user: any }> = ({ user }) => {
       setStreamSource('camera');
       setGuestSetup({ show: true, name: '', title: '' }); // Show Green Room Prompt
     }
+
+    const handleGuestSync = () => {
+      if (typeof window !== 'undefined') {
+         try {
+           const gInfo = JSON.parse(localStorage.getItem('vibe_host_guests_session') || '[]');
+           setGuests(gInfo);
+         } catch (e) {}
+      }
+    };
+    handleGuestSync();
+    window.addEventListener('storage', handleGuestSync);
+    window.addEventListener('vibe_guests_updated', handleGuestSync);
+
+    return () => {
+      window.removeEventListener('storage', handleGuestSync);
+      window.removeEventListener('vibe_guests_updated', handleGuestSync);
+    };
   }, [location.search]);
 
   useEffect(() => {
@@ -342,6 +359,8 @@ const ProfileDashboard: React.FC<{ user: any }> = ({ user }) => {
     );
   }
 
+  const isGuestMode = new URLSearchParams(location.search).get('guest_invite') === 'true' || localGuestData !== null;
+  
   return (
     <div style={{ paddingTop: '80px', minHeight: '100vh', background: '#050505', color: '#fff' }}>
       
@@ -366,8 +385,10 @@ const ProfileDashboard: React.FC<{ user: any }> = ({ user }) => {
       )}
 
       {/* Feed Layout Container */}
-      <div style={{ maxWidth: '800px', margin: '40px auto 0', padding: '0 20px', display: 'flex', flexDirection: 'column', gap: '30px', paddingBottom: '100px' }}>
+      <div style={{ maxWidth: isGuestMode ? '1400px' : '800px', margin: isGuestMode ? '0 auto' : '40px auto 0', padding: isGuestMode ? '0' : '0 20px', display: 'flex', flexDirection: 'column', gap: '30px', paddingBottom: '100px' }}>
         
+        {!isGuestMode && (
+          <>
         {/* Creator Header (Editable) */}
         <div style={{ background: 'rgba(15,15,15,0.8)', padding: '40px', borderRadius: '24px', border: '1px solid rgba(255,255,255,0.05)', position: 'relative' }}>
           
@@ -574,6 +595,9 @@ const ProfileDashboard: React.FC<{ user: any }> = ({ user }) => {
             </>
           )}
         </div>
+
+          </>
+        )}
 
         {activeTab === 'feed' && (
           <>
@@ -1407,7 +1431,17 @@ const ProfileDashboard: React.FC<{ user: any }> = ({ user }) => {
 
               <button onClick={() => {
                 if (guestSetup.name.trim() && guestSetup.title.trim()) {
-                  setLocalGuestData({ name: guestSetup.name, title: guestSetup.title });
+                  const payload = { name: guestSetup.name, title: guestSetup.title };
+                  setLocalGuestData(payload);
+                  
+                  // Publish to local storage ring for the Host to pick up instantly
+                  if (typeof window !== 'undefined') {
+                    const current = JSON.parse(localStorage.getItem('vibe_host_guests_session') || '[]');
+                    const updated = [...current, payload];
+                    localStorage.setItem('vibe_host_guests_session', JSON.stringify(updated));
+                    window.dispatchEvent(new Event('vibe_guests_updated'));
+                  }
+
                   setIsPlayingLive(true); // Ignite local stream 
                   setGuestSetup({ show: false, name: '', title: '' });
                 } else {
