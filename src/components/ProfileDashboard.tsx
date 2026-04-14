@@ -97,6 +97,7 @@ const ProfileDashboard: React.FC<{ user: any }> = ({ user }) => {
     });
 
     // Listen for direct structural overrides from Director Studio
+    channel.on('broadcast', { event: 'director_command' }, (payload) => {
         const { action, guestId, layout, lowerThirds, status } = payload.payload;
         if (action === 'toggle_guest') {
             setGuests(current => {
