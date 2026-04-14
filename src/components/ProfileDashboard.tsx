@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { LogOut, Camera, Lock, Unlock, Image as ImageIcon, Star, ShieldCheck, Eye, Edit2, Wand, Calendar, Edit3, Clock, CheckCircle, Heart, MessageCircle, Wallet, ArrowUpRight, ArrowDownLeft, Activity, Monitor } from 'lucide-react';
 import LiveChat from './LiveChat';
 import { useNavigate, useParams, useLocation } from 'react-router-dom';
+import Peer from 'peerjs';
 
 const ProfileDashboard: React.FC<{ user: any }> = ({ user }) => {
   const navigate = useNavigate();
@@ -178,6 +179,18 @@ const ProfileDashboard: React.FC<{ user: any }> = ({ user }) => {
                  videoRef.current.srcObject = stream;
                  // Explicitly fire play in case autoPlay fails on dynamic srcObject
                  videoRef.current.play().catch(e => console.warn("Video play interrupted:", e));
+                 
+                 // Wire up WebRTC signaling so the director can fetch our feed
+                 const streamId = profile?.username || profile?.id;
+                 if (streamId && typeof window !== 'undefined') {
+                    // Create peer with deterministic ID
+                    const peer = new Peer(`vibe-host-${streamId}`);
+                    peer.on('call', (call) => {
+                       call.answer(stream);
+                    });
+                    // Store on window so we can clean it up
+                    (window as any)._vibeHostPeer = peer;
+                 }
               }
            })
            .catch(err => {
@@ -191,6 +204,10 @@ const ProfileDashboard: React.FC<{ user: any }> = ({ user }) => {
      return () => {
         if (currentStream) {
            currentStream.getTracks().forEach(track => track.stop());
+        }
+        if (typeof window !== 'undefined' && (window as any)._vibeHostPeer) {
+           (window as any)._vibeHostPeer.destroy();
+           (window as any)._vibeHostPeer = null;
         }
      };
   }, [isPlayingLive, streamSource, presenterMode, guests.length]);

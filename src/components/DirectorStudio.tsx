@@ -2,6 +2,8 @@ import React, { useState, useEffect, useRef } from 'react';
 import { supabase } from '../supabaseClient';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Settings, Play, Square, Mic, MicOff, Volume2, Monitor, Video, Music, Layers, Type, Users, LayoutDashboard, Copy, Check, Hash } from 'lucide-react';
+import Peer from 'peerjs';
+
 export default function DirectorStudio() {
   const [isLive, setIsLive] = useState(false);
   const [guests, setGuests] = useState<any[]>([]);
@@ -10,6 +12,7 @@ export default function DirectorStudio() {
   const [lowerThirds, setLowerThirds] = useState({ active: false, text: 'Vibe Network Exclusive Broadcast', sub: 'Live from the Studio' });
   const [bgMusic, setBgMusic] = useState({ active: false, track: 'Lofi Chilled Beats', volume: 40 });
   const [copied, setCopied] = useState(false);
+  const hostVideoRef = useRef<HTMLVideoElement>(null);
 
   // Mock connecting to WebRTC room
   const [studioStatus, setStudioStatus] = useState('Initializing master signaling servers...');
@@ -30,10 +33,37 @@ export default function DirectorStudio() {
      }).subscribe((status) => {
         if (status === 'SUBSCRIBED') {
            setStudioStatus('Connected');
+           
+           if (typeof window !== 'undefined' && streamId) {
+             const peer = new Peer();
+             peer.on('open', () => {
+                // Call host with dummy stream since we only receive
+                const ctx = new AudioContext();
+                const dest = ctx.createMediaStreamDestination();
+                const call = peer.call(`vibe-host-${streamId}`, dest.stream);
+                
+                if (call) {
+                  call.on('stream', (remoteStream) => {
+                     console.log("Receiving host stream!");
+                     if (hostVideoRef.current) {
+                        hostVideoRef.current.srcObject = remoteStream;
+                        hostVideoRef.current.play().catch(e => console.error("Playback failed:", e));
+                     }
+                  });
+                }
+             });
+             // Cleanup
+             (window as any)._vibeDirectorPeer = peer;
+           }
         }
      });
 
-     return () => { channel.unsubscribe(); };
+     return () => { 
+        channel.unsubscribe(); 
+        if (typeof window !== 'undefined' && (window as any)._vibeDirectorPeer) {
+           (window as any)._vibeDirectorPeer.destroy();
+        }
+     };
   }, []);
 
   const handleCopyLink = () => {
@@ -269,8 +299,8 @@ export default function DirectorStudio() {
                     
                     {/* Host Block */}
                     {layoutStyle !== 'isolate_guest' && (
-                       <div style={{ flex: layoutStyle === 'isolate_host' || activeGuests.length === 0 ? '1 1 100%' : '1 1 50%', height: activeGuests.length > 0 && layoutStyle === 'split' ? '100%' : '100%', position: 'relative' }}>
-                          <img src="https://images.unsplash.com/photo-1516280440502-86927dccab74?auto=format&fit=crop&q=80&w=1200" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                       <div style={{ flex: layoutStyle === 'isolate_host' || activeGuests.length === 0 ? '1 1 100%' : '1 1 50%', height: activeGuests.length > 0 && layoutStyle === 'split' ? '100%' : '100%', position: 'relative', background: '#111' }}>
+                          <video ref={hostVideoRef} autoPlay playsInline muted style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                           <div style={{ position: 'absolute', bottom: 15, left: 15, background: 'rgba(0,0,0,0.6)', padding: '4px 10px', borderRadius: '4px', fontSize: '12px' }}>Studio Host Cam</div>
                        </div>
                     )}
