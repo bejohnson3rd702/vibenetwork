@@ -165,7 +165,7 @@ export default function MasterAdminDashboard() {
                          </div>
                          <div>
                            <h4 style={{ margin: '0 0 8px 0', fontSize: '18px' }}>{brandConfig.name}</h4>
-                           <span style={{ color: brandConfig.accent || '#0055ff', fontSize: '13px', background: `${brandConfig.accent}11` || 'rgba(0,85,255,0.1)', padding: '4px 10px', borderRadius: '12px', fontWeight: 'bold' }}>{brandConfig.domain}</span>
+                           <span style={{ color: brandConfig.accent || '#0055ff', fontSize: '13px', background: brandConfig.accent ? `${brandConfig.accent}11` : 'rgba(0,85,255,0.1)', padding: '4px 10px', borderRadius: '12px', fontWeight: 'bold' }}>{brandConfig.domain}</span>
                          </div>
                       </div>
                       <div style={{ display: 'flex', gap: '12px' }}>

@@ -253,7 +253,7 @@ const ProfileDashboard: React.FC<{ user: any }> = ({ user }) => {
       await supabase!.storage.from('images').upload(filePath, file);
       const { data } = supabase!.storage.from('images').getPublicUrl(filePath);
       setNewProduct(prev => ({ ...prev, image_url: data.publicUrl }));
-    } catch(err) {
+    } catch {
       alert('Upload failed. Did you run the storage buckets script?');
     } finally {
       setUploadingProductImg(false);
@@ -283,7 +283,7 @@ const ProfileDashboard: React.FC<{ user: any }> = ({ user }) => {
         // Fallback for demo purposes if SQL isn't run
         setProducts(prev => [...prev, mockProduct]);
       }
-    } catch(e) {
+    } catch {
       setProducts(prev => [...prev, mockProduct]);
     }
 
