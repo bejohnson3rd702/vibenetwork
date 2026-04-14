@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
+import { supabase } from '../supabaseClient';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Settings, Play, Square, Mic, MicOff, Volume2, Monitor, Video, Music, Layers, Type, Users, LayoutDashboard, Copy, Check, Hash } from 'lucide-react';
 
@@ -10,7 +11,8 @@ const MOCK_GUESTS = [
 
 export default function DirectorStudio() {
   const [isLive, setIsLive] = useState(false);
-  const [guests, setGuests] = useState(MOCK_GUESTS);
+  const [guests, setGuests] = useState<any[]>([]);
+  const channelRef = useRef<any>(null);
   const [layoutStyle, setLayoutStyle] = useState<'split' | 'isolate_host' | 'isolate_guest'>('split');
   const [lowerThirds, setLowerThirds] = useState({ active: false, text: 'Vibe Network Exclusive Broadcast', sub: 'Live from the Studio' });
   const [bgMusic, setBgMusic] = useState({ active: false, track: 'Lofi Chilled Beats', volume: 40 });
@@ -20,9 +22,27 @@ export default function DirectorStudio() {
   const [studioStatus, setStudioStatus] = useState('Initializing master signaling servers...');
 
   useEffect(() => {
-     let t1 = setTimeout(() => setStudioStatus('Connecting to distributed video relays...'), 1000);
-     let t2 = setTimeout(() => setStudioStatus('Connected'), 2000);
-     return () => { clearTimeout(t1); clearTimeout(t2); };
+     const streamId = new URLSearchParams(window.location.search).get('stream');
+     if (!streamId) {
+        setStudioStatus('No stream ID provided. URL must contain ?stream=ID');
+        return;
+     }
+
+     const channel = supabase.channel(`stream-room-${streamId}`);
+     channelRef.current = channel;
+
+     channel.on('broadcast', { event: 'host_sync_guests' }, (payload) => {
+        // Hydrate green room visually for director
+        setGuests(payload.payload.map((g: any) => ({ ...g, feed: `https://images.unsplash.com/photo-${1550000000000 + (Math.random() * 1000)}?auto=format&fit=crop&w=400&q=80`, volume: 80, micActive: true })));
+     }).subscribe((status) => {
+        if (status === 'SUBSCRIBED') {
+           setStudioStatus('Connected');
+           // If we're debugging without a real host, fall back to mock guests after 2s
+           setTimeout(() => { if (guests.length === 0) setGuests(MOCK_GUESTS); }, 2000);
+        }
+     });
+
+     return () => { channel.unsubscribe(); };
   }, []);
 
   const handleCopyLink = () => {
@@ -32,6 +52,9 @@ export default function DirectorStudio() {
   };
 
   const toggleGuestLive = (id: string) => {
+    if (channelRef.current) {
+       channelRef.current.send({ type: 'broadcast', event: 'director_command', payload: { action: 'toggle_guest', guestId: id } });
+    }
     setGuests(prev => prev.map(g => g.id === id ? { ...g, isLive: !g.isLive } : g));
   };
 
@@ -132,9 +155,20 @@ export default function DirectorStudio() {
            
            {/* Scene Controls */}
            <div style={{ position: 'absolute', top: 20, left: 20, right: 20, zIndex: 50, display: 'flex', justifyContent: 'center', gap: '10px' }}>
-              <button onClick={() => setLayoutStyle('split')} style={{ background: layoutStyle === 'split' ? '#fff' : 'rgba(0,0,0,0.5)', color: layoutStyle === 'split' ? '#000' : '#fff', border: '1px solid #333', padding: '6px 16px', borderRadius: '20px', fontSize: '12px', cursor: 'pointer', backdropFilter: 'blur(10px)', display: 'flex', alignItems: 'center', gap: '6px' }}><LayoutDashboard size={14}/> Split Grid</button>
-              <button onClick={() => setLayoutStyle('isolate_host')} style={{ background: layoutStyle === 'isolate_host' ? '#fff' : 'rgba(0,0,0,0.5)', color: layoutStyle === 'isolate_host' ? '#000' : '#fff', border: '1px solid #333', padding: '6px 16px', borderRadius: '20px', fontSize: '12px', cursor: 'pointer', backdropFilter: 'blur(10px)', display: 'flex', alignItems: 'center', gap: '6px' }}><Monitor size={14}/> Host Only</button>
-              <button onClick={() => setLayoutStyle('isolate_guest')} style={{ background: layoutStyle === 'isolate_guest' ? '#fff' : 'rgba(0,0,0,0.5)', color: layoutStyle === 'isolate_guest' ? '#000' : '#fff', border: '1px solid #333', padding: '6px 16px', borderRadius: '20px', fontSize: '12px', cursor: 'pointer', backdropFilter: 'blur(10px)', display: 'flex', alignItems: 'center', gap: '6px' }}><Users size={14}/> Primary Guest</button>
+              <button onClick={() => {
+                setLayoutStyle('split');
+                if (channelRef.current) channelRef.current.send({ type: 'broadcast', event: 'director_command', payload: { action: 'update_layout', layout: 'split' } });
+              }} style={{ background: layoutStyle === 'split' ? '#fff' : 'rgba(0,0,0,0.5)', color: layoutStyle === 'split' ? '#000' : '#fff', border: '1px solid #333', padding: '6px 16px', borderRadius: '20px', fontSize: '12px', cursor: 'pointer', backdropFilter: 'blur(10px)', display: 'flex', alignItems: 'center', gap: '6px' }}><LayoutDashboard size={14}/> Split Grid</button>
+              
+              <button onClick={() => {
+                setLayoutStyle('isolate_host');
+                if (channelRef.current) channelRef.current.send({ type: 'broadcast', event: 'director_command', payload: { action: 'update_layout', layout: 'isolate_host' } });
+              }} style={{ background: layoutStyle === 'isolate_host' ? '#fff' : 'rgba(0,0,0,0.5)', color: layoutStyle === 'isolate_host' ? '#000' : '#fff', border: '1px solid #333', padding: '6px 16px', borderRadius: '20px', fontSize: '12px', cursor: 'pointer', backdropFilter: 'blur(10px)', display: 'flex', alignItems: 'center', gap: '6px' }}><Monitor size={14}/> Host Only</button>
+              
+              <button onClick={() => {
+                setLayoutStyle('isolate_guest');
+                if (channelRef.current) channelRef.current.send({ type: 'broadcast', event: 'director_command', payload: { action: 'update_layout', layout: 'isolate_guest' } });
+              }} style={{ background: layoutStyle === 'isolate_guest' ? '#fff' : 'rgba(0,0,0,0.5)', color: layoutStyle === 'isolate_guest' ? '#000' : '#fff', border: '1px solid #333', padding: '6px 16px', borderRadius: '20px', fontSize: '12px', cursor: 'pointer', backdropFilter: 'blur(10px)', display: 'flex', alignItems: 'center', gap: '6px' }}><Users size={14}/> Primary Guest</button>
            </div>
 
            {/* Live Program Monitor */}
@@ -203,23 +237,34 @@ export default function DirectorStudio() {
                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px', fontSize: '12px', color: '#aaa', fontWeight: 'bold' }}>
                     <span style={{ display: 'flex', gap: '6px', alignItems: 'center' }}><Type size={14}/> Lower Thirds</span>
                  </div>
-                 <div style={{ background: '#1a1a1a', padding: '15px', borderRadius: '8px', border: '1px solid #333' }}>
                     <input 
                       type="text" 
                       value={lowerThirds.text} 
-                      onChange={e => setLowerThirds({...lowerThirds, text: e.target.value})} 
+                      onChange={e => {
+                        const next = {...lowerThirds, text: e.target.value};
+                        setLowerThirds(next);
+                        if (channelRef.current) channelRef.current.send({ type: 'broadcast', event: 'director_command', payload: { action: 'update_lower_thirds', lowerThirds: next } });
+                      }} 
                       style={{ width: '100%', background: '#000', border: '1px solid #333', color: '#fff', padding: '8px', borderRadius: '4px', marginBottom: '10px', fontSize: '12px' }} 
                       placeholder="Headline"
                     />
                     <input 
                       type="text" 
                       value={lowerThirds.sub} 
-                      onChange={e => setLowerThirds({...lowerThirds, sub: e.target.value})} 
+                      onChange={e => {
+                        const next = {...lowerThirds, sub: e.target.value};
+                        setLowerThirds(next);
+                        if (channelRef.current) channelRef.current.send({ type: 'broadcast', event: 'director_command', payload: { action: 'update_lower_thirds', lowerThirds: next } });
+                      }} 
                       style={{ width: '100%', background: '#000', border: '1px solid #333', color: '#fff', padding: '8px', borderRadius: '4px', marginBottom: '15px', fontSize: '12px' }} 
                       placeholder="Subtext"
                     />
                     <button 
-                      onClick={() => setLowerThirds({...lowerThirds, active: !lowerThirds.active})}
+                      onClick={() => {
+                        const next = {...lowerThirds, active: !lowerThirds.active};
+                        setLowerThirds(next);
+                        if (channelRef.current) channelRef.current.send({ type: 'broadcast', event: 'director_command', payload: { action: 'update_lower_thirds', lowerThirds: next } });
+                      }}
                       style={{ width: '100%', padding: '8px', background: lowerThirds.active ? '#ff0055' : '#333', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold', fontSize: '12px', transition: '0.2s' }}
                     >
                       {lowerThirds.active ? 'Hide Graphic' : 'Show Graphic'}

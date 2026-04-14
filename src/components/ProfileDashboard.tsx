@@ -46,6 +46,8 @@ const ProfileDashboard: React.FC<{ user: any }> = ({ user }) => {
   const [tipAmount, setTipAmount] = useState<number | ''>('');
   const [presenterMode, setPresenterMode] = useState(false);
   const [showExitScreen, setShowExitScreen] = useState(false);
+  const [directorLayout, setDirectorLayout] = useState<'split' | 'isolate_host' | 'isolate_guest'>('split');
+  const [directorLowerThirds, setDirectorLowerThirds] = useState({ active: false, text: '', sub: '' });
   const videoRef = useRef<HTMLVideoElement>(null);
   
   const channelRef = useRef<any>(null);
@@ -89,6 +91,25 @@ const ProfileDashboard: React.FC<{ user: any }> = ({ user }) => {
            }
            return currentLocalGuest;
         });
+    });
+
+    // Listen for direct structural overrides from Director Studio
+    channel.on('broadcast', { event: 'director_command' }, (payload) => {
+        const { action, guestId, layout, lowerThirds } = payload.payload;
+        if (action === 'toggle_guest') {
+            setGuests(current => {
+               const updated = current.map((g: any) => g.id === guestId ? { ...g, isLive: !g.isLive } : g);
+               if (typeof window !== 'undefined') localStorage.setItem('vibe_host_guests_session', JSON.stringify(updated));
+               channel.send({ type: 'broadcast', event: 'host_sync_guests', payload: updated });
+               return updated;
+            });
+        }
+        if (action === 'update_layout') {
+            setDirectorLayout(layout);
+        }
+        if (action === 'update_lower_thirds') {
+            setDirectorLowerThirds(lowerThirds);
+        }
     });
 
     // Listen for guests requesting to join
@@ -449,6 +470,9 @@ const ProfileDashboard: React.FC<{ user: any }> = ({ user }) => {
 
   const isGuestMode = new URLSearchParams(location.search).get('guest_invite') === 'true' || localGuestData !== null;
   const activeGuests = guests.filter(g => g.isLive);
+  const visibleGuests = directorLayout === 'isolate_host' ? [] : activeGuests;
+  const showHost = directorLayout !== 'isolate_guest';
+  const totalSlots = (showHost ? 1 : 0) + visibleGuests.length;
   
   return (
     <div style={{ paddingTop: '80px', minHeight: '100vh', background: '#050505', color: '#fff' }}>
@@ -896,27 +920,29 @@ const ProfileDashboard: React.FC<{ user: any }> = ({ user }) => {
                               bottom: 20, left: 20, right: 20, display: 'flex', gap: '10px', justifyContent: 'flex-start', alignItems: 'flex-end', pointerEvents: 'none'
                            } : {
                              inset: 0, background: '#000', display: 'grid', gap: '2px',
-                             gridTemplateColumns: (activeGuests.length + 1 === 1) ? '1fr' : (activeGuests.length + 1 <= 4) ? '1fr 1fr' : '1fr 1fr 1fr',
-                             gridTemplateRows: (activeGuests.length + 1 <= 2) ? '1fr' : '1fr 1fr'
+                             gridTemplateColumns: (totalSlots === 1) ? '1fr' : (totalSlots <= 4) ? '1fr 1fr' : '1fr 1fr 1fr',
+                             gridTemplateRows: (totalSlots <= 2) ? '1fr' : '1fr 1fr'
                            })
                          }}>
                            {/* Main Host Webcam Slot */}
-                           <div style={{ position: 'relative', background: '#111', flexShrink: 0, pointerEvents: 'auto', ...(streamSource === 'url' ? { width: 'min(20%, 200px)', aspectRatio: '16/9', borderRadius: '12px', border: '2px solid rgba(255,255,255,0.2)', overflow: 'hidden', boxShadow: '0 4px 20px rgba(0,0,0,0.5)' } : { width: '100%', height: '100%' }) }}>
-                             <video 
-                               ref={videoRef} 
-                               autoPlay 
-                               playsInline 
-                               muted 
-                               style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
-                             />
-                             <div style={{ position: 'absolute', bottom: streamSource==='url'?4:10, right: streamSource==='url'?4:10, background: 'rgba(0,0,0,0.7)', padding: streamSource==='url'?'4px 8px':'6px 12px', borderRadius: '8px', textAlign: 'right', border: '1px solid rgba(255,255,255,0.1)', backdropFilter: 'blur(10px)' }}>
-                               <div style={{ fontWeight: 'bold', fontSize: streamSource==='url'?'11px':'14px', color: '#fff' }}>{localGuestData ? localGuestData.name : profile?.username || 'Host'}</div>
-                               <div style={{ fontSize: streamSource==='url'?'9px':'11px', color: '#00ff88', textTransform: 'uppercase', letterSpacing: '1px', marginTop: '2px' }}>{localGuestData ? localGuestData.title : 'Executive Streamer'}</div>
+                           {showHost && (
+                             <div style={{ position: 'relative', background: '#111', flexShrink: 0, pointerEvents: 'auto', ...(streamSource === 'url' ? { width: 'min(20%, 200px)', aspectRatio: '16/9', borderRadius: '12px', border: '2px solid rgba(255,255,255,0.2)', overflow: 'hidden', boxShadow: '0 4px 20px rgba(0,0,0,0.5)' } : { width: '100%', height: '100%' }) }}>
+                               <video 
+                                 ref={videoRef} 
+                                 autoPlay 
+                                 playsInline 
+                                 muted 
+                                 style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
+                               />
+                               <div style={{ position: 'absolute', bottom: streamSource==='url'?4:10, right: streamSource==='url'?4:10, background: 'rgba(0,0,0,0.7)', padding: streamSource==='url'?'4px 8px':'6px 12px', borderRadius: '8px', textAlign: 'right', border: '1px solid rgba(255,255,255,0.1)', backdropFilter: 'blur(10px)' }}>
+                                 <div style={{ fontWeight: 'bold', fontSize: streamSource==='url'?'11px':'14px', color: '#fff' }}>{localGuestData ? localGuestData.name : profile?.username || 'Host'}</div>
+                                 <div style={{ fontSize: streamSource==='url'?'9px':'11px', color: '#00ff88', textTransform: 'uppercase', letterSpacing: '1px', marginTop: '2px' }}>{localGuestData ? localGuestData.title : 'Executive Streamer'}</div>
+                               </div>
                              </div>
-                           </div>
+                           )}
                            
                            {/* Simulated Guests Webcams Slot */}
-                           {activeGuests.map((g, i) => (
+                           {visibleGuests.map((g, i) => (
                              <div key={i} style={{ position: 'relative', background: '#222', flexShrink: 0, pointerEvents: 'auto', ...(streamSource === 'url' ? { width: 'min(20%, 200px)', aspectRatio: '16/9', borderRadius: '12px', border: '2px solid rgba(255,255,255,0.2)', overflow: 'hidden', boxShadow: '0 4px 20px rgba(0,0,0,0.5)' } : { width: '100%', height: '100%' }) }}>
                                <img src={`https://images.unsplash.com/photo-${1550000000000 + (i * 1000)}?auto=format&fit=crop&w=800&q=80`} style={{ width: '100%', height: '100%', objectFit: 'cover', filter: 'grayscale(0.5)' }} alt="Guest Feed" />
                                <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -930,6 +956,23 @@ const ProfileDashboard: React.FC<{ user: any }> = ({ user }) => {
                            ))}
                          </div>
                        )}
+
+                       {/* Directed Lower Thirds Overlay */}
+                       <AnimatePresence>
+                          {directorLowerThirds.active && isPlayingLive && (
+                             <motion.div initial={{ x: -50, opacity: 0 }} animate={{ x: 0, opacity: 1 }} exit={{ x: -20, opacity: 0 }} style={{ position: 'absolute', bottom: 40, left: 40, zIndex: 90, pointerEvents: 'none' }}>
+                                <div style={{ background: '#00ff88', color: '#000', padding: '10px 20px', fontWeight: '900', fontSize: '20px', display: 'inline-block', boxShadow: '5px 5px 0px rgba(0,0,0,0.3)' }}>
+                                  {directorLowerThirds.text}
+                                </div>
+                                <br />
+                                {directorLowerThirds.sub && (
+                                  <div style={{ background: '#000', color: '#fff', padding: '6px 20px', display: 'inline-block', fontSize: '14px', borderLeft: '4px solid #00ff88', marginTop: '4px' }}>
+                                     {directorLowerThirds.sub}
+                                  </div>
+                                )}
+                             </motion.div>
+                          )}
+                       </AnimatePresence>
                      </>
                   ) : (
                     <>
