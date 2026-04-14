@@ -34,7 +34,16 @@ export default function DirectorStudio() {
         // Use a dummy canvas stream to ensure PeerJS sets SDP offerToReceiveVideo flag
         const canvas = document.createElement('canvas');
         canvas.width = 1; canvas.height = 1;
-        const dummyStream = canvas.captureStream();
+        const dummyStream = canvas.captureStream(10); // Capture at 10 fps to keep active
+        
+        // Prevent WebRTC garbage collection by forcing active frame painting
+        const ctxCanvas = canvas.getContext('2d');
+        setInterval(() => {
+            if (ctxCanvas) {
+               ctxCanvas.fillStyle = Math.random() > 0.5 ? '#000' : '#010101';
+               ctxCanvas.fillRect(0, 0, 1, 1);
+            }
+        }, 1000);
 
         const call = peerInstance.call(`vibe-host-${streamId}`, dummyStream);
         

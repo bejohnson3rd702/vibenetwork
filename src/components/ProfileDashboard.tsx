@@ -181,9 +181,12 @@ const ProfileDashboard: React.FC<{ user: any }> = ({ user }) => {
            clearInterval(interval);
            setLiveCountdown(null);
            setIsPlayingLive(true);
-           // Initially auto-go live, the Director can override this if they connect.
-           // In a real topology we would block this if director mode was requested.
-           setIsPubliclyLive(true);
+           // If using external URL, bypass studio mode and go straight to live
+           if (streamSource === 'url') {
+              setIsPubliclyLive(true);
+           } else {
+              setIsPubliclyLive(false);
+           }
         } else {
            setLiveCountdown(ticker);
         }
@@ -1080,14 +1083,18 @@ const ProfileDashboard: React.FC<{ user: any }> = ({ user }) => {
                          <button onClick={() => { setStreamSource('url'); setIsPlayingLive(false); }} style={{ padding: '10px 20px', background: streamSource === 'url' ? '#0055ff' : 'rgba(255,255,255,0.05)', color: streamSource === 'url' ? '#fff' : '#888', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold' }}>External URL / RTMP</button>
                          <button onClick={() => { setStreamSource('camera'); setIsPlayingLive(false); }} style={{ padding: '10px 20px', background: streamSource === 'camera' ? '#0055ff' : 'rgba(255,255,255,0.05)', color: streamSource === 'camera' ? '#fff' : '#888', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '8px' }}><Camera size={16}/> Direct Webcam</button>
                          
-                         <div style={{ flex: 1 }} />
-                         <button onClick={() => {
-                            const inviteUrl = `${window.location.origin}/director?stream=${targetProfileId}`;
-                            navigator.clipboard.writeText(inviteUrl);
-                            alert('Director Protocol Activated! The Director Studio URL has been copied to your clipboard. Send this to your producer.');
-                         }} style={{ padding: '10px 20px', background: 'rgba(0, 255, 136, 0.1)', color: '#00ff88', border: '1px solid currentColor', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                            <Monitor size={16} /> Hire Director
-                         </button>
+                         {streamSource === 'camera' && (
+                            <>
+                               <div style={{ flex: 1 }} />
+                               <button onClick={() => {
+                                  const inviteUrl = `${window.location.origin}/director?stream=${targetProfileId}`;
+                                  navigator.clipboard.writeText(inviteUrl);
+                                  alert('Director Protocol Activated! The Director Studio URL has been copied to your clipboard. Send this to your producer.');
+                               }} style={{ padding: '10px 20px', background: 'rgba(0, 255, 136, 0.1)', color: '#00ff88', border: '1px solid currentColor', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                  <Monitor size={16} /> Hire Director
+                               </button>
+                            </>
+                         )}
                       </div>
                       
                       <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
@@ -1108,7 +1115,16 @@ const ProfileDashboard: React.FC<{ user: any }> = ({ user }) => {
                           <div style={{ display: 'flex', gap: '12px', alignItems: 'center', flexWrap: 'wrap' }}>
                              <p style={{ margin: 0, color: '#aaa', flex: 1, minWidth: '200px' }}>Using your local hardware as the broadcast origin server. Press "Start Streaming" to ignite the feed.</p>
                              {isPlayingLive ? (
-                               <button onClick={() => setIsPlayingLive(false)} style={{ padding: '14px 24px', background: 'rgba(229, 9, 20, 0.1)', color: '#e50914', border: '1px solid #e50914', borderRadius: '10px', fontWeight: 'bold', fontSize: '15px', cursor: 'pointer', transition: '0.2s', display: 'flex', alignItems: 'center', gap: '8px' }}>Stop Streaming</button>
+                               <>
+                                 {!isPubliclyLive && (
+                                   <button onClick={() => setIsPubliclyLive(true)} style={{ padding: '14px 24px', background: '#00ff88', color: '#000', border: 'none', borderRadius: '10px', fontWeight: 'bold', fontSize: '15px', cursor: 'pointer', transition: '0.2s', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                      Push Publicly Live
+                                   </button>
+                                 )}
+                                 <button onClick={() => { setIsPlayingLive(false); setIsPubliclyLive(false); }} style={{ padding: '14px 24px', background: 'rgba(229, 9, 20, 0.1)', color: '#e50914', border: '1px solid #e50914', borderRadius: '10px', fontWeight: 'bold', fontSize: '15px', cursor: 'pointer', transition: '0.2s', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                    Stop Streaming
+                                 </button>
+                               </>
                              ) : liveCountdown !== null ? (
                                <button disabled style={{ padding: '14px 24px', background: '#e50914', color: '#fff', border: 'none', borderRadius: '10px', fontWeight: 'bold', fontSize: '15px', cursor: 'not-allowed', display: 'flex', alignItems: 'center', gap: '8px' }}>Going Live in {liveCountdown}...</button>
                              ) : (
