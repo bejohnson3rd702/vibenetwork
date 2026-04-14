@@ -1076,16 +1076,7 @@ const ProfileDashboard: React.FC<{ user: any }> = ({ user }) => {
                                 }} style={{ padding: '8px 14px', background: '#0055ff', color: '#fff', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold', fontSize: '13px' }}>
                                   🔗 Copy Guest Link
                                 </button>
-                                <button onClick={() => {
-                                  if (guests.length < 4) {
-                                    const MOCK_TITLES = ['Creative Director', 'VP of Ops', 'Senior Engineer', 'Chief Marketing Officer'];
-                                    const MOCK_NAMES = ['Sarah Jenkins', 'Mike Ross', 'Alex Mercer', 'David Chen'];
-                                    const rn = Math.floor(Math.random()*4);
-                                    setGuests([...guests, { id: Math.random().toString(), name: MOCK_NAMES[rn], title: MOCK_TITLES[rn], isLive: false }]);
-                                  }
-                                }} style={{ padding: '8px 14px', background: 'rgba(255,255,255,0.1)', color: '#fff', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold', fontSize: '13px' }}>
-                                  + [Demo] Add Guest
-                                </button>
+
                               </div>
 
                               {guests.length > 0 && (

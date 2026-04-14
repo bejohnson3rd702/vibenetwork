@@ -2,13 +2,6 @@ import React, { useState, useEffect, useRef } from 'react';
 import { supabase } from '../supabaseClient';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Settings, Play, Square, Mic, MicOff, Volume2, Monitor, Video, Music, Layers, Type, Users, LayoutDashboard, Copy, Check, Hash } from 'lucide-react';
-
-const MOCK_GUESTS = [
-  { id: '1', name: 'Sarah Jenkins', title: 'Tech Analyst', isLive: true, micActive: true, volume: 80, feed: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&q=80&w=400' },
-  { id: '2', name: 'Mike Ross', title: 'Legal Counsel', isLive: false, micActive: true, volume: 65, feed: 'https://images.unsplash.com/photo-1560250097-0b93528c311a?auto=format&fit=crop&q=80&w=400' },
-  { id: '3', name: 'Elena Chen', title: 'Product Lead', isLive: true, micActive: false, volume: 0, feed: 'https://images.unsplash.com/photo-1580489944761-15a19d654956?auto=format&fit=crop&q=80&w=400' },
-];
-
 export default function DirectorStudio() {
   const [isLive, setIsLive] = useState(false);
   const [guests, setGuests] = useState<any[]>([]);
@@ -37,8 +30,6 @@ export default function DirectorStudio() {
      }).subscribe((status) => {
         if (status === 'SUBSCRIBED') {
            setStudioStatus('Connected');
-           // If we're debugging without a real host, fall back to mock guests after 2s
-           setTimeout(() => { if (guests.length === 0) setGuests(MOCK_GUESTS); }, 2000);
         }
      });
 
