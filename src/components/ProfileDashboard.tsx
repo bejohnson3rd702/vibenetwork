@@ -181,12 +181,22 @@ const ProfileDashboard: React.FC<{ user: any }> = ({ user }) => {
                  videoRef.current.play().catch(e => console.warn("Video play interrupted:", e));
                  
                  // Wire up WebRTC signaling so the director can fetch our feed
-                 const streamId = profile?.username || profile?.id;
+                 const streamId = targetProfileId || profile?.username || profile?.id;
                  if (streamId && typeof window !== 'undefined') {
                     // Create peer with deterministic ID
-                    const peer = new Peer(`vibe-host-${streamId}`);
+                    const peerId = `vibe-host-${streamId}`;
+                    console.log("[WebRTC] Creating Host Peer Node:", peerId);
+                    const peer = new Peer(peerId);
                     peer.on('call', (call) => {
+                       console.log("[WebRTC] Director is calling! Answering with local stream...");
                        call.answer(stream);
+                    });
+                    peer.on('open', () => {
+                       // Tell anyone listening that the pipeline is open!
+                       console.log("[WebRTC] Host node ready, broadcasting ping...");
+                       if (channelRef.current) {
+                          channelRef.current.send({ type: 'broadcast', event: 'webrtc_host_ready', payload: { streamId } });
+                       }
                     });
                     // Store on window so we can clean it up
                     (window as any)._vibeHostPeer = peer;

@@ -27,33 +27,42 @@ export default function DirectorStudio() {
      const channel = supabase.channel(`stream-room-${streamId}`);
      channelRef.current = channel;
 
+     const connectToHost = (peerInstance: any) => {
+        if (!streamId) return;
+        console.log("[WebRTC] Dialing host:", streamId);
+        const ctx = new AudioContext();
+        const dest = ctx.createMediaStreamDestination();
+        const call = peerInstance.call(`vibe-host-${streamId}`, dest.stream);
+        
+        if (call) {
+          call.on('stream', (remoteStream: any) => {
+             console.log("[WebRTC] Receiving host stream via PeerJS!");
+             if (hostVideoRef.current) {
+                hostVideoRef.current.srcObject = remoteStream;
+                hostVideoRef.current.play().catch((e: any) => console.error("Playback failed:", e));
+             }
+          });
+        }
+     };
+
      channel.on('broadcast', { event: 'host_sync_guests' }, (payload) => {
         // Hydrate green room visually for director
         setGuests(payload.payload.map((g: any) => ({ ...g, feed: `https://images.unsplash.com/photo-${1550000000000 + (Math.random() * 1000)}?auto=format&fit=crop&w=400&q=80`, volume: 80, micActive: true })));
+     }).on('broadcast', { event: 'webrtc_host_ready' }, () => {
+        console.log("[WebRTC] Host signaled ready! Redialing...");
+        if (typeof window !== 'undefined' && (window as any)._vibeDirectorPeer) {
+           connectToHost((window as any)._vibeDirectorPeer);
+        }
      }).subscribe((status) => {
         if (status === 'SUBSCRIBED') {
            setStudioStatus('Connected');
            
            if (typeof window !== 'undefined' && streamId) {
              const peer = new Peer();
-             peer.on('open', () => {
-                // Call host with dummy stream since we only receive
-                const ctx = new AudioContext();
-                const dest = ctx.createMediaStreamDestination();
-                const call = peer.call(`vibe-host-${streamId}`, dest.stream);
-                
-                if (call) {
-                  call.on('stream', (remoteStream) => {
-                     console.log("Receiving host stream!");
-                     if (hostVideoRef.current) {
-                        hostVideoRef.current.srcObject = remoteStream;
-                        hostVideoRef.current.play().catch(e => console.error("Playback failed:", e));
-                     }
-                  });
-                }
-             });
-             // Cleanup
              (window as any)._vibeDirectorPeer = peer;
+             peer.on('open', () => {
+                 connectToHost(peer);
+             });
            }
         }
      });
