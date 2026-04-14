@@ -968,9 +968,6 @@ const ProfileDashboard: React.FC<{ user: any }> = ({ user }) => {
                    <div style={{ flex: 1, position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center', aspectRatio: '16/9' }}>
                   {isPlayingLive && (
                      <>
-                        <div style={{ position: 'absolute', top: 0, left: 0, background: 'rgba(255,255,0,0.9)', color: '#000', fontSize: '10px', padding: '4px', zIndex: 9999, fontWeight: 'bold' }}>
-                           V-STATE: {isPlayingLive?'L':'O'} | SS:{streamSource} | CS:{cameraStatus} | PU:{isPubliclyLive?'Y':'N'}
-                        </div>
                         {isPubliclyLive ? (
                            <div style={{ position: 'absolute', top: 20, left: 20, background: '#ff0055', color: '#fff', padding: '6px 14px', borderRadius: '12px', fontWeight: 'bold', fontSize: '14px', display: 'flex', alignItems: 'center', gap: '8px', zIndex: 10, textTransform: 'uppercase', boxShadow: '0 4px 15px rgba(255,0,85,0.4)' }}>
                              <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#fff', animation: 'pulse 1.5s infinite' }}/> LIVE
@@ -1039,11 +1036,6 @@ const ProfileDashboard: React.FC<{ user: any }> = ({ user }) => {
                                  </div>
                                )}
 
-                               {cameraStatus === 'active' && cameraDebugData && (
-                                 <div style={{ position: 'absolute', top: 50, left: 10, background: 'rgba(0,0,0,0.8)', color: '#00ff88', fontSize: '10px', padding: '4px 8px', borderRadius: '4px', zIndex: 20, fontFamily: 'monospace' }}>
-                                    DEBUG: {cameraDebugData}
-                                 </div>
-                               )}
 
                                <video 
                                  ref={videoRef} 
