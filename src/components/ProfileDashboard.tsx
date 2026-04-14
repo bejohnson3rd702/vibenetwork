@@ -45,6 +45,7 @@ const ProfileDashboard: React.FC<{ user: any }> = ({ user }) => {
   const [showTipModal, setShowTipModal] = useState(false);
   const [tipAmount, setTipAmount] = useState<number | ''>('');
   const [presenterMode, setPresenterMode] = useState(false);
+  const [showExitScreen, setShowExitScreen] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
   
   const channelRef = useRef<any>(null);
@@ -424,6 +425,24 @@ const ProfileDashboard: React.FC<{ user: any }> = ({ user }) => {
     return (
       <div style={{ paddingTop: '100px', minHeight: '100vh', background: '#050505', color: '#888', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
         <p>Loading Profile Network Data...</p>
+      </div>
+    );
+  }
+
+  if (showExitScreen) {
+    return (
+      <div style={{ minHeight: '100vh', background: '#050505', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', padding: '20px', textAlign: 'center' }}>
+        <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} transition={{ duration: 0.5 }} style={{ background: '#111', border: '1px solid rgba(255,255,255,0.05)', padding: '40px', borderRadius: '30px', boxShadow: '0 20px 40px rgba(0,0,0,0.5)', maxWidth: '500px' }}>
+           <h1 style={{ margin: '0 0 10px 0', fontSize: '36px', background: 'linear-gradient(45deg, #00ff88, #00bbff)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
+             Thank You!
+           </h1>
+           <p style={{ color: '#888', fontSize: '18px', lineHeight: '1.6', marginBottom: '30px' }}>
+             Your livestream broadcasting session has been successfully disconnected from the Green Room.
+           </p>
+           <div style={{ background: 'rgba(255,77,133,0.1)', border: '1px solid rgba(255,77,133,0.3)', color: '#ff4d85', padding: '16px', borderRadius: '16px', fontWeight: 'bold' }}>
+             You may now safely close this window.
+           </div>
+        </motion.div>
       </div>
     );
   }
@@ -942,7 +961,7 @@ const ProfileDashboard: React.FC<{ user: any }> = ({ user }) => {
                       }
                       setLocalGuestData(null);
                       setIsPlayingLive(false);
-                      window.location.href = '/';
+                      setShowExitScreen(true);
                   }} style={{ width: '100%', padding: '16px 24px', background: 'rgba(229,9,20,0.9)', color: '#fff', border: 'none', borderRadius: '16px', fontWeight: '900', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '12px', cursor: 'pointer', textTransform: 'uppercase', fontSize: '15px', letterSpacing: '2px', boxShadow: '0 4px 20px rgba(229,9,20,0.3)' }}>
                       🛑 Disconnect & Leave Stream
                   </button>
