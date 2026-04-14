@@ -22,7 +22,7 @@ export default function LiveChat({ streamId }: { streamId: string }) {
   const autoScrollRef = useRef<HTMLDivElement>(null);
   
   const [isActive, setIsActive] = useState(true);
-  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const resetTimer = () => {
     setIsActive(prev => {
       if (!prev) return true;
