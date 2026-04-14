@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Play } from 'lucide-react';
+import LiveChat from './LiveChat';
 
 import { getLiveSchedule } from '../api';
 
@@ -198,6 +199,11 @@ const WhatsOnNow: React.FC = () => {
             <span style={{ width: '8px', height: '8px', background: 'var(--accent-primary)', borderRadius: '50%' }}></span>
             ON AIR
           </div>
+        </div>
+
+        {/* Middle Pane: Live Chat */}
+        <div style={{ width: '380px', flexShrink: 0, borderLeft: '1px solid rgba(255,255,255,0.05)', background: '#050505', display: 'flex', flexDirection: 'column' }}>
+          <LiveChat streamId={activeItem?.id || 'main-stage'} />
         </div>
 
         {/* Right Side: Channel Guide / Up Next */}
