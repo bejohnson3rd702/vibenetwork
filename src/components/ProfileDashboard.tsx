@@ -386,7 +386,7 @@ const ProfileDashboard: React.FC<{ user: any }> = ({ user }) => {
       )}
 
       {/* Feed Layout Container */}
-      <div style={{ maxWidth: isGuestMode ? '1400px' : '800px', margin: isGuestMode ? '0 auto' : '40px auto 0', padding: isGuestMode ? '0' : '0 20px', display: 'flex', flexDirection: 'column', gap: '30px', paddingBottom: '100px' }}>
+      <div style={{ maxWidth: isGuestMode ? '1400px' : '800px', margin: isGuestMode ? '0 auto' : '40px auto 0', padding: '0 20px', display: 'flex', flexDirection: 'column', gap: '30px', paddingBottom: '100px' }}>
         
         {!isGuestMode && (
           <>
@@ -944,11 +944,11 @@ const ProfileDashboard: React.FC<{ user: any }> = ({ user }) => {
                               {guests.length > 0 && (
                                 <div style={{ marginTop: '16px', background: 'rgba(0,0,0,0.5)', padding: '12px', borderRadius: '8px' }}>
                                    {guests.map((g, i) => (
-                                     <div key={g.id || i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px', borderBottom: '1px solid rgba(255,255,255,0.05)', paddingBottom: '8px' }}>
+                                     <div key={g.id || i} style={{ display: 'flex', flexWrap: 'wrap', gap: '10px', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px', borderBottom: '1px solid rgba(255,255,255,0.05)', paddingBottom: '8px' }}>
                                        <div>
                                          <div style={{color: '#fff', fontSize: '13px'}}>{g.name} <span style={{color: '#00ff88', fontSize: '10px'}}>{g.title}</span></div>
                                        </div>
-                                       <div style={{ display: 'flex', gap: '8px' }}>
+                                       <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
                                          <button onClick={() => {
                                             const newG = [...guests];
                                             newG[i].isLive = !newG[i].isLive;
