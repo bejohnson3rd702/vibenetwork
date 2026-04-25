@@ -197,7 +197,8 @@ const SliderSection: React.FC<SliderSectionProps> = ({ title, items, delay = 0, 
 
   const endDrag = () => setIsDragging(false);
 
-  const widthVal = aspectRatio === '1/1' ? '320px' : aspectRatio === '3/4' ? '320px' : '480px';
+  // Profile sliders (3/4) reduced by exactly 15% from 320px to 272px
+  const widthVal = aspectRatio === '1/1' ? '320px' : aspectRatio === '3/4' ? '272px' : '480px';
 
   return (
     <motion.section 
