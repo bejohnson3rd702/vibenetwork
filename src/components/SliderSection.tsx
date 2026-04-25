@@ -213,14 +213,14 @@ const SliderSection: React.FC<SliderSectionProps> = ({ title, items, delay = 0, 
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '30px' }}>
           <h2 style={{ fontSize: '28px', margin: 0, fontWeight: 900, display: 'flex', alignItems: 'center', gap: '16px', letterSpacing: '-0.5px' }}>
             <span style={{ width: '4px', height: '24px', borderRadius: '4px', background: 'var(--accent-primary)', boxShadow: '0 0 10px var(--accent-primary)' }} />
-            <span style={{ color: '#fff' }}>{title}</span>
+            <span style={{ color: 'var(--text-primary)' }}>{title}</span>
           </h2>
           
           <div style={{ display: 'flex', gap: '8px' }}>
-            <button onClick={() => { if(scrollRef.current) scrollRef.current.scrollBy({ left: -600, behavior: 'smooth' }) }} style={{ width: '48px', height: '48px', borderRadius: '50%', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: '#fff', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.2s', boxShadow: '0 4px 10px rgba(0,0,0,0.3)' }} onMouseOver={e=>e.currentTarget.style.background='var(--accent-primary)'} onMouseOut={e=>e.currentTarget.style.background='rgba(255,255,255,0.05)'}>
+            <button onClick={() => { if(scrollRef.current) scrollRef.current.scrollBy({ left: -600, behavior: 'smooth' }) }} style={{ width: '48px', height: '48px', borderRadius: '50%', background: 'var(--bg-surface)', border: '1px solid var(--bg-surface-hover)', color: 'var(--text-primary)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.2s', boxShadow: '0 4px 10px rgba(0,0,0,0.1)' }} onMouseOver={e=>{e.currentTarget.style.background='var(--accent-primary)'; e.currentTarget.style.color='#fff'}} onMouseOut={e=>{e.currentTarget.style.background='var(--bg-surface)'; e.currentTarget.style.color='var(--text-primary)'}}>
               <ChevronLeft size={28} />
             </button>
-            <button onClick={() => { if(scrollRef.current) scrollRef.current.scrollBy({ left: 600, behavior: 'smooth' }) }} style={{ width: '48px', height: '48px', borderRadius: '50%', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: '#fff', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.2s', boxShadow: '0 4px 10px rgba(0,0,0,0.3)' }} onMouseOver={e=>e.currentTarget.style.background='var(--accent-primary)'} onMouseOut={e=>e.currentTarget.style.background='rgba(255,255,255,0.05)'}>
+            <button onClick={() => { if(scrollRef.current) scrollRef.current.scrollBy({ left: 600, behavior: 'smooth' }) }} style={{ width: '48px', height: '48px', borderRadius: '50%', background: 'var(--bg-surface)', border: '1px solid var(--bg-surface-hover)', color: 'var(--text-primary)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.2s', boxShadow: '0 4px 10px rgba(0,0,0,0.1)' }} onMouseOver={e=>{e.currentTarget.style.background='var(--accent-primary)'; e.currentTarget.style.color='#fff'}} onMouseOut={e=>{e.currentTarget.style.background='var(--bg-surface)'; e.currentTarget.style.color='var(--text-primary)'}}>
               <ChevronRight size={28} />
             </button>
           </div>

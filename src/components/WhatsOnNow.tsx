@@ -15,13 +15,13 @@ const ScheduleRow: React.FC<{ item: any, isActive: boolean, onClick: () => void 
         padding: '16px 20px',
         gap: '16px',
         cursor: 'pointer',
-        background: isActive ? 'rgba(255,255,255,0.05)' : 'transparent',
+        background: isActive ? 'var(--bg-surface-hover)' : 'transparent',
         borderLeft: isActive ? '3px solid var(--accent-primary)' : '3px solid transparent',
         transition: 'all 0.2s ease',
         borderBottom: '1px solid rgba(255,255,255,0.02)'
       }}
       onMouseOver={(e) => {
-        if (!isActive) e.currentTarget.style.background = 'rgba(255,255,255,0.02)';
+        if (!isActive) e.currentTarget.style.background = 'var(--bg-surface-hover)';
       }}
       onMouseOut={(e) => {
         if (!isActive) e.currentTarget.style.background = 'transparent';
@@ -40,10 +40,10 @@ const ScheduleRow: React.FC<{ item: any, isActive: boolean, onClick: () => void 
         <div style={{ color: isActive ? 'var(--accent-primary)' : 'var(--text-secondary)', fontSize: '12px', fontWeight: 700, marginBottom: '4px', textTransform: 'uppercase', letterSpacing: '1px' }}>
           {isActive ? 'Live Now' : item.time}
         </div>
-        <h4 style={{ fontSize: '15px', margin: 0, color: isActive ? '#fff' : 'rgba(255,255,255,0.8)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+        <h4 style={{ fontSize: '15px', margin: 0, color: isActive ? 'var(--text-primary)' : 'var(--text-secondary)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
           {item.title}
         </h4>
-        <div style={{ fontSize: '12px', color: 'rgba(255,255,255,0.4)', marginTop: '4px' }}>
+        <div style={{ fontSize: '12px', color: 'var(--text-muted)', marginTop: '4px' }}>
           {item.tags[0]} • {item.tags[1] || 'Music'}
         </div>
       </div>
@@ -115,7 +115,7 @@ const WhatsOnNow: React.FC = () => {
             boxShadow: '0 0 15px var(--accent-primary)',
             animation: 'pulse 2s infinite'
           }} />
-          <span style={{ color: 'white', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '2px' }}>LIVE NOW</span>
+          <span style={{ color: 'var(--text-primary)', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '2px' }}>LIVE NOW</span>
         </h2>
       </div>
 
@@ -132,8 +132,8 @@ const WhatsOnNow: React.FC = () => {
           background: 'var(--bg-color)',
           borderRadius: '24px', 
           overflow: 'hidden',
-          border: '1px solid rgba(255,255,255,0.05)',
-          boxShadow: '0 40px 100px rgba(0,0,0,0.8)'
+          border: '1px solid var(--bg-surface-hover)',
+          boxShadow: '0 40px 100px rgba(0,0,0,0.2)'
         }}
       >
         <div className="tv-video-mobile" style={{ flex: '1 1 auto', position: 'relative', background: '#000', pointerEvents: 'auto' }}>
@@ -204,14 +204,14 @@ const WhatsOnNow: React.FC = () => {
           width: '380px', 
           flexShrink: 0, 
           background: 'var(--bg-surface)', 
-          borderLeft: '1px solid rgba(255,255,255,0.05)',
+          borderLeft: '1px solid var(--bg-surface-hover)',
           display: 'flex',
           flexDirection: 'column'
         }}>
           <div style={{ 
             padding: '30px 24px', 
-            borderBottom: '1px solid rgba(255,255,255,0.05)',
-            background: 'rgba(255,255,255,0.02)'
+            borderBottom: '1px solid var(--bg-surface-hover)',
+            background: 'var(--bg-surface-hover)'
           }}>
             <h3 style={{ fontSize: '18px', margin: 0, fontWeight: 700, letterSpacing: '1px' }}>Global Schedule</h3>
             <p style={{ margin: '6px 0 0', fontSize: '13px', color: 'var(--text-secondary)' }}>Live Enterprise Broadcasts</p>
