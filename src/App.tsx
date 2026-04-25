@@ -96,7 +96,7 @@ function App() {
              name: dbConf.name || 'Vibe B2B Enterprise',
              domain: dbConf.domain || 'vibenetwork.tv',
              accent: dbConf.accent || '#0055ff',
-             bg: dbConf.bg || '#050505',
+             bg: dbConf.bg || 'var(--bg-color)',
              heroCopy: dbConf.hero_copy,
              btnPrimary: dbConf.btn_primary,
              sliderCount: dbConf.slider_count || 4,
@@ -124,7 +124,7 @@ function App() {
           
           <div style={{
              width: '100%', minHeight: '100vh', 
-             backgroundColor: '#050505',
+             backgroundColor: 'var(--bg-color)',
              display:'flex', flexDirection: 'column', alignItems:'center', justifyContent:'center', position: 'relative',
              textAlign: 'center', overflow: 'hidden'
           }}>
@@ -138,9 +138,9 @@ function App() {
                style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', objectFit: 'cover', zIndex: 0, filter: 'brightness(0.4) contrast(1.1) saturate(1.2)' }} 
              />
              {/* Complex Gradient Overlays responding dynamically to Tenant Accent */}
-             <div style={{ position: 'absolute', inset: 0, background: `linear-gradient(to right, ${wlConfig.bg || '#050505'}dd, transparent)`, zIndex: 1 }} />
+             <div style={{ position: 'absolute', inset: 0, background: `linear-gradient(to right, ${wlConfig.bg || 'var(--bg-color)'}dd, transparent)`, zIndex: 1 }} />
              <div style={{ position: 'absolute', inset: 0, background: `radial-gradient(circle at 50% 30%, ${wlConfig.accent || '#b829ea'}44, transparent 60%)`, zIndex: 1, mixBlendMode: 'screen' }} />
-             <div style={{ position: 'absolute', inset: 0, background: `linear-gradient(to bottom, transparent 40%, ${wlConfig.bg || '#050505'} 100%)`, zIndex: 1 }} />
+             <div style={{ position: 'absolute', inset: 0, background: `linear-gradient(to bottom, transparent 40%, ${wlConfig.bg || 'var(--bg-color)'} 100%)`, zIndex: 1 }} />
              
              <div className="px-mobile-sm py-mobile-sm" style={{ zIndex: 2, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '32px', marginTop: '60px' }}>
                 <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, delay: 0.2, ease: [0.16, 1, 0.3, 1] }} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '16px' }}>
@@ -305,7 +305,7 @@ function Home({ categories, activeVideo, setActiveVideo }: any) {
   return (
     <>
       <Hero />
-      <main style={{ background: '#000000', paddingBottom: '100px', zIndex: 10, position: 'relative', width: '100%' }}>
+      <main style={{ background: 'var(--bg-color)', paddingBottom: '100px', zIndex: 10, position: 'relative', width: '100%' }}>
         
         <div id="whats-on-now">
           <WhatsOnNow />
@@ -435,7 +435,7 @@ function Home({ categories, activeVideo, setActiveVideo }: any) {
               })()}
               </div>
               {/* Chat Pane */}
-              <div style={{ flexShrink: 0, background: '#050505', borderRadius: '0 16px 16px 0', overflow: 'hidden' }}>
+              <div style={{ flexShrink: 0, background: 'var(--bg-color)', borderRadius: '0 16px 16px 0', overflow: 'hidden' }}>
                  <LiveChat streamId={activeVideo.id || 'global'} />
               </div>
             </motion.div>
@@ -487,7 +487,7 @@ function Home({ categories, activeVideo, setActiveVideo }: any) {
       }} />
 
       {/* Premium Footer */}
-      <footer style={{ background: '#020202', borderTop: '1px solid rgba(255,255,255,0.05)', padding: '80px 40px', position: 'relative', overflow: 'hidden' }}>
+      <footer style={{ background: 'var(--bg-color)', borderTop: '1px solid rgba(255,255,255,0.05)', padding: '80px 40px', position: 'relative', overflow: 'hidden' }}>
         <div style={{ position: 'absolute', top: 0, left: '50%', transform: 'translateX(-50%)', width: '100%', height: '1px', background: 'linear-gradient(90deg, transparent, var(--accent-primary), transparent)', opacity: 0.3 }} />
         <div style={{ maxWidth: '1400px', margin: '0 auto', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '32px' }}>
            <h2 style={{ margin: 0, fontSize: '24px', fontWeight: 900, letterSpacing: '4px', display: 'flex', alignItems: 'center', gap: '12px' }}>

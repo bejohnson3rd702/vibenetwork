@@ -5,7 +5,7 @@ import { ASSETS } from '../data';
 
 const Hero: React.FC = () => {
   return (
-    <div style={{ position: 'relative', width: '100%', minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: '#020202', overflow: 'hidden' }}>
+    <div style={{ position: 'relative', width: '100%', minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: 'var(--bg-color)', overflow: 'hidden' }}>
       
       {/* Dynamic Cinematic Background Layer */}
       <motion.img 

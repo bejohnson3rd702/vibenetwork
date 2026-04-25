@@ -129,7 +129,7 @@ const WhatsOnNow: React.FC = () => {
           display: 'flex', 
           width: '100%', 
           height: '650px', 
-          background: '#050505',
+          background: 'var(--bg-color)',
           borderRadius: '24px', 
           overflow: 'hidden',
           border: '1px solid rgba(255,255,255,0.05)',
@@ -196,14 +196,14 @@ const WhatsOnNow: React.FC = () => {
           </div>
         </div>
 
-        <div className="tv-chat-mobile" style={{ flexShrink: 0, background: '#050505', display: 'flex', flexDirection: 'column' }}>
+        <div className="tv-chat-mobile" style={{ flexShrink: 0, background: 'var(--bg-color)', display: 'flex', flexDirection: 'column' }}>
           <LiveChat streamId={scheduleItems[activeIndex]?.id || 'main-stage'} />
         </div>
 
         <div className="tv-guide-mobile" style={{ 
           width: '380px', 
           flexShrink: 0, 
-          background: '#0a0a0a', 
+          background: 'var(--bg-surface)', 
           borderLeft: '1px solid rgba(255,255,255,0.05)',
           display: 'flex',
           flexDirection: 'column'

@@ -167,7 +167,7 @@ const SlideItem: React.FC<{ item: Item, aspectRatio: string, onClick?: () => voi
         boxShadow: isHovered ? '0 20px 40px rgba(0,0,0,0.8)' : '0 10px 30px rgba(0,0,0,0.5)',
         transition: 'all 0.4s ease',
         borderRadius: '24px',
-        background: '#050505'
+        background: 'var(--bg-color)'
       }}
     >
       {innerContent}
