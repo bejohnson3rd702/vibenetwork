@@ -67,8 +67,6 @@ const FALLBACK_10_YOUTUBE = [
 const WhatsOnNow: React.FC = () => {
   const [activeIndex, setActiveIndex] = useState(0);
   const [scheduleItems, setScheduleItems] = useState<any[]>(FALLBACK_10_YOUTUBE);
-  const [showTipModal, setShowTipModal] = useState(false);
-  const [tipAmount, setTipAmount] = useState<number | ''>('');
 
   React.useEffect(() => {
     async function loadSchedule() {
@@ -176,7 +174,7 @@ const WhatsOnNow: React.FC = () => {
              );
           })()}
           
-          <div style={{ 
+           <div style={{ 
               position: 'absolute', 
               top: '30px', 
               left: '30px', 
@@ -196,14 +194,6 @@ const WhatsOnNow: React.FC = () => {
             <span style={{ width: '8px', height: '8px', background: 'var(--accent-primary)', borderRadius: '50%' }}></span>
             ON AIR
           </div>
-
-          <div style={{ position: 'absolute', top: 30, right: 30, zIndex: 20 }}>
-            <button onClick={() => setShowTipModal(true)} style={{ padding: '8px 16px', background: 'linear-gradient(45deg, #00ff88, #00bbff)', color: '#000', border: 'none', borderRadius: '20px', fontWeight: '900', display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', boxShadow: '0 4px 15px rgba(0,255,136,0.3)', textTransform: 'uppercase', fontSize: '13px', letterSpacing: '1px' }}>
-               💰 Support Stream
-            </button>
-          </div>
-          
-
         </div>
 
         <div className="tv-chat-mobile" style={{ flexShrink: 0, background: '#050505', display: 'flex', flexDirection: 'column' }}>
@@ -263,39 +253,6 @@ const WhatsOnNow: React.FC = () => {
           background: rgba(255, 255, 255, 0.2);
         }
       `}</style>
-
-      <AnimatePresence>
-        {showTipModal && (
-          <div style={{ position: 'fixed', inset: 0, zIndex: 99999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }}>
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.8)', backdropFilter: 'blur(5px)' }} onClick={() => setShowTipModal(false)} />
-            <motion.div initial={{ scale: 0.9, opacity: 0, y: 20 }} animate={{ scale: 1, opacity: 1, y: 0 }} exit={{ scale: 0.9, opacity: 0, y: 20 }} style={{ position: 'relative', background: '#111', border: '1px solid rgba(255,255,255,0.1)', padding: '30px', borderRadius: '24px', width: '100%', maxWidth: '400px', display: 'flex', flexDirection: 'column', gap: '20px', boxShadow: '0 20px 40px rgba(0,0,0,0.5)' }}>
-              <h2 style={{ margin: 0, fontSize: '24px', display: 'flex', alignItems: 'center', gap: '8px' }}>💰 Support Vibe Network</h2>
-              <p style={{ margin: 0, color: '#aaa', fontSize: '14px' }}>100% of the tips on the Live Now stage go directly to Vibe Network.</p>
-              
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
-                {[5, 10, 20, 50].map(amt => (
-                  <button key={amt} onClick={() => setTipAmount(amt)} style={{ padding: '12px', background: tipAmount === amt ? '#00ff88' : 'rgba(255,255,255,0.05)', color: tipAmount === amt ? '#000' : '#fff', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px', cursor: 'pointer', fontWeight: 'bold', fontSize: '16px' }}>
-                    ${amt}
-                  </button>
-                ))}
-              </div>
-              <input type="number" placeholder="Custom Amount" value={tipAmount} onChange={e => setTipAmount(Number(e.target.value))} style={{ width: '100%', padding: '14px', background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.1)', color: '#fff', borderRadius: '12px', fontSize: '16px', outline: 'none' }} />
-              
-              <button onClick={() => {
-                const stored = JSON.parse(localStorage.getItem('vibe_network_ledger') || '[]');
-                stored.unshift({ time: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}), source: 'Platform Support Tip', origin: 'Vibe Network 100%', gross: Number(tipAmount) });
-                localStorage.setItem('vibe_network_ledger', JSON.stringify(stored));
-
-                alert(`Successfully supported Vibe Network with $${tipAmount}!`);
-                setShowTipModal(false);
-                setTipAmount('');
-              }} style={{ padding: '16px', background: 'linear-gradient(45deg, #00ff88, #00bbff)', color: '#000', border: 'none', borderRadius: '12px', fontWeight: '900', fontSize: '16px', cursor: 'pointer' }} disabled={!tipAmount}>
-                Confirm Tip &rarr;
-              </button>
-            </motion.div>
-          </div>
-        )}
-      </AnimatePresence>
     </section>
   );
 };
