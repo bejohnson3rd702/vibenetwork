@@ -341,24 +341,22 @@ function Home({ categories, activeVideo, setActiveVideo }: any) {
         </div>
 
         {/* New content section below sliders */}
-        <section style={{ maxWidth: '1400px', margin: '60px auto 0', padding: '0 40px' }}>
-          <div className="glass-panel" style={{ 
-            display: 'flex', 
-            flexDirection: 'column', 
-            alignItems: 'center', 
-            textAlign: 'center',
-            padding: '60px 20px',
-            background: 'linear-gradient(135deg, rgba(0, 100, 255, 0.05), rgba(0, 200, 255, 0.1))',
-            border: '1px solid rgba(255,255,255,0.05)',
-            boxShadow: '0 20px 40px rgba(0,0,0,0.5)'
-          }}>
-            <h2 style={{ fontSize: '36px', marginBottom: '16px' }}>Ready to Scale Your <span className="gradient-text">Enterprise</span>?</h2>
-            <p style={{ color: 'var(--text-secondary)', maxWidth: '600px', marginBottom: '32px', fontSize: '18px', lineHeight: 1.6 }}>
-              Create an administrative account today to instantly provision high-end corporate streaming nodes, global architecture networks, and executive live-broadcast tools.
-            </p>
-            <div style={{ display: 'flex', gap: '16px' }}>
-              <button className="btn-primary" style={{ padding: '14px 40px', background: '#0055ff' }}>Deploy Network Workspace</button>
-              <button className="btn-secondary" style={{ padding: '14px 40px' }}>View Case Studies</button>
+        <section style={{ maxWidth: '1400px', margin: '100px auto 40px', padding: '0 40px' }}>
+          <div style={{ position: 'relative', borderRadius: '24px', overflow: 'hidden' }}>
+            <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to right, #000 0%, transparent 100%)', zIndex: 1 }} />
+            <div style={{ position: 'absolute', inset: 0, backgroundImage: 'url("https://images.unsplash.com/photo-1550751827-4bd374c3f58b?auto=format&fit=crop&w=1200")', backgroundSize: 'cover', backgroundPosition: 'center', opacity: 0.3, filter: 'brightness(0.6)', zIndex: 0 }} />
+            <div style={{ position: 'absolute', right: '-10%', top: '-50%', width: '500px', height: '500px', background: 'var(--accent-primary)', filter: 'blur(150px)', opacity: 0.2, zIndex: 0, borderRadius: '50%' }} />
+            
+            <div style={{ position: 'relative', zIndex: 2, padding: '80px 60px', display: 'flex', flexDirection: 'column', alignItems: 'flex-start', textAlign: 'left' }}>
+              <div style={{ padding: '6px 16px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '20px', display: 'inline-block', marginBottom: '24px', fontSize: '12px', fontWeight: 800, textTransform: 'uppercase', color: 'rgba(255,255,255,0.6)' }}>Vibe Enterprise Nodes</div>
+              <h2 style={{ fontSize: '56px', fontWeight: 900, marginBottom: '20px', lineHeight: 1.1, letterSpacing: '-1px' }}>Ready to Scale Your<br/><span style={{ color: 'var(--accent-primary)' }}>Architecture</span>?</h2>
+              <p style={{ color: 'rgba(255,255,255,0.6)', maxWidth: '550px', marginBottom: '40px', fontSize: '18px', lineHeight: 1.6 }}>
+                Create an administrative account today to instantly provision high-end corporate streaming nodes, global architecture networks, and executive live-broadcast tools.
+              </p>
+              <div style={{ display: 'flex', gap: '20px' }}>
+                <button style={{ padding: '18px 40px', background: '#fff', color: '#000', border: 'none', borderRadius: '12px', fontWeight: 900, letterSpacing: '1px', textTransform: 'uppercase', fontSize: '14px', cursor: 'pointer', boxShadow: '0 10px 30px rgba(255,255,255,0.2)' }}>Deploy Network Workspace</button>
+                <button style={{ padding: '18px 40px', background: 'rgba(255,255,255,0.05)', color: '#fff', border: '1px solid rgba(255,255,255,0.2)', borderRadius: '12px', fontWeight: 900, letterSpacing: '1px', textTransform: 'uppercase', fontSize: '14px', cursor: 'pointer', backdropFilter: 'blur(10px)' }}>View Case Studies</button>
+              </div>
             </div>
           </div>
         </section>
@@ -489,25 +487,20 @@ function Home({ categories, activeVideo, setActiveVideo }: any) {
       }} />
 
       {/* Premium Footer */}
-      <footer style={{
-        background: 'rgba(10, 10, 10, 0.8)',
-        backdropFilter: 'blur(20px)',
-        borderTop: '1px solid rgba(255,255,255,0.05)',
-        padding: '60px 40px',
-        textAlign: 'center'
-      }}>
-        <img src={ASSETS.logo} alt="Logo" style={{ height: '50px', marginBottom: '20px', opacity: 0.8 }} />
-        <p style={{ color: 'var(--text-secondary)', maxWidth: '600px', margin: '0 auto 30px' }}>
-          Vibe Network is the premier global enterprise engine for deploying, managing, and scaling dedicated SaaS streaming architectures.
-        </p>
-        <div style={{ display: 'flex', justifyContent: 'center', gap: '30px', color: 'var(--text-secondary)', fontSize: '14px' }}>
-          <span style={{cursor: 'pointer'}}>Terms of Service</span>
-          <span style={{cursor: 'pointer'}}>Privacy Policy</span>
-          <span style={{cursor: 'pointer'}}>Contact Us</span>
+      <footer style={{ background: '#020202', borderTop: '1px solid rgba(255,255,255,0.05)', padding: '80px 40px', position: 'relative', overflow: 'hidden' }}>
+        <div style={{ position: 'absolute', top: 0, left: '50%', transform: 'translateX(-50%)', width: '100%', height: '1px', background: 'linear-gradient(90deg, transparent, var(--accent-primary), transparent)', opacity: 0.3 }} />
+        <div style={{ maxWidth: '1400px', margin: '0 auto', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '32px' }}>
+           <h2 style={{ margin: 0, fontSize: '24px', fontWeight: 900, letterSpacing: '4px', display: 'flex', alignItems: 'center', gap: '12px' }}>
+             <span style={{ fontSize: '32px', color: 'var(--accent-primary)' }}>V</span> VIBE NETWORK
+           </h2>
+           <div style={{ display: 'flex', gap: '40px', fontSize: '14px', fontWeight: 600, color: 'rgba(255,255,255,0.5)', textTransform: 'uppercase', letterSpacing: '2px' }}>
+             <span style={{ cursor: 'pointer', transition: 'color 0.2s' }} onMouseOver={e=>e.currentTarget.style.color='#fff'} onMouseOut={e=>e.currentTarget.style.color='rgba(255,255,255,0.5)'}>Architecture</span>
+             <span style={{ cursor: 'pointer', transition: 'color 0.2s' }} onMouseOver={e=>e.currentTarget.style.color='#fff'} onMouseOut={e=>e.currentTarget.style.color='rgba(255,255,255,0.5)'}>Pricing</span>
+             <span style={{ cursor: 'pointer', transition: 'color 0.2s' }} onMouseOver={e=>e.currentTarget.style.color='#fff'} onMouseOut={e=>e.currentTarget.style.color='rgba(255,255,255,0.5)'}>Scale Nodes</span>
+             <span style={{ cursor: 'pointer', transition: 'color 0.2s' }} onMouseOver={e=>e.currentTarget.style.color='#fff'} onMouseOut={e=>e.currentTarget.style.color='rgba(255,255,255,0.5)'}>Contact</span>
+           </div>
+           <p style={{ color: 'rgba(255,255,255,0.3)', fontSize: '12px', marginTop: '40px' }}>&copy; 2026 Vibe Media Networks LLC. All rights reserved.</p>
         </div>
-        <p style={{ color: 'rgba(255,255,255,0.2)', fontSize: '12px', marginTop: '40px' }}>
-          &copy; {new Date().getFullYear()} The VIBE Network. All Rights Reserved.
-        </p>
       </footer>
     </>
   );
