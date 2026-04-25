@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { supabase } from '../supabaseClient';
 import { X, Lock, Mail, AtSign } from 'lucide-react';
+import { useWhiteLabel } from '../context/WhiteLabelContext';
 
 interface AuthModalProps {
   onClose: () => void;
@@ -9,6 +10,7 @@ interface AuthModalProps {
 }
 
 const AuthModal: React.FC<AuthModalProps> = ({ onClose, onSuccess }) => {
+  const { setWlConfig: setGlobalWlDeploy } = useWhiteLabel();
   const [isLogin, setIsLogin] = useState(true);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -254,7 +256,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ onClose, onSuccess }) => {
                {wizardStep === 9 && (
                  <button onClick={() => {
                    onClose();
-                   window.dispatchEvent(new CustomEvent('whitelabel_commit', { detail: wlConfig }));
+                   setGlobalWlDeploy(wlConfig);
                  }} style={{ marginTop: '20px', padding: '16px', background: '#00ff88', color: '#000', fontWeight: 'bold', border: 'none', borderRadius: '12px', cursor: 'pointer', transition: 'all 0.2s' }}>
                    Boot New Operations Dashboard
                  </button>

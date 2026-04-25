@@ -1,13 +1,14 @@
 import React, { useState } from 'react';
 import { supabase } from '../supabaseClient';
 import { X, Mail, Lock, ShieldCheck, ArrowRight, Loader, AtSign } from 'lucide-react';
+import { useWhiteLabel } from '../context/WhiteLabelContext';
 
 interface EndUserAuthModalProps {
   onClose: () => void;
-  wlConfig: any;
 }
 
-export default function EndUserAuthModal({ onClose, wlConfig }: EndUserAuthModalProps) {
+export default function EndUserAuthModal({ onClose }: EndUserAuthModalProps) {
+  const { wlConfig } = useWhiteLabel();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isLogin, setIsLogin] = useState(true);

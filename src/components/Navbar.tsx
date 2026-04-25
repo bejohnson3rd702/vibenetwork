@@ -4,32 +4,22 @@ import { Search, User, Menu, Lightbulb, Wallet, Settings, LogOut } from 'lucide-
 import { ASSETS } from '../data';
 import { Link } from 'react-router-dom';
 import { supabase } from '../supabaseClient';
+import { useWhiteLabel } from '../context/WhiteLabelContext';
 
 interface NavbarProps {
   user: any;
   onLoginClick: () => void;
   onAdminClick?: () => void;
-  wlConfig?: any;
 }
 
-const Navbar: React.FC<NavbarProps> = ({ user, onLoginClick, onAdminClick, wlConfig }) => {
+const Navbar: React.FC<NavbarProps> = ({ user, onLoginClick, onAdminClick }) => {
   const [scrolled, setScrolled] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [theme, setTheme] = useState('dark');
-  const [appName, setAppName] = useState('');
-  const [appAccent, setAppAccent] = useState('');
-  const [appLogo, setAppLogo] = useState('');
-  // navigate removed
-
-  useEffect(() => {
-    const handleWhiteLabel = (e: any) => {
-      if (e.detail.name) setAppName(e.detail.name);
-      if (e.detail.accent) setAppAccent(e.detail.accent);
-      if (e.detail.logo) setAppLogo(e.detail.logo);
-    };
-    window.addEventListener('whitelabel_update', handleWhiteLabel);
-    return () => window.removeEventListener('whitelabel_update', handleWhiteLabel);
-  }, []);
+  const { wlConfig } = useWhiteLabel();
+  const appName = wlConfig?.name || '';
+  const appAccent = wlConfig?.accent || '';
+  const appLogo = wlConfig?.logoImage || '';
 
   const toggleTheme = () => {
     const newTheme = theme === 'dark' ? 'light' : 'dark';
@@ -63,10 +53,10 @@ const Navbar: React.FC<NavbarProps> = ({ user, onLoginClick, onAdminClick, wlCon
     }}>
       <div className="gap-mobile-sm" style={{ display: 'flex', alignItems: 'center', gap: '60px' }}>
         <Link to={`/${window.location.search}`} style={{ textDecoration: 'none' }}>
-          {(wlConfig?.logoImage || appLogo) ? (
-            <img src={wlConfig?.logoImage || appLogo} alt={wlConfig?.name || appName} style={{ height: '36px', objectFit: 'contain', cursor: 'pointer', borderRadius: '4px' }} />
-          ) : (wlConfig?.name || appName) ? (
-            <h1 style={{ margin: 0, fontSize: '24px', color: wlConfig?.accent || appAccent || '#fff', fontWeight: 900, textTransform: 'uppercase', letterSpacing: '2px' }}>{wlConfig?.name || appName}</h1>
+          {appLogo ? (
+            <img src={appLogo} alt={appName} style={{ height: '36px', objectFit: 'contain', cursor: 'pointer', borderRadius: '4px' }} />
+          ) : appName ? (
+            <h1 style={{ margin: 0, fontSize: '24px', color: appAccent || '#fff', fontWeight: 900, textTransform: 'uppercase', letterSpacing: '2px' }}>{appName}</h1>
           ) : (
             <img 
               src={ASSETS.logo} 
@@ -123,7 +113,7 @@ const Navbar: React.FC<NavbarProps> = ({ user, onLoginClick, onAdminClick, wlCon
               {(user?.email?.includes('admin') || user?.user_metadata?.role === 'admin') && onAdminClick && (
                 <div 
                   onClick={onAdminClick}
-                  style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', background: wlConfig?.accent || '#b829ea', padding: '6px 14px', borderRadius: '8px' }}
+                  style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', background: appAccent || '#b829ea', padding: '6px 14px', borderRadius: '8px' }}
                 >
                   <span style={{ fontFamily: 'var(--font-heading)', fontWeight: 600, fontSize: '12px', color: 'white', letterSpacing: '1px' }}>
                     Dashboard

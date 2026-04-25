@@ -12,6 +12,7 @@ import EndUserAuthModal from './components/EndUserAuthModal';
 import MasterAdminDashboard from './components/MasterAdminDashboard';
 import LiveChat from './components/LiveChat';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { WhiteLabelContext } from './context/WhiteLabelContext';
 import { useEffect, useState } from 'react';
 import { supabase } from './supabaseClient';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -116,9 +117,10 @@ function App() {
 
   if (wlConfig) {
     return (
-      <Router>
-        <div style={{ background: wlConfig.bg, minHeight: '100vh', color: '#fff', overflowX: 'hidden' }}>
-          <Navbar user={user} onLoginClick={() => setShowEndUserAuthModal(true)} onAdminClick={() => setShowAdminPanel(true)} wlConfig={wlConfig} />
+      <WhiteLabelContext.Provider value={{ wlConfig, setWlConfig }}>
+        <Router>
+          <div style={{ background: wlConfig.bg, minHeight: '100vh', color: '#fff', overflowX: 'hidden' }}>
+            <Navbar user={user} onLoginClick={() => setShowEndUserAuthModal(true)} onAdminClick={() => setShowAdminPanel(true)} />
           
           <div style={{
              width: '100%', height: '80vh', 
@@ -218,16 +220,17 @@ function App() {
           </div>
           
           {showAdminPanel && user && (
-            <BusinessAdminDashboard wlConfig={wlConfig} onClose={() => setShowAdminPanel(false)} />
+            <BusinessAdminDashboard onClose={() => setShowAdminPanel(false)} />
           )}
 
           <AnimatePresence>
              {showEndUserAuthModal && (
-               <EndUserAuthModal wlConfig={wlConfig} onClose={() => setShowEndUserAuthModal(false)} />
+               <EndUserAuthModal onClose={() => setShowEndUserAuthModal(false)} />
              )}
           </AnimatePresence>
         </div>
       </Router>
+      </WhiteLabelContext.Provider>
     );
   }
 

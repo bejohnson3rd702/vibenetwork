@@ -68,8 +68,10 @@ const AiTextArea = ({ defaultValue, label, rows=4, accent, onChange }: { default
        </div>
    )
 }
+import { useWhiteLabel } from '../context/WhiteLabelContext';
 
-export default function BusinessAdminDashboard({ wlConfig, onClose }: { wlConfig: any; onClose: () => void }) {
+export default function BusinessAdminDashboard({ onClose }: { onClose: () => void }) {
+  const { wlConfig } = useWhiteLabel();
   const [activeTab, setActiveTab] = useState('hero');
   const [uploadStatus, setUploadStatus] = useState<string | null>(null);
 
