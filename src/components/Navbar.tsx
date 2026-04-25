@@ -81,11 +81,11 @@ const Navbar: React.FC<NavbarProps> = ({ user, onLoginClick, onAdminClick }) => 
           {['Home', 'About Us', 'Vibe Agency', 'Watch Live', 'Contact'].map((item, i) => (
             <li key={item} style={{ 
               cursor: 'pointer',
-              color: i === 0 ? 'white' : 'rgba(255,255,255,0.6)',
+              color: i === 0 ? 'var(--text-primary)' : 'var(--text-secondary)',
               transition: 'color 0.2s',
             }}
-            onMouseOver={(e) => e.currentTarget.style.color = 'white'}
-            onMouseOut={(e) => e.currentTarget.style.color = i === 0 ? 'white' : 'rgba(255,255,255,0.6)'}
+            onMouseOver={(e) => e.currentTarget.style.color = 'var(--text-primary)'}
+            onMouseOut={(e) => e.currentTarget.style.color = i === 0 ? 'var(--text-primary)' : 'var(--text-secondary)'}
             >
               {item}
             </li>
@@ -105,7 +105,7 @@ const Navbar: React.FC<NavbarProps> = ({ user, onLoginClick, onAdminClick }) => 
             }}
             onClick={toggleTheme} 
           />
-          <Search size={20} color={appAccent || "white"} style={{ cursor: 'pointer' }} />
+          <Search size={20} color={appAccent || "var(--text-primary)"} style={{ cursor: 'pointer' }} />
         </div>
         <div className="hide-on-mobile" style={{ display: 'flex', alignItems: 'center', gap: '8px', borderLeft: '1px solid rgba(255,255,255,0.2)', paddingLeft: '24px' }}>
           {user ? (
@@ -115,7 +115,7 @@ const Navbar: React.FC<NavbarProps> = ({ user, onLoginClick, onAdminClick }) => 
                   onClick={onAdminClick}
                   style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', background: appAccent || '#b829ea', padding: '6px 14px', borderRadius: '8px' }}
                 >
-                  <span style={{ fontFamily: 'var(--font-heading)', fontWeight: 600, fontSize: '12px', color: 'white', letterSpacing: '1px' }}>
+                  <span style={{ fontFamily: 'var(--font-heading)', fontWeight: 600, fontSize: '12px', color: 'var(--text-primary)', letterSpacing: '1px' }}>
                     Dashboard
                   </span>
                 </div>
@@ -124,20 +124,20 @@ const Navbar: React.FC<NavbarProps> = ({ user, onLoginClick, onAdminClick }) => 
                 <div style={{ width: '30px', height: '30px', borderRadius: '50%', background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                   <span style={{ color: '#000', fontWeight: 'bold' }}>{user.email?.[0].toUpperCase()}</span>
                 </div>
-                <span style={{ fontFamily: 'var(--font-heading)', fontWeight: 600, fontSize: '12px', color: 'white', letterSpacing: '1px' }}>
+                <span style={{ fontFamily: 'var(--font-heading)', fontWeight: 600, fontSize: '12px', color: 'var(--text-primary)', letterSpacing: '1px' }}>
                   Profile
                 </span>
               </Link>
             </div>
           ) : (
             <div style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px' }} onClick={onLoginClick}>
-              <User size={20} color="white" />
-              <span style={{ fontFamily: 'var(--font-heading)', fontWeight: 600, fontSize: '13px', color: 'white', textTransform: 'uppercase', letterSpacing: '1px' }}>Log In</span>
+              <User size={20} color="var(--text-primary)" />
+              <span style={{ fontFamily: 'var(--font-heading)', fontWeight: 600, fontSize: '13px', color: 'var(--text-primary)', textTransform: 'uppercase', letterSpacing: '1px' }}>Log In</span>
             </div>
           )}
         </div>
         <div style={{ display: 'flex', alignItems: 'center', marginLeft: '12px', position: 'relative' }}>
-          <Menu size={24} color="white" cursor="pointer" onClick={() => setIsMenuOpen(!isMenuOpen)} />
+          <Menu size={24} color="var(--text-primary)" cursor="pointer" onClick={() => setIsMenuOpen(!isMenuOpen)} />
           
           {isMenuOpen && (
             <div style={{ position: 'absolute', top: '100%', right: 0, marginTop: '24px', background: '#111', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px', padding: '8px', minWidth: '220px', display: 'flex', flexDirection: 'column', gap: '4px', zIndex: 1000, boxShadow: '0 20px 40px rgba(0,0,0,0.5)' }}>
@@ -147,22 +147,22 @@ const Navbar: React.FC<NavbarProps> = ({ user, onLoginClick, onAdminClick }) => 
               
               {user ? (
                 <>
-                  <Link to={`/profile${window.location.search}${window.location.search ? '&' : '?'}tab=wallet`} onClick={() => setIsMenuOpen(false)} style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '12px 16px', color: '#fff', textDecoration: 'none', fontSize: '14px', borderRadius: '8px', cursor: 'pointer', transition: 'background 0.2s' }} onMouseOver={e => e.currentTarget.style.background='rgba(255,255,255,0.1)'} onMouseOut={e => e.currentTarget.style.background='transparent'}>
+                  <Link to={`/profile${window.location.search}${window.location.search ? '&' : '?'}tab=wallet`} onClick={() => setIsMenuOpen(false)} style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '12px 16px', color: 'var(--text-primary)', textDecoration: 'none', fontSize: '14px', borderRadius: '8px', cursor: 'pointer', transition: 'background 0.2s' }} onMouseOver={e => e.currentTarget.style.background='var(--bg-surface-hover)'} onMouseOut={e => e.currentTarget.style.background='transparent'}>
                     <Wallet size={16} /> Digital Wallet
                   </Link>
 
-                  <Link to={`/profile${window.location.search}`} onClick={() => setIsMenuOpen(false)} style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '12px 16px', color: '#fff', textDecoration: 'none', fontSize: '14px', borderRadius: '8px', cursor: 'pointer', transition: 'background 0.2s' }} onMouseOver={e => e.currentTarget.style.background='rgba(255,255,255,0.1)'} onMouseOut={e => e.currentTarget.style.background='transparent'}>
+                  <Link to={`/profile${window.location.search}`} onClick={() => setIsMenuOpen(false)} style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '12px 16px', color: 'var(--text-primary)', textDecoration: 'none', fontSize: '14px', borderRadius: '8px', cursor: 'pointer', transition: 'background 0.2s' }} onMouseOver={e => e.currentTarget.style.background='var(--bg-surface-hover)'} onMouseOut={e => e.currentTarget.style.background='transparent'}>
                     <Settings size={16} /> Account Settings
                   </Link>
                   
-                  <div style={{ height: '1px', background: 'rgba(255,255,255,0.1)', margin: '4px 0' }} />
+                  <div style={{ height: '1px', background: 'var(--bg-surface-hover)', margin: '4px 0' }} />
 
                   <div onClick={async () => { await supabase?.auth?.signOut(); window.location.reload(); }} style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '12px 16px', color: '#ff4444', textDecoration: 'none', fontSize: '14px', borderRadius: '8px', cursor: 'pointer', transition: 'background 0.2s' }} onMouseOver={e => e.currentTarget.style.background='rgba(255,68,68,0.1)'} onMouseOut={e => e.currentTarget.style.background='transparent'}>
                     <LogOut size={16} /> Disconnect
                   </div>
                 </>
               ) : (
-                <div onClick={() => { setIsMenuOpen(false); onLoginClick(); }} style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '12px 16px', color: '#fff', textDecoration: 'none', fontSize: '14px', borderRadius: '8px', cursor: 'pointer', transition: 'background 0.2s' }} onMouseOver={e => e.currentTarget.style.background='rgba(255,255,255,0.1)'} onMouseOut={e => e.currentTarget.style.background='transparent'}>
+                <div onClick={() => { setIsMenuOpen(false); onLoginClick(); }} style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '12px 16px', color: 'var(--text-primary)', textDecoration: 'none', fontSize: '14px', borderRadius: '8px', cursor: 'pointer', transition: 'background 0.2s' }} onMouseOver={e => e.currentTarget.style.background='var(--bg-surface-hover)'} onMouseOut={e => e.currentTarget.style.background='transparent'}>
                   <User size={16} /> Sign In to Access
                 </div>
               )}

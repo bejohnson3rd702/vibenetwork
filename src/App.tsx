@@ -119,7 +119,7 @@ function App() {
     return (
       <WhiteLabelContext.Provider value={{ wlConfig, setWlConfig }}>
         <Router>
-          <div style={{ background: wlConfig.bg, minHeight: '100vh', color: '#fff', overflowX: 'hidden' }}>
+          <div style={{ background: wlConfig.bg, minHeight: '100vh', color: 'var(--text-primary)', overflowX: 'hidden' }}>
             <Navbar user={user} onLoginClick={() => setShowEndUserAuthModal(true)} onAdminClick={() => setShowAdminPanel(true)} />
           
           <div style={{
@@ -144,7 +144,7 @@ function App() {
              
              <div className="px-mobile-sm py-mobile-sm" style={{ zIndex: 2, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '32px', marginTop: '60px' }}>
                 <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, delay: 0.2, ease: [0.16, 1, 0.3, 1] }} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '16px' }}>
-                  <div style={{ padding: '8px 16px', background: 'rgba(255,255,255,0.05)', backdropFilter: 'blur(10px)', border: `1px solid ${wlConfig.accent || '#b829ea'}44`, borderRadius: '30px', display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
+                  <div style={{ padding: '8px 16px', background: 'var(--bg-surface)', backdropFilter: 'blur(10px)', border: `1px solid ${wlConfig.accent || '#b829ea'}44`, borderRadius: '30px', display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
                     <div style={{ width: 8, height: 8, borderRadius: '50%', background: wlConfig.accent || '#b829ea', boxShadow: `0 0 10px ${wlConfig.accent || '#b829ea'}` }} />
                     <span style={{ fontSize: '13px', fontWeight: 600, letterSpacing: '2px', textTransform: 'uppercase', color: wlConfig.accent || '#b829ea' }}>Live Network Initialized</span>
                   </div>
@@ -158,7 +158,7 @@ function App() {
                 </motion.p>
                 
                 <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.8, delay: 0.6, ease: [0.16, 1, 0.3, 1] }} style={{ marginTop: '20px', display: 'flex', gap: '20px', alignItems: 'center' }}>
-                   <button onClick={() => { document.getElementById('featured-content')?.scrollIntoView({ behavior: 'smooth' }); }} style={{ padding: '20px 48px', background: wlConfig.accent || '#b829ea', color: '#fff', border: 'none', borderRadius: '16px', fontSize: '18px', fontWeight: 'bold', cursor: 'pointer', boxShadow: `0 10px 30px ${wlConfig.accent || '#b829ea'}66`, transition: 'all 0.3s ease' }}>
+                   <button onClick={() => { document.getElementById('featured-content')?.scrollIntoView({ behavior: 'smooth' }); }} style={{ padding: '20px 48px', background: wlConfig.accent || '#b829ea', color: 'var(--text-primary)', border: 'none', borderRadius: '16px', fontSize: '18px', fontWeight: 'bold', cursor: 'pointer', boxShadow: `0 10px 30px ${wlConfig.accent || '#b829ea'}66`, transition: 'all 0.3s ease' }}>
                      {wlConfig.btnPrimary || 'Explore Content'}
                    </button>
                 </motion.div>
@@ -203,7 +203,7 @@ function App() {
                    style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.95)', zIndex: 1000, display: 'flex', flexDirection: 'column' }}
                  >
                    <div style={{ padding: '24px 40px', display: 'flex', justifyContent: 'flex-end' }}>
-                     <button onClick={() => setActiveVideo(null)} style={{ background: 'none', border: 'none', color: '#fff', cursor: 'pointer', opacity: 0.7, padding: '8px' }} onMouseOver={e=>e.currentTarget.style.opacity='1'} onMouseOut={e=>e.currentTarget.style.opacity='0.7'}><X size={32} /></button>
+                     <button onClick={() => setActiveVideo(null)} style={{ background: 'none', border: 'none', color: 'var(--text-primary)', cursor: 'pointer', opacity: 0.7, padding: '8px' }} onMouseOver={e=>e.currentTarget.style.opacity='1'} onMouseOut={e=>e.currentTarget.style.opacity='0.7'}><X size={32} /></button>
                    </div>
                    <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '0 40px 40px', gap: '20px' }} onClick={e => e.stopPropagation()}>
                      <div style={{ flex: 1, maxWidth: '1200px', height: '100%', background: '#000', borderRadius: '16px', overflow: 'hidden', boxShadow: '0 20px 40px rgba(0,0,0,0.5)' }}>
@@ -348,14 +348,14 @@ function Home({ categories, activeVideo, setActiveVideo }: any) {
             <div style={{ position: 'absolute', right: '-10%', top: '-50%', width: '500px', height: '500px', background: 'var(--accent-primary)', filter: 'blur(150px)', opacity: 0.2, zIndex: 0, borderRadius: '50%' }} />
             
             <div style={{ position: 'relative', zIndex: 2, padding: '80px 60px', display: 'flex', flexDirection: 'column', alignItems: 'flex-start', textAlign: 'left' }}>
-              <div style={{ padding: '6px 16px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '20px', display: 'inline-block', marginBottom: '24px', fontSize: '12px', fontWeight: 800, textTransform: 'uppercase', color: 'rgba(255,255,255,0.6)' }}>Vibe Enterprise Nodes</div>
+              <div style={{ padding: '6px 16px', background: 'var(--bg-surface)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '20px', display: 'inline-block', marginBottom: '24px', fontSize: '12px', fontWeight: 800, textTransform: 'uppercase', color: 'var(--text-secondary)' }}>Vibe Enterprise Nodes</div>
               <h2 style={{ fontSize: '56px', fontWeight: 900, marginBottom: '20px', lineHeight: 1.1, letterSpacing: '-1px' }}>Ready to Scale Your<br/><span style={{ color: 'var(--accent-primary)' }}>Architecture</span>?</h2>
-              <p style={{ color: 'rgba(255,255,255,0.6)', maxWidth: '550px', marginBottom: '40px', fontSize: '18px', lineHeight: 1.6 }}>
+              <p style={{ color: 'var(--text-secondary)', maxWidth: '550px', marginBottom: '40px', fontSize: '18px', lineHeight: 1.6 }}>
                 Create an administrative account today to instantly provision high-end corporate streaming nodes, global architecture networks, and executive live-broadcast tools.
               </p>
               <div style={{ display: 'flex', gap: '20px' }}>
                 <button style={{ padding: '18px 40px', background: '#fff', color: '#000', border: 'none', borderRadius: '12px', fontWeight: 900, letterSpacing: '1px', textTransform: 'uppercase', fontSize: '14px', cursor: 'pointer', boxShadow: '0 10px 30px rgba(255,255,255,0.2)' }}>Deploy Network Workspace</button>
-                <button style={{ padding: '18px 40px', background: 'rgba(255,255,255,0.05)', color: '#fff', border: '1px solid rgba(255,255,255,0.2)', borderRadius: '12px', fontWeight: 900, letterSpacing: '1px', textTransform: 'uppercase', fontSize: '14px', cursor: 'pointer', backdropFilter: 'blur(10px)' }}>View Case Studies</button>
+                <button style={{ padding: '18px 40px', background: 'var(--bg-surface)', color: 'var(--text-primary)', border: '1px solid rgba(255,255,255,0.2)', borderRadius: '12px', fontWeight: 900, letterSpacing: '1px', textTransform: 'uppercase', fontSize: '14px', cursor: 'pointer', backdropFilter: 'blur(10px)' }}>View Case Studies</button>
               </div>
             </div>
           </div>
@@ -387,7 +387,7 @@ function Home({ categories, activeVideo, setActiveVideo }: any) {
                 position: 'absolute',
                 top: '40px',
                 right: '40px',
-                background: 'rgba(255,255,255,0.1)',
+                background: 'var(--bg-surface-hover)',
                 border: 'none',
                 color: 'white',
                 width: '50px',
@@ -493,13 +493,13 @@ function Home({ categories, activeVideo, setActiveVideo }: any) {
            <h2 style={{ margin: 0, fontSize: '24px', fontWeight: 900, letterSpacing: '4px', display: 'flex', alignItems: 'center', gap: '12px' }}>
              <span style={{ fontSize: '32px', color: 'var(--accent-primary)' }}>V</span> VIBE NETWORK
            </h2>
-           <div style={{ display: 'flex', gap: '40px', fontSize: '14px', fontWeight: 600, color: 'rgba(255,255,255,0.5)', textTransform: 'uppercase', letterSpacing: '2px' }}>
-             <span style={{ cursor: 'pointer', transition: 'color 0.2s' }} onMouseOver={e=>e.currentTarget.style.color='#fff'} onMouseOut={e=>e.currentTarget.style.color='rgba(255,255,255,0.5)'}>Architecture</span>
-             <span style={{ cursor: 'pointer', transition: 'color 0.2s' }} onMouseOver={e=>e.currentTarget.style.color='#fff'} onMouseOut={e=>e.currentTarget.style.color='rgba(255,255,255,0.5)'}>Pricing</span>
-             <span style={{ cursor: 'pointer', transition: 'color 0.2s' }} onMouseOver={e=>e.currentTarget.style.color='#fff'} onMouseOut={e=>e.currentTarget.style.color='rgba(255,255,255,0.5)'}>Scale Nodes</span>
-             <span style={{ cursor: 'pointer', transition: 'color 0.2s' }} onMouseOver={e=>e.currentTarget.style.color='#fff'} onMouseOut={e=>e.currentTarget.style.color='rgba(255,255,255,0.5)'}>Contact</span>
+           <div style={{ display: 'flex', gap: '40px', fontSize: '14px', fontWeight: 600, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '2px' }}>
+             <span style={{ cursor: 'pointer', transition: 'color 0.2s' }} onMouseOver={e=>e.currentTarget.style.color='var(--text-primary)'} onMouseOut={e=>e.currentTarget.style.color='var(--text-secondary)'}>Architecture</span>
+             <span style={{ cursor: 'pointer', transition: 'color 0.2s' }} onMouseOver={e=>e.currentTarget.style.color='var(--text-primary)'} onMouseOut={e=>e.currentTarget.style.color='var(--text-secondary)'}>Pricing</span>
+             <span style={{ cursor: 'pointer', transition: 'color 0.2s' }} onMouseOver={e=>e.currentTarget.style.color='var(--text-primary)'} onMouseOut={e=>e.currentTarget.style.color='var(--text-secondary)'}>Scale Nodes</span>
+             <span style={{ cursor: 'pointer', transition: 'color 0.2s' }} onMouseOver={e=>e.currentTarget.style.color='var(--text-primary)'} onMouseOut={e=>e.currentTarget.style.color='var(--text-secondary)'}>Contact</span>
            </div>
-           <p style={{ color: 'rgba(255,255,255,0.3)', fontSize: '12px', marginTop: '40px' }}>&copy; 2026 Vibe Media Networks LLC. All rights reserved.</p>
+           <p style={{ color: 'var(--text-muted)', fontSize: '12px', marginTop: '40px' }}>&copy; 2026 Vibe Media Networks LLC. All rights reserved.</p>
         </div>
       </footer>
     </>
