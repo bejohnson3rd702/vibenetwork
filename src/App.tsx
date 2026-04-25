@@ -123,20 +123,49 @@ function App() {
             <Navbar user={user} onLoginClick={() => setShowEndUserAuthModal(true)} onAdminClick={() => setShowAdminPanel(true)} />
           
           <div style={{
-             width: '100%', height: '80vh', 
-             backgroundColor: '#000',
+             width: '100%', minHeight: '100vh', 
+             backgroundColor: '#050505',
              display:'flex', flexDirection: 'column', alignItems:'center', justifyContent:'center', position: 'relative',
              textAlign: 'center', overflow: 'hidden'
           }}>
-             <img src={wlConfig.heroImage || `https://images.unsplash.com/photo-1550751827-4bd374c3f58b?auto=format&fit=crop&q=80&w=2000`} alt="Generative Hero Base" style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', objectFit: 'cover', zIndex: 0, filter: 'brightness(0.6)' }} />
-             <div style={{ position: 'absolute', inset: 0, background: `linear-gradient(to bottom, rgba(0,0,0,0.4), ${wlConfig.bg || '#050505'})`, zIndex: 1 }} />
-             <div className="px-mobile-sm py-mobile-sm" style={{ zIndex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '24px' }}>
-               <h1 className="hero-title-mobile" style={{ fontSize: '80px', fontWeight: '900', margin: 0, letterSpacing: '-2px', textShadow: '0 10px 30px rgba(0,0,0,0.5)' }}>{wlConfig.name}</h1>
-               <p className="hero-sub-mobile" style={{ fontSize: '24px', opacity: 0.9, maxWidth: '750px', fontWeight: '500', textShadow: '0 4px 10px rgba(0,0,0,0.5)', lineHeight: 1.5 }}>{wlConfig.heroCopy || 'The premiere destination for high quality digital content.'}</p>
+             {/* Background Mesh & Image Layer */}
+             <motion.img 
+               initial={{ scale: 1.1, opacity: 0 }}
+               animate={{ scale: 1, opacity: 1 }}
+               transition={{ duration: 1.5, ease: 'easeOut' }}
+               src={wlConfig.heroImage || `https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&q=80&w=2500`} 
+               alt="Atmospheric Hero Background" 
+               style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', objectFit: 'cover', zIndex: 0, filter: 'brightness(0.4) contrast(1.1) saturate(1.2)' }} 
+             />
+             {/* Complex Gradient Overlays responding dynamically to Tenant Accent */}
+             <div style={{ position: 'absolute', inset: 0, background: `linear-gradient(to right, ${wlConfig.bg || '#050505'}dd, transparent)`, zIndex: 1 }} />
+             <div style={{ position: 'absolute', inset: 0, background: `radial-gradient(circle at 50% 30%, ${wlConfig.accent || '#b829ea'}44, transparent 60%)`, zIndex: 1, mixBlendMode: 'screen' }} />
+             <div style={{ position: 'absolute', inset: 0, background: `linear-gradient(to bottom, transparent 40%, ${wlConfig.bg || '#050505'} 100%)`, zIndex: 1 }} />
+             
+             <div className="px-mobile-sm py-mobile-sm" style={{ zIndex: 2, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '32px', marginTop: '60px' }}>
+                <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, delay: 0.2, ease: [0.16, 1, 0.3, 1] }} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '16px' }}>
+                  <div style={{ padding: '8px 16px', background: 'rgba(255,255,255,0.05)', backdropFilter: 'blur(10px)', border: `1px solid ${wlConfig.accent || '#b829ea'}44`, borderRadius: '30px', display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
+                    <div style={{ width: 8, height: 8, borderRadius: '50%', background: wlConfig.accent || '#b829ea', boxShadow: `0 0 10px ${wlConfig.accent || '#b829ea'}` }} />
+                    <span style={{ fontSize: '13px', fontWeight: 600, letterSpacing: '2px', textTransform: 'uppercase', color: wlConfig.accent || '#b829ea' }}>Live Network Initialized</span>
+                  </div>
+                  <h1 className="hero-title-mobile" style={{ fontSize: '96px', fontWeight: '900', margin: 0, letterSpacing: '-3px', lineHeight: 1.1, textShadow: '0 20px 40px rgba(0,0,0,0.8)', background: `linear-gradient(to bottom, #ffffff, rgba(255,255,255,0.7))`, WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
+                    {wlConfig.name}
+                  </h1>
+                </motion.div>
+                
+                <motion.p initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, delay: 0.4, ease: [0.16, 1, 0.3, 1] }} className="hero-sub-mobile" style={{ fontSize: '26px', color: 'rgba(255,255,255,0.7)', maxWidth: '800px', fontWeight: '400', textShadow: '0 10px 20px rgba(0,0,0,0.8)', lineHeight: 1.6 }}>
+                  {wlConfig.heroCopy || 'The premiere destination for high quality digital content.'}
+                </motion.p>
+                
+                <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.8, delay: 0.6, ease: [0.16, 1, 0.3, 1] }} style={{ marginTop: '20px', display: 'flex', gap: '20px', alignItems: 'center' }}>
+                   <button onClick={() => { document.getElementById('featured-content')?.scrollIntoView({ behavior: 'smooth' }); }} style={{ padding: '20px 48px', background: wlConfig.accent || '#b829ea', color: '#fff', border: 'none', borderRadius: '16px', fontSize: '18px', fontWeight: 'bold', cursor: 'pointer', boxShadow: `0 10px 30px ${wlConfig.accent || '#b829ea'}66`, transition: 'all 0.3s ease' }}>
+                     {wlConfig.btnPrimary || 'Explore Content'}
+                   </button>
+                </motion.div>
              </div>
           </div>
 
-          <div className="px-mobile-sm py-mobile-sm" style={{ padding: '80px 10%', display: 'flex', flexDirection: 'column', gap: '60px', background: 'linear-gradient(to bottom, rgba(0,0,0,0), rgba(0,0,0,0.5))' }}>
+          <div id="featured-content" className="px-mobile-sm py-mobile-sm" style={{ padding: '80px 10%', display: 'flex', flexDirection: 'column', gap: '80px', position: 'relative', zIndex: 2 }}>
              
              <div className="mobile-w-full no-margin-mobile" style={{ position: 'relative', width: '100vw', marginLeft: 'calc(-50vw + 50%)' }}>
                {categories.map((category: any, index: number) => {
