@@ -141,19 +141,21 @@ a {
 
 /* Light Mode Global CSS Engine */
 html[data-theme="light"] {
-  filter: invert(1) hue-rotate(180deg);
-  background-color: #fff;
-}
-
-html[data-theme="light"] img,
-html[data-theme="light"] video,
-html[data-theme="light"] iframe {
-  filter: invert(1) hue-rotate(180deg);
+  background-color: var(--bg-color);
+  
+  /* Overwrite the core variables naturally */
+  --bg-color: #f7f7f7;
+  --bg-surface: #ffffff;
+  --bg-surface-hover: #eaeaea;
+  
+  --text-primary: #0a0a0a;
+  --text-secondary: #525252;
+  --text-muted: #8a8a8a;
 }
 
 html[data-theme="light"] .btn-primary {
   color: #fff;
-  background: #000;
+  background: var(--text-primary);
 }
 
 /* Mobile Responsive Engine */
