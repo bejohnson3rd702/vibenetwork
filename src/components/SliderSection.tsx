@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react';
-import { Play, ArrowRight } from 'lucide-react';
+import { Play, ArrowRight, ChevronLeft, ChevronRight } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 interface Item {
@@ -216,8 +216,12 @@ const SliderSection: React.FC<SliderSectionProps> = ({ title, items, delay = 0, 
           </h2>
           
           <div style={{ display: 'flex', gap: '8px' }}>
-            <button onClick={() => { if(scrollRef.current) scrollRef.current.scrollBy({ left: -400, behavior: 'smooth' }) }} style={{ width: '40px', height: '40px', borderRadius: '50%', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: '#fff', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>&larr;</button>
-            <button onClick={() => { if(scrollRef.current) scrollRef.current.scrollBy({ left: 400, behavior: 'smooth' }) }} style={{ width: '40px', height: '40px', borderRadius: '50%', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: '#fff', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>&rarr;</button>
+            <button onClick={() => { if(scrollRef.current) scrollRef.current.scrollBy({ left: -600, behavior: 'smooth' }) }} style={{ width: '48px', height: '48px', borderRadius: '50%', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: '#fff', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.2s', boxShadow: '0 4px 10px rgba(0,0,0,0.3)' }} onMouseOver={e=>e.currentTarget.style.background='var(--accent-primary)'} onMouseOut={e=>e.currentTarget.style.background='rgba(255,255,255,0.05)'}>
+              <ChevronLeft size={28} />
+            </button>
+            <button onClick={() => { if(scrollRef.current) scrollRef.current.scrollBy({ left: 600, behavior: 'smooth' }) }} style={{ width: '48px', height: '48px', borderRadius: '50%', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: '#fff', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.2s', boxShadow: '0 4px 10px rgba(0,0,0,0.3)' }} onMouseOver={e=>e.currentTarget.style.background='var(--accent-primary)'} onMouseOut={e=>e.currentTarget.style.background='rgba(255,255,255,0.05)'}>
+              <ChevronRight size={28} />
+            </button>
           </div>
         </div>
         
@@ -248,7 +252,7 @@ const SliderSection: React.FC<SliderSectionProps> = ({ title, items, delay = 0, 
               transition={{ duration: 0.6, delay: delay + (index * 0.1), ease: [0.16, 1, 0.3, 1] }}
               className="slider-item-mobile"
               key={item.id} 
-              style={{ width: widthVal, height: aspectRatio === '1/1' ? widthVal : 'auto' }}
+              style={{ flexShrink: 0, width: widthVal, height: aspectRatio === '1/1' ? widthVal : 'auto' }}
               onClick={(e) => {
                 if (isDragging && Math.abs(scrollRef.current!.scrollLeft - scrollLeft) > 10) {
                    e.preventDefault(); return;
