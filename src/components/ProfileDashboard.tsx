@@ -28,7 +28,7 @@ const ProfileDashboard: React.FC<{ user: any }> = ({ user }) => {
   const [avatarUrl, setAvatarUrl] = useState('');
   const [homepageImageUrl, setHomepageImageUrl] = useState('');
   const [saving, setSaving] = useState(false);
-  const [activeTab, setActiveTab] = useState<'feed' | 'store' | 'live' | 'booking' | 'series' | 'courses' | 'scheduler' | 'wallet'>('feed');
+  const [activeTab, setActiveTab] = useState<'feed' | 'store' | 'live' | 'booking' | 'series' | 'courses' | 'wallet'>('feed');
   const [walletBalance, setWalletBalance] = useState(() => (typeof window !== 'undefined' ? Number(localStorage.getItem('vibe_host_wallet') || 1250.00) : 1250.00));
   const [paySubsWithWallet, setPaySubsWithWallet] = useState(true);
   const [isSubscribed, setIsSubscribed] = useState(false);
@@ -763,13 +763,7 @@ const ProfileDashboard: React.FC<{ user: any }> = ({ user }) => {
           </button>
 
           {isOwnProfile && viewMode === 'edit' && (
-            <button 
-              onClick={() => setActiveTab('scheduler')}
-              style={{ background: 'none', border: 'none', color: activeTab === 'scheduler' ? '#ff4d85' : '#888', fontSize: '18px', fontWeight: 'bold', cursor: 'pointer', position: 'relative', display: 'flex', alignItems: 'center', gap: '6px' }}
-            >
-              <Calendar size={18} /> Scheduler
-              {activeTab === 'scheduler' && <motion.div layoutId="activetab" style={{ position: 'absolute', bottom: '-17px', left: 0, right: 0, height: '3px', background: '#ff4d85', borderRadius: '3px' }} />}
-            </button>
+
           )}
 
           {isOwnProfile && (
@@ -1438,92 +1432,7 @@ const ProfileDashboard: React.FC<{ user: any }> = ({ user }) => {
           </motion.div>
         )}
 
-        {activeTab === 'scheduler' && isOwnProfile && viewMode === 'edit' && (
-        /* ----------- SCHEDULER TAB ----------- */
-          <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '16px' }}>
-              <div>
-                <h3 style={{ margin: '0 0 8px 0', fontSize: '28px' }}>Content Scheduler</h3>
-                <p style={{ margin: 0, color: '#888', fontSize: '16px' }}>Automate your content pipeline across Vibe Network.</p>
-              </div>
-              <button onClick={handleNewSchedule} style={{ padding: '14px 28px', background: 'linear-gradient(135deg, #ff4d85, #8A2BE2)', color: '#fff', border: 'none', borderRadius: '12px', fontWeight: 'bold', fontSize: '15px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px', boxShadow: '0 10px 20px rgba(138,43,226,0.3)' }} onMouseOver={e=>e.currentTarget.style.transform='scale(1.02)'} onMouseOut={e=>e.currentTarget.style.transform='scale(1)'}>
-                <Edit3 size={18} /> Schedule New Post
-              </button>
-            </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '24px', alignItems: 'start' }}>
-              
-              {/* Drafts Column */}
-              <div 
-                onDrop={(e) => handleDrop(e, 'draft')}
-                onDragOver={handleDragOver}
-                style={{ background: 'rgba(255,255,255,0.02)', borderRadius: '20px', padding: '24px', border: '1px solid rgba(255,255,255,0.05)', minHeight: '400px' }}
-              >
-                <h4 style={{ margin: '0 0 20px 0', color: '#fff', fontSize: '16px', display: 'flex', alignItems: 'center', gap: '10px' }}>
-                  <div style={{ width:12, height:12, borderRadius:'50%', background:'#888' }}/> 
-                  Drafts ({scheduledPosts.filter(p => p.status === 'draft').length})
-                </h4>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                  {scheduledPosts.filter(p => p.status === 'draft').map(post => (
-                     <div key={post.id} draggable onDragStart={(e) => handleDragStart(e, post.id)} style={{ background: 'rgba(0,0,0,0.5)', padding: '20px', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.05)', cursor: 'grab' }}>
-                       <div style={{ fontSize: '12px', color: post.color, fontWeight: 'bold', marginBottom: '10px', textTransform: 'uppercase', letterSpacing: '1px' }}>{post.type}</div>
-                       <p style={{ margin: '0 0 16px 0', fontSize: '15px', lineHeight: 1.5 }}>{post.content}</p>
-                       <div style={{ fontSize: '12px', color: '#666', display: 'flex', alignItems: 'center', gap: '6px' }}><Clock size={12}/> {post.date}</div>
-                     </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* Scheduled Column */}
-              <div 
-                onDrop={(e) => handleDrop(e, 'scheduled')}
-                onDragOver={handleDragOver}
-                style={{ background: 'rgba(255,255,255,0.02)', borderRadius: '20px', padding: '24px', border: '1px solid rgba(255,255,255,0.05)', minHeight: '400px' }}
-              >
-                <h4 style={{ margin: '0 0 20px 0', color: '#fff', fontSize: '16px', display: 'flex', alignItems: 'center', gap: '10px' }}>
-                  <div style={{ width:12, height:12, borderRadius:'50%', background:'#FFD700', boxShadow: '0 0 10px rgba(255,215,0,0.5)' }}/> 
-                  Scheduled ({scheduledPosts.filter(p => p.status === 'scheduled').length})
-                </h4>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                  {scheduledPosts.filter(p => p.status === 'scheduled').map(post => (
-                     <div key={post.id} draggable onDragStart={(e) => handleDragStart(e, post.id)} style={{ background: 'rgba(0,0,0,0.6)', padding: '20px', borderRadius: '16px', border: '1px solid rgba(255,215,0,0.3)', cursor: 'grab', position: 'relative', overflow: 'hidden' }}>
-                       <div style={{ position: 'absolute', top: 0, left: 0, width: '4px', height: '100%', background: '#FFD700' }} />
-                       <div style={{ fontSize: '12px', color: '#FFD700', fontWeight: 'bold', marginBottom: '12px', display: 'flex', alignItems: 'center', gap:'6px' }}><Clock size={14}/> {post.date}</div>
-                       <p style={{ margin: '0 0 16px 0', fontSize: '15px', lineHeight: 1.5 }}>{post.content}</p>
-                       {post.image && <img src={post.image} alt="preview" style={{ width: '100%', height: '100px', objectFit: 'cover', borderRadius: '10px' }}/>}
-                     </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* Published Column */}
-              <div 
-                onDrop={(e) => handleDrop(e, 'published')}
-                onDragOver={handleDragOver}
-                style={{ background: 'rgba(255,255,255,0.02)', borderRadius: '20px', padding: '24px', border: '1px solid rgba(255,255,255,0.05)', minHeight: '400px' }}
-              >
-                <h4 style={{ margin: '0 0 20px 0', color: '#fff', fontSize: '16px', display: 'flex', alignItems: 'center', gap: '10px' }}>
-                  <div style={{ width:12, height:12, borderRadius:'50%', background:'#00ff88' }}/> 
-                  Published ({scheduledPosts.filter(p => p.status === 'published').length})
-                </h4>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                  {scheduledPosts.filter(p => p.status === 'published').map(post => (
-                     <div key={post.id} draggable onDragStart={(e) => handleDragStart(e, post.id)} style={{ background: 'rgba(0,0,0,0.5)', padding: '20px', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.05)', opacity: 0.6, cursor: 'grab' }}>
-                       <div style={{ fontSize: '12px', color: '#00ff88', fontWeight: 'bold', marginBottom: '12px', display: 'flex', alignItems: 'center', gap:'6px' }}><CheckCircle size={14}/> {post.date}</div>
-                       <p style={{ margin: '0 0 16px 0', fontSize: '15px', lineHeight: 1.5 }}>{post.content}</p>
-                       {post.likes && (
-                         <div style={{ display: 'flex', gap: '16px', borderTop: '1px solid rgba(255,255,255,0.1)', paddingTop: '12px' }}>
-                           <div style={{ fontSize: '13px', color: '#888', display: 'flex', alignItems: 'center', gap:'4px' }}><Heart size={14}/> {post.likes}</div>
-                           <div style={{ fontSize: '13px', color: '#888', display: 'flex', alignItems: 'center', gap:'4px' }}><MessageCircle size={14}/> {post.comments}</div>
-                         </div>
-                       )}
-                     </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-          </motion.div>
-        )}
 
         {/* --- WALLET SUBSCRIPTION & EARNINGS TAB --- */}
         {activeTab === 'wallet' && isOwnProfile && viewMode === 'edit' && (
