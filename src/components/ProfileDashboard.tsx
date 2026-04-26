@@ -399,7 +399,7 @@ const ProfileDashboard: React.FC<{ user: any }> = ({ user }) => {
       
       if (!error && data) {
         setProfile(data);
-        setBio(data.bio || 'Welcome to my official Vibe Network channel!');
+        setBio(data.bio || 'Welcome to my official channel!');
         setAvatarUrl(data.avatar_url || '');
         setHomepageImageUrl(data.homepage_image_url || '');
         if (data.genre) setSelectedGenre(data.genre);
@@ -1089,7 +1089,7 @@ const ProfileDashboard: React.FC<{ user: any }> = ({ user }) => {
                                        <Video size={30} />
                                     </div>
                                     <p style={{ margin: 0, color: '#fff', fontSize: '14px', fontWeight: 'bold' }}>CAMERA ACCESS DENIED</p>
-                                    <p style={{ margin: '5px 0 0 0', color: '#888', fontSize: '12px', maxWidth: '300px', textAlign: 'center' }}>Check your browser settings to ensure Vibe Network has hardware permissions.</p>
+                                    <p style={{ margin: '5px 0 0 0', color: '#888', fontSize: '12px', maxWidth: '300px', textAlign: 'center' }}>Check your browser settings to ensure the platform has hardware permissions.</p>
                                     <button onClick={() => setIsPlayingLive(false)} style={{ marginTop: '15px', padding: '8px 20px', background: 'transparent', border: '1px solid #333', color: '#fff', borderRadius: '20px', cursor: 'pointer' }}>Close Mode</button>
                                  </div>
                                )}
@@ -1104,7 +1104,7 @@ const ProfileDashboard: React.FC<{ user: any }> = ({ user }) => {
                                />
                                <div style={{ position: 'absolute', bottom: streamSource==='url'?4:10, right: streamSource==='url'?4:10, background: 'rgba(0,0,0,0.7)', padding: streamSource==='url'?'4px 8px':'6px 12px', borderRadius: '8px', textAlign: 'right', border: '1px solid rgba(255,255,255,0.1)', backdropFilter: 'blur(10px)' }}>
                                  <div style={{ fontWeight: 'bold', fontSize: streamSource==='url'?'11px':'14px', color: '#fff' }}>{localGuestData ? localGuestData.name : profile?.username || 'Host'}</div>
-                                 <div style={{ fontSize: streamSource==='url'?'9px':'11px', color: '#00ff88', textTransform: 'uppercase', letterSpacing: '1px', marginTop: '2px' }}>{localGuestData ? localGuestData.title : 'Executive Streamer'}</div>
+                                 <div style={{ fontSize: streamSource==='url'?'9px':'11px', color: '#00ff88', textTransform: 'uppercase', letterSpacing: '1px', marginTop: '2px' }}>{localGuestData ? localGuestData.title : (profile?.industry || 'Live Streamer')}</div>
                                </div>
                              </div>
                            )}
@@ -1470,7 +1470,7 @@ const ProfileDashboard: React.FC<{ user: any }> = ({ user }) => {
               { id: 'c1', title: 'The Complete DJ Masterclass: Zero to Festival', price: 199.99, modules: 24, hours: '12.5', img: 'https://picsum.photos/seed/djcourse/400/250', progress: 0 },
               { id: 'c2', title: 'Viral Growth Secrets: Dominate TikTok', price: 99.99, modules: 14, hours: '5.0', img: 'https://picsum.photos/seed/tiktokcourse/400/250', progress: 0 },
               { id: 'c3', title: 'Ableton Live 12 Studio Deep Dive', price: 149.99, modules: 32, hours: '18.0', img: 'https://picsum.photos/seed/abletoncourse/400/250', progress: 0 },
-              { id: 'c4', title: 'The Ultimate Guide to Independent Vibe Networks', price: 299.99, modules: 40, hours: '22.0', img: 'https://picsum.photos/seed/networkcourse/400/250', progress: 0 },
+              { id: 'c4', title: 'The Ultimate Guide to Independent Networks', price: 299.99, modules: 40, hours: '22.0', img: 'https://picsum.photos/seed/networkcourse/400/250', progress: 0 },
             ].map((course) => (
               <motion.div key={course.id} initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} style={{ background: 'rgba(255,255,255,0.02)', borderRadius: '20px', overflow: 'hidden', border: '1px solid rgba(255,255,255,0.05)', display: 'flex', flexDirection: 'column' }}>
                 <div style={{ height: '180px', background: `url(${course.img}) center/cover`, position: 'relative' }}>
@@ -1500,10 +1500,10 @@ const ProfileDashboard: React.FC<{ user: any }> = ({ user }) => {
         )}
 
         {activeTab === 'vibe_agency' && (
-        /* ----------- VIBE AGENCY TAB ----------- */
+        /* ----------- AGENCY TAB ----------- */
           <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
             <div style={{ padding: '40px', background: 'rgba(255,255,255,0.02)', borderRadius: '24px', border: '1px solid rgba(255,255,255,0.05)', textAlign: 'center' }}>
-              <h3 style={{ fontSize: '28px', marginBottom: '16px', color: '#fff' }}>Vibe Agency Services</h3>
+              <h3 style={{ fontSize: '28px', marginBottom: '16px', color: '#fff' }}>Platform Agency Services</h3>
               <p style={{ color: '#888', fontSize: '16px', maxWidth: '600px', margin: '0 auto 30px' }}>
                 Partner with our dedicated team of creative professionals. We offer full-service production, branding, and career management for elite creators.
               </p>
