@@ -41,6 +41,7 @@ const ProfileDashboard: React.FC<{ user: any }> = ({ user }) => {
   const [isPubliclyLive, setIsPubliclyLive] = useState(false);
   const [livePrice, setLivePrice] = useState('5.00');
   const [hasPaidForLive, setHasPaidForLive] = useState(false);
+  const [previewTimeLeft, setPreviewTimeLeft] = useState(90);
   const [cameraStatus, setCameraStatus] = useState<'idle'|'loading'|'active'|'error'>('idle');
   const [cameraDebugData, setCameraDebugData] = useState<string>('');
   const [liveCountdown, setLiveCountdown] = useState<number | null>(null);
@@ -71,6 +72,18 @@ const ProfileDashboard: React.FC<{ user: any }> = ({ user }) => {
       setGuestSetup({ show: true, name: '', title: '' }); // Show Green Room Prompt
     }
   }, [location.search]);
+
+  useEffect(() => {
+    let timer: NodeJS.Timeout;
+    if (!isOwnProfile && isPlayingLive && !isSubscribed && !hasPaidForLive && previewTimeLeft > 0) {
+      timer = setInterval(() => {
+        setPreviewTimeLeft(prev => Math.max(0, prev - 1));
+      }, 1000);
+    }
+    return () => clearInterval(timer);
+  }, [isOwnProfile, isPlayingLive, isSubscribed, hasPaidForLive, previewTimeLeft]);
+
+  const isPreviewExpired = !isOwnProfile && isPlayingLive && !isSubscribed && !hasPaidForLive && previewTimeLeft === 0;
 
   useEffect(() => {
     if (!supabase || !targetProfileId) return;
