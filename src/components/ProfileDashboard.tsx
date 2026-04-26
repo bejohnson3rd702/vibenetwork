@@ -991,7 +991,7 @@ const ProfileDashboard: React.FC<{ user: any }> = ({ user }) => {
                   
                   {isPlayingLive ? (
                      <>
-                       {streamSource === 'url' && (
+                       {streamSource === 'url' && !isPreviewExpired && (
                          <iframe 
                            src={liveEmbedUrl} 
                            title="Live Stream Broadcast"
@@ -1003,24 +1003,30 @@ const ProfileDashboard: React.FC<{ user: any }> = ({ user }) => {
                          />
                        )}
                        {!isOwnProfile && isPlayingLive && !isSubscribed && !hasPaidForLive ? (
-                         <div style={{ position: 'absolute', inset: 0, zIndex: 30, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(10px)', padding: '40px', textAlign: 'center' }}>
-                           <Lock size={48} color="#ff4d85" style={{ marginBottom: '16px' }} />
-                           <h2 style={{ margin: '0 0 12px 0', fontSize: '28px', color: '#fff' }}>Premium Live Stream</h2>
-                           <p style={{ color: '#aaa', fontSize: '16px', maxWidth: '400px', marginBottom: '24px', lineHeight: 1.5 }}>
-                             This broadcast is restricted. Subscribe to {profile?.username} for full access, or purchase a one-time pass.
-                           </p>
-                           <div style={{ display: 'flex', gap: '16px' }}>
-                             <button onClick={() => setHasPaidForLive(true)} style={{ padding: '14px 28px', background: 'linear-gradient(135deg, #0055ff, #00ff88)', color: '#fff', border: 'none', borderRadius: '12px', fontWeight: 'bold', fontSize: '16px', cursor: 'pointer', boxShadow: '0 10px 20px rgba(0,85,255,0.3)' }}>
-                               Unlock for ${livePrice}
-                             </button>
-                             <button onClick={() => setIsSubscribed(true)} style={{ padding: '14px 28px', background: 'rgba(255,255,255,0.1)', color: '#fff', border: '1px solid rgba(255,255,255,0.2)', borderRadius: '12px', fontWeight: 'bold', fontSize: '16px', cursor: 'pointer' }}>
-                               Subscribe Now
-                             </button>
+                         isPreviewExpired ? (
+                           <div style={{ position: 'absolute', inset: 0, zIndex: 30, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: '#111', padding: '40px', textAlign: 'center' }}>
+                             <Lock size={48} color="#ff4d85" style={{ marginBottom: '16px' }} />
+                             <h2 style={{ margin: '0 0 12px 0', fontSize: '28px', color: '#fff' }}>Preview Ended</h2>
+                             <p style={{ color: '#aaa', fontSize: '16px', maxWidth: '400px', marginBottom: '24px', lineHeight: 1.5 }}>
+                               Your free 90-second preview has expired. Subscribe to {profile?.username} for full access, or purchase a one-time pass to continue watching.
+                             </p>
+                             <div style={{ display: 'flex', gap: '16px' }}>
+                               <button onClick={() => setHasPaidForLive(true)} style={{ padding: '14px 28px', background: 'linear-gradient(135deg, #0055ff, #00ff88)', color: '#fff', border: 'none', borderRadius: '12px', fontWeight: 'bold', fontSize: '16px', cursor: 'pointer', boxShadow: '0 10px 20px rgba(0,85,255,0.3)' }}>
+                                 Unlock for ${livePrice}
+                               </button>
+                               <button onClick={() => setIsSubscribed(true)} style={{ padding: '14px 28px', background: 'rgba(255,255,255,0.1)', color: '#fff', border: '1px solid rgba(255,255,255,0.2)', borderRadius: '12px', fontWeight: 'bold', fontSize: '16px', cursor: 'pointer' }}>
+                                 Subscribe Now
+                               </button>
+                             </div>
                            </div>
-                         </div>
+                         ) : (
+                           <div style={{ position: 'absolute', top: 20, left: 20, zIndex: 30, background: 'rgba(255,0,85,0.8)', padding: '6px 12px', borderRadius: '8px', color: '#fff', fontWeight: 'bold', fontSize: '12px', letterSpacing: '1px', backdropFilter: 'blur(10px)', border: '1px solid rgba(255,255,255,0.2)' }}>
+                             FREE PREVIEW: {Math.floor(previewTimeLeft / 60)}:{(previewTimeLeft % 60).toString().padStart(2, '0')} REMAINING
+                           </div>
+                         )
                        ) : null}
                        {/* Host AND Guest PIP/Grid Layer */}
-                       {(streamSource === 'camera' || presenterMode || activeGuests.length > 0) && (
+                       {!isPreviewExpired && (streamSource === 'camera' || presenterMode || activeGuests.length > 0) && (
                          <div style={{
                            position: 'absolute', zIndex: 15,
                            ...(streamSource === 'url' ? {
