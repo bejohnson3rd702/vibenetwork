@@ -15,8 +15,8 @@ export default function MasterAdminDashboard() {
 
   const [dbStats, setDbStats] = useState({
       whitelabels: 0,
-      nodes: 0,
-      revenue: '$1.2M',
+      networks: 0,
+      activeStreams: 0,
       load: '42%'
   });
   
@@ -24,19 +24,28 @@ export default function MasterAdminDashboard() {
   const [usersList, setUsersList] = useState<any[]>([]);
   const [isRestarting, setIsRestarting] = useState(false);
   const [ledgerFilter, setLedgerFilter] = useState('ALL');
+  const [loading, setLoading] = useState(false);
+
+  async function fetchUsers() {
+     setLoading(true);
+     const { data: usersData } = await supabase!.from('profiles').select('*').limit(50);
+     setUsersList(usersData || []);
+     setLoading(false);
+  }
 
   useEffect(() => {
      async function fetchGlobalMetrics() {
-        const { data: usersData, count: usersCount } = await supabase!.from('profiles').select('*', { count: 'exact' }).limit(50);
+        const { count: usersCount } = await supabase!.from('profiles').select('*', { count: 'exact' });
         const { data: configs } = await supabase!.from('whitelabel_configs').select('*');
         
         setWhitelabelsList(configs || []);
-        setUsersList(usersData || []);
+        fetchUsers();
         
         setDbStats(prev => ({
            ...prev,
-           nodes: usersCount || 0,
+           networks: usersCount || 0,
            whitelabels: configs?.length || 0,
+           activeStreams: 342
         }));
      }
      fetchGlobalMetrics();
@@ -44,8 +53,8 @@ export default function MasterAdminDashboard() {
 
   const stats = [
     { label: 'Active Whitelabels', value: dbStats.whitelabels.toString(), icon: <Network />, color: '#0055ff' },
-    { label: 'Global Registered Nodes', value: dbStats.nodes.toString(), icon: <Users />, color: '#00ff88' },
-    { label: 'Monthly Sustained MRR', value: dbStats.revenue, icon: <BarChart3 />, color: '#FFD700' },
+    { label: 'Global Registered Networks', value: dbStats.networks.toString(), icon: <Users />, color: '#00ff88' },
+    { label: 'Active Live Streams', value: dbStats.activeStreams.toString(), icon: <Activity />, color: '#ff4d85' },
     { label: 'Server Fleet Load', value: dbStats.load, icon: <Activity />, color: '#ff4d85' }
   ];
 
@@ -69,11 +78,12 @@ export default function MasterAdminDashboard() {
 
         <nav style={{ padding: '24px 12px', flex: 1, display: 'flex', flexDirection: 'column', gap: '8px' }}>
           {[
-            { id: 'overview', icon: <Globe size={18} />, label: 'Global Overview' },
+            { id: 'overview', icon: <Activity size={18} />, label: 'Pulse' },
             { id: 'live-now', icon: <Play size={18} />, label: 'Live Now TV' },
             { id: 'networks', icon: <Network size={18} />, label: 'Whitelabel Fleet' },
-            { id: 'users', icon: <Users size={18} />, label: 'Node Directory' },
+            { id: 'users', icon: <Users size={18} />, label: 'Network Directory' },
             { id: 'database', icon: <Database size={18} />, label: 'Data Clusters' },
+            { id: 'analytics', icon: <BarChart size={18} />, label: 'Global Analytics' },
             { id: 'accounting', icon: <Wallet size={18} />, label: 'Global Ledger' },
             { id: 'logs', icon: <Terminal size={18} />, label: 'System Logs' },
           ].map(tab => (
@@ -234,7 +244,7 @@ export default function MasterAdminDashboard() {
                        (document.getElementById('yt-url') as HTMLInputElement).value = '';
                        (document.getElementById('yt-title') as HTMLInputElement).value = '';
                        (document.getElementById('yt-time') as HTMLInputElement).value = '';
-                    }} style={{ background: 'var(--accent-primary)', color: '#fff', border: 'none', padding: '16px', borderRadius: '8px', fontWeight: 'bold', cursor: 'pointer', fontSize: '15px' }}>
+                    }} style={{ background: '#0055ff', color: '#fff', border: 'none', padding: '16px', borderRadius: '8px', fontWeight: 'bold', cursor: 'pointer', fontSize: '15px' }}>
                        Deploy Broadcast
                     </button>
                  </div>
@@ -244,28 +254,28 @@ export default function MasterAdminDashboard() {
 
           {activeTab === 'users' && (
              <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
-               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '30px' }}>
-                 <h3 style={{ margin: 0, fontSize: '24px' }}>System Node Directory</h3>
-                 <button style={{ background: 'var(--accent-primary)', color: '#fff', border: 'none', padding: '12px 24px', borderRadius: '12px', fontWeight: 'bold', cursor: 'pointer' }}>Auditor Review</button>
+               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
+                 <h3 style={{ margin: 0, fontSize: '24px' }}>System Network Directory</h3>
+                 <button onClick={fetchUsers} style={{ padding: '8px 16px', background: 'rgba(255,255,255,0.1)', color: '#fff', border: 'none', borderRadius: '8px', cursor: 'pointer' }}>Refresh Index</button>
                </div>
                <div style={{ background: '#111', padding: '20px', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.05)' }}>
                   <table style={{ width: '100%', textAlign: 'left', borderCollapse: 'collapse' }}>
                     <thead>
                       <tr style={{ color: '#888', borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
-                        <th style={{ padding: '16px 12px' }}>Node ID</th>
-                        <th style={{ padding: '16px 12px' }}>Designation</th>
+                        <th style={{ padding: '16px 12px' }}>Network ID</th>
+                        <th style={{ padding: '16px 12px' }}>Email</th>
                         <th style={{ padding: '16px 12px' }}>Status</th>
                         <th style={{ padding: '16px 12px' }}>Role</th>
                         <th style={{ padding: '16px 12px' }}>Vibe Indexing</th>
                       </tr>
                     </thead>
                     <tbody>
-                      {usersList.length === 0 ? (
-                        <tr><td colSpan={5} style={{ padding: '20px', textAlign: 'center', color: '#888' }}>Initializing node fetch pattern...</td></tr>
+                      {loading ? (
+                        <tr><td colSpan={5} style={{ padding: '20px', textAlign: 'center', color: '#888' }}>Initializing network fetch pattern...</td></tr>
                       ) : usersList.map((user, i) => (
                         <tr key={user.id} style={{ borderBottom: i !== usersList.length - 1 ? '1px solid rgba(255,255,255,0.05)' : 'none' }}>
                           <td style={{ padding: '16px 12px', fontFamily: 'monospace', color: '#0055ff', fontSize: '12px' }}>{user.id.split('-')[0]}</td>
-                          <td style={{ padding: '16px 12px', fontWeight: 'bold' }}>{user.username || 'Unassigned User'}</td>
+                          <td style={{ padding: '16px 12px', fontWeight: 'bold' }}>{user.email || 'Unassigned User'}</td>
                           <td style={{ padding: '16px 12px' }}>
                             <span style={{ background: 'rgba(0,255,136,0.1)', color: '#00ff88', padding: '4px 8px', borderRadius: '6px', fontSize: '11px', fontWeight: 'bold' }}>ACTIVE</span>
                           </td>
@@ -296,14 +306,13 @@ export default function MasterAdminDashboard() {
                   <Terminal size={20} color="#00ff88" />
                   <h3 style={{ margin: 0, fontSize: '18px', color: '#fff' }}>Daemon Live Trace</h3>
                 </div>
-                <div style={{ fontFamily: 'monospace', color: '#00ff88', fontSize: '13px', lineHeight: 1.8, height: '400px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', fontSize: '13px', color: '#00ff88', fontFamily: 'monospace' }}>
                   <div>[2026-04-06T10:14:02Z] INFO: Initializing B2B router matrix... OK.</div>
                   <div>[2026-04-06T10:14:03Z] WARN: Legacy music profiles intercepted at layer 4.</div>
-                  <div>[2026-04-06T10:14:05Z] INFO: Executing role demotion on DJ partitions.</div>
-                  <div>[2026-04-06T10:14:07Z] INFO: Database seeder node successfully connected via service role.</div>
-                  <div style={{ color: '#fff' }}>[2026-04-06T10:14:09Z] SYNC: Provisioning 3 new whitelabel tenants across us-east regions.</div>
-                  <div style={{ color: '#ffcc00' }}>[2026-04-06T10:14:15Z] ALERT: Master CPU spiking above 80% during node migration. Autoresizing pool.</div>
-                  <div>[2026-04-06T10:14:16Z] INFO: Target state converged. Resuming normal operations.</div>
+                  <div>[2026-04-06T10:14:07Z] INFO: Database seeder service successfully connected via service role.</div>
+                  <div>[2026-04-06T10:14:12Z] SUCCESS: Migrated 6 external media assets to global CDN.</div>
+                  <div style={{ color: '#ffcc00' }}>[2026-04-06T10:14:15Z] ALERT: Master CPU spiking above 80% during network migration. Autoresizing pool.</div>
+                  <div>[2026-04-06T10:14:22Z] INFO: Global latency stable at 24ms.</div>
                   <div className="blink" style={{ marginTop: '20px' }}>_</div>
                 </div>
                 <style>{`
@@ -322,10 +331,10 @@ export default function MasterAdminDashboard() {
 
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
                    
-                   {/* Direct Node Tier */}
-                   <div style={{ background: '#111', padding: '30px', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.05)' }}>
-                     <h4 style={{ margin: '0 0 10px 0', fontSize: '18px', color: '#fff' }}>1. Main Root Node Architecture</h4>
-                     <p style={{ color: '#888', margin: '0 0 24px 0', fontSize: '14px', lineHeight: 1.5 }}>
+                   {/* Direct Platform Tier */}
+                   <div style={{ background: 'rgba(0,0,0,0.3)', padding: '20px', borderRadius: '16px', borderLeft: '4px solid #b829ea' }}>
+                     <h4 style={{ margin: '0 0 10px 0', fontSize: '18px', color: '#fff' }}>1. Main Root Platform Architecture</h4>
+                     <p style={{ color: '#888', margin: 0, fontSize: '14px', lineHeight: 1.5 }}>
                        For all creators directly registered and transacting on the core Vibe Network. No intermediaries.
                      </p>
                      
@@ -378,9 +387,8 @@ export default function MasterAdminDashboard() {
                   <table style={{ width: '100%', textAlign: 'left', borderCollapse: 'collapse' }}>
                     <thead>
                       <tr style={{ color: '#888', borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
-                        <th style={{ padding: '16px 12px' }}>Timestamp</th>
-                        <th style={{ padding: '16px 12px' }}>Source Node</th>
-                        <th style={{ padding: '16px 12px' }}>Type</th>
+                        <th style={{ padding: '16px 12px' }}>Source Network</th>
+                        <th style={{ padding: '16px 12px' }}>Protocol</th>
                         <th style={{ padding: '16px 12px' }}>Gross Sub</th>
                         <th style={{ padding: '16px 12px', color: '#0055ff' }}>WL Cut (15%)</th>
                         <th style={{ padding: '16px 12px', color: '#FFD700' }}>Vibe Cut (15-30%)</th>

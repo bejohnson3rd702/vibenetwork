@@ -28,7 +28,7 @@ const ProfileDashboard: React.FC<{ user: any }> = ({ user }) => {
   const [avatarUrl, setAvatarUrl] = useState('');
   const [homepageImageUrl, setHomepageImageUrl] = useState('');
   const [saving, setSaving] = useState(false);
-  const [activeTab, setActiveTab] = useState<'feed' | 'store' | 'live' | 'booking' | 'series' | 'courses' | 'vibe_agency' | 'scheduler' | 'wallet'>('feed');
+  const [activeTab, setActiveTab] = useState<'feed' | 'store' | 'live' | 'booking' | 'series' | 'courses' | 'scheduler' | 'wallet'>('feed');
   const [walletBalance, setWalletBalance] = useState(() => (typeof window !== 'undefined' ? Number(localStorage.getItem('vibe_host_wallet') || 1250.00) : 1250.00));
   const [paySubsWithWallet, setPaySubsWithWallet] = useState(true);
   const [isSubscribed, setIsSubscribed] = useState(false);
@@ -622,7 +622,7 @@ const ProfileDashboard: React.FC<{ user: any }> = ({ user }) => {
               {isInfluencer ? (
                 <>
                   <div style={{ display: 'flex', gap: '10px', marginBottom: '20px', flexWrap: 'wrap' }}>
-                    <span style={{ padding: '6px 14px', background: 'rgba(0,85,255,0.2)', color: '#0055ff', borderRadius: '20px', fontSize: '12px', fontWeight: 'bold', textTransform: 'uppercase' }}>Enterprise Account Node</span>
+                    <span style={{ padding: '6px 14px', background: 'rgba(0,85,255,0.2)', color: '#0055ff', borderRadius: '20px', fontSize: '12px', fontWeight: 'bold', textTransform: 'uppercase' }}>Enterprise Profile</span>
                     
                     {viewMode === 'edit' ? (
                       <>
@@ -761,31 +761,25 @@ const ProfileDashboard: React.FC<{ user: any }> = ({ user }) => {
             Masterclasses
             {activeTab === 'courses' && <motion.div layoutId="activetab" style={{ position: 'absolute', bottom: '-17px', left: 0, right: 0, height: '3px', background: '#ff4d85', borderRadius: '3px' }} />}
           </button>
-          <button 
-            onClick={() => setActiveTab('vibe_agency')}
-            style={{ background: 'none', border: 'none', color: activeTab === 'vibe_agency' ? '#fff' : '#888', fontSize: '18px', fontWeight: 'bold', cursor: 'pointer', position: 'relative', display: 'flex', alignItems: 'center', gap: '6px' }}
-          >
-            Vibe Agency
-            {activeTab === 'vibe_agency' && <motion.div layoutId="activetab" style={{ position: 'absolute', bottom: '-17px', left: 0, right: 0, height: '3px', background: '#ff4d85', borderRadius: '3px' }} />}
-          </button>
-          
+
           {isOwnProfile && viewMode === 'edit' && (
-            <>
-              <button 
-                onClick={() => setActiveTab('scheduler')}
-                style={{ background: 'none', border: 'none', color: activeTab === 'scheduler' ? '#ff4d85' : '#888', fontSize: '18px', fontWeight: 'bold', cursor: 'pointer', position: 'relative', display: 'flex', alignItems: 'center', gap: '6px' }}
-              >
-                <Calendar size={18} /> Scheduler
-                {activeTab === 'scheduler' && <motion.div layoutId="activetab" style={{ position: 'absolute', bottom: '-17px', left: 0, right: 0, height: '3px', background: '#ff4d85', borderRadius: '3px' }} />}
-              </button>
-              <button 
-                onClick={() => setActiveTab('wallet')}
-                style={{ background: 'none', border: 'none', color: activeTab === 'wallet' ? '#00ff88' : '#888', fontSize: '18px', fontWeight: 'bold', cursor: 'pointer', position: 'relative', display: 'flex', alignItems: 'center', gap: '6px' }}
-              >
-                <Wallet size={18} /> Wallet
-                {activeTab === 'wallet' && <motion.div layoutId="activetab" style={{ position: 'absolute', bottom: '-17px', left: 0, right: 0, height: '3px', background: '#00ff88', borderRadius: '3px' }} />}
-              </button>
-            </>
+            <button 
+              onClick={() => setActiveTab('scheduler')}
+              style={{ background: 'none', border: 'none', color: activeTab === 'scheduler' ? '#ff4d85' : '#888', fontSize: '18px', fontWeight: 'bold', cursor: 'pointer', position: 'relative', display: 'flex', alignItems: 'center', gap: '6px' }}
+            >
+              <Calendar size={18} /> Scheduler
+              {activeTab === 'scheduler' && <motion.div layoutId="activetab" style={{ position: 'absolute', bottom: '-17px', left: 0, right: 0, height: '3px', background: '#ff4d85', borderRadius: '3px' }} />}
+            </button>
+          )}
+
+          {isOwnProfile && (
+            <button 
+              onClick={() => setActiveTab('wallet')}
+              style={{ background: 'none', border: 'none', color: activeTab === 'wallet' ? '#00ff88' : '#888', fontSize: '18px', fontWeight: 'bold', cursor: 'pointer', position: 'relative', display: 'flex', alignItems: 'center', gap: '6px' }}
+            >
+              <Wallet size={18} /> Wallet
+              {activeTab === 'wallet' && <motion.div layoutId="activetab" style={{ position: 'absolute', bottom: '-17px', left: 0, right: 0, height: '3px', background: '#00ff88', borderRadius: '3px' }} />}
+            </button>
           )}
         </div>
 
@@ -1646,7 +1640,7 @@ const ProfileDashboard: React.FC<{ user: any }> = ({ user }) => {
                   <button onClick={() => {
                     const prompt = (document.getElementById('ai-prompt-input') as HTMLInputElement).value;
                     if (prompt) {
-                      const computedUrl = `https://picsum.photos/seed/${encodeURIComponent(prompt)}/512/512`;
+                      const computedUrl = `https://image.pollinations.ai/prompt/${encodeURIComponent(prompt)}?width=512&height=512&nologo=true&seed=${Math.floor(Math.random() * 1000000)}`;
                       if (imageTarget === 'avatar') setAvatarUrl(computedUrl);
                       else setHomepageImageUrl(computedUrl);
                       

@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 
 export interface WhiteLabelConfig {
   id?: string;
@@ -28,6 +28,12 @@ export const useWhiteLabel = () => useContext(WhiteLabelContext);
 
 export const WhiteLabelProvider = ({ children, initialConfig }: { children: ReactNode, initialConfig?: any }) => {
   const [wlConfig, setWlConfig] = useState<WhiteLabelConfig | null>(initialConfig || null);
+
+  useEffect(() => {
+    if (initialConfig !== undefined) {
+      setWlConfig(initialConfig);
+    }
+  }, [initialConfig]);
 
   return (
     <WhiteLabelContext.Provider value={{ wlConfig, setWlConfig }}>

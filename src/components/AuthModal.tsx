@@ -7,15 +7,17 @@ import { useWhiteLabel } from '../context/WhiteLabelContext';
 interface AuthModalProps {
   onClose: () => void;
   onSuccess: (user: any) => void;
+  defaultIsLogin?: boolean;
+  defaultRole?: 'viewer' | 'influencer' | 'business';
 }
 
-const AuthModal: React.FC<AuthModalProps> = ({ onClose, onSuccess }) => {
+const AuthModal: React.FC<AuthModalProps> = ({ onClose, onSuccess, defaultIsLogin = true, defaultRole = 'viewer' }) => {
   const { setWlConfig: setGlobalWlDeploy } = useWhiteLabel();
-  const [isLogin, setIsLogin] = useState(true);
+  const [isLogin, setIsLogin] = useState(defaultIsLogin);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [username, setUsername] = useState('');
-  const [role, setRole] = useState<'viewer' | 'influencer' | 'business'>('viewer');
+  const [role, setRole] = useState<'viewer' | 'influencer' | 'business'>(defaultRole);
   
   const [errorMSG, setErrorMSG] = useState('');
   const [loading, setLoading] = useState(false);
@@ -25,10 +27,10 @@ const AuthModal: React.FC<AuthModalProps> = ({ onClose, onSuccess }) => {
   const [wizardStep, setWizardStep] = useState(0);
   const [wlConfig, setWlConfig] = useState({ name: '', domain: '', bg: '#000', accent: '#ff4d85', heroImage: '', logoImage: '', sliderCount: 4, customSections: '', heroCopy: '' });
   const [chatHistory, setChatHistory] = useState<{sender: 'bot'|'user', text: string, imagePreview?: string}[]>([
-    { sender: 'bot', text: "Welcome to the Beginning of your Business's AI Journey. I am the Vibe Agency's Business Creator. First off, what is the name of your organization?" }
+    { sender: 'bot', text: "Welcome to the Beginning of your Business's AI Journey. I am your automated AI setup architect. First off, what is the name of your organization?" }
   ]);
   const [chatInput, setChatInput] = useState('');
-  const [selectedSections, setSelectedSections] = useState<string[]>([]);
+  const [selectedSections, setSelectedSections] = useState<string[]>(['Contact Us Form']);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
@@ -256,7 +258,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ onClose, onSuccess }) => {
                {wizardStep === 9 && (
                  <button onClick={() => {
                    onClose();
-                   setGlobalWlDeploy(wlConfig);
+                   window.dispatchEvent(new CustomEvent('whitelabel_commit', { detail: wlConfig }));
                  }} style={{ marginTop: '20px', padding: '16px', background: '#00ff88', color: '#000', fontWeight: 'bold', border: 'none', borderRadius: '12px', cursor: 'pointer', transition: 'all 0.2s' }}>
                    Boot New Operations Dashboard
                  </button>
@@ -304,7 +306,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ onClose, onSuccess }) => {
                        setWlConfig(c => ({ ...c, name: input }));
                        window.dispatchEvent(new CustomEvent('whitelabel_update', { detail: { name: input } }));
                        document.title = input;
-                       setChatHistory(h => [...h, { sender: 'bot', text: `Brilliant. '${input}' is officially staged. Do you already have a logo, or would you like Vibe Agency to generate one for you? (Type 'create one' or 'I have one').` }]);
+                       setChatHistory(h => [...h, { sender: 'bot', text: `Brilliant. '${input}' is officially staged. Do you already have a logo, or would you like our AI to generate one for you? (Type 'create one' or 'I have one').` }]);
                        setWizardStep(1);
                        break;
                      }
@@ -319,7 +321,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ onClose, onSuccess }) => {
                        break;
                      }
                      case 1.5: {
-                       const logoUrl = `https://image.pollinations.ai/prompt/${encodeURIComponent(input + ' minimal vector logomark isolated')}?width=300&height=300&nologo=true`;
+                       const logoUrl = `https://image.pollinations.ai/prompt/${encodeURIComponent(input + ' minimal vector logomark isolated')}?width=300&height=300&nologo=true&seed=${Math.floor(Math.random() * 1000000)}`;
                        setWlConfig(c => ({ ...c, logoImage: logoUrl }));
                        window.dispatchEvent(new CustomEvent('whitelabel_update', { detail: { logo: logoUrl } }));
                        setChatHistory(h => [...h, { sender: 'bot', text: `Logo locked in! Here's a preview. Next, what custom domain would you like to purchase and bind? (e.g., streaming.com for $15/yr). If you don't want to purchase one right now, just say "skip".`, imagePreview: logoUrl }]);
@@ -334,17 +336,57 @@ const AuthModal: React.FC<AuthModalProps> = ({ onClose, onSuccess }) => {
                           text = `No problem! I have generated a free isolated subdomain for you: ${domain}`;
                        }
                        setWlConfig(c => ({ ...c, domain }));
-                       setChatHistory(h => [...h, { sender: 'bot', text: `${text} Next, what background color and brand accent color should the UI globally inherit? (e.g. "Dark Blue background with Yellow accents").` }]);
+                       setChatHistory(h => [...h, { sender: 'bot', text: `${text} Next, what are your primary brand colors? (e.g. "Black and Gold" or "Purple and Cyan").` }]);
                        setWizardStep(3);
                        break;
                      }
                      case 3: {
                        const colorInput = input.toLowerCase();
-                       let bg = '#000'; let accent = '#ff4d85';
-                       if (colorInput.includes('blue')) { bg = '#050c24'; accent = '#0055ff'; }
-                       if (colorInput.includes('white') || colorInput.includes('light')) { bg = '#f4f4f4'; accent = '#333'; document.documentElement.setAttribute('data-theme', 'light'); }
-                       if (colorInput.includes('purple')) { bg = '#12001a'; accent = '#a600ff'; }
-                       if (colorInput.includes('green')) { bg = '#001a09'; accent = '#00ff44'; }
+                       let bg = '#050505'; let accent = '#ff4d85';
+                       
+                       const colorMap: Record<string, { bg: string, accent: string }> = {
+                         black: { bg: '#050505', accent: '#ffffff' },
+                         dark: { bg: '#050505', accent: '#ffffff' },
+                         white: { bg: '#f4f4f4', accent: '#111111' },
+                         light: { bg: '#f4f4f4', accent: '#111111' },
+                         blue: { bg: '#050c24', accent: '#0055ff' },
+                         purple: { bg: '#12001a', accent: '#a600ff' },
+                         green: { bg: '#001a09', accent: '#00ff44' },
+                         red: { bg: '#1a0505', accent: '#ff0033' },
+                         gold: { bg: '#1a1805', accent: '#ffd700' },
+                         yellow: { bg: '#1a1a05', accent: '#ffea00' },
+                         teal: { bg: '#051a1a', accent: '#00e5ff' },
+                         pink: { bg: '#1a0510', accent: '#ff4d85' },
+                         orange: { bg: '#1a0f05', accent: '#ff8800' },
+                         cyan: { bg: '#051a1a', accent: '#00ffff' },
+                         silver: { bg: '#111111', accent: '#c0c0c0' }
+                       };
+
+                       const mentioned = Object.keys(colorMap).filter(c => colorInput.includes(c));
+                       if (mentioned.length === 1) {
+                           bg = colorMap[mentioned[0]].bg;
+                           accent = colorMap[mentioned[0]].accent;
+                       } else if (mentioned.length > 1) {
+                           bg = colorMap[mentioned[0]].bg;
+                           accent = colorMap[mentioned[1]].accent;
+                       }
+
+                       const hexMatches = colorInput.match(/(#[0-9a-f]{3,6})/gi);
+                       if (hexMatches) {
+                           if (hexMatches.length === 1) {
+                               accent = hexMatches[0];
+                           } else if (hexMatches.length >= 2) {
+                               bg = hexMatches[0];
+                               accent = hexMatches[1];
+                           }
+                       }
+
+                       if (bg === '#f4f4f4' || bg === '#ffffff') {
+                           document.documentElement.setAttribute('data-theme', 'light');
+                       } else {
+                           document.documentElement.removeAttribute('data-theme');
+                       }
+
                        document.documentElement.style.setProperty('--bg-color', bg);
                        window.dispatchEvent(new CustomEvent('whitelabel_update', { detail: { accent } }));
                        setWlConfig(c => ({ ...c, bg, accent }));
@@ -378,7 +420,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ onClose, onSuccess }) => {
                      case 7: {
                        let imageUrl = input;
                        if (!input.startsWith('http')) {
-                          imageUrl = `https://image.pollinations.ai/prompt/${encodeURIComponent(input)}?width=1920&height=1080&nologo=true`;
+                          imageUrl = `https://image.pollinations.ai/prompt/${encodeURIComponent(input)}?width=1920&height=1080&nologo=true&seed=${Math.floor(Math.random() * 1000000)}`;
                        }
                        setWlConfig(c => ({ ...c, heroImage: imageUrl }));
                        setChatHistory(h => [...h, 
@@ -393,7 +435,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ onClose, onSuccess }) => {
                           setChatHistory(h => [...h, { sender: 'bot', text: `Beautiful. Final Step: This White Label feature costs $199 for setup and your first month, then $99/mo. Please physically type 'I AGREE' to e-sign the 1-Year Service Agreement and process your invoice.` }]);
                           setWizardStep(8);
                        } else {
-                          const newUrl = input.startsWith('http') ? input : `https://image.pollinations.ai/prompt/${encodeURIComponent(input + ' v2 masterpiece')}?width=1920&height=1080&nologo=true`;
+                          const newUrl = input.startsWith('http') ? input : `https://image.pollinations.ai/prompt/${encodeURIComponent(input + ' v2 masterpiece')}?width=1920&height=1080&nologo=true&seed=${Math.floor(Math.random() * 1000000)}`;
                           setWlConfig(c => ({ ...c, heroImage: newUrl }));
                           setChatHistory(h => [...h, { sender: 'bot', text: `How about this one? Type 'yes' to proceed, or write a new prompt!`, imagePreview: newUrl }]);
                        }

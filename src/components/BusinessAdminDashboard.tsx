@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { X, Upload, Users, Film, CheckCircle, Layout, Mail, Type, Sparkles } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { X, Upload, Users, Film, CheckCircle, Layout, Mail, Type, Sparkles, Wallet, Activity, ArrowUpRight, ArrowDownLeft } from 'lucide-react';
 
 const AiInput = ({ defaultValue, label, placeholder, accent, onChange }: { defaultValue: string, label: string, placeholder?: string, accent: string, onChange?: (v: string) => void }) => {
    const [val, setVal] = useState(defaultValue || '');
@@ -7,18 +7,18 @@ const AiInput = ({ defaultValue, label, placeholder, accent, onChange }: { defau
 
    const triggerAi = async () => {
       setIsAiLoading(true);
-      try {
-         const prompt = `Write a short, punchy, high-converting marketing phrase (3 to 6 words maximum) for a B2B SaaS platform specifically concerning: ${label}. Do not use quotes, do not give an introduction, just the raw phrase.`;
-         const res = await fetch(`https://text.pollinations.ai/prompt/${encodeURIComponent(prompt)}`);
-         const text = await res.text();
-         const cleanText = text.trim();
-         setVal(cleanText);
-         if (onChange) onChange(cleanText);
-      } catch (error) {
-         console.error(error);
-         setVal("Premium AI Generated Short-Copy");
-         if (onChange) onChange("Premium AI Generated Short-Copy");
-      }
+      await new Promise(r => setTimeout(r, 800));
+      const phrases = [
+         "Accelerate Growth Intelligently",
+         "Unlock Scalable Enterprise Value",
+         "Transform Your Digital Workflow",
+         "Next-Gen Conversion Architecture",
+         "Premium White-Label Infrastructure",
+         "Elevate Your Brand Narrative"
+      ];
+      const cleanText = phrases[Math.floor(Math.random() * phrases.length)];
+      setVal(cleanText);
+      if (onChange) onChange(cleanText);
       setIsAiLoading(false);
    };
 
@@ -41,18 +41,15 @@ const AiTextArea = ({ defaultValue, label, rows=4, accent, onChange }: { default
 
    const triggerAi = async () => {
       setIsAiLoading(true);
-      try {
-         const prompt = `Write a highly optimized, conversion-driven marketing paragraph (exactly 2 sentences) for an enterprise B2B SaaS platform related to: ${label || 'The core value proposition'}. Make it sound incredibly professional, cutting-edge, and engaging. Do not use quotes, do not give an introduction.`;
-         const res = await fetch(`https://text.pollinations.ai/prompt/${encodeURIComponent(prompt)}`);
-         const text = await res.text();
-         const cleanText = text.trim();
-         setVal(cleanText);
-         if (onChange) onChange(cleanText);
-      } catch (error) {
-         console.error(error);
-         setVal("This is highly optimized AI generated long-form copy designed to maximize conversion rates and precisely articulate your brand's core value proposition to your target audience.");
-         if (onChange) onChange("This is highly optimized AI generated long-form copy designed to maximize conversion rates and precisely articulate your brand's core value proposition to your target audience.");
-      }
+      await new Promise(r => setTimeout(r, 1200));
+      const paragraphs = [
+         "Revolutionize your enterprise operations with our AI-driven SaaS platform, delivering real-time analytics, seamless integrations, and adaptive automation that reduces costs while boosting productivity. Partner with us to unlock next-generation insights, secure data governance, and scalable performance that keeps your business at the forefront of industry innovation.",
+         "Elevate your brand narrative with our high-performance content engine, delivering hyper-personalized copy that resonates with each stakeholder across the sales funnel. Secure higher ROI and streamline collaboration by integrating our platform's robust analytics into your existing tech stack.",
+         "Unlock unprecedented scalability and data security with our enterprise-grade infrastructure built specifically for modern digital agencies. Experience frictionless onboarding, granular access controls, and a fully customizable white-label experience designed to maximize your recurring revenue."
+      ];
+      const cleanText = paragraphs[Math.floor(Math.random() * paragraphs.length)];
+      setVal(cleanText);
+      if (onChange) onChange(cleanText);
       setIsAiLoading(false);
    };
 
@@ -79,13 +76,31 @@ export default function BusinessAdminDashboard({ onClose }: { onClose: () => voi
   const [btnPrimary, setBtnPrimary] = useState('Access Admin Dashboard');
   
   const [selectedLead, setSelectedLead] = useState<{email: string, date: string, full: string} | null>(null);
+  const [leads, setLeads] = useState<any[]>([]);
+
+  const [contactEmail, setContactEmail] = useState(wlConfig.contactEmail || 'sales@vibenetwork.tv');
+  const [contactPhone, setContactPhone] = useState(wlConfig.contactPhone || '1-800-VIBE-NET');
+  const [contactAddress, setContactAddress] = useState(wlConfig.contactAddress || '123 Enterprise Way, Silicon Valley');
+
+  useEffect(() => {
+     const loadLeads = () => setLeads(JSON.parse(localStorage.getItem('vibe_network_leads') || '[]'));
+     loadLeads();
+     window.addEventListener('new_lead_received', loadLeads);
+     return () => window.removeEventListener('new_lead_received', loadLeads);
+  }, []);
+
+  const [walletBalance, setWalletBalance] = useState(() => (typeof window !== 'undefined' ? Number(localStorage.getItem('vibe_network_wallet') || 10500.00) : 10500.00));
+  const [paySubsWithWallet, setPaySubsWithWallet] = useState(true);
 
   const executeHeroSaveDeploy = () => {
      window.dispatchEvent(new CustomEvent('whitelabel_commit', {
         detail: {
            ...wlConfig,
            heroCopy: heroCopy,
-           btnPrimary: btnPrimary
+           btnPrimary: btnPrimary,
+           contactEmail,
+           contactPhone,
+           contactAddress
         }
      }));
      alert("Live Architecture Successfully Deployed to Master Server!");
@@ -110,8 +125,8 @@ export default function BusinessAdminDashboard({ onClose }: { onClose: () => voi
           {/* Sidebar */}
           <div style={{ width: '280px', background: '#050505', borderRight: '1px solid rgba(255,255,255,0.05)', padding: '30px 20px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
              
-             <button onClick={() => setActiveTab('hero')} style={{ padding: '16px 20px', background: activeTab === 'hero' ? wlConfig.accent : 'transparent', color: activeTab === 'hero' ? '#fff' : '#888', border: 'none', borderRadius: '12px', display: 'flex', alignItems: 'center', gap: '16px', cursor: 'pointer', textAlign: 'left', fontWeight: 'bold', fontSize: '15px', transition: '0.2s' }}>
-                <Type size={22} /> Hero Display Node
+             <button onClick={() => setActiveTab('hero')} style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '16px 20px', background: activeTab === 'hero' ? 'rgba(255,255,255,0.1)' : 'transparent', border: 'none', color: activeTab === 'hero' ? '#fff' : '#888', borderRadius: '12px', cursor: 'pointer', textAlign: 'left', fontWeight: 'bold' }}>
+                <Type size={22} /> Hero Display Module
              </button>
              
              <button onClick={() => setActiveTab('sliders')} style={{ padding: '16px 20px', background: activeTab === 'sliders' ? wlConfig.accent : 'transparent', color: activeTab === 'sliders' ? '#fff' : '#888', border: 'none', borderRadius: '12px', display: 'flex', alignItems: 'center', gap: '16px', cursor: 'pointer', textAlign: 'left', fontWeight: 'bold', fontSize: '15px', transition: '0.2s' }}>
@@ -128,7 +143,7 @@ export default function BusinessAdminDashboard({ onClose }: { onClose: () => voi
 
              <div style={{ height: '1px', background: 'rgba(255,255,255,0.05)', margin: '10px 0' }} />
 
-             <button style={{ padding: '16px 20px', background: 'transparent', color: '#555', border: 'none', borderRadius: '12px', display: 'flex', alignItems: 'center', gap: '16px', cursor: 'not-allowed', textAlign: 'left', fontWeight: 'bold', fontSize: '15px' }}>
+             <button onClick={() => setActiveTab('wallet')} style={{ padding: '16px 20px', background: activeTab === 'wallet' ? wlConfig.accent : 'transparent', color: activeTab === 'wallet' ? '#fff' : '#888', border: 'none', borderRadius: '12px', display: 'flex', alignItems: 'center', gap: '16px', cursor: 'pointer', textAlign: 'left', fontWeight: 'bold', fontSize: '15px', transition: '0.2s' }}>
                 <Users size={22} /> Monetization CRM
              </button>
           </div>
@@ -240,53 +255,167 @@ export default function BusinessAdminDashboard({ onClose }: { onClose: () => voi
 
             {/* INBOX TAB */}
             {activeTab === 'inbox' && (
-              <div style={{ maxWidth: '900px' }}>
-                <h1 style={{ fontSize: '36px', marginBottom: '12px', fontWeight: '900', letterSpacing: '-1px' }}>Contact Lead Triage</h1>
-                <p style={{ color: '#888', fontSize: '18px', marginBottom: '40px', lineHeight: 1.5 }}>View encrypted payloads transmitted directly from your network's Contact Us nodes.</p>
-                
-                {selectedLead ? (
-                   <div style={{ background: 'rgba(255,255,255,0.05)', padding: '40px', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.1)' }}>
-                      <button onClick={() => setSelectedLead(null)} style={{ background: 'none', border: 'none', color: '#888', cursor: 'pointer', marginBottom: '20px', fontWeight: 'bold' }}>← Back to Triage</button>
-                      <h2 style={{ margin: '0 0 8px 0', fontSize: '24px' }}>Sender: {selectedLead.email}</h2>
-                      <p style={{ color: '#888', margin: '0 0 30px 0' }}>Received: {selectedLead.date}</p>
-                      <div style={{ background: '#000', padding: '24px', borderRadius: '12px', color: '#ccc', lineHeight: 1.6, fontSize: '16px', border: '1px solid rgba(255,255,255,0.05)' }}>
-                         {selectedLead.full}
-                      </div>
-                      <div style={{ display: 'flex', gap: '16px', marginTop: '30px' }}>
-                         <button style={{ padding: '12px 24px', background: wlConfig.accent, color: '#fff', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold' }}>Forward to Sales CRM</button>
-                         <button style={{ padding: '12px 24px', background: 'rgba(255,0,0,0.1)', color: '#ff0000', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold' }}>Archive Lead</button>
-                      </div>
-                   </div>
-                ) : (
-                   <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                      <div style={{ display: 'table', width: '100%', background: 'rgba(255,255,255,0.05)', borderRadius: '12px', overflow: 'hidden' }}>
-                         <div style={{ display: 'table-row', background: 'rgba(255,255,255,0.05)', fontWeight: 'bold' }}>
-                            <div style={{ display: 'table-cell', padding: '16px 20px' }}>Date</div>
-                            <div style={{ display: 'table-cell', padding: '16px 20px' }}>Entity</div>
-                            <div style={{ display: 'table-cell', padding: '16px 20px' }}>Payload Preview</div>
-                            <div style={{ display: 'table-cell', padding: '16px 20px' }}>Action</div>
-                         </div>
-                         
-                         <div style={{ display: 'table-row', borderTop: '1px solid rgba(255,255,255,0.05)' }}>
-                            <div style={{ display: 'table-cell', padding: '16px 20px', color: '#888' }}>2 minutes ago</div>
-                            <div style={{ display: 'table-cell', padding: '16px 20px', fontWeight: 'bold' }}>jordan@invest.com</div>
-                            <div style={{ display: 'table-cell', padding: '16px 20px', color: '#ccc' }}>"We love the white label structure..."</div>
-                            <div style={{ display: 'table-cell', padding: '16px 20px' }}>
-                               <button onClick={() => setSelectedLead({email: 'jordan@invest.com', date: '2 minutes ago', full: 'We love the white label structure. We are looking to deploy 400 nodes globally for our enterprise suite. What is your volume pricing?'})} style={{ padding: '8px 16px', background: wlConfig.accent, color: '#fff', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold' }}>View Full</button>
-                            </div>
-                         </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '30px' }}>
+                <div style={{ padding: '40px', background: 'rgba(0,0,0,0.3)', borderRadius: '24px', border: '1px solid rgba(255,255,255,0.05)' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '24px' }}>
+                     <div>
+                       <h3 style={{ fontSize: '28px', color: '#fff', margin: '0 0 16px 0' }}>Contact Destination Parameters</h3>
+                       <p style={{ color: '#888', fontSize: '18px', margin: 0, lineHeight: 1.5 }}>Configure where inquiries from your network's Contact Us form are routed.</p>
+                     </div>
+                     <button onClick={executeHeroSaveDeploy} style={{ padding: '12px 24px', background: wlConfig.accent, color: '#fff', border: 'none', borderRadius: '12px', cursor: 'pointer', fontWeight: 'bold' }}>Deploy Routing Table</button>
+                  </div>
+                  <div style={{ display: 'flex', gap: '20px', flexWrap: 'wrap' }}>
+                     <div style={{ flex: 1, minWidth: '250px' }}>
+                        <label style={{ display: 'block', marginBottom: '8px', color: '#ccc', fontWeight: 'bold' }}>Primary Ingestion Email</label>
+                        <input type="text" value={contactEmail} onChange={e=>setContactEmail(e.target.value)} style={{ width: '100%', background: 'rgba(255,255,255,0.05)', color: '#fff', padding: '14px', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.1)', outline: 'none' }} />
+                     </div>
+                     <div style={{ flex: 1, minWidth: '250px' }}>
+                        <label style={{ display: 'block', marginBottom: '8px', color: '#ccc', fontWeight: 'bold' }}>Corporate Phone Pipeline</label>
+                        <input type="text" value={contactPhone} onChange={e=>setContactPhone(e.target.value)} style={{ width: '100%', background: 'rgba(255,255,255,0.05)', color: '#fff', padding: '14px', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.1)', outline: 'none' }} />
+                     </div>
+                     <div style={{ flex: 1, minWidth: '250px' }}>
+                        <label style={{ display: 'block', marginBottom: '8px', color: '#ccc', fontWeight: 'bold' }}>Physical Operations Node</label>
+                        <input type="text" value={contactAddress} onChange={e=>setContactAddress(e.target.value)} style={{ width: '100%', background: 'rgba(255,255,255,0.05)', color: '#fff', padding: '14px', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.1)', outline: 'none' }} />
+                     </div>
+                  </div>
+                </div>
 
-                         <div style={{ display: 'table-row', borderTop: '1px solid rgba(255,255,255,0.05)' }}>
-                            <div style={{ display: 'table-cell', padding: '16px 20px', color: '#888' }}>1 hour ago</div>
-                            <div style={{ display: 'table-cell', padding: '16px 20px', fontWeight: 'bold' }}>support@local.com</div>
-                            <div style={{ display: 'table-cell', padding: '16px 20px', color: '#ccc' }}>"Can I get a custom SLA for..."</div>
-                            <div style={{ display: 'table-cell', padding: '16px 20px' }}>
-                               <button onClick={() => setSelectedLead({email: 'support@local.com', date: '1 hour ago', full: 'Can I get a custom SLA for API downtime guarantees? Our platform requires 99.999% uptime.'})} style={{ padding: '8px 16px', background: wlConfig.accent, color: '#fff', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold' }}>View Full</button>
-                            </div>
-                         </div>
+                <div style={{ padding: '40px', background: 'rgba(0,0,0,0.3)', borderRadius: '24px', border: '1px solid rgba(255,255,255,0.05)' }}>
+                  <h3 style={{ fontSize: '28px', color: '#fff', margin: '0 0 16px 0' }}>Lead Inbox</h3>
+                  <p style={{ color: '#888', fontSize: '18px', marginBottom: '40px', lineHeight: 1.5 }}>View encrypted payloads transmitted directly from your network's Contact Us forms.</p>
+                  
+                  {selectedLead ? (
+                     <div style={{ background: 'rgba(255,255,255,0.05)', padding: '40px', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.1)' }}>
+                        <button onClick={() => setSelectedLead(null)} style={{ background: 'none', border: 'none', color: '#888', cursor: 'pointer', marginBottom: '20px', fontWeight: 'bold' }}>← Back to Triage</button>
+                        <h2 style={{ margin: '0 0 8px 0', fontSize: '24px' }}>Sender: {selectedLead.email}</h2>
+                        <p style={{ color: '#888', margin: '0 0 30px 0' }}>Received: {selectedLead.date}</p>
+                        <div style={{ background: '#000', padding: '24px', borderRadius: '12px', color: '#ccc', lineHeight: 1.6, fontSize: '16px', border: '1px solid rgba(255,255,255,0.05)' }}>
+                           {selectedLead.full}
+                        </div>
+                        <div style={{ display: 'flex', gap: '16px', marginTop: '30px' }}>
+                           <button style={{ padding: '12px 24px', background: wlConfig.accent, color: '#fff', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold' }}>Forward to Sales CRM</button>
+                           <button onClick={() => {
+                              const updated = leads.filter(l => l.date !== selectedLead.date);
+                              localStorage.setItem('vibe_network_leads', JSON.stringify(updated));
+                              setLeads(updated);
+                              setSelectedLead(null);
+                           }} style={{ padding: '12px 24px', background: 'rgba(255,0,0,0.1)', color: '#ff0000', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold' }}>Archive Lead</button>
+                        </div>
+                     </div>
+                  ) : (
+                     <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                        <div style={{ display: 'table', width: '100%', background: 'rgba(255,255,255,0.05)', borderRadius: '12px', overflow: 'hidden' }}>
+                           <div style={{ display: 'table-row', background: 'rgba(255,255,255,0.05)', fontWeight: 'bold' }}>
+                              <div style={{ display: 'table-cell', padding: '16px 20px' }}>Date</div>
+                              <div style={{ display: 'table-cell', padding: '16px 20px' }}>Entity</div>
+                              <div style={{ display: 'table-cell', padding: '16px 20px' }}>Payload Preview</div>
+                              <div style={{ display: 'table-cell', padding: '16px 20px' }}>Action</div>
+                           </div>
+                           
+                           {leads.length === 0 ? (
+                              <div style={{ display: 'table-row' }}>
+                                 <div style={{ display: 'table-cell', padding: '30px 20px', color: '#888', textAlign: 'center' }} colSpan={4}>No leads have been ingested into this pipeline yet.</div>
+                              </div>
+                           ) : (
+                              leads.map((lead: any, i: number) => (
+                                 <div key={i} style={{ display: 'table-row', borderTop: '1px solid rgba(255,255,255,0.05)' }}>
+                                    <div style={{ display: 'table-cell', padding: '16px 20px', color: '#888' }}>{lead.date}</div>
+                                    <div style={{ display: 'table-cell', padding: '16px 20px', fontWeight: 'bold' }}>{lead.email}</div>
+                                    <div style={{ display: 'table-cell', padding: '16px 20px', color: '#ccc' }}>{lead.full.substring(0, 60)}...</div>
+                                    <div style={{ display: 'table-cell', padding: '16px 20px' }}>
+                                       <button onClick={() => setSelectedLead(lead)} style={{ padding: '8px 16px', background: wlConfig.accent, color: '#fff', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold' }}>View Full</button>
+                                    </div>
+                                 </div>
+                              ))
+                           )}
+                        </div>
+                     </div>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* WALLET / CRM TAB */}
+            {activeTab === 'wallet' && (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+                <h1 style={{ fontSize: '36px', marginBottom: '12px', fontWeight: '900', letterSpacing: '-1px' }}>Enterprise Revenue Ledger</h1>
+                
+                {/* Top Balance Row */}
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '20px' }}>
+                  
+                  <div style={{ background: `linear-gradient(135deg, ${wlConfig.accent}22, rgba(0,0,0,0))`, borderRadius: '24px', padding: '30px', border: `1px solid ${wlConfig.accent}44`, gridColumn: 'span 2', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <div>
+                      <h3 style={{ margin: '0 0 8px 0', fontSize: '18px', color: wlConfig.accent, display: 'flex', alignItems: 'center', gap: '8px' }}><Wallet size={20}/> Active Settled Revenue</h3>
+                      <div style={{ fontSize: '48px', fontWeight: 900, color: '#fff' }}>
+                        ${walletBalance.toFixed(2)}
                       </div>
-                   </div>
-                )}
+                      <p style={{ margin: '8px 0 0 0', color: '#888', fontSize: '14px' }}>Enterprise funds available for secure off-ramping.</p>
+                    </div>
+                    <div style={{ display: 'flex', gap: '16px', flexDirection: 'column' }}>
+                      <button style={{ padding: '14px 24px', borderRadius: '12px', background: wlConfig.accent, color: '#fff', fontWeight: 'bold', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px', fontSize: '15px', transition: 'all 0.2s' }} onClick={() => { alert('Funds securely routed to your connected corporate account.'); setWalletBalance(0); localStorage.setItem('vibe_network_wallet', '0'); }}>
+                        <ArrowUpRight size={18}/> Initiate Withdrawal
+                      </button>
+                    </div>
+                  </div>
+    
+                  <div style={{ background: 'rgba(255,255,255,0.03)', borderRadius: '24px', padding: '30px', border: '1px solid rgba(255,255,255,0.05)', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+                    <h4 style={{ margin: '0 0 16px 0', fontSize: '16px', color: '#fff' }}>Infrastructure Billing</h4>
+                    <div style={{ color: '#888', fontSize: '14px', lineHeight: 1.5, marginBottom: '20px' }}>
+                      Automatically deduct your $99/mo Vibe Network White-Label hosting fee from generated revenue.
+                    </div>
+                    <label style={{ display: 'flex', alignItems: 'center', gap: '12px', cursor: 'pointer', background: 'rgba(0,0,0,0.4)', padding: '16px', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.1)' }}>
+                      <input type="checkbox" checked={paySubsWithWallet} onChange={(e) => setPaySubsWithWallet(e.target.checked)} style={{ width: '20px', height: '20px', accentColor: wlConfig.accent }} />
+                      <span style={{ color: '#fff', fontWeight: 'bold' }}>Auto-Pay from Balance</span>
+                    </label>
+                  </div>
+                </div>
+    
+                {/* Income Streams */}
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
+                  
+                  <div style={{ background: 'rgba(255,255,255,0.03)', borderRadius: '24px', padding: '30px', border: '1px solid rgba(255,255,255,0.05)' }}>
+                    <h3 style={{ margin: '0 0 20px 0', fontSize: '20px', color: '#fff', display: 'flex', alignItems: 'center', gap: '8px' }}><Activity size={20} color={wlConfig.accent}/> Global Revenue Stream</h3>
+                    
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                      {[
+                        { id: 1, title: 'Enterprise Subscription (Vertex Tech)', amount: '+$4,999.00', type: 'B2B License', color: '#00ff88' },
+                        { id: 2, title: 'Network Event Ticketing (Keynote)', amount: '+$1,250.00', type: 'Pay-Per-View', color: '#0055ff' },
+                        { id: 3, title: 'API Access Overage', amount: '+$300.00', type: 'Infrastructure', color: '#FFD700' },
+                        { id: 4, title: 'Executive Seat License', amount: '+$199.00', type: 'Subscription', color: '#00ff88' }
+                      ].map(tx => (
+                        <div key={tx.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingBottom: '16px', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+                          <div>
+                            <div style={{ fontWeight: 'bold', color: '#fff', fontSize: '15px' }}>{tx.title}</div>
+                            <div style={{ color: '#888', fontSize: '13px', marginTop: '4px' }}>{tx.type}</div>
+                          </div>
+                          <div style={{ color: tx.color, fontWeight: 'bold', fontSize: '16px' }}>{tx.amount}</div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+    
+                  <div style={{ background: 'rgba(255,255,255,0.03)', borderRadius: '24px', padding: '30px', border: '1px solid rgba(255,255,255,0.05)' }}>
+                    <h3 style={{ margin: '0 0 20px 0', fontSize: '20px', color: '#fff', display: 'flex', alignItems: 'center', gap: '8px' }}><ArrowUpRight size={20} color={wlConfig.accent}/> Payable Infrastructure</h3>
+                    
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                      {[
+                        { id: 1, creator: 'Vibe Network Operating License', amount: '-$99.00/mo', due: 'Due in 14 days', status: paySubsWithWallet ? 'Covered by Revenue' : 'Corporate Card *4242' },
+                        { id: 2, creator: 'AWS Global CDN Routing', amount: '-$450.00/mo', due: 'Due next week', status: paySubsWithWallet ? 'Covered by Revenue' : 'Corporate Card *4242' },
+                      ].map(sub => (
+                        <div key={sub.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '16px', background: 'rgba(0,0,0,0.4)', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.02)' }}>
+                          <div>
+                            <div style={{ fontWeight: 'bold', color: '#fff', fontSize: '15px' }}>{sub.creator}</div>
+                            <div style={{ color: '#888', fontSize: '13px', marginTop: '6px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                              <span style={{ color: paySubsWithWallet ? '#00ff88' : '#888' }}>{sub.status}</span> • {sub.due}
+                            </div>
+                          </div>
+                          <div style={{ color: '#fff', fontWeight: 'bold', fontSize: '16px' }}>{sub.amount}</div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+    
+                </div>
               </div>
             )}
 

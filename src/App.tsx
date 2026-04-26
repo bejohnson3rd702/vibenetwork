@@ -11,6 +11,8 @@ import BusinessAdminDashboard from './components/BusinessAdminDashboard';
 import EndUserAuthModal from './components/EndUserAuthModal';
 import MasterAdminDashboard from './components/MasterAdminDashboard';
 import LiveChat from './components/LiveChat';
+import MoreInfo from './components/MoreInfo';
+import Contact from './components/Contact';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { WhiteLabelContext } from './context/WhiteLabelContext';
 import { useEffect, useState } from 'react';
@@ -24,9 +26,23 @@ function App() {
   
   const [user, setUser] = useState<any>(null);
   const [showAuthModal, setShowAuthModal] = useState(false);
+  const [authDefaults, setAuthDefaults] = useState({ isLogin: true, role: 'viewer' as 'viewer' | 'influencer' | 'business' });
   const [wlConfig, setWlConfig] = useState<any>(null);
   const [showAdminPanel, setShowAdminPanel] = useState(false);
   const [showEndUserAuthModal, setShowEndUserAuthModal] = useState(false);
+
+  useEffect(() => {
+    const handleOpenAuth = (e: any) => {
+      if (e.detail) {
+        setAuthDefaults({ isLogin: e.detail.isLogin ?? true, role: e.detail.role ?? 'viewer' });
+      } else {
+        setAuthDefaults({ isLogin: true, role: 'viewer' });
+      }
+      setShowAuthModal(true);
+    };
+    window.addEventListener('open_auth', handleOpenAuth);
+    return () => window.removeEventListener('open_auth', handleOpenAuth);
+  }, []);
 
   useEffect(() => {
     // Check Active Session
@@ -44,23 +60,48 @@ function App() {
 
 
     const handleCommit = async (e: any) => {
-       setWlConfig(e.detail);
-       // Persist to database
        try {
-         await supabase!.from('whitelabel_configs').upsert({
-           id: e.detail.id,
+         const newId = e.detail.id || 'test_wl_' + Date.now();
+         let finalId = newId;
+
+         // Try persisting to DB
+         const { data: wlData, error: wlError } = await supabase!.from('whitelabel_configs').upsert({
+           id: newId,
            name: e.detail.name,
            domain: e.detail.domain,
            accent: e.detail.accent,
-           bg: e.detail.bg,
            hero_copy: e.detail.heroCopy,
-           btn_primary: e.detail.btnPrimary,
-           slider_count: e.detail.sliderCount,
-           custom_sections: e.detail.customSections,
-           hero_image: e.detail.heroImage
-         });
+           logo: e.detail.logoImage
+         }).select().single();
+
+         if (wlError) {
+            console.warn('DB upsert failed (likely RLS). Falling back to local storage sync.', wlError);
+            const localNetworks = JSON.parse(localStorage.getItem('vibe_local_networks') || '[]');
+            localNetworks.push({ ...e.detail, id: newId });
+            localStorage.setItem('vibe_local_networks', JSON.stringify(localNetworks));
+         } else if (wlData) {
+            finalId = wlData.id;
+            const { data: { session } } = await supabase!.auth.getSession();
+            if (session?.user) {
+               await supabase!.from('profiles').update({ whitelabel_id: finalId }).eq('id', session.user.id);
+            }
+         }
+         // Ensure the business owner stays logged into their newly created White Label!
+         const masterToken = localStorage.getItem('sb-vibe-master-auth-token');
+         if (masterToken) {
+            localStorage.setItem(`sb-${finalId}-auth-token`, masterToken);
+            // Log them out of the master Vibe site locally so they don't bleed back into the public network
+            localStorage.removeItem('sb-vibe-master-auth-token');
+         }
+         
+         setTimeout(() => {
+            window.open(`/?tenant=${finalId}`, '_blank');
+            // Clean up the master site's UI after launching the network
+            setTimeout(() => { window.location.reload(); }, 500);
+         }, 1000);
        } catch (err) {
          console.error('Failed to sync whitelabel config', err);
+         setTimeout(() => { window.location.reload(); }, 1000);
        }
     };
     window.addEventListener('whitelabel_commit', handleCommit);
@@ -79,14 +120,35 @@ function App() {
       let loadedTenantId = undefined;
 
       if (forceTenant) {
-        query = query.eq('id', forceTenant).limit(1);
-        isTenant = true;
+        const localNetworks = JSON.parse(localStorage.getItem('vibe_local_networks') || '[]');
+        const localTenant = localNetworks.find((n: any) => n.id === forceTenant);
+        
+        if (localTenant) {
+           isTenant = true;
+           loadedTenantId = forceTenant;
+           setWlConfig({
+              id: localTenant.id,
+              name: localTenant.name || 'Vibe B2B Enterprise',
+              domain: localTenant.domain || 'vibenetwork.tv',
+              accent: localTenant.accent || '#0055ff',
+              bg: localTenant.bg || 'var(--bg-color)',
+              heroCopy: localTenant.heroCopy,
+              btnPrimary: localTenant.btnPrimary,
+              sliderCount: localTenant.sliderCount || 4,
+              customSections: localTenant.customSections || 'Platform Architecture,Success Stories',
+              heroImage: localTenant.heroImage,
+              logoImage: localTenant.logoImage || localTenant.logo || null
+           });
+        } else {
+           query = query.eq('id', forceTenant).limit(1);
+           isTenant = true;
+        }
       } else if (hostname !== 'localhost' && hostname !== '127.0.0.1') {
         query = query.eq('domain', hostname).limit(1);
         isTenant = true;
       }
 
-      if (isTenant) {
+      if (isTenant && !loadedTenantId) {
         const { data } = await query;
         if (data && data.length > 0) {
           const dbConf = data[0];
@@ -122,131 +184,13 @@ function App() {
           <div style={{ background: wlConfig.bg, minHeight: '100vh', color: 'var(--text-primary)', overflowX: 'hidden' }}>
             <Navbar user={user} onLoginClick={() => setShowEndUserAuthModal(true)} onAdminClick={() => setShowAdminPanel(true)} />
           
-          <div style={{
-             width: '100%', minHeight: '100vh', 
-             backgroundColor: 'var(--bg-color)',
-             display:'flex', flexDirection: 'column', alignItems:'center', justifyContent:'center', position: 'relative',
-             textAlign: 'center', overflow: 'hidden'
-          }}>
-             {/* Background Mesh & Image Layer */}
-             <motion.img 
-               initial={{ scale: 1.1, opacity: 0 }}
-               animate={{ scale: 1, opacity: 1 }}
-               transition={{ duration: 1.5, ease: 'easeOut' }}
-               src={wlConfig.heroImage || `https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&q=80&w=2500`} 
-               alt="Atmospheric Hero Background" 
-               style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', objectFit: 'cover', zIndex: 0, filter: 'brightness(0.4) contrast(1.1) saturate(1.2)' }} 
-             />
-             {/* Complex Gradient Overlays responding dynamically to Tenant Accent */}
-             <div style={{ position: 'absolute', inset: 0, background: `linear-gradient(to right, ${wlConfig.bg || 'var(--bg-color)'}dd, transparent)`, zIndex: 1 }} />
-             <div style={{ position: 'absolute', inset: 0, background: `radial-gradient(circle at 50% 30%, ${wlConfig.accent || '#b829ea'}44, transparent 60%)`, zIndex: 1, mixBlendMode: 'screen' }} />
-             <div style={{ position: 'absolute', inset: 0, background: `linear-gradient(to bottom, transparent 40%, ${wlConfig.bg || 'var(--bg-color)'} 100%)`, zIndex: 1 }} />
-             
-             <div className="px-mobile-sm py-mobile-sm" style={{ zIndex: 2, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '32px', marginTop: '60px' }}>
-                <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, delay: 0.2, ease: [0.16, 1, 0.3, 1] }} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '16px' }}>
-                  <div style={{ padding: '8px 16px', background: 'var(--bg-surface)', backdropFilter: 'blur(10px)', border: `1px solid ${wlConfig.accent || '#b829ea'}44`, borderRadius: '30px', display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
-                    <div style={{ width: 8, height: 8, borderRadius: '50%', background: wlConfig.accent || '#b829ea', boxShadow: `0 0 10px ${wlConfig.accent || '#b829ea'}` }} />
-                    <span style={{ fontSize: '13px', fontWeight: 600, letterSpacing: '2px', textTransform: 'uppercase', color: wlConfig.accent || '#b829ea' }}>Live Network Initialized</span>
-                  </div>
-                  <h1 className="hero-title-mobile" style={{ fontSize: '96px', fontWeight: '900', margin: 0, letterSpacing: '-3px', lineHeight: 1.1, textShadow: '0 20px 40px rgba(0,0,0,0.8)', background: `linear-gradient(to bottom, #ffffff, rgba(255,255,255,0.7))`, WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
-                    {wlConfig.name}
-                  </h1>
-                </motion.div>
-                
-                <motion.p initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, delay: 0.4, ease: [0.16, 1, 0.3, 1] }} className="hero-sub-mobile" style={{ fontSize: '26px', color: 'rgba(255,255,255,0.7)', maxWidth: '800px', fontWeight: '400', textShadow: '0 10px 20px rgba(0,0,0,0.8)', lineHeight: 1.6 }}>
-                  {wlConfig.heroCopy || 'The premiere destination for high quality digital content.'}
-                </motion.p>
-                
-                <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.8, delay: 0.6, ease: [0.16, 1, 0.3, 1] }} style={{ marginTop: '20px', display: 'flex', gap: '20px', alignItems: 'center' }}>
-                   <button onClick={() => { document.getElementById('featured-content')?.scrollIntoView({ behavior: 'smooth' }); }} style={{ padding: '20px 48px', background: wlConfig.accent || '#b829ea', color: 'var(--text-primary)', border: 'none', borderRadius: '16px', fontSize: '18px', fontWeight: 'bold', cursor: 'pointer', boxShadow: `0 10px 30px ${wlConfig.accent || '#b829ea'}66`, transition: 'all 0.3s ease' }}>
-                     {wlConfig.btnPrimary || 'Explore Content'}
-                   </button>
-                </motion.div>
-             </div>
-          </div>
-
-          <div id="featured-content" className="px-mobile-sm py-mobile-sm" style={{ padding: '80px 10%', display: 'flex', flexDirection: 'column', gap: '80px', position: 'relative', zIndex: 2 }}>
-             
-             <div className="mobile-w-full no-margin-mobile" style={{ position: 'relative', width: '100vw', marginLeft: 'calc(-50vw + 50%)' }}>
-               {categories.map((category: any, index: number) => {
-                 const isArtist = category.aspectRatio === '3/4' || (category.title && category.title.includes('Artist'));
-                 const ratio = isArtist ? '3/4' : '16/9';
-                 return (
-                   <div key={category.title} style={{ padding: '0 10%', margin: '0 auto 60px' }}>
-                     <SliderSection 
-                       title={category.title} 
-                       items={category.items} 
-                       delay={index * 0.2}
-                       aspectRatio={ratio}
-                       sizeMultiplier={1}
-                       onItemClick={(item) => {
-                         if (item.linkUrl) {
-                           window.location.href = item.linkUrl;
-                         } else if (item.tags && item.tags.includes('Influencer Channel')) {
-                           window.location.href = `/profile/${item.id}`;
-                         } else {
-                           setActiveVideo(item);
-                         }
-                       }}
-                     />
-                   </div>
-                 );
-               })}
-             </div>
-             
-             {/* Embed the standard VideoOverlay conditionally */}
-             <AnimatePresence>
-               {activeVideo && (
-                 <motion.div 
-                   initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-                   onClick={() => setActiveVideo(null)}
-                   style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.95)', zIndex: 1000, display: 'flex', flexDirection: 'column' }}
-                 >
-                   <div style={{ padding: '24px 40px', display: 'flex', justifyContent: 'flex-end' }}>
-                     <button onClick={() => setActiveVideo(null)} style={{ background: 'none', border: 'none', color: 'var(--text-primary)', cursor: 'pointer', opacity: 0.7, padding: '8px' }} onMouseOver={e=>e.currentTarget.style.opacity='1'} onMouseOut={e=>e.currentTarget.style.opacity='0.7'}><X size={32} /></button>
-                   </div>
-                   <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '0 40px 40px', gap: '20px' }} onClick={e => e.stopPropagation()}>
-                     <div style={{ flex: 1, maxWidth: '1200px', height: '100%', background: '#000', borderRadius: '16px', overflow: 'hidden', boxShadow: '0 20px 40px rgba(0,0,0,0.5)' }}>
-                       {(() => {
-                         const match = activeVideo.videoUrl.match(/^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/);
-                         const ytId = (match && match[2].length === 11) ? match[2] : null;
-                         if (ytId) {
-                           return (
-                             <iframe 
-                               src={`https://www.youtube.com/embed/${ytId}?autoplay=1`}
-                               title={activeVideo.title}
-                               style={{ width: '100%', height: '100%', border: 'none' }}
-                               allow="autoplay; encrypted-media; fullscreen"
-                               allowFullScreen
-                             />
-                           );
-                         }
-                         return (
-                           <video src={activeVideo.videoUrl} poster={activeVideo.image} autoPlay controls style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
-                         );
-                       })()}
-                     </div>
-                   </div>
-                 </motion.div>
-               )}
-             </AnimatePresence>
-             
-             {wlConfig.customSections && wlConfig.customSections.toLowerCase() !== 'none' && (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '40px', marginTop: '40px' }}>
-                   {wlConfig.customSections.split(',').map((section: string, idx: number) => {
-                      const title = section.trim();
-                      if (!title) return null;
-                      return (
-                         <div key={idx} style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '24px', padding: '60px', display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', gap: '20px' }}>
-                            <h2 style={{ fontSize: '36px', color: wlConfig.accent || '#fff', margin: 0 }}>{title}</h2>
-                            <p style={{ color: '#aaa', fontSize: '18px', maxWidth: '600px' }}>This is the autogenerated structural block for your requested <b>{title}</b> modular section. Connect your CMS to deploy actual structured content here.</p>
-                         </div>
-                      );
-                   })}
-                </div>
-             )}
-             
-          </div>
+          <Routes>
+            <Route path="/" element={
+               <WhiteLabelHome wlConfig={wlConfig} categories={categories} user={user} activeVideo={activeVideo} setActiveVideo={setActiveVideo} />
+            } />
+            <Route path="/profile" element={<ProfileDashboard user={user} />} />
+            <Route path="/profile/:creatorId" element={<ProfileDashboard user={user} />} />
+          </Routes>
           
           {showAdminPanel && user && (
             <BusinessAdminDashboard onClose={() => setShowAdminPanel(false)} />
@@ -271,6 +215,8 @@ function App() {
             <AuthModal 
               onClose={() => setShowAuthModal(false)} 
               onSuccess={(u) => setUser(u)} 
+              defaultIsLogin={authDefaults.isLogin}
+              defaultRole={authDefaults.role}
             />
           )}
         </AnimatePresence>
@@ -287,6 +233,9 @@ function App() {
               />
               <Routes>
                 <Route path="/" element={<Home categories={categories} activeVideo={activeVideo} setActiveVideo={setActiveVideo} />} />
+                <Route path="/about" element={<MoreInfo />} />
+                <Route path="/more-info" element={<MoreInfo />} />
+                <Route path="/contact" element={<Contact />} />
                 <Route path="/profile" element={<ProfileDashboard user={user} />} />
                 <Route path="/profile/:creatorId" element={<ProfileDashboard user={user} />} />
               </Routes>
@@ -326,11 +275,11 @@ function Home({ categories, activeVideo, setActiveVideo }: any) {
               sizeMultiplier={multiplier}
               onItemClick={(item) => {
                 if (item.linkUrl) {
-                  window.location.href = item.linkUrl;
+                  window.location.href = item.linkUrl + window.location.search;
                 } else if (item.tags && item.tags.includes('Influencer Channel')) {
                   // Force a hard redirect specifically for Influencer profiles from the Swiper slider
                   // This entirely bypasses any nested DOM event swallowing bugs from swiper/react wrapper
-                  window.location.href = `/profile/${item.id}`;
+                  window.location.href = `/profile/${item.id}${window.location.search}`;
                 } else {
                   setActiveVideo(item);
                 }
@@ -348,14 +297,14 @@ function Home({ categories, activeVideo, setActiveVideo }: any) {
             <div style={{ position: 'absolute', right: '-10%', top: '-50%', width: '500px', height: '500px', background: 'var(--accent-primary)', filter: 'blur(150px)', opacity: 0.2, zIndex: 0, borderRadius: '50%' }} />
             
             <div style={{ position: 'relative', zIndex: 2, padding: '80px 60px', display: 'flex', flexDirection: 'column', alignItems: 'flex-start', textAlign: 'left' }}>
-              <div style={{ padding: '6px 16px', background: 'var(--bg-surface)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '20px', display: 'inline-block', marginBottom: '24px', fontSize: '12px', fontWeight: 800, textTransform: 'uppercase', color: 'var(--text-secondary)' }}>Vibe Enterprise Nodes</div>
+              <div style={{ padding: '6px 16px', background: 'var(--bg-surface)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '20px', display: 'inline-block', marginBottom: '24px', fontSize: '12px', fontWeight: 800, textTransform: 'uppercase', color: 'var(--text-secondary)' }}>Vibe Enterprise Networks</div>
               <h2 style={{ fontSize: '56px', fontWeight: 900, marginBottom: '20px', lineHeight: 1.1, letterSpacing: '-1px' }}>Ready to Scale Your<br/><span style={{ color: 'var(--accent-primary)' }}>Architecture</span>?</h2>
               <p style={{ color: 'var(--text-secondary)', maxWidth: '550px', marginBottom: '40px', fontSize: '18px', lineHeight: 1.6 }}>
-                Create an administrative account today to instantly provision high-end corporate streaming nodes, global architecture networks, and executive live-broadcast tools.
+                Create an administrative account today to instantly provision high-end corporate streaming platforms, global architecture networks, and executive live-broadcast tools.
               </p>
               <div style={{ display: 'flex', gap: '20px' }}>
-                <button style={{ padding: '18px 40px', background: '#fff', color: '#000', border: 'none', borderRadius: '12px', fontWeight: 900, letterSpacing: '1px', textTransform: 'uppercase', fontSize: '14px', cursor: 'pointer', boxShadow: '0 10px 30px rgba(255,255,255,0.2)' }}>Deploy Network Workspace</button>
-                <button style={{ padding: '18px 40px', background: 'var(--bg-surface)', color: 'var(--text-primary)', border: '1px solid rgba(255,255,255,0.2)', borderRadius: '12px', fontWeight: 900, letterSpacing: '1px', textTransform: 'uppercase', fontSize: '14px', cursor: 'pointer', backdropFilter: 'blur(10px)' }}>View Case Studies</button>
+                <button onClick={() => window.dispatchEvent(new CustomEvent('open_auth', { detail: { isLogin: false, role: 'business' } }))} style={{ padding: '18px 40px', background: '#fff', color: '#000', border: 'none', borderRadius: '12px', fontWeight: 900, letterSpacing: '1px', textTransform: 'uppercase', fontSize: '14px', cursor: 'pointer', boxShadow: '0 10px 30px rgba(255,255,255,0.2)' }}>Create Network</button>
+                <button onClick={() => window.dispatchEvent(new CustomEvent('open_auth', { detail: { isLogin: false, role: 'influencer' } }))} style={{ padding: '18px 40px', background: 'var(--bg-surface)', color: 'var(--text-primary)', border: '1px solid rgba(255,255,255,0.2)', borderRadius: '12px', fontWeight: 900, letterSpacing: '1px', textTransform: 'uppercase', fontSize: '14px', cursor: 'pointer', backdropFilter: 'blur(10px)' }}>Create a Profile</button>
               </div>
             </div>
           </div>
@@ -496,13 +445,183 @@ function Home({ categories, activeVideo, setActiveVideo }: any) {
            <div style={{ display: 'flex', gap: '40px', fontSize: '14px', fontWeight: 600, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '2px' }}>
              <span style={{ cursor: 'pointer', transition: 'color 0.2s' }} onMouseOver={e=>e.currentTarget.style.color='var(--text-primary)'} onMouseOut={e=>e.currentTarget.style.color='var(--text-secondary)'}>Architecture</span>
              <span style={{ cursor: 'pointer', transition: 'color 0.2s' }} onMouseOver={e=>e.currentTarget.style.color='var(--text-primary)'} onMouseOut={e=>e.currentTarget.style.color='var(--text-secondary)'}>Pricing</span>
-             <span style={{ cursor: 'pointer', transition: 'color 0.2s' }} onMouseOver={e=>e.currentTarget.style.color='var(--text-primary)'} onMouseOut={e=>e.currentTarget.style.color='var(--text-secondary)'}>Scale Nodes</span>
-             <span style={{ cursor: 'pointer', transition: 'color 0.2s' }} onMouseOver={e=>e.currentTarget.style.color='var(--text-primary)'} onMouseOut={e=>e.currentTarget.style.color='var(--text-secondary)'}>Contact</span>
+             <span style={{ cursor: 'pointer', transition: 'color 0.2s' }} onMouseOver={e=>e.currentTarget.style.color='var(--text-primary)'} onMouseOut={e=>e.currentTarget.style.color='var(--text-secondary)'}>Scale Networks</span>
+             <span style={{ cursor: 'pointer', transition: 'color 0.2s' }} onMouseOver={e=>e.currentTarget.style.color='var(--text-primary)'} onMouseOut={e=>e.currentTarget.style.color='var(--text-secondary)'}>Documentation</span>
            </div>
            <p style={{ color: 'var(--text-muted)', fontSize: '12px', marginTop: '40px' }}>&copy; 2026 Vibe Media Networks LLC. All rights reserved.</p>
         </div>
       </footer>
     </>
+  );
+}
+
+function WhiteLabelHome({ wlConfig, categories, user, activeVideo, setActiveVideo }: any) {
+  return (
+    <div style={{
+       width: '100%', minHeight: '100vh', 
+       backgroundColor: 'var(--bg-color)',
+       display:'flex', flexDirection: 'column', alignItems:'center', justifyContent:'center', position: 'relative',
+       textAlign: 'center', overflow: 'hidden'
+    }}>
+       {/* Background Mesh & Image Layer */}
+       <motion.img 
+         initial={{ scale: 1.1, opacity: 0 }}
+         animate={{ scale: 1, opacity: 1 }}
+         transition={{ duration: 1.5, ease: 'easeOut' }}
+         src={wlConfig.heroImage || `https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&q=80&w=2500`} 
+         alt="Atmospheric Hero Background" 
+         style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', objectFit: 'cover', zIndex: 0, filter: 'brightness(0.4) contrast(1.1) saturate(1.2)' }} 
+       />
+       {/* Complex Gradient Overlays responding dynamically to Tenant Accent */}
+       <div style={{ position: 'absolute', inset: 0, background: `linear-gradient(to right, ${wlConfig.bg || 'var(--bg-color)'}dd, transparent)`, zIndex: 1 }} />
+       <div style={{ position: 'absolute', inset: 0, background: `radial-gradient(circle at 50% 30%, ${wlConfig.accent || '#b829ea'}44, transparent 60%)`, zIndex: 1, mixBlendMode: 'screen' }} />
+       <div style={{ position: 'absolute', inset: 0, background: `linear-gradient(to bottom, transparent 40%, ${wlConfig.bg || 'var(--bg-color)'} 100%)`, zIndex: 1 }} />
+       
+       <div className="px-mobile-sm py-mobile-sm" style={{ zIndex: 2, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '32px', marginTop: '60px' }}>
+          <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, delay: 0.2, ease: [0.16, 1, 0.3, 1] }} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '16px' }}>
+            <div style={{ padding: '8px 16px', background: 'var(--bg-surface)', backdropFilter: 'blur(10px)', border: `1px solid ${wlConfig.accent || '#b829ea'}44`, borderRadius: '30px', display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
+              <div style={{ width: 8, height: 8, borderRadius: '50%', background: wlConfig.accent || '#b829ea', boxShadow: `0 0 10px ${wlConfig.accent || '#b829ea'}` }} />
+              <span style={{ fontSize: '13px', fontWeight: 600, letterSpacing: '2px', textTransform: 'uppercase', color: wlConfig.accent || '#b829ea' }}>Live Network Initialized</span>
+            </div>
+            <h1 className="hero-title-mobile" style={{ fontSize: '96px', fontWeight: '900', margin: 0, letterSpacing: '-3px', lineHeight: 1.1, textShadow: '0 20px 40px rgba(0,0,0,0.8)', background: `linear-gradient(to bottom, #ffffff, rgba(255,255,255,0.7))`, WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
+              {wlConfig.name}
+            </h1>
+          </motion.div>
+          
+          <motion.p initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, delay: 0.4, ease: [0.16, 1, 0.3, 1] }} className="hero-sub-mobile" style={{ fontSize: '26px', color: 'rgba(255,255,255,0.7)', maxWidth: '800px', fontWeight: '400', textShadow: '0 10px 20px rgba(0,0,0,0.8)', lineHeight: 1.6 }}>
+            {wlConfig.heroCopy || 'The premiere destination for high quality digital content.'}
+          </motion.p>
+          
+          <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.8, delay: 0.6, ease: [0.16, 1, 0.3, 1] }} style={{ marginTop: '20px', display: 'flex', gap: '20px', alignItems: 'center' }}>
+             <button onClick={() => { document.getElementById('featured-content')?.scrollIntoView({ behavior: 'smooth' }); }} style={{ padding: '20px 48px', background: wlConfig.accent || '#b829ea', color: 'var(--text-primary)', border: 'none', borderRadius: '16px', fontSize: '18px', fontWeight: 'bold', cursor: 'pointer', boxShadow: `0 10px 30px ${wlConfig.accent || '#b829ea'}66`, transition: 'all 0.3s ease' }}>
+               {wlConfig.btnPrimary || 'Explore Content'}
+             </button>
+          </motion.div>
+       </div>
+       
+       <div id="featured-content" className="px-mobile-sm py-mobile-sm" style={{ padding: '80px 10%', display: 'flex', flexDirection: 'column', gap: '80px', position: 'relative', zIndex: 2, width: '100%' }}>
+          
+          <div className="mobile-w-full no-margin-mobile" style={{ position: 'relative', width: '100vw', marginLeft: 'calc(-50vw + 50%)' }}>
+            {(() => {
+              const displayCategories = [...categories];
+              if (user) {
+                displayCategories.unshift({
+                  title: 'Network Executives',
+                  aspectRatio: '3/4',
+                  items: [
+                    {
+                      id: user.id,
+                      title: user.user_metadata?.username || 'Network Founder',
+                      image: user.user_metadata?.avatar_url || `https://image.pollinations.ai/prompt/professional%20corporate%20headshot%20portrait%20cinematic%20lighting%20startup%20founder?width=400&height=600&nologo=true&seed=${user.id || 'owner'}`,
+                      tags: ['Influencer Channel', 'Executive'],
+                      linkUrl: null
+                    }
+                  ]
+                });
+              }
+              return displayCategories.map((category: any, index: number) => {
+                const isArtist = category.aspectRatio === '3/4' || (category.title && category.title.includes('Artist')) || category.title === 'Network Executives';
+                const ratio = isArtist ? '3/4' : '16/9';
+                return (
+                  <div key={category.title} style={{ padding: '0 10%', margin: '0 auto 60px' }}>
+                    <SliderSection 
+                      title={category.title} 
+                      items={category.items} 
+                      delay={index * 0.2}
+                      aspectRatio={ratio}
+                      sizeMultiplier={1}
+                      onItemClick={(item) => {
+                        if (item.linkUrl) {
+                          window.location.href = item.linkUrl + window.location.search;
+                        } else if (item.tags && item.tags.includes('Influencer Channel')) {
+                          window.location.href = `/profile/${item.id}${window.location.search}`;
+                        } else {
+                          setActiveVideo(item);
+                        }
+                      }}
+                    />
+                  </div>
+                );
+              });
+            })()}
+          </div>
+          
+          <AnimatePresence>
+            {activeVideo && (
+              <motion.div 
+                initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+                onClick={() => setActiveVideo(null)}
+                style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.95)', zIndex: 1000, display: 'flex', flexDirection: 'column' }}
+              >
+                <div style={{ padding: '24px 40px', display: 'flex', justifyContent: 'flex-end' }}>
+                  <button onClick={() => setActiveVideo(null)} style={{ background: 'none', border: 'none', color: 'var(--text-primary)', cursor: 'pointer', opacity: 0.7, padding: '8px' }} onMouseOver={e=>e.currentTarget.style.opacity='1'} onMouseOut={e=>e.currentTarget.style.opacity='0.7'}><X size={32} /></button>
+                </div>
+                <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '0 40px 40px', gap: '20px' }} onClick={e => e.stopPropagation()}>
+                  <div style={{ flex: 1, maxWidth: '1200px', height: '100%', background: '#000', borderRadius: '16px', overflow: 'hidden', boxShadow: '0 20px 40px rgba(0,0,0,0.5)' }}>
+                    {(() => {
+                      const match = activeVideo.videoUrl.match(/^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/);
+                      const ytId = (match && match[2].length === 11) ? match[2] : null;
+                      if (ytId) {
+                        return (
+                          <iframe 
+                            src={`https://www.youtube.com/embed/${ytId}?autoplay=1`}
+                            title={activeVideo.title}
+                            style={{ width: '100%', height: '100%', border: 'none' }}
+                            allow="autoplay; encrypted-media; fullscreen"
+                            allowFullScreen
+                          />
+                        );
+                      }
+                      return (
+                        <video src={activeVideo.videoUrl} poster={activeVideo.image} autoPlay controls style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+                      );
+                    })()}
+                  </div>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+          
+          {wlConfig.customSections && wlConfig.customSections.toLowerCase() !== 'none' && (
+             <div style={{ display: 'flex', flexDirection: 'column', gap: '40px', marginTop: '40px' }}>
+                {wlConfig.customSections.split(',').map((section: string, idx: number) => {
+                   const title = section.trim();
+                   if (!title) return null;
+                   if (title === 'Contact Us Form') {
+                       return (
+                          <div key={idx} style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '24px', padding: '60px', display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', gap: '24px', maxWidth: '600px', margin: '0 auto', width: '100%' }}>
+                             <h2 style={{ fontSize: '36px', color: wlConfig.accent || '#fff', margin: 0 }}>Contact Us</h2>
+                             <p style={{ color: '#aaa', fontSize: '16px', margin: '0 0 10px 0' }}>Reach out to our team at {wlConfig.contactEmail || 'sales@vibenetwork.tv'} or call {wlConfig.contactPhone || '1-800-VIBE-NET'}. Address: {wlConfig.contactAddress || '123 Enterprise Way, Silicon Valley'}</p>
+                             <form style={{ display: 'flex', flexDirection: 'column', gap: '16px', width: '100%' }} onSubmit={(e) => {
+                                 e.preventDefault();
+                                 const form = e.target as HTMLFormElement;
+                                 const email = (form.elements.namedItem('email') as HTMLInputElement).value;
+                                 const msg = (form.elements.namedItem('message') as HTMLTextAreaElement).value;
+                                 const payload = { email, date: new Date().toLocaleString(), full: msg };
+                                 const existing = JSON.parse(localStorage.getItem('vibe_network_leads') || '[]');
+                                 localStorage.setItem('vibe_network_leads', JSON.stringify([payload, ...existing]));
+                                 window.dispatchEvent(new Event('new_lead_received'));
+                                 form.reset();
+                                 alert('Message securely dispatched to network administrators!');
+                             }}>
+                                <input name="email" type="email" placeholder="Your Email Address" required style={{ width: '100%', padding: '16px', borderRadius: '12px', background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.1)', color: '#fff', fontSize: '16px', outline: 'none' }} />
+                                <textarea name="message" placeholder="How can we help your business scale?" required rows={4} style={{ width: '100%', padding: '16px', borderRadius: '12px', background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.1)', color: '#fff', fontSize: '16px', outline: 'none', resize: 'vertical' }} />
+                                <button type="submit" style={{ padding: '16px', background: wlConfig.accent || '#fff', color: '#000', fontWeight: 'bold', fontSize: '16px', border: 'none', borderRadius: '12px', cursor: 'pointer', transition: 'all 0.2s' }}>Send Encrypted Message</button>
+                             </form>
+                          </div>
+                       );
+                   }
+                   return (
+                      <div key={idx} style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '24px', padding: '60px', display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', gap: '20px', maxWidth: '800px', margin: '0 auto', width: '100%' }}>
+                         <h2 style={{ fontSize: '36px', color: wlConfig.accent || '#fff', margin: 0 }}>{title}</h2>
+                         <p style={{ color: '#aaa', fontSize: '18px', maxWidth: '600px' }}>This is the autogenerated structural block for your requested <b>{title}</b> modular section. Connect your CMS to deploy actual structured content here.</p>
+                      </div>
+                   );
+                })}
+             </div>
+          )}
+       </div>
+    </div>
   );
 }
 

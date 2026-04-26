@@ -197,8 +197,9 @@ const SliderSection: React.FC<SliderSectionProps> = ({ title, items, delay = 0, 
 
   const endDrag = () => setIsDragging(false);
 
-  // Profile sliders (3/4) reduced by exactly 15% from 320px to 272px
-  const widthVal = aspectRatio === '1/1' ? '320px' : aspectRatio === '3/4' ? '272px' : '480px';
+  // Set width dynamically so exactly 5 cards are visible at a time
+  // The gap is 30px, so 4 gaps between 5 cards is 120px total. 120 / 5 = 24px subtracted from 20%
+  const widthVal = 'calc(20% - 24px)';
 
   return (
     <motion.section 

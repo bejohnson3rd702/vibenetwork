@@ -2,8 +2,10 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { Play, ArrowRight } from 'lucide-react';
 import { ASSETS } from '../data';
+import { useWhiteLabel } from '../context/WhiteLabelContext';
 
 const Hero: React.FC = () => {
+  const { wlConfig } = useWhiteLabel();
   return (
     <div style={{ position: 'relative', width: '100%', minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: 'var(--bg-color)', overflow: 'hidden' }}>
       
@@ -12,8 +14,8 @@ const Hero: React.FC = () => {
         initial={{ scale: 1.1, opacity: 0 }}
         animate={{ scale: 1, opacity: 0.6 }}
         transition={{ duration: 2, ease: 'easeOut' }}
-        src={ASSETS.heroMain}
-        alt="B2B Corporate Master"
+        src={wlConfig?.heroImage || ASSETS.heroMain}
+        alt={wlConfig?.name || "B2B Corporate Master"}
         style={{
           position: 'absolute',
           inset: 0,
@@ -52,53 +54,34 @@ const Hero: React.FC = () => {
           </span>
         </motion.div>
         
-        {/* Main Sleek Typography */}
-        <motion.div 
+        {/* Massive 3D Typography */}
+        <motion.h1 
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 0.4 }}
-          style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}
+          style={{ 
+            fontSize: '85px', fontWeight: 900, lineHeight: 1.05, letterSpacing: '-2px', color: '#ffffff',
+            margin: '0 0 24px 0', textShadow: '0 20px 40px rgba(0,0,0,0.5)'
+          }}
         >
-          <h1 style={{ margin: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', lineHeight: 1 }}>
-            <span style={{ 
-              fontSize: 'clamp(80px, 12vw, 160px)', 
-              fontWeight: 900, 
-              letterSpacing: '-4px', 
-              color: '#ffffff',
-              textShadow: '0 20px 50px rgba(0,0,0,0.5)',
-              background: 'linear-gradient(to bottom, #ffffff, rgba(255,255,255,0.5))',
-              WebkitBackgroundClip: 'text',
-              WebkitTextFillColor: 'transparent'
-            }}>
-              VIBE
-            </span>
-            <span style={{ 
-              fontSize: 'clamp(24px, 4vw, 40px)', 
-              fontWeight: 700, 
-              letterSpacing: '16px', 
-              color: 'var(--accent-primary)', 
-              transform: 'translateY(-10px)',
-              textShadow: '0 10px 20px rgba(184, 41, 234, 0.4)'
-            }}>
-              NETWORK
-            </span>
-          </h1>
-          
-          <motion.p 
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 1, delay: 0.6 }}
-            style={{ 
-              fontSize: '20px', 
-              color: 'rgba(255,255,255,0.6)', 
-              fontWeight: 400, 
-              lineHeight: 1.6, 
-              maxWidth: '650px', 
-              margin: '30px auto 50px' 
-            }}
-          >
-            Launch your own fully branded, monetized streaming platform in minutes. Advanced generative AI deployments and global content delivery.
-          </motion.p>
+          {wlConfig?.name ? (
+            <>Welcome to<br/> <span style={{ background: 'linear-gradient(135deg, #fff 0%, var(--accent-primary) 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>{wlConfig.name}</span></>
+          ) : (
+            <>Step Into The<br/> <span style={{ background: 'linear-gradient(135deg, #fff 0%, var(--accent-primary) 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>New Dimension</span></>
+          )}
+        </motion.h1>
+        
+        <motion.p 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8, delay: 0.6 }}
+          style={{ 
+            fontSize: '22px', color: 'rgba(255,255,255,0.7)', maxWidth: '750px', 
+            margin: '0 0 50px 0', lineHeight: 1.6, fontWeight: 500
+          }}
+        >
+          {wlConfig?.heroCopy || "The highest fidelity, ultra-low latency broadcasting architecture built exclusively for global corporate brands, creators, and enterprise media."}
+        </motion.p>
           
           <motion.div 
             initial={{ opacity: 0, y: 20 }}
@@ -125,7 +108,7 @@ const Hero: React.FC = () => {
             
             {/* Secondary Glass Button */}
             <motion.button 
-              onClick={() => document.getElementById('slider-section-container')?.scrollIntoView({ behavior: 'smooth' })}
+              onClick={() => window.location.href = '/more-info'}
               whileHover={{ scale: 1.05, y: -2, backgroundColor: 'rgba(255,255,255,0.1)' }}
               whileTap={{ scale: 0.95 }}
               style={{ 
@@ -139,7 +122,6 @@ const Hero: React.FC = () => {
               <ArrowRight size={18} />
             </motion.button>
           </motion.div>
-        </motion.div>
       </div>
     </div>
   );

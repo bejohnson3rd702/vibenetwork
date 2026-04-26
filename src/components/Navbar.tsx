@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { Search, User, Menu, Lightbulb, Wallet, Settings, LogOut } from 'lucide-react';
 import { ASSETS } from '../data';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { supabase } from '../supabaseClient';
 import { useWhiteLabel } from '../context/WhiteLabelContext';
 
@@ -16,6 +16,7 @@ const Navbar: React.FC<NavbarProps> = ({ user, onLoginClick, onAdminClick }) => 
   const [scrolled, setScrolled] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [theme, setTheme] = useState('dark');
+  const navigate = useNavigate();
   const { wlConfig } = useWhiteLabel();
   const appName = wlConfig?.name || '';
   const appAccent = wlConfig?.accent || '';
@@ -78,16 +79,31 @@ const Navbar: React.FC<NavbarProps> = ({ user, onLoginClick, onAdminClick }) => 
           textTransform: 'uppercase',
           letterSpacing: '1px'
         }}>
-          {['Home', 'About Us', 'Vibe Agency', 'Watch Live', 'Contact'].map((item, i) => (
-            <li key={item} style={{ 
+          {[
+            { label: 'Home', path: '/' },
+            { label: 'About Us', path: '/about' },
+            { label: 'Watch Live', path: '/#whats-on-now' },
+            { label: 'Contact', path: '/contact' }
+          ].map((item, i) => (
+            <li key={item.label} style={{ 
               cursor: 'pointer',
               color: i === 0 ? 'white' : 'rgba(255,255,255,0.6)',
               transition: 'color 0.2s',
             }}
             onMouseOver={(e) => e.currentTarget.style.color = 'white'}
             onMouseOut={(e) => e.currentTarget.style.color = i === 0 ? 'white' : 'rgba(255,255,255,0.6)'}
+            onClick={() => {
+               if (item.path.startsWith('/#')) {
+                   navigate('/');
+                   setTimeout(() => {
+                       document.getElementById(item.path.substring(2))?.scrollIntoView({ behavior: 'smooth' });
+                   }, 100);
+               } else {
+                   navigate(item.path);
+               }
+            }}
             >
-              {item}
+              {item.label}
             </li>
           ))}
         </ul>
@@ -110,15 +126,15 @@ const Navbar: React.FC<NavbarProps> = ({ user, onLoginClick, onAdminClick }) => 
         <div className="hide-on-mobile" style={{ display: 'flex', alignItems: 'center', gap: '8px', borderLeft: '1px solid rgba(255,255,255,0.2)', paddingLeft: '24px' }}>
           {user ? (
             <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
-              {(user?.email?.includes('admin') || user?.user_metadata?.role === 'admin') && onAdminClick && (
-                <div 
+              {(user?.email?.includes('admin') || user?.user_metadata?.role === 'admin' || user?.user_metadata?.role === 'business') && onAdminClick && (
+                <button 
                   onClick={onAdminClick}
-                  style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', background: appAccent || '#b829ea', padding: '6px 14px', borderRadius: '8px' }}
+                  style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', background: appAccent || '#b829ea', padding: '6px 14px', borderRadius: '8px', border: 'none' }}
                 >
                   <span style={{ fontFamily: 'var(--font-heading)', fontWeight: 600, fontSize: '12px', color: 'white', letterSpacing: '1px' }}>
                     Dashboard
                   </span>
-                </div>
+                </button>
               )}
               <Link to={`/profile${window.location.search}`} style={{ display: 'flex', alignItems: 'center', gap: '12px', cursor: 'pointer', textDecoration: 'none' }}>
                 <div style={{ width: '30px', height: '30px', borderRadius: '50%', background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -136,16 +152,16 @@ const Navbar: React.FC<NavbarProps> = ({ user, onLoginClick, onAdminClick }) => 
             </div>
           )}
         </div>
-        <div style={{ display: 'flex', alignItems: 'center', marginLeft: '12px', position: 'relative' }}>
-          <Menu size={24} color="white" cursor="pointer" onClick={() => setIsMenuOpen(!isMenuOpen)} />
-          
-          {isMenuOpen && (
-            <div style={{ position: 'absolute', top: '100%', right: 0, marginTop: '24px', background: '#111', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px', padding: '8px', minWidth: '220px', display: 'flex', flexDirection: 'column', gap: '4px', zIndex: 1000, boxShadow: '0 20px 40px rgba(0,0,0,0.5)' }}>
-              <div style={{ padding: '8px 16px', color: '#888', fontSize: '13px', fontWeight: 'bold', textTransform: 'uppercase' }}>
-                 System Options
-              </div>
-              
-              {user ? (
+        {user && (
+          <div style={{ display: 'flex', alignItems: 'center', marginLeft: '12px', position: 'relative' }}>
+            <Menu size={24} color="white" cursor="pointer" onClick={() => setIsMenuOpen(!isMenuOpen)} />
+            
+            {isMenuOpen && (
+              <div style={{ position: 'absolute', top: '100%', right: 0, marginTop: '24px', background: '#111', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px', padding: '8px', minWidth: '220px', display: 'flex', flexDirection: 'column', gap: '4px', zIndex: 1000, boxShadow: '0 20px 40px rgba(0,0,0,0.5)' }}>
+                <div style={{ padding: '8px 16px', color: '#888', fontSize: '13px', fontWeight: 'bold', textTransform: 'uppercase' }}>
+                   System Options
+                </div>
+                
                 <>
                   <Link to={`/profile${window.location.search}${window.location.search ? '&' : '?'}tab=wallet`} onClick={() => setIsMenuOpen(false)} style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '12px 16px', color: '#fff', textDecoration: 'none', fontSize: '14px', borderRadius: '8px', cursor: 'pointer', transition: 'background 0.2s' }} onMouseOver={e => e.currentTarget.style.background='rgba(255,255,255,0.1)'} onMouseOut={e => e.currentTarget.style.background='transparent'}>
                     <Wallet size={16} /> Digital Wallet
@@ -161,14 +177,10 @@ const Navbar: React.FC<NavbarProps> = ({ user, onLoginClick, onAdminClick }) => 
                     <LogOut size={16} /> Disconnect
                   </div>
                 </>
-              ) : (
-                <div onClick={() => { setIsMenuOpen(false); onLoginClick(); }} style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '12px 16px', color: '#fff', textDecoration: 'none', fontSize: '14px', borderRadius: '8px', cursor: 'pointer', transition: 'background 0.2s' }} onMouseOver={e => e.currentTarget.style.background='rgba(255,255,255,0.1)'} onMouseOut={e => e.currentTarget.style.background='transparent'}>
-                  <User size={16} /> Sign In to Access
-                </div>
-              )}
-            </div>
-          )}
-        </div>
+              </div>
+            )}
+          </div>
+        )}
       </div>
     </nav>
   );

@@ -66,33 +66,75 @@ const FALLBACK_10_YOUTUBE = [
 
 const WhatsOnNow: React.FC = () => {
   const [activeIndex, setActiveIndex] = useState(0);
-  const [scheduleItems, setScheduleItems] = useState<any[]>(FALLBACK_10_YOUTUBE);
+  const [scheduleItems, setScheduleItems] = useState<any[]>([]);
 
   React.useEffect(() => {
     async function loadSchedule() {
-      const data = await getLiveSchedule();
-      if (data && data.length > 0) {
-        const genuineInjections = data.filter((v: any) => 
-          v.video_url && 
-          !v.video_url.includes('bbb.mp4') && 
-          !v.video_url.includes('w3schools') &&
-          !v.video_url.includes('.mp4')
-        ).map((v: any) => {
-          if (v.image && v.image.includes('unsplash.com')) {
-             return { ...v, image: `https://image.pollinations.ai/prompt/corporate%20boardroom%20presentation%20cinematic?width=800&height=600&nologo=true` };
+      let finalItems = FALLBACK_10_YOUTUBE;
+      try {
+        const data = await getLiveSchedule();
+        if (data && data.length > 0) {
+          const genuineInjections = data.filter((v: any) => 
+            v.video_url && 
+            !v.video_url.includes('bbb.mp4') && 
+            !v.video_url.includes('w3schools') &&
+            !v.video_url.includes('.mp4')
+          ).map((v: any) => {
+            if (v.image && v.image.includes('unsplash.com')) {
+               return { ...v, image: `https://image.pollinations.ai/prompt/corporate%20boardroom%20presentation%20cinematic?width=800&height=600&nologo=true` };
+            }
+            return v;
+          });
+          
+          if (genuineInjections.length > 0) {
+            finalItems = genuineInjections;
           }
-          return v;
-        });
-        
-        if (genuineInjections.length > 0) {
-          setScheduleItems(genuineInjections);
-        } else {
-          setScheduleItems(FALLBACK_10_YOUTUBE);
         }
+      } catch (e) {
+        console.error("Failed to load live schedule", e);
+      }
+      
+      const now = new Date();
+      let currentStartTime = new Date(now);
+      // Start the schedule from the current hour or half-hour slot
+      currentStartTime.setMinutes(now.getMinutes() >= 30 ? 30 : 0, 0, 0);
+
+      const dynamicSchedule = finalItems.map((item: any, index: number) => {
+        const startTime = new Date(currentStartTime.getTime() + index * 30 * 60 * 1000);
+        const endTime = new Date(startTime.getTime() + 30 * 60 * 1000);
+        
+        return {
+          ...item,
+          startTime,
+          endTime,
+          time: startTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+        };
+      });
+
+      setScheduleItems(dynamicSchedule);
+      
+      const initialIndex = dynamicSchedule.findIndex((item: any) => now >= item.startTime && now < item.endTime);
+      if (initialIndex !== -1) {
+        setActiveIndex(initialIndex);
       }
     }
     loadSchedule();
   }, []);
+
+  React.useEffect(() => {
+    if (scheduleItems.length === 0 || !scheduleItems[0].startTime) return;
+
+    const interval = setInterval(() => {
+      const now = new Date();
+      const currentIndex = scheduleItems.findIndex(item => now >= item.startTime && now < item.endTime);
+      
+      if (currentIndex !== -1) {
+        setActiveIndex(currentIndex);
+      }
+    }, 10000);
+
+    return () => clearInterval(interval);
+  }, [scheduleItems]);
 
   if (scheduleItems.length === 0) return null;
 
@@ -174,6 +216,7 @@ const WhatsOnNow: React.FC = () => {
              );
           })()}
           
+          {/* ON AIR overlay removed 
            <div style={{ 
               position: 'absolute', 
               top: '30px', 
@@ -194,11 +237,12 @@ const WhatsOnNow: React.FC = () => {
             <span style={{ width: '8px', height: '8px', background: 'var(--accent-primary)', borderRadius: '50%' }}></span>
             ON AIR
           </div>
+          */}
         </div>
 
-        <div className="tv-chat-mobile" style={{ flexShrink: 0, background: 'var(--bg-color)', display: 'flex', flexDirection: 'column' }}>
+        {/* <div className="tv-chat-mobile" style={{ flexShrink: 0, background: 'var(--bg-color)', display: 'flex', flexDirection: 'column' }}>
           <LiveChat streamId={scheduleItems[activeIndex]?.id || 'main-stage'} />
-        </div>
+        </div> */}
 
         <div className="tv-guide-mobile" style={{ 
           width: '380px', 

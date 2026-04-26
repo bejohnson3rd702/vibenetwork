@@ -25,7 +25,7 @@ export async function getCategoriesWithVideos(tenantId?: string) {
 
   const mappedNetworks = (whitelabels || []).map((wl: any) => ({
     id: 'wl_' + wl.id,
-    title: wl.name || wl.domain || 'Tenant Node',
+    title: wl.name || wl.domain || 'Tenant Platform',
     image: wl.logo || `https://ui-avatars.com/api/?name=${encodeURIComponent(wl.name || 'W')}&background=0D8ABC&color=fff`,
     tags: ['Firm'],
     linkUrl: `/?tenant=${wl.id}`
@@ -40,6 +40,20 @@ export async function getCategoriesWithVideos(tenantId?: string) {
       { id: 'mock_wl5', title: 'Aegis Security', image: 'https://image.pollinations.ai/prompt/aegis%20security%20shield%20logo%20silver%203d?width=800&height=600&nologo=true', tags: ['Cyber'], linkUrl: '#' },
       { id: 'mock_wl6', title: 'Vertex Media', image: 'https://image.pollinations.ai/prompt/purple%20vertex%20media%20play%20button%20glow%20logo?width=800&height=600&nologo=true', tags: ['Agency'], linkUrl: '#' }
   ];
+
+  // Mix in local test networks safely
+  if (typeof window !== 'undefined') {
+    const localNetworks = JSON.parse(localStorage.getItem('vibe_local_networks') || '[]');
+    localNetworks.forEach((n: any) => {
+      mappedNetworks.unshift({
+        id: 'wl_' + n.id,
+        title: n.name || 'Tenant Platform',
+        image: n.logoImage || n.logo || `https://ui-avatars.com/api/?name=${encodeURIComponent(n.name || 'W')}&background=0D8ABC&color=fff`,
+        tags: ['Firm', 'Test'],
+        linkUrl: `/?tenant=${n.id}`
+      });
+    });
+  }
 
   while (mappedNetworks.length < 6) {
     mappedNetworks.push(mockWhitelabels[mappedNetworks.length]);

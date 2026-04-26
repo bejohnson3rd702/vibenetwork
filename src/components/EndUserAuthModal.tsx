@@ -27,8 +27,15 @@ export default function EndUserAuthModal({ onClose }: EndUserAuthModalProps) {
 
     try {
       if (isLogin) {
-        const { error } = await supabase!.auth.signInWithPassword({ email, password });
+        const { data, error } = await supabase!.auth.signInWithPassword({ email, password });
         if (error) throw error;
+        
+        // Strict Login DB Isolation Check
+        if (data.user?.user_metadata?.whitelabel_id !== wlConfig?.id) {
+           await supabase!.auth.signOut();
+           throw new Error("Invalid credentials for this network.");
+        }
+        
         onClose();
       } else {
         const { error } = await supabase!.auth.signUp({ 
@@ -224,7 +231,7 @@ export default function EndUserAuthModal({ onClose }: EndUserAuthModalProps) {
              <button 
                 onClick={() => { setIsLogin(!isLogin); setErrorMsg(''); }}
                 style={{ background: 'none', border: 'none', color: accentColor, fontWeight: 'bold', marginLeft: '6px', cursor: 'pointer' }}>
-                {isLogin ? "Register Node" : "Login Here"}
+                {isLogin ? "Register Account" : "Login Here"}
              </button>
            </p>
         </div>
