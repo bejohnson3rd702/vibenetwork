@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { supabase } from '../supabaseClient';
 import { motion, AnimatePresence } from 'framer-motion';
-import { LogOut, Camera, Lock, Unlock, Image as ImageIcon, Star, ShieldCheck, Eye, Edit2, Wand, Calendar, Edit3, Clock, CheckCircle, Heart, MessageCircle, Wallet, ArrowUpRight, ArrowDownLeft, Activity, Monitor, Settings, Video } from 'lucide-react';
+import { LogOut, Camera, Lock, Unlock, Image as ImageIcon, Star, ShieldCheck, Eye, Edit2, Wand, Calendar, Edit3, Clock, CheckCircle, Heart, MessageCircle, Wallet, ArrowUpRight, ArrowDownLeft, Activity, Monitor, Settings, Video, DollarSign } from 'lucide-react';
 import LiveChat from './LiveChat';
 import { useNavigate, useParams, useLocation } from 'react-router-dom';
 import Peer from 'peerjs';
@@ -39,6 +39,8 @@ const ProfileDashboard: React.FC<{ user: any }> = ({ user }) => {
   // Live Stream State
   const [isPlayingLive, setIsPlayingLive] = useState(false);
   const [isPubliclyLive, setIsPubliclyLive] = useState(false);
+  const [livePrice, setLivePrice] = useState('5.00');
+  const [hasPaidForLive, setHasPaidForLive] = useState(false);
   const [cameraStatus, setCameraStatus] = useState<'idle'|'loading'|'active'|'error'>('idle');
   const [cameraDebugData, setCameraDebugData] = useState<string>('');
   const [liveCountdown, setLiveCountdown] = useState<number | null>(null);
@@ -987,7 +989,23 @@ const ProfileDashboard: React.FC<{ user: any }> = ({ user }) => {
                            style={{ width: '100%', height: '100%', position: 'absolute', inset: 0, zIndex: 5 }}
                          />
                        )}
-                       
+                       {!isOwnProfile && isPlayingLive && !isSubscribed && !hasPaidForLive ? (
+                         <div style={{ position: 'absolute', inset: 0, zIndex: 30, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(10px)', padding: '40px', textAlign: 'center' }}>
+                           <Lock size={48} color="#ff4d85" style={{ marginBottom: '16px' }} />
+                           <h2 style={{ margin: '0 0 12px 0', fontSize: '28px', color: '#fff' }}>Premium Live Stream</h2>
+                           <p style={{ color: '#aaa', fontSize: '16px', maxWidth: '400px', marginBottom: '24px', lineHeight: 1.5 }}>
+                             This broadcast is restricted. Subscribe to {profile?.username} for full access, or purchase a one-time pass.
+                           </p>
+                           <div style={{ display: 'flex', gap: '16px' }}>
+                             <button onClick={() => setHasPaidForLive(true)} style={{ padding: '14px 28px', background: 'linear-gradient(135deg, #0055ff, #00ff88)', color: '#fff', border: 'none', borderRadius: '12px', fontWeight: 'bold', fontSize: '16px', cursor: 'pointer', boxShadow: '0 10px 20px rgba(0,85,255,0.3)' }}>
+                               Unlock for ${livePrice}
+                             </button>
+                             <button onClick={() => setIsSubscribed(true)} style={{ padding: '14px 28px', background: 'rgba(255,255,255,0.1)', color: '#fff', border: '1px solid rgba(255,255,255,0.2)', borderRadius: '12px', fontWeight: 'bold', fontSize: '16px', cursor: 'pointer' }}>
+                               Subscribe Now
+                             </button>
+                           </div>
+                         </div>
+                       ) : null}
                        {/* Host AND Guest PIP/Grid Layer */}
                        {(streamSource === 'camera' || presenterMode || activeGuests.length > 0) && (
                          <div style={{
@@ -1108,10 +1126,22 @@ const ProfileDashboard: React.FC<{ user: any }> = ({ user }) => {
               )}
               <div style={{ padding: '24px' }}>
                   <h3 style={{ margin: '0 0 8px 0', fontSize: '20px' }}>VIP Backstage Broadcast</h3>
-                  <p style={{ margin: 0, color: '#888' }}>Streaming live now. Uncensored and ad-free exclusively for premium subscribers.</p>
+                  <p style={{ margin: 0, color: '#888' }}>
+                    {isOwnProfile ? 'Configure your live stream settings below.' : 
+                     isSubscribed ? 'Live stream is free since you are subscribed!' : 
+                     'Streaming live now. Subscribe for free access, or unlock this broadcast below.'}
+                  </p>
                   
                   {isOwnProfile && viewMode === 'edit' && (
                     <div style={{ marginTop: '24px', background: 'rgba(255,255,255,0.03)', padding: '20px', borderRadius: '16px', border: '1px dashed rgba(255,255,255,0.2)' }}>
+                      <div style={{ display: 'flex', gap: '16px', alignItems: 'center', marginBottom: '24px', background: 'rgba(0,0,0,0.4)', padding: '12px 16px', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.05)' }}>
+                        <label style={{ color: '#fff', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '8px', flexShrink: 0 }}>
+                          Pay-Per-View Price: $
+                        </label>
+                        <input type="number" value={livePrice} onChange={e => setLivePrice(e.target.value)} style={{ background: 'transparent', border: '1px solid rgba(255,255,255,0.2)', color: '#fff', padding: '6px 12px', borderRadius: '6px', width: '80px', fontSize: '15px' }} />
+                        <span style={{ color: '#888', fontSize: '13px' }}>(Free for subscribers)</span>
+                      </div>
+                      
                       <label style={{ display: 'block', marginBottom: '12px', color: '#ff4d85', fontWeight: 'bold', fontSize: '15px' }}>Configure Live Stream Origin</label>
                       <div style={{ display: 'flex', gap: '12px', marginBottom: '16px' }}>
                          <button onClick={() => { setStreamSource('url'); setIsPlayingLive(false); }} style={{ padding: '10px 20px', background: streamSource === 'url' ? '#0055ff' : 'rgba(255,255,255,0.05)', color: streamSource === 'url' ? '#fff' : '#888', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold' }}>External URL / RTMP</button>
