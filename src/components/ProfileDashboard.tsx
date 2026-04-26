@@ -289,6 +289,41 @@ const ProfileDashboard: React.FC<{ user: any }> = ({ user }) => {
         }
      };
   }, [isPlayingLive, streamSource, presenterMode, guests.length]);
+
+   const processPurchaseSplit = (amount: number, type: string) => {
+     // Mock backend split: Creator gets 80%, Platform gets 20%
+     const hostCut = amount * 0.8;
+     const platformCut = amount * 0.2;
+     
+     // Update local creator wallet mock
+     const newBalance = walletBalance + hostCut;
+     setWalletBalance(newBalance);
+     if (typeof window !== 'undefined') {
+       localStorage.setItem('vibe_host_wallet', String(newBalance));
+     }
+
+     alert(`[Backend Split Simulation - ${type}]\n\nTotal Paid: $${amount.toFixed(2)}\nCreator Cut (80%): $${hostCut.toFixed(2)}\nPlatform Cut (20%): $${platformCut.toFixed(2)}\n\nCreator wallet has been updated!`);
+   };
+
+   const handleUnlockLive = () => {
+     const amount = Number(livePrice);
+     if (isNaN(amount) || amount <= 0) {
+       setHasPaidForLive(true);
+       return;
+     }
+     processPurchaseSplit(amount, 'Live Stream PPV Unlock');
+     setHasPaidForLive(true);
+   };
+
+   const handleSubscribe = () => {
+     const amount = Number(subPrice);
+     if (isNaN(amount) || amount <= 0) {
+       setIsSubscribed(true);
+       return;
+     }
+     processPurchaseSplit(amount, 'Monthly Subscription');
+     setIsSubscribed(true);
+   };
   
   // Scheduler State & DnD Handlers
   const [scheduledPosts, setScheduledPosts] = useState<any[]>([
@@ -1011,10 +1046,10 @@ const ProfileDashboard: React.FC<{ user: any }> = ({ user }) => {
                                Your free 90-second preview has expired. Subscribe to {profile?.username} for full access, or purchase a one-time pass to continue watching.
                              </p>
                              <div style={{ display: 'flex', gap: '16px' }}>
-                               <button onClick={() => setHasPaidForLive(true)} style={{ padding: '14px 28px', background: 'linear-gradient(135deg, #0055ff, #00ff88)', color: '#fff', border: 'none', borderRadius: '12px', fontWeight: 'bold', fontSize: '16px', cursor: 'pointer', boxShadow: '0 10px 20px rgba(0,85,255,0.3)' }}>
+                               <button onClick={handleUnlockLive} style={{ padding: '14px 28px', background: 'linear-gradient(135deg, #0055ff, #00ff88)', color: '#fff', border: 'none', borderRadius: '12px', fontWeight: 'bold', fontSize: '16px', cursor: 'pointer', boxShadow: '0 10px 20px rgba(0,85,255,0.3)' }}>
                                  Unlock for ${livePrice}
                                </button>
-                               <button onClick={() => setIsSubscribed(true)} style={{ padding: '14px 28px', background: 'rgba(255,255,255,0.1)', color: '#fff', border: '1px solid rgba(255,255,255,0.2)', borderRadius: '12px', fontWeight: 'bold', fontSize: '16px', cursor: 'pointer' }}>
+                               <button onClick={handleSubscribe} style={{ padding: '14px 28px', background: 'rgba(255,255,255,0.1)', color: '#fff', border: '1px solid rgba(255,255,255,0.2)', borderRadius: '12px', fontWeight: 'bold', fontSize: '16px', cursor: 'pointer' }}>
                                  Subscribe Now
                                </button>
                              </div>
