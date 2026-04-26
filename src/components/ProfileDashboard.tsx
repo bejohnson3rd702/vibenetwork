@@ -762,9 +762,7 @@ const ProfileDashboard: React.FC<{ user: any }> = ({ user }) => {
             {activeTab === 'courses' && <motion.div layoutId="activetab" style={{ position: 'absolute', bottom: '-17px', left: 0, right: 0, height: '3px', background: '#ff4d85', borderRadius: '3px' }} />}
           </button>
 
-          {isOwnProfile && viewMode === 'edit' && (
 
-          )}
 
           {isOwnProfile && (
             <button 
