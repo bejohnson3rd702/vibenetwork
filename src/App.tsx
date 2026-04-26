@@ -16,7 +16,7 @@ import Contact from './components/Contact';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { WhiteLabelContext } from './context/WhiteLabelContext';
 import { useEffect, useState } from 'react';
-import { supabase } from './supabaseClient';
+import { supabase, storageKey } from './supabaseClient';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X } from 'lucide-react';
 
@@ -87,11 +87,11 @@ function App() {
             }
          }
          // Ensure the business owner stays logged into their newly created White Label!
-         const masterToken = localStorage.getItem('sb-vibe-master-auth-token');
+         const masterToken = localStorage.getItem(storageKey);
          if (masterToken) {
             localStorage.setItem(`sb-${finalId}-auth-token`, masterToken);
             // Log them out of the master Vibe site locally so they don't bleed back into the public network
-            localStorage.removeItem('sb-vibe-master-auth-token');
+            localStorage.removeItem(storageKey);
          }
          
          setTimeout(() => {
