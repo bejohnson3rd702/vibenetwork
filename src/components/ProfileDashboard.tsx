@@ -1117,7 +1117,7 @@ const ProfileDashboard: React.FC<{ user: any }> = ({ user }) => {
                          <button onClick={() => { setStreamSource('url'); setIsPlayingLive(false); }} style={{ padding: '10px 20px', background: streamSource === 'url' ? '#0055ff' : 'rgba(255,255,255,0.05)', color: streamSource === 'url' ? '#fff' : '#888', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold' }}>External URL / RTMP</button>
                          <button onClick={() => { setStreamSource('camera'); setIsPlayingLive(false); }} style={{ padding: '10px 20px', background: streamSource === 'camera' ? '#0055ff' : 'rgba(255,255,255,0.05)', color: streamSource === 'camera' ? '#fff' : '#888', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '8px' }}><Camera size={16}/> Direct Webcam</button>
                          
-                         {streamSource === 'camera' && (
+                         {/* streamSource === 'camera' && (
                             <>
                                <div style={{ flex: 1 }} />
                                <button onClick={() => {
@@ -1128,7 +1128,7 @@ const ProfileDashboard: React.FC<{ user: any }> = ({ user }) => {
                                   <Monitor size={16} /> Hire Director
                                </button>
                             </>
-                         )}
+                         ) */}
                       </div>
                       
                       <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>

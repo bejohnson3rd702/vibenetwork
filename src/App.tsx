@@ -223,7 +223,7 @@ function App() {
 
         <Routes>
           <Route path="/master-admin" element={<MasterAdminDashboard />} />
-          <Route path="/director" element={<DirectorStudio />} />
+          {/* <Route path="/director" element={<DirectorStudio />} /> */}
           <Route path="*" element={
             <>
               <Navbar 
