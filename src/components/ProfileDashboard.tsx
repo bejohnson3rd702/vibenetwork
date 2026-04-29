@@ -792,7 +792,7 @@ const ProfileDashboard: React.FC<{ user: any }> = ({ user }) => {
                 { id: 'store', label: 'Store' },
                 { id: 'live', label: 'Live Stream' },
                 { id: 'booking', label: 'Booking' },
-                { id: 'series', label: 'TV Series' },
+                { id: 'series', label: 'Episodes' },
                 { id: 'courses', label: 'Masterclasses' }
               ].map(tab => (
                 <button 
@@ -1752,6 +1752,7 @@ const ProfileDashboard: React.FC<{ user: any }> = ({ user }) => {
           </div>
         )}
       </AnimatePresence>
+      </div>
     </div>
   );
 };
