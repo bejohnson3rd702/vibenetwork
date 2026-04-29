@@ -605,229 +605,224 @@ const ProfileDashboard: React.FC<{ user: any }> = ({ user }) => {
   const totalSlots = (showHost ? 1 : 0) + visibleGuests.length;
   
   return (
-    <div style={{ paddingTop: '80px', minHeight: '100vh', background: '#050505', color: '#fff' }}>
+    <div style={{ minHeight: '100vh', background: '#050505', color: '#fff', position: 'relative' }}>
       
-      {/* View Toggle Bar (Only for account owner) */}
-      {isOwnProfile && isInfluencer && (
-        <div style={{ background: '#111', padding: '12px', display: 'flex', justifyContent: 'center', position: 'sticky', top: '80px', zIndex: 100, borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
-          <div style={{ display: 'flex', background: 'rgba(0,0,0,0.5)', borderRadius: '30px', padding: '4px' }}>
-            <button 
-              onClick={() => setViewMode('edit')}
-              style={{ padding: '8px 24px', borderRadius: '30px', border: 'none', background: viewMode === 'edit' ? '#fff' : 'transparent', color: viewMode === 'edit' ? '#000' : '#888', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px' }}
-            >
-              <Edit2 size={16} /> Edit Profile
-            </button>
-            <button 
-              onClick={() => setViewMode('public')}
-              style={{ padding: '8px 24px', borderRadius: '30px', border: 'none', background: viewMode === 'public' ? 'rgba(255,0,85,1)' : 'transparent', color: viewMode === 'public' ? '#fff' : '#888', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px' }}
-            >
-              <Eye size={16} /> Public Preview
-            </button>
-          </div>
+      {/* Immersive Hero Banner */}
+      {!isGuestMode && (
+        <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '400px', zIndex: 0 }}>
+          <div style={{ position: 'absolute', inset: 0, backgroundImage: `url(${homepageImageUrl || profile?.avatar_url || 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&q=80&w=2500'})`, backgroundSize: 'cover', backgroundPosition: 'center', filter: 'brightness(0.6) saturate(1.2)' }} />
+          <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to bottom, transparent 30%, #050505 100%)' }} />
+          {/* Dynamic Glowing Accent */}
+          <div style={{ position: 'absolute', inset: 0, background: 'radial-gradient(circle at 50% 50%, rgba(255, 77, 133, 0.2), transparent 70%)', mixBlendMode: 'screen' }} />
         </div>
       )}
 
-      {/* Feed Layout Container */}
-      <div style={{ maxWidth: isGuestMode ? '1400px' : '800px', margin: isGuestMode ? '0 auto' : '40px auto 0', padding: '0 20px', display: 'flex', flexDirection: 'column', gap: '30px', paddingBottom: '100px' }}>
-        
-        {!isGuestMode && (
-          <>
-        {/* Creator Header (Editable) */}
-        <div style={{ background: 'rgba(15,15,15,0.8)', padding: '40px', borderRadius: '24px', border: '1px solid rgba(255,255,255,0.05)', position: 'relative' }}>
-          
-          {isOwnProfile && (
-            <button onClick={async () => { await supabase!.auth.signOut(); window.location.href = '/' + window.location.search; }} style={{ position: 'absolute', top: 30, right: 30, background: 'none', border: 'none', color: '#888', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <LogOut size={16} /> Logout
-            </button>
-          )}
-
-          <div style={{ display: 'flex', gap: '30px', alignItems: 'flex-start' }}>
-            
-            {/* Editable Profile Picture */}
-            <div className="group" style={{ position: 'relative', cursor: 'pointer' }} onClick={handleImageClick}>
-              <div style={{ 
-                width: '120px', height: '120px', borderRadius: '50%', 
-                background: avatarUrl ? `url(${avatarUrl})` : 'linear-gradient(135deg, #FF0055, #8A2BE2)',
-                backgroundSize: 'cover', backgroundPosition: 'center',
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                fontSize: '48px', fontWeight: 'bold', border: '3px solid rgba(255,255,255,0.1)'
-              }}>
-                {!avatarUrl && (profile?.username ? profile.username[0].toUpperCase() : (user?.email ? user.email[0].toUpperCase() : 'V'))}
-              </div>
-              {/* Camera Overlay only on Edit Mode */}
-              {viewMode === 'edit' && (
-                <div className="camera-overlay" style={{
-                  position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.5)', borderRadius: '50%',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center', opacity: 0, transition: '0.2s'
-                }}>
-                  <Camera size={30} color="#fff" />
-                </div>
-              )}
-              <input type="file" ref={fileInputRef} style={{ display: 'none' }} accept="image/*" />
+      {/* Main Content Wrapper */}
+      <div style={{ position: 'relative', zIndex: 1, paddingTop: isGuestMode ? '80px' : '200px' }}>
+      
+        {/* View Toggle Bar (Only for account owner) */}
+        {isOwnProfile && isInfluencer && (
+          <div style={{ padding: '12px', display: 'flex', justifyContent: 'center', position: 'relative', zIndex: 100, marginBottom: '20px' }}>
+            <div style={{ display: 'flex', background: 'rgba(0,0,0,0.4)', backdropFilter: 'blur(12px)', borderRadius: '30px', padding: '4px', border: '1px solid rgba(255,255,255,0.1)', boxShadow: '0 8px 32px rgba(0,0,0,0.2)' }}>
+              <button 
+                onClick={() => setViewMode('edit')}
+                style={{ padding: '8px 24px', borderRadius: '30px', border: 'none', background: viewMode === 'edit' ? '#fff' : 'transparent', color: viewMode === 'edit' ? '#000' : '#fff', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px', transition: 'all 0.3s ease' }}
+              >
+                <Edit2 size={16} /> Edit Profile
+              </button>
+              <button 
+                onClick={() => setViewMode('public')}
+                style={{ padding: '8px 24px', borderRadius: '30px', border: 'none', background: viewMode === 'public' ? 'rgba(255,0,85,1)' : 'transparent', color: '#fff', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px', transition: 'all 0.3s ease' }}
+              >
+                <Eye size={16} /> Public Preview
+              </button>
             </div>
+          </div>
+        )}
 
-            <div style={{ flex: 1 }}>
-              <h1 style={{ fontSize: '36px', margin: '0 0 10px 0' }}>{profile.username || 'Anonymous Creator'}</h1>
+        {/* Feed Layout Container */}
+        <div style={{ maxWidth: isGuestMode ? '1400px' : '1000px', margin: '0 auto', padding: '0 20px', display: 'flex', flexDirection: 'column', gap: '30px', paddingBottom: '100px' }}>
+          
+          {!isGuestMode && (
+            <>
+          {/* Glassmorphic Creator Header */}
+          <div style={{ background: 'rgba(15, 15, 15, 0.4)', backdropFilter: 'blur(24px)', padding: '40px', borderRadius: '32px', border: '1px solid rgba(255,255,255,0.08)', position: 'relative', boxShadow: '0 20px 40px rgba(0,0,0,0.4)' }}>
+            
+            {isOwnProfile && (
+              <button onClick={async () => { await supabase!.auth.signOut(); window.location.href = '/' + window.location.search; }} style={{ position: 'absolute', top: 30, right: 30, background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: '#fff', padding: '8px 16px', borderRadius: '20px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px', backdropFilter: 'blur(10px)', transition: 'background 0.2s' }} onMouseOver={e => e.currentTarget.style.background = 'rgba(255,255,255,0.1)'} onMouseOut={e => e.currentTarget.style.background = 'rgba(255,255,255,0.05)'}>
+                <LogOut size={16} /> Logout
+              </button>
+            )}
+
+            <div style={{ display: 'flex', gap: '40px', alignItems: 'flex-start', flexWrap: 'wrap' }}>
               
-              {isInfluencer ? (
-                <>
-                  <div style={{ display: 'flex', gap: '10px', marginBottom: '20px', flexWrap: 'wrap' }}>
-                    <span style={{ padding: '6px 14px', background: 'rgba(0,85,255,0.2)', color: '#0055ff', borderRadius: '20px', fontSize: '12px', fontWeight: 'bold', textTransform: 'uppercase' }}>Enterprise Profile</span>
-                    
+              {/* Profile Picture with Glow */}
+              <div className="group" style={{ position: 'relative', cursor: 'pointer' }} onClick={handleImageClick}>
+                <div style={{ position: 'absolute', inset: '-10px', background: 'radial-gradient(circle at 50% 50%, rgba(255, 77, 133, 0.5), transparent 70%)', borderRadius: '50%', zIndex: 0, filter: 'blur(10px)' }} />
+                <div style={{ 
+                  position: 'relative', zIndex: 1,
+                  width: '140px', height: '140px', borderRadius: '50%', 
+                  background: avatarUrl ? `url(${avatarUrl})` : 'linear-gradient(135deg, #FF0055, #8A2BE2)',
+                  backgroundSize: 'cover', backgroundPosition: 'center',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  fontSize: '56px', fontWeight: 'bold', border: '4px solid rgba(255,255,255,0.2)', boxShadow: '0 10px 30px rgba(0,0,0,0.5)'
+                }}>
+                  {!avatarUrl && (profile?.username ? profile.username[0].toUpperCase() : (user?.email ? user.email[0].toUpperCase() : 'V'))}
+                </div>
+                {/* Camera Overlay only on Edit Mode */}
+                {viewMode === 'edit' && (
+                  <div className="camera-overlay" style={{
+                    position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.6)', borderRadius: '50%',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center', opacity: 0, transition: '0.2s', zIndex: 2
+                  }}>
+                    <Camera size={34} color="#fff" />
+                  </div>
+                )}
+                <input type="file" ref={fileInputRef} style={{ display: 'none' }} accept="image/*" />
+              </div>
+
+              <div style={{ flex: 1, minWidth: '300px' }}>
+                <h1 style={{ fontSize: '48px', fontWeight: 900, margin: '0 0 16px 0', letterSpacing: '-1px', textShadow: '0 4px 20px rgba(0,0,0,0.5)' }}>{profile.username || 'Anonymous Creator'}</h1>
+                
+                {isInfluencer ? (
+                  <>
+                    <div style={{ display: 'flex', gap: '12px', marginBottom: '24px', flexWrap: 'wrap' }}>
+                      <span style={{ padding: '8px 16px', background: 'rgba(0,85,255,0.15)', color: '#4da6ff', border: '1px solid rgba(0,85,255,0.3)', borderRadius: '24px', fontSize: '12px', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '1px' }}>Enterprise Profile</span>
+                      
+                      {viewMode === 'edit' ? (
+                        <>
+                          <select aria-label="genre selector" value={selectedGenre} onChange={(e) => setSelectedGenre(e.target.value)} style={{ padding: '8px 16px', background: 'rgba(255,255,255,0.05)', color: '#fff', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '24px', fontSize: '13px', outline: 'none', cursor: 'pointer', backdropFilter: 'blur(10px)' }}>
+                            <option>SaaS Platform</option>
+                            <option>Fintech API</option>
+                            <option>AI Automation</option>
+                            <option>B2B Marketplace</option>
+                          </select>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 16px', background: 'rgba(255,215,0,0.1)', color: '#FFD700', border: '1px solid rgba(255,215,0,0.3)', borderRadius: '24px', fontSize: '13px', fontWeight: 'bold' }}>
+                            $<input type="number" value={subPrice} step="0.50" onChange={(e) => setSubPrice(parseFloat(e.target.value))} style={{ width: '45px', background: 'none', border: 'none', color: '#FFD700', outline: 'none', fontWeight: 'bold', fontSize: '14px' }} />/month
+                          </div>
+                        </>
+                      ) : (
+                        <>
+                          <span style={{ padding: '8px 16px', background: 'rgba(255,255,255,0.1)', color: '#fff', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '24px', fontSize: '13px', backdropFilter: 'blur(10px)' }}>{selectedGenre}</span>
+                          {!isOwnProfile && (
+                            <button 
+                              onClick={() => {
+                                if (!user) { alert('Please log in to subscribe.'); return; }
+                                if (!isSubscribed) alert(`Successfully subscribed using your Network Wallet! Auto-pay of $${subPrice}/mo has been linked.`);
+                                setIsSubscribed(!isSubscribed);
+                              }}
+                              style={{ 
+                                background: isSubscribed ? 'rgba(255, 215, 0, 0.1)' : 'linear-gradient(135deg, #FFD700, #FFA500)', 
+                                color: isSubscribed ? '#FFD700' : '#000', 
+                                border: isSubscribed ? '1px solid #FFD700' : 'none', 
+                                padding: '8px 24px', 
+                                borderRadius: '24px', 
+                                fontWeight: 'bold', 
+                                cursor: 'pointer',
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '8px',
+                                boxShadow: isSubscribed ? 'none' : '0 10px 20px rgba(255,215,0,0.3)',
+                                transition: 'all 0.2s'
+                              }}
+                            >
+                              {isSubscribed ? <><CheckCircle size={16} /> Subscribed</> : <><Star size={16} /> Subscribe ${subPrice}/mo</>}
+                            </button>
+                          )}
+                        </>
+                      )}
+                    </div>
+
                     {viewMode === 'edit' ? (
                       <>
-                        <select aria-label="genre selector" value={selectedGenre} onChange={(e) => setSelectedGenre(e.target.value)} style={{ padding: '6px 14px', background: 'rgba(255,255,255,0.1)', color: '#fff', border: 'none', borderRadius: '20px', fontSize: '12px', outline: 'none', cursor: 'pointer' }}>
-                          <option>SaaS Platform</option>
-                          <option>Fintech API</option>
-                          <option>AI Automation</option>
-                          <option>B2B Marketplace</option>
-                        </select>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '6px 14px', background: 'rgba(255,215,0,0.1)', color: '#FFD700', borderRadius: '20px', fontSize: '12px', fontWeight: 'bold' }}>
-                          $<input type="number" value={subPrice} step="0.50" onChange={(e) => setSubPrice(parseFloat(e.target.value))} style={{ width: '40px', background: 'none', border: 'none', color: '#FFD700', outline: 'none', fontWeight: 'bold' }} />/month
+                        <div style={{ position: 'relative' }}>
+                          <textarea 
+                            value={bio}
+                            onChange={(e) => setBio(e.target.value)}
+                            placeholder="Write a bio to tell your viewers what your channel is about..."
+                            style={{ width: '100%', minHeight: '100px', background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '16px', padding: '16px', color: '#fff', resize: 'vertical', fontSize: '15px', outline: 'none', backdropFilter: 'blur(10px)' }}
+                          />
+                          <button type="button" onClick={() => enhanceText('bio')} disabled={saving} style={{ position: 'absolute', right: '16px', bottom: '20px', background: 'linear-gradient(135deg, #8A2BE2, #ff4d85)', color: '#fff', border: 'none', borderRadius: '12px', padding: '8px 16px', fontSize: '13px', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px', boxShadow: '0 4px 15px rgba(255,77,133,0.4)' }}>
+                            <Wand size={14} /> AI Boost
+                          </button>
+                        </div>
+
+                        <div style={{ marginTop: '24px', background: 'rgba(0,0,0,0.4)', padding: '24px', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.08)' }}>
+                          <h4 style={{ margin: '0 0 12px 0', fontSize: '15px', color: '#ff4d85', display: 'flex', alignItems: 'center', gap: '10px' }}>
+                            <ImageIcon size={18} /> Featured Homepage Banner
+                          </h4>
+                          <p style={{ color: '#aaa', fontSize: '13px', marginBottom: '16px', lineHeight: 1.5 }}>Upload a custom image from your computer or use our AI Generator to explicitly build a hero image when your channel is featured on the homepage slider. (Overrides avatar)</p>
+                          
+                          {homepageImageUrl ? (
+                            <div style={{ position: 'relative', width: '100%', aspectRatio: '21/9', borderRadius: '12px', overflow: 'hidden', backgroundImage: `url("${homepageImageUrl}")`, backgroundSize: 'cover', backgroundPosition: 'center', border: '1px solid rgba(255,255,255,0.1)' }}>
+                              <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(0,0,0,0.8), transparent)' }} />
+                              <button onClick={() => { setImageTarget('homepage'); setShowImageModal(true); }} style={{ position: 'absolute', bottom: 16, right: 16, padding: '10px 20px', background: 'rgba(255,255,255,0.15)', backdropFilter: 'blur(8px)', color: 'white', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.2)', cursor: 'pointer', fontSize: '13px', fontWeight: 'bold', transition: 'background 0.2s' }} onMouseOver={e=>e.currentTarget.style.background='rgba(255,255,255,0.25)'} onMouseOut={e=>e.currentTarget.style.background='rgba(255,255,255,0.15)'}>
+                                Update Banner Image
+                              </button>
+                            </div>
+                          ) : (
+                            <button onClick={() => { setImageTarget('homepage'); setShowImageModal(true); }} style={{ width: '100%', padding: '40px', background: 'rgba(255,255,255,0.03)', border: '2px dashed rgba(255,255,255,0.15)', color: '#fff', fontSize: '15px', borderRadius: '16px', cursor: 'pointer', transition: 'all 0.3s', fontWeight: 'bold' }} onMouseOver={e=>e.currentTarget.style.background='rgba(255,255,255,0.08)'} onMouseOut={e=>e.currentTarget.style.background='rgba(255,255,255,0.03)'}>
+                              + Select or Generate Banner Image
+                            </button>
+                          )}
+                        </div>
+
+                        <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '24px' }}>
+                          <button onClick={saveProfile} disabled={saving} style={{ padding: '12px 32px', background: '#fff', color: '#000', borderRadius: '12px', border: 'none', fontWeight: 'bold', cursor: 'pointer', opacity: saving ? 0.7 : 1, fontSize: '15px', transition: 'transform 0.2s' }} onMouseOver={e=>e.currentTarget.style.transform='scale(1.05)'} onMouseOut={e=>e.currentTarget.style.transform='scale(1)'}>
+                            {saving ? 'Saving...' : 'Save Profile'}
+                          </button>
                         </div>
                       </>
                     ) : (
-                      <>
-                        <span style={{ padding: '6px 14px', background: 'rgba(255,255,255,0.1)', color: '#fff', borderRadius: '20px', fontSize: '12px' }}>{selectedGenre}</span>
-                        {!isOwnProfile && (
-                          <button 
-                            onClick={() => {
-                              if (!user) { alert('Please log in to subscribe.'); return; }
-                              if (!isSubscribed) alert(`Successfully subscribed using your Network Wallet! Auto-pay of $${subPrice}/mo has been linked.`);
-                              setIsSubscribed(!isSubscribed);
-                            }}
-                            style={{ 
-                              background: isSubscribed ? 'rgba(255, 215, 0, 0.1)' : '#FFD700', 
-                              color: isSubscribed ? '#FFD700' : '#000', 
-                              border: isSubscribed ? '1px solid #FFD700' : 'none', 
-                              padding: '6px 20px', 
-                              borderRadius: '20px', 
-                              fontWeight: 'bold', 
-                              cursor: 'pointer',
-                              display: 'flex',
-                              alignItems: 'center',
-                              gap: '6px'
-                            }}
-                          >
-                            {isSubscribed ? <><CheckCircle size={14} /> Subscribed</> : `Subscribe $${subPrice}/mo`}
-                          </button>
-                        )}
-                      </>
+                      <p style={{ color: '#eee', fontSize: '16px', lineHeight: 1.7, opacity: 0.9 }}>{bio}</p>
                     )}
-                  </div>
+                  </>
+                ) : (
+                  <p style={{ color: '#aaa', fontSize: '16px' }}>Standard Viewer Account</p>
+                )}
+              </div>
+            </div>
+          </div>
 
-                  {viewMode === 'edit' ? (
-                    <>
-                      <div style={{ position: 'relative' }}>
-                        <textarea 
-                          value={bio}
-                          onChange={(e) => setBio(e.target.value)}
-                          placeholder="Write a bio to tell your viewers what your channel is about..."
-                          style={{ width: '100%', minHeight: '80px', background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px', padding: '12px', color: '#ccc', resize: 'vertical', fontSize: '14px', outline: 'none' }}
-                        />
-                        <button type="button" onClick={() => enhanceText('bio')} disabled={saving} style={{ position: 'absolute', right: '12px', bottom: '16px', background: 'linear-gradient(135deg, #8A2BE2, #ff4d85)', color: '#fff', border: 'none', borderRadius: '12px', padding: '6px 12px', fontSize: '12px', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                          <Wand size={14} /> AI Boost
-                        </button>
-                      </div>
-
-                      <div style={{ marginTop: '20px', background: 'rgba(0,0,0,0.3)', padding: '16px', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.1)' }}>
-                        <h4 style={{ margin: '0 0 10px 0', fontSize: '14px', color: '#ff4d85', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                          <ImageIcon size={16} /> Featured Homepage Banner
-                        </h4>
-                        <p style={{ color: '#888', fontSize: '12px', marginBottom: '10px' }}>Upload a custom image from your computer or use our AI Generator to explicitly build a hero image when your channel is featured on the homepage slider. (Overrides avatar)</p>
-                        
-                        {homepageImageUrl ? (
-                          <div style={{ position: 'relative', width: '100%', aspectRatio: '16/9', borderRadius: '12px', overflow: 'hidden', backgroundImage: `url("${homepageImageUrl}")`, backgroundSize: 'cover', backgroundPosition: 'center', border: '1px solid rgba(255,255,255,0.1)' }}>
-                            <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(0,0,0,0.8), transparent)' }} />
-                            <button onClick={() => { setImageTarget('homepage'); setShowImageModal(true); }} style={{ position: 'absolute', bottom: 12, right: 12, padding: '8px 16px', background: 'rgba(255,255,255,0.1)', backdropFilter: 'blur(4px)', color: 'white', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.2)', cursor: 'pointer', fontSize: '12px', fontWeight: 'bold' }}>
-                              Update Banner Image
-                            </button>
-                          </div>
-                        ) : (
-                          <button onClick={() => { setImageTarget('homepage'); setShowImageModal(true); }} style={{ width: '100%', padding: '30px', background: 'rgba(255,255,255,0.02)', border: '1px dashed rgba(255,255,255,0.15)', color: '#ccc', fontSize: '14px', borderRadius: '12px', cursor: 'pointer', transition: 'all 0.2s', fontWeight: 'bold' }}>
-                            + Select or Generate Banner Image
-                          </button>
-                        )}
-                      </div>
-
-                      <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '16px' }}>
-                        <button onClick={saveProfile} disabled={saving} style={{ padding: '8px 20px', background: '#fff', color: '#000', borderRadius: '8px', border: 'none', fontWeight: 'bold', cursor: 'pointer', opacity: saving ? 0.7 : 1 }}>
-                          {saving ? 'Saving...' : 'Save Profile'}
-                        </button>
-                      </div>
-                    </>
-                  ) : (
-                    <p style={{ color: '#ccc', fontSize: '14px', lineHeight: 1.6 }}>{bio}</p>
+          {/* Modern Pill Navigation */}
+          <div style={{ display: 'flex', justifyContent: 'center', marginTop: '10px' }}>
+            <div style={{ display: 'flex', gap: '8px', background: 'rgba(255,255,255,0.03)', padding: '8px', borderRadius: '100px', border: '1px solid rgba(255,255,255,0.05)', flexWrap: 'wrap', backdropFilter: 'blur(20px)' }}>
+              {[
+                { id: 'feed', label: 'Content Feed' },
+                { id: 'store', label: 'Store' },
+                { id: 'live', label: 'Live Stream' },
+                { id: 'booking', label: 'Booking' },
+                { id: 'series', label: 'TV Series' },
+                { id: 'courses', label: 'Masterclasses' }
+              ].map(tab => (
+                <button 
+                  key={tab.id}
+                  onClick={() => setActiveTab(tab.id as any)}
+                  style={{ position: 'relative', background: 'none', border: 'none', padding: '12px 24px', color: activeTab === tab.id ? '#fff' : '#888', fontSize: '15px', fontWeight: 'bold', cursor: 'pointer', borderRadius: '100px', transition: 'color 0.3s' }}
+                >
+                  {activeTab === tab.id && (
+                    <motion.div layoutId="activetab" style={{ position: 'absolute', inset: 0, background: 'rgba(255,77,133,0.2)', borderRadius: '100px', border: '1px solid rgba(255,77,133,0.5)' }} />
                   )}
-                </>
-              ) : (
-                <p style={{ color: '#888' }}>Standard Viewer Account</p>
+                  <span style={{ position: 'relative', zIndex: 1 }}>{tab.label}</span>
+                </button>
+              ))}
+
+              {isOwnProfile && (
+                <button 
+                  onClick={() => setActiveTab('wallet')}
+                  style={{ position: 'relative', background: 'none', border: 'none', padding: '12px 24px', color: activeTab === 'wallet' ? '#00ff88' : '#888', fontSize: '15px', fontWeight: 'bold', cursor: 'pointer', borderRadius: '100px', display: 'flex', alignItems: 'center', gap: '8px', transition: 'color 0.3s' }}
+                >
+                  {activeTab === 'wallet' && (
+                    <motion.div layoutId="activetab" style={{ position: 'absolute', inset: 0, background: 'rgba(0,255,136,0.1)', borderRadius: '100px', border: '1px solid rgba(0,255,136,0.4)' }} />
+                  )}
+                  <span style={{ position: 'relative', zIndex: 1, display: 'flex', alignItems: 'center', gap: '8px' }}><Wallet size={16} /> Wallet</span>
+                </button>
               )}
             </div>
           </div>
-        </div>
 
-        {/* Tab Navigation */}
-        <div style={{ display: 'flex', gap: '30px', justifyContent: 'center', flexWrap: 'wrap', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '16px' }}>
-          <button 
-            onClick={() => setActiveTab('feed')}
-            style={{ background: 'none', border: 'none', color: activeTab === 'feed' ? '#fff' : '#888', fontSize: '18px', fontWeight: 'bold', cursor: 'pointer', position: 'relative' }}
-          >
-            Content Feed
-            {activeTab === 'feed' && <motion.div layoutId="activetab" style={{ position: 'absolute', bottom: '-17px', left: 0, right: 0, height: '3px', background: '#ff4d85', borderRadius: '3px' }} />}
-          </button>
-          <button 
-            onClick={() => setActiveTab('store')}
-            style={{ background: 'none', border: 'none', color: activeTab === 'store' ? '#fff' : '#888', fontSize: '18px', fontWeight: 'bold', cursor: 'pointer', position: 'relative', display: 'flex', alignItems: 'center', gap: '6px' }}
-          >
-            Store
-            {activeTab === 'store' && <motion.div layoutId="activetab" style={{ position: 'absolute', bottom: '-17px', left: 0, right: 0, height: '3px', background: '#ff4d85', borderRadius: '3px' }} />}
-          </button>
-          <button 
-            onClick={() => setActiveTab('live')}
-            style={{ background: 'none', border: 'none', color: activeTab === 'live' ? '#fff' : '#888', fontSize: '18px', fontWeight: 'bold', cursor: 'pointer', position: 'relative', display: 'flex', alignItems: 'center', gap: '6px' }}
-          >
-            Live Stream
-            {activeTab === 'live' && <motion.div layoutId="activetab" style={{ position: 'absolute', bottom: '-17px', left: 0, right: 0, height: '3px', background: '#ff4d85', borderRadius: '3px' }} />}
-          </button>
-          <button 
-            onClick={() => setActiveTab('booking')}
-            style={{ background: 'none', border: 'none', color: activeTab === 'booking' ? '#fff' : '#888', fontSize: '18px', fontWeight: 'bold', cursor: 'pointer', position: 'relative', display: 'flex', alignItems: 'center', gap: '6px' }}
-          >
-            Booking
-            {activeTab === 'booking' && <motion.div layoutId="activetab" style={{ position: 'absolute', bottom: '-17px', left: 0, right: 0, height: '3px', background: '#ff4d85', borderRadius: '3px' }} />}
-          </button>
-          <button 
-            onClick={() => setActiveTab('series')}
-            style={{ background: 'none', border: 'none', color: activeTab === 'series' ? '#fff' : '#888', fontSize: '18px', fontWeight: 'bold', cursor: 'pointer', position: 'relative', display: 'flex', alignItems: 'center', gap: '6px' }}
-          >
-            TV Series
-            {activeTab === 'series' && <motion.div layoutId="activetab" style={{ position: 'absolute', bottom: '-17px', left: 0, right: 0, height: '3px', background: '#ff4d85', borderRadius: '3px' }} />}
-          </button>
-          <button 
-            onClick={() => setActiveTab('courses')}
-            style={{ background: 'none', border: 'none', color: activeTab === 'courses' ? '#fff' : '#888', fontSize: '18px', fontWeight: 'bold', cursor: 'pointer', position: 'relative', display: 'flex', alignItems: 'center', gap: '6px' }}
-          >
-            Masterclasses
-            {activeTab === 'courses' && <motion.div layoutId="activetab" style={{ position: 'absolute', bottom: '-17px', left: 0, right: 0, height: '3px', background: '#ff4d85', borderRadius: '3px' }} />}
-          </button>
-
-
-
-          {isOwnProfile && (
-            <button 
-              onClick={() => setActiveTab('wallet')}
-              style={{ background: 'none', border: 'none', color: activeTab === 'wallet' ? '#00ff88' : '#888', fontSize: '18px', fontWeight: 'bold', cursor: 'pointer', position: 'relative', display: 'flex', alignItems: 'center', gap: '6px' }}
-            >
-              <Wallet size={18} /> Wallet
-              {activeTab === 'wallet' && <motion.div layoutId="activetab" style={{ position: 'absolute', bottom: '-17px', left: 0, right: 0, height: '3px', background: '#00ff88', borderRadius: '3px' }} />}
-            </button>
+            </>
           )}
-        </div>
-
-          </>
-        )}
-
         {activeTab === 'feed' && (
           <>
             {/* Content Creation Widget -> ONLY IF EDITING */}
