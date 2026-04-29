@@ -27,6 +27,7 @@ const ProfileDashboard: React.FC<{ user: any }> = ({ user }) => {
   const [selectedGenre, setSelectedGenre] = useState('Electronic');
   const [avatarUrl, setAvatarUrl] = useState('');
   const [homepageImageUrl, setHomepageImageUrl] = useState('');
+  const [currentBannerIndex, setCurrentBannerIndex] = useState(0);
   const [saving, setSaving] = useState(false);
   const [activeTab, setActiveTab] = useState<'feed' | 'store' | 'live' | 'booking' | 'series' | 'courses' | 'wallet'>('feed');
   const [walletBalance, setWalletBalance] = useState(() => (typeof window !== 'undefined' ? Number(localStorage.getItem('vibe_host_wallet') || 1250.00) : 1250.00));
@@ -72,6 +73,17 @@ const ProfileDashboard: React.FC<{ user: any }> = ({ user }) => {
       setGuestSetup({ show: true, name: '', title: '' }); // Show Green Room Prompt
     }
   }, [location.search]);
+
+  useEffect(() => {
+    if (!homepageImageUrl) return;
+    const images = homepageImageUrl.split(',').filter(Boolean);
+    if (images.length <= 1) return;
+    
+    const interval = setInterval(() => {
+      setCurrentBannerIndex(prev => (prev + 1) % images.length);
+    }, 4000);
+    return () => clearInterval(interval);
+  }, [homepageImageUrl]);
 
   useEffect(() => {
     let timer: NodeJS.Timeout;
@@ -459,7 +471,7 @@ const ProfileDashboard: React.FC<{ user: any }> = ({ user }) => {
       if (imageTarget === 'avatar') {
         setAvatarUrl(data.publicUrl);
       } else if (imageTarget === 'homepage') {
-        setHomepageImageUrl(data.publicUrl);
+        setHomepageImageUrl(prev => prev ? prev + ',' + data.publicUrl : data.publicUrl);
       }
       setShowImageModal(false);
     } catch (error: any) {
@@ -610,7 +622,7 @@ const ProfileDashboard: React.FC<{ user: any }> = ({ user }) => {
       {/* Immersive Hero Banner */}
       {!isGuestMode && (
         <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '400px', zIndex: 0 }}>
-          <div style={{ position: 'absolute', inset: 0, backgroundImage: `url(${homepageImageUrl || profile?.avatar_url || 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&q=80&w=2500'})`, backgroundSize: 'cover', backgroundPosition: 'center', filter: 'brightness(0.6) saturate(1.2)' }} />
+          <div style={{ position: 'absolute', inset: 0, backgroundImage: `url(${(homepageImageUrl ? homepageImageUrl.split(',')[currentBannerIndex] : null) || profile?.avatar_url || 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&q=80&w=2500'})`, backgroundSize: 'cover', backgroundPosition: 'center', filter: 'brightness(0.6) saturate(1.2)', transition: 'background-image 1s ease-in-out' }} />
           <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to bottom, transparent 30%, #050505 100%)' }} />
           {/* Dynamic Glowing Accent */}
           <div style={{ position: 'absolute', inset: 0, background: 'radial-gradient(circle at 50% 50%, rgba(255, 77, 133, 0.2), transparent 70%)', mixBlendMode: 'screen' }} />
@@ -749,16 +761,31 @@ const ProfileDashboard: React.FC<{ user: any }> = ({ user }) => {
 
                         <div style={{ marginTop: '24px', background: 'rgba(0,0,0,0.4)', padding: '24px', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.08)' }}>
                           <h4 style={{ margin: '0 0 12px 0', fontSize: '15px', color: '#ff4d85', display: 'flex', alignItems: 'center', gap: '10px' }}>
-                            <ImageIcon size={18} /> Featured Homepage Banner
+                            <ImageIcon size={18} /> Featured Flip Book Slider
                           </h4>
-                          <p style={{ color: '#aaa', fontSize: '13px', marginBottom: '16px', lineHeight: 1.5 }}>Upload a custom image from your computer or use our AI Generator to explicitly build a hero image when your channel is featured on the homepage slider. (Overrides avatar)</p>
+                          <p style={{ color: '#aaa', fontSize: '13px', marginBottom: '16px', lineHeight: 1.5 }}>Upload custom images from your computer or use our AI Generator to explicitly build a hero image slider flip book. (Overrides avatar)</p>
                           
                           {homepageImageUrl ? (
-                            <div style={{ position: 'relative', width: '100%', aspectRatio: '21/9', borderRadius: '12px', overflow: 'hidden', backgroundImage: `url("${homepageImageUrl}")`, backgroundSize: 'cover', backgroundPosition: 'center', border: '1px solid rgba(255,255,255,0.1)' }}>
-                              <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(0,0,0,0.8), transparent)' }} />
-                              <button onClick={() => { setImageTarget('homepage'); setShowImageModal(true); }} style={{ position: 'absolute', bottom: 16, right: 16, padding: '10px 20px', background: 'rgba(255,255,255,0.15)', backdropFilter: 'blur(8px)', color: 'white', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.2)', cursor: 'pointer', fontSize: '13px', fontWeight: 'bold', transition: 'background 0.2s' }} onMouseOver={e=>e.currentTarget.style.background='rgba(255,255,255,0.25)'} onMouseOut={e=>e.currentTarget.style.background='rgba(255,255,255,0.15)'}>
-                                Update Banner Image
-                              </button>
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                              <div style={{ position: 'relative', width: '100%', aspectRatio: '21/9', borderRadius: '12px', overflow: 'hidden', backgroundImage: `url("${homepageImageUrl.split(',')[currentBannerIndex]}")`, backgroundSize: 'cover', backgroundPosition: 'center', border: '1px solid rgba(255,255,255,0.1)', transition: 'background-image 0.5s' }}>
+                                <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(0,0,0,0.8), transparent)' }} />
+                                <button onClick={() => { setImageTarget('homepage'); setShowImageModal(true); }} style={{ position: 'absolute', bottom: 16, right: 16, padding: '10px 20px', background: 'rgba(255,255,255,0.15)', backdropFilter: 'blur(8px)', color: 'white', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.2)', cursor: 'pointer', fontSize: '13px', fontWeight: 'bold', transition: 'background 0.2s' }} onMouseOver={e=>e.currentTarget.style.background='rgba(255,255,255,0.25)'} onMouseOut={e=>e.currentTarget.style.background='rgba(255,255,255,0.15)'}>
+                                  + Add Image to Flip Book
+                                </button>
+                                <button onClick={() => {
+                                  const arr = homepageImageUrl.split(',').filter(Boolean);
+                                  arr.splice(currentBannerIndex, 1);
+                                  setHomepageImageUrl(arr.join(','));
+                                  setCurrentBannerIndex(0);
+                                }} style={{ position: 'absolute', top: 16, right: 16, padding: '8px 16px', background: 'rgba(255,0,0,0.5)', backdropFilter: 'blur(8px)', color: 'white', borderRadius: '12px', border: 'none', cursor: 'pointer', fontSize: '12px', fontWeight: 'bold' }}>
+                                  Remove This Image
+                                </button>
+                              </div>
+                              <div style={{ display: 'flex', gap: '10px', overflowX: 'auto', paddingBottom: '8px' }}>
+                                {homepageImageUrl.split(',').filter(Boolean).map((imgUrl, idx) => (
+                                  <div key={idx} onClick={() => setCurrentBannerIndex(idx)} style={{ width: '100px', height: '56px', borderRadius: '8px', backgroundImage: `url("${imgUrl}")`, backgroundSize: 'cover', backgroundPosition: 'center', cursor: 'pointer', border: currentBannerIndex === idx ? '2px solid #ff4d85' : '2px solid transparent', flexShrink: 0, opacity: currentBannerIndex === idx ? 1 : 0.5, transition: '0.2s' }} />
+                                ))}
+                              </div>
                             </div>
                           ) : (
                             <button onClick={() => { setImageTarget('homepage'); setShowImageModal(true); }} style={{ width: '100%', padding: '40px', background: 'rgba(255,255,255,0.03)', border: '2px dashed rgba(255,255,255,0.15)', color: '#fff', fontSize: '15px', borderRadius: '16px', cursor: 'pointer', transition: 'all 0.3s', fontWeight: 'bold' }} onMouseOver={e=>e.currentTarget.style.background='rgba(255,255,255,0.08)'} onMouseOut={e=>e.currentTarget.style.background='rgba(255,255,255,0.03)'}>
@@ -1628,7 +1655,7 @@ const ProfileDashboard: React.FC<{ user: any }> = ({ user }) => {
                     if (prompt) {
                       const computedUrl = `https://image.pollinations.ai/prompt/${encodeURIComponent(prompt)}?width=512&height=512&nologo=true&seed=${Math.floor(Math.random() * 1000000)}`;
                       if (imageTarget === 'avatar') setAvatarUrl(computedUrl);
-                      else setHomepageImageUrl(computedUrl);
+                      else setHomepageImageUrl(prev => prev ? prev + ',' + computedUrl : computedUrl);
                       
                       setShowImageModal(false);
                       setSaving(true);
