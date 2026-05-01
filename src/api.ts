@@ -91,11 +91,43 @@ export async function getCategoriesWithVideos(tenantId?: string) {
     items: mappedProfiles
   });
 
-  categoriesToReturn.push({
-    title: 'New Content',
-    aspectRatio: '16/9',
-    items: mappedContent
-  });
+  // Dynamically load custom categories and their assigned videos!
+  const { data: dbCategories } = await supabase.from('categories').select('*');
+  const { data: allVideos } = await supabase.from('videos').select('*');
+
+  let addedCustom = false;
+
+  if (dbCategories) {
+    dbCategories.forEach(cat => {
+      if (cat.title === 'Live Network Schedule') return;
+      
+      const catVideos = (allVideos || []).filter((v: any) => v.category_id === cat.id);
+      
+      if (catVideos.length > 0) {
+        addedCustom = true;
+        categoriesToReturn.push({
+          title: cat.title,
+          aspectRatio: '16/9',
+          items: catVideos.map((vid: any) => ({
+            id: vid.id,
+            title: vid.title,
+            image: vid.image_url,
+            tags: vid.tags || [],
+            videoUrl: vid.video_url
+          }))
+        });
+      }
+    });
+  }
+
+  // Fallback if no custom categories have videos yet
+  if (!addedCustom) {
+    categoriesToReturn.push({
+      title: 'New Content',
+      aspectRatio: '16/9',
+      items: mappedContent
+    });
+  }
 
   return categoriesToReturn;
 }

@@ -22,7 +22,13 @@ export default function MasterAdminDashboard() {
   
   const [whitelabelsList, setWhitelabelsList] = useState<any[]>([]);
   const [usersList, setUsersList] = useState<any[]>([]);
+  const [categories, setCategories] = useState<any[]>([]);
   const [isRestarting, setIsRestarting] = useState(false);
+
+  async function fetchCategories() {
+     const { data } = await supabase!.from('categories').select('*');
+     if (data) setCategories(data);
+  }
   const [ledgerFilter, setLedgerFilter] = useState('ALL');
   const [loading, setLoading] = useState(false);
 
@@ -40,6 +46,7 @@ export default function MasterAdminDashboard() {
         
         setWhitelabelsList(configs || []);
         fetchUsers();
+        fetchCategories();
         
         setDbStats(prev => ({
            ...prev,
@@ -80,6 +87,7 @@ export default function MasterAdminDashboard() {
           {[
             { id: 'overview', icon: <Activity size={18} />, label: 'Pulse' },
             { id: 'live-now', icon: <Play size={18} />, label: 'Live Now TV' },
+            { id: 'app-builder', icon: <Globe size={18} />, label: 'Homepage Builder' },
             { id: 'networks', icon: <Network size={18} />, label: 'Whitelabel Fleet' },
             { id: 'users', icon: <Users size={18} />, label: 'Network Directory' },
             { id: 'database', icon: <Database size={18} />, label: 'Data Clusters' },
@@ -247,6 +255,89 @@ export default function MasterAdminDashboard() {
                     }} style={{ background: '#0055ff', color: '#fff', border: 'none', padding: '16px', borderRadius: '8px', fontWeight: 'bold', cursor: 'pointer', fontSize: '15px' }}>
                        Deploy Broadcast
                     </button>
+                 </div>
+               </div>
+             </motion.div>
+          )}
+
+          {activeTab === 'app-builder' && (
+             <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} style={{ display: 'flex', flexDirection: 'column', gap: '30px' }}>
+               
+               {/* 1. Global Brand Settings */}
+               <div style={{ background: '#111', padding: '30px', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.05)' }}>
+                 <h4 style={{ margin: '0 0 20px 0', fontSize: '18px', color: '#ff4d85' }}>1. Global Brand & Hero Settings</h4>
+                 <p style={{ color: '#888', marginBottom: '20px' }}>Update the master platform brand name and the cinematic hero banner seen by all logged-out visitors.</p>
+                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+                    <input type="text" placeholder="Platform Name (e.g. Vibe Network)" style={{ background: '#000', border: '1px solid #333', padding: '16px', borderRadius: '8px', color: '#fff', fontSize: '15px' }} id="global-name" />
+                    <input type="text" placeholder="Hero Image URL (e.g. https://...)" style={{ background: '#000', border: '1px solid #333', padding: '16px', borderRadius: '8px', color: '#fff', fontSize: '15px' }} id="global-hero-img" />
+                    <textarea placeholder="Hero Copy (e.g. Welcome to the ultimate network...)" style={{ background: '#000', border: '1px solid #333', padding: '16px', borderRadius: '8px', color: '#fff', fontSize: '15px', gridColumn: 'span 2', height: '100px' }} id="global-hero-copy" />
+                 </div>
+                 <button onClick={async () => {
+                    const name = (document.getElementById('global-name') as HTMLInputElement).value;
+                    const heroImage = (document.getElementById('global-hero-img') as HTMLInputElement).value;
+                    const heroCopy = (document.getElementById('global-hero-copy') as HTMLTextAreaElement).value;
+                    if(!name) return alert('Platform Name is required');
+                    
+                    const { data: existing } = await supabase!.from('whitelabel_configs').select('id').limit(1);
+                    const updatePayload: any = { name };
+                    // If theme doesn't exist we'll merge
+                    const themeObj = { heroImage: heroImage || '', heroCopy: heroCopy || '' };
+                    
+                    if (existing && existing.length > 0) {
+                      await supabase!.from('whitelabel_configs').update({ name, theme: themeObj }).eq('id', existing[0].id);
+                    } else {
+                      await supabase!.from('whitelabel_configs').insert([{ name, theme: themeObj }]);
+                    }
+                    alert('Global Brand Settings Updated! Refresh the homepage to see changes.');
+                 }} style={{ marginTop: '20px', background: '#0055ff', color: '#fff', border: 'none', padding: '16px 24px', borderRadius: '8px', fontWeight: 'bold', cursor: 'pointer' }}>Save Brand Settings</button>
+               </div>
+
+               {/* 2. Category Sliders */}
+               <div style={{ background: '#111', padding: '30px', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.05)' }}>
+                 <h4 style={{ margin: '0 0 20px 0', fontSize: '18px', color: '#00ff88' }}>2. Create Content Slider (Category)</h4>
+                 <p style={{ color: '#888', marginBottom: '20px' }}>Every category creates a new horizontal scrolling slider row on the homepage.</p>
+                 <div style={{ display: 'flex', gap: '16px' }}>
+                    <input type="text" placeholder="Slider Title (e.g. Trending Business Podcasts)" style={{ flex: 1, background: '#000', border: '1px solid #333', padding: '16px', borderRadius: '8px', color: '#fff', fontSize: '15px' }} id="new-category" />
+                    <button onClick={async () => {
+                       const title = (document.getElementById('new-category') as HTMLInputElement).value;
+                       if(!title) return;
+                       await supabase!.from('categories').insert([{ title }]);
+                       fetchCategories();
+                       alert('Category Slider Created!');
+                       (document.getElementById('new-category') as HTMLInputElement).value = '';
+                    }} style={{ background: '#00ff88', color: '#000', border: 'none', padding: '0 24px', borderRadius: '8px', fontWeight: 'bold', cursor: 'pointer' }}>Add Slider</button>
+                 </div>
+               </div>
+
+               {/* 3. Add Content to Sliders */}
+               <div style={{ background: '#111', padding: '30px', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.05)' }}>
+                 <h4 style={{ margin: '0 0 20px 0', fontSize: '18px', color: '#FFD700' }}>3. Add Content to Sliders</h4>
+                 <p style={{ color: '#888', marginBottom: '20px' }}>Upload a video or image card into one of your existing homepage sliders.</p>
+                 <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                    <select id="video-category" style={{ background: '#000', border: '1px solid #333', padding: '16px', borderRadius: '8px', color: '#fff', fontSize: '15px' }}>
+                       <option value="">Select a Category Slider...</option>
+                       {categories.map(c => <option key={c.id} value={c.id}>{c.title}</option>)}
+                    </select>
+                    <input type="text" placeholder="Content Title" style={{ background: '#000', border: '1px solid #333', padding: '16px', borderRadius: '8px', color: '#fff', fontSize: '15px' }} id="video-title" />
+                    <input type="text" placeholder="Thumbnail Image URL (e.g. https://...)" style={{ background: '#000', border: '1px solid #333', padding: '16px', borderRadius: '8px', color: '#fff', fontSize: '15px' }} id="video-thumb" />
+                    <input type="text" placeholder="Video/Link URL" style={{ background: '#000', border: '1px solid #333', padding: '16px', borderRadius: '8px', color: '#fff', fontSize: '15px' }} id="video-url" />
+                    
+                    <button onClick={async () => {
+                       const catId = (document.getElementById('video-category') as HTMLSelectElement).value;
+                       const title = (document.getElementById('video-title') as HTMLInputElement).value;
+                       const img = (document.getElementById('video-thumb') as HTMLInputElement).value;
+                       const url = (document.getElementById('video-url') as HTMLInputElement).value;
+                       
+                       if(!catId || !title || !img) return alert('Category, Title, and Thumbnail are required!');
+                       
+                       await supabase!.from('videos').insert([{
+                         title, category_id: catId, image_url: img, video_url: url || '#'
+                       }]);
+                       alert('Content Added to Slider!');
+                       (document.getElementById('video-title') as HTMLInputElement).value = '';
+                       (document.getElementById('video-thumb') as HTMLInputElement).value = '';
+                       (document.getElementById('video-url') as HTMLInputElement).value = '';
+                    }} style={{ background: '#FFD700', color: '#000', border: 'none', padding: '16px', borderRadius: '8px', fontWeight: 'bold', cursor: 'pointer', fontSize: '15px' }}>Publish to Slider</button>
                  </div>
                </div>
              </motion.div>
