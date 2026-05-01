@@ -42,6 +42,7 @@ CREATE TABLE IF NOT EXISTS public.videos (
     video_url TEXT NOT NULL,
     image_url TEXT,
     tags TEXT[],
+    stream_time TEXT,
     price NUMERIC DEFAULT 0.00,
     preview_duration INTEGER DEFAULT 90,
     category_id UUID REFERENCES public.categories(id),

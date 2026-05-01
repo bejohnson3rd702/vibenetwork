@@ -259,12 +259,19 @@ export default function MasterAdminDashboard() {
                        const title = (document.getElementById('yt-title') as HTMLInputElement).value;
                        const time = (document.getElementById('yt-time') as HTMLInputElement).value;
                        if(!url || !title) return alert('Enter URL and Title');
-                       const { data: cat } = await supabase!.from('categories').select('id').eq('title', 'Live Network Schedule').single();
-                       if (!cat) return alert('Live Network Schedule category not found in DB!');
-                       await supabase!.from('videos').insert({
-                         title, video_url: url, stream_time: time || 'LIVE', category_id: cat.id,
+                       const { data: existingCat } = await supabase!.from('categories').select('id').eq('title', 'Live Network Schedule').single();
+                       let targetCatId = existingCat?.id;
+                       if (!targetCatId) {
+                           const { data: newCat } = await supabase!.from('categories').insert({ title: 'Live Network Schedule' }).select('id').single();
+                           if (!newCat) return alert('Failed to create Live Network Schedule category.');
+                           targetCatId = newCat.id;
+                       }
+                       
+                       const { error } = await supabase!.from('videos').insert({
+                         title, video_url: url, stream_time: time || 'LIVE', category_id: targetCatId,
                          image_url: `https://images.unsplash.com/photo-1550751827-4bd374c3f58b?auto=format&fit=crop&q=80&w=800`
                        });
+                       if (error) return alert(`Failed to insert broadcast: ${error.message}`);
                        alert('Successfully injected broadcast into global live slate!');
                        (document.getElementById('yt-url') as HTMLInputElement).value = '';
                        (document.getElementById('yt-title') as HTMLInputElement).value = '';
