@@ -126,9 +126,9 @@ DROP POLICY IF EXISTS "Allow users to delete own products" ON public.products;
 CREATE POLICY "Allow users to delete own products" ON public.products FOR DELETE USING (auth.uid() = creator_id);
 
 -- Optional: Allow permissive insert for testing phase (Uncomment if needed)
--- DROP POLICY IF EXISTS "Testing Insert All" ON public.products;
+DROP POLICY IF EXISTS "Testing Insert All" ON public.products;
 CREATE POLICY "Testing Insert All" ON public.products FOR INSERT WITH CHECK (true);
--- DROP POLICY IF EXISTS "Testing Insert All" ON public.posts;
+DROP POLICY IF EXISTS "Testing Insert All" ON public.posts;
 CREATE POLICY "Testing Insert All" ON public.posts FOR INSERT WITH CHECK (true);
 
 -- Admin Global Access Bypasses (Requires is_admin = true on the user's profile)
@@ -207,7 +207,20 @@ ALTER TABLE public.series ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.episodes ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.bookings ENABLE ROW LEVEL SECURITY;
 
--- 10. Ledger (Global Accounting)
+-- 10. Courses
+CREATE TABLE IF NOT EXISTS public.courses (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    creator_id UUID REFERENCES public.profiles(id) ON DELETE CASCADE,
+    title TEXT NOT NULL,
+    price NUMERIC DEFAULT 0.00,
+    modules INTEGER DEFAULT 10,
+    hours TEXT,
+    img TEXT,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+ALTER TABLE public.courses ENABLE ROW LEVEL SECURITY;
+
+-- 11. Ledger (Global Accounting)
 CREATE TABLE IF NOT EXISTS public.ledger (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     amount NUMERIC NOT NULL,
@@ -243,3 +256,20 @@ DROP POLICY IF EXISTS "Allow users to insert own bookings" ON public.bookings;
 CREATE POLICY "Allow users to insert own bookings" ON public.bookings FOR INSERT WITH CHECK (auth.uid() = creator_id);
 DROP POLICY IF EXISTS "Allow users to update own bookings" ON public.bookings;
 CREATE POLICY "Allow users to update own bookings" ON public.bookings FOR UPDATE USING (auth.uid() = creator_id);
+
+DROP POLICY IF EXISTS "Allow public read access for courses" ON public.courses;
+CREATE POLICY "Allow public read access for courses" ON public.courses FOR SELECT USING (true);
+DROP POLICY IF EXISTS "Allow users to insert own courses" ON public.courses;
+CREATE POLICY "Allow users to insert own courses" ON public.courses FOR INSERT WITH CHECK (auth.uid() = creator_id);
+DROP POLICY IF EXISTS "Allow users to update own courses" ON public.courses;
+CREATE POLICY "Allow users to update own courses" ON public.courses FOR UPDATE USING (auth.uid() = creator_id);
+
+-- 12. Storage Buckets (For avatars, covers, and thumbnails)
+INSERT INTO storage.buckets (id, name, public) VALUES ('images', 'images', true) ON CONFLICT (id) DO NOTHING;
+
+DROP POLICY IF EXISTS "Public Access" ON storage.objects;
+CREATE POLICY "Public Access" ON storage.objects FOR SELECT USING (bucket_id = 'images');
+
+DROP POLICY IF EXISTS "Auth Insert" ON storage.objects;
+CREATE POLICY "Auth Insert" ON storage.objects FOR INSERT WITH CHECK (bucket_id = 'images' AND auth.role() = 'authenticated');
+
