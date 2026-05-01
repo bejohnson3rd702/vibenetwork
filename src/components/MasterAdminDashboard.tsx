@@ -42,7 +42,7 @@ export default function MasterAdminDashboard() {
 
   useEffect(() => {
      async function fetchGlobalMetrics() {
-        const { count: usersCount } = await supabase!.from('profiles').select('*', { count: 'exact' });
+        const { count: usersCount } = await supabase!.from('profiles').select('*', { count: 'exact', head: true });
         const { data: configs } = await supabase!.from('whitelabel_configs').select('*');
         const { data: ledgerTx } = await supabase!.from('ledger').select('*, profiles(*)').order('created_at', { ascending: false }).limit(50);
         
@@ -181,7 +181,7 @@ export default function MasterAdminDashboard() {
                  ) : whitelabelsList.map((brandConfig, i) => (
                    <div key={brandConfig.id || i} style={{ background: '#111', padding: '24px', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
-                         <div style={{ width: '60px', height: '60px', background: brandConfig.accent || `linear-gradient(135deg, #005${i}ff, #ff${i}0ff)`, borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontWeight: 'bold' }}>
+                         <div style={{ width: '60px', height: '60px', background: brandConfig.accent || `linear-gradient(135deg, hsl(${(i * 50) % 360}, 100%, 50%), hsl(${((i * 50) + 60) % 360}, 100%, 50%))`, borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontWeight: 'bold' }}>
                             {brandConfig.name?.substring(0,2).toUpperCase() || 'WL'}
                          </div>
                          <div>
@@ -528,47 +528,46 @@ export default function MasterAdminDashboard() {
                       </tr>
                     </thead>
                     <tbody>
-                      {[
-                        ...ledgerData.map(tx => ({
+                      {(() => {
+                        const mappedTx = ledgerData.map(tx => ({
                           time: new Date(tx.created_at).toLocaleDateString(),
                           source: tx.product_title || 'Network Purchase',
                           origin: tx.profiles?.whitelabel_id ? 'Whitelabel' : 'Direct Vibe',
-                          gross: Number(tx.amount)
-                        })),
-                        { time: 'Just now', source: 'Acme Corp Systems', origin: 'Whitelabel', gross: 49.99 },
-                        { time: '2 min ago', source: 'Nexus Tech Global', origin: 'Whitelabel', gross: 9.99 },
-                        { time: '14 min ago', source: 'DJ Tech Live', origin: 'Direct Vibe', gross: 14.99 },
-                        { time: '1 hr ago', source: 'Vertex Media', origin: 'Whitelabel', gross: 199.99 },
-                        { time: '2 hrs ago', source: 'SaaS Innovators', origin: 'Direct Vibe', gross: 29.99 },
-                      ].filter(tx => ledgerFilter === 'ALL' || tx.origin === ledgerFilter).map((tx, i, arr) => {
-                         const creatorCut = (Number(tx.gross) * 0.70).toFixed(2);
-                         const isDirect = tx.origin === 'Direct Vibe';
-                         const vibeCut = isDirect ? (Number(tx.gross) * 0.30).toFixed(2) : (Number(tx.gross) * 0.15).toFixed(2);
-                         const wlCut = isDirect ? 'N/A' : '$' + (Number(tx.gross) * 0.15).toFixed(2);
-                         
-                         return (
-                           <tr key={i} style={{ borderBottom: i !== arr.length - 1 ? '1px solid rgba(255,255,255,0.05)' : 'none' }}>
-                             <td style={{ padding: '16px 12px', color: '#888', fontSize: '13px' }}>{tx.time}</td>
-                             <td style={{ padding: '16px 12px', fontWeight: 'bold' }}>{tx.source}</td>
-                             <td style={{ padding: '16px 12px' }}>
-                               <span style={{ padding: '4px 8px', borderRadius: '6px', fontSize: '11px', fontWeight: 'bold', background: isDirect ? 'rgba(255,215,0,0.1)' : 'rgba(0,85,255,0.1)', color: isDirect ? '#FFD700' : '#0055ff' }}>{tx.origin}</span>
-                             </td>
-                             <td style={{ padding: '16px 12px', fontWeight: 'bold' }}>${Number(tx.gross).toFixed(2)}</td>
-                             <td style={{ padding: '16px 12px', color: '#888' }}>{wlCut}</td>
-                             <td style={{ padding: '16px 12px', color: '#FFD700', fontWeight: 'bold' }}>+${vibeCut}</td>
-                             <td style={{ padding: '16px 12px', color: '#00ff88', fontWeight: 'bold' }}>${creatorCut}</td>
-                           </tr>
-                         )
-                      })}
-                      {ledgerFilter !== 'ALL' && [1].map(() => {
-                         const matchCount = [
-                           { origin: 'Whitelabel' }, { origin: 'Whitelabel' }, { origin: 'Direct Vibe' }, { origin: 'Whitelabel' }, { origin: 'Direct Vibe' }
-                         ].filter(tx => tx.origin === ledgerFilter).length;
-                         if (matchCount === 0) return (
-                            <tr><td colSpan={7} style={{ padding: '30px', textAlign: 'center', color: '#888' }}>No recent traffic detected for this filter tier.</td></tr>
-                         );
-                         return null;
-                      })}
+                          gross: Number(tx.amount),
+                          vibeFeePercent: Number(tx.profiles?.platform_fee_percentage || 15)
+                        }));
+                        
+                        const filteredTx = mappedTx.filter(tx => ledgerFilter === 'ALL' || tx.origin === ledgerFilter);
+                        
+                        if (filteredTx.length === 0) {
+                           return <tr><td colSpan={7} style={{ padding: '30px', textAlign: 'center', color: '#888' }}>No recent traffic detected for this filter tier.</td></tr>;
+                        }
+                        
+                        return filteredTx.map((tx, i, arr) => {
+                           const isDirect = tx.origin === 'Direct Vibe';
+                           const wlFeePercent = isDirect ? 0 : 15; // Assumption based on standard whitelabel rate
+                           const totalFeePercent = tx.vibeFeePercent + wlFeePercent;
+                           const creatorCutPercent = 100 - totalFeePercent;
+                           
+                           const creatorCut = (tx.gross * (creatorCutPercent / 100)).toFixed(2);
+                           const vibeCut = (tx.gross * (tx.vibeFeePercent / 100)).toFixed(2);
+                           const wlCut = isDirect ? 'N/A' : '$' + (tx.gross * (wlFeePercent / 100)).toFixed(2);
+                           
+                           return (
+                             <tr key={i} style={{ borderBottom: i !== arr.length - 1 ? '1px solid rgba(255,255,255,0.05)' : 'none' }}>
+                               <td style={{ padding: '16px 12px', color: '#888', fontSize: '13px' }}>{tx.time}</td>
+                               <td style={{ padding: '16px 12px', fontWeight: 'bold' }}>{tx.source}</td>
+                               <td style={{ padding: '16px 12px' }}>
+                                 <span style={{ padding: '4px 8px', borderRadius: '6px', fontSize: '11px', fontWeight: 'bold', background: isDirect ? 'rgba(255,215,0,0.1)' : 'rgba(0,85,255,0.1)', color: isDirect ? '#FFD700' : '#0055ff' }}>{tx.origin}</span>
+                               </td>
+                               <td style={{ padding: '16px 12px', fontWeight: 'bold' }}>${Number(tx.gross).toFixed(2)}</td>
+                               <td style={{ padding: '16px 12px', color: '#888' }}>{wlCut}</td>
+                               <td style={{ padding: '16px 12px', color: '#FFD700', fontWeight: 'bold' }}>+${vibeCut}</td>
+                               <td style={{ padding: '16px 12px', color: '#00ff88', fontWeight: 'bold' }}>${creatorCut}</td>
+                             </tr>
+                           );
+                        });
+                      })()}
                     </tbody>
                   </table>
                 </div>
