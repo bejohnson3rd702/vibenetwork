@@ -29,6 +29,9 @@ CREATE TABLE IF NOT EXISTS public.profiles (
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
+-- Ensure new columns are added if the table already exists
+ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS is_admin BOOLEAN DEFAULT FALSE;
+
 -- 3. Categories
 CREATE TABLE IF NOT EXISTS public.categories (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -50,6 +53,11 @@ CREATE TABLE IF NOT EXISTS public.videos (
     creator_id UUID REFERENCES public.profiles(id),
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
+
+-- Ensure new columns are added if the table already exists
+ALTER TABLE public.videos ADD COLUMN IF NOT EXISTS stream_time TEXT;
+ALTER TABLE public.videos ADD COLUMN IF NOT EXISTS price NUMERIC DEFAULT 0.00;
+ALTER TABLE public.videos ADD COLUMN IF NOT EXISTS preview_duration INTEGER DEFAULT 90;
 
 -- 5. Products (Store)
 CREATE TABLE IF NOT EXISTS public.products (
