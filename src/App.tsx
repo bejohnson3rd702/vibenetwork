@@ -13,6 +13,7 @@ import MasterAdminDashboard from './components/MasterAdminDashboard';
 import LiveChat from './components/LiveChat';
 import MoreInfo from './components/MoreInfo';
 import Contact from './components/Contact';
+import VirtualCallRoom from './components/VirtualCallRoom';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { WhiteLabelContext } from './context/WhiteLabelContext';
 import { useEffect, useState } from 'react';
@@ -190,6 +191,7 @@ function App() {
             } />
             <Route path="/profile" element={<ProfileDashboard user={user} />} />
             <Route path="/profile/:creatorId" element={<ProfileDashboard user={user} />} />
+            <Route path="/call/:callId" element={<VirtualCallRoom />} />
           </Routes>
           
           {showAdminPanel && user && (
@@ -238,6 +240,7 @@ function App() {
                 <Route path="/contact" element={<Contact />} />
                 <Route path="/profile" element={<ProfileDashboard user={user} />} />
                 <Route path="/profile/:creatorId" element={<ProfileDashboard user={user} />} />
+                <Route path="/call/:callId" element={<VirtualCallRoom />} />
               </Routes>
             </>
           } />

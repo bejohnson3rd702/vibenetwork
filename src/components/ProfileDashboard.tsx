@@ -1512,6 +1512,7 @@ const ProfileDashboard: React.FC<{ user: any }> = ({ user }) => {
                       <input type="number" step="0.01" value={bookingPrice} onChange={e => setBookingPrice(e.target.value)} style={{ background: 'transparent', border: 'none', padding: '14px', color: '#fff', outline: 'none', fontSize: '15px', width: '120px' }} />
                     </div>
                     <p style={{ color: '#aaa', fontSize: '14px', margin: 0, flex: 1 }}>Select dates on the calendar below to add or remove your available timeslots.</p>
+                    <button onClick={() => window.location.href = `/call/room_${profile?.id || 'demo'}`} style={{ padding: '12px 24px', background: 'rgba(138,43,226,0.2)', color: '#fff', border: '1px solid #8A2BE2', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold' }}>Enter Virtual Room</button>
                   </div>
                 </motion.div>
               )}
