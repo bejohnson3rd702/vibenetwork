@@ -113,10 +113,10 @@ const Navbar: React.FC<NavbarProps> = ({ user, onLoginClick, onAdminClick }) => 
         <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
           <Lightbulb 
             size={22} 
-            color={theme === 'dark' ? '#b829ea' : '#ffffff'} 
+            color={theme === 'dark' ? '#D35400' : '#ffffff'} 
             style={{ 
                cursor: 'pointer',
-               filter: theme === 'light' ? 'drop-shadow(0px 0px 4px rgba(0,0,0,0.8))' : 'drop-shadow(0px 0px 8px rgba(184, 41, 234, 0.4))',
+               filter: theme === 'light' ? 'drop-shadow(0px 0px 4px rgba(0,0,0,0.8))' : 'drop-shadow(0px 0px 8px rgba(211, 84, 0, 0.4))',
                transition: 'all 0.3s'
             }}
             onClick={toggleTheme} 
@@ -129,7 +129,7 @@ const Navbar: React.FC<NavbarProps> = ({ user, onLoginClick, onAdminClick }) => 
               {(user?.email?.includes('admin') || user?.user_metadata?.role === 'admin' || user?.user_metadata?.role === 'business') && onAdminClick && (
                 <button 
                   onClick={onAdminClick}
-                  style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', background: appAccent || '#b829ea', padding: '6px 14px', borderRadius: '8px', border: 'none' }}
+                  style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', background: appAccent || '#D35400', padding: '6px 14px', borderRadius: '8px', border: 'none' }}
                 >
                   <span style={{ fontFamily: 'var(--font-heading)', fontWeight: 600, fontSize: '12px', color: 'white', letterSpacing: '1px' }}>
                     Dashboard

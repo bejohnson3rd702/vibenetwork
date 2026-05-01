@@ -110,26 +110,12 @@ const VirtualCallRoom: React.FC = () => {
       {/* Header */}
       <div style={{ padding: '20px 40px', background: 'rgba(0,0,0,0.5)', borderBottom: '1px solid rgba(255,255,255,0.05)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', zIndex: 10 }}>
         <div>
-          <h1 style={{ margin: 0, fontSize: '20px' }}>Vibe 1-on-1 Session</h1>
-          <p style={{ margin: '4px 0 0 0', color: '#888', fontSize: '14px' }}>Room ID: {callId}</p>
+          <h1 style={{ margin: 0, fontSize: '20px', fontWeight: 800, letterSpacing: '1px' }}>Vibe 1-on-1 Session</h1>
         </div>
         
         {!isConnected && (
-          <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
-            <span style={{ fontSize: '12px', color: '#888' }}>Your Connection ID: <br/><b style={{ color: '#fff' }}>{peerId}</b></span>
-            <input 
-              type="text" 
-              placeholder="Paste Partner's ID" 
-              value={targetId} 
-              onChange={(e) => setTargetId(e.target.value)}
-              style={{ background: '#111', border: '1px solid #333', padding: '12px', borderRadius: '8px', color: '#fff', width: '200px', outline: 'none' }}
-            />
-            <button 
-              onClick={handleCall}
-              style={{ padding: '12px 24px', background: '#00ff88', color: '#000', border: 'none', borderRadius: '8px', fontWeight: 'bold', cursor: 'pointer' }}
-            >
-              Connect
-            </button>
+          <div style={{ padding: '8px 16px', background: 'rgba(255,255,255,0.1)', borderRadius: '20px', fontSize: '14px', color: '#ccc' }}>
+             Waiting for partner...
           </div>
         )}
       </div>
@@ -140,10 +126,35 @@ const VirtualCallRoom: React.FC = () => {
         {/* Remote Video (Full Screen) */}
         <div style={{ flex: 1, background: '#0a0a0a', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
           {!isConnected && (
-            <div style={{ color: '#444', textAlign: 'center' }}>
-              <div style={{ fontSize: '48px', marginBottom: '16px' }}>🎧</div>
-              <p>Waiting for connection...</p>
-              <p style={{ fontSize: '12px', color: '#666', maxWidth: '300px', margin: '0 auto', lineHeight: '1.5' }}>Share your Connection ID with your partner, or paste theirs in the top right to start the call.</p>
+            <div style={{ color: '#aaa', textAlign: 'center', background: 'rgba(255,255,255,0.03)', padding: '40px', borderRadius: '24px', border: '1px solid rgba(255,255,255,0.05)', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '20px' }}>
+              <div style={{ fontSize: '48px', marginBottom: '8px' }}>🎧</div>
+              <h2 style={{ margin: 0, color: '#fff' }}>Waiting for connection...</h2>
+              
+              <div style={{ background: 'rgba(0,0,0,0.5)', padding: '24px', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.1)', width: '100%', maxWidth: '400px' }}>
+                <span style={{ fontSize: '14px', color: '#888', display: 'block', marginBottom: '8px' }}>Your Connection ID:</span>
+                <div style={{ fontSize: '16px', fontWeight: 'bold', color: '#D35400', letterSpacing: '1px', background: 'rgba(211,84,0,0.1)', padding: '12px', borderRadius: '8px', marginBottom: '24px', wordBreak: 'break-all', userSelect: 'all' }}>
+                  {peerId || 'Generating...'}
+                </div>
+                
+                <span style={{ fontSize: '14px', color: '#888', display: 'block', marginBottom: '8px' }}>Enter Partner's ID to Connect:</span>
+                <div style={{ display: 'flex', gap: '10px' }}>
+                  <input 
+                    type="text" 
+                    placeholder="Paste ID here" 
+                    value={targetId} 
+                    onChange={(e) => setTargetId(e.target.value)}
+                    style={{ flex: 1, background: '#111', border: '1px solid #333', padding: '14px', borderRadius: '8px', color: '#fff', outline: 'none' }}
+                  />
+                  <button 
+                    onClick={handleCall}
+                    disabled={!targetId}
+                    style={{ padding: '14px 24px', background: targetId ? '#D35400' : '#444', color: '#fff', border: 'none', borderRadius: '8px', fontWeight: 'bold', cursor: targetId ? 'pointer' : 'not-allowed', transition: '0.2s' }}
+                    onMouseOver={e=>{if(targetId)e.currentTarget.style.background='#E65100'}} onMouseOut={e=>{if(targetId)e.currentTarget.style.background='#D35400'}}
+                  >
+                    Connect
+                  </button>
+                </div>
+              </div>
             </div>
           )}
           <video 
@@ -182,7 +193,13 @@ const VirtualCallRoom: React.FC = () => {
       </div>
 
       {/* Bottom Control Bar */}
-      <div style={{ height: '90px', background: 'rgba(0,0,0,0.8)', borderTop: '1px solid rgba(255,255,255,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '20px', padding: '0 40px' }}>
+      <div style={{ height: '90px', background: 'rgba(0,0,0,0.8)', borderTop: '1px solid rgba(255,255,255,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '20px', padding: '0 40px', position: 'relative' }}>
+        
+        <div style={{ position: 'absolute', left: '40px', color: '#666', fontSize: '13px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: isConnected ? '#00ff88' : '#ff4d4d' }} />
+          Room: {callId}
+        </div>
+
         <button 
           onClick={toggleAudio}
           style={{ width: '50px', height: '50px', borderRadius: '50%', background: isAudioMuted ? '#ff4d4d' : 'rgba(255,255,255,0.1)', border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', transition: '0.2s' }}

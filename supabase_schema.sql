@@ -17,6 +17,8 @@ CREATE TABLE IF NOT EXISTS public.profiles (
     full_name TEXT,
     avatar_url TEXT,
     cover_image TEXT,
+    homepage_image_url TEXT,
+    flipbook_images TEXT,
     bio TEXT,
     sub_price NUMERIC DEFAULT 4.99,
     whitelabel_id UUID REFERENCES public.whitelabel_configs(id),
@@ -123,6 +125,8 @@ CREATE TABLE IF NOT EXISTS public.bookings (
     date TEXT NOT NULL,
     time TEXT NOT NULL,
     price NUMERIC NOT NULL,
+    meeting_type TEXT DEFAULT 'virtual_video',
+    meeting_link TEXT,
     status TEXT DEFAULT 'confirmed',
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );

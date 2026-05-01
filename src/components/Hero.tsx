@@ -29,7 +29,7 @@ const Hero: React.FC = () => {
       
       {/* Sleek Mesh Overlays */}
       <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to right, rgba(2,2,2,0.95) 0%, rgba(2,2,2,0.4) 50%, rgba(2,2,2,0.95) 100%)', zIndex: 1 }} />
-      <div style={{ position: 'absolute', inset: 0, background: 'radial-gradient(ellipse at 50% -20%, rgba(184, 41, 234, 0.25), transparent 70%)', zIndex: 1, mixBlendMode: 'screen' }} />
+      <div style={{ position: 'absolute', inset: 0, background: 'radial-gradient(ellipse at 50% -20%, rgba(211, 84, 0, 0.25), transparent 70%)', zIndex: 1, mixBlendMode: 'screen' }} />
       <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to bottom, transparent 30%, #000000 100%)', zIndex: 1 }} />
       
       {/* Floating Orbital Glow */}
@@ -99,7 +99,7 @@ const Hero: React.FC = () => {
                 display: 'flex', alignItems: 'center', gap: '12px', padding: '18px 40px', 
                 fontSize: '14px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '2px',
                 background: 'var(--accent-primary)', color: '#ffffff', border: 'none', borderRadius: '14px',
-                cursor: 'pointer', boxShadow: '0 10px 30px rgba(184, 41, 234, 0.4)', transition: 'all 0.3s ease'
+                cursor: 'pointer', boxShadow: '0 10px 30px rgba(211, 84, 0, 0.4)', transition: 'all 0.3s ease'
               }}
             >
               <Play fill="white" size={18} />

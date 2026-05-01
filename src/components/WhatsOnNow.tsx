@@ -30,7 +30,7 @@ const ScheduleRow: React.FC<{ item: any, isActive: boolean, onClick: () => void 
       <div style={{ width: '60px', height: '60px', borderRadius: '8px', overflow: 'hidden', flexShrink: 0, position: 'relative' }}>
         <img src={item.image} alt={item.title} loading="lazy" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
         {isActive && (
-          <div style={{ position: 'absolute', inset: 0, background: 'rgba(229,9,20,0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <div style={{ position: 'absolute', inset: 0, background: 'rgba(211,84,0,0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <Play fill="white" size={20} />
           </div>
         )}

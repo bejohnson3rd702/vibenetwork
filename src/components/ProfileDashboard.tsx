@@ -30,10 +30,12 @@ const ProfileDashboard: React.FC<{ user: any }> = ({ user }) => {
   const [selectedGenre, setSelectedGenre] = useState('Electronic');
   const [avatarUrl, setAvatarUrl] = useState('');
   const [homepageImageUrl, setHomepageImageUrl] = useState('');
+  const [flipbookImages, setFlipbookImages] = useState('');
   const [currentBannerIndex, setCurrentBannerIndex] = useState(0);
+  const [currentBgIndex, setCurrentBgIndex] = useState(0);
   const [saving, setSaving] = useState(false);
-  const [activeTab, setActiveTab] = useState<'feed' | 'store' | 'live' | 'booking' | 'series' | 'courses' | 'wallet' | 'flipbook'>('feed');
-  const [walletBalance, setWalletBalance] = useState(() => (typeof window !== 'undefined' ? Number(localStorage.getItem('vibe_host_wallet') || 1250.00) : 1250.00));
+  const [activeTab, setActiveTab] = useState<'feed' | 'store' | 'live' | 'booking' | 'series' | 'courses' | 'wallet' | 'flipbook' | 'appearance'>('feed');
+  const [walletBalance, setWalletBalance] = useState(() => (typeof window !== 'undefined' ? Number(localStorage.getItem('vibe_host_wallet') || 0.00) : 0.00));
   const [paySubsWithWallet, setPaySubsWithWallet] = useState(true);
   const [isSubscribed, setIsSubscribed] = useState(false);
   const [products, setProducts] = useState<any[]>([]);
@@ -43,6 +45,7 @@ const ProfileDashboard: React.FC<{ user: any }> = ({ user }) => {
   // Real Booking State
   const [bookingPrice, setBookingPrice] = useState('49.00');
   const [bookingType, setBookingType] = useState('virtual');
+  const [virtualCallType, setVirtualCallType] = useState('video');
   const [availableSlots, setAvailableSlots] = useState<Record<number, string[]>>({
     16: ['10:00 AM', '1:30 PM', '4:00 PM'],
     18: ['6:30 PM', '8:00 PM'],
@@ -86,16 +89,28 @@ const ProfileDashboard: React.FC<{ user: any }> = ({ user }) => {
       setGuestSetup({ show: true, name: '', title: '' }); // Show Green Room Prompt
     }
   }, [location.search]);
+  // Auto-rotate flipbook banner
+  useEffect(() => {
+    if (!flipbookImages) return;
+    const images = flipbookImages.split(',').filter(Boolean);
+    if (images.length <= 1) return;
+    
+    const int = setInterval(() => {
+      setCurrentBannerIndex(prev => (prev + 1) % images.length);
+    }, 5000);
+    return () => clearInterval(int);
+  }, [flipbookImages]);
 
+  // Auto-rotate background banner
   useEffect(() => {
     if (!homepageImageUrl) return;
     const images = homepageImageUrl.split(',').filter(Boolean);
     if (images.length <= 1) return;
     
-    const interval = setInterval(() => {
-      setCurrentBannerIndex(prev => (prev + 1) % images.length);
-    }, 4000);
-    return () => clearInterval(interval);
+    const int = setInterval(() => {
+      setCurrentBgIndex(prev => (prev + 1) % images.length);
+    }, 8000);
+    return () => clearInterval(int);
   }, [homepageImageUrl]);
 
   useEffect(() => {
@@ -453,7 +468,8 @@ const ProfileDashboard: React.FC<{ user: any }> = ({ user }) => {
           'https://images.unsplash.com/photo-1598866594230-a7018322ca21?auto=format&fit=crop&q=80&w=1200'
         ];
         const pastaMockImages = Array.from({length: 20}).map((_, i) => baseMockImages[i % 5]).join(',');
-        setHomepageImageUrl(data.homepage_image_url || pastaMockImages);
+        setHomepageImageUrl(data.homepage_image_url || baseMockImages[0]);
+        setFlipbookImages(data.flipbook_images || pastaMockImages);
         if (data.genre) setSelectedGenre(data.genre);
         if (data.sub_price) setSubPrice(data.sub_price);
         
@@ -493,6 +509,28 @@ const ProfileDashboard: React.FC<{ user: any }> = ({ user }) => {
         if (coursesData && coursesData.length > 0) {
           setCourses(coursesData);
         } else {
+          setCourses([]);
+        }
+      } else if (isOwnProfile) {
+        // Auto-create profile if missing!
+        const { data: newProfile, error: insertError } = await supabase!.from('profiles').insert({
+           id: targetProfileId,
+           username: user?.email?.split('@')[0] || 'NewCreator',
+           full_name: 'New Creator',
+           bio: 'Welcome to my official channel!'
+        }).select().single();
+        
+        if (!insertError && newProfile) {        
+          setProfile(newProfile);
+          setBio(newProfile.bio);
+          setAvatarUrl('');
+          setHomepageImageUrl('');
+          setFlipbookImages('');
+          setSelectedGenre(newProfile.genre);
+          setSubPrice(4.99);
+          setProducts([]);
+          setFeed([]);
+          setSeriesList([]);
           setCourses([]);
         }
       }
@@ -552,7 +590,8 @@ const ProfileDashboard: React.FC<{ user: any }> = ({ user }) => {
       genre: selectedGenre,
       sub_price: subPrice,
       avatar_url: avatarUrl,
-      homepage_image_url: homepageImageUrl
+      homepage_image_url: homepageImageUrl,
+      flipbook_images: flipbookImages,
     }).eq('id', user.id);
     setSaving(false);
     alert('Profile successfully saved to network database!');
@@ -786,7 +825,7 @@ const ProfileDashboard: React.FC<{ user: any }> = ({ user }) => {
       {/* Immersive Hero Banner */}
       {!isGuestMode && (
         <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '400px', zIndex: 0 }}>
-          <div style={{ position: 'absolute', inset: 0, backgroundImage: `url(${(homepageImageUrl ? homepageImageUrl.split(',')[currentBannerIndex] : null) || profile?.avatar_url || 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&q=80&w=2500'})`, backgroundSize: 'cover', backgroundPosition: 'center', filter: 'brightness(0.6) saturate(1.2)', transition: 'background-image 1s ease-in-out' }} />
+          <div style={{ position: 'absolute', inset: 0, backgroundImage: `url(${(homepageImageUrl ? homepageImageUrl.split(',')[currentBgIndex] : null) || profile?.avatar_url || 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&q=80&w=2500'})`, backgroundSize: 'cover', backgroundPosition: 'center', filter: 'brightness(0.6) saturate(1.2)', transition: 'background-image 1s ease-in-out' }} />
           <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to bottom, transparent 30%, #050505 100%)' }} />
           {/* Dynamic Glowing Accent */}
           <div style={{ position: 'absolute', inset: 0, background: 'radial-gradient(circle at 50% 50%, rgba(255, 77, 133, 0.2), transparent 70%)', mixBlendMode: 'screen' }} />
@@ -969,6 +1008,18 @@ const ProfileDashboard: React.FC<{ user: any }> = ({ user }) => {
                   <span style={{ position: 'relative', zIndex: 1 }}>{tab.label}</span>
                 </button>
               ))}
+
+              {isOwnProfile && (
+                <button 
+                  onClick={() => setActiveTab('appearance')}
+                  style={{ position: 'relative', background: 'none', border: 'none', padding: '12px 24px', color: activeTab === 'appearance' ? '#D35400' : '#888', fontSize: '15px', fontWeight: 'bold', cursor: 'pointer', borderRadius: '100px', display: 'flex', alignItems: 'center', gap: '8px', transition: 'color 0.3s' }}
+                >
+                  {activeTab === 'appearance' && (
+                    <motion.div layoutId="activetab" style={{ position: 'absolute', inset: 0, background: 'rgba(211,84,0,0.1)', borderRadius: '100px', border: '1px solid rgba(211,84,0,0.4)' }} />
+                  )}
+                  <span style={{ position: 'relative', zIndex: 1, display: 'flex', alignItems: 'center', gap: '8px' }}><Wand size={16} /> Appearance</span>
+                </button>
+              )}
 
               {isOwnProfile && (
                 <button 
@@ -1637,9 +1688,20 @@ const ProfileDashboard: React.FC<{ user: any }> = ({ user }) => {
                          </button>
                       </div>
 
+                      {bookingType === 'virtual' && (
+                          <div style={{ display: 'flex', gap: '10px', marginBottom: '20px' }}>
+                             <button onClick={() => setVirtualCallType('video')} style={{ flex: 1, padding: '10px', background: virtualCallType === 'video' ? 'rgba(255,77,133,0.2)' : 'rgba(255,255,255,0.05)', border: '1px solid', borderColor: virtualCallType === 'video' ? '#ff4d85' : 'transparent', color: virtualCallType === 'video' ? '#fff' : '#aaa', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold', transition: 'all 0.2s', fontSize: '14px' }}>
+                                📹 Video Call
+                             </button>
+                             <button onClick={() => setVirtualCallType('audio')} style={{ flex: 1, padding: '10px', background: virtualCallType === 'audio' ? 'rgba(0,170,255,0.2)' : 'rgba(255,255,255,0.05)', border: '1px solid', borderColor: virtualCallType === 'audio' ? '#00aaff' : 'transparent', color: virtualCallType === 'audio' ? '#fff' : '#aaa', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold', transition: 'all 0.2s', fontSize: '14px' }}>
+                                🎙️ Audio Only
+                             </button>
+                          </div>
+                      )}
+
                       <input type="text" placeholder="Your Name" style={{ width: '100%', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', padding: '14px', borderRadius: '8px', color: '#fff', marginBottom: '12px', outline: 'none' }} />
                       <input type="text" placeholder="Purpose of Meeting (e.g. Mixing Advice)" style={{ width: '100%', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', padding: '14px', borderRadius: '8px', color: '#fff', marginBottom: '20px', outline: 'none' }} />
-                      <button onClick={() => { handleStripeCheckout(`${bookingType === 'virtual' ? 'Virtual Call' : 'Physical Meeting'} (April ${selectedDate} at ${selectedTime})`, Number(bookingPrice)); setSelectedTime(null); setSelectedDate(null); }} style={{ width: '100%', padding: '16px', background: 'linear-gradient(135deg, #ff4d85, #8A2BE2)', color: '#fff', border: 'none', borderRadius: '12px', fontWeight: 'bold', fontSize: '16px', cursor: 'pointer', boxShadow: '0 10px 20px rgba(138,43,226,0.3)', transition: 'transform 0.2s' }} onMouseOver={e=>e.currentTarget.style.transform='scale(1.02)'} onMouseOut={e=>e.currentTarget.style.transform='scale(1)'}>
+                      <button onClick={() => { handleStripeCheckout(`${bookingType === 'virtual' ? `1-on-1 Virtual Call (${virtualCallType === 'video' ? 'Video' : 'Audio'})` : 'Physical Meeting'} (April ${selectedDate} at ${selectedTime})`, Number(bookingPrice)); setSelectedTime(null); setSelectedDate(null); }} style={{ width: '100%', padding: '16px', background: 'linear-gradient(135deg, #ff4d85, #8A2BE2)', color: '#fff', border: 'none', borderRadius: '12px', fontWeight: 'bold', fontSize: '16px', cursor: 'pointer', boxShadow: '0 10px 20px rgba(138,43,226,0.3)', transition: 'transform 0.2s' }} onMouseOver={e=>e.currentTarget.style.transform='scale(1.02)'} onMouseOut={e=>e.currentTarget.style.transform='scale(1)'}>
                         Book Now (${bookingPrice})
                       </button>
                     </motion.div>
@@ -1845,51 +1907,56 @@ const ProfileDashboard: React.FC<{ user: any }> = ({ user }) => {
         {/* --- FLIP BOOK TAB --- */}
         {activeTab === 'flipbook' && (
           <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
-            <h2 style={{ fontSize: '24px', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '16px', margin: 0 }}>Flip Book Photos</h2>
+            <h2 style={{ fontSize: '24px', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '16px', margin: 0 }}>Media & Backgrounds</h2>
             
             {isOwnProfile && viewMode === 'edit' && (
-              <div style={{ background: 'rgba(0,0,0,0.4)', padding: '24px', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.08)' }}>
-                <h4 style={{ margin: '0 0 12px 0', fontSize: '15px', color: '#ff4d85', display: 'flex', alignItems: 'center', gap: '10px' }}>
-                  <ImageIcon size={18} /> Manage Flip Book Images
-                </h4>
-                <p style={{ color: '#aaa', fontSize: '13px', marginBottom: '16px', lineHeight: 1.5 }}>Upload custom images from your computer or use our AI Generator to explicitly build your Flip Book.</p>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
                 
-                {homepageImageUrl ? (
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                    <div style={{ position: 'relative', width: '100%', aspectRatio: '21/9', borderRadius: '12px', overflow: 'hidden', backgroundImage: `url("${homepageImageUrl.split(',')[currentBannerIndex]}")`, backgroundSize: 'cover', backgroundPosition: 'center', border: '1px solid rgba(255,255,255,0.1)', transition: 'background-image 0.5s' }}>
-                      <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(0,0,0,0.8), transparent)' }} />
-                      <button onClick={() => { setImageTarget('homepage'); setShowImageModal(true); }} style={{ position: 'absolute', bottom: 16, right: 16, padding: '10px 20px', background: 'rgba(255,255,255,0.15)', backdropFilter: 'blur(8px)', color: 'white', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.2)', cursor: 'pointer', fontSize: '13px', fontWeight: 'bold', transition: 'background 0.2s' }} onMouseOver={e=>e.currentTarget.style.background='rgba(255,255,255,0.25)'} onMouseOut={e=>e.currentTarget.style.background='rgba(255,255,255,0.15)'}>
-                        + Add Image to Flip Book
-                      </button>
-                      <button onClick={() => {
-                        const arr = homepageImageUrl.split(',').filter(Boolean);
-                        arr.splice(currentBannerIndex, 1);
-                        setHomepageImageUrl(arr.join(','));
-                        setCurrentBannerIndex(0);
-                      }} style={{ position: 'absolute', top: 16, right: 16, padding: '8px 16px', background: 'rgba(255,0,0,0.5)', backdropFilter: 'blur(8px)', color: 'white', borderRadius: '12px', border: 'none', cursor: 'pointer', fontSize: '12px', fontWeight: 'bold' }}>
-                        Remove This Image
-                      </button>
+                {/* Flip Book Images Upload */}
+                <div style={{ background: 'rgba(0,0,0,0.4)', padding: '24px', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.08)' }}>
+                  <h4 style={{ margin: '0 0 12px 0', fontSize: '15px', color: '#ff4d85', display: 'flex', alignItems: 'center', gap: '10px' }}>
+                    <ImageIcon size={18} /> Manage Flip Book Images
+                  </h4>
+                  <p style={{ color: '#aaa', fontSize: '13px', marginBottom: '16px', lineHeight: 1.5 }}>Upload custom images from your computer or use our AI Generator to explicitly build your Flip Book.</p>
+                  
+                  {flipbookImages ? (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                      <div style={{ position: 'relative', width: '100%', aspectRatio: '21/9', borderRadius: '12px', overflow: 'hidden', backgroundImage: `url("${flipbookImages.split(',')[currentBannerIndex]}")`, backgroundSize: 'cover', backgroundPosition: 'center', border: '1px solid rgba(255,255,255,0.1)', transition: 'background-image 0.5s' }}>
+                        <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(0,0,0,0.8), transparent)' }} />
+                        <button onClick={() => { setImageTarget('flipbook'); setShowImageModal(true); }} style={{ position: 'absolute', bottom: 16, right: 16, padding: '10px 20px', background: 'rgba(255,255,255,0.15)', backdropFilter: 'blur(8px)', color: 'white', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.2)', cursor: 'pointer', fontSize: '13px', fontWeight: 'bold', transition: 'background 0.2s' }} onMouseOver={e=>e.currentTarget.style.background='rgba(255,255,255,0.25)'} onMouseOut={e=>e.currentTarget.style.background='rgba(255,255,255,0.15)'}>
+                          + Add Image to Flip Book
+                        </button>
+                        <button onClick={() => {
+                          const arr = flipbookImages.split(',').filter(Boolean);
+                          arr.splice(currentBannerIndex, 1);
+                          setFlipbookImages(arr.join(','));
+                          setCurrentBannerIndex(0);
+                        }} style={{ position: 'absolute', top: 16, right: 16, padding: '8px 16px', background: 'rgba(255,0,0,0.5)', backdropFilter: 'blur(8px)', color: 'white', borderRadius: '12px', border: 'none', cursor: 'pointer', fontSize: '12px', fontWeight: 'bold' }}>
+                          Remove This Image
+                        </button>
+                      </div>
+                      <div style={{ display: 'flex', gap: '10px', overflowX: 'auto', paddingBottom: '8px' }}>
+                        {flipbookImages.split(',').filter(Boolean).map((imgUrl, idx) => (
+                          <div key={idx} onClick={() => setCurrentBannerIndex(idx)} style={{ width: '100px', height: '56px', borderRadius: '8px', backgroundImage: `url("${imgUrl}")`, backgroundSize: 'cover', backgroundPosition: 'center', cursor: 'pointer', border: currentBannerIndex === idx ? '2px solid #ff4d85' : '2px solid transparent', flexShrink: 0, opacity: currentBannerIndex === idx ? 1 : 0.5, transition: '0.2s' }} />
+                        ))}
+                      </div>
                     </div>
-                    <div style={{ display: 'flex', gap: '10px', overflowX: 'auto', paddingBottom: '8px' }}>
-                      {homepageImageUrl.split(',').filter(Boolean).map((imgUrl, idx) => (
-                        <div key={idx} onClick={() => setCurrentBannerIndex(idx)} style={{ width: '100px', height: '56px', borderRadius: '8px', backgroundImage: `url("${imgUrl}")`, backgroundSize: 'cover', backgroundPosition: 'center', cursor: 'pointer', border: currentBannerIndex === idx ? '2px solid #ff4d85' : '2px solid transparent', flexShrink: 0, opacity: currentBannerIndex === idx ? 1 : 0.5, transition: '0.2s' }} />
-                      ))}
-                    </div>
-                  </div>
-                ) : (
-                  <button onClick={() => { setImageTarget('homepage'); setShowImageModal(true); }} style={{ width: '100%', padding: '40px', background: 'rgba(255,255,255,0.03)', border: '2px dashed rgba(255,255,255,0.15)', color: '#fff', fontSize: '15px', borderRadius: '16px', cursor: 'pointer', transition: 'all 0.3s', fontWeight: 'bold' }} onMouseOver={e=>e.currentTarget.style.background='rgba(255,255,255,0.08)'} onMouseOut={e=>e.currentTarget.style.background='rgba(255,255,255,0.03)'}>
-                    + Select or Generate Flip Book Image
-                  </button>
-                )}
+                  ) : (
+                    <button onClick={() => { setImageTarget('flipbook'); setShowImageModal(true); }} style={{ width: '100%', padding: '40px', background: 'rgba(255,255,255,0.03)', border: '2px dashed rgba(255,255,255,0.15)', color: '#fff', fontSize: '15px', borderRadius: '16px', cursor: 'pointer', transition: 'all 0.3s', fontWeight: 'bold' }} onMouseOver={e=>e.currentTarget.style.background='rgba(255,255,255,0.08)'} onMouseOut={e=>e.currentTarget.style.background='rgba(255,255,255,0.03)'}>
+                      + Select or Generate Flip Book Image
+                    </button>
+                  )}
+                </div>
+
               </div>
             )}
 
             {(!isOwnProfile || viewMode === 'public') && (
-              homepageImageUrl ? (
+              flipbookImages ? (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                  <div style={{ position: 'relative', width: '100%', aspectRatio: '21/9', borderRadius: '24px', overflow: 'hidden', backgroundImage: `url("${homepageImageUrl.split(',')[currentBannerIndex]}")`, backgroundSize: 'cover', backgroundPosition: 'center', border: '1px solid rgba(255,255,255,0.1)', transition: 'background-image 0.5s' }} />
+                  <div style={{ position: 'relative', width: '100%', aspectRatio: '21/9', borderRadius: '24px', overflow: 'hidden', backgroundImage: `url("${flipbookImages.split(',')[currentBannerIndex]}")`, backgroundSize: 'cover', backgroundPosition: 'center', border: '1px solid rgba(255,255,255,0.1)', transition: 'background-image 0.5s' }} />
                   <div style={{ display: 'flex', gap: '12px', overflowX: 'auto', paddingBottom: '12px', justifyContent: 'center' }}>
-                    {homepageImageUrl.split(',').filter(Boolean).map((imgUrl, idx) => (
+                    {flipbookImages.split(',').filter(Boolean).map((imgUrl, idx) => (
                       <div key={idx} onClick={() => setCurrentBannerIndex(idx)} style={{ width: '120px', height: '68px', borderRadius: '12px', backgroundImage: `url("${imgUrl}")`, backgroundSize: 'cover', backgroundPosition: 'center', cursor: 'pointer', border: currentBannerIndex === idx ? '2px solid #ff4d85' : '2px solid transparent', flexShrink: 0, opacity: currentBannerIndex === idx ? 1 : 0.5, transition: '0.2s' }} />
                     ))}
                   </div>
@@ -1903,6 +1970,52 @@ const ProfileDashboard: React.FC<{ user: any }> = ({ user }) => {
           </motion.div>
         )}
 
+
+        {/* --- APPEARANCE TAB --- */}
+        {activeTab === 'appearance' && isOwnProfile && viewMode === 'edit' && (
+          <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+            <h2 style={{ fontSize: '24px', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '16px', margin: 0 }}>Channel Appearance</h2>
+            
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+              
+              {/* Background Images Upload */}
+              <div style={{ background: 'rgba(0,0,0,0.4)', padding: '24px', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.08)' }}>
+                <h4 style={{ margin: '0 0 12px 0', fontSize: '15px', color: '#D35400', display: 'flex', alignItems: 'center', gap: '10px' }}>
+                  <ImageIcon size={18} /> Manage Channel Backgrounds
+                </h4>
+                <p style={{ color: '#aaa', fontSize: '13px', marginBottom: '16px', lineHeight: 1.5 }}>Upload images to cycle through in the background of your channel.</p>
+                
+                {homepageImageUrl ? (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                    <div style={{ position: 'relative', width: '100%', aspectRatio: '21/9', borderRadius: '12px', overflow: 'hidden', backgroundImage: `url("${homepageImageUrl.split(',')[currentBgIndex]}")`, backgroundSize: 'cover', backgroundPosition: 'center', border: '1px solid rgba(255,255,255,0.1)', transition: 'background-image 0.5s' }}>
+                      <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(0,0,0,0.8), transparent)' }} />
+                      <button onClick={() => { setImageTarget('homepage'); setShowImageModal(true); }} style={{ position: 'absolute', bottom: 16, right: 16, padding: '10px 20px', background: 'rgba(255,255,255,0.15)', backdropFilter: 'blur(8px)', color: 'white', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.2)', cursor: 'pointer', fontSize: '13px', fontWeight: 'bold', transition: 'background 0.2s' }} onMouseOver={e=>e.currentTarget.style.background='rgba(255,255,255,0.25)'} onMouseOut={e=>e.currentTarget.style.background='rgba(255,255,255,0.15)'}>
+                        + Add Background
+                      </button>
+                      <button onClick={() => {
+                        const arr = homepageImageUrl.split(',').filter(Boolean);
+                        arr.splice(currentBgIndex, 1);
+                        setHomepageImageUrl(arr.join(','));
+                        setCurrentBgIndex(0);
+                      }} style={{ position: 'absolute', top: 16, right: 16, padding: '8px 16px', background: 'rgba(255,0,0,0.5)', backdropFilter: 'blur(8px)', color: 'white', borderRadius: '12px', border: 'none', cursor: 'pointer', fontSize: '12px', fontWeight: 'bold' }}>
+                        Remove Image
+                      </button>
+                    </div>
+                    <div style={{ display: 'flex', gap: '10px', overflowX: 'auto', paddingBottom: '8px' }}>
+                      {homepageImageUrl.split(',').filter(Boolean).map((imgUrl, idx) => (
+                        <div key={idx} onClick={() => setCurrentBgIndex(idx)} style={{ width: '100px', height: '56px', borderRadius: '8px', backgroundImage: `url("${imgUrl}")`, backgroundSize: 'cover', backgroundPosition: 'center', cursor: 'pointer', border: currentBgIndex === idx ? '2px solid #D35400' : '2px solid transparent', flexShrink: 0, opacity: currentBgIndex === idx ? 1 : 0.5, transition: '0.2s' }} />
+                      ))}
+                    </div>
+                  </div>
+                ) : (
+                  <button onClick={() => { setImageTarget('homepage'); setShowImageModal(true); }} style={{ width: '100%', padding: '40px', background: 'rgba(255,255,255,0.03)', border: '2px dashed rgba(255,255,255,0.15)', color: '#fff', fontSize: '15px', borderRadius: '16px', cursor: 'pointer', transition: 'all 0.3s', fontWeight: 'bold' }} onMouseOver={e=>e.currentTarget.style.background='rgba(255,255,255,0.08)'} onMouseOut={e=>e.currentTarget.style.background='rgba(255,255,255,0.03)'}>
+                    + Select or Generate Background Image
+                  </button>
+                )}
+              </div>
+            </div>
+          </motion.div>
+        )}
 
         {/* --- WALLET SUBSCRIPTION & EARNINGS TAB --- */}
         {activeTab === 'wallet' && isOwnProfile && viewMode === 'edit' && (
@@ -1956,11 +2069,7 @@ const ProfileDashboard: React.FC<{ user: any }> = ({ user }) => {
                       amount: `+$${Number(tx.gross).toFixed(2)}`,
                       type: 'Dynamic Tip',
                       color: '#FFD700'
-                    })),
-                    { id: 1, title: 'Subscriber Payment (John Doe)', amount: '+$4.99', type: 'Subscription', color: '#00ff88' },
-                    { id: 2, title: 'Store Sale (White-Glove Onboarding)', amount: '+$499.00', type: 'Sale', color: '#0055ff' },
-                    { id: 3, title: 'Remote Broadcast Tip', amount: '+$50.00', type: 'Tip', color: '#FFD700' },
-                    { id: 4, title: 'Subscriber Payment (Alice V.)', amount: '+$4.99', type: 'Subscription', color: '#00ff88' }
+                    }))
                   ].map(tx => (
                     <div key={tx.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingBottom: '16px', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
                       <div>
@@ -1977,10 +2086,7 @@ const ProfileDashboard: React.FC<{ user: any }> = ({ user }) => {
                 <h3 style={{ margin: '0 0 20px 0', fontSize: '20px', color: '#fff', display: 'flex', alignItems: 'center', gap: '8px' }}><ArrowUpRight size={20} color="#ff4d85"/> Payable Subscriptions</h3>
                 
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                  {[
-                    { id: 1, creator: 'Acme SaaS Engineering', amount: '-$14.99/mo', due: 'Due in 3 days', status: paySubsWithWallet ? 'Covered by Wallet' : 'Card ending in 4242' },
-                    { id: 2, creator: 'Global Network Board', amount: '-$9.99/mo', due: 'Due next week', status: paySubsWithWallet ? 'Covered by Wallet' : 'Card ending in 4242' },
-                  ].map(sub => (
+                  {[].length > 0 ? [].map((sub: any) => (
                     <div key={sub.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '16px', background: 'rgba(0,0,0,0.4)', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.02)' }}>
                       <div>
                         <div style={{ fontWeight: 'bold', color: '#fff', fontSize: '15px' }}>{sub.creator}</div>
@@ -1990,7 +2096,9 @@ const ProfileDashboard: React.FC<{ user: any }> = ({ user }) => {
                       </div>
                       <div style={{ color: '#fff', fontWeight: 'bold', fontSize: '16px' }}>{sub.amount}</div>
                     </div>
-                  ))}
+                  )) : (
+                    <div style={{ color: '#888', fontStyle: 'italic', padding: '16px 0' }}>No active payable subscriptions.</div>
+                  )}
                 </div>
               </div>
 
