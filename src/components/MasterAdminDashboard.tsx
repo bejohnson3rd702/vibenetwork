@@ -44,7 +44,7 @@ export default function MasterAdminDashboard() {
      async function fetchGlobalMetrics() {
         const { count: usersCount } = await supabase!.from('profiles').select('*', { count: 'exact' });
         const { data: configs } = await supabase!.from('whitelabel_configs').select('*');
-        const { data: ledgerTx } = await supabase!.from('ledger').select('*, creator:profiles(*)').order('created_at', { ascending: false }).limit(50);
+        const { data: ledgerTx } = await supabase!.from('ledger').select('*, profiles(*)').order('created_at', { ascending: false }).limit(50);
         
         setWhitelabelsList(configs || []);
         if (ledgerTx) setLedgerData(ledgerTx);
@@ -371,9 +371,9 @@ export default function MasterAdminDashboard() {
                     <thead>
                       <tr style={{ color: '#888', borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
                         <th style={{ padding: '16px 12px' }}>Network ID</th>
-                        <th style={{ padding: '16px 12px' }}>Email</th>
+                        <th style={{ padding: '16px 12px' }}>Profile Name</th>
                         <th style={{ padding: '16px 12px' }}>Status</th>
-                        <th style={{ padding: '16px 12px' }}>Role</th>
+                        <th style={{ padding: '16px 12px' }}>Network Tier</th>
                         <th style={{ padding: '16px 12px' }}>Platform Fee %</th>
                         <th style={{ padding: '16px 12px' }}>Vibe Indexing</th>
                       </tr>
@@ -384,11 +384,11 @@ export default function MasterAdminDashboard() {
                       ) : usersList.map((user, i) => (
                         <tr key={user.id} style={{ borderBottom: i !== usersList.length - 1 ? '1px solid rgba(255,255,255,0.05)' : 'none' }}>
                           <td style={{ padding: '16px 12px', fontFamily: 'monospace', color: '#0055ff', fontSize: '12px' }}>{user.id.split('-')[0]}</td>
-                          <td style={{ padding: '16px 12px', fontWeight: 'bold' }}>{user.email || 'Unassigned User'}</td>
+                          <td style={{ padding: '16px 12px', fontWeight: 'bold' }}>{user.username || user.full_name || 'Unassigned Profile'}</td>
                           <td style={{ padding: '16px 12px' }}>
                             <span style={{ background: 'rgba(0,255,136,0.1)', color: '#00ff88', padding: '4px 8px', borderRadius: '6px', fontSize: '11px', fontWeight: 'bold' }}>ACTIVE</span>
                           </td>
-                          <td style={{ padding: '16px 12px', color: '#ccc', fontSize: '14px', textTransform: 'capitalize' }}>{user.role || 'Member'}</td>
+                          <td style={{ padding: '16px 12px', color: user.whitelabel_id ? '#0055ff' : '#ccc', fontSize: '14px', fontWeight: 'bold' }}>{user.whitelabel_id ? 'Enterprise Tenant' : 'Platform Creator'}</td>
                           <td style={{ padding: '16px 12px' }}>
                              <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
                                <input 
@@ -525,7 +525,7 @@ export default function MasterAdminDashboard() {
                         ...ledgerData.map(tx => ({
                           time: new Date(tx.created_at).toLocaleDateString(),
                           source: tx.product_title || 'Network Purchase',
-                          origin: tx.creator?.whitelabel_id ? 'Whitelabel' : 'Direct Vibe',
+                          origin: tx.profiles?.whitelabel_id ? 'Whitelabel' : 'Direct Vibe',
                           gross: Number(tx.amount)
                         })),
                         { time: 'Just now', source: 'Acme Corp Systems', origin: 'Whitelabel', gross: 49.99 },
