@@ -127,18 +127,18 @@ function App() {
         if (localTenant) {
            isTenant = true;
            loadedTenantId = forceTenant;
-           setWlConfig({
+            setWlConfig({
               id: localTenant.id,
               name: localTenant.name || 'Vibe B2B Enterprise',
               domain: localTenant.domain || 'vibenetwork.tv',
-              accent: localTenant.accent || '#0055ff',
-              bg: localTenant.bg || 'var(--bg-color)',
-              heroCopy: localTenant.heroCopy,
-              btnPrimary: localTenant.btnPrimary,
-              sliderCount: localTenant.sliderCount || 4,
-              customSections: localTenant.customSections || 'Platform Architecture,Success Stories',
-              heroImage: localTenant.heroImage,
-              logoImage: localTenant.logoImage || localTenant.logo || null
+              accent: localTenant.theme?.accent || localTenant.accent || '#0055ff',
+              bg: localTenant.theme?.bg || localTenant.bg || 'var(--bg-color)',
+              heroCopy: localTenant.theme?.heroCopy || localTenant.heroCopy,
+              btnPrimary: localTenant.theme?.btnPrimary || localTenant.btnPrimary,
+              sliderCount: localTenant.theme?.sliderCount || localTenant.sliderCount || 4,
+              customSections: localTenant.theme?.customSections || localTenant.customSections || 'Platform Architecture,Success Stories',
+              heroImage: localTenant.theme?.heroImage || localTenant.heroImage,
+              logoImage: localTenant.logo || localTenant.theme?.logoImage || localTenant.logoImage || null
            });
         } else {
            query = query.eq('id', forceTenant).limit(1);
@@ -158,14 +158,14 @@ function App() {
              id: dbConf.id,
              name: dbConf.name || 'Vibe B2B Enterprise',
              domain: dbConf.domain || 'vibenetwork.tv',
-             accent: dbConf.accent || '#0055ff',
-             bg: dbConf.bg || 'var(--bg-color)',
-             heroCopy: dbConf.hero_copy,
-             btnPrimary: dbConf.btn_primary,
-             sliderCount: dbConf.slider_count || 4,
-             customSections: dbConf.custom_sections || 'Platform Architecture,Success Stories',
-             heroImage: dbConf.hero_image,
-             logoImage: dbConf.logo_url || dbConf.navbar_logo || dbConf.logo_image || null
+             accent: dbConf.theme?.accent || '#0055ff',
+             bg: dbConf.theme?.bg || 'var(--bg-color)',
+             heroCopy: dbConf.theme?.heroCopy || 'The premiere destination for high quality digital content.',
+             btnPrimary: dbConf.theme?.btnPrimary || 'Explore Content',
+             sliderCount: dbConf.theme?.sliderCount || 4,
+             customSections: dbConf.theme?.customSections || 'Platform Architecture,Success Stories',
+             heroImage: dbConf.theme?.heroImage || null,
+             logoImage: dbConf.logo || dbConf.theme?.logoImage || null
           });
         }
       }

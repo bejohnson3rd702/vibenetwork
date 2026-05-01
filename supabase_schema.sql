@@ -24,6 +24,7 @@ CREATE TABLE IF NOT EXISTS public.profiles (
     sub_price NUMERIC DEFAULT 4.99,
     stripe_account_id TEXT,
     platform_fee_percentage NUMERIC DEFAULT 15.00,
+    is_admin BOOLEAN DEFAULT FALSE,
     whitelabel_id UUID REFERENCES public.whitelabel_configs(id),
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
@@ -101,6 +102,26 @@ CREATE POLICY "Allow users to delete own products" ON public.products FOR DELETE
 -- CREATE POLICY "Testing Insert All" ON public.products FOR INSERT WITH CHECK (true);
 -- CREATE POLICY "Testing Insert All" ON public.posts FOR INSERT WITH CHECK (true);
 
+-- Admin Global Access Bypasses (Requires is_admin = true on the user's profile)
+CREATE POLICY "Admins can update any profile" ON public.profiles FOR UPDATE USING (
+    (SELECT is_admin FROM public.profiles WHERE id = auth.uid()) = true
+);
+CREATE POLICY "Admins can insert categories" ON public.categories FOR INSERT WITH CHECK (
+    (SELECT is_admin FROM public.profiles WHERE id = auth.uid()) = true
+);
+CREATE POLICY "Admins can insert videos" ON public.videos FOR INSERT WITH CHECK (
+    (SELECT is_admin FROM public.profiles WHERE id = auth.uid()) = true
+);
+CREATE POLICY "Admins can update videos" ON public.videos FOR UPDATE USING (
+    (SELECT is_admin FROM public.profiles WHERE id = auth.uid()) = true
+);
+CREATE POLICY "Admins can insert whitelabel configs" ON public.whitelabel_configs FOR INSERT WITH CHECK (
+    (SELECT is_admin FROM public.profiles WHERE id = auth.uid()) = true
+);
+CREATE POLICY "Admins can update whitelabel configs" ON public.whitelabel_configs FOR UPDATE USING (
+    (SELECT is_admin FROM public.profiles WHERE id = auth.uid()) = true
+);
+
 -- 7. Series
 CREATE TABLE IF NOT EXISTS public.series (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -154,6 +175,9 @@ CREATE TABLE IF NOT EXISTS public.ledger (
 );
 ALTER TABLE public.ledger ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "Allow users to view own ledger" ON public.ledger FOR SELECT USING (auth.uid() = buyer_id OR auth.uid() = creator_id);
+CREATE POLICY "Admins can view global ledger" ON public.ledger FOR SELECT USING (
+    (SELECT is_admin FROM public.profiles WHERE id = auth.uid()) = true
+);
 -- Insert via webhook only (Service Role Key bypasses RLS)
 
 CREATE POLICY "Allow public read access for series" ON public.series FOR SELECT USING (true);

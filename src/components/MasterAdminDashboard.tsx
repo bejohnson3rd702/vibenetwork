@@ -302,15 +302,16 @@ export default function MasterAdminDashboard() {
                     const heroCopy = (document.getElementById('global-hero-copy') as HTMLTextAreaElement).value;
                     if(!name) return alert('Platform Name is required');
                     
-                    const { data: existing } = await supabase!.from('whitelabel_configs').select('id').limit(1);
+                    const { data: existing } = await supabase!.from('whitelabel_configs').select('id, theme').limit(1);
                     const updatePayload: any = { name };
-                    // If theme doesn't exist we'll merge
-                    const themeObj = { heroImage: heroImage || '', heroCopy: heroCopy || '' };
                     
                     if (existing && existing.length > 0) {
+                      const currentTheme = existing[0].theme || {};
+                      const themeObj = { ...currentTheme, heroImage: heroImage || currentTheme.heroImage, heroCopy: heroCopy || currentTheme.heroCopy };
                       await supabase!.from('whitelabel_configs').update({ name, theme: themeObj }).eq('id', existing[0].id);
                     } else {
-                      await supabase!.from('whitelabel_configs').insert([{ name, theme: themeObj }]);
+                      const fallbackTheme = { heroImage: heroImage || '', heroCopy: heroCopy || '' };
+                      await supabase!.from('whitelabel_configs').insert([{ name, theme: fallbackTheme }]);
                     }
                     alert('Global Brand Settings Updated! Refresh the homepage to see changes.');
                  }} style={{ marginTop: '20px', background: '#0055ff', color: '#fff', border: 'none', padding: '16px 24px', borderRadius: '8px', fontWeight: 'bold', cursor: 'pointer' }}>Save Brand Settings</button>
