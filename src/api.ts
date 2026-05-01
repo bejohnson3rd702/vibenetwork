@@ -105,17 +105,20 @@ export async function getCategoriesWithVideos(tenantId?: string) {
       
       if (catVideos.length > 0) {
         addedCustom = true;
-        categoriesToReturn.push({
-          title: cat.title,
-          aspectRatio: '16/9',
-          items: catVideos.map((vid: any) => ({
-            id: vid.id,
-            title: vid.title,
-            image: vid.image_url,
-            tags: vid.tags || [],
-            videoUrl: vid.video_url
-          }))
-        });
+        // Prevent duplicate sliders if the database has duplicate categories
+        if (!categoriesToReturn.find(c => c.title === cat.title)) {
+          categoriesToReturn.push({
+            title: cat.title,
+            aspectRatio: '16/9',
+            items: catVideos.map((vid: any) => ({
+              id: vid.id,
+              title: vid.title,
+              image: vid.image_url,
+              tags: vid.tags || [],
+              videoUrl: vid.video_url
+            }))
+          });
+        }
       }
     });
   }
