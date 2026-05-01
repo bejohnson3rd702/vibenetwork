@@ -6,6 +6,7 @@ import LiveChat from './LiveChat';
 import { useNavigate, useParams, useLocation } from 'react-router-dom';
 import Peer from 'peerjs';
 import { loadStripe } from '@stripe/stripe-js';
+import { useWhiteLabel } from '../context/WhiteLabelContext';
 
 const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLIC_KEY || 'pk_test_placeholder');
 
@@ -14,6 +15,7 @@ const ProfileDashboard: React.FC<{ user: any }> = ({ user }) => {
   const { creatorId } = useParams();
   const location = useLocation();
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const { wlConfig } = useWhiteLabel();
   
   const targetProfileId = creatorId || user?.id; // Determine which profile to load
   const isOwnProfile = user && targetProfileId === user.id;
@@ -518,7 +520,8 @@ const ProfileDashboard: React.FC<{ user: any }> = ({ user }) => {
            id: targetProfileId,
            username: user?.email?.split('@')[0] || 'NewCreator',
            full_name: 'New Creator',
-           bio: 'Welcome to my official channel!'
+           bio: 'Welcome to my official channel!',
+           whitelabel_id: wlConfig?.domain === 'vibenetwork.tv' ? null : wlConfig?.id
         }).select().single();
         
         if (!insertError && newProfile) {        

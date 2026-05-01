@@ -12,7 +12,7 @@ interface AuthModalProps {
 }
 
 const AuthModal: React.FC<AuthModalProps> = ({ onClose, onSuccess, defaultIsLogin = true, defaultRole = 'viewer' }) => {
-  const { setWlConfig: setGlobalWlDeploy } = useWhiteLabel();
+  const { wlConfig: activeTenantConfig, setWlConfig: setGlobalWlDeploy } = useWhiteLabel();
   const [isLogin, setIsLogin] = useState(defaultIsLogin);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -48,10 +48,47 @@ const AuthModal: React.FC<AuthModalProps> = ({ onClose, onSuccess, defaultIsLogi
         email,
         password,
       });
-      if (error) setErrorMSG(error.message);
-      else if (data.user) {
-        onSuccess(data.user);
-        onClose();
+      if (error) {
+        setErrorMSG(error.message);
+      } else if (data.user) {
+         // Strict Tenancy Isolation Check
+         const { data: profile } = await supabase!.from('profiles').select('whitelabel_id, is_admin').eq('id', data.user.id).single();
+         const isMaster = activeTenantConfig?.domain === 'vibenetwork.tv';
+         
+         let allowed = false;
+         
+         if (!profile) {
+            allowed = true; // New account, profile not initialized yet.
+         } else if (profile.is_admin) {
+            allowed = true; // Global Admins can log in anywhere.
+         } else {
+             // 1. Are they the explicit owner of this Tenant?
+             if (activeTenantConfig?.id) {
+                 const { data: tenantConfig } = await supabase!.from('whitelabel_configs').select('owner_id').eq('id', activeTenantConfig.id).single();
+                 if (tenantConfig && tenantConfig.owner_id === data.user.id) {
+                     allowed = true;
+                 }
+             }
+             
+             // 2. If not the owner, does their profile strictly bind to this Tenant?
+             if (!allowed) {
+                 if (isMaster && !profile.whitelabel_id) {
+                     allowed = true;
+                 } else if (!isMaster && profile.whitelabel_id === activeTenantConfig?.id) {
+                     allowed = true;
+                 }
+             }
+         }
+
+         if (!allowed) {
+             await supabase!.auth.signOut();
+             setErrorMSG('Access Denied: Your account is restricted to a different network domain.');
+             setLoading(false);
+             return;
+         }
+
+         onSuccess(data.user);
+         onClose();
       }
     } else {
       const { data, error } = await supabase!.auth.signUp({
@@ -61,6 +98,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ onClose, onSuccess, defaultIsLogi
           data: {
             username,
             role,
+            whitelabel_id: activeTenantConfig?.domain === 'vibenetwork.tv' ? null : activeTenantConfig?.id
           }
         }
       });
