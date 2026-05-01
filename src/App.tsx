@@ -29,6 +29,7 @@ function App() {
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [authDefaults, setAuthDefaults] = useState({ isLogin: true, role: 'viewer' as 'viewer' | 'influencer' | 'business' });
   const [wlConfig, setWlConfig] = useState<any>(null);
+  const [isTenantMode, setIsTenantMode] = useState(false);
   const [showAdminPanel, setShowAdminPanel] = useState(false);
   const [showEndUserAuthModal, setShowEndUserAuthModal] = useState(false);
 
@@ -67,12 +68,22 @@ function App() {
 
          // Try persisting to DB
          const { data: wlData, error: wlError } = await supabase!.from('whitelabel_configs').upsert({
-           id: newId,
+           id: newId.includes('test_wl') ? undefined : newId, // allow DB to gen_random_uuid if test
            name: e.detail.name,
            domain: e.detail.domain,
-           accent: e.detail.accent,
-           hero_copy: e.detail.heroCopy,
-           logo: e.detail.logoImage
+           logo: e.detail.logoImage,
+           theme: {
+              accent: e.detail.accent,
+              heroCopy: e.detail.heroCopy,
+              bg: e.detail.bg,
+              btnPrimary: e.detail.btnPrimary,
+              customSections: e.detail.customSections,
+              sliderCount: e.detail.sliderCount,
+              logoImage: e.detail.logoImage,
+              contactEmail: e.detail.contactEmail,
+              contactPhone: e.detail.contactPhone,
+              contactAddress: e.detail.contactAddress
+           }
          }).select().single();
 
          if (wlError) {
@@ -126,8 +137,9 @@ function App() {
         
         if (localTenant) {
            isTenant = true;
+           setIsTenantMode(true);
            loadedTenantId = forceTenant;
-            setWlConfig({
+           setWlConfig({
               id: localTenant.id,
               name: localTenant.name || 'Vibe B2B Enterprise',
               domain: localTenant.domain || 'vibenetwork.tv',
@@ -138,15 +150,34 @@ function App() {
               sliderCount: localTenant.theme?.sliderCount || localTenant.sliderCount || 4,
               customSections: localTenant.theme?.customSections || localTenant.customSections || 'Platform Architecture,Success Stories',
               heroImage: localTenant.theme?.heroImage || localTenant.heroImage,
-              logoImage: localTenant.logo || localTenant.theme?.logoImage || localTenant.logoImage || null
+              logoImage: localTenant.logo || localTenant.theme?.logoImage || localTenant.logoImage || null,
+              contactEmail: localTenant.theme?.contactEmail || localTenant.contactEmail,
+              contactPhone: localTenant.theme?.contactPhone || localTenant.contactPhone,
+              contactAddress: localTenant.theme?.contactAddress || localTenant.contactAddress
            });
         } else {
            query = query.eq('id', forceTenant).limit(1);
            isTenant = true;
+           setIsTenantMode(true);
         }
-      } else if (hostname !== 'localhost' && hostname !== '127.0.0.1') {
+      } else if (hostname !== 'localhost' && hostname !== '127.0.0.1' && hostname !== 'vibenetwork.tv') {
         query = query.eq('domain', hostname).limit(1);
         isTenant = true;
+        setIsTenantMode(true);
+      } else {
+        // Master Platform Mode (localhost or vibenetwork.tv)
+        // We fetch the master config so the Hero component can use it, but we DON'T set isTenantMode=true
+        const { data: masterData } = await supabase!.from('whitelabel_configs').select('*').eq('domain', 'vibenetwork.tv').limit(1);
+        if (masterData && masterData.length > 0) {
+           const mConf = masterData[0];
+           setWlConfig({
+              id: mConf.id,
+              name: mConf.name || 'Vibe Network',
+              domain: 'vibenetwork.tv',
+              heroImage: mConf.theme?.heroImage || null,
+              heroCopy: mConf.theme?.heroCopy || null
+           });
+        }
       }
 
       if (isTenant && !loadedTenantId) {
@@ -165,7 +196,10 @@ function App() {
              sliderCount: dbConf.theme?.sliderCount || 4,
              customSections: dbConf.theme?.customSections || 'Platform Architecture,Success Stories',
              heroImage: dbConf.theme?.heroImage || null,
-             logoImage: dbConf.logo || dbConf.theme?.logoImage || null
+             logoImage: dbConf.logo || dbConf.theme?.logoImage || null,
+             contactEmail: dbConf.theme?.contactEmail,
+             contactPhone: dbConf.theme?.contactPhone,
+             contactAddress: dbConf.theme?.contactAddress
           });
         }
       }
@@ -184,7 +218,7 @@ function App() {
     }
   }, [wlConfig]);
 
-  if (wlConfig) {
+  if (isTenantMode && wlConfig) {
     return (
       <WhiteLabelContext.Provider value={{ wlConfig, setWlConfig }}>
         <Router>
@@ -216,43 +250,45 @@ function App() {
   }
 
   return (
-    <Router>
-      <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', overflowX: 'hidden' }}>
-        <AnimatePresence>
-          {showAuthModal && (
-            <AuthModal 
-              onClose={() => setShowAuthModal(false)} 
-              onSuccess={(u) => setUser(u)} 
-              defaultIsLogin={authDefaults.isLogin}
-              defaultRole={authDefaults.role}
-            />
-          )}
-        </AnimatePresence>
-
-        <Routes>
-          <Route path="/master-admin" element={<MasterAdminDashboard />} />
-          {/* <Route path="/director" element={<DirectorStudio />} /> */}
-          <Route path="*" element={
-            <>
-              <Navbar 
-                user={user} 
-                onLoginClick={() => setShowAuthModal(true)} 
-                onAdminClick={() => window.location.href = '/master-admin'}
+    <WhiteLabelContext.Provider value={{ wlConfig, setWlConfig }}>
+      <Router>
+        <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', overflowX: 'hidden' }}>
+          <AnimatePresence>
+            {showAuthModal && (
+              <AuthModal 
+                onClose={() => setShowAuthModal(false)} 
+                onSuccess={(u) => setUser(u)} 
+                defaultIsLogin={authDefaults.isLogin}
+                defaultRole={authDefaults.role}
               />
-              <Routes>
-                <Route path="/" element={<Home categories={categories} activeVideo={activeVideo} setActiveVideo={setActiveVideo} />} />
-                <Route path="/about" element={<MoreInfo />} />
-                <Route path="/more-info" element={<MoreInfo />} />
-                <Route path="/contact" element={<Contact />} />
-                <Route path="/profile" element={<ProfileDashboard user={user} />} />
-                <Route path="/profile/:creatorId" element={<ProfileDashboard user={user} />} />
-                <Route path="/call/:callId" element={<VirtualCallRoom />} />
-              </Routes>
-            </>
-          } />
-        </Routes>
-      </div>
-    </Router>
+            )}
+          </AnimatePresence>
+
+          <Routes>
+            <Route path="/master-admin" element={<MasterAdminDashboard />} />
+            {/* <Route path="/director" element={<DirectorStudio />} /> */}
+            <Route path="*" element={
+              <>
+                <Navbar 
+                  user={user} 
+                  onLoginClick={() => setShowAuthModal(true)} 
+                  onAdminClick={() => window.location.href = '/master-admin'}
+                />
+                <Routes>
+                  <Route path="/" element={<Home categories={categories} activeVideo={activeVideo} setActiveVideo={setActiveVideo} />} />
+                  <Route path="/about" element={<MoreInfo />} />
+                  <Route path="/more-info" element={<MoreInfo />} />
+                  <Route path="/contact" element={<Contact />} />
+                  <Route path="/profile" element={<ProfileDashboard user={user} />} />
+                  <Route path="/profile/:creatorId" element={<ProfileDashboard user={user} />} />
+                  <Route path="/call/:callId" element={<VirtualCallRoom />} />
+                </Routes>
+              </>
+            } />
+          </Routes>
+        </div>
+      </Router>
+    </WhiteLabelContext.Provider>
   );
 }
 
