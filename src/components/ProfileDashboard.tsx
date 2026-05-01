@@ -318,7 +318,7 @@ const ProfileDashboard: React.FC<{ user: any }> = ({ user }) => {
      try {
        // In a production app, this endpoint would be your Supabase Edge Function
        // that creates the Stripe Checkout Session securely using the Stripe Secret Key.
-       const response = await fetch('https://your-project.supabase.co/functions/v1/create-checkout', {
+       const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/create-checkout`, {
          method: 'POST',
          headers: {
            'Content-Type': 'application/json',
