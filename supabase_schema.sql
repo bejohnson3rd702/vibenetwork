@@ -42,6 +42,8 @@ CREATE TABLE IF NOT EXISTS public.videos (
     video_url TEXT NOT NULL,
     image_url TEXT,
     tags TEXT[],
+    price NUMERIC DEFAULT 0.00,
+    preview_duration INTEGER DEFAULT 90,
     category_id UUID REFERENCES public.categories(id),
     creator_id UUID REFERENCES public.profiles(id),
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
@@ -137,6 +139,21 @@ CREATE TABLE IF NOT EXISTS public.bookings (
 ALTER TABLE public.series ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.episodes ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.bookings ENABLE ROW LEVEL SECURITY;
+
+-- 10. Ledger (Global Accounting)
+CREATE TABLE IF NOT EXISTS public.ledger (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    amount NUMERIC NOT NULL,
+    buyer_id UUID REFERENCES auth.users(id),
+    creator_id UUID REFERENCES public.profiles(id),
+    product_title TEXT,
+    transaction_type TEXT DEFAULT 'PPV',
+    stripe_payment_intent TEXT,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+ALTER TABLE public.ledger ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Allow users to view own ledger" ON public.ledger FOR SELECT USING (auth.uid() = buyer_id OR auth.uid() = creator_id);
+-- Insert via webhook only (Service Role Key bypasses RLS)
 
 CREATE POLICY "Allow public read access for series" ON public.series FOR SELECT USING (true);
 CREATE POLICY "Allow public read access for episodes" ON public.episodes FOR SELECT USING (true);

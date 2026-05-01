@@ -23,6 +23,7 @@ export default function MasterAdminDashboard() {
   const [whitelabelsList, setWhitelabelsList] = useState<any[]>([]);
   const [usersList, setUsersList] = useState<any[]>([]);
   const [categories, setCategories] = useState<any[]>([]);
+  const [ledgerData, setLedgerData] = useState<any[]>([]);
   const [isRestarting, setIsRestarting] = useState(false);
 
   async function fetchCategories() {
@@ -43,8 +44,10 @@ export default function MasterAdminDashboard() {
      async function fetchGlobalMetrics() {
         const { count: usersCount } = await supabase!.from('profiles').select('*', { count: 'exact' });
         const { data: configs } = await supabase!.from('whitelabel_configs').select('*');
+        const { data: ledgerTx } = await supabase!.from('ledger').select('*, creator:profiles(*)').order('created_at', { ascending: false }).limit(50);
         
         setWhitelabelsList(configs || []);
+        if (ledgerTx) setLedgerData(ledgerTx);
         fetchUsers();
         fetchCategories();
         
@@ -519,7 +522,12 @@ export default function MasterAdminDashboard() {
                     </thead>
                     <tbody>
                       {[
-                        ...(typeof window !== 'undefined' ? JSON.parse(localStorage.getItem('vibe_network_ledger') || '[]') : []),
+                        ...ledgerData.map(tx => ({
+                          time: new Date(tx.created_at).toLocaleDateString(),
+                          source: tx.product_title || 'Network Purchase',
+                          origin: tx.creator?.whitelabel_id ? 'Whitelabel' : 'Direct Vibe',
+                          gross: Number(tx.amount)
+                        })),
                         { time: 'Just now', source: 'Acme Corp Systems', origin: 'Whitelabel', gross: 49.99 },
                         { time: '2 min ago', source: 'Nexus Tech Global', origin: 'Whitelabel', gross: 9.99 },
                         { time: '14 min ago', source: 'DJ Tech Live', origin: 'Direct Vibe', gross: 14.99 },

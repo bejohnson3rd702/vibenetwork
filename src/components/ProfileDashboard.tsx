@@ -334,23 +334,24 @@ const ProfileDashboard: React.FC<{ user: any }> = ({ user }) => {
      try {
        // In a production app, this endpoint would be your Supabase Edge Function
        // that creates the Stripe Checkout Session securely using the Stripe Secret Key.
-       const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/create-checkout`, {
+       const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/stripe-checkout`, {
          method: 'POST',
          headers: {
            'Content-Type': 'application/json',
+           'Authorization': `Bearer ${(await supabase.auth.getSession()).data.session?.access_token}`
          },
          body: JSON.stringify({
-           itemName,
-           amount: amount * 100, // Stripe expects cents
-           creatorId: targetProfileId // To attribute the sale
+           productTitle: itemName,
+           amount: amount, // Do not multiply by 100, edge function handles it
+           creatorId: targetProfileId,
+           returnUrl: window.location.href
          })
        });
        
        const data = await response.json().catch(() => null);
        
-       if (data && data.sessionId) {
-         const stripe = await stripePromise;
-         await stripe?.redirectToCheckout({ sessionId: data.sessionId });
+       if (data && data.url) {
+         window.location.href = data.url;
        } else {
          // Fallback for development before Edge Function is deployed
          alert(`[STRIPE READY]\n\nThe frontend is wired up! To complete the payment for:\n${itemName} ($${amount.toFixed(2)})\n\nyou just need to deploy the Supabase Edge Function to return a sessionId.`);

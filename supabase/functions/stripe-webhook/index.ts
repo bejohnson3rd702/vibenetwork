@@ -29,8 +29,14 @@ serve(async (req) => {
 
       console.log(`Payment Success! $${paymentIntent.amount / 100} for ${metadata.product_title}`);
 
-      // Future: Log to your database Ledger here
-      // await supabase.from('ledger').insert({ ... })
+      await supabase.from('ledger').insert({
+        amount: paymentIntent.amount / 100,
+        buyer_id: metadata.buyer_id,
+        creator_id: metadata.creator_id,
+        product_title: metadata.product_title,
+        transaction_type: 'PPV',
+        stripe_payment_intent: paymentIntent.id
+      });
     }
 
     return new Response(JSON.stringify({ received: true }), { status: 200 });
