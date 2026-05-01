@@ -37,6 +37,15 @@ const ProfileDashboard: React.FC<{ user: any }> = ({ user }) => {
   const [selectedDate, setSelectedDate] = useState<number | null>(null);
   const [selectedTime, setSelectedTime] = useState<string | null>(null);
   
+  // Real Booking State
+  const [bookingPrice, setBookingPrice] = useState('49.00');
+  const [availableSlots, setAvailableSlots] = useState<Record<number, string[]>>({
+    16: ['10:00 AM', '1:30 PM', '4:00 PM'],
+    18: ['6:30 PM', '8:00 PM'],
+    22: ['10:00 AM', '2:00 PM', '4:30 PM']
+  });
+  const [newTimeInput, setNewTimeInput] = useState('');
+  
   // Live Stream State
   const [isPlayingLive, setIsPlayingLive] = useState(false);
   const [isPubliclyLive, setIsPubliclyLive] = useState(false);
@@ -302,19 +311,8 @@ const ProfileDashboard: React.FC<{ user: any }> = ({ user }) => {
      };
   }, [isPlayingLive, streamSource, presenterMode, guests.length]);
 
-   const processPurchaseSplit = (amount: number, type: string) => {
-     // Mock backend split: Creator gets 80%, Platform gets 20%
-     const hostCut = amount * 0.8;
-     const platformCut = amount * 0.2;
-     
-     // Update local creator wallet mock
-     const newBalance = walletBalance + hostCut;
-     setWalletBalance(newBalance);
-     if (typeof window !== 'undefined') {
-       localStorage.setItem('vibe_host_wallet', String(newBalance));
-     }
-
-     alert(`[Backend Split Simulation - ${type}]\n\nTotal Paid: $${amount.toFixed(2)}\nCreator Cut (80%): $${hostCut.toFixed(2)}\nPlatform Cut (20%): $${platformCut.toFixed(2)}\n\nCreator wallet has been updated!`);
+   const handleStripeCheckout = (itemName: string, amount: number) => {
+     alert(`[STRIPE CHECKOUT PENDING]\n\nRedirecting to Stripe to purchase:\n${itemName} - $${amount.toFixed(2)}\n\n(Connect your Stripe API keys in the backend to enable live payments)`);
    };
 
    const handleUnlockLive = () => {
@@ -323,8 +321,7 @@ const ProfileDashboard: React.FC<{ user: any }> = ({ user }) => {
        setHasPaidForLive(true);
        return;
      }
-     processPurchaseSplit(amount, 'Live Stream PPV Unlock');
-     setHasPaidForLive(true);
+     handleStripeCheckout('Live Stream PPV Unlock', amount);
    };
 
    const handleSubscribe = () => {
@@ -333,8 +330,7 @@ const ProfileDashboard: React.FC<{ user: any }> = ({ user }) => {
        setIsSubscribed(true);
        return;
      }
-     processPurchaseSplit(amount, 'Monthly Subscription');
-     setIsSubscribed(true);
+     handleStripeCheckout('Monthly Subscription', amount);
    };
   
   // Scheduler State & DnD Handlers
@@ -384,13 +380,18 @@ const ProfileDashboard: React.FC<{ user: any }> = ({ user }) => {
 
   // Store internal state MUST be above early returns!
   const [newProduct, setNewProduct] = useState({ title: '', price: '19.99', type: 'digital', image_url: '' });
+  const [courses, setCourses] = useState<any[]>([]);
+  const [newCourse, setNewCourse] = useState({ title: '', price: '', modules: '', hours: '', img: '' });
   const [uploadingProductImg, setUploadingProductImg] = useState(false);
 
-  // Mock Feed Data
-  const [feed, setFeed] = useState([
-    { id: 1, title: 'Live from the Global Tech Alliance Summit', locked: true, likes: 304, date: '2 hours ago', img: 'https://image.pollinations.ai/prompt/business%20executives%20shaking%20hands%20modern%20office' },
-    { id: 2, title: 'Scaling Your SaaS Infrastructure', locked: false, likes: 112, date: '1 day ago', img: 'https://image.pollinations.ai/prompt/modern%20corporate%20server%20room%20glowing%20blue%20lights' },
-  ]);
+  // Real Feed Data
+  const [feed, setFeed] = useState<any[]>([]);
+
+  // Series Data
+  const [seriesList, setSeriesList] = useState<any[]>([]);
+  const [newSeries, setNewSeries] = useState({ title: '', description: '', price: '', img: '' });
+  const [newEpisode, setNewEpisode] = useState({ title: '', description: '', length: '', price: '' });
+  const [activeSeriesIdForEp, setActiveSeriesIdForEp] = useState<string | null>(null);
 
   useEffect(() => {
     if (!targetProfileId) {
@@ -413,7 +414,15 @@ const ProfileDashboard: React.FC<{ user: any }> = ({ user }) => {
         setProfile(data);
         setBio(data.bio || 'Welcome to my official channel!');
         setAvatarUrl(data.avatar_url || '');
-        setHomepageImageUrl(data.homepage_image_url || '');
+        const baseMockImages = [
+          'https://images.unsplash.com/photo-1473093295043-cdd812d0e601?auto=format&fit=crop&q=80&w=1200',
+          'https://images.unsplash.com/photo-1551183053-bf91a1d81141?auto=format&fit=crop&q=80&w=1200',
+          'https://images.unsplash.com/photo-1563379926898-05f4575a45d8?auto=format&fit=crop&q=80&w=1200',
+          'https://images.unsplash.com/photo-1608897013039-887f214b985c?auto=format&fit=crop&q=80&w=1200',
+          'https://images.unsplash.com/photo-1598866594230-a7018322ca21?auto=format&fit=crop&q=80&w=1200'
+        ];
+        const pastaMockImages = Array.from({length: 20}).map((_, i) => baseMockImages[i % 5]).join(',');
+        setHomepageImageUrl(data.homepage_image_url || pastaMockImages);
         if (data.genre) setSelectedGenre(data.genre);
         if (data.sub_price) setSubPrice(data.sub_price);
         
@@ -422,14 +431,22 @@ const ProfileDashboard: React.FC<{ user: any }> = ({ user }) => {
         if (prodData && prodData.length > 0) {
           setProducts(prodData);
         } else {
-          // Provide 10 premium mock products to instantly showcase the storefront UI
-          setProducts([
-            { id: 'm1', title: 'Priority API Access (1M Calls)', price: '299.99', type: 'digital', image_url: 'https://image.pollinations.ai/prompt/hologram%20api%20keys' },
-            { id: 'm2', title: 'White-glove Onboarding Call', price: '499.00', type: 'digital', image_url: 'https://image.pollinations.ai/prompt/business%20zoom%20call' },
-            { id: 'm3', title: 'Dedicated Support Account Manager', price: '1499.00', type: 'digital', image_url: 'https://image.pollinations.ai/prompt/customer%20support%20agent%20headset' },
-            { id: 'm4', title: 'Custom Analytics Dashboard Add-on', price: '500.00', type: 'digital', image_url: 'https://image.pollinations.ai/prompt/data%20analytics%20dashboard' },
-            { id: 'm5', title: 'Enterprise SLA Contract Upgrades', price: '2500.00', type: 'digital', image_url: 'https://image.pollinations.ai/prompt/legal%20contract%20signature' },
-          ]);
+          setProducts([]);
+        }
+        
+        // Load Feed Posts
+        const { data: postsData } = await supabase!.from('posts').select('*').eq('creator_id', targetProfileId).order('created_at', { ascending: false });
+        if (postsData && postsData.length > 0) {
+          setFeed(postsData.map((p: any) => ({
+            id: p.id,
+            title: p.content || p.title,
+            locked: p.is_locked || false,
+            likes: p.likes || 0,
+            date: p.created_at ? new Date(p.created_at).toLocaleDateString() : 'Just now',
+            img: p.image_url || null
+          })));
+        } else {
+          setFeed([]);
         }
       }
       setLoading(false);
@@ -510,13 +527,54 @@ const ProfileDashboard: React.FC<{ user: any }> = ({ user }) => {
     }
   };
 
+  const handleAddSeries = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newSeries.title || !newSeries.price) return;
+    const sId = 's_' + Date.now();
+    setSeriesList([{ ...newSeries, id: sId, episodes: [] }, ...seriesList]);
+    setNewSeries({ title: '', description: '', price: '', img: '' });
+  };
+
+  const handleAddEpisode = (seriesId: string) => {
+    if (!newEpisode.title) return;
+    setSeriesList(prev => prev.map(s => {
+      if (s.id === seriesId) {
+        return {
+          ...s,
+          episodes: [...s.episodes, { ...newEpisode, id: 'e_' + Date.now() }]
+        };
+      }
+      return s;
+    }));
+    setNewEpisode({ title: '', description: '', length: '', price: '' });
+    setActiveSeriesIdForEp(null);
+  };
+
+  const handleAddCourse = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newCourse.title || !newCourse.price) return;
+    setSaving(true);
+    setTimeout(() => {
+      setCourses(prev => [...prev, {
+        id: 'c_' + Date.now(),
+        title: newCourse.title,
+        price: parseFloat(newCourse.price),
+        modules: parseInt(newCourse.modules || '10'),
+        hours: newCourse.hours || '5.0',
+        img: newCourse.img || 'https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?w=400&q=80',
+        progress: 0
+      }]);
+      setNewCourse({ title: '', price: '', modules: '', hours: '', img: '' });
+      setSaving(false);
+    }, 500);
+  };
+
   const handleAddProduct = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newProduct.title || !newProduct.price) return;
     
-    // Incase the user hasn't run the products.sql script yet, we mock add it locally too
     setSaving(true);
-    const mockProduct = {
+    const productInsert = {
       id: Math.random().toString(),
       creator_id: profile.id,
       title: newProduct.title,
@@ -526,30 +584,48 @@ const ProfileDashboard: React.FC<{ user: any }> = ({ user }) => {
     };
 
     try {
-      const { data, error } = await supabase!.from('products').insert([mockProduct]).select();
+      const { data, error } = await supabase!.from('products').insert([productInsert]).select();
       if (!error && data) {
         setProducts(prev => [...prev, data[0]]);
       } else {
-        // Fallback for demo purposes if SQL isn't run
-        setProducts(prev => [...prev, mockProduct]);
+        // Fallback if table doesn't exist yet
+        setProducts(prev => [...prev, productInsert]);
       }
     } catch {
-      setProducts(prev => [...prev, mockProduct]);
+      setProducts(prev => [...prev, productInsert]);
     }
 
     setNewProduct({ title: '', price: '19.99', type: 'digital', image_url: '' });
     setSaving(false);
   };
 
-  const handlePostSubmit = (e: React.FormEvent) => {
+  const handlePostSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!postTitle.trim()) return;
     
-    // Add to top of mock feed
-    setFeed([{ 
-      id: Date.now(), title: postTitle, locked: isLocked, likes: 0, date: 'Just now', 
-      img: 'https://vibenetwork.tv/wp-content/uploads/2026/02/mukap-vibe-tv-networkk_11zon.png'
-    }, ...feed]);
+    const newPost = {
+      creator_id: targetProfileId,
+      content: postTitle,
+      is_locked: isLocked,
+      likes: 0,
+      image_url: 'https://vibenetwork.tv/wp-content/uploads/2026/02/mukap-vibe-tv-networkk_11zon.png'
+    };
+    
+    // Add to supabase
+    const { data } = await supabase!.from('posts').insert([newPost]).select();
+    
+    if (data && data[0]) {
+      setFeed([{ 
+        id: data[0].id, title: data[0].content || postTitle, locked: data[0].is_locked || isLocked, likes: 0, date: 'Just now', 
+        img: data[0].image_url || newPost.image_url
+      }, ...feed]);
+    } else {
+      // Fallback local state if table doesn't exist yet
+      setFeed([{ 
+        id: Date.now(), title: postTitle, locked: isLocked, likes: 0, date: 'Just now', 
+        img: newPost.image_url
+      }, ...feed]);
+    }
     setPostTitle('');
     alert(requestFeature ? 'Post Submitted & Feature Requested to Admins!' : 'Content Published Successfully!');
   };
@@ -720,8 +796,12 @@ const ProfileDashboard: React.FC<{ user: any }> = ({ user }) => {
                             <button 
                               onClick={() => {
                                 if (!user) { alert('Please log in to subscribe.'); return; }
-                                if (!isSubscribed) alert(`Successfully subscribed using your Network Wallet! Auto-pay of $${subPrice}/mo has been linked.`);
-                                setIsSubscribed(!isSubscribed);
+                                if (!isSubscribed) {
+                                  handleStripeCheckout('Monthly Subscription', Number(subPrice));
+                                  setIsSubscribed(true);
+                                } else {
+                                  setIsSubscribed(false);
+                                }
                               }}
                               style={{ 
                                 background: isSubscribed ? 'rgba(255, 215, 0, 0.1)' : 'linear-gradient(135deg, #FFD700, #FFA500)', 
@@ -897,8 +977,8 @@ const ProfileDashboard: React.FC<{ user: any }> = ({ user }) => {
                     <button 
                       onClick={() => {
                         if (!user) { alert('Please log in to subscribe.'); return; }
+                        handleStripeCheckout('Monthly Subscription', Number(subPrice));
                         setIsSubscribed(true);
-                        alert(`Successfully subscribed using your Network Wallet! Auto-pay of $${subPrice}/mo has been linked.`);
                       }}
                       style={{ padding: '12px 30px', background: '#FFD700', border: 'none', borderRadius: '20px', color: '#000', fontWeight: 'bold', cursor: 'pointer', fontSize: '16px' }}
                     >
@@ -1314,8 +1394,8 @@ const ProfileDashboard: React.FC<{ user: any }> = ({ user }) => {
                 <button 
                   onClick={() => {
                     if (!user) { alert('Please log in to subscribe.'); return; }
+                    handleStripeCheckout('Monthly Subscription', Number(subPrice));
                     setIsSubscribed(true);
-                    alert(`Successfully subscribed using your Network Wallet! Auto-pay of $${subPrice}/mo has been linked.`);
                   }} 
                   style={{ padding: '16px 40px', background: 'linear-gradient(135deg, #ff4d85, #8A2BE2)', color: '#fff', border: 'none', borderRadius: '30px', fontWeight: 'bold', fontSize: '18px', cursor: 'pointer', boxShadow: '0 10px 20px rgba(255,77,133,0.3)', transition: 'transform 0.2s' }} 
                   onMouseOver={e=>e.currentTarget.style.transform='scale(1.05)'} 
@@ -1335,6 +1415,19 @@ const ProfileDashboard: React.FC<{ user: any }> = ({ user }) => {
               <h3 style={{ margin: '0 0 10px 0', fontSize: '28px' }}>Book {profile?.username || 'this Creator'}</h3>
               <p style={{ color: '#aaa', margin: '0 0 40px 0', fontSize: '16px' }}>Schedule a 1-on-1 session, studio consultation, or collaboration meeting.</p>
               
+              {isOwnProfile && viewMode === 'edit' && (
+                <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} style={{ background: 'rgba(255,255,255,0.03)', padding: '24px', borderRadius: '24px', border: '1px dashed rgba(255,255,255,0.15)', marginBottom: '30px' }}>
+                  <h3 style={{ margin: '0 0 16px 0', fontSize: '18px', display: 'flex', alignItems: 'center', gap: '8px' }}>Creator Booking Settings</h3>
+                  <div style={{ display: 'flex', gap: '16px', alignItems: 'center', flexWrap: 'wrap' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px', overflow: 'hidden' }}>
+                      <span style={{ padding: '14px', color: '#888', background: 'rgba(255,255,255,0.02)', borderRight: '1px solid rgba(255,255,255,0.1)' }}>1-on-1 Price ($)</span>
+                      <input type="number" step="0.01" value={bookingPrice} onChange={e => setBookingPrice(e.target.value)} style={{ background: 'transparent', border: 'none', padding: '14px', color: '#fff', outline: 'none', fontSize: '15px', width: '120px' }} />
+                    </div>
+                    <p style={{ color: '#aaa', fontSize: '14px', margin: 0, flex: 1 }}>Select dates on the calendar below to add or remove your available timeslots.</p>
+                  </div>
+                </motion.div>
+              )}
+
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '40px' }}>
                 {/* Calendar View */}
                 <div>
@@ -1347,19 +1440,25 @@ const ProfileDashboard: React.FC<{ user: any }> = ({ user }) => {
                     <div /> <div /> <div /> 
                     {Array.from({length: 30}).map((_, i) => {
                       const date = i + 1;
-                      const isPast = date < 15; // mock past dates
+                      const isPast = date < 15;
+                      const isAvailable = availableSlots[date] && availableSlots[date].length > 0;
                       const isSelected = selectedDate === date;
+                      
+                      // If standard user, disable if no slots or past
+                      // If creator editing, they can select any future date to add slots
+                      const disabled = (viewMode !== 'edit' && (!isAvailable || isPast)) || (viewMode === 'edit' && isPast);
+
                       return (
                         <button 
                           key={i} 
-                          disabled={isPast}
-                          onClick={() => setSelectedDate(date)}
+                          disabled={disabled}
+                          onClick={() => { setSelectedDate(date); setSelectedTime(null); }}
                           style={{ 
                             aspectRatio: '1', borderRadius: '12px', border: '1px solid',
-                            borderColor: isSelected ? '#ff4d85' : 'rgba(255,255,255,0.05)',
-                            background: isSelected ? 'rgba(255,77,133,0.1)' : 'rgba(0,0,0,0.3)',
-                            color: isPast ? '#444' : '#fff',
-                            cursor: isPast ? 'not-allowed' : 'pointer',
+                            borderColor: isSelected ? '#ff4d85' : (isAvailable && !isPast) ? 'rgba(0, 255, 136, 0.3)' : 'rgba(255,255,255,0.05)',
+                            background: isSelected ? 'rgba(255,77,133,0.1)' : (isAvailable && !isPast) ? 'rgba(0, 255, 136, 0.05)' : 'rgba(0,0,0,0.3)',
+                            color: disabled ? '#444' : '#fff',
+                            cursor: disabled ? 'not-allowed' : 'pointer',
                             fontSize: '15px', fontWeight: 'bold', transition: 'all 0.2s',
                           }}
                         >
@@ -1370,33 +1469,82 @@ const ProfileDashboard: React.FC<{ user: any }> = ({ user }) => {
                   </div>
                 </div>
 
-                {/* Time Selection */}
+                {/* Time Selection & Editing */}
                 <div style={{ opacity: selectedDate ? 1 : 0.4, pointerEvents: selectedDate ? 'auto' : 'none', transition: 'all 0.3s' }}>
                   <h4 style={{ margin: '0 0 20px 0', color: '#fff', fontSize: '18px' }}>2. Available Times</h4>
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
-                    {['10:00 AM', '1:30 PM', '4:00 PM', '6:30 PM', '8:00 PM', '10:30 PM'].map(time => (
-                      <button 
-                        key={time}
-                        onClick={() => setSelectedTime(time)}
-                        style={{ padding: '16px', borderRadius: '12px', border: '1px solid', borderColor: selectedTime === time ? '#8A2BE2' : 'rgba(255,255,255,0.05)', background: selectedTime === time ? 'rgba(138,43,226,0.1)' : 'rgba(0,0,0,0.4)', color: '#fff', fontSize: '15px', fontWeight: 'bold', cursor: 'pointer', transition: 'all 0.2s' }}
-                      >
-                        {time}
-                      </button>
-                    ))}
-                  </div>
+                  
+                  {isOwnProfile && viewMode === 'edit' && selectedDate ? (
+                    <div style={{ marginBottom: '24px', padding: '16px', background: 'rgba(255,255,255,0.02)', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.05)' }}>
+                      <h5 style={{ margin: '0 0 12px 0', fontSize: '14px', color: '#aaa' }}>Add Timeslot for April {selectedDate}</h5>
+                      <div style={{ display: 'flex', gap: '8px' }}>
+                        <input type="time" value={newTimeInput} onChange={e => setNewTimeInput(e.target.value)} style={{ flex: 1, background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.1)', padding: '10px', borderRadius: '8px', color: '#fff', outline: 'none' }} />
+                        <button 
+                          onClick={() => {
+                            if (!newTimeInput) return;
+                            // Convert 24h to 12h AM/PM
+                            const [h, m] = newTimeInput.split(':');
+                            let hour = parseInt(h);
+                            const ampm = hour >= 12 ? 'PM' : 'AM';
+                            hour = hour % 12 || 12;
+                            const timeString = `${hour}:${m} ${ampm}`;
+                            
+                            setAvailableSlots(prev => {
+                              const current = prev[selectedDate] || [];
+                              if (!current.includes(timeString)) return { ...prev, [selectedDate]: [...current, timeString].sort() };
+                              return prev;
+                            });
+                            setNewTimeInput('');
+                          }}
+                          style={{ padding: '10px 20px', background: 'rgba(255,255,255,0.1)', color: '#fff', border: 'none', borderRadius: '8px', fontWeight: 'bold', cursor: 'pointer' }}
+                        >
+                          Add
+                        </button>
+                      </div>
+                    </div>
+                  ) : null}
 
-                  {/* Payment/Confirmation section */}
-                  {selectedTime && (
+                  {selectedDate && availableSlots[selectedDate]?.length > 0 ? (
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                      {availableSlots[selectedDate].map(time => (
+                        <div key={time} style={{ display: 'flex', gap: '4px' }}>
+                          <button 
+                            onClick={() => setSelectedTime(time)}
+                            style={{ flex: 1, padding: '16px', borderRadius: '12px', border: '1px solid', borderColor: selectedTime === time ? '#8A2BE2' : 'rgba(255,255,255,0.05)', background: selectedTime === time ? 'rgba(138,43,226,0.1)' : 'rgba(0,0,0,0.4)', color: '#fff', fontSize: '15px', fontWeight: 'bold', cursor: 'pointer', transition: 'all 0.2s' }}
+                          >
+                            {time}
+                          </button>
+                          {isOwnProfile && viewMode === 'edit' && (
+                            <button 
+                              onClick={() => {
+                                setAvailableSlots(prev => ({
+                                  ...prev,
+                                  [selectedDate]: prev[selectedDate].filter(t => t !== time)
+                                }));
+                                if (selectedTime === time) setSelectedTime(null);
+                              }}
+                              style={{ background: 'rgba(255,0,0,0.1)', color: '#ff4d4d', border: '1px solid rgba(255,0,0,0.2)', borderRadius: '12px', padding: '0 12px', cursor: 'pointer' }}
+                            >
+                              X
+                            </button>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <p style={{ color: '#666', fontStyle: 'italic' }}>No times available on this date.</p>
+                  )}
+
+                  {/* Payment/Confirmation section (Only for Guests) */}
+                  {selectedTime && (!isOwnProfile || viewMode !== 'edit') && (
                     <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} style={{ marginTop: '30px', background: 'rgba(0,0,0,0.4)', padding: '24px', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.05)' }}>
                       <h4 style={{ margin: '0 0 16px 0', color: '#fff', fontSize: '18px' }}>3. Confirm Booking</h4>
                       <input type="text" placeholder="Your Name" style={{ width: '100%', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', padding: '14px', borderRadius: '8px', color: '#fff', marginBottom: '12px', outline: 'none' }} />
                       <input type="text" placeholder="Purpose of Meeting (e.g. Mixing Advice)" style={{ width: '100%', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', padding: '14px', borderRadius: '8px', color: '#fff', marginBottom: '20px', outline: 'none' }} />
-                      <button onClick={() => { alert('Booking Confirmed for $' + 49 + '! Confirmation sent to your email.'); setSelectedTime(null); setSelectedDate(null); }} style={{ width: '100%', padding: '16px', background: 'linear-gradient(135deg, #ff4d85, #8A2BE2)', color: '#fff', border: 'none', borderRadius: '12px', fontWeight: 'bold', fontSize: '16px', cursor: 'pointer', boxShadow: '0 10px 20px rgba(138,43,226,0.3)', transition: 'transform 0.2s' }} onMouseOver={e=>e.currentTarget.style.transform='scale(1.02)'} onMouseOut={e=>e.currentTarget.style.transform='scale(1)'}>
-                        Book Now ($49.00)
+                      <button onClick={() => { handleStripeCheckout(`1-on-1 Session (April ${selectedDate} at ${selectedTime})`, Number(bookingPrice)); setSelectedTime(null); setSelectedDate(null); }} style={{ width: '100%', padding: '16px', background: 'linear-gradient(135deg, #ff4d85, #8A2BE2)', color: '#fff', border: 'none', borderRadius: '12px', fontWeight: 'bold', fontSize: '16px', cursor: 'pointer', boxShadow: '0 10px 20px rgba(138,43,226,0.3)', transition: 'transform 0.2s' }} onMouseOver={e=>e.currentTarget.style.transform='scale(1.02)'} onMouseOut={e=>e.currentTarget.style.transform='scale(1)'}>
+                        Book Now (${bookingPrice})
                       </button>
                     </motion.div>
                   )}
-
                 </div>
               </div>
             </motion.div>
@@ -1406,86 +1554,177 @@ const ProfileDashboard: React.FC<{ user: any }> = ({ user }) => {
         {activeTab === 'series' && (
         /* ----------- TV SERIES TAB ----------- */
           <div style={{ display: 'flex', flexDirection: 'column', gap: '30px' }}>
-            <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} style={{ background: '#111', borderRadius: '24px', overflow: 'hidden', border: '1px solid rgba(255,255,255,0.05)' }}>
-              
-              {/* Series Hero Panel */}
-              <div style={{ width: '100%', height: '300px', background: 'url(https://picsum.photos/seed/cybercity/1200/500) center/cover', position: 'relative' }}>
-                <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to right, rgba(0,0,0,0.9), rgba(0,0,0,0.3))' }} />
-                <div style={{ position: 'absolute', bottom: '30px', left: '30px', maxWidth: '500px' }}>
-                  <div style={{ background: 'rgba(255,77,133,0.2)', color: '#ff4d85', padding: '4px 12px', borderRadius: '8px', fontSize: '12px', fontWeight: 'bold', display: 'inline-block', marginBottom: '12px', border: '1px solid #ff4d85' }}>ORIGINAL SERIES</div>
-                  <h2 style={{ fontSize: '36px', margin: '0 0 10px 0', textShadow: '0 2px 10px rgba(0,0,0,0.5)' }}>Neon Nights: The Underground</h2>
-                  <p style={{ color: '#ccc', margin: '0 0 20px 0', lineHeight: 1.5 }}>Follow the rise of the underground cyber-synth scene in the year 2026. Explicit and uncensored.</p>
-                  <button onClick={() => alert('Purchasing Full Season Pass ($49.99)!')} style={{ padding: '14px 28px', background: '#fff', color: '#000', border: 'none', borderRadius: '12px', fontWeight: 'bold', fontSize: '16px', cursor: 'pointer', transition: 'all 0.2s', boxShadow: '0 10px 20px rgba(255,255,255,0.2)' }} onMouseOver={e=>e.currentTarget.style.transform='scale(1.05)'} onMouseOut={e=>e.currentTarget.style.transform='scale(1)'}>
-                    Buy Full Season ($49.99)
-                  </button>
-                </div>
-              </div>
+            {isOwnProfile && viewMode === 'edit' && (
+              <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} style={{ background: 'rgba(255,255,255,0.03)', padding: '24px', borderRadius: '24px', border: '1px dashed rgba(255,255,255,0.15)' }}>
+                <h3 style={{ margin: '0 0 16px 0', fontSize: '18px', display: 'flex', alignItems: 'center', gap: '8px' }}>Create New Series</h3>
+                <form onSubmit={handleAddSeries} style={{ display: 'grid', gap: '16px', gridTemplateColumns: '1fr 1fr' }}>
+                  <div style={{ gridColumn: '1 / -1' }}>
+                    <input type="text" placeholder="Series Title (e.g. Neon Nights)" value={newSeries.title} onChange={e => setNewSeries({...newSeries, title: e.target.value})} style={{ width: '100%', background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.1)', padding: '14px', borderRadius: '12px', color: '#fff', outline: 'none', fontSize: '15px' }} />
+                  </div>
+                  <div style={{ gridColumn: '1 / -1' }}>
+                    <textarea placeholder="Series Description..." value={newSeries.description} onChange={e => setNewSeries({...newSeries, description: e.target.value})} style={{ width: '100%', background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.1)', padding: '14px', borderRadius: '12px', color: '#fff', outline: 'none', fontSize: '15px', minHeight: '80px', resize: 'vertical' }} />
+                  </div>
+                  <div style={{ display: 'flex', background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px', overflow: 'hidden' }}>
+                    <span style={{ padding: '14px', color: '#888', background: 'rgba(255,255,255,0.02)', borderRight: '1px solid rgba(255,255,255,0.1)' }}>Full Season $</span>
+                    <input type="number" step="0.01" placeholder="Price" value={newSeries.price} onChange={e => setNewSeries({...newSeries, price: e.target.value})} style={{ flex: 1, background: 'transparent', border: 'none', padding: '14px', color: '#fff', outline: 'none', fontSize: '15px' }} />
+                  </div>
+                  <input type="text" placeholder="Cover Image URL (optional)" value={newSeries.img} onChange={e => setNewSeries({...newSeries, img: e.target.value})} style={{ background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.1)', padding: '14px', borderRadius: '12px', color: '#fff', outline: 'none', fontSize: '15px' }} />
+                  <div style={{ gridColumn: '1 / -1', display: 'flex', justifyContent: 'flex-end' }}>
+                    <button type="submit" disabled={!newSeries.title || !newSeries.price} style={{ padding: '12px 24px', background: (!newSeries.title || !newSeries.price) ? 'rgba(255,255,255,0.1)' : '#ff4d85', color: '#fff', border: 'none', borderRadius: '12px', fontWeight: 'bold', cursor: (!newSeries.title || !newSeries.price) ? 'not-allowed' : 'pointer' }}>Publish Series</button>
+                  </div>
+                </form>
+              </motion.div>
+            )}
 
-              {/* Episodes List */}
-              <div style={{ padding: '30px' }}>
-                <h3 style={{ margin: '0 0 20px 0', fontSize: '20px', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '16px' }}>Episodes (Season 1)</h3>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                  {[
-                    { ep: 1, title: 'Pilot: The Grid Offline', len: '45 min' },
-                    { ep: 2, title: 'Bass Drops & Heartbeats', len: '42 min' },
-                    { ep: 3, title: 'Virtual Reality Syndicates', len: '50 min' },
-                    { ep: 4, title: 'The Silent Code', len: '48 min' },
-                    { ep: 5, title: 'Signal Inteference', len: '41 min' },
-                  ].map(episode => (
-                    <div key={episode.ep} style={{ display: 'flex', gap: '20px', alignItems: 'center', background: 'rgba(255,255,255,0.02)', padding: '16px', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.05)', transition: 'background 0.2s' }}>
-                      <div style={{ width: '160px', height: '90px', borderRadius: '8px', background: `url(https://picsum.photos/seed/ep${episode.ep}/300/150) center/cover`, position: 'relative', flexShrink: 0 }}>
-                        <div style={{ position: 'absolute', bottom: 6, right: 6, background: 'rgba(0,0,0,0.8)', padding: '2px 6px', borderRadius: '4px', fontSize: '11px', fontWeight: 'bold' }}>{episode.len}</div>
-                      </div>
-                      <div style={{ flex: 1 }}>
-                        <div style={{ color: '#888', fontSize: '12px', fontWeight: 'bold', marginBottom: '4px' }}>Episode {episode.ep}</div>
-                        <h4 style={{ margin: '0 0 8px 0', fontSize: '18px' }}>{episode.title}</h4>
-                        <p style={{ margin: 0, color: '#aaa', fontSize: '14px', lineHeight: 1.4 }}>When the servers crash, the underground comes alive. Follow the intense journey into the dark web.</p>
-                      </div>
-                      <button onClick={()=>alert(`Purchased Episode ${episode.ep} for $9.99!`)} style={{ padding: '10px 20px', background: 'rgba(255,255,255,0.1)', border: 'none', color: '#fff', borderRadius: '20px', fontWeight: 'bold', cursor: 'pointer', transition: 'background 0.2s' }} onMouseOver={e=>e.currentTarget.style.background='rgba(255,255,255,0.2)'} onMouseOut={e=>e.currentTarget.style.background='rgba(255,255,255,0.1)'}>
-                        Buy ($9.99)
+            {seriesList.length === 0 ? (
+              <div style={{ padding: '60px 20px', textAlign: 'center', background: 'rgba(255,255,255,0.02)', borderRadius: '24px', border: '1px dashed rgba(255,255,255,0.1)' }}>
+                <p style={{ color: '#888', fontSize: '16px', margin: 0 }}>No original series published yet.</p>
+              </div>
+            ) : (
+              seriesList.map((series) => (
+                <motion.div key={series.id} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} style={{ background: '#111', borderRadius: '24px', overflow: 'hidden', border: '1px solid rgba(255,255,255,0.05)' }}>
+                  
+                  {/* Series Hero Panel */}
+                  <div style={{ width: '100%', height: '300px', background: `url(${series.img || 'https://picsum.photos/seed/cybercity/1200/500'}) center/cover`, position: 'relative' }}>
+                    <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to right, rgba(0,0,0,0.9), rgba(0,0,0,0.3))' }} />
+                    <div style={{ position: 'absolute', bottom: '30px', left: '30px', maxWidth: '500px' }}>
+                      <div style={{ background: 'rgba(255,77,133,0.2)', color: '#ff4d85', padding: '4px 12px', borderRadius: '8px', fontSize: '12px', fontWeight: 'bold', display: 'inline-block', marginBottom: '12px', border: '1px solid #ff4d85' }}>ORIGINAL SERIES</div>
+                      <h2 style={{ fontSize: '36px', margin: '0 0 10px 0', textShadow: '0 2px 10px rgba(0,0,0,0.5)' }}>{series.title}</h2>
+                      <p style={{ color: '#ccc', margin: '0 0 20px 0', lineHeight: 1.5 }}>{series.description}</p>
+                      <button onClick={() => handleStripeCheckout(`Full Season Pass: ${series.title}`, Number(series.price))} style={{ padding: '14px 28px', background: '#fff', color: '#000', border: 'none', borderRadius: '12px', fontWeight: 'bold', fontSize: '16px', cursor: 'pointer', transition: 'all 0.2s', boxShadow: '0 10px 20px rgba(255,255,255,0.2)' }} onMouseOver={e=>e.currentTarget.style.transform='scale(1.05)'} onMouseOut={e=>e.currentTarget.style.transform='scale(1)'}>
+                        Buy Full Season (${series.price})
                       </button>
                     </div>
-                  ))}
-                </div>
-              </div>
+                  </div>
 
-            </motion.div>
+                  {/* Episodes List */}
+                  <div style={{ padding: '30px' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '16px', marginBottom: '20px' }}>
+                      <h3 style={{ margin: 0, fontSize: '20px' }}>Episodes</h3>
+                      {isOwnProfile && viewMode === 'edit' && (
+                        <button onClick={() => setActiveSeriesIdForEp(activeSeriesIdForEp === series.id ? null : series.id)} style={{ background: 'rgba(255,255,255,0.1)', color: '#fff', border: 'none', padding: '8px 16px', borderRadius: '8px', fontSize: '14px', cursor: 'pointer' }}>
+                          {activeSeriesIdForEp === series.id ? 'Cancel' : '+ Add Episode'}
+                        </button>
+                      )}
+                    </div>
+                    
+                    {/* Add Episode Form */}
+                    {activeSeriesIdForEp === series.id && (
+                      <div style={{ background: 'rgba(0,0,0,0.3)', padding: '20px', borderRadius: '16px', marginBottom: '20px', border: '1px solid rgba(255,255,255,0.05)' }}>
+                        <h4 style={{ margin: '0 0 16px 0', fontSize: '16px', color: '#aaa' }}>New Episode for {series.title}</h4>
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                          <input type="text" placeholder="Episode Title" value={newEpisode.title} onChange={e=>setNewEpisode({...newEpisode, title: e.target.value})} style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', padding: '10px', borderRadius: '8px', color: '#fff', outline: 'none' }} />
+                          <input type="text" placeholder="Length (e.g. 45 min)" value={newEpisode.length} onChange={e=>setNewEpisode({...newEpisode, length: e.target.value})} style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', padding: '10px', borderRadius: '8px', color: '#fff', outline: 'none' }} />
+                          <div style={{ gridColumn: '1 / -1' }}>
+                            <textarea placeholder="Description..." value={newEpisode.description} onChange={e=>setNewEpisode({...newEpisode, description: e.target.value})} style={{ width: '100%', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', padding: '10px', borderRadius: '8px', color: '#fff', outline: 'none', minHeight: '60px' }} />
+                          </div>
+                          <div style={{ gridColumn: '1 / -1', display: 'flex', gap: '12px', alignItems: 'center' }}>
+                            <span style={{ color: '#888' }}>Price $</span>
+                            <input type="number" step="0.01" placeholder="9.99" value={newEpisode.price} onChange={e=>setNewEpisode({...newEpisode, price: e.target.value})} style={{ flex: 1, background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', padding: '10px', borderRadius: '8px', color: '#fff', outline: 'none' }} />
+                            <button onClick={() => handleAddEpisode(series.id)} disabled={!newEpisode.title} style={{ padding: '10px 20px', background: newEpisode.title ? '#00ff88' : 'rgba(255,255,255,0.1)', color: '#000', border: 'none', borderRadius: '8px', fontWeight: 'bold', cursor: newEpisode.title ? 'pointer' : 'not-allowed' }}>Save</button>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                      {(!series.episodes || series.episodes.length === 0) ? (
+                        <p style={{ color: '#666', fontStyle: 'italic', margin: 0 }}>No episodes added to this series yet.</p>
+                      ) : (
+                        series.episodes.map((episode: any, idx: number) => (
+                          <div key={episode.id} style={{ display: 'flex', gap: '20px', alignItems: 'center', background: 'rgba(255,255,255,0.02)', padding: '16px', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.05)', transition: 'background 0.2s' }}>
+                            <div style={{ width: '160px', height: '90px', borderRadius: '8px', background: `url(https://picsum.photos/seed/ep${idx+1}/300/150) center/cover`, position: 'relative', flexShrink: 0 }}>
+                              <div style={{ position: 'absolute', bottom: 6, right: 6, background: 'rgba(0,0,0,0.8)', padding: '2px 6px', borderRadius: '4px', fontSize: '11px', fontWeight: 'bold' }}>{episode.length || 'TBD'}</div>
+                            </div>
+                            <div style={{ flex: 1 }}>
+                              <div style={{ color: '#888', fontSize: '12px', fontWeight: 'bold', marginBottom: '4px' }}>Episode {idx + 1}</div>
+                              <h4 style={{ margin: '0 0 8px 0', fontSize: '18px' }}>{episode.title}</h4>
+                              <p style={{ margin: 0, color: '#aaa', fontSize: '14px', lineHeight: 1.4 }}>{episode.description}</p>
+                            </div>
+                            <button onClick={()=>handleStripeCheckout(`Episode: ${episode.title}`, Number(episode.price || 0))} style={{ padding: '10px 20px', background: 'rgba(255,255,255,0.1)', border: 'none', color: '#fff', borderRadius: '20px', fontWeight: 'bold', cursor: 'pointer', transition: 'background 0.2s' }} onMouseOver={e=>e.currentTarget.style.background='rgba(255,255,255,0.2)'} onMouseOut={e=>e.currentTarget.style.background='rgba(255,255,255,0.1)'}>
+                              Buy (${episode.price || '0.00'})
+                            </button>
+                          </div>
+                        ))
+                      )}
+                    </div>
+                  </div>
+                </motion.div>
+              ))
+            )}
           </div>
         )}
 
         {activeTab === 'courses' && (
         /* ----------- COURSES TAB ----------- */
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '24px' }}>
-            {[
-              { id: 'c1', title: 'The Complete DJ Masterclass: Zero to Festival', price: 199.99, modules: 24, hours: '12.5', img: 'https://picsum.photos/seed/djcourse/400/250', progress: 0 },
-              { id: 'c2', title: 'Viral Growth Secrets: Dominate TikTok', price: 99.99, modules: 14, hours: '5.0', img: 'https://picsum.photos/seed/tiktokcourse/400/250', progress: 0 },
-              { id: 'c3', title: 'Ableton Live 12 Studio Deep Dive', price: 149.99, modules: 32, hours: '18.0', img: 'https://picsum.photos/seed/abletoncourse/400/250', progress: 0 },
-              { id: 'c4', title: 'The Ultimate Guide to Independent Networks', price: 299.99, modules: 40, hours: '22.0', img: 'https://picsum.photos/seed/networkcourse/400/250', progress: 0 },
-            ].map((course) => (
-              <motion.div key={course.id} initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} style={{ background: 'rgba(255,255,255,0.02)', borderRadius: '20px', overflow: 'hidden', border: '1px solid rgba(255,255,255,0.05)', display: 'flex', flexDirection: 'column' }}>
-                <div style={{ height: '180px', background: `url(${course.img}) center/cover`, position: 'relative' }}>
-                  <div style={{ position: 'absolute', top: 12, right: 12, background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(4px)', padding: '6px 10px', borderRadius: '8px', fontSize: '12px', fontWeight: 'bold' }}>
-                    {course.modules} Modules • {course.hours}h
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '30px' }}>
+            {isOwnProfile && viewMode === 'edit' && (
+              <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} style={{ background: 'rgba(255,255,255,0.03)', padding: '24px', borderRadius: '24px', border: '1px dashed rgba(255,255,255,0.15)' }}>
+                <h3 style={{ margin: '0 0 16px 0', fontSize: '18px', display: 'flex', alignItems: 'center', gap: '8px' }}>Create New Masterclass</h3>
+                <form onSubmit={handleAddCourse} style={{ display: 'grid', gap: '16px', gridTemplateColumns: '1fr 1fr' }}>
+                  <div style={{ gridColumn: '1 / -1' }}>
+                    <input type="text" placeholder="Masterclass Title (e.g. Advanced Beatmaking)" value={newCourse.title} onChange={e => setNewCourse({...newCourse, title: e.target.value})} style={{ width: '100%', background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.1)', padding: '14px', borderRadius: '12px', color: '#fff', outline: 'none', fontSize: '15px' }} />
                   </div>
-                </div>
-                <div style={{ padding: '24px', display: 'flex', flexDirection: 'column', flex: 1 }}>
-                  <h3 style={{ margin: '0 0 16px 0', fontSize: '20px', lineHeight: 1.4, flex: 1 }}>{course.title}</h3>
                   
-                  {/* Progress Bar Mock */}
-                  <div style={{ width: '100%', height: '6px', background: 'rgba(255,255,255,0.1)', borderRadius: '3px', marginBottom: '8px', overflow: 'hidden' }}>
-                    <div style={{ width: `${course.progress}%`, height: '100%', background: '#8A2BE2' }} />
+                  <div style={{ display: 'flex', background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px', overflow: 'hidden' }}>
+                    <span style={{ padding: '14px', color: '#888', background: 'rgba(255,255,255,0.02)', borderRight: '1px solid rgba(255,255,255,0.1)' }}>$</span>
+                    <input type="number" step="0.01" placeholder="Price" value={newCourse.price} onChange={e => setNewCourse({...newCourse, price: e.target.value})} style={{ flex: 1, background: 'transparent', border: 'none', padding: '14px', color: '#fff', outline: 'none', fontSize: '15px' }} />
                   </div>
-                  <div style={{ fontSize: '12px', color: '#888', marginBottom: '20px', fontWeight: 'bold' }}>{course.progress}% Completed</div>
                   
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                    <span style={{ fontSize: '24px', fontWeight: 'bold' }}>${course.price}</span>
-                    <button onClick={() => alert(`Purchasing Course: ${course.title} for $${course.price}`)} style={{ padding: '12px 24px', background: 'linear-gradient(135deg, #8A2BE2, #ff4d85)', color: '#fff', border: 'none', borderRadius: '12px', fontWeight: 'bold', cursor: 'pointer', transition: 'transform 0.2s' }} onMouseOver={e=>e.currentTarget.style.transform='scale(1.05)'} onMouseOut={e=>e.currentTarget.style.transform='scale(1)'}>
-                      Enroll Now
+                  <div style={{ display: 'flex', gap: '12px' }}>
+                    <input type="number" placeholder="Modules (e.g. 12)" value={newCourse.modules} onChange={e => setNewCourse({...newCourse, modules: e.target.value})} style={{ flex: 1, background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.1)', padding: '14px', borderRadius: '12px', color: '#fff', outline: 'none', fontSize: '15px' }} />
+                    <input type="number" step="0.5" placeholder="Hours" value={newCourse.hours} onChange={e => setNewCourse({...newCourse, hours: e.target.value})} style={{ flex: 1, background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.1)', padding: '14px', borderRadius: '12px', color: '#fff', outline: 'none', fontSize: '15px' }} />
+                  </div>
+
+                  <div style={{ display: 'flex', gap: '12px', gridColumn: '1 / -1', justifyContent: 'flex-end' }}>
+                    <button type="submit" disabled={saving || !newCourse.title} style={{ padding: '14px 30px', background: 'linear-gradient(135deg, #8A2BE2, #ff4d85)', color: '#fff', border: 'none', borderRadius: '12px', fontWeight: 'bold', cursor: 'pointer', opacity: (!newCourse.title || saving) ? 0.5 : 1 }}>
+                      {saving ? 'Publishing...' : 'Publish Masterclass'}
                     </button>
                   </div>
-                </div>
+                </form>
               </motion.div>
-            ))}
+            )}
+
+            {courses.length === 0 ? (
+              <div style={{ textAlign: 'center', padding: '60px 20px', background: 'rgba(0,0,0,0.2)', borderRadius: '24px', border: '1px solid rgba(255,255,255,0.05)' }}>
+                <h3 style={{ fontSize: '20px', marginTop: 0, color: '#888' }}>No Masterclasses</h3>
+                <p style={{ color: '#555', marginBottom: 0 }}>This creator hasn't published any courses yet.</p>
+              </div>
+            ) : (
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '24px' }}>
+                {courses.map((course) => (
+                  <motion.div key={course.id} initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} style={{ background: 'rgba(255,255,255,0.02)', borderRadius: '20px', overflow: 'hidden', border: '1px solid rgba(255,255,255,0.05)', display: 'flex', flexDirection: 'column' }}>
+                    <div style={{ height: '180px', background: `url(${course.img}) center/cover`, position: 'relative' }}>
+                      <div style={{ position: 'absolute', top: 12, right: 12, background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(4px)', padding: '6px 10px', borderRadius: '8px', fontSize: '12px', fontWeight: 'bold' }}>
+                        {course.modules} Modules • {course.hours}h
+                      </div>
+                    </div>
+                    <div style={{ padding: '24px', display: 'flex', flexDirection: 'column', flex: 1 }}>
+                      <h3 style={{ margin: '0 0 16px 0', fontSize: '20px', lineHeight: 1.4, flex: 1 }}>{course.title}</h3>
+                      
+                      {/* Progress Bar Mock */}
+                      <div style={{ width: '100%', height: '6px', background: 'rgba(255,255,255,0.1)', borderRadius: '3px', marginBottom: '8px', overflow: 'hidden' }}>
+                        <div style={{ width: `${course.progress}%`, height: '100%', background: '#8A2BE2' }} />
+                      </div>
+                      <div style={{ fontSize: '12px', color: '#888', marginBottom: '20px', fontWeight: 'bold' }}>{course.progress}% Completed</div>
+                      
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                        <span style={{ fontSize: '24px', fontWeight: 'bold' }}>${course.price}</span>
+                        {viewMode === 'edit' ? (
+                          <button style={{ padding: '8px 16px', background: 'rgba(255,255,255,0.1)', color: '#fff', border: 'none', borderRadius: '8px', fontWeight: 'bold', cursor: 'pointer' }}>
+                            Edit
+                          </button>
+                        ) : (
+                          <button onClick={() => handleStripeCheckout(`Course: ${course.title}`, course.price)} style={{ padding: '12px 24px', background: 'linear-gradient(135deg, #8A2BE2, #ff4d85)', color: '#fff', border: 'none', borderRadius: '12px', fontWeight: 'bold', cursor: 'pointer', transition: 'transform 0.2s' }} onMouseOver={e=>e.currentTarget.style.transform='scale(1.05)'} onMouseOut={e=>e.currentTarget.style.transform='scale(1)'}>
+                            Enroll Now
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  </motion.div>
+                ))}
+              </div>
+            )}
           </div>
         )}
 

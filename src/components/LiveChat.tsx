@@ -2,23 +2,9 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Send, User } from 'lucide-react';
 import { supabase } from '../supabaseClient';
 
-const MOCK_NAMES = ["Alex", "Jordan", "Taylor", "Casey", "Morgan", "Riley", "Sam", "Avery"];
-const MOCK_MESSAGES = [
-  "This stream is fire! 🔥", 
-  "Wait, how did they do that?!", 
-  "LFG!", 
-  "dropping a sub for this", 
-  "Does anyone know what time the next segment starts?",
-  "yooo 👏", 
-  "Can't believe I caught this live.", 
-  "The production quality is insane.",
-  "hi from brazil 🇧🇷",
-  "anyone else lagging?"
-];
-
 export default function LiveChat({ streamId }: { streamId: string }) {
   const [messages, setMessages] = useState<{id: string, user: string, text: string, time: string}[]>([]);
-  const [viewersCount] = useState(() => Math.floor(Math.random() * 5000 + 1000).toLocaleString());
+  const [viewersCount, setViewersCount] = useState(1);
   const [input, setInput] = useState("");
   const autoScrollRef = useRef<HTMLDivElement>(null);
   
@@ -58,48 +44,35 @@ export default function LiveChat({ streamId }: { streamId: string }) {
   }, []);
 
   useEffect(() => {
-    // 1. Initial Mocks (isolated session)
-    const initial = Array.from({length: 5}).map((_, i) => ({
-      id: Math.random().toString(),
-      user: MOCK_NAMES[Math.floor(Math.random() * MOCK_NAMES.length)],
-      text: MOCK_MESSAGES[Math.floor(Math.random() * MOCK_MESSAGES.length)],
-      time: new Date(Date.now() - (5-i)*60000).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})
-    }));
-    setMessages(initial);
-
-    // 2. Realtime WebSocket binding specifically for this single live stream
+    // Realtime WebSocket binding specifically for this single live stream
     if (supabase) {
       const channelId = `live-chat-${streamId}`;
       const channel = supabase.channel(channelId);
       
-      channel.on('broadcast', { event: 'new-message' }, (payload) => {
-         setMessages(prev => {
-           const next = [...prev, payload.payload.message];
-           if (next.length > 10) next.shift();
-           return next;
-         });
-      }).subscribe();
+      channel
+        .on('presence', { event: 'sync' }, () => {
+          const state = channel.presenceState();
+          // Count total uniquely connected clients
+          const totalViewers = Object.values(state).reduce((acc, presences) => acc + presences.length, 0);
+          setViewersCount(totalViewers || 1);
+        })
+        .on('broadcast', { event: 'new-message' }, (payload) => {
+          setMessages(prev => {
+            const next = [...prev, payload.payload.message];
+            if (next.length > 50) next.shift();
+            return next;
+          });
+        })
+        .subscribe(async (status) => {
+          if (status === 'SUBSCRIBED') {
+            await channel.track({ online_at: new Date().toISOString() });
+          }
+        });
       
       channelRef.current = channel;
     }
 
-    // 3. Local simulated bots to keep chat feeling active
-    const activeBots = setInterval(() => {
-      setMessages(prev => {
-        const newMsg = {
-          id: Math.random().toString(),
-          user: MOCK_NAMES[Math.floor(Math.random() * MOCK_NAMES.length)],
-          text: MOCK_MESSAGES[Math.floor(Math.random() * MOCK_MESSAGES.length)],
-          time: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})
-        };
-        const next = [...prev, newMsg];
-        if (next.length > 10) next.shift(); // Keep bounded
-        return next;
-      });
-    }, 4500);
-
     return () => {
-      clearInterval(activeBots);
       if (channelRef.current) {
         supabase?.removeChannel(channelRef.current);
       }
@@ -126,7 +99,7 @@ export default function LiveChat({ streamId }: { streamId: string }) {
     // Inject instantly locally
     setMessages(prev => {
       const next = [...prev, myMessage];
-      if (next.length > 10) next.shift();
+      if (next.length > 50) next.shift();
       return next;
     });
     

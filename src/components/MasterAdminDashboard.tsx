@@ -83,7 +83,7 @@ export default function MasterAdminDashboard() {
             { id: 'networks', icon: <Network size={18} />, label: 'Whitelabel Fleet' },
             { id: 'users', icon: <Users size={18} />, label: 'Network Directory' },
             { id: 'database', icon: <Database size={18} />, label: 'Data Clusters' },
-            { id: 'analytics', icon: <BarChart size={18} />, label: 'Global Analytics' },
+            { id: 'analytics', icon: <BarChart3 size={18} />, label: 'Global Analytics' },
             { id: 'accounting', icon: <Wallet size={18} />, label: 'Global Ledger' },
             { id: 'logs', icon: <Terminal size={18} />, label: 'System Logs' },
           ].map(tab => (
