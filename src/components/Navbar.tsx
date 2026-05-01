@@ -80,6 +80,7 @@ const Navbar: React.FC<NavbarProps> = ({ user, onLoginClick, onAdminClick }) => 
         }}>
           {[
             { label: 'Home', path: '/' },
+            { label: 'Marketplace', path: '/marketplace' },
             { label: 'About Us', path: '/about' },
             { label: 'Watch Live', path: '/#whats-on-now' },
             { label: 'Contact', path: '/contact' }

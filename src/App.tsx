@@ -14,6 +14,7 @@ import LiveChat from './components/LiveChat';
 import MoreInfo from './components/MoreInfo';
 import Contact from './components/Contact';
 import VirtualCallRoom from './components/VirtualCallRoom';
+import Marketplace from './components/Marketplace';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { WhiteLabelContext } from './context/WhiteLabelContext';
 import { useEffect, useState } from 'react';
@@ -230,6 +231,7 @@ function App() {
             <Route path="/" element={
                <WhiteLabelHome wlConfig={wlConfig} categories={categories} user={user} activeVideo={activeVideo} setActiveVideo={setActiveVideo} />
             } />
+            <Route path="/marketplace" element={<Marketplace />} />
             <Route path="/profile" element={<ProfileDashboard user={user} />} />
             <Route path="/profile/:creatorId" element={<ProfileDashboard user={user} />} />
             <Route path="/call/:callId" element={<VirtualCallRoom />} />
@@ -277,6 +279,7 @@ function App() {
                 />
                 <Routes>
                   <Route path="/" element={<Home categories={categories} activeVideo={activeVideo} setActiveVideo={setActiveVideo} />} />
+                  <Route path="/marketplace" element={<Marketplace />} />
                   <Route path="/about" element={<MoreInfo />} />
                   <Route path="/more-info" element={<MoreInfo />} />
                   <Route path="/contact" element={<Contact />} />
