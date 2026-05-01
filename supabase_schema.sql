@@ -8,8 +8,12 @@ CREATE TABLE IF NOT EXISTS public.whitelabel_configs (
     logo TEXT,
     theme JSONB DEFAULT '{}'::jsonb,
     platform_fee_percentage NUMERIC DEFAULT 15.00,
+    owner_id UUID REFERENCES auth.users(id),
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
+
+-- Ensure new columns are added if the table already exists
+ALTER TABLE public.whitelabel_configs ADD COLUMN IF NOT EXISTS owner_id UUID REFERENCES auth.users(id);
 
 -- 2. Profiles
 CREATE TABLE IF NOT EXISTS public.profiles (
@@ -25,12 +29,14 @@ CREATE TABLE IF NOT EXISTS public.profiles (
     stripe_account_id TEXT,
     platform_fee_percentage NUMERIC DEFAULT 15.00,
     is_admin BOOLEAN DEFAULT FALSE,
+    role TEXT DEFAULT 'viewer',
     whitelabel_id UUID REFERENCES public.whitelabel_configs(id),
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
 -- Ensure new columns are added if the table already exists
 ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS is_admin BOOLEAN DEFAULT FALSE;
+ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS role TEXT DEFAULT 'viewer';
 
 -- 3. Categories
 CREATE TABLE IF NOT EXISTS public.categories (
@@ -149,6 +155,16 @@ CREATE POLICY "Admins can insert whitelabel configs" ON public.whitelabel_config
 DROP POLICY IF EXISTS "Admins can update whitelabel configs" ON public.whitelabel_configs;
 CREATE POLICY "Admins can update whitelabel configs" ON public.whitelabel_configs FOR UPDATE USING (
     (SELECT is_admin FROM public.profiles WHERE id = auth.uid()) = true
+);
+
+DROP POLICY IF EXISTS "Users can insert their own whitelabel config" ON public.whitelabel_configs;
+CREATE POLICY "Users can insert their own whitelabel config" ON public.whitelabel_configs FOR INSERT WITH CHECK (
+    auth.uid() = owner_id
+);
+
+DROP POLICY IF EXISTS "Users can update their own whitelabel config" ON public.whitelabel_configs;
+CREATE POLICY "Users can update their own whitelabel config" ON public.whitelabel_configs FOR UPDATE USING (
+    auth.uid() = owner_id
 );
 
 -- 7. Series

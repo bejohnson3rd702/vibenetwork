@@ -66,9 +66,10 @@ function App() {
          const newId = e.detail.id || 'test_wl_' + Date.now();
          let finalId = newId;
 
-         // Try persisting to DB
+         const { data: { session: currentSession } } = await supabase!.auth.getSession();
          const { data: wlData, error: wlError } = await supabase!.from('whitelabel_configs').upsert({
            id: newId.includes('test_wl') ? undefined : newId, // allow DB to gen_random_uuid if test
+           owner_id: currentSession?.user?.id,
            name: e.detail.name,
            domain: e.detail.domain,
            logo: e.detail.logoImage,
