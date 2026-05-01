@@ -33,7 +33,7 @@ serve(async (req) => {
       return new Response("Unauthorized", { status: 401, headers: corsHeaders });
     }
 
-    const { creatorId, amount, productTitle, returnUrl } = await req.json();
+    const { creatorId, amount, productTitle, returnUrl, extraMetadata } = await req.json();
 
     if (!creatorId || !amount) {
       return new Response("Missing parameters", { status: 400, headers: corsHeaders });
@@ -92,7 +92,8 @@ serve(async (req) => {
         metadata: {
            buyer_id: user.id,
            creator_id: creatorId,
-           product_title: productTitle
+           product_title: productTitle,
+           ...(extraMetadata || {})
         }
       },
       success_url: returnUrl ? `${returnUrl}?success=true` : "http://localhost:5174/profile?success=true",

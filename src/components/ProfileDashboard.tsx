@@ -36,7 +36,7 @@ const ProfileDashboard: React.FC<{ user: any }> = ({ user }) => {
   const [currentBannerIndex, setCurrentBannerIndex] = useState(0);
   const [currentBgIndex, setCurrentBgIndex] = useState(0);
   const [saving, setSaving] = useState(false);
-  const [activeTab, setActiveTab] = useState<'feed' | 'store' | 'live' | 'booking' | 'series' | 'courses' | 'wallet' | 'flipbook' | 'appearance'>('feed');
+  const [activeTab, setActiveTab] = useState<'feed' | 'store' | 'live' | 'booking' | 'series' | 'courses' | 'wallet' | 'flipbook' | 'appearance' | 'my_bookings'>('feed');
   const [walletBalance, setWalletBalance] = useState(() => (typeof window !== 'undefined' ? Number(localStorage.getItem('vibe_host_wallet') || 0.00) : 0.00));
   const [paySubsWithWallet, setPaySubsWithWallet] = useState(true);
   const [isSubscribed, setIsSubscribed] = useState(false);
@@ -332,7 +332,7 @@ const ProfileDashboard: React.FC<{ user: any }> = ({ user }) => {
      };
   }, [isPlayingLive, streamSource, presenterMode, guests.length]);
 
-   const handleStripeCheckout = async (itemName: string, amount: number) => {
+   const handleStripeCheckout = async (itemName: string, amount: number, extraMetadata?: any) => {
      try {
        // In a production app, this endpoint would be your Supabase Edge Function
        // that creates the Stripe Checkout Session securely using the Stripe Secret Key.
@@ -346,7 +346,8 @@ const ProfileDashboard: React.FC<{ user: any }> = ({ user }) => {
            productTitle: itemName,
            amount: amount, // Do not multiply by 100, edge function handles it
            creatorId: targetProfileId,
-           returnUrl: window.location.href
+           returnUrl: window.location.href,
+           extraMetadata
          })
        });
        
@@ -430,6 +431,8 @@ const ProfileDashboard: React.FC<{ user: any }> = ({ user }) => {
   // Store internal state MUST be above early returns!
   const [newProduct, setNewProduct] = useState({ title: '', price: '19.99', type: 'digital', image_url: '' });
   const [courses, setCourses] = useState<any[]>([]);
+  const [purchasedBookings, setPurchasedBookings] = useState<any[]>([]);
+  const [receivedBookings, setReceivedBookings] = useState<any[]>([]);
   const [newCourse, setNewCourse] = useState({ title: '', price: '', modules: '', hours: '', img: '' });
   const [uploadingProductImg, setUploadingProductImg] = useState(false);
 
@@ -513,6 +516,15 @@ const ProfileDashboard: React.FC<{ user: any }> = ({ user }) => {
           setCourses(coursesData);
         } else {
           setCourses([]);
+        }
+
+        // Load Bookings
+        if (isOwnProfile && user) {
+           const { data: pBookings } = await supabase!.from('bookings').select('*, creator:profiles!creator_id(username, full_name, avatar_url)').eq('buyer_id', user.id);
+           setPurchasedBookings(pBookings || []);
+
+           const { data: rBookings } = await supabase!.from('bookings').select('*, buyer:profiles!buyer_id(username, full_name, avatar_url)').eq('creator_id', user.id);
+           setReceivedBookings(rBookings || []);
         }
       } else if (isOwnProfile) {
         // Auto-create profile if missing!
@@ -1000,7 +1012,7 @@ const ProfileDashboard: React.FC<{ user: any }> = ({ user }) => {
                 { id: 'series', label: 'Episodes' },
                 { id: 'courses', label: 'Masterclasses' },
                 { id: 'flipbook', label: 'Flip Book' }
-              ].map(tab => (
+              ].concat(isOwnProfile ? [{ id: 'my_bookings', label: 'My Bookings' }] : []).map(tab => (
                 <button 
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id as any)}
@@ -1705,7 +1717,7 @@ const ProfileDashboard: React.FC<{ user: any }> = ({ user }) => {
 
                       <input type="text" placeholder="Your Name" style={{ width: '100%', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', padding: '14px', borderRadius: '8px', color: '#fff', marginBottom: '12px', outline: 'none' }} />
                       <input type="text" placeholder="Purpose of Meeting (e.g. Mixing Advice)" style={{ width: '100%', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', padding: '14px', borderRadius: '8px', color: '#fff', marginBottom: '20px', outline: 'none' }} />
-                      <button onClick={() => { handleStripeCheckout(`${bookingType === 'virtual' ? `1-on-1 Virtual Call (${virtualCallType === 'video' ? 'Video' : 'Audio'})` : 'Physical Meeting'} (April ${selectedDate} at ${selectedTime})`, Number(bookingPrice)); setSelectedTime(null); setSelectedDate(null); }} style={{ width: '100%', padding: '16px', background: 'linear-gradient(135deg, #ff4d85, #8A2BE2)', color: '#fff', border: 'none', borderRadius: '12px', fontWeight: 'bold', fontSize: '16px', cursor: 'pointer', boxShadow: '0 10px 20px rgba(138,43,226,0.3)', transition: 'transform 0.2s' }} onMouseOver={e=>e.currentTarget.style.transform='scale(1.02)'} onMouseOut={e=>e.currentTarget.style.transform='scale(1)'}>
+                      <button onClick={() => { handleStripeCheckout(`${bookingType === 'virtual' ? `1-on-1 Virtual Call (${virtualCallType === 'video' ? 'Video' : 'Audio'})` : 'Physical Meeting'} (April ${selectedDate} at ${selectedTime})`, Number(bookingPrice), { is_booking: true, date: `April ${selectedDate}`, time: selectedTime, meeting_type: bookingType === 'virtual' ? `virtual_${virtualCallType}` : 'physical' }); setSelectedTime(null); setSelectedDate(null); }} style={{ width: '100%', padding: '16px', background: 'linear-gradient(135deg, #ff4d85, #8A2BE2)', color: '#fff', border: 'none', borderRadius: '12px', fontWeight: 'bold', fontSize: '16px', cursor: 'pointer', boxShadow: '0 10px 20px rgba(138,43,226,0.3)', transition: 'transform 0.2s' }} onMouseOver={e=>e.currentTarget.style.transform='scale(1.02)'} onMouseOut={e=>e.currentTarget.style.transform='scale(1)'}>
                         Book Now (${bookingPrice})
                       </button>
                     </motion.div>
@@ -2018,6 +2030,79 @@ const ProfileDashboard: React.FC<{ user: any }> = ({ user }) => {
                 )}
               </div>
             </div>
+          </motion.div>
+        )}
+
+        {/* --- MY BOOKINGS TAB --- */}
+        {activeTab === 'my_bookings' && isOwnProfile && (
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} style={{ display: 'flex', flexDirection: 'column', gap: '30px' }}>
+            <div style={{ background: 'rgba(255,255,255,0.03)', borderRadius: '24px', padding: '30px', border: '1px solid rgba(255,255,255,0.05)' }}>
+              <h2 style={{ fontSize: '24px', margin: '0 0 20px 0', color: '#fff', display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <Calendar size={24} color="#ff4d85" /> Upcoming Calls (Purchased)
+              </h2>
+              {purchasedBookings.length === 0 ? (
+                <p style={{ color: '#888', fontStyle: 'italic' }}>You have not booked any calls yet.</p>
+              ) : (
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '20px' }}>
+                  {purchasedBookings.map((b, i) => (
+                    <div key={i} style={{ background: 'rgba(0,0,0,0.4)', borderRadius: '16px', padding: '20px', border: '1px solid rgba(255,255,255,0.05)' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px' }}>
+                        <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: '#ff4d85', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontWeight: 'bold' }}>
+                           {b.creator?.full_name?.charAt(0) || '?'}
+                        </div>
+                        <div>
+                          <div style={{ color: '#fff', fontWeight: 'bold' }}>{b.creator?.full_name}</div>
+                          <div style={{ color: '#888', fontSize: '13px' }}>@{b.creator?.username}</div>
+                        </div>
+                      </div>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '20px' }}>
+                        <div style={{ color: '#fff', fontSize: '14px', display: 'flex', alignItems: 'center', gap: '8px' }}><Calendar size={14} color="#aaa" /> {b.date}</div>
+                        <div style={{ color: '#fff', fontSize: '14px', display: 'flex', alignItems: 'center', gap: '8px' }}><Clock size={14} color="#aaa" /> {b.time}</div>
+                        <div style={{ color: '#ff4d85', fontSize: '14px', display: 'flex', alignItems: 'center', gap: '8px', fontWeight: 'bold' }}><Video size={14} /> {b.meeting_type?.replace('_', ' ')}</div>
+                      </div>
+                      <button onClick={() => window.open(b.meeting_link || `https://meet.jit.si/vibe_${b.id}`, '_blank')} style={{ width: '100%', padding: '12px', background: '#00ff88', color: '#000', border: 'none', borderRadius: '12px', fontWeight: 'bold', cursor: 'pointer', transition: '0.2s' }} onMouseOver={e=>e.currentTarget.style.transform='scale(1.02)'} onMouseOut={e=>e.currentTarget.style.transform='scale(1)'}>
+                        Join Video Room
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {viewMode === 'edit' && (
+              <div style={{ background: 'rgba(255,255,255,0.03)', borderRadius: '24px', padding: '30px', border: '1px solid rgba(255,255,255,0.05)' }}>
+                <h2 style={{ fontSize: '24px', margin: '0 0 20px 0', color: '#fff', display: 'flex', alignItems: 'center', gap: '10px' }}>
+                  <Activity size={24} color="#00ff88" /> Incoming Bookings (Your Schedule)
+                </h2>
+                {receivedBookings.length === 0 ? (
+                  <p style={{ color: '#888', fontStyle: 'italic' }}>No one has booked a call with you yet.</p>
+                ) : (
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '20px' }}>
+                    {receivedBookings.map((b, i) => (
+                      <div key={i} style={{ background: 'rgba(0,0,0,0.4)', borderRadius: '16px', padding: '20px', border: '1px solid rgba(255,255,255,0.05)' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px' }}>
+                          <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: '#00ff88', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#000', fontWeight: 'bold' }}>
+                             {b.buyer?.full_name?.charAt(0) || b.guest_name.charAt(0)}
+                          </div>
+                          <div>
+                            <div style={{ color: '#fff', fontWeight: 'bold' }}>{b.buyer?.full_name || b.guest_name}</div>
+                            <div style={{ color: '#888', fontSize: '13px' }}>Paid: ${b.price}</div>
+                          </div>
+                        </div>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '20px' }}>
+                          <div style={{ color: '#fff', fontSize: '14px', display: 'flex', alignItems: 'center', gap: '8px' }}><Calendar size={14} color="#aaa" /> {b.date}</div>
+                          <div style={{ color: '#fff', fontSize: '14px', display: 'flex', alignItems: 'center', gap: '8px' }}><Clock size={14} color="#aaa" /> {b.time}</div>
+                          <div style={{ color: '#00ff88', fontSize: '14px', display: 'flex', alignItems: 'center', gap: '8px', fontWeight: 'bold' }}><Video size={14} /> {b.meeting_type?.replace('_', ' ')}</div>
+                        </div>
+                        <button onClick={() => window.open(b.meeting_link || `https://meet.jit.si/vibe_${b.id}`, '_blank')} style={{ width: '100%', padding: '12px', background: 'transparent', border: '1px solid #00ff88', color: '#00ff88', borderRadius: '12px', fontWeight: 'bold', cursor: 'pointer', transition: '0.2s' }} onMouseOver={e=>{e.currentTarget.style.background='#00ff88'; e.currentTarget.style.color='#000'}} onMouseOut={e=>{e.currentTarget.style.background='transparent'; e.currentTarget.style.color='#00ff88'}}>
+                          Host Video Room
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
           </motion.div>
         )}
 

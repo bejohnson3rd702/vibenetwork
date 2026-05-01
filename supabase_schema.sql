@@ -193,6 +193,7 @@ CREATE TABLE IF NOT EXISTS public.episodes (
 CREATE TABLE IF NOT EXISTS public.bookings (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     creator_id UUID REFERENCES public.profiles(id) ON DELETE CASCADE,
+    buyer_id UUID REFERENCES public.profiles(id) ON DELETE CASCADE,
     guest_name TEXT NOT NULL,
     date TEXT NOT NULL,
     time TEXT NOT NULL,

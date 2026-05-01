@@ -37,6 +37,25 @@ serve(async (req) => {
         transaction_type: 'PPV',
         stripe_payment_intent: paymentIntent.id
       });
+
+      if (metadata.is_booking === 'true' || metadata.is_booking === true) {
+         // Create the booking entry
+         const bookingId = crypto.randomUUID();
+         const meetLink = `https://meet.jit.si/vibe_${bookingId}`;
+         
+         await supabase.from('bookings').insert({
+             id: bookingId,
+             creator_id: metadata.creator_id,
+             buyer_id: metadata.buyer_id,
+             guest_name: 'Customer', // Would require fetching the profile name ideally, but we can leave it as Customer or fetch it
+             date: metadata.date,
+             time: metadata.time,
+             price: paymentIntent.amount / 100,
+             meeting_type: metadata.meeting_type,
+             meeting_link: meetLink,
+             status: 'confirmed'
+         });
+      }
     }
 
     return new Response(JSON.stringify({ received: true }), { status: 200 });
