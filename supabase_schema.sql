@@ -7,6 +7,7 @@ CREATE TABLE IF NOT EXISTS public.whitelabel_configs (
     domain TEXT,
     logo TEXT,
     theme JSONB DEFAULT '{}'::jsonb,
+    platform_fee_percentage NUMERIC DEFAULT 15.00,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
@@ -21,6 +22,8 @@ CREATE TABLE IF NOT EXISTS public.profiles (
     flipbook_images TEXT,
     bio TEXT,
     sub_price NUMERIC DEFAULT 4.99,
+    stripe_account_id TEXT,
+    platform_fee_percentage NUMERIC DEFAULT 15.00,
     whitelabel_id UUID REFERENCES public.whitelabel_configs(id),
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );

@@ -2042,15 +2042,46 @@ const ProfileDashboard: React.FC<{ user: any }> = ({ user }) => {
                 </div>
               </div>
 
-              <div style={{ background: 'rgba(255,255,255,0.03)', borderRadius: '24px', padding: '30px', border: '1px solid rgba(255,255,255,0.05)', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
-                <h4 style={{ margin: '0 0 16px 0', fontSize: '16px', color: '#fff' }}>Autopay Subscriptions</h4>
-                <div style={{ color: '#888', fontSize: '14px', lineHeight: 1.5, marginBottom: '20px' }}>
-                  Use your network earnings automatically to pay for your recurring creator subscriptions.
+              <div style={{ background: 'linear-gradient(135deg, rgba(99,91,255,0.1), rgba(0,0,0,0.4))', borderRadius: '24px', padding: '30px', border: '1px solid rgba(99,91,255,0.2)', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+                <h4 style={{ margin: '0 0 16px 0', fontSize: '16px', color: '#fff', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#635BFF" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14 8h-4a2 2 0 0 0 0 4h4a2 2 0 0 1 0 4h-4"/><path d="M12 6v12"/></svg>
+                  Stripe Payouts
+                </h4>
+                <div style={{ color: '#aaa', fontSize: '14px', lineHeight: 1.5, marginBottom: '20px' }}>
+                  {profile?.stripe_account_id 
+                    ? "Your channel is securely connected to Stripe. Payouts are routed directly to your bank." 
+                    : "Connect your bank via Stripe Express to receive direct deposits from subscribers, tips, and bookings."}
                 </div>
-                <label style={{ display: 'flex', alignItems: 'center', gap: '12px', cursor: 'pointer', background: 'rgba(0,0,0,0.4)', padding: '16px', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.1)' }}>
-                  <input type="checkbox" checked={paySubsWithWallet} onChange={(e) => setPaySubsWithWallet(e.target.checked)} style={{ width: '20px', height: '20px', accentColor: '#ff4d85' }} />
-                  <span style={{ color: '#fff', fontWeight: 'bold' }}>Pay Subs from Wallet</span>
-                </label>
+                
+                {profile?.stripe_account_id ? (
+                  <button style={{ padding: '12px 24px', background: 'rgba(255,255,255,0.1)', color: '#fff', border: 'none', borderRadius: '12px', fontWeight: 'bold', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', cursor: 'pointer' }}>
+                    <CheckCircle size={16} color="#00ff88" /> Connected
+                  </button>
+                ) : (
+                  <button onClick={async (e) => {
+                    const btn = e.currentTarget;
+                    const ogText = btn.innerHTML;
+                    btn.innerHTML = 'Connecting...';
+                    btn.style.opacity = '0.7';
+                    
+                    try {
+                      const { data, error } = await supabase!.functions.invoke('stripe-onboard', {
+                        body: { return_url: window.location.href }
+                      });
+                      if (error) throw error;
+                      if (data?.url) {
+                        window.location.href = data.url;
+                      }
+                    } catch (err) {
+                      console.error(err);
+                      alert('Failed to connect to Stripe. Please ensure your backend is running.');
+                      btn.innerHTML = ogText;
+                      btn.style.opacity = '1';
+                    }
+                  }} style={{ padding: '14px 24px', background: '#635BFF', color: '#fff', border: 'none', borderRadius: '12px', fontWeight: 'bold', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', cursor: 'pointer', transition: '0.2s' }} onMouseOver={e=>e.currentTarget.style.transform='translateY(-2px)'} onMouseOut={e=>e.currentTarget.style.transform='translateY(0)'}>
+                    <ArrowUpRight size={18} /> Setup Stripe Payouts
+                  </button>
+                )}
               </div>
 
             </div>

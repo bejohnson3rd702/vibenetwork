@@ -186,7 +186,21 @@ export default function MasterAdminDashboard() {
                            <span style={{ color: brandConfig.accent || '#0055ff', fontSize: '13px', background: brandConfig.accent ? `${brandConfig.accent}11` : 'rgba(0,85,255,0.1)', padding: '4px 10px', borderRadius: '12px', fontWeight: 'bold' }}>{brandConfig.domain}</span>
                          </div>
                       </div>
-                      <div style={{ display: 'flex', gap: '12px' }}>
+                      <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+                         <div style={{ display: 'flex', alignItems: 'center', gap: '4px', background: 'rgba(0,0,0,0.4)', padding: '6px 12px', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.1)' }}>
+                            <span style={{ color: '#888', fontSize: '12px', fontWeight: 'bold' }}>Fee:</span>
+                            <input 
+                              type="number" 
+                              defaultValue={brandConfig.platform_fee_percentage || 15} 
+                              onBlur={async (e) => {
+                                const val = parseFloat(e.target.value);
+                                if (isNaN(val)) return;
+                                await supabase!.from('whitelabel_configs').update({ platform_fee_percentage: val }).eq('id', brandConfig.id);
+                              }}
+                              style={{ width: '50px', background: 'transparent', color: '#0055ff', border: 'none', fontWeight: 'bold', outline: 'none', textAlign: 'right' }}
+                            />
+                            <span style={{ color: '#0055ff', fontSize: '12px', fontWeight: 'bold' }}>%</span>
+                         </div>
                          <button onClick={(e) => {
                             const btn = e.currentTarget;
                             const isAllowed = btn.innerText.includes('Allowed');
@@ -357,6 +371,7 @@ export default function MasterAdminDashboard() {
                         <th style={{ padding: '16px 12px' }}>Email</th>
                         <th style={{ padding: '16px 12px' }}>Status</th>
                         <th style={{ padding: '16px 12px' }}>Role</th>
+                        <th style={{ padding: '16px 12px' }}>Platform Fee %</th>
                         <th style={{ padding: '16px 12px' }}>Vibe Indexing</th>
                       </tr>
                     </thead>
@@ -371,6 +386,22 @@ export default function MasterAdminDashboard() {
                             <span style={{ background: 'rgba(0,255,136,0.1)', color: '#00ff88', padding: '4px 8px', borderRadius: '6px', fontSize: '11px', fontWeight: 'bold' }}>ACTIVE</span>
                           </td>
                           <td style={{ padding: '16px 12px', color: '#ccc', fontSize: '14px', textTransform: 'capitalize' }}>{user.role || 'Member'}</td>
+                          <td style={{ padding: '16px 12px' }}>
+                             <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                               <input 
+                                 type="number" 
+                                 defaultValue={user.platform_fee_percentage || 15} 
+                                 onBlur={async (e) => {
+                                   const val = parseFloat(e.target.value);
+                                   if (isNaN(val)) return;
+                                   await supabase!.from('profiles').update({ platform_fee_percentage: val }).eq('id', user.id);
+                                   // Keep it silent to not annoy the admin on every blur, or show a toast
+                                 }}
+                                 style={{ width: '60px', padding: '6px', background: 'rgba(255,255,255,0.05)', color: '#FFD700', border: '1px solid rgba(255,215,0,0.3)', borderRadius: '6px', fontWeight: 'bold', outline: 'none' }}
+                               />
+                               <span style={{ color: '#888', fontSize: '12px', fontWeight: 'bold' }}>%</span>
+                             </div>
+                          </td>
                           <td style={{ padding: '16px 12px' }}>
                              <button onClick={(e) => {
                                 const btn = e.currentTarget;
