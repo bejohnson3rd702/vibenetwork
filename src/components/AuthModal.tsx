@@ -315,29 +315,25 @@ const AuthModal: React.FC<AuthModalProps> = ({ onClose, onSuccess, defaultIsLogi
                           setChatHistory(h => [...h, { sender: 'bot', text: `Awesome. Briefly describe what you want the logo to look like (e.g., 'A minimalist white lion logo').` }]);
                           setWizardStep(1.5);
                        } else {
-                          setChatHistory(h => [...h, { sender: 'bot', text: `Great, we'll use your text name for now and you can upload a logo file later. Next, what custom domain would you like to purchase and bind? (e.g., streaming.com for $15/yr). If you don't want to purchase one right now, just say "skip".` }]);
-                          setWizardStep(2);
-                       }
+                           const autoDomain = `${wlConfig.name.replace(/\s+/g, '').toLowerCase()}.vibenetwork.tv`;
+                           setWlConfig(c => ({ ...c, domain: autoDomain }));
+                           setChatHistory(h => [...h, { sender: 'bot', text: `Great, we'll use your text name for now and you can upload a logo file later. I've automatically assigned you the isolated subdomain: ${autoDomain}. Next, what are your primary brand colors? (e.g. "Black and Gold" or "Purple and Cyan").` }]);
+                           setWizardStep(3);
+                        }
                        break;
                      }
                      case 1.5: {
                        const logoUrl = `https://image.pollinations.ai/prompt/${encodeURIComponent(input + ' minimal vector logomark isolated')}?width=300&height=300&nologo=true&seed=${Math.floor(Math.random() * 1000000)}`;
                        setWlConfig(c => ({ ...c, logoImage: logoUrl }));
                        window.dispatchEvent(new CustomEvent('whitelabel_update', { detail: { logo: logoUrl } }));
-                       setChatHistory(h => [...h, { sender: 'bot', text: `Logo locked in! Here's a preview. Next, what custom domain would you like to purchase and bind? (e.g., streaming.com for $15/yr). If you don't want to purchase one right now, just say "skip".`, imagePreview: logoUrl }]);
-                       setWizardStep(2);
+                       const autoDomain = `${wlConfig.name.replace(/\s+/g, '').toLowerCase()}.vibenetwork.tv`;
+                       setWlConfig(c => ({ ...c, domain: autoDomain }));
+                       setChatHistory(h => [...h, { sender: 'bot', text: `Logo locked in! Here's a preview. I've automatically assigned you the isolated subdomain: ${autoDomain}. Next, what are your primary brand colors? (e.g. "Black and Gold" or "Purple and Cyan").`, imagePreview: logoUrl }]);
+                       setWizardStep(3);
                        break;
                      }
                      case 2: {
-                       let domain = input;
-                       let text = `Scanning registries... Awesome! ${domain} is available and I have queued the $15 invoice.`;
-                       if (['no', 'skip', 'none'].includes(input.toLowerCase().trim())) {
-                          domain = `${wlConfig.name.replace(/\\s+/g, '').toLowerCase()}.vibenetwork.tv`;
-                          text = `No problem! I have generated a free isolated subdomain for you: ${domain}`;
-                       }
-                       setWlConfig(c => ({ ...c, domain }));
-                       setChatHistory(h => [...h, { sender: 'bot', text: `${text} Next, what are your primary brand colors? (e.g. "Black and Gold" or "Purple and Cyan").` }]);
-                       setWizardStep(3);
+                       // Step 2 is now deprecated/skipped.
                        break;
                      }
                      case 3: {
