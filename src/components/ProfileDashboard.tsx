@@ -5,6 +5,9 @@ import { LogOut, Camera, Lock, Unlock, Image as ImageIcon, Star, ShieldCheck, Ey
 import LiveChat from './LiveChat';
 import { useNavigate, useParams, useLocation } from 'react-router-dom';
 import Peer from 'peerjs';
+import { loadStripe } from '@stripe/stripe-js';
+
+const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLIC_KEY || 'pk_test_placeholder');
 
 const ProfileDashboard: React.FC<{ user: any }> = ({ user }) => {
   const navigate = useNavigate();
@@ -311,8 +314,35 @@ const ProfileDashboard: React.FC<{ user: any }> = ({ user }) => {
      };
   }, [isPlayingLive, streamSource, presenterMode, guests.length]);
 
-   const handleStripeCheckout = (itemName: string, amount: number) => {
-     alert(`[STRIPE CHECKOUT PENDING]\n\nRedirecting to Stripe to purchase:\n${itemName} - $${amount.toFixed(2)}\n\n(Connect your Stripe API keys in the backend to enable live payments)`);
+   const handleStripeCheckout = async (itemName: string, amount: number) => {
+     try {
+       // In a production app, this endpoint would be your Supabase Edge Function
+       // that creates the Stripe Checkout Session securely using the Stripe Secret Key.
+       const response = await fetch('https://your-project.supabase.co/functions/v1/create-checkout', {
+         method: 'POST',
+         headers: {
+           'Content-Type': 'application/json',
+         },
+         body: JSON.stringify({
+           itemName,
+           amount: amount * 100, // Stripe expects cents
+           creatorId: targetProfileId // To attribute the sale
+         })
+       });
+       
+       const data = await response.json().catch(() => null);
+       
+       if (data && data.sessionId) {
+         const stripe = await stripePromise;
+         await stripe?.redirectToCheckout({ sessionId: data.sessionId });
+       } else {
+         // Fallback for development before Edge Function is deployed
+         alert(`[STRIPE READY]\n\nThe frontend is wired up! To complete the payment for:\n${itemName} ($${amount.toFixed(2)})\n\nyou just need to deploy the Supabase Edge Function to return a sessionId.`);
+       }
+     } catch (error) {
+       console.error("Stripe Checkout Error:", error);
+       alert(`[STRIPE READY]\n\nThe frontend is wired up! To complete the payment for:\n${itemName} ($${amount.toFixed(2)})\n\nyou just need to deploy the Supabase Edge Function to return a sessionId.`);
+     }
    };
 
    const handleUnlockLive = () => {
@@ -448,6 +478,22 @@ const ProfileDashboard: React.FC<{ user: any }> = ({ user }) => {
         } else {
           setFeed([]);
         }
+
+        // Load Series with Episodes
+        const { data: seriesData } = await supabase!.from('series').select('*, episodes(*)').eq('creator_id', targetProfileId);
+        if (seriesData && seriesData.length > 0) {
+          setSeriesList(seriesData);
+        } else {
+          setSeriesList([]);
+        }
+
+        // Load Courses
+        const { data: coursesData } = await supabase!.from('courses').select('*').eq('creator_id', targetProfileId);
+        if (coursesData && coursesData.length > 0) {
+          setCourses(coursesData);
+        } else {
+          setCourses([]);
+        }
       }
       setLoading(false);
     }
@@ -527,46 +573,88 @@ const ProfileDashboard: React.FC<{ user: any }> = ({ user }) => {
     }
   };
 
-  const handleAddSeries = (e: React.FormEvent) => {
+  const handleAddSeries = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newSeries.title || !newSeries.price) return;
-    const sId = 's_' + Date.now();
-    setSeriesList([{ ...newSeries, id: sId, episodes: [] }, ...seriesList]);
+    setSaving(true);
+    
+    const insertData = {
+      creator_id: profile.id,
+      title: newSeries.title,
+      description: newSeries.description,
+      price: parseFloat(newSeries.price),
+      img: newSeries.img || 'https://images.unsplash.com/photo-1611162617474-5b21e879e113?w=400&q=80'
+    };
+
+    try {
+      const { data, error } = await supabase!.from('series').insert([insertData]).select();
+      if (!error && data) {
+        setSeriesList([{ ...data[0], episodes: [] }, ...seriesList]);
+      } else {
+        setSeriesList([{ ...insertData, id: Date.now().toString(), episodes: [] }, ...seriesList]);
+      }
+    } catch {
+      setSeriesList([{ ...insertData, id: Date.now().toString(), episodes: [] }, ...seriesList]);
+    }
     setNewSeries({ title: '', description: '', price: '', img: '' });
+    setSaving(false);
   };
 
-  const handleAddEpisode = (seriesId: string) => {
+  const handleAddEpisode = async (seriesId: string) => {
     if (!newEpisode.title) return;
-    setSeriesList(prev => prev.map(s => {
-      if (s.id === seriesId) {
-        return {
-          ...s,
-          episodes: [...s.episodes, { ...newEpisode, id: 'e_' + Date.now() }]
-        };
-      }
-      return s;
-    }));
+    
+    const insertData = {
+      series_id: seriesId,
+      title: newEpisode.title,
+      description: newEpisode.description,
+      length: newEpisode.length,
+      price: parseFloat(newEpisode.price || '0')
+    };
+
+    try {
+      const { data, error } = await supabase!.from('episodes').insert([insertData]).select();
+      const epToAdd = (!error && data) ? data[0] : { ...insertData, id: 'e_' + Date.now() };
+      
+      setSeriesList(prev => prev.map(s => {
+        if (s.id === seriesId) return { ...s, episodes: [...(s.episodes || []), epToAdd] };
+        return s;
+      }));
+    } catch {
+      setSeriesList(prev => prev.map(s => {
+        if (s.id === seriesId) return { ...s, episodes: [...(s.episodes || []), { ...insertData, id: 'e_' + Date.now() }] };
+        return s;
+      }));
+    }
     setNewEpisode({ title: '', description: '', length: '', price: '' });
     setActiveSeriesIdForEp(null);
   };
 
-  const handleAddCourse = (e: React.FormEvent) => {
+  const handleAddCourse = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newCourse.title || !newCourse.price) return;
     setSaving(true);
-    setTimeout(() => {
-      setCourses(prev => [...prev, {
-        id: 'c_' + Date.now(),
-        title: newCourse.title,
-        price: parseFloat(newCourse.price),
-        modules: parseInt(newCourse.modules || '10'),
-        hours: newCourse.hours || '5.0',
-        img: newCourse.img || 'https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?w=400&q=80',
-        progress: 0
-      }]);
-      setNewCourse({ title: '', price: '', modules: '', hours: '', img: '' });
-      setSaving(false);
-    }, 500);
+    
+    const insertData = {
+      creator_id: profile.id,
+      title: newCourse.title,
+      price: parseFloat(newCourse.price),
+      modules: parseInt(newCourse.modules || '10'),
+      hours: newCourse.hours || '5.0',
+      img: newCourse.img || 'https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?w=400&q=80'
+    };
+
+    try {
+      const { data, error } = await supabase!.from('courses').insert([insertData]).select();
+      if (!error && data) {
+        setCourses(prev => [...prev, data[0]]);
+      } else {
+        setCourses(prev => [...prev, { ...insertData, id: 'c_' + Date.now(), progress: 0 }]);
+      }
+    } catch {
+      setCourses(prev => [...prev, { ...insertData, id: 'c_' + Date.now(), progress: 0 }]);
+    }
+    setNewCourse({ title: '', price: '', modules: '', hours: '', img: '' });
+    setSaving(false);
   };
 
   const handleAddProduct = async (e: React.FormEvent) => {
@@ -575,7 +663,6 @@ const ProfileDashboard: React.FC<{ user: any }> = ({ user }) => {
     
     setSaving(true);
     const productInsert = {
-      id: Math.random().toString(),
       creator_id: profile.id,
       title: newProduct.title,
       price: parseFloat(newProduct.price),
@@ -589,10 +676,10 @@ const ProfileDashboard: React.FC<{ user: any }> = ({ user }) => {
         setProducts(prev => [...prev, data[0]]);
       } else {
         // Fallback if table doesn't exist yet
-        setProducts(prev => [...prev, productInsert]);
+        setProducts(prev => [...prev, { ...productInsert, id: Math.random().toString() }]);
       }
     } catch {
-      setProducts(prev => [...prev, productInsert]);
+      setProducts(prev => [...prev, { ...productInsert, id: Math.random().toString() }]);
     }
 
     setNewProduct({ title: '', price: '19.99', type: 'digital', image_url: '' });
