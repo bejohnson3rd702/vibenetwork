@@ -82,42 +82,63 @@ ALTER TABLE public.products ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.posts ENABLE ROW LEVEL SECURITY;
 
 -- Create Policies (Public Read Access)
+DROP POLICY IF EXISTS "Allow public read access for whitelabel_configs" ON public.whitelabel_configs;
 CREATE POLICY "Allow public read access for whitelabel_configs" ON public.whitelabel_configs FOR SELECT USING (true);
+DROP POLICY IF EXISTS "Allow public read access for profiles" ON public.profiles;
 CREATE POLICY "Allow public read access for profiles" ON public.profiles FOR SELECT USING (true);
+DROP POLICY IF EXISTS "Allow public read access for categories" ON public.categories;
 CREATE POLICY "Allow public read access for categories" ON public.categories FOR SELECT USING (true);
+DROP POLICY IF EXISTS "Allow public read access for videos" ON public.videos;
 CREATE POLICY "Allow public read access for videos" ON public.videos FOR SELECT USING (true);
+DROP POLICY IF EXISTS "Allow public read access for products" ON public.products;
 CREATE POLICY "Allow public read access for products" ON public.products FOR SELECT USING (true);
+DROP POLICY IF EXISTS "Allow public read access for posts" ON public.posts;
 CREATE POLICY "Allow public read access for posts" ON public.posts FOR SELECT USING (true);
 
 -- Create Policies (Authenticated Insert/Update for own data)
+DROP POLICY IF EXISTS "Allow users to update own profile" ON public.profiles;
 CREATE POLICY "Allow users to update own profile" ON public.profiles FOR UPDATE USING (auth.uid() = id);
+DROP POLICY IF EXISTS "Allow users to insert own products" ON public.products;
 CREATE POLICY "Allow users to insert own products" ON public.products FOR INSERT WITH CHECK (auth.uid() = creator_id);
+DROP POLICY IF EXISTS "Allow users to update own products" ON public.products;
 CREATE POLICY "Allow users to update own products" ON public.products FOR UPDATE USING (auth.uid() = creator_id);
+DROP POLICY IF EXISTS "Allow users to insert own posts" ON public.posts;
 CREATE POLICY "Allow users to insert own posts" ON public.posts FOR INSERT WITH CHECK (auth.uid() = creator_id);
+DROP POLICY IF EXISTS "Allow users to update own posts" ON public.posts;
 CREATE POLICY "Allow users to update own posts" ON public.posts FOR UPDATE USING (auth.uid() = creator_id);
+DROP POLICY IF EXISTS "Allow users to delete own posts" ON public.posts;
 CREATE POLICY "Allow users to delete own posts" ON public.posts FOR DELETE USING (auth.uid() = creator_id);
+DROP POLICY IF EXISTS "Allow users to delete own products" ON public.products;
 CREATE POLICY "Allow users to delete own products" ON public.products FOR DELETE USING (auth.uid() = creator_id);
 
 -- Optional: Allow permissive insert for testing phase (Uncomment if needed)
--- CREATE POLICY "Testing Insert All" ON public.products FOR INSERT WITH CHECK (true);
--- CREATE POLICY "Testing Insert All" ON public.posts FOR INSERT WITH CHECK (true);
+-- DROP POLICY IF EXISTS "Testing Insert All" ON public.products;
+CREATE POLICY "Testing Insert All" ON public.products FOR INSERT WITH CHECK (true);
+-- DROP POLICY IF EXISTS "Testing Insert All" ON public.posts;
+CREATE POLICY "Testing Insert All" ON public.posts FOR INSERT WITH CHECK (true);
 
 -- Admin Global Access Bypasses (Requires is_admin = true on the user's profile)
+DROP POLICY IF EXISTS "Admins can update any profile" ON public.profiles;
 CREATE POLICY "Admins can update any profile" ON public.profiles FOR UPDATE USING (
     (SELECT is_admin FROM public.profiles WHERE id = auth.uid()) = true
 );
+DROP POLICY IF EXISTS "Admins can insert categories" ON public.categories;
 CREATE POLICY "Admins can insert categories" ON public.categories FOR INSERT WITH CHECK (
     (SELECT is_admin FROM public.profiles WHERE id = auth.uid()) = true
 );
+DROP POLICY IF EXISTS "Admins can insert videos" ON public.videos;
 CREATE POLICY "Admins can insert videos" ON public.videos FOR INSERT WITH CHECK (
     (SELECT is_admin FROM public.profiles WHERE id = auth.uid()) = true
 );
+DROP POLICY IF EXISTS "Admins can update videos" ON public.videos;
 CREATE POLICY "Admins can update videos" ON public.videos FOR UPDATE USING (
     (SELECT is_admin FROM public.profiles WHERE id = auth.uid()) = true
 );
+DROP POLICY IF EXISTS "Admins can insert whitelabel configs" ON public.whitelabel_configs;
 CREATE POLICY "Admins can insert whitelabel configs" ON public.whitelabel_configs FOR INSERT WITH CHECK (
     (SELECT is_admin FROM public.profiles WHERE id = auth.uid()) = true
 );
+DROP POLICY IF EXISTS "Admins can update whitelabel configs" ON public.whitelabel_configs;
 CREATE POLICY "Admins can update whitelabel configs" ON public.whitelabel_configs FOR UPDATE USING (
     (SELECT is_admin FROM public.profiles WHERE id = auth.uid()) = true
 );
@@ -174,18 +195,27 @@ CREATE TABLE IF NOT EXISTS public.ledger (
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 ALTER TABLE public.ledger ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "Allow users to view own ledger" ON public.ledger;
 CREATE POLICY "Allow users to view own ledger" ON public.ledger FOR SELECT USING (auth.uid() = buyer_id OR auth.uid() = creator_id);
+DROP POLICY IF EXISTS "Admins can view global ledger" ON public.ledger;
 CREATE POLICY "Admins can view global ledger" ON public.ledger FOR SELECT USING (
     (SELECT is_admin FROM public.profiles WHERE id = auth.uid()) = true
 );
 -- Insert via webhook only (Service Role Key bypasses RLS)
 
+DROP POLICY IF EXISTS "Allow public read access for series" ON public.series;
 CREATE POLICY "Allow public read access for series" ON public.series FOR SELECT USING (true);
+DROP POLICY IF EXISTS "Allow public read access for episodes" ON public.episodes;
 CREATE POLICY "Allow public read access for episodes" ON public.episodes FOR SELECT USING (true);
+DROP POLICY IF EXISTS "Allow public read access for bookings" ON public.bookings;
 CREATE POLICY "Allow public read access for bookings" ON public.bookings FOR SELECT USING (true);
 
+DROP POLICY IF EXISTS "Allow users to insert own series" ON public.series;
 CREATE POLICY "Allow users to insert own series" ON public.series FOR INSERT WITH CHECK (auth.uid() = creator_id);
+DROP POLICY IF EXISTS "Allow users to update own series" ON public.series;
 CREATE POLICY "Allow users to update own series" ON public.series FOR UPDATE USING (auth.uid() = creator_id);
 
+DROP POLICY IF EXISTS "Allow users to insert own bookings" ON public.bookings;
 CREATE POLICY "Allow users to insert own bookings" ON public.bookings FOR INSERT WITH CHECK (auth.uid() = creator_id);
+DROP POLICY IF EXISTS "Allow users to update own bookings" ON public.bookings;
 CREATE POLICY "Allow users to update own bookings" ON public.bookings FOR UPDATE USING (auth.uid() = creator_id);
