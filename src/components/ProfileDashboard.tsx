@@ -46,6 +46,7 @@ const ProfileDashboard: React.FC<{ user: any }> = ({ user }) => {
   
   // Real Booking State
   const [bookingPrice, setBookingPrice] = useState('49.00');
+  const [bookingDuration, setBookingDuration] = useState(1);
   const [bookingType, setBookingType] = useState('virtual');
   const [virtualCallType, setVirtualCallType] = useState('video');
   const [availableSlots, setAvailableSlots] = useState<Record<number, string[]>>({
@@ -1575,7 +1576,7 @@ const ProfileDashboard: React.FC<{ user: any }> = ({ user }) => {
                   <h3 style={{ margin: '0 0 16px 0', fontSize: '18px', display: 'flex', alignItems: 'center', gap: '8px' }}>Creator Booking Settings</h3>
                   <div style={{ display: 'flex', gap: '16px', alignItems: 'center', flexWrap: 'wrap' }}>
                     <div style={{ display: 'flex', alignItems: 'center', background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px', overflow: 'hidden' }}>
-                      <span style={{ padding: '14px', color: '#888', background: 'rgba(255,255,255,0.02)', borderRight: '1px solid rgba(255,255,255,0.1)' }}>1-on-1 Price ($)</span>
+                      <span style={{ padding: '14px', color: '#888', background: 'rgba(255,255,255,0.02)', borderRight: '1px solid rgba(255,255,255,0.1)' }}>Hourly Rate ($)</span>
                       <input type="number" step="0.01" value={bookingPrice} onChange={e => setBookingPrice(e.target.value)} style={{ background: 'transparent', border: 'none', padding: '14px', color: '#fff', outline: 'none', fontSize: '15px', width: '120px' }} />
                     </div>
                     <p style={{ color: '#aaa', fontSize: '14px', margin: 0, flex: 1 }}>Select dates on the calendar below to add or remove your available timeslots.</p>
@@ -1715,10 +1716,22 @@ const ProfileDashboard: React.FC<{ user: any }> = ({ user }) => {
                           </div>
                       )}
 
+                      <div style={{ display: 'flex', gap: '10px', marginBottom: '12px' }}>
+                        <div style={{ flex: 1, position: 'relative' }}>
+                          <select value={bookingDuration} onChange={e => setBookingDuration(Number(e.target.value))} style={{ width: '100%', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', padding: '14px', borderRadius: '8px', color: '#fff', outline: 'none', appearance: 'none', fontSize: '15px' }}>
+                            <option value={1}>1 Hour Duration</option>
+                            <option value={2}>2 Hours Duration</option>
+                            <option value={3}>3 Hours Duration</option>
+                            <option value={4}>4 Hours Duration</option>
+                            <option value={8}>8 Hours (Full Day)</option>
+                          </select>
+                          <div style={{ position: 'absolute', right: '14px', top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none', color: '#888' }}>▼</div>
+                        </div>
+                      </div>
                       <input type="text" placeholder="Your Name" style={{ width: '100%', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', padding: '14px', borderRadius: '8px', color: '#fff', marginBottom: '12px', outline: 'none' }} />
                       <input type="text" placeholder="Purpose of Meeting (e.g. Mixing Advice)" style={{ width: '100%', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', padding: '14px', borderRadius: '8px', color: '#fff', marginBottom: '20px', outline: 'none' }} />
-                      <button onClick={() => { handleStripeCheckout(`${bookingType === 'virtual' ? `1-on-1 Virtual Call (${virtualCallType === 'video' ? 'Video' : 'Audio'})` : 'Physical Meeting'} (April ${selectedDate} at ${selectedTime})`, Number(bookingPrice), { is_booking: true, date: `April ${selectedDate}`, time: selectedTime, meeting_type: bookingType === 'virtual' ? `virtual_${virtualCallType}` : 'physical' }); setSelectedTime(null); setSelectedDate(null); }} style={{ width: '100%', padding: '16px', background: 'linear-gradient(135deg, #ff4d85, #8A2BE2)', color: '#fff', border: 'none', borderRadius: '12px', fontWeight: 'bold', fontSize: '16px', cursor: 'pointer', boxShadow: '0 10px 20px rgba(138,43,226,0.3)', transition: 'transform 0.2s' }} onMouseOver={e=>e.currentTarget.style.transform='scale(1.02)'} onMouseOut={e=>e.currentTarget.style.transform='scale(1)'}>
-                        Book Now (${bookingPrice})
+                      <button onClick={() => { handleStripeCheckout(`${bookingType === 'virtual' ? `1-on-1 Virtual Call (${virtualCallType === 'video' ? 'Video' : 'Audio'})` : 'Physical Meeting'} (April ${selectedDate} at ${selectedTime}) - ${bookingDuration} Hour(s)`, Number(bookingPrice) * bookingDuration, { is_booking: true, date: `April ${selectedDate}`, time: selectedTime, duration: bookingDuration, meeting_type: bookingType === 'virtual' ? `virtual_${virtualCallType}` : 'physical' }); setSelectedTime(null); setSelectedDate(null); }} style={{ width: '100%', padding: '16px', background: 'linear-gradient(135deg, #ff4d85, #8A2BE2)', color: '#fff', border: 'none', borderRadius: '12px', fontWeight: 'bold', fontSize: '16px', cursor: 'pointer', boxShadow: '0 10px 20px rgba(138,43,226,0.3)', transition: 'transform 0.2s' }} onMouseOver={e=>e.currentTarget.style.transform='scale(1.02)'} onMouseOut={e=>e.currentTarget.style.transform='scale(1)'}>
+                        Book Now (${(Number(bookingPrice) * bookingDuration).toFixed(2)})
                       </button>
                     </motion.div>
                   )}
