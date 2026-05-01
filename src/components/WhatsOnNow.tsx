@@ -95,7 +95,7 @@ const WhatsOnNow: React.FC = () => {
       }
       
       const now = new Date();
-      let currentStartTime = new Date(now);
+      const currentStartTime = new Date(now);
       // Start the schedule from the current hour or half-hour slot
       currentStartTime.setMinutes(now.getMinutes() >= 30 ? 30 : 0, 0, 0);
 

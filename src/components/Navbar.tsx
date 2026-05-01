@@ -1,4 +1,3 @@
-// @ts-nocheck
 import React, { useState, useEffect } from 'react';
 import { Search, User, Menu, Lightbulb, Wallet, Settings, LogOut } from 'lucide-react';
 import { ASSETS } from '../data';
