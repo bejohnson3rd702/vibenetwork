@@ -66,6 +66,7 @@ const FALLBACK_10_YOUTUBE = [
 
 const WhatsOnNow: React.FC = () => {
   const [activeIndex, setActiveIndex] = useState(0);
+  const [userManuallySelected, setUserManuallySelected] = useState(false);
   const [scheduleItems, setScheduleItems] = useState<any[]>([]);
 
   React.useEffect(() => {
@@ -125,16 +126,17 @@ const WhatsOnNow: React.FC = () => {
     if (scheduleItems.length === 0 || !scheduleItems[0].startTime) return;
 
     const interval = setInterval(() => {
+      if (userManuallySelected) return;
       const now = new Date();
       const currentIndex = scheduleItems.findIndex(item => now >= item.startTime && now < item.endTime);
       
-      if (currentIndex !== -1) {
+      if (currentIndex !== -1 && currentIndex !== activeIndex) {
         setActiveIndex(currentIndex);
       }
     }, 10000);
 
     return () => clearInterval(interval);
-  }, [scheduleItems]);
+  }, [scheduleItems, userManuallySelected, activeIndex]);
 
   if (scheduleItems.length === 0) return null;
 
@@ -270,7 +272,10 @@ const WhatsOnNow: React.FC = () => {
                 key={item.id} 
                 item={item} 
                 isActive={activeIndex === idx}
-                onClick={() => setActiveIndex(idx)}
+                onClick={() => {
+                  setActiveIndex(idx);
+                  setUserManuallySelected(true);
+                }}
               />
             ))}
           </div>

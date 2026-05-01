@@ -178,11 +178,17 @@ function App() {
     initPlatform();
   }, []);
 
+  useEffect(() => {
+    if (wlConfig?.bg) {
+      document.documentElement.style.setProperty('--bg-color', wlConfig.bg);
+    }
+  }, [wlConfig]);
+
   if (wlConfig) {
     return (
       <WhiteLabelContext.Provider value={{ wlConfig, setWlConfig }}>
         <Router>
-          <div style={{ background: wlConfig.bg, minHeight: '100vh', color: 'var(--text-primary)', overflowX: 'hidden' }}>
+          <div style={{ background: 'var(--bg-color)', minHeight: '100vh', color: 'var(--text-primary)', overflowX: 'hidden' }}>
             <Navbar user={user} onLoginClick={() => setShowEndUserAuthModal(true)} onAdminClick={() => setShowAdminPanel(true)} />
           
           <Routes>
