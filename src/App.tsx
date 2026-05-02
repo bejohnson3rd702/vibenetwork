@@ -526,14 +526,14 @@ function WhiteLabelHome({ wlConfig, categories, user, activeVideo, setActiveVide
        />
        {/* Complex Gradient Overlays responding dynamically to Tenant Accent */}
        <div style={{ position: 'absolute', inset: 0, background: `linear-gradient(to right, ${wlConfig.bg || 'var(--bg-color)'}dd, transparent)`, zIndex: 1 }} />
-       <div style={{ position: 'absolute', inset: 0, background: `radial-gradient(circle at 50% 30%, ${wlConfig.accent || '#b829ea'}44, transparent 60%)`, zIndex: 1, mixBlendMode: 'screen' }} />
+       <div style={{ position: 'absolute', inset: 0, background: `radial-gradient(circle at 50% 30%, ${wlConfig.accent || 'var(--accent-primary)'}44, transparent 60%)`, zIndex: 1, mixBlendMode: 'screen' }} />
        <div style={{ position: 'absolute', inset: 0, background: `linear-gradient(to bottom, transparent 40%, ${wlConfig.bg || 'var(--bg-color)'} 100%)`, zIndex: 1 }} />
        
        <div className="px-mobile-sm py-mobile-sm" style={{ zIndex: 2, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '32px', marginTop: '60px' }}>
           <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, delay: 0.2, ease: [0.16, 1, 0.3, 1] }} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '16px' }}>
-            <div style={{ padding: '8px 16px', background: 'var(--bg-surface)', backdropFilter: 'blur(10px)', border: `1px solid ${wlConfig.accent || '#b829ea'}44`, borderRadius: '30px', display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
-              <div style={{ width: 8, height: 8, borderRadius: '50%', background: wlConfig.accent || '#b829ea', boxShadow: `0 0 10px ${wlConfig.accent || '#b829ea'}` }} />
-              <span style={{ fontSize: '13px', fontWeight: 600, letterSpacing: '2px', textTransform: 'uppercase', color: wlConfig.accent || '#b829ea' }}>Live Network Initialized</span>
+            <div style={{ padding: '8px 16px', background: 'var(--bg-surface)', backdropFilter: 'blur(10px)', border: `1px solid ${wlConfig.accent || 'var(--accent-primary)'}44`, borderRadius: '30px', display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
+              <div style={{ width: 8, height: 8, borderRadius: '50%', background: wlConfig.accent || 'var(--accent-primary)', boxShadow: `0 0 10px ${wlConfig.accent || 'var(--accent-primary)'}` }} />
+              <span style={{ fontSize: '13px', fontWeight: 600, letterSpacing: '2px', textTransform: 'uppercase', color: wlConfig.accent || 'var(--accent-primary)' }}>Live Network Initialized</span>
             </div>
             <h1 className="hero-title-mobile" style={{ fontSize: '96px', fontWeight: '900', margin: 0, letterSpacing: '-3px', lineHeight: 1.1, textShadow: '0 20px 40px rgba(0,0,0,0.8)', background: `linear-gradient(to bottom, #ffffff, rgba(255,255,255,0.7))`, WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
               {wlConfig.name}
@@ -545,7 +545,7 @@ function WhiteLabelHome({ wlConfig, categories, user, activeVideo, setActiveVide
           </motion.p>
           
           <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.8, delay: 0.6, ease: [0.16, 1, 0.3, 1] }} style={{ marginTop: '20px', display: 'flex', gap: '20px', alignItems: 'center' }}>
-             <button onClick={() => { document.getElementById('featured-content')?.scrollIntoView({ behavior: 'smooth' }); }} style={{ padding: '20px 48px', background: wlConfig.accent || '#b829ea', color: 'var(--text-primary)', border: 'none', borderRadius: '16px', fontSize: '18px', fontWeight: 'bold', cursor: 'pointer', boxShadow: `0 10px 30px ${wlConfig.accent || '#b829ea'}66`, transition: 'all 0.3s ease' }}>
+             <button onClick={() => { document.getElementById('featured-content')?.scrollIntoView({ behavior: 'smooth' }); }} style={{ padding: '20px 48px', background: wlConfig.accent || 'var(--accent-primary)', color: 'var(--text-primary)', border: 'none', borderRadius: '16px', fontSize: '18px', fontWeight: 'bold', cursor: 'pointer', boxShadow: `0 10px 30px ${wlConfig.accent || 'var(--accent-primary)'}66`, transition: 'all 0.3s ease' }}>
                {wlConfig.btnPrimary || 'Explore Content'}
              </button>
           </motion.div>

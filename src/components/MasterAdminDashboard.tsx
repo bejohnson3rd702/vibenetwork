@@ -465,7 +465,7 @@ export default function MasterAdminDashboard() {
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
                    
                    {/* Direct Platform Tier */}
-                   <div style={{ background: 'rgba(0,0,0,0.3)', padding: '20px', borderRadius: '16px', borderLeft: '4px solid #b829ea' }}>
+                   <div style={{ background: 'rgba(0,0,0,0.3)', padding: '20px', borderRadius: '16px', borderLeft: '4px solid var(--accent-primary)' }}>
                      <h4 style={{ margin: '0 0 10px 0', fontSize: '18px', color: '#fff' }}>1. Main Root Platform Architecture</h4>
                      <p style={{ color: '#888', margin: 0, fontSize: '14px', lineHeight: 1.5 }}>
                        For all creators directly registered and transacting on the core Vibe Network. No intermediaries.

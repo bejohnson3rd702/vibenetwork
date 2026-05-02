@@ -49,9 +49,9 @@ const Marketplace: React.FC = () => {
       {/* Marketplace Header */}
       <div style={{ textAlign: 'center', marginBottom: '60px', padding: '0 20px' }}>
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
-          <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', padding: '8px 16px', background: 'rgba(255,255,255,0.05)', borderRadius: '30px', marginBottom: '16px', border: `1px solid ${wlConfig?.accent || '#b829ea'}44` }}>
-             <ShoppingBag size={16} color={wlConfig?.accent || '#b829ea'} />
-             <span style={{ fontSize: '13px', fontWeight: 'bold', letterSpacing: '1px', color: wlConfig?.accent || '#b829ea', textTransform: 'uppercase' }}>Network Marketplace</span>
+          <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', padding: '8px 16px', background: 'rgba(255,255,255,0.05)', borderRadius: '30px', marginBottom: '16px', border: `1px solid ${wlConfig?.accent || 'var(--accent-primary)'}44` }}>
+             <ShoppingBag size={16} color={wlConfig?.accent || 'var(--accent-primary)'} />
+             <span style={{ fontSize: '13px', fontWeight: 'bold', letterSpacing: '1px', color: wlConfig?.accent || 'var(--accent-primary)', textTransform: 'uppercase' }}>Network Marketplace</span>
           </div>
           <h1 style={{ fontSize: '48px', margin: '0 0 16px 0', fontWeight: 900 }}>Discover & Collect</h1>
           <p style={{ color: '#aaa', fontSize: '18px', maxWidth: '600px', margin: '0 auto' }}>
@@ -82,7 +82,7 @@ const Marketplace: React.FC = () => {
                     onClick={() => setActiveFilter(filter)}
                     style={{ 
                       padding: '12px 24px', 
-                      background: activeFilter === filter ? (wlConfig?.accent || '#b829ea') : 'rgba(255,255,255,0.05)', 
+                      background: activeFilter === filter ? (wlConfig?.accent || 'var(--accent-primary)') : 'rgba(255,255,255,0.05)', 
                       color: activeFilter === filter ? '#000' : '#fff', 
                       border: 'none', 
                       borderRadius: '12px', 
@@ -145,7 +145,7 @@ const Marketplace: React.FC = () => {
                        <ShoppingBag size={48} color="#333" />
                      </div>
                    )}
-                   <div style={{ position: 'absolute', top: 16, right: 16, background: 'rgba(0,0,0,0.8)', backdropFilter: 'blur(10px)', padding: '6px 12px', borderRadius: '20px', fontSize: '12px', fontWeight: 'bold', textTransform: 'uppercase', color: wlConfig?.accent || '#b829ea', border: `1px solid ${wlConfig?.accent || '#b829ea'}44` }}>
+                   <div style={{ position: 'absolute', top: 16, right: 16, background: 'rgba(0,0,0,0.8)', backdropFilter: 'blur(10px)', padding: '6px 12px', borderRadius: '20px', fontSize: '12px', fontWeight: 'bold', textTransform: 'uppercase', color: wlConfig?.accent || 'var(--accent-primary)', border: `1px solid ${wlConfig?.accent || 'var(--accent-primary)'}44` }}>
                      {product.type}
                    </div>
                 </div>
@@ -169,7 +169,7 @@ const Marketplace: React.FC = () => {
                       <div style={{ fontSize: '24px', fontWeight: 900, color: '#fff' }}>
                         ${Number(product.price).toFixed(2)}
                       </div>
-                      <button style={{ width: '40px', height: '40px', borderRadius: '50%', background: wlConfig?.accent || '#b829ea', border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: '#000' }}>
+                      <button style={{ width: '40px', height: '40px', borderRadius: '50%', background: wlConfig?.accent || 'var(--accent-primary)', border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: '#000' }}>
                         <ShoppingCart size={18} />
                       </button>
                    </div>

@@ -125,9 +125,9 @@ const ProductPage: React.FC = () => {
           {/* Right: Product Details */}
           <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} style={{ flex: '1 1 400px', minWidth: '300px', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
              
-             <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', padding: '8px 16px', background: 'rgba(255,255,255,0.05)', borderRadius: '30px', marginBottom: '24px', border: `1px solid ${wlConfig?.accent || '#b829ea'}44`, width: 'fit-content' }}>
+             <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', padding: '8px 16px', background: 'rgba(255,255,255,0.05)', borderRadius: '30px', marginBottom: '24px', border: `1px solid ${wlConfig?.accent || 'var(--accent-primary)'}44`, width: 'fit-content' }}>
                {getTypeIcon()}
-               <span style={{ fontSize: '13px', fontWeight: 'bold', letterSpacing: '1px', color: wlConfig?.accent || '#b829ea', textTransform: 'uppercase' }}>
+               <span style={{ fontSize: '13px', fontWeight: 'bold', letterSpacing: '1px', color: wlConfig?.accent || 'var(--accent-primary)', textTransform: 'uppercase' }}>
                  {product.type}
                </span>
              </div>
@@ -164,10 +164,10 @@ const ProductPage: React.FC = () => {
                              padding: '10px 20px', 
                              borderRadius: '20px', 
                              background: selectedColor === c ? 'rgba(255,255,255,0.1)' : 'rgba(255,255,255,0.02)', 
-                             border: selectedColor === c ? `2px solid ${wlConfig?.accent || '#b829ea'}` : '1px solid rgba(255,255,255,0.1)',
+                             border: selectedColor === c ? `2px solid ${wlConfig?.accent || 'var(--accent-primary)'}` : '1px solid rgba(255,255,255,0.1)',
                              color: selectedColor === c ? '#fff' : '#ccc',
                              cursor: 'pointer',
-                             boxShadow: selectedColor === c ? `0 0 15px ${wlConfig?.accent || '#b829ea'}66` : 'none',
+                             boxShadow: selectedColor === c ? `0 0 15px ${wlConfig?.accent || 'var(--accent-primary)'}66` : 'none',
                              transition: 'all 0.2s',
                              fontWeight: 'bold'
                            }}
@@ -192,10 +192,10 @@ const ProductPage: React.FC = () => {
                            style={{
                              flex: '1 1 calc(20% - 8px)',
                              padding: '12px 0',
-                             background: selectedSize === s ? (wlConfig?.accent || '#b829ea') : 'rgba(255,255,255,0.05)',
+                             background: selectedSize === s ? (wlConfig?.accent || 'var(--accent-primary)') : 'rgba(255,255,255,0.05)',
                              color: selectedSize === s ? '#000' : '#fff',
                              border: '1px solid',
-                             borderColor: selectedSize === s ? (wlConfig?.accent || '#b829ea') : 'rgba(255,255,255,0.1)',
+                             borderColor: selectedSize === s ? (wlConfig?.accent || 'var(--accent-primary)') : 'rgba(255,255,255,0.1)',
                              borderRadius: '12px',
                              fontWeight: 'bold',
                              cursor: 'pointer',
@@ -224,7 +224,7 @@ const ProductPage: React.FC = () => {
                    width: '100%', 
                    padding: '20px', 
                    marginTop: '32px', 
-                   background: purchasing ? '#444' : (wlConfig?.accent || '#b829ea'), 
+                   background: purchasing ? '#444' : (wlConfig?.accent || 'var(--accent-primary)'), 
                    color: purchasing ? '#aaa' : '#000', 
                    border: 'none', 
                    borderRadius: '16px', 
@@ -236,7 +236,7 @@ const ProductPage: React.FC = () => {
                    alignItems: 'center',
                    justifyContent: 'center',
                    gap: '12px',
-                   boxShadow: purchasing ? 'none' : `0 10px 30px ${wlConfig?.accent || '#b829ea'}66`,
+                   boxShadow: purchasing ? 'none' : `0 10px 30px ${wlConfig?.accent || 'var(--accent-primary)'}66`,
                    transition: 'all 0.3s ease'
                  }}
                >
