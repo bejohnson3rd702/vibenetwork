@@ -134,7 +134,7 @@ const Marketplace: React.FC = () => {
                   e.currentTarget.style.boxShadow = 'none';
                   e.currentTarget.style.borderColor = `rgba(255,255,255,0.05)`;
                 }}
-                onClick={() => navigate(`/profile/${product.creator_id}?tab=store`)}
+                onClick={() => navigate(`/product/${product.id}`)}
               >
                 {/* Product Image */}
                 <div style={{ width: '100%', aspectRatio: '1/1', background: '#111', position: 'relative', overflow: 'hidden' }}>
