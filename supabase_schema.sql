@@ -283,6 +283,7 @@ CREATE TABLE IF NOT EXISTS public.platform_settings (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     global_vibe_fee NUMERIC DEFAULT 15.00,
     global_whitelabel_fee NUMERIC DEFAULT 15.00,
+    global_vibe_fee_whitelabel NUMERIC DEFAULT 15.00,
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 ALTER TABLE public.platform_settings ENABLE ROW LEVEL SECURITY;

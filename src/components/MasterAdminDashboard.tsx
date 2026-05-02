@@ -34,7 +34,7 @@ export default function MasterAdminDashboard() {
   const [loading, setLoading] = useState(false);
   const [broadcastSource, setBroadcastSource] = useState<'youtube' | 'upload'>('youtube');
   const [currentUser, setCurrentUser] = useState<any>(null);
-  const [globalSettings, setGlobalSettings] = useState<any>({ id: '', global_vibe_fee: 15, global_whitelabel_fee: 15 });
+  const [globalSettings, setGlobalSettings] = useState<any>({ id: '', global_vibe_fee: 15, global_whitelabel_fee: 15, global_vibe_fee_whitelabel: 15 });
   const [systemLogs, setSystemLogs] = useState<any[]>([]);
   const [toast, setToast] = useState<{message: string, type: 'success' | 'error'} | null>(null);
 
@@ -87,7 +87,7 @@ export default function MasterAdminDashboard() {
            } else if (error) {
               showToast("CRITICAL: platform_settings table is missing! Please run the Supabase schema migration.", 'error');
            } else {
-              const { data: newSettings } = await supabase!.from('platform_settings').insert([{ global_vibe_fee: 15, global_whitelabel_fee: 15 }]).select().single();
+              const { data: newSettings } = await supabase!.from('platform_settings').insert([{ global_vibe_fee: 15, global_whitelabel_fee: 15, global_vibe_fee_whitelabel: 15 }]).select().single();
               if (newSettings) setGlobalSettings(newSettings);
            }
         } catch (e) {
@@ -778,7 +778,7 @@ export default function MasterAdminDashboard() {
                      <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                         <div style={{ background: 'rgba(0,255,136,0.05)', border: '1px solid rgba(0,255,136,0.2)', padding: '16px', borderRadius: '12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                            <span style={{ color: '#aaa', fontWeight: 'bold' }}>Creator / Profile Split</span>
-                           <span style={{ fontSize: '24px', color: '#00ff88', fontWeight: 900 }}>{100 - Number(globalSettings?.global_vibe_fee ?? 15) - Number(globalSettings?.global_whitelabel_fee ?? 15)}%</span>
+                           <span style={{ fontSize: '24px', color: '#00ff88', fontWeight: 900 }}>{100 - Number(globalSettings?.global_vibe_fee_whitelabel ?? 15) - Number(globalSettings?.global_whitelabel_fee ?? 15)}%</span>
                         </div>
                         <div style={{ background: 'rgba(0,85,255,0.05)', border: '1px solid rgba(0,85,255,0.2)', padding: '16px', borderRadius: '12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                            <span style={{ color: '#aaa', fontWeight: 'bold' }}>Global Whitelabel Fee Default</span>
@@ -813,10 +813,31 @@ export default function MasterAdminDashboard() {
                         <div style={{ background: 'rgba(255,215,0,0.05)', border: '1px solid rgba(255,215,0,0.2)', padding: '16px', borderRadius: '12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                            <span style={{ color: '#aaa', fontWeight: 'bold' }}>Global Vibe Network Gateway Default</span>
                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                              <span style={{ background: 'transparent', color: '#FFD700', fontSize: '20px', fontWeight: 900, textAlign: 'center' }}>
-                                {globalSettings.global_vibe_fee}%
-                              </span>
-                              <span style={{ fontSize: '12px', color: '#888', marginLeft: '10px' }}>(Inherited from Main Root)</span>
+                              <input id="global-vibe-fee-wl" type="number" value={globalSettings.global_vibe_fee_whitelabel} onChange={(e) => setGlobalSettings(prev => ({ ...prev, global_vibe_fee_whitelabel: e.target.value }))} style={{ background: 'transparent', border: '1px solid rgba(255,215,0,0.3)', color: '#FFD700', fontSize: '20px', fontWeight: 900, width: '80px', textAlign: 'center', outline: 'none', borderRadius: '8px', padding: '4px' }} />
+                              <span style={{ fontSize: '20px', color: '#FFD700', fontWeight: 900 }}>%</span>
+                              <button onClick={async (e) => {
+                                 const btn = e.currentTarget;
+                                 const val = parseFloat((document.getElementById('global-vibe-fee-wl') as HTMLInputElement).value);
+                                 if (isNaN(val) || !globalSettings.id) {
+                                    if (!globalSettings.id) showToast('Settings row not initialized in database.', 'error');
+                                    return;
+                                 }
+                                 btn.innerText = '...';
+                                 const { data, error } = await supabase!.from('platform_settings').update({ global_vibe_fee_whitelabel: val }).neq('id', '00000000-0000-0000-0000-000000000000').select();
+                                 if (error || !data || data.length === 0) {
+                                    showToast('Failed to save setting (Permission Denied): ' + (error?.message || 'RLS Blocked'), 'error');
+                                    btn.innerText = 'Save';
+                                    logSystemEvent('ERROR', `Failed to update Vibe Whitelabel Gateway Fee to ${val}%`);
+                                    return;
+                                 }
+                                 setGlobalSettings(prev => ({ ...prev, global_vibe_fee_whitelabel: val }));
+                                 logSystemEvent('WARN', `Global Vibe Whitelabel Gateway Default updated to ${val}%`);
+                                 btn.innerText = 'Saved';
+                                 btn.style.color = '#00ff88';
+                                 setTimeout(() => { btn.innerText = 'Save'; btn.style.color = '#FFD700'; }, 2000);
+                              }} style={{ background: 'rgba(255,215,0,0.1)', color: '#FFD700', border: '1px solid rgba(255,215,0,0.2)', padding: '6px 16px', borderRadius: '8px', fontWeight: 'bold', cursor: 'pointer', transition: '0.2s', marginLeft: '10px' }}>
+                                 Save
+                              </button>
                            </div>
                         </div>
                      </div>
@@ -881,7 +902,7 @@ export default function MasterAdminDashboard() {
                            const gross = Number(tx.amount || 0);
                            
                            const wlFeePercent = isDirect ? 0 : Number(wlConfig?.platform_fee_percentage ?? globalSettings?.global_whitelabel_fee ?? 15);
-                           const vFeePercent = Number(profile?.platform_fee_percentage ?? globalSettings?.global_vibe_fee ?? 15);
+                           const vFeePercent = Number(profile?.platform_fee_percentage ?? (isDirect ? globalSettings?.global_vibe_fee : globalSettings?.global_vibe_fee_whitelabel) ?? 15);
                            const totalFeePercent = vFeePercent + wlFeePercent;
                            const creatorCutPercent = 100 - totalFeePercent;
                            
