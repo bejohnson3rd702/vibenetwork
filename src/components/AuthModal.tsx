@@ -21,6 +21,9 @@ const AuthModal: React.FC<AuthModalProps> = ({ onClose, onSuccess, defaultIsLogi
   
   const [errorMSG, setErrorMSG] = useState('');
   const [loading, setLoading] = useState(false);
+  
+  const accentColor = activeTenantConfig?.accent || '#ff4d85';
+  const btnColor = activeTenantConfig?.btnPrimary || '#fff';
 
   // Business Wizard State
   const [showBusinessWizard, setShowBusinessWizard] = useState(false);
@@ -240,9 +243,9 @@ const AuthModal: React.FC<AuthModalProps> = ({ onClose, onSuccess, defaultIsLogi
                   onClick={() => setRole('business')}
                   style={{
                     flex: 1, padding: '10px', borderRadius: '12px', fontWeight: 'bold', fontSize: '13px',
-                    background: role === 'business' ? '#ff4d85' : 'rgba(255,255,255,0.05)',
+                    background: role === 'business' ? accentColor : 'rgba(255,255,255,0.05)',
                     color: role === 'business' ? '#fff' : '#888',
-                    border: '1px solid', borderColor: role === 'business' ? '#ff4d85' : 'rgba(255,255,255,0.1)',
+                    border: '1px solid', borderColor: role === 'business' ? accentColor : 'rgba(255,255,255,0.1)',
                     cursor: 'pointer', transition: 'all 0.2s'
                   }}
                 >
@@ -257,7 +260,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ onClose, onSuccess, defaultIsLogi
             disabled={loading}
             style={{
               width: '100%', padding: '18px', marginTop: '16px',
-              background: '#fff', color: '#000', fontWeight: 'bold', fontSize: '16px',
+              background: btnColor, color: btnColor === '#fff' ? '#000' : '#fff', fontWeight: 'bold', fontSize: '16px',
               border: 'none', borderRadius: '12px', cursor: loading ? 'not-allowed' : 'pointer',
               opacity: loading ? 0.7 : 1
             }}
@@ -284,7 +287,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ onClose, onSuccess, defaultIsLogi
             
             <div style={{ flex: 1, padding: '20px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '16px' }}>
                {chatHistory.map((msg, idx) => (
-                 <div key={idx} style={{ alignSelf: msg.sender === 'user' ? 'flex-end' : 'flex-start', background: msg.sender === 'user' ? '#ff4d85' : 'rgba(255,255,255,0.1)', padding: '12px 16px', borderRadius: '16px', maxWidth: '85%', color: 'var(--text-primary)', fontSize: '14px', lineHeight: 1.4 }}>
+                 <div key={idx} style={{ alignSelf: msg.sender === 'user' ? 'flex-end' : 'flex-start', background: msg.sender === 'user' ? accentColor : 'rgba(255,255,255,0.1)', padding: '12px 16px', borderRadius: '16px', maxWidth: '85%', color: '#fff', fontSize: '14px', lineHeight: 1.4 }}>
                    {msg.text && <div>{msg.text}</div>}
                    {msg.imagePreview && (
                      <img src={msg.imagePreview} alt="Preview" style={{ width: '100%', marginTop: '12px', borderRadius: '8px', border: '2px solid rgba(255,255,255,0.2)', objectFit: 'contain', height: '180px', backgroundColor: '#000' }} />
