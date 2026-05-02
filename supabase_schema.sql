@@ -311,3 +311,76 @@ CREATE POLICY "Admins can read system logs" ON public.system_logs FOR SELECT USI
     (SELECT is_admin FROM public.profiles WHERE id = auth.uid()) = true
 );
 CREATE POLICY "Anyone can insert logs" ON public.system_logs FOR INSERT WITH CHECK (true);
+
+-- Missing Tables for Creator Studio
+CREATE TABLE IF NOT EXISTS public.bookings (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    creator_id UUID REFERENCES public.profiles(id) ON DELETE CASCADE,
+    buyer_id UUID REFERENCES public.profiles(id) ON DELETE CASCADE,
+    status TEXT DEFAULT 'pending',
+    price NUMERIC NOT NULL,
+    duration INTEGER NOT NULL,
+    booking_type TEXT,
+    call_type TEXT,
+    scheduled_at TIMESTAMP WITH TIME ZONE,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+ALTER TABLE public.bookings ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Users can read own bookings" ON public.bookings FOR SELECT USING (auth.uid() = creator_id OR auth.uid() = buyer_id);
+CREATE POLICY "Users can insert bookings" ON public.bookings FOR INSERT WITH CHECK (auth.uid() = buyer_id);
+
+CREATE TABLE IF NOT EXISTS public.products (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    creator_id UUID REFERENCES public.profiles(id) ON DELETE CASCADE,
+    title TEXT NOT NULL,
+    price NUMERIC NOT NULL,
+    type TEXT DEFAULT 'digital',
+    image_url TEXT,
+    variants JSONB,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+ALTER TABLE public.products ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Public read products" ON public.products FOR SELECT USING (true);
+CREATE POLICY "Creators can insert products" ON public.products FOR INSERT WITH CHECK (auth.uid() = creator_id);
+
+CREATE TABLE IF NOT EXISTS public.courses (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    creator_id UUID REFERENCES public.profiles(id) ON DELETE CASCADE,
+    title TEXT NOT NULL,
+    price NUMERIC NOT NULL,
+    modules INTEGER DEFAULT 1,
+    hours NUMERIC DEFAULT 1.0,
+    img TEXT,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+ALTER TABLE public.courses ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Public read courses" ON public.courses FOR SELECT USING (true);
+CREATE POLICY "Creators can insert courses" ON public.courses FOR INSERT WITH CHECK (auth.uid() = creator_id);
+
+CREATE TABLE IF NOT EXISTS public.series (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    creator_id UUID REFERENCES public.profiles(id) ON DELETE CASCADE,
+    title TEXT NOT NULL,
+    description TEXT,
+    price NUMERIC NOT NULL,
+    img TEXT,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+ALTER TABLE public.series ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Public read series" ON public.series FOR SELECT USING (true);
+CREATE POLICY "Creators can insert series" ON public.series FOR INSERT WITH CHECK (auth.uid() = creator_id);
+
+CREATE TABLE IF NOT EXISTS public.episodes (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    series_id UUID REFERENCES public.series(id) ON DELETE CASCADE,
+    title TEXT NOT NULL,
+    description TEXT,
+    length TEXT,
+    price NUMERIC DEFAULT 0,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+ALTER TABLE public.episodes ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Public read episodes" ON public.episodes FOR SELECT USING (true);
+CREATE POLICY "Creators can insert episodes" ON public.episodes FOR INSERT WITH CHECK (
+    EXISTS (SELECT 1 FROM public.series WHERE id = series_id AND creator_id = auth.uid())
+);

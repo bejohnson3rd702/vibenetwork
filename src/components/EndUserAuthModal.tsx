@@ -100,7 +100,7 @@ export default function EndUserAuthModal({ onClose }: EndUserAuthModalProps) {
           
           <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '16px' }}>
              {wlConfig?.logoImage ? (
-                <img src={wlConfig.logoImage} style={{ height: '40px', objectFit: 'contain' }} alt="Logo" />
+                <img src={wlConfig.logoImage} onError={(e) => e.currentTarget.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(wlConfig.name || 'Vibe')}&background=random`} style={{ height: '40px', objectFit: 'contain' }} alt="Logo" />
              ) : (
                 <div style={{ background: accentColor, width: '48px', height: '48px', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                    <ShieldCheck size={28} color="#fff" />
