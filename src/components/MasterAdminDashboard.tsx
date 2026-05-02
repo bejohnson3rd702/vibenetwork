@@ -81,7 +81,7 @@ export default function MasterAdminDashboard() {
         }
         
         try {
-           const { data: settingsData, error } = await supabase!.from('platform_settings').select('*').limit(1).maybeSingle();
+           const { data: settingsData, error } = await supabase!.from('platform_settings').select('*').order('id', { ascending: true }).limit(1).maybeSingle();
            if (settingsData) {
               setGlobalSettings(settingsData);
            } else if (error) {
