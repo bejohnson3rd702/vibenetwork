@@ -421,3 +421,20 @@ CREATE POLICY "Admins can update leads" ON public.network_leads FOR UPDATE USING
     (SELECT is_admin FROM public.profiles WHERE id = auth.uid()) = true OR
     whitelabel_id IN (SELECT id FROM public.whitelabel_configs WHERE owner_id = auth.uid())
 );
+
+-- ==========================================
+-- SCALABILITY & PERFORMANCE INDEXES
+-- ==========================================
+CREATE INDEX IF NOT EXISTS idx_whitelabel_configs_domain ON public.whitelabel_configs(domain);
+CREATE INDEX IF NOT EXISTS idx_whitelabel_configs_owner_id ON public.whitelabel_configs(owner_id);
+CREATE INDEX IF NOT EXISTS idx_profiles_whitelabel_id ON public.profiles(whitelabel_id);
+CREATE INDEX IF NOT EXISTS idx_profiles_username ON public.profiles(username);
+CREATE INDEX IF NOT EXISTS idx_videos_category_id ON public.videos(category_id);
+CREATE INDEX IF NOT EXISTS idx_videos_creator_id ON public.videos(creator_id);
+CREATE INDEX IF NOT EXISTS idx_products_creator_id ON public.products(creator_id);
+CREATE INDEX IF NOT EXISTS idx_posts_creator_id ON public.posts(creator_id);
+CREATE INDEX IF NOT EXISTS idx_series_creator_id ON public.series(creator_id);
+CREATE INDEX IF NOT EXISTS idx_episodes_series_id ON public.episodes(series_id);
+CREATE INDEX IF NOT EXISTS idx_courses_creator_id ON public.courses(creator_id);
+CREATE INDEX IF NOT EXISTS idx_bookings_creator_id ON public.bookings(creator_id);
+CREATE INDEX IF NOT EXISTS idx_bookings_buyer_id ON public.bookings(buyer_id);
