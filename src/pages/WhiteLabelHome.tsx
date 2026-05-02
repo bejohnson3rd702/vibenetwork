@@ -145,6 +145,8 @@ export default function WhiteLabelHome({ wlConfig, categories, user, activeVideo
                 {wlConfig.customSections.split(',').map((section: string, idx: number) => {
                    const title = section.trim();
                    if (!title) return null;
+                   const lTitle = title.toLowerCase();
+                   if (lTitle === 'contact us form' || lTitle === 'contact us' || lTitle === 'contact' || lTitle === 'about us' || lTitle === 'about') return null;
 
                    return (
                       <div key={idx} style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '24px', padding: '60px', display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', gap: '20px', maxWidth: '800px', margin: '0 auto', width: '100%' }}>

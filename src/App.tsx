@@ -254,6 +254,8 @@ function App() {
               } />
               <Route path="/marketplace" element={<Marketplace />} />
               <Route path="/contact" element={<Contact />} />
+              <Route path="/about" element={<MoreInfo />} />
+              <Route path="/more-info" element={<MoreInfo />} />
               <Route path="/product/:productId" element={<ProductPage />} />
               <Route path="/profile" element={<ProfileDashboard user={user} />} />
               <Route path="/profile/:creatorId" element={<ProfileDashboard user={user} />} />
