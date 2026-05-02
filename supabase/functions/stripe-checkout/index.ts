@@ -59,12 +59,12 @@ serve(async (req) => {
     const globalWlFee = globalSettings ? Number(globalSettings.global_whitelabel_fee) : 15;
 
     // 2. Calculate Total Platform Fee (Vibe Base + Potential Whitelabel)
-    let totalFeePercent = Number(creator.platform_fee_percentage || globalVibeFee);
+    let totalFeePercent = Number(creator.platform_fee_percentage ?? globalVibeFee);
     
     // If they belong to an Enterprise Whitelabel, pull that fee too
     if (creator.whitelabel_id) {
        const { data: wl } = await supabase.from('whitelabel_configs').select('platform_fee_percentage').eq('id', creator.whitelabel_id).single();
-       totalFeePercent += Number(wl?.platform_fee_percentage || globalWlFee);
+       totalFeePercent += Number(wl?.platform_fee_percentage ?? globalWlFee);
     }
 
     // Amount is in cents

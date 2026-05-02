@@ -226,7 +226,7 @@ export default function MasterAdminDashboard() {
                             <input 
                               id={`fee-input-wl-${brandConfig.id}`}
                               type="number" 
-                              defaultValue={brandConfig.platform_fee_percentage || 15} 
+                              defaultValue={brandConfig.platform_fee_percentage ?? globalSettings.global_whitelabel_fee} 
                               onBlur={async (e) => {
                                  const val = parseFloat(e.target.value);
                                  if (isNaN(val)) return;
@@ -493,7 +493,7 @@ export default function MasterAdminDashboard() {
                                <input 
                                  id={`fee-input-${user.id}`}
                                  type="number" 
-                                 defaultValue={user.platform_fee_percentage || 15} 
+                                 defaultValue={user.platform_fee_percentage ?? globalSettings.global_vibe_fee} 
                                  onBlur={async (e) => {
                                     const val = parseFloat(e.target.value);
                                     if (isNaN(val)) return;
