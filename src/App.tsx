@@ -11,6 +11,7 @@ const MasterAdminDashboard = lazy(() => import('./components/MasterAdminDashboar
 const LiveChat = lazy(() => import('./components/LiveChat'));
 const MoreInfo = lazy(() => import('./components/MoreInfo'));
 const Contact = lazy(() => import('./components/Contact'));
+const VirtualCallRoom = lazy(() => import('./components/VirtualCallRoom'));
 const Marketplace = lazy(() => import('./components/Marketplace'));
 const ProductPage = lazy(() => import('./components/ProductPage'));
 const CookieConsent = lazy(() => import('./components/CookieConsent'));
