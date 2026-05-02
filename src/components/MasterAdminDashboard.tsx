@@ -813,31 +813,10 @@ export default function MasterAdminDashboard() {
                         <div style={{ background: 'rgba(255,215,0,0.05)', border: '1px solid rgba(255,215,0,0.2)', padding: '16px', borderRadius: '12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                            <span style={{ color: '#aaa', fontWeight: 'bold' }}>Global Vibe Network Gateway Default</span>
                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                              <input id="global-vibe-fee" type="number" value={globalSettings.global_vibe_fee} onChange={(e) => setGlobalSettings(prev => ({ ...prev, global_vibe_fee: e.target.value }))} style={{ background: 'transparent', border: '1px solid rgba(255,215,0,0.3)', color: '#FFD700', fontSize: '20px', fontWeight: 900, width: '80px', textAlign: 'center', outline: 'none', borderRadius: '8px', padding: '4px' }} />
-                              <span style={{ fontSize: '20px', color: '#FFD700', fontWeight: 900 }}>%</span>
-                              <button onClick={async (e) => {
-                                 const btn = e.currentTarget;
-                                 const val = parseFloat((document.getElementById('global-vibe-fee') as HTMLInputElement).value);
-                                 if (isNaN(val) || !globalSettings.id) {
-                                    if (!globalSettings.id) showToast('Settings row not initialized in database.', 'error');
-                                    return;
-                                 }
-                                 btn.innerText = '...';
-                                 const { data, error } = await supabase!.from('platform_settings').update({ global_vibe_fee: val }).neq('id', '00000000-0000-0000-0000-000000000000').select();
-                                 if (error || !data || data.length === 0) {
-                                    showToast('Failed to save setting (Permission Denied): ' + (error?.message || 'RLS Blocked'), 'error');
-                                    btn.innerText = 'Save';
-                                    logSystemEvent('ERROR', `Failed to update Vibe Network Fee to ${val}%`);
-                                    return;
-                                 }
-                                 setGlobalSettings(prev => ({ ...prev, global_vibe_fee: val }));
-                                 logSystemEvent('WARN', `Global Vibe Network Gateway Default updated to ${val}%`);
-                                 btn.innerText = 'Saved';
-                                 btn.style.color = '#00ff88';
-                                 setTimeout(() => { btn.innerText = 'Save'; btn.style.color = '#FFD700'; }, 2000);
-                              }} style={{ background: 'rgba(255,215,0,0.1)', color: '#FFD700', border: '1px solid rgba(255,215,0,0.2)', padding: '6px 16px', borderRadius: '8px', fontWeight: 'bold', cursor: 'pointer', transition: '0.2s', marginLeft: '10px' }}>
-                                 Save
-                              </button>
+                              <span style={{ background: 'transparent', color: '#FFD700', fontSize: '20px', fontWeight: 900, textAlign: 'center' }}>
+                                {globalSettings.global_vibe_fee}%
+                              </span>
+                              <span style={{ fontSize: '12px', color: '#888', marginLeft: '10px' }}>(Inherited from Main Root)</span>
                            </div>
                         </div>
                      </div>
