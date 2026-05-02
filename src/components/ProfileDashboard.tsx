@@ -1218,7 +1218,7 @@ const ProfileDashboard: React.FC<{ user: any }> = ({ user }) => {
           ) : (
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))', gap: '20px' }}>
               {products.map(product => (
-                <motion.div onClick={() => navigate(`/product/${product.id}`)} initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} key={product.id} className="store-card" style={{ background: 'var(--bg-surface)', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.05)', overflow: 'hidden', display: 'flex', flexDirection: 'column', transition: 'all 0.3s ease', cursor: 'pointer' }}>
+                <motion.div onClick={() => navigate(`/product/${product.id}${window.location.search}`)} initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} key={product.id} className="store-card" style={{ background: 'var(--bg-surface)', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.05)', overflow: 'hidden', display: 'flex', flexDirection: 'column', transition: 'all 0.3s ease', cursor: 'pointer' }}>
                   <div style={{ width: '100%', aspectRatio: '1/1', background: `url("${product.image_url}")`, backgroundSize: 'cover', backgroundPosition: 'center' }} />
                   <div style={{ padding: '20px', display: 'flex', flexDirection: 'column', flex: 1 }}>
                     <div style={{ fontSize: '10px', textTransform: 'uppercase', color: product.type === 'physical' ? '#ff4d85' : '#8A2BE2', fontWeight: 'bold', letterSpacing: '1px', marginBottom: '8px' }}>
@@ -1599,8 +1599,8 @@ const ProfileDashboard: React.FC<{ user: any }> = ({ user }) => {
                       <span style={{ padding: '14px', color: 'var(--text-muted)', background: 'rgba(255,255,255,0.02)', borderRight: '1px solid rgba(255,255,255,0.1)' }}>Hourly Rate ($)</span>
                       <input type="number" step="0.01" value={bookingPrice} onChange={e => setBookingPrice(e.target.value)} style={{ background: 'transparent', border: 'none', padding: '14px', color: 'var(--text-primary)', outline: 'none', fontSize: '15px', width: '120px' }} />
                     </div>
-                    <p style={{ color: 'var(--text-secondary)', fontSize: '14px', margin: 0, flex: 1 }}>Select dates on the calendar below to add or remove your available timeslots.</p>
-                    <button onClick={() => window.location.href = `/call/room_${profile?.id || 'demo'}`} style={{ padding: '12px 24px', background: 'rgba(138,43,226,0.2)', color: 'var(--text-primary)', border: '1px solid #8A2BE2', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold' }}>Enter Virtual Room</button>
+                    <p style={{ color: 'var(--text-secondary)', marginBottom: '24px', fontSize: '14px', lineHeight: 1.6 }}>Host secure, high-definition virtual calls directly from your enterprise dashboard.</p>
+                    <button onClick={() => window.location.href = `/call/room_${profile?.id || 'demo'}${window.location.search}`} style={{ padding: '12px 24px', background: 'rgba(138,43,226,0.2)', color: 'var(--text-primary)', border: '1px solid #8A2BE2', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold' }}>Enter Virtual Room</button>
                   </div>
                 </motion.div>
               )}

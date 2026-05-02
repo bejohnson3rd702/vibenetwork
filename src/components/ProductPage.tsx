@@ -136,7 +136,7 @@ const ProductPage: React.FC = () => {
                {product.title}
              </h1>
 
-             <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '40px', cursor: 'pointer' }} onClick={() => navigate(`/profile/${product.creator.id}`)}>
+             <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '40px', cursor: 'pointer' }} onClick={() => navigate(`/profile/${product.creator.id}${window.location.search}`)}>
                <img 
                  src={product.creator.avatar_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(product.creator.username || 'C')}&background=random`} 
                  alt={product.creator.username}

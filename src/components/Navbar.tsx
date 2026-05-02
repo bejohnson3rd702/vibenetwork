@@ -94,12 +94,12 @@ const Navbar: React.FC<NavbarProps> = ({ user, onLoginClick, onAdminClick }) => 
             onMouseOut={(e) => e.currentTarget.style.color = i === 0 ? 'white' : 'rgba(255,255,255,0.6)'}
             onClick={() => {
                if (item.path.startsWith('/#')) {
-                   navigate('/');
+                   navigate(`/${window.location.search}`);
                    setTimeout(() => {
                        document.getElementById(item.path.substring(2))?.scrollIntoView({ behavior: 'smooth' });
                    }, 100);
                } else {
-                   navigate(item.path);
+                   navigate(`${item.path}${window.location.search}`);
                }
             }}
             >

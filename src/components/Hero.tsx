@@ -110,7 +110,7 @@ const Hero: React.FC = () => {
             
             {/* Secondary Glass Button */}
             <motion.button 
-              onClick={() => window.location.href = '/more-info'}
+              onClick={() => window.location.href = `/more-info${window.location.search}`}
               whileHover={{ scale: 1.05, y: -2, backgroundColor: 'rgba(255,255,255,0.1)' }}
               whileTap={{ scale: 0.95 }}
               style={{ 
