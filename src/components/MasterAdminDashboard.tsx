@@ -200,16 +200,34 @@ export default function MasterAdminDashboard() {
                          <div style={{ display: 'flex', alignItems: 'center', gap: '4px', background: 'rgba(0,0,0,0.4)', padding: '6px 12px', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.1)' }}>
                             <span style={{ color: '#888', fontSize: '12px', fontWeight: 'bold' }}>Fee:</span>
                             <input 
+                              id={`fee-input-wl-${brandConfig.id}`}
                               type="number" 
                               defaultValue={brandConfig.platform_fee_percentage || 15} 
-                              onBlur={async (e) => {
-                                const val = parseFloat(e.target.value);
-                                if (isNaN(val)) return;
-                                await supabase!.from('whitelabel_configs').update({ platform_fee_percentage: val }).eq('id', brandConfig.id);
-                              }}
                               style={{ width: '50px', background: 'transparent', color: '#0055ff', border: 'none', fontWeight: 'bold', outline: 'none', textAlign: 'right' }}
                             />
                             <span style={{ color: '#0055ff', fontSize: '12px', fontWeight: 'bold' }}>%</span>
+                            <button onClick={async (e) => {
+                                const btn = e.currentTarget;
+                                const input = document.getElementById(`fee-input-wl-${brandConfig.id}`) as HTMLInputElement;
+                                const val = parseFloat(input.value);
+                                if (isNaN(val)) return;
+                                
+                                const originalText = btn.innerText;
+                                btn.innerText = '...';
+                                const { data, error } = await supabase!.from('whitelabel_configs').update({ platform_fee_percentage: val }).eq('id', brandConfig.id).select();
+                                if (error || !data || data.length === 0) {
+                                   alert('Failed to save (Permission Denied): ' + (error?.message || 'Row Level Security blocked the update.'));
+                                   btn.innerText = 'Save';
+                                   return;
+                                }
+                                
+                                setWhitelabelsList(prev => prev.map(wl => wl.id === brandConfig.id ? { ...wl, platform_fee_percentage: val } : wl));
+                                btn.innerText = 'Saved';
+                                btn.style.color = '#00ff88';
+                                setTimeout(() => { btn.innerText = 'Save'; btn.style.color = '#0055ff'; }, 2000);
+                             }} style={{ padding: '4px 8px', background: 'rgba(0, 85, 255, 0.1)', color: '#0055ff', border: '1px solid rgba(0, 85, 255, 0.2)', borderRadius: '6px', cursor: 'pointer', fontWeight: 'bold', fontSize: '11px', marginLeft: '4px', transition: '0.2s' }}>
+                               Save
+                             </button>
                          </div>
                          <button onClick={(e) => {
                             const btn = e.currentTarget;
