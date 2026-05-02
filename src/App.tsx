@@ -11,10 +11,12 @@ const MasterAdminDashboard = lazy(() => import('./components/MasterAdminDashboar
 const LiveChat = lazy(() => import('./components/LiveChat'));
 const MoreInfo = lazy(() => import('./components/MoreInfo'));
 const Contact = lazy(() => import('./components/Contact'));
-const VirtualCallRoom = lazy(() => import('./components/VirtualCallRoom'));
 const Marketplace = lazy(() => import('./components/Marketplace'));
 const ProductPage = lazy(() => import('./components/ProductPage'));
 const CookieConsent = lazy(() => import('./components/CookieConsent'));
+const TermsOfService = lazy(() => import('./components/TermsOfService'));
+const PrivacyPolicy = lazy(() => import('./components/PrivacyPolicy'));
+const Footer = lazy(() => import('./components/Footer'));
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { WhiteLabelContext } from './context/WhiteLabelContext';
 import { supabase, storageKey } from './supabaseClient';
@@ -257,6 +259,8 @@ function App() {
               <Route path="/contact" element={<Contact />} />
               <Route path="/about" element={<MoreInfo />} />
               <Route path="/more-info" element={<MoreInfo />} />
+              <Route path="/terms" element={<TermsOfService />} />
+              <Route path="/privacy" element={<PrivacyPolicy />} />
               <Route path="/product/:productId" element={<ProductPage />} />
               <Route path="/profile" element={<ProfileDashboard user={user} />} />
               <Route path="/profile/:creatorId" element={<ProfileDashboard user={user} />} />
@@ -277,6 +281,7 @@ function App() {
           </AnimatePresence>
           
           <Suspense fallback={null}>
+             <Footer />
              <CookieConsent />
           </Suspense>
         </div>
@@ -319,6 +324,8 @@ function App() {
                       <Route path="/about" element={<MoreInfo />} />
                       <Route path="/more-info" element={<MoreInfo />} />
                       <Route path="/contact" element={<Contact />} />
+                      <Route path="/terms" element={<TermsOfService />} />
+                      <Route path="/privacy" element={<PrivacyPolicy />} />
                       <Route path="/profile" element={<ProfileDashboard user={user} />} />
                       <Route path="/profile/:creatorId" element={<ProfileDashboard user={user} />} />
                       <Route path="/call/:callId" element={<VirtualCallRoom />} />
@@ -330,6 +337,7 @@ function App() {
           </Suspense>
 
           <Suspense fallback={null}>
+             <Footer />
              <CookieConsent />
           </Suspense>
         </div>
