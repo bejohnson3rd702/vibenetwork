@@ -66,10 +66,7 @@ const ProfileDashboard: React.FC<{ user: any }> = ({ user }) => {
   const [cameraDebugData, setCameraDebugData] = useState<string>('');
   const [liveCountdown, setLiveCountdown] = useState<number | null>(null);
   const [liveEmbedUrl, setLiveEmbedUrl] = useState('https://www.youtube.com/embed/jfKfPfyJRdk?autoplay=1&mute=0');
-  const [uploadedVideoUrl, setUploadedVideoUrl] = useState('');
-  const [liveTitle, setLiveTitle] = useState('');
-  const [liveDescription, setLiveDescription] = useState('');
-  const [streamSource, setStreamSource] = useState<'youtube' | 'upload'>('youtube');
+  const [streamSource, setStreamSource] = useState<'url' | 'camera'>('url');
   const [guests, setGuests] = useState<{id: string, name: string, title: string, isLive: boolean}[]>([]);
   const [guestSetup, setGuestSetup] = useState<{show: boolean, name: string, title: string}>({show: false, name: '', title: ''});
   const [localGuestData, setLocalGuestData] = useState<{id: string, name: string, title: string, isLive: boolean} | null>(null);
@@ -249,7 +246,7 @@ const ProfileDashboard: React.FC<{ user: any }> = ({ user }) => {
               setCameraStatus('loading');
            }
            // If using external URL, bypass studio mode and go straight to live
-           if (streamSource === 'youtube') {
+           if (streamSource === 'url') {
               setIsPubliclyLive(true);
            } else {
               setIsPubliclyLive(false);
@@ -1272,16 +1269,7 @@ const ProfileDashboard: React.FC<{ user: any }> = ({ user }) => {
                   
                   {isPlayingLive ? (
                      <>
-                       {streamSource === 'upload' && !isPreviewExpired && (
-                         <div style={{ position: 'absolute', inset: 0, zIndex: 5, background: '#000', display: 'flex', flexDirection: 'column' }}>
-                            <video src={uploadedVideoUrl || 'https://www.w3schools.com/html/mov_bbb.mp4'} controls autoPlay style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
-                            <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, padding: '20px', background: 'linear-gradient(to top, rgba(0,0,0,0.9), transparent)', color: '#fff', pointerEvents: 'none' }}>
-                               <h3 style={{ margin: '0 0 8px 0', fontSize: '24px' }}>{liveTitle || 'Untitled Broadcast'}</h3>
-                               <p style={{ margin: 0, fontSize: '14px', color: 'rgba(255,255,255,0.8)' }}>{liveDescription || 'No description provided.'}</p>
-                            </div>
-                         </div>
-                       )}
-                       {streamSource === 'youtube' && !isPreviewExpired && (
+                       {streamSource === 'url' && !isPreviewExpired && (
                          <iframe 
                            src={liveEmbedUrl} 
                            title="Live Stream Broadcast"
@@ -1319,7 +1307,7 @@ const ProfileDashboard: React.FC<{ user: any }> = ({ user }) => {
                        {!isPreviewExpired && (streamSource === 'camera' || presenterMode || activeGuests.length > 0) && (
                          <div style={{
                            position: 'absolute', zIndex: 15,
-                           ...(streamSource === 'youtube' ? {
+                           ...(streamSource === 'url' ? {
                               bottom: 20, left: 20, right: 20, display: 'flex', gap: '10px', justifyContent: 'flex-start', alignItems: 'flex-end', pointerEvents: 'none'
                            } : {
                              inset: 0, background: '#000', display: 'grid', gap: '2px',
@@ -1329,7 +1317,7 @@ const ProfileDashboard: React.FC<{ user: any }> = ({ user }) => {
                          }}>
                            {/* Main Host Webcam Slot */}
                            {showHost && (
-                             <div style={{ position: 'relative', background: '#111', flexShrink: 0, pointerEvents: 'auto', ...(streamSource === 'youtube' ? { width: 'min(20%, 200px)', aspectRatio: '16/9', borderRadius: '12px', border: '2px solid rgba(255,255,255,0.2)', overflow: 'hidden', boxShadow: '0 4px 20px rgba(0,0,0,0.5)' } : { width: '100%', height: '100%' }) }}>
+                             <div style={{ position: 'relative', background: '#111', flexShrink: 0, pointerEvents: 'auto', ...(streamSource === 'url' ? { width: 'min(20%, 200px)', aspectRatio: '16/9', borderRadius: '12px', border: '2px solid rgba(255,255,255,0.2)', overflow: 'hidden', boxShadow: '0 4px 20px rgba(0,0,0,0.5)' } : { width: '100%', height: '100%' }) }}>
                                
                                {cameraStatus === 'loading' && (
                                  <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: '#111', zIndex: 5 }}>
@@ -1366,7 +1354,7 @@ const ProfileDashboard: React.FC<{ user: any }> = ({ user }) => {
                            
                            {/* Simulated Guests Webcams Slot */}
                            {visibleGuests.map((g, i) => (
-                             <div key={i} style={{ position: 'relative', background: '#222', flexShrink: 0, pointerEvents: 'auto', ...(streamSource === 'youtube' ? { width: 'min(20%, 200px)', aspectRatio: '16/9', borderRadius: '12px', border: '2px solid rgba(255,255,255,0.2)', overflow: 'hidden', boxShadow: '0 4px 20px rgba(0,0,0,0.5)' } : { width: '100%', height: '100%' }) }}>
+                             <div key={i} style={{ position: 'relative', background: '#222', flexShrink: 0, pointerEvents: 'auto', ...(streamSource === 'url' ? { width: 'min(20%, 200px)', aspectRatio: '16/9', borderRadius: '12px', border: '2px solid rgba(255,255,255,0.2)', overflow: 'hidden', boxShadow: '0 4px 20px rgba(0,0,0,0.5)' } : { width: '100%', height: '100%' }) }}>
                                <img src={`https://images.unsplash.com/photo-${1550000000000 + (i * 1000)}?auto=format&fit=crop&w=800&q=80`} style={{ width: '100%', height: '100%', objectFit: 'cover', filter: 'grayscale(0.5)' }} alt="Guest Feed" />
                                <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                                  <span style={{ background: 'rgba(0,0,0,0.5)', padding: '4px 10px', borderRadius: '20px', fontSize: '10px' }}>Guest Feed</span>
@@ -1451,10 +1439,10 @@ const ProfileDashboard: React.FC<{ user: any }> = ({ user }) => {
                         <span style={{ color: '#888', fontSize: '13px' }}>(Free for subscribers)</span>
                       </div>
                       
-                      <label style={{ display: 'block', marginBottom: '12px', color: '#ff4d85', fontWeight: 'bold', fontSize: '15px' }}>Configure Broadcast Source</label>
+                      <label style={{ display: 'block', marginBottom: '12px', color: '#ff4d85', fontWeight: 'bold', fontSize: '15px' }}>Configure Live Stream Origin</label>
                       <div style={{ display: 'flex', gap: '12px', marginBottom: '16px' }}>
-                         <button onClick={() => { setStreamSource('youtube'); setIsPlayingLive(false); }} style={{ padding: '10px 20px', background: streamSource === 'youtube' ? '#0055ff' : 'rgba(255,255,255,0.05)', color: streamSource === 'youtube' ? '#fff' : '#888', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold' }}>YouTube Link</button>
-                         <button onClick={() => { setStreamSource('upload'); setIsPlayingLive(false); }} style={{ padding: '10px 20px', background: streamSource === 'upload' ? '#0055ff' : 'rgba(255,255,255,0.05)', color: streamSource === 'upload' ? '#fff' : '#888', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '8px' }}><Video size={16}/> Upload Video</button>
+                         <button onClick={() => { setStreamSource('url'); setIsPlayingLive(false); }} style={{ padding: '10px 20px', background: streamSource === 'url' ? '#0055ff' : 'rgba(255,255,255,0.05)', color: streamSource === 'url' ? '#fff' : '#888', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold' }}>External URL / RTMP</button>
+                         <button onClick={() => { setStreamSource('camera'); setIsPlayingLive(false); }} style={{ padding: '10px 20px', background: streamSource === 'camera' ? '#0055ff' : 'rgba(255,255,255,0.05)', color: streamSource === 'camera' ? '#fff' : '#888', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '8px' }}><Camera size={16}/> Direct Webcam</button>
                          
                          {/* streamSource === 'camera' && (
                             <>
@@ -1471,7 +1459,7 @@ const ProfileDashboard: React.FC<{ user: any }> = ({ user }) => {
                       </div>
                       
                       <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-                        {streamSource === 'youtube' && (
+                        {streamSource === 'url' && (
                           <div style={{ display: 'flex', gap: '12px' }}>
                             <input type="text" value={liveEmbedUrl} onChange={e => setLiveEmbedUrl(e.target.value)} placeholder="Embed URL (e.g. YouTube, Twitch)" style={{ flex: 1, padding: '14px', borderRadius: '10px', background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.1)', color: '#fff', fontSize: '15px', outline: 'none' }}/>
                             {isPlayingLive ? (
@@ -1484,28 +1472,25 @@ const ProfileDashboard: React.FC<{ user: any }> = ({ user }) => {
                           </div>
                         )}
                         
-                        {streamSource === 'upload' && (
-                          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                             <input type="text" value={liveTitle} onChange={e => setLiveTitle(e.target.value)} placeholder="Broadcast Title" style={{ width: '100%', padding: '14px', borderRadius: '10px', background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.1)', color: '#fff', fontSize: '15px', outline: 'none' }}/>
-                             <textarea value={liveDescription} onChange={e => setLiveDescription(e.target.value)} placeholder="Broadcast Description" rows={3} style={{ width: '100%', padding: '14px', borderRadius: '10px', background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.1)', color: '#fff', fontSize: '15px', outline: 'none', resize: 'vertical' }}/>
-                             <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
-                               <input type="file" id="broadcastVideoUpload" accept="video/*" style={{ display: 'none' }} onChange={(e) => {
-                                 if (e.target.files && e.target.files[0]) {
-                                   setUploadedVideoUrl(URL.createObjectURL(e.target.files[0]));
-                                 }
-                               }} />
-                               <button onClick={() => document.getElementById('broadcastVideoUpload')?.click()} style={{ padding: '14px 24px', background: 'rgba(255,255,255,0.1)', color: '#fff', border: '1px solid rgba(255,255,255,0.2)', borderRadius: '10px', fontWeight: 'bold', fontSize: '15px', cursor: 'pointer' }}>
-                                  {uploadedVideoUrl ? 'Change Video' : 'Select Video File'}
-                               </button>
-                               <div style={{ flex: 1 }} />
-                               {isPlayingLive ? (
-                                 <button onClick={() => setIsPlayingLive(false)} style={{ padding: '14px 24px', background: 'rgba(229, 9, 20, 0.1)', color: '#e50914', border: '1px solid #e50914', borderRadius: '10px', fontWeight: 'bold', fontSize: '15px', cursor: 'pointer', transition: '0.2s', display: 'flex', alignItems: 'center', gap: '8px' }}>Stop Broadcast</button>
-                               ) : liveCountdown !== null ? (
-                                 <button disabled style={{ padding: '14px 24px', background: '#e50914', color: '#fff', border: 'none', borderRadius: '10px', fontWeight: 'bold', fontSize: '15px', cursor: 'not-allowed', display: 'flex', alignItems: 'center', gap: '8px' }}>Going Live in {liveCountdown}...</button>
-                               ) : (
-                                 <button onClick={startLiveStream} style={{ padding: '14px 24px', background: '#e50914', color: '#fff', border: 'none', borderRadius: '10px', fontWeight: 'bold', fontSize: '15px', cursor: 'pointer', transition: '0.2s', display: 'flex', alignItems: 'center', gap: '8px' }}><Camera size={18}/> Start Broadcast</button>
-                               )}
-                             </div>
+                        {streamSource === 'camera' && (
+                          <div style={{ display: 'flex', gap: '12px', alignItems: 'center', flexWrap: 'wrap' }}>
+                             <p style={{ margin: 0, color: '#aaa', flex: 1, minWidth: '200px' }}>Using your local hardware as the broadcast origin server. Press "Start Streaming" to ignite the feed.</p>
+                             {isPlayingLive ? (
+                               <>
+                                 {!isPubliclyLive && (
+                                   <button onClick={() => setIsPubliclyLive(true)} style={{ padding: '14px 24px', background: '#00ff88', color: '#000', border: 'none', borderRadius: '10px', fontWeight: 'bold', fontSize: '15px', cursor: 'pointer', transition: '0.2s', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                      Push Publicly Live
+                                   </button>
+                                 )}
+                                 <button onClick={() => { setIsPlayingLive(false); setIsPubliclyLive(false); }} style={{ padding: '14px 24px', background: 'rgba(229, 9, 20, 0.1)', color: '#e50914', border: '1px solid #e50914', borderRadius: '10px', fontWeight: 'bold', fontSize: '15px', cursor: 'pointer', transition: '0.2s', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                    Stop Streaming
+                                 </button>
+                               </>
+                             ) : liveCountdown !== null ? (
+                               <button disabled style={{ padding: '14px 24px', background: '#e50914', color: '#fff', border: 'none', borderRadius: '10px', fontWeight: 'bold', fontSize: '15px', cursor: 'not-allowed', display: 'flex', alignItems: 'center', gap: '8px' }}>Going Live in {liveCountdown}...</button>
+                             ) : (
+                               <button onClick={startLiveStream} style={{ padding: '14px 24px', background: '#e50914', color: '#fff', border: 'none', borderRadius: '10px', fontWeight: 'bold', fontSize: '15px', cursor: 'pointer', transition: '0.2s', display: 'flex', alignItems: 'center', gap: '8px' }}><Camera size={18}/> Start Streaming</button>
+                             )}
                           </div>
                         )}
 
@@ -1513,12 +1498,12 @@ const ProfileDashboard: React.FC<{ user: any }> = ({ user }) => {
                           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px' }}>
                             <div>
                                <p style={{ margin: 0, color: '#fff', fontWeight: 'bold', fontSize: '14px' }}>WebRTC Overlays & Guests</p>
-                               <p style={{ margin: '4px 0 0 0', color: '#aaa', fontSize: '12px' }}>Enable your webcam and invite up to 4 guests {streamSource === 'youtube' ? 'over your broadcast frame' : 'to join the primary grid'}.</p>
+                               <p style={{ margin: '4px 0 0 0', color: '#aaa', fontSize: '12px' }}>Enable your webcam and invite up to 4 guests {streamSource === 'url' ? 'over your broadcast frame' : 'to join the primary grid'}.</p>
                             </div>
                             {isPlayingLive && (
                               <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                               <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-                                {streamSource === 'youtube' && (
+                                {streamSource === 'url' && (
                                   <button onClick={() => setPresenterMode(!presenterMode)} style={{ padding: '8px 14px', background: presenterMode ? '#ff0055' : 'rgba(255,255,255,0.1)', color: '#fff', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold', fontSize: '13px' }}>
                                     {presenterMode ? 'Stop Presenting' : 'Show My Webcam'}
                                   </button>
