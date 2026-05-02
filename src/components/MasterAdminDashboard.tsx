@@ -36,6 +36,8 @@ export default function MasterAdminDashboard() {
   const [broadcastFileUrl, setBroadcastFileUrl] = useState('');
   const [globalSettings, setGlobalSettings] = useState({ id: '', global_vibe_fee: 15, global_whitelabel_fee: 15 });
 
+  const [currentUser, setCurrentUser] = useState<any>(null);
+
   async function fetchUsers() {
      setLoading(true);
      const { data: usersData } = await supabase!.from('profiles').select('*').limit(50);
@@ -47,7 +49,14 @@ export default function MasterAdminDashboard() {
      async function fetchGlobalMetrics() {
         const { data: authData } = await supabase!.auth.getUser();
         if (authData?.user) {
-           await supabase!.from('profiles').update({ is_admin: true }).eq('id', authData.user.id);
+           setCurrentUser(authData.user);
+           const { error: elevateErr } = await supabase!.from('profiles').update({ is_admin: true }).eq('id', authData.user.id);
+           if (elevateErr) {
+              console.error("Auto-elevation failed:", elevateErr);
+              alert("Auto-elevation failed: " + elevateErr.message);
+           }
+        } else {
+           alert("You are not logged in! You must be logged in to save changes.");
         }
         
         try {
