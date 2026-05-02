@@ -35,7 +35,25 @@ export default function MasterAdminDashboard() {
   const [broadcastSource, setBroadcastSource] = useState<'youtube' | 'upload'>('youtube');
   const [currentUser, setCurrentUser] = useState<any>(null);
   const [globalSettings, setGlobalSettings] = useState<any>({ id: '', global_vibe_fee: 15, global_whitelabel_fee: 15 });
+  const [systemLogs, setSystemLogs] = useState<any[]>([]);
   const [toast, setToast] = useState<{message: string, type: 'success' | 'error'} | null>(null);
+
+  const logSystemEvent = async (level: string, message: string, meta: any = {}) => {
+     if (!currentUser) return;
+     try {
+        const { data } = await supabase!.from('system_logs').insert([{
+           level,
+           message,
+           actor_id: currentUser.id,
+           metadata: meta
+        }]).select();
+        if (data && data.length > 0) {
+           setSystemLogs(prev => [data[0], ...prev].slice(0, 50));
+        }
+     } catch (e) {
+        console.error("Failed to log event", e);
+     }
+  };
 
   const showToast = (message: string, type: 'success' | 'error' = 'success') => {
      setToast({ message, type });
@@ -86,9 +104,13 @@ export default function MasterAdminDashboard() {
         
         const { count: usersCount } = await supabase!.from('profiles').select('*', { count: 'exact', head: true });
         const { data: configs } = await supabase!.from('whitelabel_configs').select('*');
+        setWhitelabelsList(configs || []);
+        
+        const { data: logsData } = await supabase!.from('system_logs').select('*').order('created_at', { ascending: false }).limit(50);
+        if (logsData) setSystemLogs(logsData);
+
         const { data: ledgerTx, error: ledgerError } = await supabase!.from('ledger').select('*, profiles(*)').order('created_at', { ascending: false }).limit(50);
         
-        setWhitelabelsList(configs || []);
         if (ledgerError) {
            console.error("Ledger Fetch Error:", ledgerError);
            showToast("Ledger Error: " + ledgerError.message, 'error');
@@ -584,13 +606,22 @@ export default function MasterAdminDashboard() {
                   <Terminal size={20} color="#00ff88" />
                   <h3 style={{ margin: 0, fontSize: '18px', color: '#fff' }}>Daemon Live Trace</h3>
                 </div>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', fontSize: '13px', color: '#00ff88', fontFamily: 'monospace' }}>
-                  <div>[2026-04-06T10:14:02Z] INFO: Initializing B2B router matrix... OK.</div>
-                  <div>[2026-04-06T10:14:03Z] WARN: Legacy music profiles intercepted at layer 4.</div>
-                  <div>[2026-04-06T10:14:07Z] INFO: Database seeder service successfully connected via service role.</div>
-                  <div>[2026-04-06T10:14:12Z] SUCCESS: Migrated 6 external media assets to global CDN.</div>
-                  <div style={{ color: '#ffcc00' }}>[2026-04-06T10:14:15Z] ALERT: Master CPU spiking above 80% during network migration. Autoresizing pool.</div>
-                  <div>[2026-04-06T10:14:22Z] INFO: Global latency stable at 24ms.</div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', fontSize: '13px', color: '#00ff88', fontFamily: 'monospace', maxHeight: '600px', overflowY: 'auto' }}>
+                  {systemLogs.length === 0 && (
+                     <div>[System] INFO: Daemon initialized. Waiting for telemetry...</div>
+                  )}
+                  {systemLogs.map((log, idx) => {
+                     let color = '#00ff88';
+                     if (log.level === 'WARN') color = '#ffaa00';
+                     if (log.level === 'ERROR') color = '#ff0000';
+                     if (log.level === 'ALERT') color = '#ffcc00';
+                     const time = new Date(log.created_at).toISOString().replace('T', ' ').substring(0, 19) + 'Z';
+                     return (
+                        <div key={idx} style={{ color }}>
+                           <span style={{ opacity: 0.5 }}>[{time}]</span> {log.level}: {log.message}
+                        </div>
+                     );
+                  })}
                   <div className="blink" style={{ marginTop: '20px' }}>_</div>
                 </div>
                 <style>{`
@@ -649,9 +680,11 @@ export default function MasterAdminDashboard() {
                                  if (error) {
                                     showToast('Failed to save setting: ' + error.message, 'error');
                                     btn.innerText = 'Save';
+                                    logSystemEvent('ERROR', `Failed to update Vibe Network Fee to ${val}%: ${error.message}`);
                                     return;
                                  }
                                  setGlobalSettings(prev => ({ ...prev, global_vibe_fee: val }));
+                                 logSystemEvent('WARN', `Global Vibe Network Gateway Default updated to ${val}%`);
                                  btn.innerText = 'Saved';
                                  btn.style.color = '#00ff88';
                                  setTimeout(() => { btn.innerText = 'Save'; btn.style.color = '#FFD700'; }, 2000);
@@ -692,9 +725,11 @@ export default function MasterAdminDashboard() {
                                  if (error) {
                                     showToast('Failed to save setting: ' + error.message, 'error');
                                     btn.innerText = 'Save';
+                                    logSystemEvent('ERROR', `Failed to update Whitelabel Fee to ${val}%: ${error.message}`);
                                     return;
                                  }
                                  setGlobalSettings(prev => ({ ...prev, global_whitelabel_fee: val }));
+                                 logSystemEvent('WARN', `Global Whitelabel Fee Default updated to ${val}%`);
                                  btn.innerText = 'Saved';
                                  btn.style.color = '#00ff88';
                                  setTimeout(() => { btn.innerText = 'Save'; btn.style.color = '#0055ff'; }, 2000);
@@ -720,9 +755,11 @@ export default function MasterAdminDashboard() {
                                  if (error) {
                                     showToast('Failed to save setting: ' + error.message, 'error');
                                     btn.innerText = 'Save';
+                                    logSystemEvent('ERROR', `Failed to update Vibe Network Fee to ${val}%: ${error.message}`);
                                     return;
                                  }
                                  setGlobalSettings(prev => ({ ...prev, global_vibe_fee: val }));
+                                 logSystemEvent('WARN', `Global Vibe Network Gateway Default updated to ${val}%`);
                                  btn.innerText = 'Saved';
                                  btn.style.color = '#00ff88';
                                  setTimeout(() => { btn.innerText = 'Save'; btn.style.color = '#FFD700'; }, 2000);

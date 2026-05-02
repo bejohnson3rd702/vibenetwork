@@ -294,3 +294,19 @@ CREATE POLICY "Admins can insert platform_settings" ON public.platform_settings 
     (SELECT is_admin FROM public.profiles WHERE id = auth.uid()) = true
 );
 
+
+-- System Logs for Admin Audit Trail
+CREATE TABLE IF NOT EXISTS public.system_logs (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    level TEXT DEFAULT 'INFO', -- INFO, WARN, ERROR, SUCCESS, ALERT
+    message TEXT NOT NULL,
+    actor_id UUID REFERENCES public.profiles(id),
+    metadata JSONB,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+ALTER TABLE public.system_logs ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Admins can read system logs" ON public.system_logs FOR SELECT USING (
+    (SELECT is_admin FROM public.profiles WHERE id = auth.uid()) = true
+);
+CREATE POLICY "Anyone can insert logs" ON public.system_logs FOR INSERT WITH CHECK (true);
