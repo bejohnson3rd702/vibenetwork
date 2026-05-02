@@ -520,10 +520,12 @@ const ProfileDashboard: React.FC<{ user: any }> = ({ user }) => {
         }
 
         // Load Bookings
-        if (isOwnProfile && user) {
+        if (user) {
            const { data: pBookings } = await supabase!.from('bookings').select('*, creator:profiles!creator_id(username, full_name, avatar_url)').eq('buyer_id', user.id);
            setPurchasedBookings(pBookings || []);
+        }
 
+        if (isOwnProfile && user) {
            const { data: rBookings } = await supabase!.from('bookings').select('*, buyer:profiles!buyer_id(username, full_name, avatar_url)').eq('creator_id', user.id);
            setReceivedBookings(rBookings || []);
         }
@@ -1017,7 +1019,7 @@ const ProfileDashboard: React.FC<{ user: any }> = ({ user }) => {
                 { id: 'series', label: 'Episodes' },
                 { id: 'courses', label: 'Masterclasses' },
                 { id: 'flipbook', label: 'Flip Book' }
-              ].concat((isOwnProfile && viewMode === 'edit') ? [{ id: 'my_bookings', label: 'My Bookings' }] : []).map(tab => (
+              ].concat(user ? [{ id: 'my_bookings', label: 'My Bookings' }] : []).map(tab => (
                 <button 
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id as any)}
@@ -2064,7 +2066,7 @@ const ProfileDashboard: React.FC<{ user: any }> = ({ user }) => {
         )}
 
         {/* --- MY BOOKINGS TAB --- */}
-        {activeTab === 'my_bookings' && isOwnProfile && (
+        {activeTab === 'my_bookings' && user && (
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} style={{ display: 'flex', flexDirection: 'column', gap: '30px' }}>
             <div style={{ background: 'rgba(255,255,255,0.03)', borderRadius: '24px', padding: '30px', border: '1px solid rgba(255,255,255,0.05)' }}>
               <h2 style={{ fontSize: '24px', margin: '0 0 20px 0', color: '#fff', display: 'flex', alignItems: 'center', gap: '10px' }}>
