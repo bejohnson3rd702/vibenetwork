@@ -64,6 +64,7 @@ CREATE TABLE IF NOT EXISTS public.videos (
 ALTER TABLE public.videos ADD COLUMN IF NOT EXISTS stream_time TEXT;
 ALTER TABLE public.videos ADD COLUMN IF NOT EXISTS price NUMERIC DEFAULT 0.00;
 ALTER TABLE public.videos ADD COLUMN IF NOT EXISTS preview_duration INTEGER DEFAULT 90;
+ALTER TABLE public.videos ADD COLUMN IF NOT EXISTS creator_id UUID REFERENCES public.profiles(id);
 
 -- 5. Products (Store)
 CREATE TABLE IF NOT EXISTS public.products (
