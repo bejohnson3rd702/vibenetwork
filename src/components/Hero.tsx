@@ -23,13 +23,13 @@ const Hero: React.FC = () => {
           height: '100%',
           objectFit: 'cover',
           zIndex: 0,
-          filter: 'brightness(0.35) contrast(1.3) saturate(1.2)'
+          filter: 'brightness(0.6) contrast(1.1) saturate(1.2)'
         }}
       />
       
       {/* Sleek Mesh Overlays */}
-      <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to right, rgba(var(--bg-rgb),0.98) 0%, rgba(var(--bg-rgb),0.2) 50%, rgba(var(--bg-rgb),0.98) 100%)', zIndex: 1 }} />
-      <div style={{ position: 'absolute', inset: 0, background: `radial-gradient(ellipse at 50% 0%, ${wlConfig?.accent ? wlConfig.accent + '22' : 'rgba(211, 84, 0, 0.15)'}, transparent 60%)`, zIndex: 1 }} />
+      <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to right, rgba(var(--bg-rgb),0.95) 0%, transparent 50%, rgba(var(--bg-rgb),0.95) 100%)', zIndex: 1 }} />
+      <div style={{ position: 'absolute', inset: 0, background: `radial-gradient(ellipse at 50% 0%, ${wlConfig?.accent ? wlConfig.accent + '66' : 'rgba(211, 84, 0, 0.35)'}, transparent 60%)`, zIndex: 1, mixBlendMode: 'screen' }} />
       <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to bottom, transparent 10%, var(--bg-color) 100%)', zIndex: 1 }} />
       
       {/* Floating Orbital Glow */}
