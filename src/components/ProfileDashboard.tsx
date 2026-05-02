@@ -533,9 +533,10 @@ const ProfileDashboard: React.FC<{ user: any }> = ({ user }) => {
         // Auto-create profile if missing!
         const { data: newProfile, error: insertError } = await supabase!.from('profiles').insert({
            id: targetProfileId,
-           username: user?.email?.split('@')[0] || 'NewCreator',
-           full_name: 'New Creator',
+           username: user?.user_metadata?.username || user?.email?.split('@')[0] || 'NewCreator',
+           full_name: user?.user_metadata?.username || 'New Creator',
            bio: 'Welcome to my official channel!',
+           role: user?.user_metadata?.role || 'viewer',
            whitelabel_id: wlConfig?.domain === 'vibenetwork.tv' ? null : wlConfig?.id
         }).select().single();
         

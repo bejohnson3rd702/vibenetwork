@@ -156,7 +156,7 @@ export default function EndUserAuthModal({ onClose }: EndUserAuthModalProps) {
                    onChange={e=>setEmail(e.target.value)}
                    required
                    placeholder="name@company.com" 
-                   style={{ width: '100%', background: '#050505', border: '1px solid rgba(255,255,255,0.1)', color: '#fff', padding: '16px 16px 16px 48px', borderRadius: '12px', fontSize: '16px', outline: 'none', transition: 'border-color 0.2s' }} 
+                   style={{ width: '100%', background: '#050505', border: '1px solid rgba(255,255,255,0.1)', color: '#fff', padding: '16px 16px 16px 48px', borderRadius: '12px', fontSize: '16px', outline: 'none', transition: 'border-color 0.2s', boxSizing: 'border-box' }} 
                    onFocus={e=>e.currentTarget.style.borderColor = accentColor}
                    onBlur={e=>e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)'}
                  />
@@ -172,7 +172,7 @@ export default function EndUserAuthModal({ onClose }: EndUserAuthModalProps) {
                    onChange={e=>setPassword(e.target.value)}
                    required
                    placeholder="••••••••" 
-                   style={{ width: '100%', background: '#050505', border: '1px solid rgba(255,255,255,0.1)', color: '#fff', padding: '16px 16px 16px 48px', borderRadius: '12px', fontSize: '16px', outline: 'none', transition: 'border-color 0.2s' }} 
+                   style={{ width: '100%', background: '#050505', border: '1px solid rgba(255,255,255,0.1)', color: '#fff', padding: '16px 16px 16px 48px', borderRadius: '12px', fontSize: '16px', outline: 'none', transition: 'border-color 0.2s', boxSizing: 'border-box' }} 
                    onFocus={e=>e.currentTarget.style.borderColor = accentColor}
                    onBlur={e=>e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)'}
                  />
