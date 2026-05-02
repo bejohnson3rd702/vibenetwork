@@ -203,6 +203,24 @@ export default function MasterAdminDashboard() {
                               id={`fee-input-wl-${brandConfig.id}`}
                               type="number" 
                               defaultValue={brandConfig.platform_fee_percentage || 15} 
+                              onBlur={async (e) => {
+                                 const val = parseFloat(e.target.value);
+                                 if (isNaN(val)) return;
+                                 const btn = e.target.nextElementSibling?.nextElementSibling as HTMLButtonElement;
+                                 if (btn) btn.innerText = '...';
+                                 const { data, error } = await supabase!.from('whitelabel_configs').update({ platform_fee_percentage: val }).eq('id', brandConfig.id).select();
+                                 if (error || !data || data.length === 0) {
+                                    alert('Failed to save (Permission Denied): ' + (error?.message || 'Row Level Security blocked the update.'));
+                                    if (btn) btn.innerText = 'Save';
+                                    return;
+                                 }
+                                 setWhitelabelsList(prev => prev.map(wl => wl.id === brandConfig.id ? { ...wl, platform_fee_percentage: val } : wl));
+                                 if (btn) {
+                                    btn.innerText = 'Saved';
+                                    btn.style.color = '#00ff88';
+                                    setTimeout(() => { btn.innerText = 'Save'; btn.style.color = '#0055ff'; }, 2000);
+                                 }
+                              }}
                               style={{ width: '50px', background: 'transparent', color: '#0055ff', border: 'none', fontWeight: 'bold', outline: 'none', textAlign: 'right' }}
                             />
                             <span style={{ color: '#0055ff', fontSize: '12px', fontWeight: 'bold' }}>%</span>
@@ -452,6 +470,24 @@ export default function MasterAdminDashboard() {
                                  id={`fee-input-${user.id}`}
                                  type="number" 
                                  defaultValue={user.platform_fee_percentage || 15} 
+                                 onBlur={async (e) => {
+                                    const val = parseFloat(e.target.value);
+                                    if (isNaN(val)) return;
+                                    const btn = e.target.nextElementSibling?.nextElementSibling as HTMLButtonElement;
+                                    if (btn) btn.innerText = '...';
+                                    const { data, error } = await supabase!.from('profiles').update({ platform_fee_percentage: val }).eq('id', user.id).select();
+                                    if (error || !data || data.length === 0) {
+                                       alert('Failed to save (Permission Denied): ' + (error?.message || 'Row Level Security blocked the update.'));
+                                       if (btn) btn.innerText = 'Save';
+                                       return;
+                                    }
+                                    setUsersList(prev => prev.map(u => u.id === user.id ? { ...u, platform_fee_percentage: val } : u));
+                                    if (btn) {
+                                       btn.innerText = 'Saved';
+                                       btn.style.color = '#00ff88';
+                                       setTimeout(() => { btn.innerText = 'Save'; btn.style.color = '#0055ff'; }, 2000);
+                                    }
+                                 }}
                                  style={{ width: '60px', padding: '6px', background: 'rgba(255,255,255,0.05)', color: '#FFD700', border: '1px solid rgba(255,215,0,0.3)', borderRadius: '6px', fontWeight: 'bold', outline: 'none' }}
                                />
                                <span style={{ color: '#888', fontSize: '12px', fontWeight: 'bold' }}>%</span>
