@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Globe, Users, Activity, Database, 
   ShieldAlert, Terminal, ChevronRight, BarChart3, 
-  Network, Server, Play, StopCircle, CheckCircle, Wallet, AlertCircle
+  Network, Server, Play, StopCircle, CheckCircle, Wallet, AlertCircle, Mail
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../supabaseClient';
@@ -24,6 +24,7 @@ export default function MasterAdminDashboard() {
   const [usersList, setUsersList] = useState<any[]>([]);
   const [categories, setCategories] = useState<any[]>([]);
   const [ledgerData, setLedgerData] = useState<any[]>([]);
+  const [globalLeads, setGlobalLeads] = useState<any[]>([]);
   const [isRestarting, setIsRestarting] = useState(false);
 
   async function fetchCategories() {
@@ -114,6 +115,9 @@ export default function MasterAdminDashboard() {
         }
         fetchUsers();
         fetchCategories();
+
+        const { data: leadsData } = await supabase!.from('network_leads').select('*, whitelabel_configs(name)').order('created_at', { ascending: false }).limit(100);
+        if (leadsData) setGlobalLeads(leadsData);
         
         setDbStats(prev => ({
            ...prev,
@@ -159,6 +163,7 @@ export default function MasterAdminDashboard() {
             { id: 'users', icon: <Users size={18} />, label: 'Network Directory' },
             { id: 'database', icon: <Database size={18} />, label: 'Data Clusters' },
             { id: 'analytics', icon: <BarChart3 size={18} />, label: 'Global Analytics' },
+            { id: 'leads', icon: <Mail size={18} />, label: 'Global Leads' },
             { id: 'accounting', icon: <Wallet size={18} />, label: 'Global Ledger' },
             { id: 'logs', icon: <Terminal size={18} />, label: 'System Logs' },
           ].map(tab => (
@@ -712,6 +717,52 @@ export default function MasterAdminDashboard() {
              </motion.div>
              );
           })()}
+
+          {activeTab === 'leads' && (
+            <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} style={{ display: 'flex', flexDirection: 'column', gap: '30px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                <div>
+                  <h1 style={{ fontSize: '36px', marginBottom: '12px', fontWeight: '900', letterSpacing: '-1px' }}>Global Contact Leads</h1>
+                  <p style={{ color: '#888', fontSize: '18px', maxWidth: '600px', lineHeight: 1.5 }}>View all inquiries and leads submitted across the entire Vibe Network architecture and its whitelabel child networks.</p>
+                </div>
+              </div>
+              
+              <div style={{ background: '#111', borderRadius: '24px', border: '1px solid rgba(255,255,255,0.05)', overflow: 'hidden' }}>
+                <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
+                  <thead>
+                    <tr style={{ background: 'rgba(255,255,255,0.02)', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+                      <th style={{ padding: '20px', color: '#888', fontWeight: 'normal', fontSize: '14px' }}>Date Received</th>
+                      <th style={{ padding: '20px', color: '#888', fontWeight: 'normal', fontSize: '14px' }}>Network / Origin</th>
+                      <th style={{ padding: '20px', color: '#888', fontWeight: 'normal', fontSize: '14px' }}>Contact Email</th>
+                      <th style={{ padding: '20px', color: '#888', fontWeight: 'normal', fontSize: '14px' }}>Message Preview</th>
+                      <th style={{ padding: '20px', color: '#888', fontWeight: 'normal', fontSize: '14px', textAlign: 'right' }}>Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {globalLeads.length === 0 ? (
+                       <tr>
+                         <td colSpan={5} style={{ padding: '40px', textAlign: 'center', color: '#888' }}>No network leads have been received yet.</td>
+                       </tr>
+                    ) : globalLeads.map((lead: any) => (
+                      <tr key={lead.id} style={{ borderBottom: '1px solid rgba(255,255,255,0.02)' }}>
+                        <td style={{ padding: '20px', color: '#ccc', fontSize: '14px' }}>{new Date(lead.created_at).toLocaleString()}</td>
+                        <td style={{ padding: '20px' }}>
+                          <div style={{ padding: '6px 12px', background: 'rgba(0,85,255,0.1)', color: '#0055ff', borderRadius: '8px', display: 'inline-block', fontSize: '12px', fontWeight: 'bold' }}>
+                            {lead.whitelabel_configs?.name || 'Vibe Network Main'}
+                          </div>
+                        </td>
+                        <td style={{ padding: '20px', fontWeight: 'bold' }}>{lead.email}</td>
+                        <td style={{ padding: '20px', color: '#888', fontSize: '14px', maxWidth: '300px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{lead.message}</td>
+                        <td style={{ padding: '20px', textAlign: 'right' }}>
+                          <button onClick={() => alert('Full Message:\n\n' + lead.message)} style={{ padding: '8px 16px', background: 'rgba(255,255,255,0.1)', color: '#fff', border: 'none', borderRadius: '8px', cursor: 'pointer', fontSize: '13px' }}>Read</button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </motion.div>
+          )}
 
           {activeTab === 'accounting' && (
              <ErrorBoundary>
