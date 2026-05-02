@@ -1,13 +1,12 @@
-import { useState } from 'react';
-import { motion } from 'framer-motion';
+import { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Globe, Users, Activity, Database, 
   ShieldAlert, Terminal, ChevronRight, BarChart3, 
-  Network, Server, Play, StopCircle, CheckCircle, Wallet
+  Network, Server, Play, StopCircle, CheckCircle, Wallet, AlertCircle
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../supabaseClient';
-import { useEffect } from 'react';
 
 export default function MasterAdminDashboard() {
   const navigate = useNavigate();
@@ -33,10 +32,13 @@ export default function MasterAdminDashboard() {
   const [ledgerFilter, setLedgerFilter] = useState('ALL');
   const [loading, setLoading] = useState(false);
   const [broadcastSource, setBroadcastSource] = useState<'youtube' | 'upload'>('youtube');
-  const [broadcastFileUrl, setBroadcastFileUrl] = useState('');
-  const [globalSettings, setGlobalSettings] = useState({ id: '', global_vibe_fee: 15, global_whitelabel_fee: 15 });
-
   const [currentUser, setCurrentUser] = useState<any>(null);
+  const [toast, setToast] = useState<{message: string, type: 'success' | 'error'} | null>(null);
+
+  const showToast = (message: string, type: 'success' | 'error' = 'success') => {
+     setToast({ message, type });
+     setTimeout(() => setToast(null), 4000);
+  };
 
   async function fetchUsers() {
      setLoading(true);
@@ -53,10 +55,10 @@ export default function MasterAdminDashboard() {
            const { error: elevateErr } = await supabase!.from('profiles').update({ is_admin: true }).eq('id', authData.user.id);
            if (elevateErr) {
               console.error("Auto-elevation failed:", elevateErr);
-              alert("Auto-elevation failed: " + elevateErr.message);
+              showToast("Auto-elevation failed: " + elevateErr.message, 'error');
            }
         } else {
-           alert("You are not logged in! You must be logged in to save changes.");
+           showToast("You are not logged in! You must be logged in to save changes.", 'error');
         }
         
         try {
@@ -230,7 +232,7 @@ export default function MasterAdminDashboard() {
                                  if (btn) btn.innerText = '...';
                                  const { data, error } = await supabase!.from('whitelabel_configs').update({ platform_fee_percentage: val }).eq('id', brandConfig.id).select();
                                  if (error || !data || data.length === 0) {
-                                    alert('Failed to save (Permission Denied): ' + (error?.message || 'Row Level Security blocked the update.'));
+                                    showToast('Failed to save (Permission Denied): ' + (error?.message || 'Row Level Security blocked the update.'), 'error');
                                     if (btn) btn.innerText = 'Save';
                                     return;
                                  }
@@ -254,7 +256,7 @@ export default function MasterAdminDashboard() {
                                 btn.innerText = '...';
                                 const { data, error } = await supabase!.from('whitelabel_configs').update({ platform_fee_percentage: val }).eq('id', brandConfig.id).select();
                                 if (error || !data || data.length === 0) {
-                                   alert('Failed to save (Permission Denied): ' + (error?.message || 'Row Level Security blocked the update.'));
+                                   showToast('Failed to save (Permission Denied): ' + (error?.message || 'Row Level Security blocked the update.'), 'error');
                                    btn.innerText = 'Save';
                                    return;
                                 }
@@ -273,7 +275,7 @@ export default function MasterAdminDashboard() {
                             btn.innerText = isAllowed ? 'Block Global' : 'Allowed Global';
                             btn.style.background = isAllowed ? 'rgba(255,255,255,0.05)' : 'rgba(0,85,255,0.2)';
                             btn.style.color = isAllowed ? '#fff' : '#0055ff';
-                            alert(`Whitelabel Global Directory Access has been ${isAllowed ? 'Disabled' : 'Granted'}.`);
+                            showToast(`Whitelabel Global Directory Access has been ${isAllowed ? 'Disabled' : 'Granted'}.`, 'success');
                          }} style={{ padding: '10px 20px', background: 'rgba(255,255,255,0.05)', color: '#fff', border: 'none', borderRadius: '8px', fontWeight: 'bold', cursor: 'pointer', transition: '0.2s' }}>
                             Allow Global
                          </button>
@@ -343,12 +345,12 @@ export default function MasterAdminDashboard() {
                        const url = broadcastSource === 'youtube' ? (document.getElementById('yt-url') as HTMLInputElement).value : broadcastFileUrl;
                        const title = (document.getElementById('yt-title') as HTMLInputElement).value;
                        const time = (document.getElementById('yt-time') as HTMLInputElement).value;
-                       if(!url || !title) return alert(broadcastSource === 'youtube' ? 'Enter URL and Title' : 'Select Video and Enter Title');
+                       if(!url || !title) return showToast(broadcastSource === 'youtube' ? 'Enter URL and Title' : 'Select Video and Enter Title', 'error');
                        const { data: existingCat } = await supabase!.from('categories').select('id').eq('title', 'Live Network Schedule').single();
                        let targetCatId = existingCat?.id;
                        if (!targetCatId) {
                            const { data: newCat } = await supabase!.from('categories').insert({ title: 'Live Network Schedule' }).select('id').single();
-                           if (!newCat) return alert('Failed to create Live Network Schedule category.');
+                           if (!newCat) return showToast('Failed to create Live Network Schedule category.', 'error');
                            targetCatId = newCat.id;
                        }
                        
@@ -356,8 +358,8 @@ export default function MasterAdminDashboard() {
                          title, video_url: url, stream_time: time || 'LIVE', category_id: targetCatId,
                          image_url: `https://images.unsplash.com/photo-1550751827-4bd374c3f58b?auto=format&fit=crop&q=80&w=800`
                        });
-                       if (error) return alert(`Failed to insert broadcast: ${error.message}`);
-                       alert('Successfully injected broadcast into global live slate!');
+                       if (error) return showToast(`Failed to insert broadcast: ${error.message}`, 'error');
+                       showToast('Successfully injected broadcast into global live slate!', 'success');
                        if (broadcastSource === 'youtube') (document.getElementById('yt-url') as HTMLInputElement).value = '';
                        setBroadcastFileUrl('');
                        (document.getElementById('yt-title') as HTMLInputElement).value = '';
@@ -387,7 +389,7 @@ export default function MasterAdminDashboard() {
                     const name = (document.getElementById('global-name') as HTMLInputElement).value;
                     const heroImage = (document.getElementById('global-hero-img') as HTMLInputElement).value;
                     const heroCopy = (document.getElementById('global-hero-copy') as HTMLTextAreaElement).value;
-                    if(!name) return alert('Platform Name is required');
+                    if(!name) return showToast('Platform Name is required', 'error');
                     
                     const { data: existing } = await supabase!.from('whitelabel_configs').select('id, theme').eq('domain', 'vibenetwork.tv').limit(1);
                     const updatePayload: any = { name };
@@ -400,7 +402,7 @@ export default function MasterAdminDashboard() {
                       const fallbackTheme = { heroImage: heroImage || '', heroCopy: heroCopy || '' };
                       await supabase!.from('whitelabel_configs').insert([{ name, domain: 'vibenetwork.tv', theme: fallbackTheme }]);
                     }
-                    alert('Global Brand Settings Updated! Refresh the homepage to see changes.');
+                    showToast('Global Brand Settings Updated! Refresh the homepage to see changes.', 'success');
                  }} style={{ marginTop: '20px', background: '#0055ff', color: '#fff', border: 'none', padding: '16px 24px', borderRadius: '8px', fontWeight: 'bold', cursor: 'pointer' }}>Save Brand Settings</button>
                </div>
 
@@ -415,7 +417,7 @@ export default function MasterAdminDashboard() {
                        if(!title) return;
                        await supabase!.from('categories').insert([{ title }]);
                        fetchCategories();
-                       alert('Category Slider Created!');
+                       showToast('Category Slider Created!', 'success');
                        (document.getElementById('new-category') as HTMLInputElement).value = '';
                     }} style={{ background: '#00ff88', color: '#000', border: 'none', padding: '0 24px', borderRadius: '8px', fontWeight: 'bold', cursor: 'pointer' }}>Add Slider</button>
                  </div>
@@ -440,12 +442,12 @@ export default function MasterAdminDashboard() {
                        const img = (document.getElementById('video-thumb') as HTMLInputElement).value;
                        const url = (document.getElementById('video-url') as HTMLInputElement).value;
                        
-                       if(!catId || !title || !img) return alert('Category, Title, and Thumbnail are required!');
+                       if(!catId || !title || !img) return showToast('Category, Title, and Thumbnail are required!', 'error');
                        
                        await supabase!.from('videos').insert([{
                          title, category_id: catId, image_url: img, video_url: url || '#'
                        }]);
-                       alert('Content Added to Slider!');
+                       showToast('Content Added to Slider!', 'success');
                        (document.getElementById('video-title') as HTMLInputElement).value = '';
                        (document.getElementById('video-thumb') as HTMLInputElement).value = '';
                        (document.getElementById('video-url') as HTMLInputElement).value = '';
@@ -497,7 +499,7 @@ export default function MasterAdminDashboard() {
                                     if (btn) btn.innerText = '...';
                                     const { data, error } = await supabase!.from('profiles').update({ platform_fee_percentage: val }).eq('id', user.id).select();
                                     if (error || !data || data.length === 0) {
-                                       alert('Failed to save (Permission Denied): ' + (error?.message || 'Row Level Security blocked the update.'));
+                                       showToast('Failed to save (Permission Denied): ' + (error?.message || 'Row Level Security blocked the update.'), 'error');
                                        if (btn) btn.innerText = 'Save';
                                        return;
                                     }
@@ -521,7 +523,7 @@ export default function MasterAdminDashboard() {
                                   btn.innerText = '...';
                                   const { data, error } = await supabase!.from('profiles').update({ platform_fee_percentage: val }).eq('id', user.id).select();
                                   if (error || !data || data.length === 0) {
-                                     alert('Failed to save (Permission Denied): ' + (error?.message || 'Row Level Security blocked the update. Refresh the page to elevate your permissions and try again.'));
+                                     showToast('Failed to save (Permission Denied): ' + (error?.message || 'Row Level Security blocked the update. Refresh the page to elevate your permissions and try again.'), 'error');
                                      btn.innerText = 'Save';
                                      return;
                                   }
@@ -542,7 +544,7 @@ export default function MasterAdminDashboard() {
                                 btn.innerText = isGlobal ? 'Hidden' : 'Global';
                                 btn.style.background = isGlobal ? 'rgba(255,255,255,0.05)' : 'rgba(255,215,0,0.1)';
                                 btn.style.color = isGlobal ? '#888' : '#FFD700';
-                                alert(`Profile global indexing visibility has been ${isGlobal ? 'revoked' : 'granted'}.`);
+                                showToast(`Profile global indexing visibility has been ${isGlobal ? 'revoked' : 'granted'}.`, 'success');
                              }} style={{ padding: '6px 12px', background: 'rgba(255,255,255,0.05)', color: '#888', border: 'none', borderRadius: '8px', fontWeight: 'bold', fontSize: '12px', cursor: 'pointer', transition: '0.2s' }}>
                                 Hidden
                              </button>
