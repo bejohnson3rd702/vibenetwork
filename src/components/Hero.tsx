@@ -29,14 +29,14 @@ const Hero: React.FC = () => {
       
       {/* Sleek Mesh Overlays */}
       <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to right, rgba(var(--bg-rgb),0.95) 0%, transparent 50%, rgba(var(--bg-rgb),0.95) 100%)', zIndex: 1 }} />
-      <div style={{ position: 'absolute', inset: 0, background: 'radial-gradient(ellipse at 50% -20%, rgba(211, 84, 0, 0.35), transparent 70%)', zIndex: 1, mixBlendMode: 'screen' }} />
+      <div style={{ position: 'absolute', inset: 0, background: `radial-gradient(ellipse at 50% -20%, ${wlConfig?.accent ? wlConfig.accent + '88' : 'rgba(211, 84, 0, 0.45)'}, transparent 70%)`, zIndex: 1, mixBlendMode: 'screen' }} />
       <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to bottom, transparent 30%, var(--bg-color) 100%)', zIndex: 1 }} />
       
       {/* Floating Orbital Glow */}
       <motion.div 
         animate={{ filter: ['blur(100px)', 'blur(140px)', 'blur(100px)'], scale: [1, 1.2, 1] }}
         transition={{ duration: 8, repeat: Infinity, ease: 'easeInOut' }}
-        style={{ position: 'absolute', top: '10%', right: '15%', width: '400px', height: '400px', borderRadius: '50%', background: 'var(--accent-primary)', opacity: 0.15, zIndex: 1 }}
+        style={{ position: 'absolute', top: '10%', right: '15%', width: '400px', height: '400px', borderRadius: '50%', background: wlConfig?.accent || 'var(--accent-primary)', opacity: 0.15, zIndex: 1 }}
       />
       
       <div className="px-mobile-sm" style={{ position: 'relative', zIndex: 2, width: '100%', maxWidth: '1200px', padding: '0 40px', textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
@@ -48,7 +48,7 @@ const Hero: React.FC = () => {
           transition={{ duration: 0.8, delay: 0.2 }}
           style={{ padding: '8px 24px', background: 'rgba(255,255,255,0.03)', backdropFilter: 'blur(20px)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '100px', display: 'inline-flex', alignItems: 'center', gap: '12px', marginBottom: '40px' }}
         >
-          <span style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--accent-primary)', boxShadow: '0 0 10px var(--accent-primary)' }} />
+          <span style={{ width: 6, height: 6, borderRadius: '50%', background: wlConfig?.accent || 'var(--accent-primary)', boxShadow: `0 0 10px ${wlConfig?.accent || 'var(--accent-primary)'}` }} />
           <span style={{ fontSize: '12px', fontWeight: 700, letterSpacing: '3px', textTransform: 'uppercase', color: 'rgba(255,255,255,0.8)' }}>
             The Ultimate White Label Architecture
           </span>
@@ -66,9 +66,9 @@ const Hero: React.FC = () => {
           }}
         >
           {wlConfig?.name ? (
-            <>Welcome to<br/> <span style={{ background: 'linear-gradient(135deg, #fff 0%, var(--accent-primary) 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>{wlConfig.name}</span></>
+            <>Welcome to<br/> <span style={{ background: `linear-gradient(135deg, #fff 0%, ${wlConfig?.accent || 'var(--accent-primary)'} 100%)`, WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>{wlConfig.name}</span></>
           ) : (
-            <>Step Into The<br/> <span style={{ background: 'linear-gradient(135deg, #fff 0%, var(--accent-primary) 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>New Dimension</span></>
+            <>Step Into The<br/> <span style={{ background: `linear-gradient(135deg, #fff 0%, ${wlConfig?.accent || 'var(--accent-primary)'} 100%)`, WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>New Dimension</span></>
           )}
         </motion.h1>
         
@@ -100,8 +100,8 @@ const Hero: React.FC = () => {
               style={{ 
                 display: 'flex', alignItems: 'center', gap: '12px', padding: '18px 40px', 
                 fontSize: '14px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '2px',
-                background: 'var(--accent-primary)', color: 'var(--text-primary)', border: 'none', borderRadius: '14px',
-                cursor: 'pointer', boxShadow: '0 10px 30px rgba(211, 84, 0, 0.4)', transition: 'all 0.3s ease'
+                background: wlConfig?.accent || 'var(--accent-primary)', color: 'var(--text-primary)', border: 'none', borderRadius: '14px',
+                cursor: 'pointer', boxShadow: `0 10px 30px ${wlConfig?.accent ? wlConfig.accent + '66' : 'rgba(211, 84, 0, 0.4)'}`, transition: 'all 0.3s ease'
               }}
             >
               <Play fill="white" size={18} />
