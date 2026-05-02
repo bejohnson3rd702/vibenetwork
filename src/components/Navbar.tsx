@@ -126,7 +126,7 @@ const Navbar: React.FC<NavbarProps> = ({ user, onLoginClick, onAdminClick }) => 
         <div className="hide-on-mobile" style={{ display: 'flex', alignItems: 'center', gap: '8px', borderLeft: '1px solid rgba(255,255,255,0.2)', paddingLeft: '24px' }}>
           {user ? (
             <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
-              {(user?.email?.includes('admin') || user?.user_metadata?.role === 'admin' || user?.user_metadata?.role === 'business') && onAdminClick && (
+              {(user?.email?.includes('admin') || user?.email === 'bennie@level2network.com' || user?.user_metadata?.role === 'admin' || user?.user_metadata?.role === 'business') && onAdminClick && (
                 <button 
                   onClick={onAdminClick}
                   style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', background: appAccent || '#D35400', padding: '6px 14px', borderRadius: '8px', border: 'none' }}
