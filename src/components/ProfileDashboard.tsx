@@ -1030,7 +1030,7 @@ const ProfileDashboard: React.FC<{ user: any }> = ({ user }) => {
                 </button>
               ))}
 
-              {isOwnProfile && (
+              {isOwnProfile && viewMode === 'edit' && (
                 <button 
                   onClick={() => setActiveTab('appearance')}
                   style={{ position: 'relative', background: 'none', border: 'none', padding: '12px 24px', color: activeTab === 'appearance' ? '#D35400' : '#888', fontSize: '15px', fontWeight: 'bold', cursor: 'pointer', borderRadius: '100px', display: 'flex', alignItems: 'center', gap: '8px', transition: 'color 0.3s' }}
