@@ -57,9 +57,9 @@ export default function WhiteLabelHome({ wlConfig, categories, user, activeVideo
           </motion.div>
        </div>
        
-       <div id="featured-content" className="px-mobile-sm py-mobile-sm" style={{ padding: '80px 10%', display: 'flex', flexDirection: 'column', gap: '80px', position: 'relative', zIndex: 2, width: '100%' }}>
+       <div id="featured-content" style={{ position: 'relative', zIndex: 2, width: '100%', paddingBottom: '80px' }}>
           
-          <div className="mobile-w-full no-margin-mobile" style={{ position: 'relative', width: '100vw', marginLeft: 'calc(-50vw + 50%)' }}>
+          <div id="slider-section-container">
             {(() => {
               const displayCategories = [...categories];
               if (user) {
@@ -81,8 +81,8 @@ export default function WhiteLabelHome({ wlConfig, categories, user, activeVideo
                 const isArtist = category.aspectRatio === '3/4' || (category.title && category.title.includes('Artist')) || category.title === 'Network Executives';
                 const ratio = isArtist ? '3/4' : '16/9';
                 return (
-                  <div key={category.title} style={{ padding: '0 10%', margin: '0 auto 60px' }}>
                     <SliderSection 
+                      key={category.title}
                       title={category.title} 
                       items={category.items} 
                       delay={index * 0.2}
@@ -98,7 +98,6 @@ export default function WhiteLabelHome({ wlConfig, categories, user, activeVideo
                         }
                       }}
                     />
-                  </div>
                 );
               });
             })()}
@@ -142,7 +141,7 @@ export default function WhiteLabelHome({ wlConfig, categories, user, activeVideo
           </AnimatePresence>
           
           {wlConfig.customSections && wlConfig.customSections.toLowerCase() !== 'none' && (
-             <div style={{ display: 'flex', flexDirection: 'column', gap: '40px', marginTop: '40px' }}>
+             <div className="px-mobile-sm" style={{ display: 'flex', flexDirection: 'column', gap: '40px', marginTop: '80px', padding: '0 40px', maxWidth: '1400px', margin: '80px auto 0', width: '100%', boxSizing: 'border-box' }}>
                 {wlConfig.customSections.split(',').map((section: string, idx: number) => {
                    const title = section.trim();
                    if (!title) return null;
