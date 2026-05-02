@@ -5,6 +5,15 @@ import { useWhiteLabel } from '../context/WhiteLabelContext';
 import { motion } from 'framer-motion';
 import { ShoppingBag, ArrowLeft, ShieldCheck, Download, Package, Music, CreditCard } from 'lucide-react';
 
+const MOCK_IMAGE_MAP: Record<string, string> = {
+  'Exclusive Trap Beat - "Midnight"': 'https://images.unsplash.com/photo-1598488035139-bdbb2231ce04?w=600&h=600&fit=crop',
+  'Vibe Network Official Hoodie': 'https://images.unsplash.com/photo-1556821840-3a63f95609a7?w=600&h=600&fit=crop',
+  'Mastering Vocal Mixing Course': 'https://images.unsplash.com/photo-1598488035139-bdbb2231ce04?w=600&h=600&fit=crop',
+  'Custom 1-on-1 Consulting': 'https://images.unsplash.com/photo-1573164713988-8665fc963095?w=600&h=600&fit=crop',
+  'Acoustic Guitar Sample Pack': 'https://images.unsplash.com/photo-1510915361894-db8b60106cb1?w=600&h=600&fit=crop',
+  'Limited Edition Snapback': 'https://images.unsplash.com/photo-1588850561407-ed78c282e89b?w=600&h=600&fit=crop'
+};
+
 const ProductPage: React.FC = () => {
   const { productId } = useParams();
   const navigate = useNavigate();
@@ -99,8 +108,8 @@ const ProductPage: React.FC = () => {
           {/* Left: Image Viewer */}
           <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} style={{ flex: '1 1 500px', minWidth: '300px' }}>
             <div style={{ width: '100%', aspectRatio: '1/1', background: 'rgba(255,255,255,0.02)', borderRadius: '32px', overflow: 'hidden', border: '1px solid rgba(255,255,255,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              {product.image_url ? (
-                <img src={product.image_url} alt={product.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+              {(MOCK_IMAGE_MAP[product.title] || product.image_url) ? (
+                <img src={MOCK_IMAGE_MAP[product.title] || product.image_url} alt={product.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
               ) : (
                 <ShoppingBag size={64} color="#333" />
               )}
