@@ -52,10 +52,12 @@ export default function MasterAdminDashboard() {
         const { data: authData } = await supabase!.auth.getUser();
         if (authData?.user) {
            setCurrentUser(authData.user);
-           const { error: elevateErr } = await supabase!.from('profiles').update({ is_admin: true }).eq('id', authData.user.id);
+           const { error: elevateErr, data: elevateData } = await supabase!.from('profiles').update({ is_admin: true }).eq('id', authData.user.id).select();
            if (elevateErr) {
               console.error("Auto-elevation failed:", elevateErr);
               showToast("Auto-elevation failed: " + elevateErr.message, 'error');
+           } else if (!elevateData || elevateData.length === 0) {
+              showToast("CRITICAL: Your account does not have a row in the profiles table! You cannot become an admin. Please go to Supabase -> Table Editor -> profiles and insert a row with your Auth ID.", 'error');
            }
         } else {
            showToast("You are not logged in! You must be logged in to save changes.", 'error');
@@ -672,45 +674,42 @@ export default function MasterAdminDashboard() {
                     </thead>
                     <tbody>
                       {(() => {
-                        const mappedTx = ledgerData.map(tx => ({
-                          time: new Date(tx.created_at).toLocaleDateString(),
-                          source: tx.product_title || 'Network Purchase',
-                          origin: tx.profiles?.whitelabel_id ? 'Whitelabel' : 'Direct Vibe',
-                          gross: Number(tx.amount),
-                          vibeFeePercent: Number(tx.profiles?.platform_fee_percentage || 15)
-                        }));
-                        
-                        const filteredTx = mappedTx.filter(tx => ledgerFilter === 'ALL' || tx.origin === ledgerFilter);
+                        const filteredTx = ledgerData.filter(tx => {
+                           const origin = tx.profiles?.whitelabel_id ? 'Whitelabel' : 'Direct Vibe';
+                           return ledgerFilter === 'ALL' || origin === ledgerFilter;
+                        });
                         
                         if (filteredTx.length === 0) {
                            return <tr><td colSpan={7} style={{ padding: '30px', textAlign: 'center', color: '#888' }}>No recent traffic detected for this filter tier.</td></tr>;
                         }
                         
                         return filteredTx.map((tx, i, arr) => {
-                           const originalTx = ledgerData.find(ltx => Number(ltx.amount) === tx.gross && new Date(ltx.created_at).toLocaleDateString() === tx.time);
-                           const wlId = originalTx?.profiles?.whitelabel_id;
+                           const wlId = tx.profiles?.whitelabel_id;
                            const wlConfig = whitelabelsList.find(wl => wl.id === wlId);
                            
-                           const isDirect = tx.origin === 'Direct Vibe';
-                           const wlFeePercent = isDirect ? 0 : Number(wlConfig?.platform_fee_percentage || globalSettings.global_whitelabel_fee);
-                           const vFeePercent = Number(tx.profiles?.platform_fee_percentage || globalSettings.global_vibe_fee);
+                           const isDirect = !wlId;
+                           const origin = isDirect ? 'Direct Vibe' : 'Whitelabel';
+                           const gross = Number(tx.amount);
+                           
+                           const wlFeePercent = isDirect ? 0 : Number(wlConfig?.platform_fee_percentage ?? globalSettings.global_whitelabel_fee);
+                           const vFeePercent = Number(tx.profiles?.platform_fee_percentage ?? globalSettings.global_vibe_fee);
                            const totalFeePercent = vFeePercent + wlFeePercent;
                            const creatorCutPercent = 100 - totalFeePercent;
                            
-                           const creatorCut = (tx.gross * (creatorCutPercent / 100)).toFixed(2);
-                           const vibeCut = (tx.gross * (vFeePercent / 100)).toFixed(2);
-                           const wlCut = isDirect ? 'N/A' : '$' + (tx.gross * (wlFeePercent / 100)).toFixed(2);
+                           const creatorCut = (gross * (creatorCutPercent / 100)).toFixed(2);
+                           const vibeCut = (gross * (vFeePercent / 100)).toFixed(2);
+                           const wlCut = isDirect ? 'N/A' : '$' + (gross * (wlFeePercent / 100)).toFixed(2);
                            
                            return (
                              <tr key={i} style={{ borderBottom: i !== arr.length - 1 ? '1px solid rgba(255,255,255,0.05)' : 'none' }}>
-                               <td style={{ padding: '16px 12px', color: '#888' }}>{tx.time}</td>
-                               <td style={{ padding: '16px 12px' }}>{tx.source}</td>
+                               <td style={{ padding: '16px 12px', color: '#888' }}>{new Date(tx.created_at).toLocaleDateString()}</td>
+                               <td style={{ padding: '16px 12px' }}>{tx.product_title || 'Network Purchase'}</td>
                                <td style={{ padding: '16px 12px' }}>
                                  <span style={{ padding: '4px 8px', background: isDirect ? 'rgba(0,85,255,0.1)' : 'rgba(255,170,0,0.1)', color: isDirect ? '#0055ff' : '#ffaa00', borderRadius: '4px', fontSize: '12px', fontWeight: 'bold' }}>
-                                   {tx.origin}
+                                   {origin}
                                  </span>
                                </td>
-                               <td style={{ padding: '16px 12px', fontWeight: 'bold' }}>${tx.gross.toFixed(2)}</td>
+                               <td style={{ padding: '16px 12px', fontWeight: 'bold' }}>${gross.toFixed(2)}</td>
                                <td style={{ padding: '16px 12px', color: '#0055ff', fontWeight: 'bold' }}>${vibeCut} <span style={{fontSize:'10px', color:'#0055ff', opacity:0.7}}>({vFeePercent}%)</span></td>
                                <td style={{ padding: '16px 12px', color: '#ffaa00', fontWeight: 'bold' }}>{wlCut} {!isDirect && <span style={{fontSize:'10px', color:'#ffaa00', opacity:0.7}}>({wlFeePercent}%)</span>}</td>
                                <td style={{ padding: '16px 12px', color: '#00ff88', fontWeight: 'bold' }}>${creatorCut} <span style={{fontSize:'10px', color:'#00ff88', opacity:0.7}}>({creatorCutPercent}%)</span></td>
