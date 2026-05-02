@@ -34,6 +34,7 @@ export default function MasterAdminDashboard() {
   const [loading, setLoading] = useState(false);
   const [broadcastSource, setBroadcastSource] = useState<'youtube' | 'upload'>('youtube');
   const [currentUser, setCurrentUser] = useState<any>(null);
+  const [globalSettings, setGlobalSettings] = useState<any>({ id: '', global_vibe_fee: 15, global_whitelabel_fee: 15 });
   const [toast, setToast] = useState<{message: string, type: 'success' | 'error'} | null>(null);
 
   const showToast = (message: string, type: 'success' | 'error' = 'success') => {
