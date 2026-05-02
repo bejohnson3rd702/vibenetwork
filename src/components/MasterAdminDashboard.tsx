@@ -664,18 +664,20 @@ export default function MasterAdminDashboard() {
                   <table style={{ width: '100%', textAlign: 'left', borderCollapse: 'collapse' }}>
                     <thead>
                       <tr style={{ color: '#888', borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
-                        <th style={{ padding: '16px 12px' }}>Source Network</th>
+                        <th style={{ padding: '16px 12px' }}>Date</th>
+                        <th style={{ padding: '16px 12px' }}>Source</th>
                         <th style={{ padding: '16px 12px' }}>Protocol</th>
-                        <th style={{ padding: '16px 12px' }}>Gross Sub</th>
-                        <th style={{ padding: '16px 12px', color: '#0055ff' }}>WL Cut (15%)</th>
-                        <th style={{ padding: '16px 12px', color: '#FFD700' }}>Vibe Cut (15-30%)</th>
-                        <th style={{ padding: '16px 12px', color: '#00ff88' }}>Creator (70%)</th>
+                        <th style={{ padding: '16px 12px' }}>Gross</th>
+                        <th style={{ padding: '16px 12px', color: '#0055ff' }}>Vibe Cut</th>
+                        <th style={{ padding: '16px 12px', color: '#FFD700' }}>WL Cut</th>
+                        <th style={{ padding: '16px 12px', color: '#00ff88' }}>Creator</th>
                       </tr>
                     </thead>
                     <tbody>
                       {(() => {
                         const filteredTx = ledgerData.filter(tx => {
-                           const origin = tx.profiles?.whitelabel_id ? 'Whitelabel' : 'Direct Vibe';
+                           const profile = Array.isArray(tx.profiles) ? tx.profiles[0] : tx.profiles;
+                           const origin = profile?.whitelabel_id ? 'Whitelabel' : 'Direct Vibe';
                            return ledgerFilter === 'ALL' || origin === ledgerFilter;
                         });
                         
@@ -684,7 +686,8 @@ export default function MasterAdminDashboard() {
                         }
                         
                         return filteredTx.map((tx, i, arr) => {
-                           const wlId = tx.profiles?.whitelabel_id;
+                           const profile = Array.isArray(tx.profiles) ? tx.profiles[0] : tx.profiles;
+                           const wlId = profile?.whitelabel_id;
                            const wlConfig = whitelabelsList.find(wl => wl.id === wlId);
                            
                            const isDirect = !wlId;
@@ -692,7 +695,7 @@ export default function MasterAdminDashboard() {
                            const gross = Number(tx.amount);
                            
                            const wlFeePercent = isDirect ? 0 : Number(wlConfig?.platform_fee_percentage ?? globalSettings.global_whitelabel_fee);
-                           const vFeePercent = Number(tx.profiles?.platform_fee_percentage ?? globalSettings.global_vibe_fee);
+                           const vFeePercent = Number(profile?.platform_fee_percentage ?? globalSettings.global_vibe_fee);
                            const totalFeePercent = vFeePercent + wlFeePercent;
                            const creatorCutPercent = 100 - totalFeePercent;
                            
