@@ -19,7 +19,7 @@ const Marketplace: React.FC = () => {
       // Fetch products, joining with the profile so we can filter by whitelabel_id
       const query = supabase
         .from('products')
-        .select('*, creator:profiles!inner(username, full_name, avatar_url, whitelabel_id)');
+        .select('*, creator:profiles!inner(username, avatar_url, whitelabel_id)');
 
       // If wlConfig exists and is not vibenetwork.tv, filter by tenant ID
       if (wlConfig?.domain && wlConfig.domain !== 'vibenetwork.tv') {
