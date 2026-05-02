@@ -635,7 +635,7 @@ export default function MasterAdminDashboard() {
                         <div style={{ background: 'rgba(255,215,0,0.05)', border: '1px solid rgba(255,215,0,0.2)', padding: '16px', borderRadius: '12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                            <span style={{ color: '#aaa', fontWeight: 'bold' }}>Vibe Network (Platform Fee)</span>
                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                              <input id="global-vibe-fee-1" type="number" defaultValue={globalSettings.global_vibe_fee} style={{ background: 'transparent', border: '1px solid rgba(255,215,0,0.3)', color: '#FFD700', fontSize: '20px', fontWeight: 900, width: '80px', textAlign: 'center', outline: 'none', borderRadius: '8px', padding: '4px' }} />
+                              <input id="global-vibe-fee-1" type="number" value={globalSettings.global_vibe_fee} onChange={(e) => setGlobalSettings(prev => ({ ...prev, global_vibe_fee: e.target.value }))} style={{ background: 'transparent', border: '1px solid rgba(255,215,0,0.3)', color: '#FFD700', fontSize: '20px', fontWeight: 900, width: '80px', textAlign: 'center', outline: 'none', borderRadius: '8px', padding: '4px' }} />
                               <span style={{ fontSize: '20px', color: '#FFD700', fontWeight: 900 }}>%</span>
                               <button onClick={async (e) => {
                                  const btn = e.currentTarget;
@@ -678,7 +678,7 @@ export default function MasterAdminDashboard() {
                         <div style={{ background: 'rgba(0,85,255,0.05)', border: '1px solid rgba(0,85,255,0.2)', padding: '16px', borderRadius: '12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                            <span style={{ color: '#aaa', fontWeight: 'bold' }}>Global Whitelabel Fee Default</span>
                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                              <input id="global-wl-fee" type="number" defaultValue={globalSettings.global_whitelabel_fee} style={{ background: 'transparent', border: '1px solid rgba(0,85,255,0.3)', color: '#0055ff', fontSize: '20px', fontWeight: 900, width: '80px', textAlign: 'center', outline: 'none', borderRadius: '8px', padding: '4px' }} />
+                              <input id="global-wl-fee" type="number" value={globalSettings.global_whitelabel_fee} onChange={(e) => setGlobalSettings(prev => ({ ...prev, global_whitelabel_fee: e.target.value }))} style={{ background: 'transparent', border: '1px solid rgba(0,85,255,0.3)', color: '#0055ff', fontSize: '20px', fontWeight: 900, width: '80px', textAlign: 'center', outline: 'none', borderRadius: '8px', padding: '4px' }} />
                               <span style={{ fontSize: '20px', color: '#0055ff', fontWeight: 900 }}>%</span>
                               <button onClick={async (e) => {
                                  const btn = e.currentTarget;
@@ -706,7 +706,7 @@ export default function MasterAdminDashboard() {
                         <div style={{ background: 'rgba(255,215,0,0.05)', border: '1px solid rgba(255,215,0,0.2)', padding: '16px', borderRadius: '12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                            <span style={{ color: '#aaa', fontWeight: 'bold' }}>Global Vibe Network Gateway Default</span>
                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                              <input id="global-vibe-fee" type="number" defaultValue={globalSettings.global_vibe_fee} style={{ background: 'transparent', border: '1px solid rgba(255,215,0,0.3)', color: '#FFD700', fontSize: '20px', fontWeight: 900, width: '80px', textAlign: 'center', outline: 'none', borderRadius: '8px', padding: '4px' }} />
+                              <input id="global-vibe-fee" type="number" value={globalSettings.global_vibe_fee} onChange={(e) => setGlobalSettings(prev => ({ ...prev, global_vibe_fee: e.target.value }))} style={{ background: 'transparent', border: '1px solid rgba(255,215,0,0.3)', color: '#FFD700', fontSize: '20px', fontWeight: 900, width: '80px', textAlign: 'center', outline: 'none', borderRadius: '8px', padding: '4px' }} />
                               <span style={{ fontSize: '20px', color: '#FFD700', fontWeight: 900 }}>%</span>
                               <button onClick={async (e) => {
                                  const btn = e.currentTarget;
