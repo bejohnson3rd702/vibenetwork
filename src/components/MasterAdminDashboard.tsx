@@ -337,7 +337,7 @@ export default function MasterAdminDashboard() {
                   
                   <div style={{ background: '#000', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px', padding: '20px', fontFamily: 'monospace', color: '#4CAF50', height: '200px', overflowY: 'auto' }}>
                      root@vibe-network-db:~# SELECT count(*) FROM system_logs; <br/>
-                     <span style={{ color: '#fff' }}>-> {systemLogs.length} audit records found in telemetry index.</span><br/><br/>
+                     <span style={{ color: '#fff' }}>-{'>'} {systemLogs.length} audit records found in telemetry index.</span><br/><br/>
                      {isRestarting && <span style={{ color: '#ffaa00' }}>{">>>"} SYSTEM LOGS TRUNCATED IN PRODUCTION DATABASE...</span>}
                   </div>
                   <button onClick={async () => {
