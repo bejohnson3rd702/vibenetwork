@@ -1,15 +1,38 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Send, Mail, MapPin, Phone } from 'lucide-react';
+import { supabase } from '../supabaseClient';
+import { useWhiteLabel } from '../context/WhiteLabelContext';
 
 const Contact: React.FC = () => {
+  const { wlConfig } = useWhiteLabel();
   const [formData, setFormData] = useState({ name: '', email: '', subject: '', message: '' });
   const [isSent, setIsSent] = useState(false);
+  const [isSending, setIsSending] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Simulate sending
-    setTimeout(() => setIsSent(true), 1000);
+    setIsSending(true);
+
+    const fullMessage = `Name: ${formData.name}\nSubject: ${formData.subject}\n\n${formData.message}`;
+
+    const { error } = await supabase.from('network_leads').insert([
+       {
+          whitelabel_id: wlConfig?.id || null,
+          email: formData.email,
+          message: fullMessage,
+          status: 'new'
+       }
+    ]);
+
+    setIsSending(false);
+    
+    if (error) {
+       alert("Failed to send message: " + error.message);
+    } else {
+       setIsSent(true);
+       setFormData({ name: '', email: '', subject: '', message: '' });
+    }
   };
 
   return (
@@ -151,10 +174,11 @@ const Contact: React.FC = () => {
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
                   type="submit"
-                  style={{ width: '100%', padding: '18px', background: 'var(--accent-primary)', color: '#fff', border: 'none', borderRadius: '12px', fontSize: '16px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '2px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px', marginTop: '10px', boxShadow: '0 10px 30px rgba(184, 41, 234, 0.3)' }}
+                  disabled={isSending}
+                  style={{ width: '100%', padding: '18px', background: 'var(--accent-primary)', color: '#fff', border: 'none', borderRadius: '12px', fontSize: '16px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '2px', cursor: isSending ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px', marginTop: '10px', boxShadow: '0 10px 30px rgba(184, 41, 234, 0.3)', opacity: isSending ? 0.7 : 1 }}
                 >
                   <Send size={18} />
-                  Send Message
+                  {isSending ? 'Sending...' : 'Send Message'}
                 </motion.button>
               </form>
             )}
