@@ -85,10 +85,18 @@ export default function MasterAdminDashboard() {
         
         const { count: usersCount } = await supabase!.from('profiles').select('*', { count: 'exact', head: true });
         const { data: configs } = await supabase!.from('whitelabel_configs').select('*');
-        const { data: ledgerTx } = await supabase!.from('ledger').select('*, profiles(*)').order('created_at', { ascending: false }).limit(50);
+        const { data: ledgerTx, error: ledgerError } = await supabase!.from('ledger').select('*, profiles(*)').order('created_at', { ascending: false }).limit(50);
         
         setWhitelabelsList(configs || []);
-        if (ledgerTx) setLedgerData(ledgerTx);
+        if (ledgerError) {
+           console.error("Ledger Fetch Error:", ledgerError);
+           showToast("Ledger Error: " + ledgerError.message, 'error');
+        } else if (ledgerTx) {
+           setLedgerData(ledgerTx);
+           if (ledgerTx.length === 0) {
+              showToast("Ledger fetched successfully but contains 0 transactions.", 'success');
+           }
+        }
         fetchUsers();
         fetchCategories();
         
