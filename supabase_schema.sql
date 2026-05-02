@@ -287,10 +287,13 @@ CREATE TABLE IF NOT EXISTS public.platform_settings (
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 ALTER TABLE public.platform_settings ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "Allow public read access for platform_settings" ON public.platform_settings;
 CREATE POLICY "Allow public read access for platform_settings" ON public.platform_settings FOR SELECT USING (true);
+DROP POLICY IF EXISTS "Admins can update platform_settings" ON public.platform_settings;
 CREATE POLICY "Admins can update platform_settings" ON public.platform_settings FOR UPDATE USING (
     (SELECT is_admin FROM public.profiles WHERE id = auth.uid()) = true
 );
+DROP POLICY IF EXISTS "Admins can insert platform_settings" ON public.platform_settings;
 CREATE POLICY "Admins can insert platform_settings" ON public.platform_settings FOR INSERT WITH CHECK (
     (SELECT is_admin FROM public.profiles WHERE id = auth.uid()) = true
 );
@@ -307,9 +310,11 @@ CREATE TABLE IF NOT EXISTS public.system_logs (
 );
 
 ALTER TABLE public.system_logs ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "Admins can read system logs" ON public.system_logs;
 CREATE POLICY "Admins can read system logs" ON public.system_logs FOR SELECT USING (
     (SELECT is_admin FROM public.profiles WHERE id = auth.uid()) = true
 );
+DROP POLICY IF EXISTS "Anyone can insert logs" ON public.system_logs;
 CREATE POLICY "Anyone can insert logs" ON public.system_logs FOR INSERT WITH CHECK (true);
 
 -- Missing Tables for Creator Studio
@@ -326,7 +331,9 @@ CREATE TABLE IF NOT EXISTS public.bookings (
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 ALTER TABLE public.bookings ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "Users can read own bookings" ON public.bookings;
 CREATE POLICY "Users can read own bookings" ON public.bookings FOR SELECT USING (auth.uid() = creator_id OR auth.uid() = buyer_id);
+DROP POLICY IF EXISTS "Users can insert bookings" ON public.bookings;
 CREATE POLICY "Users can insert bookings" ON public.bookings FOR INSERT WITH CHECK (auth.uid() = buyer_id);
 
 CREATE TABLE IF NOT EXISTS public.products (
@@ -340,7 +347,9 @@ CREATE TABLE IF NOT EXISTS public.products (
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 ALTER TABLE public.products ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "Public read products" ON public.products;
 CREATE POLICY "Public read products" ON public.products FOR SELECT USING (true);
+DROP POLICY IF EXISTS "Creators can insert products" ON public.products;
 CREATE POLICY "Creators can insert products" ON public.products FOR INSERT WITH CHECK (auth.uid() = creator_id);
 
 CREATE TABLE IF NOT EXISTS public.courses (
@@ -354,7 +363,9 @@ CREATE TABLE IF NOT EXISTS public.courses (
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 ALTER TABLE public.courses ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "Public read courses" ON public.courses;
 CREATE POLICY "Public read courses" ON public.courses FOR SELECT USING (true);
+DROP POLICY IF EXISTS "Creators can insert courses" ON public.courses;
 CREATE POLICY "Creators can insert courses" ON public.courses FOR INSERT WITH CHECK (auth.uid() = creator_id);
 
 CREATE TABLE IF NOT EXISTS public.series (
@@ -367,7 +378,9 @@ CREATE TABLE IF NOT EXISTS public.series (
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 ALTER TABLE public.series ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "Public read series" ON public.series;
 CREATE POLICY "Public read series" ON public.series FOR SELECT USING (true);
+DROP POLICY IF EXISTS "Creators can insert series" ON public.series;
 CREATE POLICY "Creators can insert series" ON public.series FOR INSERT WITH CHECK (auth.uid() = creator_id);
 
 CREATE TABLE IF NOT EXISTS public.episodes (
@@ -380,7 +393,9 @@ CREATE TABLE IF NOT EXISTS public.episodes (
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 ALTER TABLE public.episodes ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "Public read episodes" ON public.episodes;
 CREATE POLICY "Public read episodes" ON public.episodes FOR SELECT USING (true);
+DROP POLICY IF EXISTS "Creators can insert episodes" ON public.episodes;
 CREATE POLICY "Creators can insert episodes" ON public.episodes FOR INSERT WITH CHECK (
     EXISTS (SELECT 1 FROM public.series WHERE id = series_id AND creator_id = auth.uid())
 );
@@ -394,11 +409,14 @@ CREATE TABLE IF NOT EXISTS public.network_leads (
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 ALTER TABLE public.network_leads ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "Public can insert leads" ON public.network_leads;
 CREATE POLICY "Public can insert leads" ON public.network_leads FOR INSERT WITH CHECK (true);
+DROP POLICY IF EXISTS "Admins can read leads" ON public.network_leads;
 CREATE POLICY "Admins can read leads" ON public.network_leads FOR SELECT USING (
     (SELECT is_admin FROM public.profiles WHERE id = auth.uid()) = true OR
     whitelabel_id IN (SELECT id FROM public.whitelabel_configs WHERE owner_id = auth.uid())
 );
+DROP POLICY IF EXISTS "Admins can update leads" ON public.network_leads;
 CREATE POLICY "Admins can update leads" ON public.network_leads FOR UPDATE USING (
     (SELECT is_admin FROM public.profiles WHERE id = auth.uid()) = true OR
     whitelabel_id IN (SELECT id FROM public.whitelabel_configs WHERE owner_id = auth.uid())
