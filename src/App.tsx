@@ -213,8 +213,30 @@ function App() {
   }, []);
 
   useEffect(() => {
-    if (wlConfig?.bg) {
-      document.documentElement.style.setProperty('--bg-color', wlConfig.bg);
+    if (wlConfig) {
+      if (wlConfig.bg) {
+        document.documentElement.style.setProperty('--bg-color', wlConfig.bg);
+      }
+      
+      // Dynamic SEO Injection
+      const platformName = wlConfig.name || 'Vibe Network';
+      document.title = platformName;
+      
+      const metaDescription = document.querySelector('meta[name="description"]');
+      if (metaDescription) {
+        metaDescription.setAttribute('content', wlConfig.heroCopy || `Welcome to ${platformName}`);
+      }
+
+      // Update Favicon
+      if (wlConfig.logoImage || wlConfig.logo) {
+        let link = document.querySelector("link[rel~='icon']") as HTMLLinkElement;
+        if (!link) {
+          link = document.createElement('link');
+          link.rel = 'icon';
+          document.head.appendChild(link);
+        }
+        link.href = wlConfig.logoImage || wlConfig.logo;
+      }
     }
   }, [wlConfig]);
 
