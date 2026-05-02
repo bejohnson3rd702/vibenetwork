@@ -384,3 +384,22 @@ CREATE POLICY "Public read episodes" ON public.episodes FOR SELECT USING (true);
 CREATE POLICY "Creators can insert episodes" ON public.episodes FOR INSERT WITH CHECK (
     EXISTS (SELECT 1 FROM public.series WHERE id = series_id AND creator_id = auth.uid())
 );
+
+CREATE TABLE IF NOT EXISTS public.network_leads (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    whitelabel_id UUID REFERENCES public.whitelabel_configs(id) ON DELETE CASCADE,
+    email TEXT NOT NULL,
+    message TEXT NOT NULL,
+    status TEXT DEFAULT 'new',
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+ALTER TABLE public.network_leads ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Public can insert leads" ON public.network_leads FOR INSERT WITH CHECK (true);
+CREATE POLICY "Admins can read leads" ON public.network_leads FOR SELECT USING (
+    (SELECT is_admin FROM public.profiles WHERE id = auth.uid()) = true OR
+    whitelabel_id IN (SELECT id FROM public.whitelabel_configs WHERE owner_id = auth.uid())
+);
+CREATE POLICY "Admins can update leads" ON public.network_leads FOR UPDATE USING (
+    (SELECT is_admin FROM public.profiles WHERE id = auth.uid()) = true OR
+    whitelabel_id IN (SELECT id FROM public.whitelabel_configs WHERE owner_id = auth.uid())
+);

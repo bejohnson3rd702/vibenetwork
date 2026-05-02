@@ -66,6 +66,7 @@ const AiTextArea = ({ defaultValue, label, rows=4, accent, onChange }: { default
    )
 }
 import { useWhiteLabel } from '../context/WhiteLabelContext';
+import { supabase } from '../supabaseClient';
 
 export default function BusinessAdminDashboard({ onClose }: { onClose: () => void }) {
   const { wlConfig } = useWhiteLabel();
@@ -75,7 +76,7 @@ export default function BusinessAdminDashboard({ onClose }: { onClose: () => voi
   const [heroCopy, setHeroCopy] = useState(wlConfig.heroCopy || '');
   const [btnPrimary, setBtnPrimary] = useState('Access Admin Dashboard');
   
-  const [selectedLead, setSelectedLead] = useState<{email: string, date: string, full: string} | null>(null);
+  const [selectedLead, setSelectedLead] = useState<any>(null);
   const [leads, setLeads] = useState<any[]>([]);
 
   const [contactEmail, setContactEmail] = useState(wlConfig.contactEmail || 'sales@vibenetwork.tv');
@@ -83,11 +84,14 @@ export default function BusinessAdminDashboard({ onClose }: { onClose: () => voi
   const [contactAddress, setContactAddress] = useState(wlConfig.contactAddress || '123 Enterprise Way, Silicon Valley');
 
   useEffect(() => {
-     const loadLeads = () => setLeads(JSON.parse(localStorage.getItem('vibe_network_leads') || '[]'));
+     const loadLeads = async () => {
+         const { data } = await supabase.from('network_leads').select('*').eq('whitelabel_id', wlConfig.id).order('created_at', { ascending: false });
+         if (data) setLeads(data);
+     };
      loadLeads();
      window.addEventListener('new_lead_received', loadLeads);
      return () => window.removeEventListener('new_lead_received', loadLeads);
-  }, []);
+  }, [wlConfig.id]);
 
   const [walletBalance, setWalletBalance] = useState(() => (typeof window !== 'undefined' ? Number(localStorage.getItem('vibe_network_wallet') || 10500.00) : 10500.00));
   const [paySubsWithWallet, setPaySubsWithWallet] = useState(true);
@@ -288,16 +292,15 @@ export default function BusinessAdminDashboard({ onClose }: { onClose: () => voi
                      <div style={{ background: 'rgba(255,255,255,0.05)', padding: '40px', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.1)' }}>
                         <button onClick={() => setSelectedLead(null)} style={{ background: 'none', border: 'none', color: '#888', cursor: 'pointer', marginBottom: '20px', fontWeight: 'bold' }}>← Back to Triage</button>
                         <h2 style={{ margin: '0 0 8px 0', fontSize: '24px' }}>Sender: {selectedLead.email}</h2>
-                        <p style={{ color: '#888', margin: '0 0 30px 0' }}>Received: {selectedLead.date}</p>
+                        <p style={{ color: '#888', margin: '0 0 30px 0' }}>Received: {new Date(selectedLead.created_at).toLocaleString()}</p>
                         <div style={{ background: '#000', padding: '24px', borderRadius: '12px', color: '#ccc', lineHeight: 1.6, fontSize: '16px', border: '1px solid rgba(255,255,255,0.05)' }}>
-                           {selectedLead.full}
+                           {selectedLead.message}
                         </div>
                         <div style={{ display: 'flex', gap: '16px', marginTop: '30px' }}>
                            <button style={{ padding: '12px 24px', background: wlConfig.accent, color: '#fff', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold' }}>Forward to Sales CRM</button>
-                           <button onClick={() => {
-                              const updated = leads.filter(l => l.date !== selectedLead.date);
-                              localStorage.setItem('vibe_network_leads', JSON.stringify(updated));
-                              setLeads(updated);
+                           <button onClick={async () => {
+                              await supabase.from('network_leads').delete().eq('id', selectedLead.id);
+                              setLeads(leads.filter(l => l.id !== selectedLead.id));
                               setSelectedLead(null);
                            }} style={{ padding: '12px 24px', background: 'rgba(255,0,0,0.1)', color: '#ff0000', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold' }}>Archive Lead</button>
                         </div>
@@ -319,9 +322,9 @@ export default function BusinessAdminDashboard({ onClose }: { onClose: () => voi
                            ) : (
                               leads.map((lead: any, i: number) => (
                                  <div key={i} style={{ display: 'table-row', borderTop: '1px solid rgba(255,255,255,0.05)' }}>
-                                    <div style={{ display: 'table-cell', padding: '16px 20px', color: '#888' }}>{lead.date}</div>
+                                    <div style={{ display: 'table-cell', padding: '16px 20px', color: '#888' }}>{new Date(lead.created_at).toLocaleDateString()}</div>
                                     <div style={{ display: 'table-cell', padding: '16px 20px', fontWeight: 'bold' }}>{lead.email}</div>
-                                    <div style={{ display: 'table-cell', padding: '16px 20px', color: '#ccc' }}>{lead.full.substring(0, 60)}...</div>
+                                    <div style={{ display: 'table-cell', padding: '16px 20px', color: '#ccc' }}>{lead.message.substring(0, 60)}...</div>
                                     <div style={{ display: 'table-cell', padding: '16px 20px' }}>
                                        <button onClick={() => setSelectedLead(lead)} style={{ padding: '8px 16px', background: wlConfig.accent, color: '#fff', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold' }}>View Full</button>
                                     </div>
