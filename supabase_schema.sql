@@ -277,3 +277,20 @@ CREATE POLICY "Auth Insert" ON storage.objects FOR INSERT WITH CHECK (bucket_id 
 
 ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS platform_fee_percentage NUMERIC DEFAULT 15.00;
 ALTER TABLE public.whitelabel_configs ADD COLUMN IF NOT EXISTS platform_fee_percentage NUMERIC DEFAULT 15.00;
+
+-- Global Settings
+CREATE TABLE IF NOT EXISTS public.platform_settings (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    global_vibe_fee NUMERIC DEFAULT 15.00,
+    global_whitelabel_fee NUMERIC DEFAULT 15.00,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+ALTER TABLE public.platform_settings ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Allow public read access for platform_settings" ON public.platform_settings FOR SELECT USING (true);
+CREATE POLICY "Admins can update platform_settings" ON public.platform_settings FOR UPDATE USING (
+    (SELECT is_admin FROM public.profiles WHERE id = auth.uid()) = true
+);
+CREATE POLICY "Admins can insert platform_settings" ON public.platform_settings FOR INSERT WITH CHECK (
+    (SELECT is_admin FROM public.profiles WHERE id = auth.uid()) = true
+);
+
