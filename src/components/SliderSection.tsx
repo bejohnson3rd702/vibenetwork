@@ -97,7 +97,7 @@ const SlideItem: React.FC<{ item: Item, aspectRatio: string, onClick?: () => voi
               fontWeight: 800,
               letterSpacing: '1px',
               textTransform: 'uppercase',
-              color: '#fff'
+              color: 'var(--text-primary)'
             }}>
               {tag}
             </span>
@@ -107,7 +107,7 @@ const SlideItem: React.FC<{ item: Item, aspectRatio: string, onClick?: () => voi
         <motion.h3 
           animate={{ y: isHovered ? -4 : 0 }} 
           transition={{ duration: 0.3 }}
-          style={{ fontSize: '20px', lineHeight: 1.2, margin: 0, color: '#fff', fontWeight: 800, letterSpacing: '-0.5px' }}
+          style={{ fontSize: '20px', lineHeight: 1.2, margin: 0, color: 'var(--text-primary)', fontWeight: 800, letterSpacing: '-0.5px' }}
         >
           {item.title}
         </motion.h3>

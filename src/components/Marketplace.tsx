@@ -137,7 +137,7 @@ const Marketplace: React.FC = () => {
                 onClick={() => navigate(`/product/${product.id}`)}
               >
                 {/* Product Image */}
-                <div style={{ width: '100%', aspectRatio: '1/1', background: '#111', position: 'relative', overflow: 'hidden' }}>
+                <div style={{ width: '100%', aspectRatio: '1/1', background: 'var(--bg-surface)', position: 'relative', overflow: 'hidden' }}>
                    {product.image_url ? (
                      <img src={product.image_url} alt={product.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                    ) : (

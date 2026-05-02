@@ -27,10 +27,10 @@ export class ErrorBoundary extends Component<Props, State> {
   public render() {
     if (this.state.hasError) {
       return (
-        <div style={{ padding: '40px', background: '#ff000022', border: '2px solid red', borderRadius: '12px', color: '#fff' }}>
+        <div style={{ padding: '40px', background: '#ff000022', border: '2px solid red', borderRadius: '12px', color: 'var(--text-primary)' }}>
           <h2>FATAL UI CRASH</h2>
           <pre style={{ whiteSpace: 'pre-wrap', wordBreak: 'break-all' }}>{this.state.error?.toString()}</pre>
-          <pre style={{ whiteSpace: 'pre-wrap', wordBreak: 'break-all', fontSize: '11px', color: '#aaa', marginTop: '10px' }}>{this.state.error?.stack}</pre>
+          <pre style={{ whiteSpace: 'pre-wrap', wordBreak: 'break-all', fontSize: '11px', color: 'var(--text-secondary)', marginTop: '10px' }}>{this.state.error?.stack}</pre>
         </div>
       );
     }

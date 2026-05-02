@@ -106,7 +106,7 @@ const VirtualCallRoom: React.FC = () => {
   };
 
   return (
-    <div style={{ height: '100vh', width: '100vw', background: '#050505', display: 'flex', flexDirection: 'column', color: '#fff' }}>
+    <div style={{ height: '100vh', width: '100vw', background: 'var(--bg-color)', display: 'flex', flexDirection: 'column', color: 'var(--text-primary)' }}>
       {/* Header */}
       <div style={{ padding: '20px 40px', background: 'rgba(0,0,0,0.5)', borderBottom: '1px solid rgba(255,255,255,0.05)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', zIndex: 10 }}>
         <div>
@@ -124,31 +124,31 @@ const VirtualCallRoom: React.FC = () => {
       <div style={{ flex: 1, display: 'flex', position: 'relative', overflow: 'hidden' }}>
         
         {/* Remote Video (Full Screen) */}
-        <div style={{ flex: 1, background: '#0a0a0a', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <div style={{ flex: 1, background: 'var(--bg-color)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
           {!isConnected && (
-            <div style={{ color: '#aaa', textAlign: 'center', background: 'rgba(255,255,255,0.03)', padding: '40px', borderRadius: '24px', border: '1px solid rgba(255,255,255,0.05)', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '20px' }}>
+            <div style={{ color: 'var(--text-secondary)', textAlign: 'center', background: 'rgba(255,255,255,0.03)', padding: '40px', borderRadius: '24px', border: '1px solid rgba(255,255,255,0.05)', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '20px' }}>
               <div style={{ fontSize: '48px', marginBottom: '8px' }}>🎧</div>
-              <h2 style={{ margin: 0, color: '#fff' }}>Waiting for connection...</h2>
+              <h2 style={{ margin: 0, color: 'var(--text-primary)' }}>Waiting for connection...</h2>
               
               <div style={{ background: 'rgba(0,0,0,0.5)', padding: '24px', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.1)', width: '100%', maxWidth: '400px' }}>
-                <span style={{ fontSize: '14px', color: '#888', display: 'block', marginBottom: '8px' }}>Your Connection ID:</span>
+                <span style={{ fontSize: '14px', color: 'var(--text-muted)', display: 'block', marginBottom: '8px' }}>Your Connection ID:</span>
                 <div style={{ fontSize: '16px', fontWeight: 'bold', color: '#D35400', letterSpacing: '1px', background: 'rgba(211,84,0,0.1)', padding: '12px', borderRadius: '8px', marginBottom: '24px', wordBreak: 'break-all', userSelect: 'all' }}>
                   {peerId || 'Generating...'}
                 </div>
                 
-                <span style={{ fontSize: '14px', color: '#888', display: 'block', marginBottom: '8px' }}>Enter Partner's ID to Connect:</span>
+                <span style={{ fontSize: '14px', color: 'var(--text-muted)', display: 'block', marginBottom: '8px' }}>Enter Partner's ID to Connect:</span>
                 <div style={{ display: 'flex', gap: '10px' }}>
                   <input 
                     type="text" 
                     placeholder="Paste ID here" 
                     value={targetId} 
                     onChange={(e) => setTargetId(e.target.value)}
-                    style={{ flex: 1, background: '#111', border: '1px solid #333', padding: '14px', borderRadius: '8px', color: '#fff', outline: 'none' }}
+                    style={{ flex: 1, background: 'var(--bg-surface)', border: '1px solid var(--bg-surface-hover)', padding: '14px', borderRadius: '8px', color: 'var(--text-primary)', outline: 'none' }}
                   />
                   <button 
                     onClick={handleCall}
                     disabled={!targetId}
-                    style={{ padding: '14px 24px', background: targetId ? '#D35400' : '#444', color: '#fff', border: 'none', borderRadius: '8px', fontWeight: 'bold', cursor: targetId ? 'pointer' : 'not-allowed', transition: '0.2s' }}
+                    style={{ padding: '14px 24px', background: targetId ? '#D35400' : '#444', color: 'var(--text-primary)', border: 'none', borderRadius: '8px', fontWeight: 'bold', cursor: targetId ? 'pointer' : 'not-allowed', transition: '0.2s' }}
                     onMouseOver={e=>{if(targetId)e.currentTarget.style.background='#E65100'}} onMouseOut={e=>{if(targetId)e.currentTarget.style.background='#D35400'}}
                   >
                     Connect
@@ -172,7 +172,7 @@ const VirtualCallRoom: React.FC = () => {
           style={{ 
             position: 'absolute', bottom: '120px', right: '40px', 
             width: '280px', height: '180px', 
-            background: '#000', borderRadius: '16px', border: '2px solid rgba(255,255,255,0.1)',
+            background: 'var(--bg-color)', borderRadius: '16px', border: '2px solid rgba(255,255,255,0.1)',
             overflow: 'hidden', boxShadow: '0 20px 40px rgba(0,0,0,0.5)', cursor: 'grab'
           }}
         >
@@ -184,7 +184,7 @@ const VirtualCallRoom: React.FC = () => {
             style={{ width: '100%', height: '100%', objectFit: 'cover', transform: 'scaleX(-1)' }} // Mirror local view
           />
           {isVideoMuted && (
-            <div style={{ position: 'absolute', inset: 0, background: '#111', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <div style={{ position: 'absolute', inset: 0, background: 'var(--bg-surface)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
               <VideoOff color="#666" size={32} />
             </div>
           )}
@@ -195,7 +195,7 @@ const VirtualCallRoom: React.FC = () => {
       {/* Bottom Control Bar */}
       <div style={{ height: '90px', background: 'rgba(0,0,0,0.8)', borderTop: '1px solid rgba(255,255,255,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '20px', padding: '0 40px', position: 'relative' }}>
         
-        <div style={{ position: 'absolute', left: '40px', color: '#666', fontSize: '13px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+        <div style={{ position: 'absolute', left: '40px', color: 'var(--text-muted)', fontSize: '13px', display: 'flex', alignItems: 'center', gap: '8px' }}>
           <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: isConnected ? '#00ff88' : '#ff4d4d' }} />
           Room: {callId}
         </div>
@@ -216,7 +216,7 @@ const VirtualCallRoom: React.FC = () => {
 
         <button 
           onClick={endCall}
-          style={{ padding: '0 30px', height: '50px', borderRadius: '25px', background: '#ff0000', color: '#fff', border: 'none', display: 'flex', alignItems: 'center', gap: '10px', fontWeight: 'bold', cursor: 'pointer', marginLeft: '20px' }}
+          style={{ padding: '0 30px', height: '50px', borderRadius: '25px', background: '#ff0000', color: 'var(--text-primary)', border: 'none', display: 'flex', alignItems: 'center', gap: '10px', fontWeight: 'bold', cursor: 'pointer', marginLeft: '20px' }}
         >
           <PhoneOff size={18} />
           End Session

@@ -142,14 +142,14 @@ const AuthModal: React.FC<AuthModalProps> = ({ onClose, onSuccess, defaultIsLogi
           onClick={onClose}
           style={{
             position: 'absolute', top: '24px', right: '24px',
-            background: 'none', border: 'none', color: '#888',
+            background: 'none', border: 'none', color: 'var(--text-muted)',
             cursor: 'pointer'
           }}
         >
           <X size={24} />
         </button>
 
-        <h2 style={{ fontSize: '32px', fontWeight: 'bold', marginBottom: '8px', color: '#fff' }}>
+        <h2 style={{ fontSize: '32px', fontWeight: 'bold', marginBottom: '8px', color: 'var(--text-primary)' }}>
           {isLogin ? 'Welcome Back' : 'Join Vibe'}
         </h2>
         <p style={{ color: '#ccc', marginBottom: '32px', fontSize: '15px' }}>
@@ -166,41 +166,41 @@ const AuthModal: React.FC<AuthModalProps> = ({ onClose, onSuccess, defaultIsLogi
           
           {!isLogin && (
             <div style={{ position: 'relative' }}>
-              <AtSign size={18} style={{ position: 'absolute', left: '16px', top: '50%', transform: 'translateY(-50%)', color: '#888' }} />
+              <AtSign size={18} style={{ position: 'absolute', left: '16px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
               <input 
                 type="text" placeholder="Choose a Username" required
                 value={username} onChange={e => setUsername(e.target.value)}
                 style={{
                   width: '100%', padding: '16px 16px 16px 44px', boxSizing: 'border-box',
                   background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.1)',
-                  borderRadius: '12px', color: '#fff', fontSize: '16px', outline: 'none'
+                  borderRadius: '12px', color: 'var(--text-primary)', fontSize: '16px', outline: 'none'
                 }}
               />
             </div>
           )}
 
           <div style={{ position: 'relative' }}>
-            <Mail size={18} style={{ position: 'absolute', left: '16px', top: '50%', transform: 'translateY(-50%)', color: '#888' }} />
+            <Mail size={18} style={{ position: 'absolute', left: '16px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
             <input 
               type="email" placeholder="Email Address" required
               value={email} onChange={e => setEmail(e.target.value)}
               style={{
                 width: '100%', padding: '16px 16px 16px 44px', boxSizing: 'border-box',
                 background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.1)',
-                borderRadius: '12px', color: '#fff', fontSize: '16px', outline: 'none'
+                borderRadius: '12px', color: 'var(--text-primary)', fontSize: '16px', outline: 'none'
               }}
             />
           </div>
 
           <div style={{ position: 'relative' }}>
-            <Lock size={18} style={{ position: 'absolute', left: '16px', top: '50%', transform: 'translateY(-50%)', color: '#888' }} />
+            <Lock size={18} style={{ position: 'absolute', left: '16px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
             <input 
               type="password" placeholder="Password" required
               value={password} onChange={e => setPassword(e.target.value)}
               style={{
                 width: '100%', padding: '16px 16px 16px 44px', boxSizing: 'border-box',
                 background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.1)',
-                borderRadius: '12px', color: '#fff', fontSize: '16px', outline: 'none'
+                borderRadius: '12px', color: 'var(--text-primary)', fontSize: '16px', outline: 'none'
               }}
             />
           </div>
@@ -266,25 +266,25 @@ const AuthModal: React.FC<AuthModalProps> = ({ onClose, onSuccess, defaultIsLogi
           </button>
         </form>
 
-        <p style={{ textAlign: 'center', marginTop: '24px', color: '#888', fontSize: '14px' }}>
+        <p style={{ textAlign: 'center', marginTop: '24px', color: 'var(--text-muted)', fontSize: '14px' }}>
           {isLogin ? "Don't have an account? " : "Already have an account? "}
           <span 
             onClick={() => setIsLogin(!isLogin)} 
-            style={{ color: '#fff', fontWeight: 'bold', cursor: 'pointer' }}
+            style={{ color: 'var(--text-primary)', fontWeight: 'bold', cursor: 'pointer' }}
           >
             {isLogin ? 'Sign Up' : 'Sign In'}
           </span>
         </p>
 
         {showBusinessWizard && (
-          <div style={{ position: 'absolute', inset: 0, background: '#111', borderRadius: '24px', zIndex: 10, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
-            <div style={{ background: '#000', padding: '20px', borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
-               <h3 style={{ margin: 0, color: '#fff', fontSize: '18px' }}>🚀 Beginning of your Business's AI Journey</h3>
+          <div style={{ position: 'absolute', inset: 0, background: 'var(--bg-surface)', borderRadius: '24px', zIndex: 10, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+            <div style={{ background: 'var(--bg-color)', padding: '20px', borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
+               <h3 style={{ margin: 0, color: 'var(--text-primary)', fontSize: '18px' }}>🚀 Beginning of your Business's AI Journey</h3>
             </div>
             
             <div style={{ flex: 1, padding: '20px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '16px' }}>
                {chatHistory.map((msg, idx) => (
-                 <div key={idx} style={{ alignSelf: msg.sender === 'user' ? 'flex-end' : 'flex-start', background: msg.sender === 'user' ? '#ff4d85' : 'rgba(255,255,255,0.1)', padding: '12px 16px', borderRadius: '16px', maxWidth: '85%', color: '#fff', fontSize: '14px', lineHeight: 1.4 }}>
+                 <div key={idx} style={{ alignSelf: msg.sender === 'user' ? 'flex-end' : 'flex-start', background: msg.sender === 'user' ? '#ff4d85' : 'rgba(255,255,255,0.1)', padding: '12px 16px', borderRadius: '16px', maxWidth: '85%', color: 'var(--text-primary)', fontSize: '14px', lineHeight: 1.4 }}>
                    {msg.text && <div>{msg.text}</div>}
                    {msg.imagePreview && (
                      <img src={msg.imagePreview} alt="Preview" style={{ width: '100%', marginTop: '12px', borderRadius: '8px', border: '2px solid rgba(255,255,255,0.2)', objectFit: 'contain', height: '180px', backgroundColor: '#000' }} />
@@ -305,14 +305,14 @@ const AuthModal: React.FC<AuthModalProps> = ({ onClose, onSuccess, defaultIsLogi
             
              {wizardStep === 5 && (
                <div style={{ padding: '20px', background: 'rgba(0,0,0,0.8)', borderTop: '1px solid rgba(255,255,255,0.1)' }}>
-                  <p style={{ margin: '0 0 16px 0', color: '#fff', fontSize: '15px' }}>Click to append custom modular architectures to your network payload:</p>
+                  <p style={{ margin: '0 0 16px 0', color: 'var(--text-primary)', fontSize: '15px' }}>Click to append custom modular architectures to your network payload:</p>
                   <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
                      {['About Us', 'Contact Us Form', 'Engineering Blog', 'Featured Merch'].map(sec => (
                         <button key={sec} onClick={(e) => {
                             e.preventDefault();
                             if (selectedSections.includes(sec)) setSelectedSections(s => s.filter(i => i !== sec));
                             else setSelectedSections(s => [...s, sec]);
-                        }} style={{ padding: '10px 20px', borderRadius: '20px', background: selectedSections.includes(sec) ? wlConfig.accent : 'rgba(255,255,255,0.1)', color: '#fff', border: 'none', cursor: 'pointer', fontWeight: 'bold', transition: '0.2s' }}>
+                        }} style={{ padding: '10px 20px', borderRadius: '20px', background: selectedSections.includes(sec) ? wlConfig.accent : 'rgba(255,255,255,0.1)', color: 'var(--text-primary)', border: 'none', cursor: 'pointer', fontWeight: 'bold', transition: '0.2s' }}>
                             {selectedSections.includes(sec) ? '✓ ' : '+ '} {sec}
                         </button>
                      ))}
@@ -488,7 +488,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ onClose, onSuccess, defaultIsLogi
                 }, 800);
                 
               }} style={{ padding: '20px', background: 'rgba(0,0,0,0.5)', display: 'flex', borderTop: '1px solid rgba(255,255,255,0.1)' }}>
-                <input type="text" value={chatInput} onChange={e => setChatInput(e.target.value)} placeholder="Type your answer here..." style={{ flex: 1, padding: '20px', background: 'transparent', border: 'none', color: '#fff', fontSize: '15px', outline: 'none' }} autoFocus />
+                <input type="text" value={chatInput} onChange={e => setChatInput(e.target.value)} placeholder="Type your answer here..." style={{ flex: 1, padding: '20px', background: 'transparent', border: 'none', color: 'var(--text-primary)', fontSize: '15px', outline: 'none' }} autoFocus />
                 <button type="submit" id="wizardSubmitBtn" style={{ padding: '0 24px', background: '#fff', color: '#000', border: 'none', fontWeight: 'bold', cursor: 'pointer' }}>Send</button>
               </form>
             )}

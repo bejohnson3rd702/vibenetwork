@@ -100,7 +100,7 @@ const Hero: React.FC = () => {
               style={{ 
                 display: 'flex', alignItems: 'center', gap: '12px', padding: '18px 40px', 
                 fontSize: '14px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '2px',
-                background: 'var(--accent-primary)', color: '#ffffff', border: 'none', borderRadius: '14px',
+                background: 'var(--accent-primary)', color: 'var(--text-primary)', border: 'none', borderRadius: '14px',
                 cursor: 'pointer', boxShadow: '0 10px 30px rgba(211, 84, 0, 0.4)', transition: 'all 0.3s ease'
               }}
             >

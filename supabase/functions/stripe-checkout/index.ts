@@ -99,8 +99,8 @@ serve(async (req) => {
            ...(extraMetadata || {})
         }
       },
-      success_url: returnUrl ? `${returnUrl}?success=true` : "http://localhost:5174/profile?success=true",
-      cancel_url: returnUrl ? `${returnUrl}?canceled=true` : "http://localhost:5174/profile?canceled=true",
+      success_url: returnUrl ? `${returnUrl}?success=true` : `${req.headers.get('origin') || 'https://vibenetwork.tv'}/profile?success=true`,
+      cancel_url: returnUrl ? `${returnUrl}?canceled=true` : `${req.headers.get('origin') || 'https://vibenetwork.tv'}/profile?canceled=true`,
     });
 
     return new Response(JSON.stringify({ url: session.url }), {

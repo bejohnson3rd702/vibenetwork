@@ -137,12 +137,12 @@ export default function MasterAdminDashboard() {
   ];
 
   return (
-    <div style={{ minHeight: '100vh', background: '#050505', color: '#fff', display: 'flex' }}>
+    <div style={{ minHeight: '100vh', background: 'var(--bg-color)', color: 'var(--text-primary)', display: 'flex' }}>
       
       {/* Sidebar Command Center */}
       <div style={{ 
         width: '280px', 
-        background: '#0a0a0a', 
+        background: 'var(--bg-color)', 
         borderRight: '1px solid rgba(255,255,255,0.05)',
         display: 'flex', flexDirection: 'column'
       }}>
@@ -151,7 +151,7 @@ export default function MasterAdminDashboard() {
             <div style={{ width: 12, height: 12, background: '#ff0000', borderRadius: '50%', boxShadow: '0 0 10px #ff0000' }} />
             <h1 style={{ margin: 0, fontSize: '18px', fontWeight: 900, letterSpacing: '1px', textTransform: 'uppercase' }}>Master Control</h1>
           </div>
-          <span style={{ fontSize: '12px', color: '#666', fontFamily: 'monospace' }}>ROOT_AUTHORIZATION_ACTIVE</span>
+          <span style={{ fontSize: '12px', color: 'var(--text-muted)', fontFamily: 'monospace' }}>ROOT_AUTHORIZATION_ACTIVE</span>
         </div>
 
         <nav style={{ padding: '24px 12px', flex: 1, display: 'flex', flexDirection: 'column', gap: '8px' }}>
@@ -185,7 +185,7 @@ export default function MasterAdminDashboard() {
         </nav>
 
         <div style={{ padding: '24px' }}>
-          <button onClick={() => navigate('/')} style={{ width: '100%', padding: '14px', background: 'rgba(255,255,255,0.05)', color: '#fff', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px', fontWeight: 'bold', cursor: 'pointer' }}>
+          <button onClick={() => navigate('/')} style={{ width: '100%', padding: '14px', background: 'rgba(255,255,255,0.05)', color: 'var(--text-primary)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px', fontWeight: 'bold', cursor: 'pointer' }}>
             Exit to Platform
           </button>
         </div>
@@ -199,7 +199,7 @@ export default function MasterAdminDashboard() {
           <h2 style={{ margin: 0, fontSize: '20px', textTransform: 'capitalize' }}>{activeTab.replace('-', ' ')}</h2>
           <div style={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
              <ShieldAlert size={20} color="#FFD700" />
-             <span style={{ fontSize: '14px', color: '#aaa', fontWeight: 'bold' }}>God Mode Enabled</span>
+             <span style={{ fontSize: '14px', color: 'var(--text-secondary)', fontWeight: 'bold' }}>God Mode Enabled</span>
           </div>
         </div>
 
@@ -211,19 +211,19 @@ export default function MasterAdminDashboard() {
                
                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '20px' }}>
                  {stats.map(s => (
-                   <div key={s.label} style={{ background: '#111', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '20px', padding: '24px', position: 'relative', overflow: 'hidden' }}>
+                   <div key={s.label} style={{ background: 'var(--bg-surface)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '20px', padding: '24px', position: 'relative', overflow: 'hidden' }}>
                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '24px' }}>
                         <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: `${s.color}22`, display: 'flex', alignItems: 'center', justifyContent: 'center', color: s.color }}>
                           {s.icon}
                         </div>
                      </div>
                      <div style={{ fontSize: '32px', fontWeight: 900, marginBottom: '8px' }}>{s.value}</div>
-                     <div style={{ color: '#888', fontSize: '14px', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '1px' }}>{s.label}</div>
+                     <div style={{ color: 'var(--text-muted)', fontSize: '14px', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '1px' }}>{s.label}</div>
                    </div>
                  ))}
                </div>
 
-               <div style={{ background: '#111', borderRadius: '24px', border: '1px solid rgba(255,255,255,0.05)', padding: '30px' }}>
+               <div style={{ background: 'var(--bg-surface)', borderRadius: '24px', border: '1px solid rgba(255,255,255,0.05)', padding: '30px' }}>
                  <h3 style={{ margin: '0 0 24px 0', fontSize: '20px' }}>Live Platform Telemetry</h3>
                  <div style={{ width: '100%', height: '300px', background: 'rgba(0,85,255,0.05)', borderRadius: '16px', border: '1px solid rgba(0,85,255,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#0055ff', flexDirection: 'column', gap: '16px' }}>
                     <Activity size={48} />
@@ -243,14 +243,14 @@ export default function MasterAdminDashboard() {
 
                <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
                  {whitelabelsList.length === 0 ? (
-                    <div style={{ background: '#111', padding: '40px', borderRadius: '16px', border: '1px dashed rgba(255,255,255,0.1)', textAlign: 'center', color: '#888' }}>
+                    <div style={{ background: 'var(--bg-surface)', padding: '40px', borderRadius: '16px', border: '1px dashed rgba(255,255,255,0.1)', textAlign: 'center', color: 'var(--text-muted)' }}>
                        No active tenants detected in the database. 
                        <br/>Did you run the <b>create_whitelabels_table.sql</b> script?
                     </div>
                  ) : whitelabelsList.map((brandConfig, i) => (
-                   <div key={brandConfig.id || i} style={{ background: '#111', padding: '24px', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                   <div key={brandConfig.id || i} style={{ background: 'var(--bg-surface)', padding: '24px', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
-                         <div style={{ width: '60px', height: '60px', background: brandConfig.accent || `linear-gradient(135deg, hsl(${(i * 50) % 360}, 100%, 50%), hsl(${((i * 50) + 60) % 360}, 100%, 50%))`, borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontWeight: 'bold' }}>
+                         <div style={{ width: '60px', height: '60px', background: brandConfig.accent || `linear-gradient(135deg, hsl(${(i * 50) % 360}, 100%, 50%), hsl(${((i * 50) + 60) % 360}, 100%, 50%))`, borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-primary)', fontWeight: 'bold' }}>
                             {brandConfig.name?.substring(0,2).toUpperCase() || 'WL'}
                          </div>
                          <div>
@@ -260,7 +260,7 @@ export default function MasterAdminDashboard() {
                       </div>
                       <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
                          <div style={{ display: 'flex', alignItems: 'center', gap: '4px', background: 'rgba(0,0,0,0.4)', padding: '6px 12px', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.1)' }}>
-                            <span style={{ color: '#888', fontSize: '12px', fontWeight: 'bold' }}>Fee:</span>
+                            <span style={{ color: 'var(--text-muted)', fontSize: '12px', fontWeight: 'bold' }}>Fee:</span>
                             <input 
                               id={`fee-input-wl-${brandConfig.id}`}
                               type="number" 
@@ -325,16 +325,16 @@ export default function MasterAdminDashboard() {
 
           {activeTab === 'database' && (
              <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
-               <div style={{ background: '#111', padding: '40px', borderRadius: '24px', border: '1px solid rgba(255,255,255,0.05)' }}>
+               <div style={{ background: 'var(--bg-surface)', padding: '40px', borderRadius: '24px', border: '1px solid rgba(255,255,255,0.05)' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '24px' }}>
                      <Server size={32} color="#0055ff" />
                      <h3 style={{ margin: 0, fontSize: '24px' }}>Master PostgreSQL Architecture</h3>
                   </div>
-                  <p style={{ color: '#888', marginBottom: '32px', fontSize: '16px', lineHeight: 1.6 }}>Direct connection established to the primary Supabase cluster. Use caution when executing raw SQL directives against the production fleet.</p>
+                  <p style={{ color: 'var(--text-muted)', marginBottom: '32px', fontSize: '16px', lineHeight: 1.6 }}>Direct connection established to the primary Supabase cluster. Use caution when executing raw SQL directives against the production fleet.</p>
                   
-                  <div style={{ background: '#000', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px', padding: '20px', fontFamily: 'monospace', color: '#4CAF50', height: '200px', overflowY: 'auto' }}>
+                  <div style={{ background: 'var(--bg-color)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px', padding: '20px', fontFamily: 'monospace', color: '#4CAF50', height: '200px', overflowY: 'auto' }}>
                      root@vibe-network-db:~# SELECT count(*) FROM system_logs; <br/>
-                     <span style={{ color: '#fff' }}>-{'>'} {systemLogs.length} audit records found in telemetry index.</span><br/><br/>
+                     <span style={{ color: 'var(--text-primary)' }}>-{'>'} {systemLogs.length} audit records found in telemetry index.</span><br/><br/>
                      {isRestarting && <span style={{ color: '#ffaa00' }}>{">>>"} SYSTEM LOGS TRUNCATED IN PRODUCTION DATABASE...</span>}
                   </div>
                   <button onClick={async () => {
@@ -350,7 +350,7 @@ export default function MasterAdminDashboard() {
                      setSystemLogs([]);
                      setIsRestarting(true);
                      setTimeout(() => setIsRestarting(false), 5000);
-                  }} id="purge-logs-btn" style={{ marginTop: '20px', padding: '16px 32px', background: isRestarting ? '#333' : '#ff0000', color: '#fff', fontWeight: 'bold', border: 'none', borderRadius: '12px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px', transition: '0.2s' }}>
+                  }} id="purge-logs-btn" style={{ marginTop: '20px', padding: '16px 32px', background: isRestarting ? '#333' : '#ff0000', color: 'var(--text-primary)', fontWeight: 'bold', border: 'none', borderRadius: '12px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px', transition: '0.2s' }}>
                      {isRestarting ? <CheckCircle size={20} /> : <StopCircle size={20} />} 
                      {isRestarting ? 'Telemetry Logs Purged' : 'Purge All System Logs'}
                   </button>
@@ -363,17 +363,17 @@ export default function MasterAdminDashboard() {
                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '30px' }}>
                  <h3 style={{ margin: 0, fontSize: '24px' }}>Live Now TV Programming</h3>
                </div>
-               <div style={{ background: '#111', padding: '30px', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.05)' }}>
+               <div style={{ background: 'var(--bg-surface)', padding: '30px', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.05)' }}>
                  <div style={{ display: 'flex', gap: '16px', marginBottom: '20px', flexWrap: 'wrap', alignItems: 'center' }}>
                     <h4 style={{ margin: 0, fontSize: '18px' }}>Inject Broadcast</h4>
                     <div style={{ display: 'flex', gap: '8px', background: 'rgba(255,255,255,0.05)', padding: '4px', borderRadius: '8px' }}>
-                       <button onClick={() => setBroadcastSource('youtube')} style={{ background: broadcastSource === 'youtube' ? '#0055ff' : 'transparent', color: '#fff', border: 'none', padding: '6px 12px', borderRadius: '6px', cursor: 'pointer', fontWeight: 'bold' }}>YouTube Link</button>
-                       <button onClick={() => setBroadcastSource('upload')} style={{ background: broadcastSource === 'upload' ? '#0055ff' : 'transparent', color: '#fff', border: 'none', padding: '6px 12px', borderRadius: '6px', cursor: 'pointer', fontWeight: 'bold' }}>Upload Video</button>
+                       <button onClick={() => setBroadcastSource('youtube')} style={{ background: broadcastSource === 'youtube' ? '#0055ff' : 'transparent', color: 'var(--text-primary)', border: 'none', padding: '6px 12px', borderRadius: '6px', cursor: 'pointer', fontWeight: 'bold' }}>YouTube Link</button>
+                       <button onClick={() => setBroadcastSource('upload')} style={{ background: broadcastSource === 'upload' ? '#0055ff' : 'transparent', color: 'var(--text-primary)', border: 'none', padding: '6px 12px', borderRadius: '6px', cursor: 'pointer', fontWeight: 'bold' }}>Upload Video</button>
                     </div>
                  </div>
                  <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
                     {broadcastSource === 'youtube' ? (
-                       <input type="text" placeholder="YouTube Video URL (e.g. https://youtube.com/watch...)" style={{ background: '#000', border: '1px solid #333', padding: '16px', borderRadius: '8px', color: '#fff', fontSize: '15px' }} id="yt-url" />
+                       <input type="text" placeholder="YouTube Video URL (e.g. https://youtube.com/watch...)" style={{ background: 'var(--bg-color)', border: '1px solid var(--bg-surface-hover)', padding: '16px', borderRadius: '8px', color: 'var(--text-primary)', fontSize: '15px' }} id="yt-url" />
                     ) : (
                        <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
                          <input type="file" id="broadcastVideoUpload" accept="video/*" style={{ display: 'none' }} onChange={(e) => {
@@ -381,16 +381,16 @@ export default function MasterAdminDashboard() {
                                setBroadcastFileUrl(URL.createObjectURL(e.target.files[0]));
                              }
                          }} />
-                         <button onClick={() => document.getElementById('broadcastVideoUpload')?.click()} style={{ padding: '16px', background: 'rgba(255,255,255,0.1)', color: '#fff', border: '1px solid rgba(255,255,255,0.2)', borderRadius: '8px', fontWeight: 'bold', fontSize: '15px', cursor: 'pointer', flex: 1 }}>
+                         <button onClick={() => document.getElementById('broadcastVideoUpload')?.click()} style={{ padding: '16px', background: 'rgba(255,255,255,0.1)', color: 'var(--text-primary)', border: '1px solid rgba(255,255,255,0.2)', borderRadius: '8px', fontWeight: 'bold', fontSize: '15px', cursor: 'pointer', flex: 1 }}>
                             {broadcastFileUrl ? 'Change Video' : 'Select Video File'}
                          </button>
                        </div>
                     )}
-                    <input type="text" placeholder="Broadcast Title" style={{ background: '#000', border: '1px solid #333', padding: '16px', borderRadius: '8px', color: '#fff', fontSize: '15px' }} id="yt-title" />
+                    <input type="text" placeholder="Broadcast Title" style={{ background: 'var(--bg-color)', border: '1px solid var(--bg-surface-hover)', padding: '16px', borderRadius: '8px', color: 'var(--text-primary)', fontSize: '15px' }} id="yt-title" />
                     {broadcastSource === 'upload' && (
-                       <textarea placeholder="Broadcast Description" rows={3} style={{ background: '#000', border: '1px solid #333', padding: '16px', borderRadius: '8px', color: '#fff', fontSize: '15px', resize: 'vertical' }} id="yt-desc" />
+                       <textarea placeholder="Broadcast Description" rows={3} style={{ background: 'var(--bg-color)', border: '1px solid var(--bg-surface-hover)', padding: '16px', borderRadius: '8px', color: 'var(--text-primary)', fontSize: '15px', resize: 'vertical' }} id="yt-desc" />
                     )}
-                    <input type="text" placeholder="Broadcast Time (e.g. LIVE, UP NEXT, 2:00 PM)" style={{ background: '#000', border: '1px solid #333', padding: '16px', borderRadius: '8px', color: '#fff', fontSize: '15px' }} id="yt-time" />
+                    <input type="text" placeholder="Broadcast Time (e.g. LIVE, UP NEXT, 2:00 PM)" style={{ background: 'var(--bg-color)', border: '1px solid var(--bg-surface-hover)', padding: '16px', borderRadius: '8px', color: 'var(--text-primary)', fontSize: '15px' }} id="yt-time" />
                     <button onClick={async () => {
                        const url = broadcastSource === 'youtube' ? (document.getElementById('yt-url') as HTMLInputElement).value : broadcastFileUrl;
                        const title = (document.getElementById('yt-title') as HTMLInputElement).value;
@@ -415,7 +415,7 @@ export default function MasterAdminDashboard() {
                        (document.getElementById('yt-title') as HTMLInputElement).value = '';
                        if (document.getElementById('yt-desc')) (document.getElementById('yt-desc') as HTMLTextAreaElement).value = '';
                        (document.getElementById('yt-time') as HTMLInputElement).value = '';
-                    }} style={{ background: '#0055ff', color: '#fff', border: 'none', padding: '16px', borderRadius: '8px', fontWeight: 'bold', cursor: 'pointer', fontSize: '15px' }}>
+                    }} style={{ background: '#0055ff', color: 'var(--text-primary)', border: 'none', padding: '16px', borderRadius: '8px', fontWeight: 'bold', cursor: 'pointer', fontSize: '15px' }}>
                        Deploy Broadcast
                     </button>
                  </div>
@@ -427,13 +427,13 @@ export default function MasterAdminDashboard() {
              <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} style={{ display: 'flex', flexDirection: 'column', gap: '30px' }}>
                
                {/* 1. Global Brand Settings */}
-               <div style={{ background: '#111', padding: '30px', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.05)' }}>
+               <div style={{ background: 'var(--bg-surface)', padding: '30px', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.05)' }}>
                  <h4 style={{ margin: '0 0 20px 0', fontSize: '18px', color: '#ff4d85' }}>1. Global Brand & Hero Settings</h4>
-                 <p style={{ color: '#888', marginBottom: '20px' }}>Update the master platform brand name and the cinematic hero banner seen by all logged-out visitors.</p>
+                 <p style={{ color: 'var(--text-muted)', marginBottom: '20px' }}>Update the master platform brand name and the cinematic hero banner seen by all logged-out visitors.</p>
                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
-                    <input type="text" placeholder="Platform Name (e.g. Vibe Network)" style={{ background: '#000', border: '1px solid #333', padding: '16px', borderRadius: '8px', color: '#fff', fontSize: '15px' }} id="global-name" />
-                    <input type="text" placeholder="Hero Image URL (e.g. https://...)" style={{ background: '#000', border: '1px solid #333', padding: '16px', borderRadius: '8px', color: '#fff', fontSize: '15px' }} id="global-hero-img" />
-                    <textarea placeholder="Hero Copy (e.g. Welcome to the ultimate network...)" style={{ background: '#000', border: '1px solid #333', padding: '16px', borderRadius: '8px', color: '#fff', fontSize: '15px', gridColumn: 'span 2', height: '100px' }} id="global-hero-copy" />
+                    <input type="text" placeholder="Platform Name (e.g. Vibe Network)" style={{ background: 'var(--bg-color)', border: '1px solid var(--bg-surface-hover)', padding: '16px', borderRadius: '8px', color: 'var(--text-primary)', fontSize: '15px' }} id="global-name" />
+                    <input type="text" placeholder="Hero Image URL (e.g. https://...)" style={{ background: 'var(--bg-color)', border: '1px solid var(--bg-surface-hover)', padding: '16px', borderRadius: '8px', color: 'var(--text-primary)', fontSize: '15px' }} id="global-hero-img" />
+                    <textarea placeholder="Hero Copy (e.g. Welcome to the ultimate network...)" style={{ background: 'var(--bg-color)', border: '1px solid var(--bg-surface-hover)', padding: '16px', borderRadius: '8px', color: 'var(--text-primary)', fontSize: '15px', gridColumn: 'span 2', height: '100px' }} id="global-hero-copy" />
                  </div>
                  <button onClick={async () => {
                     const name = (document.getElementById('global-name') as HTMLInputElement).value;
@@ -453,15 +453,15 @@ export default function MasterAdminDashboard() {
                       await supabase!.from('whitelabel_configs').insert([{ name, domain: 'vibenetwork.tv', theme: fallbackTheme }]);
                     }
                     showToast('Global Brand Settings Updated! Refresh the homepage to see changes.', 'success');
-                 }} style={{ marginTop: '20px', background: '#0055ff', color: '#fff', border: 'none', padding: '16px 24px', borderRadius: '8px', fontWeight: 'bold', cursor: 'pointer' }}>Save Brand Settings</button>
+                 }} style={{ marginTop: '20px', background: '#0055ff', color: 'var(--text-primary)', border: 'none', padding: '16px 24px', borderRadius: '8px', fontWeight: 'bold', cursor: 'pointer' }}>Save Brand Settings</button>
                </div>
 
                {/* 2. Category Sliders */}
-               <div style={{ background: '#111', padding: '30px', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.05)' }}>
+               <div style={{ background: 'var(--bg-surface)', padding: '30px', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.05)' }}>
                  <h4 style={{ margin: '0 0 20px 0', fontSize: '18px', color: '#00ff88' }}>2. Create Content Slider (Category)</h4>
-                 <p style={{ color: '#888', marginBottom: '20px' }}>Every category creates a new horizontal scrolling slider row on the homepage.</p>
+                 <p style={{ color: 'var(--text-muted)', marginBottom: '20px' }}>Every category creates a new horizontal scrolling slider row on the homepage.</p>
                  <div style={{ display: 'flex', gap: '16px' }}>
-                    <input type="text" placeholder="Slider Title (e.g. Trending Business Podcasts)" style={{ flex: 1, background: '#000', border: '1px solid #333', padding: '16px', borderRadius: '8px', color: '#fff', fontSize: '15px' }} id="new-category" />
+                    <input type="text" placeholder="Slider Title (e.g. Trending Business Podcasts)" style={{ flex: 1, background: 'var(--bg-color)', border: '1px solid var(--bg-surface-hover)', padding: '16px', borderRadius: '8px', color: 'var(--text-primary)', fontSize: '15px' }} id="new-category" />
                     <button onClick={async () => {
                        const title = (document.getElementById('new-category') as HTMLInputElement).value;
                        if(!title) return;
@@ -474,17 +474,17 @@ export default function MasterAdminDashboard() {
                </div>
 
                {/* 3. Add Content to Sliders */}
-               <div style={{ background: '#111', padding: '30px', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.05)' }}>
+               <div style={{ background: 'var(--bg-surface)', padding: '30px', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.05)' }}>
                  <h4 style={{ margin: '0 0 20px 0', fontSize: '18px', color: '#FFD700' }}>3. Add Content to Sliders</h4>
-                 <p style={{ color: '#888', marginBottom: '20px' }}>Upload a video or image card into one of your existing homepage sliders.</p>
+                 <p style={{ color: 'var(--text-muted)', marginBottom: '20px' }}>Upload a video or image card into one of your existing homepage sliders.</p>
                  <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                    <select id="video-category" style={{ background: '#000', border: '1px solid #333', padding: '16px', borderRadius: '8px', color: '#fff', fontSize: '15px' }}>
+                    <select id="video-category" style={{ background: 'var(--bg-color)', border: '1px solid var(--bg-surface-hover)', padding: '16px', borderRadius: '8px', color: 'var(--text-primary)', fontSize: '15px' }}>
                        <option value="">Select a Category Slider...</option>
                        {categories.map(c => <option key={c.id} value={c.id}>{c.title}</option>)}
                     </select>
-                    <input type="text" placeholder="Content Title" style={{ background: '#000', border: '1px solid #333', padding: '16px', borderRadius: '8px', color: '#fff', fontSize: '15px' }} id="video-title" />
-                    <input type="text" placeholder="Thumbnail Image URL (e.g. https://...)" style={{ background: '#000', border: '1px solid #333', padding: '16px', borderRadius: '8px', color: '#fff', fontSize: '15px' }} id="video-thumb" />
-                    <input type="text" placeholder="Video/Link URL" style={{ background: '#000', border: '1px solid #333', padding: '16px', borderRadius: '8px', color: '#fff', fontSize: '15px' }} id="video-url" />
+                    <input type="text" placeholder="Content Title" style={{ background: 'var(--bg-color)', border: '1px solid var(--bg-surface-hover)', padding: '16px', borderRadius: '8px', color: 'var(--text-primary)', fontSize: '15px' }} id="video-title" />
+                    <input type="text" placeholder="Thumbnail Image URL (e.g. https://...)" style={{ background: 'var(--bg-color)', border: '1px solid var(--bg-surface-hover)', padding: '16px', borderRadius: '8px', color: 'var(--text-primary)', fontSize: '15px' }} id="video-thumb" />
+                    <input type="text" placeholder="Video/Link URL" style={{ background: 'var(--bg-color)', border: '1px solid var(--bg-surface-hover)', padding: '16px', borderRadius: '8px', color: 'var(--text-primary)', fontSize: '15px' }} id="video-url" />
                     
                     <button onClick={async () => {
                        const catId = (document.getElementById('video-category') as HTMLSelectElement).value;
@@ -511,12 +511,12 @@ export default function MasterAdminDashboard() {
              <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
                  <h3 style={{ margin: 0, fontSize: '24px' }}>System Network Directory</h3>
-                 <button onClick={fetchUsers} style={{ padding: '8px 16px', background: 'rgba(255,255,255,0.1)', color: '#fff', border: 'none', borderRadius: '8px', cursor: 'pointer' }}>Refresh Index</button>
+                 <button onClick={fetchUsers} style={{ padding: '8px 16px', background: 'rgba(255,255,255,0.1)', color: 'var(--text-primary)', border: 'none', borderRadius: '8px', cursor: 'pointer' }}>Refresh Index</button>
                </div>
-               <div style={{ background: '#111', padding: '20px', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.05)' }}>
+               <div style={{ background: 'var(--bg-surface)', padding: '20px', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.05)' }}>
                   <table style={{ width: '100%', textAlign: 'left', borderCollapse: 'collapse' }}>
                     <thead>
-                      <tr style={{ color: '#888', borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
+                      <tr style={{ color: 'var(--text-muted)', borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
                         <th style={{ padding: '16px 12px' }}>Network ID</th>
                         <th style={{ padding: '16px 12px' }}>Profile Name</th>
                         <th style={{ padding: '16px 12px' }}>Status</th>
@@ -527,7 +527,7 @@ export default function MasterAdminDashboard() {
                     </thead>
                     <tbody>
                       {loading ? (
-                        <tr><td colSpan={5} style={{ padding: '20px', textAlign: 'center', color: '#888' }}>Initializing network fetch pattern...</td></tr>
+                        <tr><td colSpan={5} style={{ padding: '20px', textAlign: 'center', color: 'var(--text-muted)' }}>Initializing network fetch pattern...</td></tr>
                       ) : usersList.map((user, i) => (
                         <tr key={user.id} style={{ borderBottom: i !== usersList.length - 1 ? '1px solid rgba(255,255,255,0.05)' : 'none' }}>
                           <td style={{ padding: '16px 12px', fontFamily: 'monospace', color: '#0055ff', fontSize: '12px' }}>{user.id.split('-')[0]}</td>
@@ -564,7 +564,7 @@ export default function MasterAdminDashboard() {
                                  }}
                                  style={{ width: '60px', padding: '6px', background: 'rgba(255,255,255,0.05)', color: '#FFD700', border: '1px solid rgba(255,215,0,0.3)', borderRadius: '6px', fontWeight: 'bold', outline: 'none' }}
                                />
-                               <span style={{ color: '#888', fontSize: '12px', fontWeight: 'bold' }}>%</span>
+                               <span style={{ color: 'var(--text-muted)', fontSize: '12px', fontWeight: 'bold' }}>%</span>
                                <button onClick={async (e) => {
                                   const btn = e.currentTarget;
                                   const input = document.getElementById(`fee-input-${user.id}`) as HTMLInputElement;
@@ -616,10 +616,10 @@ export default function MasterAdminDashboard() {
           )}
 
            {activeTab === 'logs' && (
-             <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} style={{ background: '#0a0a0a', padding: '24px', borderRadius: '16px', border: '1px solid #333' }}>
+             <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} style={{ background: 'var(--bg-color)', padding: '24px', borderRadius: '16px', border: '1px solid var(--bg-surface-hover)' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '20px', borderBottom: '1px solid #222', paddingBottom: '12px' }}>
                   <Terminal size={20} color="#00ff88" />
-                  <h3 style={{ margin: 0, fontSize: '18px', color: '#fff' }}>Daemon Live Trace</h3>
+                  <h3 style={{ margin: 0, fontSize: '18px', color: 'var(--text-primary)' }}>Daemon Live Trace</h3>
                 </div>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', fontSize: '13px', color: '#00ff88', fontFamily: 'monospace', maxHeight: '600px', overflowY: 'auto' }}>
                   {systemLogs.length === 0 && (
@@ -672,14 +672,14 @@ export default function MasterAdminDashboard() {
              <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} style={{ display: 'flex', flexDirection: 'column', gap: '30px' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                   <h3 style={{ margin: 0, fontSize: '24px' }}>Real-Time Global Analytics</h3>
-                  <button onClick={() => showToast('Analytics Sync Complete', 'success')} style={{ background: '#0055ff', color: '#fff', border: 'none', padding: '12px 24px', borderRadius: '12px', fontWeight: 'bold', cursor: 'pointer' }}>Sync Telemetry</button>
+                  <button onClick={() => showToast('Analytics Sync Complete', 'success')} style={{ background: '#0055ff', color: 'var(--text-primary)', border: 'none', padding: '12px 24px', borderRadius: '12px', fontWeight: 'bold', cursor: 'pointer' }}>Sync Telemetry</button>
                 </div>
 
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '20px' }}>
                    {/* Total Volume */}
-                   <div style={{ background: '#111', padding: '24px', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.05)', display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                     <span style={{ color: '#888', fontWeight: 'bold', fontSize: '14px' }}>Total Platform Gross Volume</span>
-                     <span style={{ fontSize: '32px', color: '#fff', fontWeight: 900 }}>${platformGross.toFixed(2)}</span>
+                   <div style={{ background: 'var(--bg-surface)', padding: '24px', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.05)', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                     <span style={{ color: 'var(--text-muted)', fontWeight: 'bold', fontSize: '14px' }}>Total Platform Gross Volume</span>
+                     <span style={{ fontSize: '32px', color: 'var(--text-primary)', fontWeight: 900 }}>${platformGross.toFixed(2)}</span>
                    </div>
                    
                    {/* Vibe Revenue */}
@@ -702,15 +702,15 @@ export default function MasterAdminDashboard() {
                 </div>
 
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
-                   <div style={{ background: '#111', padding: '24px', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.05)' }}>
-                     <h4 style={{ margin: '0 0 16px 0', color: '#fff', fontSize: '18px' }}>Network Nodes</h4>
+                   <div style={{ background: 'var(--bg-surface)', padding: '24px', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.05)' }}>
+                     <h4 style={{ margin: '0 0 16px 0', color: 'var(--text-primary)', fontSize: '18px' }}>Network Nodes</h4>
                      <div style={{ display: 'flex', justifyContent: 'space-between', padding: '12px 0', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
-                        <span style={{ color: '#888' }}>Total Registered Profiles</span>
-                        <span style={{ color: '#fff', fontWeight: 'bold' }}>{dbStats.networks}</span>
+                        <span style={{ color: 'var(--text-muted)' }}>Total Registered Profiles</span>
+                        <span style={{ color: 'var(--text-primary)', fontWeight: 'bold' }}>{dbStats.networks}</span>
                      </div>
                      <div style={{ display: 'flex', justifyContent: 'space-between', padding: '12px 0' }}>
-                        <span style={{ color: '#888' }}>Active Whitelabel Tenants</span>
-                        <span style={{ color: '#fff', fontWeight: 'bold' }}>{dbStats.whitelabels}</span>
+                        <span style={{ color: 'var(--text-muted)' }}>Active Whitelabel Tenants</span>
+                        <span style={{ color: 'var(--text-primary)', fontWeight: 'bold' }}>{dbStats.whitelabels}</span>
                      </div>
                    </div>
                 </div>
@@ -723,25 +723,25 @@ export default function MasterAdminDashboard() {
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                 <div>
                   <h1 style={{ fontSize: '36px', marginBottom: '12px', fontWeight: '900', letterSpacing: '-1px' }}>Global Contact Leads</h1>
-                  <p style={{ color: '#888', fontSize: '18px', maxWidth: '600px', lineHeight: 1.5 }}>View all inquiries and leads submitted across the entire Vibe Network architecture and its whitelabel child networks.</p>
+                  <p style={{ color: 'var(--text-muted)', fontSize: '18px', maxWidth: '600px', lineHeight: 1.5 }}>View all inquiries and leads submitted across the entire Vibe Network architecture and its whitelabel child networks.</p>
                 </div>
               </div>
               
-              <div style={{ background: '#111', borderRadius: '24px', border: '1px solid rgba(255,255,255,0.05)', overflow: 'hidden' }}>
+              <div style={{ background: 'var(--bg-surface)', borderRadius: '24px', border: '1px solid rgba(255,255,255,0.05)', overflow: 'hidden' }}>
                 <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
                   <thead>
                     <tr style={{ background: 'rgba(255,255,255,0.02)', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
-                      <th style={{ padding: '20px', color: '#888', fontWeight: 'normal', fontSize: '14px' }}>Date Received</th>
-                      <th style={{ padding: '20px', color: '#888', fontWeight: 'normal', fontSize: '14px' }}>Network / Origin</th>
-                      <th style={{ padding: '20px', color: '#888', fontWeight: 'normal', fontSize: '14px' }}>Contact Email</th>
-                      <th style={{ padding: '20px', color: '#888', fontWeight: 'normal', fontSize: '14px' }}>Message Preview</th>
-                      <th style={{ padding: '20px', color: '#888', fontWeight: 'normal', fontSize: '14px', textAlign: 'right' }}>Actions</th>
+                      <th style={{ padding: '20px', color: 'var(--text-muted)', fontWeight: 'normal', fontSize: '14px' }}>Date Received</th>
+                      <th style={{ padding: '20px', color: 'var(--text-muted)', fontWeight: 'normal', fontSize: '14px' }}>Network / Origin</th>
+                      <th style={{ padding: '20px', color: 'var(--text-muted)', fontWeight: 'normal', fontSize: '14px' }}>Contact Email</th>
+                      <th style={{ padding: '20px', color: 'var(--text-muted)', fontWeight: 'normal', fontSize: '14px' }}>Message Preview</th>
+                      <th style={{ padding: '20px', color: 'var(--text-muted)', fontWeight: 'normal', fontSize: '14px', textAlign: 'right' }}>Actions</th>
                     </tr>
                   </thead>
                   <tbody>
                     {globalLeads.length === 0 ? (
                        <tr>
-                         <td colSpan={5} style={{ padding: '40px', textAlign: 'center', color: '#888' }}>No network leads have been received yet.</td>
+                         <td colSpan={5} style={{ padding: '40px', textAlign: 'center', color: 'var(--text-muted)' }}>No network leads have been received yet.</td>
                        </tr>
                     ) : globalLeads.map((lead: any) => (
                       <tr key={lead.id} style={{ borderBottom: '1px solid rgba(255,255,255,0.02)' }}>
@@ -752,9 +752,9 @@ export default function MasterAdminDashboard() {
                           </div>
                         </td>
                         <td style={{ padding: '20px', fontWeight: 'bold' }}>{lead.email}</td>
-                        <td style={{ padding: '20px', color: '#888', fontSize: '14px', maxWidth: '300px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{lead.message}</td>
+                        <td style={{ padding: '20px', color: 'var(--text-muted)', fontSize: '14px', maxWidth: '300px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{lead.message}</td>
                         <td style={{ padding: '20px', textAlign: 'right' }}>
-                          <button onClick={() => alert('Full Message:\n\n' + lead.message)} style={{ padding: '8px 16px', background: 'rgba(255,255,255,0.1)', color: '#fff', border: 'none', borderRadius: '8px', cursor: 'pointer', fontSize: '13px' }}>Read</button>
+                          <button onClick={() => alert('Full Message:\n\n' + lead.message)} style={{ padding: '8px 16px', background: 'rgba(255,255,255,0.1)', color: 'var(--text-primary)', border: 'none', borderRadius: '8px', cursor: 'pointer', fontSize: '13px' }}>Read</button>
                         </td>
                       </tr>
                     ))}
@@ -776,18 +776,18 @@ export default function MasterAdminDashboard() {
                    
                    {/* Direct Platform Tier */}
                    <div style={{ background: 'rgba(0,0,0,0.3)', padding: '20px', borderRadius: '16px', borderLeft: '4px solid var(--accent-primary)' }}>
-                     <h4 style={{ margin: '0 0 10px 0', fontSize: '18px', color: '#fff' }}>1. Main Root Platform Architecture</h4>
-                     <p style={{ color: '#888', margin: 0, fontSize: '14px', lineHeight: 1.5 }}>
+                     <h4 style={{ margin: '0 0 10px 0', fontSize: '18px', color: 'var(--text-primary)' }}>1. Main Root Platform Architecture</h4>
+                     <p style={{ color: 'var(--text-muted)', margin: 0, fontSize: '14px', lineHeight: 1.5 }}>
                        For all creators directly registered and transacting on the core Vibe Network. No intermediaries.
                      </p>
                      
                      <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                         <div style={{ background: 'rgba(0,255,136,0.05)', border: '1px solid rgba(0,255,136,0.2)', padding: '16px', borderRadius: '12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                           <span style={{ color: '#aaa', fontWeight: 'bold' }}>Creator / Profile Split</span>
+                           <span style={{ color: 'var(--text-secondary)', fontWeight: 'bold' }}>Creator / Profile Split</span>
                            <span style={{ fontSize: '24px', color: '#00ff88', fontWeight: 900 }}>{100 - Number(globalSettings?.global_vibe_fee ?? 15)}%</span>
                         </div>
                         <div style={{ background: 'rgba(255,215,0,0.05)', border: '1px solid rgba(255,215,0,0.2)', padding: '16px', borderRadius: '12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                           <span style={{ color: '#aaa', fontWeight: 'bold' }}>Vibe Network (Platform Fee)</span>
+                           <span style={{ color: 'var(--text-secondary)', fontWeight: 'bold' }}>Vibe Network (Platform Fee)</span>
                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                               <input id="global-vibe-fee-1" type="number" min="0" max="100" value={globalSettings.global_vibe_fee} onChange={(e) => setGlobalSettings(prev => ({ ...prev, global_vibe_fee: Math.min(100, Math.max(0, Number(e.target.value) || 0)) }))} style={{ background: 'transparent', border: '1px solid rgba(255,215,0,0.3)', color: '#FFD700', fontSize: '20px', fontWeight: 900, width: '80px', textAlign: 'center', outline: 'none', borderRadius: '8px', padding: '4px' }} />
                               <span style={{ fontSize: '20px', color: '#FFD700', fontWeight: 900 }}>%</span>
@@ -820,19 +820,19 @@ export default function MasterAdminDashboard() {
                    </div>
 
                    {/* Whitelabel Tenant Tier */}
-                   <div style={{ background: '#111', padding: '30px', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.05)' }}>
-                     <h4 style={{ margin: '0 0 10px 0', fontSize: '18px', color: '#fff' }}>2. Distributive Whitelabel Architecture</h4>
-                     <p style={{ color: '#888', margin: '0 0 24px 0', fontSize: '14px', lineHeight: 1.5 }}>
+                   <div style={{ background: 'var(--bg-surface)', padding: '30px', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.05)' }}>
+                     <h4 style={{ margin: '0 0 10px 0', fontSize: '18px', color: 'var(--text-primary)' }}>2. Distributive Whitelabel Architecture</h4>
+                     <p style={{ color: 'var(--text-muted)', margin: '0 0 24px 0', fontSize: '14px', lineHeight: 1.5 }}>
                        For transactions occurring inside a leased Enterprise Tenant. Vibe processes the payment and automatically distributes tripartite splits.
                      </p>
                      
                      <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                         <div style={{ background: 'rgba(0,255,136,0.05)', border: '1px solid rgba(0,255,136,0.2)', padding: '16px', borderRadius: '12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                           <span style={{ color: '#aaa', fontWeight: 'bold' }}>Creator / Profile Split</span>
+                           <span style={{ color: 'var(--text-secondary)', fontWeight: 'bold' }}>Creator / Profile Split</span>
                            <span style={{ fontSize: '24px', color: '#00ff88', fontWeight: 900 }}>{100 - Number(globalSettings?.global_vibe_fee_whitelabel ?? 15) - Number(globalSettings?.global_whitelabel_fee ?? 15)}%</span>
                         </div>
                         <div style={{ background: 'rgba(0,85,255,0.05)', border: '1px solid rgba(0,85,255,0.2)', padding: '16px', borderRadius: '12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                           <span style={{ color: '#aaa', fontWeight: 'bold' }}>Global Whitelabel Fee Default</span>
+                           <span style={{ color: 'var(--text-secondary)', fontWeight: 'bold' }}>Global Whitelabel Fee Default</span>
                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                               <input id="global-wl-fee" type="number" min="0" max="100" value={globalSettings.global_whitelabel_fee} onChange={(e) => setGlobalSettings(prev => ({ ...prev, global_whitelabel_fee: Math.min(100, Math.max(0, Number(e.target.value) || 0)) }))} style={{ background: 'transparent', border: '1px solid rgba(0,85,255,0.3)', color: '#0055ff', fontSize: '20px', fontWeight: 900, width: '80px', textAlign: 'center', outline: 'none', borderRadius: '8px', padding: '4px' }} />
                               <span style={{ fontSize: '20px', color: '#0055ff', fontWeight: 900 }}>%</span>
@@ -862,7 +862,7 @@ export default function MasterAdminDashboard() {
                            </div>
                         </div>
                         <div style={{ background: 'rgba(255,215,0,0.05)', border: '1px solid rgba(255,215,0,0.2)', padding: '16px', borderRadius: '12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                           <span style={{ color: '#aaa', fontWeight: 'bold' }}>Global Vibe Network Gateway Default</span>
+                           <span style={{ color: 'var(--text-secondary)', fontWeight: 'bold' }}>Global Vibe Network Gateway Default</span>
                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                               <input id="global-vibe-fee-wl" type="number" min="0" max="100" value={globalSettings.global_vibe_fee_whitelabel} onChange={(e) => setGlobalSettings(prev => ({ ...prev, global_vibe_fee_whitelabel: Math.min(100, Math.max(0, Number(e.target.value) || 0)) }))} style={{ background: 'transparent', border: '1px solid rgba(255,215,0,0.3)', color: '#FFD700', fontSize: '20px', fontWeight: 900, width: '80px', textAlign: 'center', outline: 'none', borderRadius: '8px', padding: '4px' }} />
                               <span style={{ fontSize: '20px', color: '#FFD700', fontWeight: 900 }}>%</span>
@@ -898,16 +898,16 @@ export default function MasterAdminDashboard() {
 
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', margin: '20px 0 16px 0' }}>
                   <h4 style={{ margin: 0, fontSize: '20px' }}>Global Revenue Rollup</h4>
-                  <div style={{ display: 'flex', gap: '8px', background: '#111', padding: '4px', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.05)' }}>
+                  <div style={{ display: 'flex', gap: '8px', background: 'var(--bg-surface)', padding: '4px', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.05)' }}>
                     <button onClick={() => setLedgerFilter('ALL')} style={{ padding: '8px 16px', background: ledgerFilter === 'ALL' ? 'rgba(255,255,255,0.1)' : 'transparent', color: ledgerFilter === 'ALL' ? '#fff' : '#888', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold', fontSize: '13px' }}>All Traffic</button>
                     <button onClick={() => setLedgerFilter('Direct Vibe')} style={{ padding: '8px 16px', background: ledgerFilter === 'Direct Vibe' ? 'rgba(255,215,0,0.1)' : 'transparent', color: ledgerFilter === 'Direct Vibe' ? '#FFD700' : '#888', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold', fontSize: '13px' }}>Direct Vibe Only</button>
                     <button onClick={() => setLedgerFilter('Whitelabel')} style={{ padding: '8px 16px', background: ledgerFilter === 'Whitelabel' ? 'rgba(0,85,255,0.1)' : 'transparent', color: ledgerFilter === 'Whitelabel' ? '#0055ff' : '#888', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold', fontSize: '13px' }}>Whitelabels Only</button>
                   </div>
                 </div>
-                <div style={{ background: '#111', padding: '20px', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.05)' }}>
+                <div style={{ background: 'var(--bg-surface)', padding: '20px', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.05)' }}>
                   <table style={{ width: '100%', textAlign: 'left', borderCollapse: 'collapse' }}>
                     <thead>
-                      <tr style={{ color: '#888', borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
+                      <tr style={{ color: 'var(--text-muted)', borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
                         <th style={{ padding: '16px 12px' }}>Date</th>
                         <th style={{ padding: '16px 12px' }}>Source</th>
                         <th style={{ padding: '16px 12px' }}>Protocol</th>
@@ -932,8 +932,8 @@ export default function MasterAdminDashboard() {
                                <td colSpan={7} style={{ padding: '60px', textAlign: 'center' }}>
                                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '16px' }}>
                                     <AlertCircle size={48} color="#FFD700" />
-                                    <h3 style={{ margin: 0, color: '#fff', fontSize: '24px' }}>Ledger is Empty</h3>
-                                    <p style={{ color: '#aaa', margin: 0, fontSize: '16px', maxWidth: '400px' }}>
+                                    <h3 style={{ margin: 0, color: 'var(--text-primary)', fontSize: '24px' }}>Ledger is Empty</h3>
+                                    <p style={{ color: 'var(--text-secondary)', margin: 0, fontSize: '16px', maxWidth: '400px' }}>
                                        There are exactly 0 transactions in your Supabase 'ledger' table for this filter tier. The Global Ledger is fully functional, it is just waiting for real Stripe payments!
                                     </p>
                                  </div>
@@ -963,7 +963,7 @@ export default function MasterAdminDashboard() {
                            
                            return (
                              <tr key={i} style={{ borderBottom: i !== arr.length - 1 ? '1px solid rgba(255,255,255,0.05)' : 'none' }}>
-                               <td style={{ padding: '16px 12px', color: '#888' }}>
+                               <td style={{ padding: '16px 12px', color: 'var(--text-muted)' }}>
                                  {(() => {
                                     if (!tx.created_at) return 'N/A';
                                     const d = new Date(tx.created_at);

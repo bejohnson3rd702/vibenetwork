@@ -180,7 +180,7 @@ const WhatsOnNow: React.FC = () => {
           boxShadow: '0 40px 100px rgba(0,0,0,0.2)'
         }}
       >
-        <div className="tv-video-mobile" style={{ flex: '1 1 auto', position: 'relative', background: '#000', pointerEvents: 'auto' }}>
+        <div className="tv-video-mobile" style={{ flex: '1 1 auto', position: 'relative', background: 'var(--bg-color)', pointerEvents: 'auto' }}>
           {(() => {
              const activeItem = scheduleItems[activeIndex];
              const activeUrl = activeItem?.video_url || 'https://www.youtube.com/watch?v=u4ZoJKF_VuA';
@@ -198,7 +198,7 @@ const WhatsOnNow: React.FC = () => {
                      frameBorder="0" 
                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
                      allowFullScreen
-                     style={{ border: 'none', background: '#000', position: 'absolute', top: 0, left: 0, width: '100%', height: '100%' }}
+                     style={{ border: 'none', background: 'var(--bg-color)', position: 'absolute', top: 0, left: 0, width: '100%', height: '100%' }}
                    />
                 );
              }

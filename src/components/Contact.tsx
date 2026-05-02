@@ -142,7 +142,7 @@ const Contact: React.FC = () => {
                 <p style={{ color: 'var(--text-secondary)', lineHeight: 1.6 }}>Thank you for reaching out to Vibe Network. Our enterprise team will get back to you within 24 hours.</p>
                 <button 
                   onClick={() => setIsSent(false)}
-                  style={{ marginTop: '30px', background: 'transparent', border: '1px solid rgba(255,255,255,0.2)', padding: '12px 24px', borderRadius: '12px', color: '#fff', cursor: 'pointer', fontWeight: 600 }}
+                  style={{ marginTop: '30px', background: 'transparent', border: '1px solid rgba(255,255,255,0.2)', padding: '12px 24px', borderRadius: '12px', color: 'var(--text-primary)', cursor: 'pointer', fontWeight: 600 }}
                 >
                   Send Another Message
                 </button>
@@ -152,22 +152,22 @@ const Contact: React.FC = () => {
                 <div style={{ display: 'flex', gap: '20px' }}>
                   <div style={{ flex: 1 }}>
                     <label style={{ display: 'block', fontSize: '13px', fontWeight: 600, color: 'var(--text-muted)', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '1px' }}>Full Name</label>
-                    <input required type="text" value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} style={{ width: '100%', padding: '16px', background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px', color: '#fff', fontSize: '16px', outline: 'none', transition: 'border 0.2s' }} onFocus={e => e.target.style.borderColor = 'var(--accent-primary)'} onBlur={e => e.target.style.borderColor = 'rgba(255,255,255,0.1)'} placeholder="John Doe" />
+                    <input required type="text" value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} style={{ width: '100%', padding: '16px', background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px', color: 'var(--text-primary)', fontSize: '16px', outline: 'none', transition: 'border 0.2s' }} onFocus={e => e.target.style.borderColor = 'var(--accent-primary)'} onBlur={e => e.target.style.borderColor = 'rgba(255,255,255,0.1)'} placeholder="John Doe" />
                   </div>
                   <div style={{ flex: 1 }}>
                     <label style={{ display: 'block', fontSize: '13px', fontWeight: 600, color: 'var(--text-muted)', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '1px' }}>Email Address</label>
-                    <input required type="email" value={formData.email} onChange={e => setFormData({...formData, email: e.target.value})} style={{ width: '100%', padding: '16px', background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px', color: '#fff', fontSize: '16px', outline: 'none', transition: 'border 0.2s' }} onFocus={e => e.target.style.borderColor = 'var(--accent-primary)'} onBlur={e => e.target.style.borderColor = 'rgba(255,255,255,0.1)'} placeholder="john@company.com" />
+                    <input required type="email" value={formData.email} onChange={e => setFormData({...formData, email: e.target.value})} style={{ width: '100%', padding: '16px', background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px', color: 'var(--text-primary)', fontSize: '16px', outline: 'none', transition: 'border 0.2s' }} onFocus={e => e.target.style.borderColor = 'var(--accent-primary)'} onBlur={e => e.target.style.borderColor = 'rgba(255,255,255,0.1)'} placeholder="john@company.com" />
                   </div>
                 </div>
                 
                 <div>
                   <label style={{ display: 'block', fontSize: '13px', fontWeight: 600, color: 'var(--text-muted)', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '1px' }}>Subject</label>
-                  <input required type="text" value={formData.subject} onChange={e => setFormData({...formData, subject: e.target.value})} style={{ width: '100%', padding: '16px', background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px', color: '#fff', fontSize: '16px', outline: 'none', transition: 'border 0.2s' }} onFocus={e => e.target.style.borderColor = 'var(--accent-primary)'} onBlur={e => e.target.style.borderColor = 'rgba(255,255,255,0.1)'} placeholder="Enterprise Architecture Inquiry" />
+                  <input required type="text" value={formData.subject} onChange={e => setFormData({...formData, subject: e.target.value})} style={{ width: '100%', padding: '16px', background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px', color: 'var(--text-primary)', fontSize: '16px', outline: 'none', transition: 'border 0.2s' }} onFocus={e => e.target.style.borderColor = 'var(--accent-primary)'} onBlur={e => e.target.style.borderColor = 'rgba(255,255,255,0.1)'} placeholder="Enterprise Architecture Inquiry" />
                 </div>
 
                 <div>
                   <label style={{ display: 'block', fontSize: '13px', fontWeight: 600, color: 'var(--text-muted)', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '1px' }}>Message</label>
-                  <textarea required value={formData.message} onChange={e => setFormData({...formData, message: e.target.value})} style={{ width: '100%', padding: '16px', background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px', color: '#fff', fontSize: '16px', outline: 'none', minHeight: '150px', resize: 'vertical', transition: 'border 0.2s' }} onFocus={e => e.target.style.borderColor = 'var(--accent-primary)'} onBlur={e => e.target.style.borderColor = 'rgba(255,255,255,0.1)'} placeholder="Tell us about your streaming needs..." />
+                  <textarea required value={formData.message} onChange={e => setFormData({...formData, message: e.target.value})} style={{ width: '100%', padding: '16px', background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px', color: 'var(--text-primary)', fontSize: '16px', outline: 'none', minHeight: '150px', resize: 'vertical', transition: 'border 0.2s' }} onFocus={e => e.target.style.borderColor = 'var(--accent-primary)'} onBlur={e => e.target.style.borderColor = 'rgba(255,255,255,0.1)'} placeholder="Tell us about your streaming needs..." />
                 </div>
 
                 <motion.button 
@@ -175,7 +175,7 @@ const Contact: React.FC = () => {
                   whileTap={{ scale: 0.98 }}
                   type="submit"
                   disabled={isSending}
-                  style={{ width: '100%', padding: '18px', background: 'var(--accent-primary)', color: '#fff', border: 'none', borderRadius: '12px', fontSize: '16px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '2px', cursor: isSending ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px', marginTop: '10px', boxShadow: '0 10px 30px rgba(184, 41, 234, 0.3)', opacity: isSending ? 0.7 : 1 }}
+                  style={{ width: '100%', padding: '18px', background: 'var(--accent-primary)', color: 'var(--text-primary)', border: 'none', borderRadius: '12px', fontSize: '16px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '2px', cursor: isSending ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px', marginTop: '10px', boxShadow: '0 10px 30px rgba(184, 41, 234, 0.3)', opacity: isSending ? 0.7 : 1 }}
                 >
                   <Send size={18} />
                   {isSending ? 'Sending...' : 'Send Message'}

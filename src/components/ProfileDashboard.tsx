@@ -416,7 +416,7 @@ const ProfileDashboard: React.FC<{ user: any }> = ({ user }) => {
       status: 'draft',
       date: 'Just now',
       type: 'New Draft',
-      color: '#fff'
+      color: 'var(--text-primary)'
     }, ...scheduledPosts]);
   };
   
@@ -559,13 +559,13 @@ const ProfileDashboard: React.FC<{ user: any }> = ({ user }) => {
     loadProfile();
   }, [user, creatorId, navigate, isOwnProfile]);
 
-  if (loading) return <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff' }}>Loading Profile...</div>;
+  if (loading) return <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-primary)' }}>Loading Profile...</div>;
   const isGuestInvite = new URLSearchParams(location.search).get('guest_invite') === 'true';
   if (!profile && !isGuestInvite) return (
-    <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', color: '#fff', background: '#050505' }}>
+    <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', color: 'var(--text-primary)', background: 'var(--bg-color)' }}>
       <h2 style={{ fontSize: '32px', marginBottom: '10px' }}>Profile Not Found</h2>
-      <p style={{ color: '#888', marginBottom: '30px' }}>This channel doesn't exist, or the user hasn't set up their profile yet.</p>
-      <button onClick={() => navigate({ pathname: '/', search: location.search })} style={{ padding: '12px 30px', background: '#ff4d85', color: '#fff', border: 'none', borderRadius: '24px', fontWeight: 'bold', cursor: 'pointer' }}>Return to Home</button>
+      <p style={{ color: 'var(--text-muted)', marginBottom: '30px' }}>This channel doesn't exist, or the user hasn't set up their profile yet.</p>
+      <button onClick={() => navigate({ pathname: '/', search: location.search })} style={{ padding: '12px 30px', background: '#ff4d85', color: 'var(--text-primary)', border: 'none', borderRadius: '24px', fontWeight: 'bold', cursor: 'pointer' }}>Return to Home</button>
     </div>
   );
 
@@ -813,7 +813,7 @@ const ProfileDashboard: React.FC<{ user: any }> = ({ user }) => {
 
   if (loading || !profile) {
     return (
-      <div style={{ paddingTop: '100px', minHeight: '100vh', background: '#050505', color: '#888', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+      <div style={{ paddingTop: '100px', minHeight: '100vh', background: 'var(--bg-color)', color: 'var(--text-muted)', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
         <p>Loading Profile Network Data...</p>
       </div>
     );
@@ -821,12 +821,12 @@ const ProfileDashboard: React.FC<{ user: any }> = ({ user }) => {
 
   if (showExitScreen) {
     return (
-      <div style={{ minHeight: '100vh', background: '#050505', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', padding: '20px', textAlign: 'center' }}>
-        <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} transition={{ duration: 0.5 }} style={{ background: '#111', border: '1px solid rgba(255,255,255,0.05)', padding: '40px', borderRadius: '30px', boxShadow: '0 20px 40px rgba(0,0,0,0.5)', maxWidth: '500px' }}>
+      <div style={{ minHeight: '100vh', background: 'var(--bg-color)', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', padding: '20px', textAlign: 'center' }}>
+        <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} transition={{ duration: 0.5 }} style={{ background: 'var(--bg-surface)', border: '1px solid rgba(255,255,255,0.05)', padding: '40px', borderRadius: '30px', boxShadow: '0 20px 40px rgba(0,0,0,0.5)', maxWidth: '500px' }}>
            <h1 style={{ margin: '0 0 10px 0', fontSize: '36px', background: 'linear-gradient(45deg, #00ff88, #00bbff)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
              Thank You!
            </h1>
-           <p style={{ color: '#888', fontSize: '18px', lineHeight: '1.6', marginBottom: '30px' }}>
+           <p style={{ color: 'var(--text-muted)', fontSize: '18px', lineHeight: '1.6', marginBottom: '30px' }}>
              Your livestream broadcasting session has been successfully disconnected from the Green Room.
            </p>
            <div style={{ background: 'rgba(255,77,133,0.1)', border: '1px solid rgba(255,77,133,0.3)', color: '#ff4d85', padding: '16px', borderRadius: '16px', fontWeight: 'bold' }}>
@@ -844,7 +844,7 @@ const ProfileDashboard: React.FC<{ user: any }> = ({ user }) => {
   const totalSlots = (showHost ? 1 : 0) + visibleGuests.length;
   
   return (
-    <div style={{ minHeight: '100vh', background: '#050505', color: '#fff', position: 'relative' }}>
+    <div style={{ minHeight: '100vh', background: 'var(--bg-color)', color: 'var(--text-primary)', position: 'relative' }}>
       
       {/* Immersive Hero Banner */}
       {!isGuestMode && (
@@ -871,7 +871,7 @@ const ProfileDashboard: React.FC<{ user: any }> = ({ user }) => {
               </button>
               <button 
                 onClick={() => setViewMode('public')}
-                style={{ padding: '8px 24px', borderRadius: '30px', border: 'none', background: viewMode === 'public' ? 'rgba(255,0,85,1)' : 'transparent', color: '#fff', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px', transition: 'all 0.3s ease' }}
+                style={{ padding: '8px 24px', borderRadius: '30px', border: 'none', background: viewMode === 'public' ? 'rgba(255,0,85,1)' : 'transparent', color: 'var(--text-primary)', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px', transition: 'all 0.3s ease' }}
               >
                 <Eye size={16} /> Public Preview
               </button>
@@ -888,7 +888,7 @@ const ProfileDashboard: React.FC<{ user: any }> = ({ user }) => {
           <div style={{ background: 'rgba(15, 15, 15, 0.4)', backdropFilter: 'blur(24px)', padding: '40px', borderRadius: '32px', border: '1px solid rgba(255,255,255,0.08)', position: 'relative', boxShadow: '0 20px 40px rgba(0,0,0,0.4)' }}>
             
             {isOwnProfile && (
-              <button onClick={async () => { await supabase!.auth.signOut(); window.location.href = '/' + window.location.search; }} style={{ position: 'absolute', top: 30, right: 30, background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: '#fff', padding: '8px 16px', borderRadius: '20px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px', backdropFilter: 'blur(10px)', transition: 'background 0.2s' }} onMouseOver={e => e.currentTarget.style.background = 'rgba(255,255,255,0.1)'} onMouseOut={e => e.currentTarget.style.background = 'rgba(255,255,255,0.05)'}>
+              <button onClick={async () => { await supabase!.auth.signOut(); window.location.href = '/' + window.location.search; }} style={{ position: 'absolute', top: 30, right: 30, background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: 'var(--text-primary)', padding: '8px 16px', borderRadius: '20px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px', backdropFilter: 'blur(10px)', transition: 'background 0.2s' }} onMouseOver={e => e.currentTarget.style.background = 'rgba(255,255,255,0.1)'} onMouseOut={e => e.currentTarget.style.background = 'rgba(255,255,255,0.05)'}>
                 <LogOut size={16} /> Logout
               </button>
             )}
@@ -930,7 +930,7 @@ const ProfileDashboard: React.FC<{ user: any }> = ({ user }) => {
                       
                       {viewMode === 'edit' ? (
                         <>
-                          <select aria-label="genre selector" value={selectedGenre} onChange={(e) => setSelectedGenre(e.target.value)} style={{ padding: '8px 16px', background: 'rgba(255,255,255,0.05)', color: '#fff', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '24px', fontSize: '13px', outline: 'none', cursor: 'pointer', backdropFilter: 'blur(10px)' }}>
+                          <select aria-label="genre selector" value={selectedGenre} onChange={(e) => setSelectedGenre(e.target.value)} style={{ padding: '8px 16px', background: 'rgba(255,255,255,0.05)', color: 'var(--text-primary)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '24px', fontSize: '13px', outline: 'none', cursor: 'pointer', backdropFilter: 'blur(10px)' }}>
                             <option>SaaS Platform</option>
                             <option>Fintech API</option>
                             <option>AI Automation</option>
@@ -942,7 +942,7 @@ const ProfileDashboard: React.FC<{ user: any }> = ({ user }) => {
                         </>
                       ) : (
                         <>
-                          <span style={{ padding: '8px 16px', background: 'rgba(255,255,255,0.1)', color: '#fff', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '24px', fontSize: '13px', backdropFilter: 'blur(10px)' }}>{selectedGenre}</span>
+                          <span style={{ padding: '8px 16px', background: 'rgba(255,255,255,0.1)', color: 'var(--text-primary)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '24px', fontSize: '13px', backdropFilter: 'blur(10px)' }}>{selectedGenre}</span>
                           {!isOwnProfile && (
                             <button 
                               onClick={() => {
@@ -983,9 +983,9 @@ const ProfileDashboard: React.FC<{ user: any }> = ({ user }) => {
                             value={bio}
                             onChange={(e) => setBio(e.target.value)}
                             placeholder="Write a bio to tell your viewers what your channel is about..."
-                            style={{ width: '100%', minHeight: '100px', background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '16px', padding: '16px', color: '#fff', resize: 'vertical', fontSize: '15px', outline: 'none', backdropFilter: 'blur(10px)' }}
+                            style={{ width: '100%', minHeight: '100px', background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '16px', padding: '16px', color: 'var(--text-primary)', resize: 'vertical', fontSize: '15px', outline: 'none', backdropFilter: 'blur(10px)' }}
                           />
-                          <button type="button" onClick={() => enhanceText('bio')} disabled={saving} style={{ position: 'absolute', right: '16px', bottom: '20px', background: 'linear-gradient(135deg, #8A2BE2, #ff4d85)', color: '#fff', border: 'none', borderRadius: '12px', padding: '8px 16px', fontSize: '13px', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px', boxShadow: '0 4px 15px rgba(255,77,133,0.4)' }}>
+                          <button type="button" onClick={() => enhanceText('bio')} disabled={saving} style={{ position: 'absolute', right: '16px', bottom: '20px', background: 'linear-gradient(135deg, #8A2BE2, #ff4d85)', color: 'var(--text-primary)', border: 'none', borderRadius: '12px', padding: '8px 16px', fontSize: '13px', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px', boxShadow: '0 4px 15px rgba(255,77,133,0.4)' }}>
                             <Wand size={14} /> AI Boost
                           </button>
                         </div>
@@ -1003,7 +1003,7 @@ const ProfileDashboard: React.FC<{ user: any }> = ({ user }) => {
                     )}
                   </>
                 ) : (
-                  <p style={{ color: '#aaa', fontSize: '16px' }}>Standard Viewer Account</p>
+                  <p style={{ color: 'var(--text-secondary)', fontSize: '16px' }}>Standard Viewer Account</p>
                 )}
               </div>
             </div>
@@ -1073,9 +1073,9 @@ const ProfileDashboard: React.FC<{ user: any }> = ({ user }) => {
                   type="text" 
                   placeholder="Drop a new link, upload a video, or announce an upcoming stream..." 
                   value={postTitle} onChange={(e) => setPostTitle(e.target.value)}
-                  style={{ width: '100%', background: 'transparent', border: 'none', color: '#fff', fontSize: '16px', outline: 'none', paddingRight: '100px' }}
+                  style={{ width: '100%', background: 'transparent', border: 'none', color: 'var(--text-primary)', fontSize: '16px', outline: 'none', paddingRight: '100px' }}
                 />
-                <button type="button" onClick={() => enhanceText('post')} disabled={saving} style={{ position: 'absolute', right: '0', top: '50%', transform: 'translateY(-50%)', background: 'linear-gradient(135deg, #8A2BE2, #ff4d85)', color: '#fff', border: 'none', borderRadius: '12px', padding: '6px 12px', fontSize: '12px', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <button type="button" onClick={() => enhanceText('post')} disabled={saving} style={{ position: 'absolute', right: '0', top: '50%', transform: 'translateY(-50%)', background: 'linear-gradient(135deg, #8A2BE2, #ff4d85)', color: 'var(--text-primary)', border: 'none', borderRadius: '12px', padding: '6px 12px', fontSize: '12px', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px' }}>
                   <Wand size={14} /> AI Boost
                 </button>
               </div>
@@ -1083,7 +1083,7 @@ const ProfileDashboard: React.FC<{ user: any }> = ({ user }) => {
             
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '20px', paddingTop: '20px', borderTop: '1px solid rgba(255,255,255,0.05)' }}>
               <div style={{ display: 'flex', gap: '16px' }}>
-                <button type="button" style={{ display: 'flex', alignItems: 'center', gap: '8px', background: 'none', border: 'none', color: '#888', cursor: 'pointer' }}>
+                <button type="button" style={{ display: 'flex', alignItems: 'center', gap: '8px', background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer' }}>
                   <ImageIcon size={18} /> Media
                 </button>
                 <label style={{ display: 'flex', alignItems: 'center', gap: '8px', color: isLocked ? '#FFD700' : '#4CAF50', cursor: 'pointer', fontSize: '14px' }}>
@@ -1117,7 +1117,7 @@ const ProfileDashboard: React.FC<{ user: any }> = ({ user }) => {
                   <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: '#ff4d85' }} />
                   <div>
                     <h4 style={{ margin: 0, fontSize: '15px' }}>{profile.username || 'Creator'} <ShieldCheck size={14} color="#ff4d85" style={{ display: 'inline', marginLeft: '4px' }} /></h4>
-                    <span style={{ fontSize: '12px', color: '#888' }}>{post.date}</span>
+                    <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>{post.date}</span>
                   </div>
                 </div>
                 {post.locked && (
@@ -1166,15 +1166,15 @@ const ProfileDashboard: React.FC<{ user: any }> = ({ user }) => {
               <h3 style={{ margin: '0 0 16px 0', fontSize: '18px', display: 'flex', alignItems: 'center', gap: '8px' }}>Add New Product to Store</h3>
               <form onSubmit={handleAddProduct} style={{ display: 'grid', gap: '16px', gridTemplateColumns: '1fr 1fr' }}>
                 <div style={{ gridColumn: '1 / -1' }}>
-                  <input type="text" placeholder="Product Title (e.g. VIP Meet & Greet, Drum Kit Vol 1)" value={newProduct.title} onChange={e => setNewProduct({...newProduct, title: e.target.value})} style={{ width: '100%', background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.1)', padding: '14px', borderRadius: '12px', color: '#fff', outline: 'none', fontSize: '15px' }} />
+                  <input type="text" placeholder="Product Title (e.g. VIP Meet & Greet, Drum Kit Vol 1)" value={newProduct.title} onChange={e => setNewProduct({...newProduct, title: e.target.value})} style={{ width: '100%', background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.1)', padding: '14px', borderRadius: '12px', color: 'var(--text-primary)', outline: 'none', fontSize: '15px' }} />
                 </div>
                 
                 <div style={{ display: 'flex', background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px', overflow: 'hidden' }}>
-                  <span style={{ padding: '14px', color: '#888', background: 'rgba(255,255,255,0.02)', borderRight: '1px solid rgba(255,255,255,0.1)' }}>$</span>
-                  <input type="number" step="0.01" value={newProduct.price} onChange={e => setNewProduct({...newProduct, price: e.target.value})} style={{ flex: 1, background: 'transparent', border: 'none', padding: '14px', color: '#fff', outline: 'none', fontSize: '15px' }} />
+                  <span style={{ padding: '14px', color: 'var(--text-muted)', background: 'rgba(255,255,255,0.02)', borderRight: '1px solid rgba(255,255,255,0.1)' }}>$</span>
+                  <input type="number" step="0.01" value={newProduct.price} onChange={e => setNewProduct({...newProduct, price: e.target.value})} style={{ flex: 1, background: 'transparent', border: 'none', padding: '14px', color: 'var(--text-primary)', outline: 'none', fontSize: '15px' }} />
                 </div>
                 
-                <select value={newProduct.type} onChange={e => setNewProduct({...newProduct, type: e.target.value})} style={{ background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.1)', padding: '14px', borderRadius: '12px', color: '#fff', outline: 'none', fontSize: '15px', cursor: 'pointer' }}>
+                <select value={newProduct.type} onChange={e => setNewProduct({...newProduct, type: e.target.value})} style={{ background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.1)', padding: '14px', borderRadius: '12px', color: 'var(--text-primary)', outline: 'none', fontSize: '15px', cursor: 'pointer' }}>
                   <option value="digital">Digital Download / Ticket</option>
                   <option value="physical">Physical Merch (Ships)</option>
                 </select>
@@ -1183,11 +1183,11 @@ const ProfileDashboard: React.FC<{ user: any }> = ({ user }) => {
                   <div style={{ gridColumn: '1 / -1', display: 'grid', gap: '16px', gridTemplateColumns: '1fr 1fr', background: 'rgba(255,255,255,0.02)', padding: '16px', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.05)' }}>
                     <div>
                       <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', color: '#ccc' }}>Available Sizes (comma separated)</label>
-                      <input type="text" placeholder="e.g. S, M, L, XL" value={newProduct.sizes} onChange={e => setNewProduct({...newProduct, sizes: e.target.value})} style={{ width: '100%', background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.1)', padding: '12px', borderRadius: '8px', color: '#fff', outline: 'none', fontSize: '14px' }} />
+                      <input type="text" placeholder="e.g. S, M, L, XL" value={newProduct.sizes} onChange={e => setNewProduct({...newProduct, sizes: e.target.value})} style={{ width: '100%', background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.1)', padding: '12px', borderRadius: '8px', color: 'var(--text-primary)', outline: 'none', fontSize: '14px' }} />
                     </div>
                     <div>
                       <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', color: '#ccc' }}>Available Colors (comma separated)</label>
-                      <input type="text" placeholder="e.g. Black, White, Red" value={newProduct.colors} onChange={e => setNewProduct({...newProduct, colors: e.target.value})} style={{ width: '100%', background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.1)', padding: '12px', borderRadius: '8px', color: '#fff', outline: 'none', fontSize: '14px' }} />
+                      <input type="text" placeholder="e.g. Black, White, Red" value={newProduct.colors} onChange={e => setNewProduct({...newProduct, colors: e.target.value})} style={{ width: '100%', background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.1)', padding: '12px', borderRadius: '8px', color: 'var(--text-primary)', outline: 'none', fontSize: '14px' }} />
                     </div>
                   </div>
                 )}
@@ -1212,13 +1212,13 @@ const ProfileDashboard: React.FC<{ user: any }> = ({ user }) => {
           {/* Store Grid */}
           {products.length === 0 ? (
              <div style={{ textAlign: 'center', padding: '60px 20px', background: 'rgba(0,0,0,0.2)', borderRadius: '24px', border: '1px solid rgba(255,255,255,0.05)' }}>
-               <h3 style={{ fontSize: '20px', marginTop: 0, color: '#888' }}>Store is Empty</h3>
+               <h3 style={{ fontSize: '20px', marginTop: 0, color: 'var(--text-muted)' }}>Store is Empty</h3>
                <p style={{ color: '#555', marginBottom: 0 }}>This creator hasn't listed any products yet.</p>
              </div>
           ) : (
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))', gap: '20px' }}>
               {products.map(product => (
-                <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} key={product.id} className="store-card" style={{ background: '#111', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.05)', overflow: 'hidden', display: 'flex', flexDirection: 'column', transition: 'all 0.3s ease', cursor: 'pointer' }}>
+                <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} key={product.id} className="store-card" style={{ background: 'var(--bg-surface)', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.05)', overflow: 'hidden', display: 'flex', flexDirection: 'column', transition: 'all 0.3s ease', cursor: 'pointer' }}>
                   <div style={{ width: '100%', aspectRatio: '1/1', background: `url("${product.image_url}")`, backgroundSize: 'cover', backgroundPosition: 'center' }} />
                   <div style={{ padding: '20px', display: 'flex', flexDirection: 'column', flex: 1 }}>
                     <div style={{ fontSize: '10px', textTransform: 'uppercase', color: product.type === 'physical' ? '#ff4d85' : '#8A2BE2', fontWeight: 'bold', letterSpacing: '1px', marginBottom: '8px' }}>
@@ -1226,9 +1226,9 @@ const ProfileDashboard: React.FC<{ user: any }> = ({ user }) => {
                     </div>
                     <h4 style={{ margin: '0 0 12px 0', fontSize: '16px', lineHeight: 1.4, flex: 1 }}>{product.title}</h4>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <span style={{ fontSize: '18px', fontWeight: 'bold', color: '#fff' }}>${parseFloat(product.price).toFixed(2)}</span>
+                      <span style={{ fontSize: '18px', fontWeight: 'bold', color: 'var(--text-primary)' }}>${parseFloat(product.price).toFixed(2)}</span>
                       {viewMode === 'edit' ? (
-                        <button style={{ padding: '6px 12px', background: 'rgba(255,255,255,0.1)', border: 'none', borderRadius: '8px', color: '#fff', fontSize: '12px', fontWeight: 'bold', cursor: 'pointer' }}>Edit</button>
+                        <button style={{ padding: '6px 12px', background: 'rgba(255,255,255,0.1)', border: 'none', borderRadius: '8px', color: 'var(--text-primary)', fontSize: '12px', fontWeight: 'bold', cursor: 'pointer' }}>Edit</button>
                       ) : (
                         <button style={{ padding: '8px 16px', background: '#fff', border: 'none', borderRadius: '20px', color: '#000', fontSize: '13px', fontWeight: 'bold', cursor: 'pointer' }}>Buy Now</button>
                       )}
@@ -1245,17 +1245,17 @@ const ProfileDashboard: React.FC<{ user: any }> = ({ user }) => {
         /* ----------- LIVE STREAM TAB ----------- */
           <div style={{ display: 'flex', flexDirection: 'column', gap: '30px' }}>
             {isSubscribed || isOwnProfile || localGuestData !== null ? (
-              <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} style={{ background: '#111', borderRadius: '24px', overflow: 'hidden', border: '1px solid rgba(255,255,255,0.05)' }}>
-                <div style={{ display: 'flex', width: '100%', background: '#000', position: 'relative' }}>
+              <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} style={{ background: 'var(--bg-surface)', borderRadius: '24px', overflow: 'hidden', border: '1px solid rgba(255,255,255,0.05)' }}>
+                <div style={{ display: 'flex', width: '100%', background: 'var(--bg-color)', position: 'relative' }}>
                    <div style={{ flex: 1, position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center', aspectRatio: '16/9' }}>
                   {isPlayingLive && (
                      <>
                         {isPubliclyLive ? (
-                           <div style={{ position: 'absolute', top: 20, left: 20, background: '#ff0055', color: '#fff', padding: '6px 14px', borderRadius: '12px', fontWeight: 'bold', fontSize: '14px', display: 'flex', alignItems: 'center', gap: '8px', zIndex: 10, textTransform: 'uppercase', boxShadow: '0 4px 15px rgba(255,0,85,0.4)' }}>
+                           <div style={{ position: 'absolute', top: 20, left: 20, background: '#ff0055', color: 'var(--text-primary)', padding: '6px 14px', borderRadius: '12px', fontWeight: 'bold', fontSize: '14px', display: 'flex', alignItems: 'center', gap: '8px', zIndex: 10, textTransform: 'uppercase', boxShadow: '0 4px 15px rgba(255,0,85,0.4)' }}>
                              <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#fff', animation: 'pulse 1.5s infinite' }}/> LIVE
                            </div>
                         ) : (
-                           <div style={{ position: 'absolute', top: 20, left: 20, background: '#0055ff', color: '#fff', padding: '6px 14px', borderRadius: '12px', fontWeight: 'bold', fontSize: '14px', display: 'flex', alignItems: 'center', gap: '8px', zIndex: 10, textTransform: 'uppercase', boxShadow: '0 4px 15px rgba(0,85,255,0.4)' }}>
+                           <div style={{ position: 'absolute', top: 20, left: 20, background: '#0055ff', color: 'var(--text-primary)', padding: '6px 14px', borderRadius: '12px', fontWeight: 'bold', fontSize: '14px', display: 'flex', alignItems: 'center', gap: '8px', zIndex: 10, textTransform: 'uppercase', boxShadow: '0 4px 15px rgba(0,85,255,0.4)' }}>
                              <Settings size={18} /> STUDIO PREVIEW
                            </div>
                         )}
@@ -1285,23 +1285,23 @@ const ProfileDashboard: React.FC<{ user: any }> = ({ user }) => {
                        )}
                        {!isOwnProfile && isPlayingLive && !isSubscribed && !hasPaidForLive ? (
                          isPreviewExpired ? (
-                           <div style={{ position: 'absolute', inset: 0, zIndex: 30, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: '#111', padding: '40px', textAlign: 'center' }}>
+                           <div style={{ position: 'absolute', inset: 0, zIndex: 30, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: 'var(--bg-surface)', padding: '40px', textAlign: 'center' }}>
                              <Lock size={48} color="#ff4d85" style={{ marginBottom: '16px' }} />
-                             <h2 style={{ margin: '0 0 12px 0', fontSize: '28px', color: '#fff' }}>Preview Ended</h2>
-                             <p style={{ color: '#aaa', fontSize: '16px', maxWidth: '400px', marginBottom: '24px', lineHeight: 1.5 }}>
+                             <h2 style={{ margin: '0 0 12px 0', fontSize: '28px', color: 'var(--text-primary)' }}>Preview Ended</h2>
+                             <p style={{ color: 'var(--text-secondary)', fontSize: '16px', maxWidth: '400px', marginBottom: '24px', lineHeight: 1.5 }}>
                                Your free 90-second preview has expired. Subscribe to {profile?.username} for full access, or purchase a one-time pass to continue watching.
                              </p>
                              <div style={{ display: 'flex', gap: '16px' }}>
-                               <button onClick={handleUnlockLive} style={{ padding: '14px 28px', background: 'linear-gradient(135deg, #0055ff, #00ff88)', color: '#fff', border: 'none', borderRadius: '12px', fontWeight: 'bold', fontSize: '16px', cursor: 'pointer', boxShadow: '0 10px 20px rgba(0,85,255,0.3)' }}>
+                               <button onClick={handleUnlockLive} style={{ padding: '14px 28px', background: 'linear-gradient(135deg, #0055ff, #00ff88)', color: 'var(--text-primary)', border: 'none', borderRadius: '12px', fontWeight: 'bold', fontSize: '16px', cursor: 'pointer', boxShadow: '0 10px 20px rgba(0,85,255,0.3)' }}>
                                  Unlock for ${livePrice}
                                </button>
-                               <button onClick={handleSubscribe} style={{ padding: '14px 28px', background: 'rgba(255,255,255,0.1)', color: '#fff', border: '1px solid rgba(255,255,255,0.2)', borderRadius: '12px', fontWeight: 'bold', fontSize: '16px', cursor: 'pointer' }}>
+                               <button onClick={handleSubscribe} style={{ padding: '14px 28px', background: 'rgba(255,255,255,0.1)', color: 'var(--text-primary)', border: '1px solid rgba(255,255,255,0.2)', borderRadius: '12px', fontWeight: 'bold', fontSize: '16px', cursor: 'pointer' }}>
                                  Subscribe Now
                                </button>
                              </div>
                            </div>
                          ) : (
-                           <div style={{ position: 'absolute', top: 20, left: 20, zIndex: 30, background: 'rgba(255,0,85,0.8)', padding: '6px 12px', borderRadius: '8px', color: '#fff', fontWeight: 'bold', fontSize: '12px', letterSpacing: '1px', backdropFilter: 'blur(10px)', border: '1px solid rgba(255,255,255,0.2)' }}>
+                           <div style={{ position: 'absolute', top: 20, left: 20, zIndex: 30, background: 'rgba(255,0,85,0.8)', padding: '6px 12px', borderRadius: '8px', color: 'var(--text-primary)', fontWeight: 'bold', fontSize: '12px', letterSpacing: '1px', backdropFilter: 'blur(10px)', border: '1px solid rgba(255,255,255,0.2)' }}>
                              FREE PREVIEW: {Math.floor(previewTimeLeft / 60)}:{(previewTimeLeft % 60).toString().padStart(2, '0')} REMAINING
                            </div>
                          )
@@ -1313,30 +1313,30 @@ const ProfileDashboard: React.FC<{ user: any }> = ({ user }) => {
                            ...(streamSource === 'url' ? {
                               bottom: 20, left: 20, right: 20, display: 'flex', gap: '10px', justifyContent: 'flex-start', alignItems: 'flex-end', pointerEvents: 'none'
                            } : {
-                             inset: 0, background: '#000', display: 'grid', gap: '2px',
+                             inset: 0, background: 'var(--bg-color)', display: 'grid', gap: '2px',
                              gridTemplateColumns: (totalSlots === 1) ? '1fr' : (totalSlots <= 4) ? '1fr 1fr' : '1fr 1fr 1fr',
                              gridTemplateRows: (totalSlots <= 2) ? '1fr' : '1fr 1fr'
                            })
                          }}>
                            {/* Main Host Webcam Slot */}
                            {showHost && (
-                             <div style={{ position: 'relative', background: '#111', flexShrink: 0, pointerEvents: 'auto', ...(streamSource === 'url' ? { width: 'min(20%, 200px)', aspectRatio: '16/9', borderRadius: '12px', border: '2px solid rgba(255,255,255,0.2)', overflow: 'hidden', boxShadow: '0 4px 20px rgba(0,0,0,0.5)' } : { width: '100%', height: '100%' }) }}>
+                             <div style={{ position: 'relative', background: 'var(--bg-surface)', flexShrink: 0, pointerEvents: 'auto', ...(streamSource === 'url' ? { width: 'min(20%, 200px)', aspectRatio: '16/9', borderRadius: '12px', border: '2px solid rgba(255,255,255,0.2)', overflow: 'hidden', boxShadow: '0 4px 20px rgba(0,0,0,0.5)' } : { width: '100%', height: '100%' }) }}>
                                
                                {cameraStatus === 'loading' && (
-                                 <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: '#111', zIndex: 5 }}>
+                                 <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: 'var(--bg-surface)', zIndex: 5 }}>
                                     <div style={{ width: 40, height: 40, border: '3px solid rgba(255,255,255,0.1)', borderTopColor: '#00ff88', borderRadius: '50%', animation: 'spin 1s linear infinite', marginBottom: 15 }} />
-                                    <p style={{ margin: 0, color: '#fff', fontSize: '14px', fontWeight: 'bold', letterSpacing: '1px' }}>INITIALIZING HARDWARE...</p>
-                                    <p style={{ margin: '5px 0 0 0', color: '#888', fontSize: '12px' }}>Please allow access to your camera and microphone</p>
+                                    <p style={{ margin: 0, color: 'var(--text-primary)', fontSize: '14px', fontWeight: 'bold', letterSpacing: '1px' }}>INITIALIZING HARDWARE...</p>
+                                    <p style={{ margin: '5px 0 0 0', color: 'var(--text-muted)', fontSize: '12px' }}>Please allow access to your camera and microphone</p>
                                  </div>
                                )}
                                {cameraStatus === 'error' && (
-                                 <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: '#111', zIndex: 5 }}>
+                                 <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: 'var(--bg-surface)', zIndex: 5 }}>
                                     <div style={{ padding: '15px', borderRadius: '50%', background: 'rgba(255,0,85,0.1)', color: '#ff0055', marginBottom: 15 }}>
                                        <Video size={30} />
                                     </div>
-                                    <p style={{ margin: 0, color: '#fff', fontSize: '14px', fontWeight: 'bold' }}>CAMERA ACCESS DENIED</p>
-                                    <p style={{ margin: '5px 0 0 0', color: '#888', fontSize: '12px', maxWidth: '300px', textAlign: 'center' }}>Check your browser settings to ensure the platform has hardware permissions.</p>
-                                    <button onClick={() => setIsPlayingLive(false)} style={{ marginTop: '15px', padding: '8px 20px', background: 'transparent', border: '1px solid #333', color: '#fff', borderRadius: '20px', cursor: 'pointer' }}>Close Mode</button>
+                                    <p style={{ margin: 0, color: 'var(--text-primary)', fontSize: '14px', fontWeight: 'bold' }}>CAMERA ACCESS DENIED</p>
+                                    <p style={{ margin: '5px 0 0 0', color: 'var(--text-muted)', fontSize: '12px', maxWidth: '300px', textAlign: 'center' }}>Check your browser settings to ensure the platform has hardware permissions.</p>
+                                    <button onClick={() => setIsPlayingLive(false)} style={{ marginTop: '15px', padding: '8px 20px', background: 'transparent', border: '1px solid var(--bg-surface-hover)', color: 'var(--text-primary)', borderRadius: '20px', cursor: 'pointer' }}>Close Mode</button>
                                  </div>
                                )}
 
@@ -1349,7 +1349,7 @@ const ProfileDashboard: React.FC<{ user: any }> = ({ user }) => {
                                  style={{ width: '100%', height: '100%', objectFit: 'cover', opacity: cameraStatus === 'active' ? 1 : 0, transition: 'opacity 0.3s' }} 
                                />
                                <div style={{ position: 'absolute', bottom: streamSource==='url'?4:10, right: streamSource==='url'?4:10, background: 'rgba(0,0,0,0.7)', padding: streamSource==='url'?'4px 8px':'6px 12px', borderRadius: '8px', textAlign: 'right', border: '1px solid rgba(255,255,255,0.1)', backdropFilter: 'blur(10px)' }}>
-                                 <div style={{ fontWeight: 'bold', fontSize: streamSource==='url'?'11px':'14px', color: '#fff' }}>{localGuestData ? localGuestData.name : profile?.username || 'Host'}</div>
+                                 <div style={{ fontWeight: 'bold', fontSize: streamSource==='url'?'11px':'14px', color: 'var(--text-primary)' }}>{localGuestData ? localGuestData.name : profile?.username || 'Host'}</div>
                                  <div style={{ fontSize: streamSource==='url'?'9px':'11px', color: '#00ff88', textTransform: 'uppercase', letterSpacing: '1px', marginTop: '2px' }}>{localGuestData ? localGuestData.title : (profile?.industry || 'Live Streamer')}</div>
                                </div>
                              </div>
@@ -1357,13 +1357,13 @@ const ProfileDashboard: React.FC<{ user: any }> = ({ user }) => {
                            
                            {/* Simulated Guests Webcams Slot */}
                            {visibleGuests.map((g, i) => (
-                             <div key={i} style={{ position: 'relative', background: '#222', flexShrink: 0, pointerEvents: 'auto', ...(streamSource === 'url' ? { width: 'min(20%, 200px)', aspectRatio: '16/9', borderRadius: '12px', border: '2px solid rgba(255,255,255,0.2)', overflow: 'hidden', boxShadow: '0 4px 20px rgba(0,0,0,0.5)' } : { width: '100%', height: '100%' }) }}>
+                             <div key={i} style={{ position: 'relative', background: 'var(--bg-surface-hover)', flexShrink: 0, pointerEvents: 'auto', ...(streamSource === 'url' ? { width: 'min(20%, 200px)', aspectRatio: '16/9', borderRadius: '12px', border: '2px solid rgba(255,255,255,0.2)', overflow: 'hidden', boxShadow: '0 4px 20px rgba(0,0,0,0.5)' } : { width: '100%', height: '100%' }) }}>
                                <img src={`https://images.unsplash.com/photo-${1550000000000 + (i * 1000)}?auto=format&fit=crop&w=800&q=80`} style={{ width: '100%', height: '100%', objectFit: 'cover', filter: 'grayscale(0.5)' }} alt="Guest Feed" />
                                <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                                  <span style={{ background: 'rgba(0,0,0,0.5)', padding: '4px 10px', borderRadius: '20px', fontSize: '10px' }}>Guest Feed</span>
                                </div>
                                <div style={{ position: 'absolute', bottom: streamSource==='url'?4:10, right: streamSource==='url'?4:10, background: 'rgba(0,0,0,0.7)', padding: streamSource==='url'?'4px 8px':'6px 12px', borderRadius: '8px', textAlign: 'right', border: '1px solid rgba(255,255,255,0.1)', backdropFilter: 'blur(10px)' }}>
-                                 <div style={{ fontWeight: 'bold', fontSize: streamSource==='url'?'11px':'14px', color: '#fff' }}>{g.name}</div>
+                                 <div style={{ fontWeight: 'bold', fontSize: streamSource==='url'?'11px':'14px', color: 'var(--text-primary)' }}>{g.name}</div>
                                  <div style={{ fontSize: streamSource==='url'?'9px':'11px', color: '#00ff88', textTransform: 'uppercase', letterSpacing: '1px', marginTop: '2px' }}>{g.title}</div>
                                </div>
                              </div>
@@ -1380,7 +1380,7 @@ const ProfileDashboard: React.FC<{ user: any }> = ({ user }) => {
                                 </div>
                                 <br />
                                 {directorLowerThirds.sub && (
-                                  <div style={{ background: '#000', color: '#fff', padding: '6px 20px', display: 'inline-block', fontSize: '14px', borderLeft: '4px solid #00ff88', marginTop: '4px' }}>
+                                  <div style={{ background: 'var(--bg-color)', color: 'var(--text-primary)', padding: '6px 20px', display: 'inline-block', fontSize: '14px', borderLeft: '4px solid #00ff88', marginTop: '4px' }}>
                                      {directorLowerThirds.sub}
                                   </div>
                                 )}
@@ -1392,7 +1392,7 @@ const ProfileDashboard: React.FC<{ user: any }> = ({ user }) => {
                     <>
                       <img src={homepageImageUrl || "https://vibenetwork.tv/wp-content/uploads/2026/02/silhouette-dj-playing-music_1230721-3514.webp"} alt="Live Stream Thumbnail" style={{ position: 'absolute', width: '100%', height: '100%', objectFit: 'cover', opacity: 0.5, filter: 'blur(2px)' }} />
                       <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 10 }}>
-                        <button onClick={() => setIsPlayingLive(true)} style={{ width: '80px', height: '80px', borderRadius: '50%', background: 'rgba(255,77,133,0.9)', border: 'none', color: '#fff', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 0 20px rgba(255,77,133,0.5)', transition: 'transform 0.2s' }} onMouseOver={e=>e.currentTarget.style.transform='scale(1.1)'} onMouseOut={e=>e.currentTarget.style.transform='scale(1)'}>
+                        <button onClick={() => setIsPlayingLive(true)} style={{ width: '80px', height: '80px', borderRadius: '50%', background: 'rgba(255,77,133,0.9)', border: 'none', color: 'var(--text-primary)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 0 20px rgba(255,77,133,0.5)', transition: 'transform 0.2s' }} onMouseOver={e=>e.currentTarget.style.transform='scale(1.1)'} onMouseOut={e=>e.currentTarget.style.transform='scale(1)'}>
                           <svg width="32" height="32" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
                         </button>
                       </div>
@@ -1419,14 +1419,14 @@ const ProfileDashboard: React.FC<{ user: any }> = ({ user }) => {
                       setLocalGuestData(null);
                       setIsPlayingLive(false);
                       setShowExitScreen(true);
-                  }} style={{ width: '100%', padding: '16px 24px', background: 'rgba(229,9,20,0.9)', color: '#fff', border: 'none', borderRadius: '16px', fontWeight: '900', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '12px', cursor: 'pointer', textTransform: 'uppercase', fontSize: '15px', letterSpacing: '2px', boxShadow: '0 4px 20px rgba(229,9,20,0.3)' }}>
+                  }} style={{ width: '100%', padding: '16px 24px', background: 'rgba(229,9,20,0.9)', color: 'var(--text-primary)', border: 'none', borderRadius: '16px', fontWeight: '900', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '12px', cursor: 'pointer', textTransform: 'uppercase', fontSize: '15px', letterSpacing: '2px', boxShadow: '0 4px 20px rgba(229,9,20,0.3)' }}>
                       🛑 Disconnect & Leave Stream
                   </button>
                 </div>
               )}
               <div style={{ padding: '24px' }}>
                   <h3 style={{ margin: '0 0 8px 0', fontSize: '20px' }}>VIP Backstage Broadcast</h3>
-                  <p style={{ margin: 0, color: '#888' }}>
+                  <p style={{ margin: 0, color: 'var(--text-muted)' }}>
                     {isOwnProfile ? 'Configure your live stream settings below.' : 
                      isSubscribed ? 'Live stream is free since you are subscribed!' : 
                      'Streaming live now. Subscribe for free access, or unlock this broadcast below.'}
@@ -1435,11 +1435,11 @@ const ProfileDashboard: React.FC<{ user: any }> = ({ user }) => {
                   {isOwnProfile && viewMode === 'edit' && (
                     <div style={{ marginTop: '24px', background: 'rgba(255,255,255,0.03)', padding: '20px', borderRadius: '16px', border: '1px dashed rgba(255,255,255,0.2)' }}>
                       <div style={{ display: 'flex', gap: '16px', alignItems: 'center', marginBottom: '24px', background: 'rgba(0,0,0,0.4)', padding: '12px 16px', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.05)' }}>
-                        <label style={{ color: '#fff', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '8px', flexShrink: 0 }}>
+                        <label style={{ color: 'var(--text-primary)', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '8px', flexShrink: 0 }}>
                           Pay-Per-View Price: $
                         </label>
-                        <input type="number" value={livePrice} onChange={e => setLivePrice(e.target.value)} style={{ background: 'transparent', border: '1px solid rgba(255,255,255,0.2)', color: '#fff', padding: '6px 12px', borderRadius: '6px', width: '80px', fontSize: '15px' }} />
-                        <span style={{ color: '#888', fontSize: '13px' }}>(Free for subscribers)</span>
+                        <input type="number" value={livePrice} onChange={e => setLivePrice(e.target.value)} style={{ background: 'transparent', border: '1px solid rgba(255,255,255,0.2)', color: 'var(--text-primary)', padding: '6px 12px', borderRadius: '6px', width: '80px', fontSize: '15px' }} />
+                        <span style={{ color: 'var(--text-muted)', fontSize: '13px' }}>(Free for subscribers)</span>
                       </div>
                       
                       <label style={{ display: 'block', marginBottom: '12px', color: '#ff4d85', fontWeight: 'bold', fontSize: '15px' }}>Configure Live Stream Origin</label>
@@ -1464,20 +1464,20 @@ const ProfileDashboard: React.FC<{ user: any }> = ({ user }) => {
                       <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
                         {streamSource === 'url' && (
                           <div style={{ display: 'flex', gap: '12px' }}>
-                            <input type="text" value={liveEmbedUrl} onChange={e => setLiveEmbedUrl(e.target.value)} placeholder="Embed URL (e.g. YouTube, Twitch)" style={{ flex: 1, padding: '14px', borderRadius: '10px', background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.1)', color: '#fff', fontSize: '15px', outline: 'none' }}/>
+                            <input type="text" value={liveEmbedUrl} onChange={e => setLiveEmbedUrl(e.target.value)} placeholder="Embed URL (e.g. YouTube, Twitch)" style={{ flex: 1, padding: '14px', borderRadius: '10px', background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.1)', color: 'var(--text-primary)', fontSize: '15px', outline: 'none' }}/>
                             {isPlayingLive ? (
                               <button onClick={() => setIsPlayingLive(false)} style={{ padding: '14px 24px', background: 'rgba(229, 9, 20, 0.1)', color: '#e50914', border: '1px solid #e50914', borderRadius: '10px', fontWeight: 'bold', fontSize: '15px', cursor: 'pointer', transition: '0.2s', display: 'flex', alignItems: 'center', gap: '8px' }}>Stop Streaming</button>
                             ) : liveCountdown !== null ? (
-                              <button disabled style={{ padding: '14px 24px', background: '#e50914', color: '#fff', border: 'none', borderRadius: '10px', fontWeight: 'bold', fontSize: '15px', cursor: 'not-allowed', display: 'flex', alignItems: 'center', gap: '8px' }}>Going Live in {liveCountdown}...</button>
+                              <button disabled style={{ padding: '14px 24px', background: '#e50914', color: 'var(--text-primary)', border: 'none', borderRadius: '10px', fontWeight: 'bold', fontSize: '15px', cursor: 'not-allowed', display: 'flex', alignItems: 'center', gap: '8px' }}>Going Live in {liveCountdown}...</button>
                             ) : (
-                              <button onClick={startLiveStream} style={{ padding: '14px 24px', background: '#e50914', color: '#fff', border: 'none', borderRadius: '10px', fontWeight: 'bold', fontSize: '15px', cursor: 'pointer', transition: '0.2s', display: 'flex', alignItems: 'center', gap: '8px' }}><Camera size={18}/> Start Streaming</button>
+                              <button onClick={startLiveStream} style={{ padding: '14px 24px', background: '#e50914', color: 'var(--text-primary)', border: 'none', borderRadius: '10px', fontWeight: 'bold', fontSize: '15px', cursor: 'pointer', transition: '0.2s', display: 'flex', alignItems: 'center', gap: '8px' }}><Camera size={18}/> Start Streaming</button>
                             )}
                           </div>
                         )}
                         
                         {streamSource === 'camera' && (
                           <div style={{ display: 'flex', gap: '12px', alignItems: 'center', flexWrap: 'wrap' }}>
-                             <p style={{ margin: 0, color: '#aaa', flex: 1, minWidth: '200px' }}>Using your local hardware as the broadcast origin server. Press "Start Streaming" to ignite the feed.</p>
+                             <p style={{ margin: 0, color: 'var(--text-secondary)', flex: 1, minWidth: '200px' }}>Using your local hardware as the broadcast origin server. Press "Start Streaming" to ignite the feed.</p>
                              {isPlayingLive ? (
                                <>
                                  {!isPubliclyLive && (
@@ -1490,9 +1490,9 @@ const ProfileDashboard: React.FC<{ user: any }> = ({ user }) => {
                                  </button>
                                </>
                              ) : liveCountdown !== null ? (
-                               <button disabled style={{ padding: '14px 24px', background: '#e50914', color: '#fff', border: 'none', borderRadius: '10px', fontWeight: 'bold', fontSize: '15px', cursor: 'not-allowed', display: 'flex', alignItems: 'center', gap: '8px' }}>Going Live in {liveCountdown}...</button>
+                               <button disabled style={{ padding: '14px 24px', background: '#e50914', color: 'var(--text-primary)', border: 'none', borderRadius: '10px', fontWeight: 'bold', fontSize: '15px', cursor: 'not-allowed', display: 'flex', alignItems: 'center', gap: '8px' }}>Going Live in {liveCountdown}...</button>
                              ) : (
-                               <button onClick={startLiveStream} style={{ padding: '14px 24px', background: '#e50914', color: '#fff', border: 'none', borderRadius: '10px', fontWeight: 'bold', fontSize: '15px', cursor: 'pointer', transition: '0.2s', display: 'flex', alignItems: 'center', gap: '8px' }}><Camera size={18}/> Start Streaming</button>
+                               <button onClick={startLiveStream} style={{ padding: '14px 24px', background: '#e50914', color: 'var(--text-primary)', border: 'none', borderRadius: '10px', fontWeight: 'bold', fontSize: '15px', cursor: 'pointer', transition: '0.2s', display: 'flex', alignItems: 'center', gap: '8px' }}><Camera size={18}/> Start Streaming</button>
                              )}
                           </div>
                         )}
@@ -1500,14 +1500,14 @@ const ProfileDashboard: React.FC<{ user: any }> = ({ user }) => {
                         <div style={{ background: 'rgba(0,0,0,0.3)', padding: '16px', borderRadius: '12px', border: '1px dashed rgba(255,255,255,0.1)' }}>
                           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px' }}>
                             <div>
-                               <p style={{ margin: 0, color: '#fff', fontWeight: 'bold', fontSize: '14px' }}>WebRTC Overlays & Guests</p>
-                               <p style={{ margin: '4px 0 0 0', color: '#aaa', fontSize: '12px' }}>Enable your webcam and invite up to 4 guests {streamSource === 'url' ? 'over your broadcast frame' : 'to join the primary grid'}.</p>
+                               <p style={{ margin: 0, color: 'var(--text-primary)', fontWeight: 'bold', fontSize: '14px' }}>WebRTC Overlays & Guests</p>
+                               <p style={{ margin: '4px 0 0 0', color: 'var(--text-secondary)', fontSize: '12px' }}>Enable your webcam and invite up to 4 guests {streamSource === 'url' ? 'over your broadcast frame' : 'to join the primary grid'}.</p>
                             </div>
                             {isPlayingLive && (
                               <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                               <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
                                 {streamSource === 'url' && (
-                                  <button onClick={() => setPresenterMode(!presenterMode)} style={{ padding: '8px 14px', background: presenterMode ? '#ff0055' : 'rgba(255,255,255,0.1)', color: '#fff', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold', fontSize: '13px' }}>
+                                  <button onClick={() => setPresenterMode(!presenterMode)} style={{ padding: '8px 14px', background: presenterMode ? '#ff0055' : 'rgba(255,255,255,0.1)', color: 'var(--text-primary)', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold', fontSize: '13px' }}>
                                     {presenterMode ? 'Stop Presenting' : 'Show My Webcam'}
                                   </button>
                                 )}
@@ -1516,7 +1516,7 @@ const ProfileDashboard: React.FC<{ user: any }> = ({ user }) => {
                                   const guestUrl = `${window.location.origin}/profile/${profileIdPath}?guest_invite=true`;
                                   navigator.clipboard.writeText(guestUrl).catch(()=>console.log('Clipboard skipped'));
                                   alert('Guest Invite Link copied: ' + guestUrl);
-                                }} style={{ padding: '8px 14px', background: '#0055ff', color: '#fff', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold', fontSize: '13px' }}>
+                                }} style={{ padding: '8px 14px', background: '#0055ff', color: 'var(--text-primary)', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold', fontSize: '13px' }}>
                                   🔗 Copy Guest Link
                                 </button>
 
@@ -1527,7 +1527,7 @@ const ProfileDashboard: React.FC<{ user: any }> = ({ user }) => {
                                    {guests.map((g, i) => (
                                      <div key={g.id || i} style={{ display: 'flex', flexWrap: 'wrap', gap: '10px', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px', borderBottom: '1px solid rgba(255,255,255,0.05)', paddingBottom: '8px' }}>
                                        <div>
-                                         <div style={{color: '#fff', fontSize: '13px'}}>{g.name} <span style={{color: '#00ff88', fontSize: '10px'}}>{g.title}</span></div>
+                                         <div style={{color: 'var(--text-primary)', fontSize: '13px'}}>{g.name} <span style={{color: '#00ff88', fontSize: '10px'}}>{g.title}</span></div>
                                        </div>
                                        <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
                                          <button onClick={() => {
@@ -1536,7 +1536,7 @@ const ProfileDashboard: React.FC<{ user: any }> = ({ user }) => {
                                             setGuests(newG);
                                             localStorage.setItem('vibe_host_guests_session', JSON.stringify(newG));
                                             window.dispatchEvent(new Event('vibe_guests_updated'));
-                                         }} style={{ padding: '4px 10px', background: g.isLive ? '#ff0055' : '#0055ff', color: '#fff', borderRadius: '6px', fontSize: '11px', border: 'none', cursor: 'pointer' }}>
+                                         }} style={{ padding: '4px 10px', background: g.isLive ? '#ff0055' : '#0055ff', color: 'var(--text-primary)', borderRadius: '6px', fontSize: '11px', border: 'none', cursor: 'pointer' }}>
                                            {g.isLive ? 'Remove from Stream' : 'Allow in Stream'}
                                          </button>
                                          <button onClick={() => {
@@ -1544,7 +1544,7 @@ const ProfileDashboard: React.FC<{ user: any }> = ({ user }) => {
                                             setGuests(newG);
                                             localStorage.setItem('vibe_host_guests_session', JSON.stringify(newG));
                                             window.dispatchEvent(new Event('vibe_guests_updated'));
-                                         }} style={{ padding: '4px 10px', background: 'transparent', border: '1px solid #888', color: '#888', borderRadius: '6px', fontSize: '11px', cursor: 'pointer' }}>Disconnect</button>
+                                         }} style={{ padding: '4px 10px', background: 'transparent', border: '1px solid #888', color: 'var(--text-muted)', borderRadius: '6px', fontSize: '11px', cursor: 'pointer' }}>Disconnect</button>
                                        </div>
                                      </div>
                                    ))}
@@ -1557,7 +1557,7 @@ const ProfileDashboard: React.FC<{ user: any }> = ({ user }) => {
 
                       </div>
                       
-                      <p style={{ margin: '15px 0 0 0', color: '#666', fontSize: '12px' }}>This feed dictates what your active subscribers consume during live events in real-time.</p>
+                      <p style={{ margin: '15px 0 0 0', color: 'var(--text-muted)', fontSize: '12px' }}>This feed dictates what your active subscribers consume during live events in real-time.</p>
                     </div>
                   )}
                 </div>
@@ -1565,15 +1565,15 @@ const ProfileDashboard: React.FC<{ user: any }> = ({ user }) => {
             ) : (
               <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} style={{ background: 'linear-gradient(135deg, rgba(255,0,85,0.1), rgba(138,43,226,0.1))', borderRadius: '24px', border: '1px solid rgba(255,255,255,0.05)', overflow: 'hidden', textAlign: 'center', padding: '80px 20px', position: 'relative' }}>
                 <Lock size={56} color="#FFD700" style={{ marginBottom: '24px' }} />
-                <h3 style={{ fontSize: '28px', margin: '0 0 16px 0', color: '#fff' }}>Exclusive Live Broadcast</h3>
-                <p style={{ color: '#aaa', fontSize: '18px', maxWidth: '450px', margin: '0 auto 40px', lineHeight: 1.5 }}>Subscribe to {profile.username || 'this creator'} to instantly unlock their live streams and premium restricted vault content.</p>
+                <h3 style={{ fontSize: '28px', margin: '0 0 16px 0', color: 'var(--text-primary)' }}>Exclusive Live Broadcast</h3>
+                <p style={{ color: 'var(--text-secondary)', fontSize: '18px', maxWidth: '450px', margin: '0 auto 40px', lineHeight: 1.5 }}>Subscribe to {profile.username || 'this creator'} to instantly unlock their live streams and premium restricted vault content.</p>
                 <button 
                   onClick={() => {
                     if (!user) { alert('Please log in to subscribe.'); return; }
                     handleStripeCheckout('Monthly Subscription', Number(subPrice));
                     setIsSubscribed(true);
                   }} 
-                  style={{ padding: '16px 40px', background: 'linear-gradient(135deg, #ff4d85, #8A2BE2)', color: '#fff', border: 'none', borderRadius: '30px', fontWeight: 'bold', fontSize: '18px', cursor: 'pointer', boxShadow: '0 10px 20px rgba(255,77,133,0.3)', transition: 'transform 0.2s' }} 
+                  style={{ padding: '16px 40px', background: 'linear-gradient(135deg, #ff4d85, #8A2BE2)', color: 'var(--text-primary)', border: 'none', borderRadius: '30px', fontWeight: 'bold', fontSize: '18px', cursor: 'pointer', boxShadow: '0 10px 20px rgba(255,77,133,0.3)', transition: 'transform 0.2s' }} 
                   onMouseOver={e=>e.currentTarget.style.transform='scale(1.05)'} 
                   onMouseOut={e=>e.currentTarget.style.transform='scale(1)'}
                 >
@@ -1589,18 +1589,18 @@ const ProfileDashboard: React.FC<{ user: any }> = ({ user }) => {
           <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
             <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} style={{ background: 'rgba(255,255,255,0.02)', borderRadius: '24px', padding: '40px', border: '1px solid rgba(255,255,255,0.05)' }}>
               <h3 style={{ margin: '0 0 10px 0', fontSize: '28px' }}>Book {profile?.username || 'this Creator'}</h3>
-              <p style={{ color: '#aaa', margin: '0 0 40px 0', fontSize: '16px' }}>Schedule a 1-on-1 session, studio consultation, or collaboration meeting.</p>
+              <p style={{ color: 'var(--text-secondary)', margin: '0 0 40px 0', fontSize: '16px' }}>Schedule a 1-on-1 session, studio consultation, or collaboration meeting.</p>
               
               {isOwnProfile && viewMode === 'edit' && (
                 <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} style={{ background: 'rgba(255,255,255,0.03)', padding: '24px', borderRadius: '24px', border: '1px dashed rgba(255,255,255,0.15)', marginBottom: '30px' }}>
                   <h3 style={{ margin: '0 0 16px 0', fontSize: '18px', display: 'flex', alignItems: 'center', gap: '8px' }}>Creator Booking Settings</h3>
                   <div style={{ display: 'flex', gap: '16px', alignItems: 'center', flexWrap: 'wrap' }}>
                     <div style={{ display: 'flex', alignItems: 'center', background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px', overflow: 'hidden' }}>
-                      <span style={{ padding: '14px', color: '#888', background: 'rgba(255,255,255,0.02)', borderRight: '1px solid rgba(255,255,255,0.1)' }}>Hourly Rate ($)</span>
-                      <input type="number" step="0.01" value={bookingPrice} onChange={e => setBookingPrice(e.target.value)} style={{ background: 'transparent', border: 'none', padding: '14px', color: '#fff', outline: 'none', fontSize: '15px', width: '120px' }} />
+                      <span style={{ padding: '14px', color: 'var(--text-muted)', background: 'rgba(255,255,255,0.02)', borderRight: '1px solid rgba(255,255,255,0.1)' }}>Hourly Rate ($)</span>
+                      <input type="number" step="0.01" value={bookingPrice} onChange={e => setBookingPrice(e.target.value)} style={{ background: 'transparent', border: 'none', padding: '14px', color: 'var(--text-primary)', outline: 'none', fontSize: '15px', width: '120px' }} />
                     </div>
-                    <p style={{ color: '#aaa', fontSize: '14px', margin: 0, flex: 1 }}>Select dates on the calendar below to add or remove your available timeslots.</p>
-                    <button onClick={() => window.location.href = `/call/room_${profile?.id || 'demo'}`} style={{ padding: '12px 24px', background: 'rgba(138,43,226,0.2)', color: '#fff', border: '1px solid #8A2BE2', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold' }}>Enter Virtual Room</button>
+                    <p style={{ color: 'var(--text-secondary)', fontSize: '14px', margin: 0, flex: 1 }}>Select dates on the calendar below to add or remove your available timeslots.</p>
+                    <button onClick={() => window.location.href = `/call/room_${profile?.id || 'demo'}`} style={{ padding: '12px 24px', background: 'rgba(138,43,226,0.2)', color: 'var(--text-primary)', border: '1px solid #8A2BE2', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold' }}>Enter Virtual Room</button>
                   </div>
                 </motion.div>
               )}
@@ -1608,10 +1608,10 @@ const ProfileDashboard: React.FC<{ user: any }> = ({ user }) => {
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '40px' }}>
                 {/* Calendar View */}
                 <div>
-                  <h4 style={{ margin: '0 0 20px 0', color: '#fff', fontSize: '18px' }}>1. Select a Date (April)</h4>
+                  <h4 style={{ margin: '0 0 20px 0', color: 'var(--text-primary)', fontSize: '18px' }}>1. Select a Date (April)</h4>
                   <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: '10px', textAlign: 'center' }}>
                     {['Sun','Mon','Tue','Wed','Thu','Fri','Sat'].map((day, i) => (
-                      <div key={i} style={{ color: '#888', fontSize: '12px', fontWeight: 'bold', padding: '10px 0', textTransform: 'uppercase' }}>{day}</div>
+                      <div key={i} style={{ color: 'var(--text-muted)', fontSize: '12px', fontWeight: 'bold', padding: '10px 0', textTransform: 'uppercase' }}>{day}</div>
                     ))}
                     {/* Add blank spaces for offset */}
                     <div /> <div /> <div /> 
@@ -1648,13 +1648,13 @@ const ProfileDashboard: React.FC<{ user: any }> = ({ user }) => {
 
                 {/* Time Selection & Editing */}
                 <div style={{ opacity: selectedDate ? 1 : 0.4, pointerEvents: selectedDate ? 'auto' : 'none', transition: 'all 0.3s' }}>
-                  <h4 style={{ margin: '0 0 20px 0', color: '#fff', fontSize: '18px' }}>2. Available Times</h4>
+                  <h4 style={{ margin: '0 0 20px 0', color: 'var(--text-primary)', fontSize: '18px' }}>2. Available Times</h4>
                   
                   {isOwnProfile && viewMode === 'edit' && selectedDate ? (
                     <div style={{ marginBottom: '24px', padding: '16px', background: 'rgba(255,255,255,0.02)', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.05)' }}>
-                      <h5 style={{ margin: '0 0 12px 0', fontSize: '14px', color: '#aaa' }}>Add Timeslot for April {selectedDate}</h5>
+                      <h5 style={{ margin: '0 0 12px 0', fontSize: '14px', color: 'var(--text-secondary)' }}>Add Timeslot for April {selectedDate}</h5>
                       <div style={{ display: 'flex', gap: '8px' }}>
-                        <input type="time" value={newTimeInput} onChange={e => setNewTimeInput(e.target.value)} style={{ flex: 1, background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.1)', padding: '10px', borderRadius: '8px', color: '#fff', outline: 'none' }} />
+                        <input type="time" value={newTimeInput} onChange={e => setNewTimeInput(e.target.value)} style={{ flex: 1, background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.1)', padding: '10px', borderRadius: '8px', color: 'var(--text-primary)', outline: 'none' }} />
                         <button 
                           onClick={() => {
                             if (!newTimeInput) return;
@@ -1672,7 +1672,7 @@ const ProfileDashboard: React.FC<{ user: any }> = ({ user }) => {
                             });
                             setNewTimeInput('');
                           }}
-                          style={{ padding: '10px 20px', background: 'rgba(255,255,255,0.1)', color: '#fff', border: 'none', borderRadius: '8px', fontWeight: 'bold', cursor: 'pointer' }}
+                          style={{ padding: '10px 20px', background: 'rgba(255,255,255,0.1)', color: 'var(--text-primary)', border: 'none', borderRadius: '8px', fontWeight: 'bold', cursor: 'pointer' }}
                         >
                           Add
                         </button>
@@ -1686,7 +1686,7 @@ const ProfileDashboard: React.FC<{ user: any }> = ({ user }) => {
                         <div key={time} style={{ display: 'flex', gap: '4px' }}>
                           <button 
                             onClick={() => setSelectedTime(time)}
-                            style={{ flex: 1, padding: '16px', borderRadius: '12px', border: '1px solid', borderColor: selectedTime === time ? '#8A2BE2' : 'rgba(255,255,255,0.05)', background: selectedTime === time ? 'rgba(138,43,226,0.1)' : 'rgba(0,0,0,0.4)', color: '#fff', fontSize: '15px', fontWeight: 'bold', cursor: 'pointer', transition: 'all 0.2s' }}
+                            style={{ flex: 1, padding: '16px', borderRadius: '12px', border: '1px solid', borderColor: selectedTime === time ? '#8A2BE2' : 'rgba(255,255,255,0.05)', background: selectedTime === time ? 'rgba(138,43,226,0.1)' : 'rgba(0,0,0,0.4)', color: 'var(--text-primary)', fontSize: '15px', fontWeight: 'bold', cursor: 'pointer', transition: 'all 0.2s' }}
                           >
                             {time}
                           </button>
@@ -1708,13 +1708,13 @@ const ProfileDashboard: React.FC<{ user: any }> = ({ user }) => {
                       ))}
                     </div>
                   ) : (
-                    <p style={{ color: '#666', fontStyle: 'italic' }}>No times available on this date.</p>
+                    <p style={{ color: 'var(--text-muted)', fontStyle: 'italic' }}>No times available on this date.</p>
                   )}
 
                   {/* Payment/Confirmation section (Only for Guests) */}
                   {selectedTime && (!isOwnProfile || viewMode !== 'edit') && (
                     <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} style={{ marginTop: '30px', background: 'rgba(0,0,0,0.4)', padding: '24px', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.05)' }}>
-                      <h4 style={{ margin: '0 0 16px 0', color: '#fff', fontSize: '18px' }}>3. Confirm Booking</h4>
+                      <h4 style={{ margin: '0 0 16px 0', color: 'var(--text-primary)', fontSize: '18px' }}>3. Confirm Booking</h4>
                       
                       <div style={{ display: 'flex', gap: '10px', marginBottom: '20px' }}>
                          <button onClick={() => setBookingType('virtual')} style={{ flex: 1, padding: '12px', background: bookingType === 'virtual' ? 'rgba(138,43,226,0.2)' : 'rgba(255,255,255,0.05)', border: '1px solid', borderColor: bookingType === 'virtual' ? '#8A2BE2' : 'transparent', color: bookingType === 'virtual' ? '#fff' : '#aaa', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold', transition: 'all 0.2s' }}>
@@ -1738,19 +1738,19 @@ const ProfileDashboard: React.FC<{ user: any }> = ({ user }) => {
 
                       <div style={{ display: 'flex', gap: '10px', marginBottom: '12px' }}>
                         <div style={{ flex: 1, position: 'relative' }}>
-                          <select value={bookingDuration} onChange={e => setBookingDuration(Number(e.target.value))} style={{ width: '100%', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', padding: '14px', borderRadius: '8px', color: '#fff', outline: 'none', appearance: 'none', fontSize: '15px' }}>
+                          <select value={bookingDuration} onChange={e => setBookingDuration(Number(e.target.value))} style={{ width: '100%', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', padding: '14px', borderRadius: '8px', color: 'var(--text-primary)', outline: 'none', appearance: 'none', fontSize: '15px' }}>
                             <option value={1}>1 Hour Duration</option>
                             <option value={2}>2 Hours Duration</option>
                             <option value={3}>3 Hours Duration</option>
                             <option value={4}>4 Hours Duration</option>
                             <option value={8}>8 Hours (Full Day)</option>
                           </select>
-                          <div style={{ position: 'absolute', right: '14px', top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none', color: '#888' }}>▼</div>
+                          <div style={{ position: 'absolute', right: '14px', top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none', color: 'var(--text-muted)' }}>▼</div>
                         </div>
                       </div>
-                      <input type="text" placeholder="Your Name" style={{ width: '100%', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', padding: '14px', borderRadius: '8px', color: '#fff', marginBottom: '12px', outline: 'none' }} />
-                      <input type="text" placeholder="Purpose of Meeting (e.g. Mixing Advice)" style={{ width: '100%', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', padding: '14px', borderRadius: '8px', color: '#fff', marginBottom: '20px', outline: 'none' }} />
-                      <button onClick={() => { handleStripeCheckout(`${bookingType === 'virtual' ? `1-on-1 Virtual Call (${virtualCallType === 'video' ? 'Video' : 'Audio'})` : 'Physical Meeting'} (April ${selectedDate} at ${selectedTime}) - ${bookingDuration} Hour(s)`, Number(bookingPrice) * bookingDuration, { is_booking: true, date: `April ${selectedDate}`, time: selectedTime, duration: bookingDuration, meeting_type: bookingType === 'virtual' ? `virtual_${virtualCallType}` : 'physical' }); setSelectedTime(null); setSelectedDate(null); }} style={{ width: '100%', padding: '16px', background: 'linear-gradient(135deg, #ff4d85, #8A2BE2)', color: '#fff', border: 'none', borderRadius: '12px', fontWeight: 'bold', fontSize: '16px', cursor: 'pointer', boxShadow: '0 10px 20px rgba(138,43,226,0.3)', transition: 'transform 0.2s' }} onMouseOver={e=>e.currentTarget.style.transform='scale(1.02)'} onMouseOut={e=>e.currentTarget.style.transform='scale(1)'}>
+                      <input type="text" placeholder="Your Name" style={{ width: '100%', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', padding: '14px', borderRadius: '8px', color: 'var(--text-primary)', marginBottom: '12px', outline: 'none' }} />
+                      <input type="text" placeholder="Purpose of Meeting (e.g. Mixing Advice)" style={{ width: '100%', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', padding: '14px', borderRadius: '8px', color: 'var(--text-primary)', marginBottom: '20px', outline: 'none' }} />
+                      <button onClick={() => { handleStripeCheckout(`${bookingType === 'virtual' ? `1-on-1 Virtual Call (${virtualCallType === 'video' ? 'Video' : 'Audio'})` : 'Physical Meeting'} (April ${selectedDate} at ${selectedTime}) - ${bookingDuration} Hour(s)`, Number(bookingPrice) * bookingDuration, { is_booking: true, date: `April ${selectedDate}`, time: selectedTime, duration: bookingDuration, meeting_type: bookingType === 'virtual' ? `virtual_${virtualCallType}` : 'physical' }); setSelectedTime(null); setSelectedDate(null); }} style={{ width: '100%', padding: '16px', background: 'linear-gradient(135deg, #ff4d85, #8A2BE2)', color: 'var(--text-primary)', border: 'none', borderRadius: '12px', fontWeight: 'bold', fontSize: '16px', cursor: 'pointer', boxShadow: '0 10px 20px rgba(138,43,226,0.3)', transition: 'transform 0.2s' }} onMouseOver={e=>e.currentTarget.style.transform='scale(1.02)'} onMouseOut={e=>e.currentTarget.style.transform='scale(1)'}>
                         Book Now (${(Number(bookingPrice) * bookingDuration).toFixed(2)})
                       </button>
                     </motion.div>
@@ -1769,18 +1769,18 @@ const ProfileDashboard: React.FC<{ user: any }> = ({ user }) => {
                 <h3 style={{ margin: '0 0 16px 0', fontSize: '18px', display: 'flex', alignItems: 'center', gap: '8px' }}>Create New Series</h3>
                 <form onSubmit={handleAddSeries} style={{ display: 'grid', gap: '16px', gridTemplateColumns: '1fr 1fr' }}>
                   <div style={{ gridColumn: '1 / -1' }}>
-                    <input type="text" placeholder="Series Title (e.g. Neon Nights)" value={newSeries.title} onChange={e => setNewSeries({...newSeries, title: e.target.value})} style={{ width: '100%', background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.1)', padding: '14px', borderRadius: '12px', color: '#fff', outline: 'none', fontSize: '15px' }} />
+                    <input type="text" placeholder="Series Title (e.g. Neon Nights)" value={newSeries.title} onChange={e => setNewSeries({...newSeries, title: e.target.value})} style={{ width: '100%', background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.1)', padding: '14px', borderRadius: '12px', color: 'var(--text-primary)', outline: 'none', fontSize: '15px' }} />
                   </div>
                   <div style={{ gridColumn: '1 / -1' }}>
-                    <textarea placeholder="Series Description..." value={newSeries.description} onChange={e => setNewSeries({...newSeries, description: e.target.value})} style={{ width: '100%', background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.1)', padding: '14px', borderRadius: '12px', color: '#fff', outline: 'none', fontSize: '15px', minHeight: '80px', resize: 'vertical' }} />
+                    <textarea placeholder="Series Description..." value={newSeries.description} onChange={e => setNewSeries({...newSeries, description: e.target.value})} style={{ width: '100%', background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.1)', padding: '14px', borderRadius: '12px', color: 'var(--text-primary)', outline: 'none', fontSize: '15px', minHeight: '80px', resize: 'vertical' }} />
                   </div>
                   <div style={{ display: 'flex', background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px', overflow: 'hidden' }}>
-                    <span style={{ padding: '14px', color: '#888', background: 'rgba(255,255,255,0.02)', borderRight: '1px solid rgba(255,255,255,0.1)' }}>Full Season $</span>
-                    <input type="number" step="0.01" placeholder="Price" value={newSeries.price} onChange={e => setNewSeries({...newSeries, price: e.target.value})} style={{ flex: 1, background: 'transparent', border: 'none', padding: '14px', color: '#fff', outline: 'none', fontSize: '15px' }} />
+                    <span style={{ padding: '14px', color: 'var(--text-muted)', background: 'rgba(255,255,255,0.02)', borderRight: '1px solid rgba(255,255,255,0.1)' }}>Full Season $</span>
+                    <input type="number" step="0.01" placeholder="Price" value={newSeries.price} onChange={e => setNewSeries({...newSeries, price: e.target.value})} style={{ flex: 1, background: 'transparent', border: 'none', padding: '14px', color: 'var(--text-primary)', outline: 'none', fontSize: '15px' }} />
                   </div>
-                  <input type="text" placeholder="Cover Image URL (optional)" value={newSeries.img} onChange={e => setNewSeries({...newSeries, img: e.target.value})} style={{ background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.1)', padding: '14px', borderRadius: '12px', color: '#fff', outline: 'none', fontSize: '15px' }} />
+                  <input type="text" placeholder="Cover Image URL (optional)" value={newSeries.img} onChange={e => setNewSeries({...newSeries, img: e.target.value})} style={{ background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.1)', padding: '14px', borderRadius: '12px', color: 'var(--text-primary)', outline: 'none', fontSize: '15px' }} />
                   <div style={{ gridColumn: '1 / -1', display: 'flex', justifyContent: 'flex-end' }}>
-                    <button type="submit" disabled={!newSeries.title || !newSeries.price} style={{ padding: '12px 24px', background: (!newSeries.title || !newSeries.price) ? 'rgba(255,255,255,0.1)' : '#ff4d85', color: '#fff', border: 'none', borderRadius: '12px', fontWeight: 'bold', cursor: (!newSeries.title || !newSeries.price) ? 'not-allowed' : 'pointer' }}>Publish Series</button>
+                    <button type="submit" disabled={!newSeries.title || !newSeries.price} style={{ padding: '12px 24px', background: (!newSeries.title || !newSeries.price) ? 'rgba(255,255,255,0.1)' : '#ff4d85', color: 'var(--text-primary)', border: 'none', borderRadius: '12px', fontWeight: 'bold', cursor: (!newSeries.title || !newSeries.price) ? 'not-allowed' : 'pointer' }}>Publish Series</button>
                   </div>
                 </form>
               </motion.div>
@@ -1788,11 +1788,11 @@ const ProfileDashboard: React.FC<{ user: any }> = ({ user }) => {
 
             {seriesList.length === 0 ? (
               <div style={{ padding: '60px 20px', textAlign: 'center', background: 'rgba(255,255,255,0.02)', borderRadius: '24px', border: '1px dashed rgba(255,255,255,0.1)' }}>
-                <p style={{ color: '#888', fontSize: '16px', margin: 0 }}>No original series published yet.</p>
+                <p style={{ color: 'var(--text-muted)', fontSize: '16px', margin: 0 }}>No original series published yet.</p>
               </div>
             ) : (
               seriesList.map((series) => (
-                <motion.div key={series.id} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} style={{ background: '#111', borderRadius: '24px', overflow: 'hidden', border: '1px solid rgba(255,255,255,0.05)' }}>
+                <motion.div key={series.id} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} style={{ background: 'var(--bg-surface)', borderRadius: '24px', overflow: 'hidden', border: '1px solid rgba(255,255,255,0.05)' }}>
                   
                   {/* Series Hero Panel */}
                   <div style={{ width: '100%', height: '300px', background: `url(${series.img || 'https://picsum.photos/seed/cybercity/1200/500'}) center/cover`, position: 'relative' }}>
@@ -1812,7 +1812,7 @@ const ProfileDashboard: React.FC<{ user: any }> = ({ user }) => {
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '16px', marginBottom: '20px' }}>
                       <h3 style={{ margin: 0, fontSize: '20px' }}>Episodes</h3>
                       {isOwnProfile && viewMode === 'edit' && (
-                        <button onClick={() => setActiveSeriesIdForEp(activeSeriesIdForEp === series.id ? null : series.id)} style={{ background: 'rgba(255,255,255,0.1)', color: '#fff', border: 'none', padding: '8px 16px', borderRadius: '8px', fontSize: '14px', cursor: 'pointer' }}>
+                        <button onClick={() => setActiveSeriesIdForEp(activeSeriesIdForEp === series.id ? null : series.id)} style={{ background: 'rgba(255,255,255,0.1)', color: 'var(--text-primary)', border: 'none', padding: '8px 16px', borderRadius: '8px', fontSize: '14px', cursor: 'pointer' }}>
                           {activeSeriesIdForEp === series.id ? 'Cancel' : '+ Add Episode'}
                         </button>
                       )}
@@ -1821,16 +1821,16 @@ const ProfileDashboard: React.FC<{ user: any }> = ({ user }) => {
                     {/* Add Episode Form */}
                     {activeSeriesIdForEp === series.id && (
                       <div style={{ background: 'rgba(0,0,0,0.3)', padding: '20px', borderRadius: '16px', marginBottom: '20px', border: '1px solid rgba(255,255,255,0.05)' }}>
-                        <h4 style={{ margin: '0 0 16px 0', fontSize: '16px', color: '#aaa' }}>New Episode for {series.title}</h4>
+                        <h4 style={{ margin: '0 0 16px 0', fontSize: '16px', color: 'var(--text-secondary)' }}>New Episode for {series.title}</h4>
                         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
-                          <input type="text" placeholder="Episode Title" value={newEpisode.title} onChange={e=>setNewEpisode({...newEpisode, title: e.target.value})} style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', padding: '10px', borderRadius: '8px', color: '#fff', outline: 'none' }} />
-                          <input type="text" placeholder="Length (e.g. 45 min)" value={newEpisode.length} onChange={e=>setNewEpisode({...newEpisode, length: e.target.value})} style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', padding: '10px', borderRadius: '8px', color: '#fff', outline: 'none' }} />
+                          <input type="text" placeholder="Episode Title" value={newEpisode.title} onChange={e=>setNewEpisode({...newEpisode, title: e.target.value})} style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', padding: '10px', borderRadius: '8px', color: 'var(--text-primary)', outline: 'none' }} />
+                          <input type="text" placeholder="Length (e.g. 45 min)" value={newEpisode.length} onChange={e=>setNewEpisode({...newEpisode, length: e.target.value})} style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', padding: '10px', borderRadius: '8px', color: 'var(--text-primary)', outline: 'none' }} />
                           <div style={{ gridColumn: '1 / -1' }}>
-                            <textarea placeholder="Description..." value={newEpisode.description} onChange={e=>setNewEpisode({...newEpisode, description: e.target.value})} style={{ width: '100%', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', padding: '10px', borderRadius: '8px', color: '#fff', outline: 'none', minHeight: '60px' }} />
+                            <textarea placeholder="Description..." value={newEpisode.description} onChange={e=>setNewEpisode({...newEpisode, description: e.target.value})} style={{ width: '100%', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', padding: '10px', borderRadius: '8px', color: 'var(--text-primary)', outline: 'none', minHeight: '60px' }} />
                           </div>
                           <div style={{ gridColumn: '1 / -1', display: 'flex', gap: '12px', alignItems: 'center' }}>
-                            <span style={{ color: '#888' }}>Price $</span>
-                            <input type="number" step="0.01" placeholder="9.99" value={newEpisode.price} onChange={e=>setNewEpisode({...newEpisode, price: e.target.value})} style={{ flex: 1, background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', padding: '10px', borderRadius: '8px', color: '#fff', outline: 'none' }} />
+                            <span style={{ color: 'var(--text-muted)' }}>Price $</span>
+                            <input type="number" step="0.01" placeholder="9.99" value={newEpisode.price} onChange={e=>setNewEpisode({...newEpisode, price: e.target.value})} style={{ flex: 1, background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', padding: '10px', borderRadius: '8px', color: 'var(--text-primary)', outline: 'none' }} />
                             <button onClick={() => handleAddEpisode(series.id)} disabled={!newEpisode.title} style={{ padding: '10px 20px', background: newEpisode.title ? '#00ff88' : 'rgba(255,255,255,0.1)', color: '#000', border: 'none', borderRadius: '8px', fontWeight: 'bold', cursor: newEpisode.title ? 'pointer' : 'not-allowed' }}>Save</button>
                           </div>
                         </div>
@@ -1839,7 +1839,7 @@ const ProfileDashboard: React.FC<{ user: any }> = ({ user }) => {
 
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
                       {(!series.episodes || series.episodes.length === 0) ? (
-                        <p style={{ color: '#666', fontStyle: 'italic', margin: 0 }}>No episodes added to this series yet.</p>
+                        <p style={{ color: 'var(--text-muted)', fontStyle: 'italic', margin: 0 }}>No episodes added to this series yet.</p>
                       ) : (
                         series.episodes.map((episode: any, idx: number) => (
                           <div key={episode.id} style={{ display: 'flex', gap: '20px', alignItems: 'center', background: 'rgba(255,255,255,0.02)', padding: '16px', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.05)', transition: 'background 0.2s' }}>
@@ -1847,11 +1847,11 @@ const ProfileDashboard: React.FC<{ user: any }> = ({ user }) => {
                               <div style={{ position: 'absolute', bottom: 6, right: 6, background: 'rgba(0,0,0,0.8)', padding: '2px 6px', borderRadius: '4px', fontSize: '11px', fontWeight: 'bold' }}>{episode.length || 'TBD'}</div>
                             </div>
                             <div style={{ flex: 1 }}>
-                              <div style={{ color: '#888', fontSize: '12px', fontWeight: 'bold', marginBottom: '4px' }}>Episode {idx + 1}</div>
+                              <div style={{ color: 'var(--text-muted)', fontSize: '12px', fontWeight: 'bold', marginBottom: '4px' }}>Episode {idx + 1}</div>
                               <h4 style={{ margin: '0 0 8px 0', fontSize: '18px' }}>{episode.title}</h4>
-                              <p style={{ margin: 0, color: '#aaa', fontSize: '14px', lineHeight: 1.4 }}>{episode.description}</p>
+                              <p style={{ margin: 0, color: 'var(--text-secondary)', fontSize: '14px', lineHeight: 1.4 }}>{episode.description}</p>
                             </div>
-                            <button onClick={()=>handleStripeCheckout(`Episode: ${episode.title}`, Number(episode.price || 0))} style={{ padding: '10px 20px', background: 'rgba(255,255,255,0.1)', border: 'none', color: '#fff', borderRadius: '20px', fontWeight: 'bold', cursor: 'pointer', transition: 'background 0.2s' }} onMouseOver={e=>e.currentTarget.style.background='rgba(255,255,255,0.2)'} onMouseOut={e=>e.currentTarget.style.background='rgba(255,255,255,0.1)'}>
+                            <button onClick={()=>handleStripeCheckout(`Episode: ${episode.title}`, Number(episode.price || 0))} style={{ padding: '10px 20px', background: 'rgba(255,255,255,0.1)', border: 'none', color: 'var(--text-primary)', borderRadius: '20px', fontWeight: 'bold', cursor: 'pointer', transition: 'background 0.2s' }} onMouseOver={e=>e.currentTarget.style.background='rgba(255,255,255,0.2)'} onMouseOut={e=>e.currentTarget.style.background='rgba(255,255,255,0.1)'}>
                               Buy (${episode.price || '0.00'})
                             </button>
                           </div>
@@ -1873,21 +1873,21 @@ const ProfileDashboard: React.FC<{ user: any }> = ({ user }) => {
                 <h3 style={{ margin: '0 0 16px 0', fontSize: '18px', display: 'flex', alignItems: 'center', gap: '8px' }}>Create New Masterclass</h3>
                 <form onSubmit={handleAddCourse} style={{ display: 'grid', gap: '16px', gridTemplateColumns: '1fr 1fr' }}>
                   <div style={{ gridColumn: '1 / -1' }}>
-                    <input type="text" placeholder="Masterclass Title (e.g. Advanced Beatmaking)" value={newCourse.title} onChange={e => setNewCourse({...newCourse, title: e.target.value})} style={{ width: '100%', background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.1)', padding: '14px', borderRadius: '12px', color: '#fff', outline: 'none', fontSize: '15px' }} />
+                    <input type="text" placeholder="Masterclass Title (e.g. Advanced Beatmaking)" value={newCourse.title} onChange={e => setNewCourse({...newCourse, title: e.target.value})} style={{ width: '100%', background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.1)', padding: '14px', borderRadius: '12px', color: 'var(--text-primary)', outline: 'none', fontSize: '15px' }} />
                   </div>
                   
                   <div style={{ display: 'flex', background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px', overflow: 'hidden' }}>
-                    <span style={{ padding: '14px', color: '#888', background: 'rgba(255,255,255,0.02)', borderRight: '1px solid rgba(255,255,255,0.1)' }}>$</span>
-                    <input type="number" step="0.01" placeholder="Price" value={newCourse.price} onChange={e => setNewCourse({...newCourse, price: e.target.value})} style={{ flex: 1, background: 'transparent', border: 'none', padding: '14px', color: '#fff', outline: 'none', fontSize: '15px' }} />
+                    <span style={{ padding: '14px', color: 'var(--text-muted)', background: 'rgba(255,255,255,0.02)', borderRight: '1px solid rgba(255,255,255,0.1)' }}>$</span>
+                    <input type="number" step="0.01" placeholder="Price" value={newCourse.price} onChange={e => setNewCourse({...newCourse, price: e.target.value})} style={{ flex: 1, background: 'transparent', border: 'none', padding: '14px', color: 'var(--text-primary)', outline: 'none', fontSize: '15px' }} />
                   </div>
                   
                   <div style={{ display: 'flex', gap: '12px' }}>
-                    <input type="number" placeholder="Modules (e.g. 12)" value={newCourse.modules} onChange={e => setNewCourse({...newCourse, modules: e.target.value})} style={{ flex: 1, background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.1)', padding: '14px', borderRadius: '12px', color: '#fff', outline: 'none', fontSize: '15px' }} />
-                    <input type="number" step="0.5" placeholder="Hours" value={newCourse.hours} onChange={e => setNewCourse({...newCourse, hours: e.target.value})} style={{ flex: 1, background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.1)', padding: '14px', borderRadius: '12px', color: '#fff', outline: 'none', fontSize: '15px' }} />
+                    <input type="number" placeholder="Modules (e.g. 12)" value={newCourse.modules} onChange={e => setNewCourse({...newCourse, modules: e.target.value})} style={{ flex: 1, background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.1)', padding: '14px', borderRadius: '12px', color: 'var(--text-primary)', outline: 'none', fontSize: '15px' }} />
+                    <input type="number" step="0.5" placeholder="Hours" value={newCourse.hours} onChange={e => setNewCourse({...newCourse, hours: e.target.value})} style={{ flex: 1, background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.1)', padding: '14px', borderRadius: '12px', color: 'var(--text-primary)', outline: 'none', fontSize: '15px' }} />
                   </div>
 
                   <div style={{ display: 'flex', gap: '12px', gridColumn: '1 / -1', justifyContent: 'flex-end' }}>
-                    <button type="submit" disabled={saving || !newCourse.title} style={{ padding: '14px 30px', background: 'linear-gradient(135deg, #8A2BE2, #ff4d85)', color: '#fff', border: 'none', borderRadius: '12px', fontWeight: 'bold', cursor: 'pointer', opacity: (!newCourse.title || saving) ? 0.5 : 1 }}>
+                    <button type="submit" disabled={saving || !newCourse.title} style={{ padding: '14px 30px', background: 'linear-gradient(135deg, #8A2BE2, #ff4d85)', color: 'var(--text-primary)', border: 'none', borderRadius: '12px', fontWeight: 'bold', cursor: 'pointer', opacity: (!newCourse.title || saving) ? 0.5 : 1 }}>
                       {saving ? 'Publishing...' : 'Publish Masterclass'}
                     </button>
                   </div>
@@ -1897,7 +1897,7 @@ const ProfileDashboard: React.FC<{ user: any }> = ({ user }) => {
 
             {courses.length === 0 ? (
               <div style={{ textAlign: 'center', padding: '60px 20px', background: 'rgba(0,0,0,0.2)', borderRadius: '24px', border: '1px solid rgba(255,255,255,0.05)' }}>
-                <h3 style={{ fontSize: '20px', marginTop: 0, color: '#888' }}>No Masterclasses</h3>
+                <h3 style={{ fontSize: '20px', marginTop: 0, color: 'var(--text-muted)' }}>No Masterclasses</h3>
                 <p style={{ color: '#555', marginBottom: 0 }}>This creator hasn't published any courses yet.</p>
               </div>
             ) : (
@@ -1916,16 +1916,16 @@ const ProfileDashboard: React.FC<{ user: any }> = ({ user }) => {
                       <div style={{ width: '100%', height: '6px', background: 'rgba(255,255,255,0.1)', borderRadius: '3px', marginBottom: '8px', overflow: 'hidden' }}>
                         <div style={{ width: `${course.progress}%`, height: '100%', background: '#8A2BE2' }} />
                       </div>
-                      <div style={{ fontSize: '12px', color: '#888', marginBottom: '20px', fontWeight: 'bold' }}>{course.progress}% Completed</div>
+                      <div style={{ fontSize: '12px', color: 'var(--text-muted)', marginBottom: '20px', fontWeight: 'bold' }}>{course.progress}% Completed</div>
                       
                       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                         <span style={{ fontSize: '24px', fontWeight: 'bold' }}>${course.price}</span>
                         {viewMode === 'edit' ? (
-                          <button style={{ padding: '8px 16px', background: 'rgba(255,255,255,0.1)', color: '#fff', border: 'none', borderRadius: '8px', fontWeight: 'bold', cursor: 'pointer' }}>
+                          <button style={{ padding: '8px 16px', background: 'rgba(255,255,255,0.1)', color: 'var(--text-primary)', border: 'none', borderRadius: '8px', fontWeight: 'bold', cursor: 'pointer' }}>
                             Edit
                           </button>
                         ) : (
-                          <button onClick={() => handleStripeCheckout(`Course: ${course.title}`, course.price)} style={{ padding: '12px 24px', background: 'linear-gradient(135deg, #8A2BE2, #ff4d85)', color: '#fff', border: 'none', borderRadius: '12px', fontWeight: 'bold', cursor: 'pointer', transition: 'transform 0.2s' }} onMouseOver={e=>e.currentTarget.style.transform='scale(1.05)'} onMouseOut={e=>e.currentTarget.style.transform='scale(1)'}>
+                          <button onClick={() => handleStripeCheckout(`Course: ${course.title}`, course.price)} style={{ padding: '12px 24px', background: 'linear-gradient(135deg, #8A2BE2, #ff4d85)', color: 'var(--text-primary)', border: 'none', borderRadius: '12px', fontWeight: 'bold', cursor: 'pointer', transition: 'transform 0.2s' }} onMouseOver={e=>e.currentTarget.style.transform='scale(1.05)'} onMouseOut={e=>e.currentTarget.style.transform='scale(1)'}>
                             Enroll Now
                           </button>
                         )}
@@ -1942,11 +1942,11 @@ const ProfileDashboard: React.FC<{ user: any }> = ({ user }) => {
         /* ----------- AGENCY TAB ----------- */
           <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
             <div style={{ padding: '40px', background: 'rgba(255,255,255,0.02)', borderRadius: '24px', border: '1px solid rgba(255,255,255,0.05)', textAlign: 'center' }}>
-              <h3 style={{ fontSize: '28px', marginBottom: '16px', color: '#fff' }}>Platform Agency Services</h3>
-              <p style={{ color: '#888', fontSize: '16px', maxWidth: '600px', margin: '0 auto 30px' }}>
+              <h3 style={{ fontSize: '28px', marginBottom: '16px', color: 'var(--text-primary)' }}>Platform Agency Services</h3>
+              <p style={{ color: 'var(--text-muted)', fontSize: '16px', maxWidth: '600px', margin: '0 auto 30px' }}>
                 Partner with our dedicated team of creative professionals. We offer full-service production, branding, and career management for elite creators.
               </p>
-              <button style={{ padding: '14px 32px', background: 'linear-gradient(135deg, #0055ff, #00d2ff)', color: '#fff', border: 'none', borderRadius: '30px', fontWeight: 'bold', fontSize: '16px', cursor: 'pointer', transition: 'transform 0.2s' }} onMouseOver={e=>e.currentTarget.style.transform='scale(1.05)'} onMouseOut={e=>e.currentTarget.style.transform='scale(1)'}>
+              <button style={{ padding: '14px 32px', background: 'linear-gradient(135deg, #0055ff, #00d2ff)', color: 'var(--text-primary)', border: 'none', borderRadius: '30px', fontWeight: 'bold', fontSize: '16px', cursor: 'pointer', transition: 'transform 0.2s' }} onMouseOver={e=>e.currentTarget.style.transform='scale(1.05)'} onMouseOut={e=>e.currentTarget.style.transform='scale(1)'}>
                 Inquire for Management
               </button>
             </div>
@@ -1966,7 +1966,7 @@ const ProfileDashboard: React.FC<{ user: any }> = ({ user }) => {
                   <h4 style={{ margin: '0 0 12px 0', fontSize: '15px', color: '#ff4d85', display: 'flex', alignItems: 'center', gap: '10px' }}>
                     <ImageIcon size={18} /> Manage Flip Book Images
                   </h4>
-                  <p style={{ color: '#aaa', fontSize: '13px', marginBottom: '16px', lineHeight: 1.5 }}>Upload custom images from your computer or use our AI Generator to explicitly build your Flip Book.</p>
+                  <p style={{ color: 'var(--text-secondary)', fontSize: '13px', marginBottom: '16px', lineHeight: 1.5 }}>Upload custom images from your computer or use our AI Generator to explicitly build your Flip Book.</p>
                   
                   {flipbookImages ? (
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
@@ -1991,7 +1991,7 @@ const ProfileDashboard: React.FC<{ user: any }> = ({ user }) => {
                       </div>
                     </div>
                   ) : (
-                    <button onClick={() => { setImageTarget('flipbook'); setShowImageModal(true); }} style={{ width: '100%', padding: '40px', background: 'rgba(255,255,255,0.03)', border: '2px dashed rgba(255,255,255,0.15)', color: '#fff', fontSize: '15px', borderRadius: '16px', cursor: 'pointer', transition: 'all 0.3s', fontWeight: 'bold' }} onMouseOver={e=>e.currentTarget.style.background='rgba(255,255,255,0.08)'} onMouseOut={e=>e.currentTarget.style.background='rgba(255,255,255,0.03)'}>
+                    <button onClick={() => { setImageTarget('flipbook'); setShowImageModal(true); }} style={{ width: '100%', padding: '40px', background: 'rgba(255,255,255,0.03)', border: '2px dashed rgba(255,255,255,0.15)', color: 'var(--text-primary)', fontSize: '15px', borderRadius: '16px', cursor: 'pointer', transition: 'all 0.3s', fontWeight: 'bold' }} onMouseOver={e=>e.currentTarget.style.background='rgba(255,255,255,0.08)'} onMouseOut={e=>e.currentTarget.style.background='rgba(255,255,255,0.03)'}>
                       + Select or Generate Flip Book Image
                     </button>
                   )}
@@ -2011,7 +2011,7 @@ const ProfileDashboard: React.FC<{ user: any }> = ({ user }) => {
                   </div>
                 </div>
               ) : (
-                <div style={{ padding: '60px', textAlign: 'center', color: '#666', background: 'rgba(255,255,255,0.02)', borderRadius: '24px', border: '1px dashed rgba(255,255,255,0.05)' }}>
+                <div style={{ padding: '60px', textAlign: 'center', color: 'var(--text-muted)', background: 'rgba(255,255,255,0.02)', borderRadius: '24px', border: '1px dashed rgba(255,255,255,0.05)' }}>
                   This creator hasn't added any photos to their Flip Book yet.
                 </div>
               )
@@ -2032,7 +2032,7 @@ const ProfileDashboard: React.FC<{ user: any }> = ({ user }) => {
                 <h4 style={{ margin: '0 0 12px 0', fontSize: '15px', color: '#D35400', display: 'flex', alignItems: 'center', gap: '10px' }}>
                   <ImageIcon size={18} /> Manage Channel Backgrounds
                 </h4>
-                <p style={{ color: '#aaa', fontSize: '13px', marginBottom: '16px', lineHeight: 1.5 }}>Upload images to cycle through in the background of your channel.</p>
+                <p style={{ color: 'var(--text-secondary)', fontSize: '13px', marginBottom: '16px', lineHeight: 1.5 }}>Upload images to cycle through in the background of your channel.</p>
                 
                 {homepageImageUrl ? (
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
@@ -2057,7 +2057,7 @@ const ProfileDashboard: React.FC<{ user: any }> = ({ user }) => {
                     </div>
                   </div>
                 ) : (
-                  <button onClick={() => { setImageTarget('homepage'); setShowImageModal(true); }} style={{ width: '100%', padding: '40px', background: 'rgba(255,255,255,0.03)', border: '2px dashed rgba(255,255,255,0.15)', color: '#fff', fontSize: '15px', borderRadius: '16px', cursor: 'pointer', transition: 'all 0.3s', fontWeight: 'bold' }} onMouseOver={e=>e.currentTarget.style.background='rgba(255,255,255,0.08)'} onMouseOut={e=>e.currentTarget.style.background='rgba(255,255,255,0.03)'}>
+                  <button onClick={() => { setImageTarget('homepage'); setShowImageModal(true); }} style={{ width: '100%', padding: '40px', background: 'rgba(255,255,255,0.03)', border: '2px dashed rgba(255,255,255,0.15)', color: 'var(--text-primary)', fontSize: '15px', borderRadius: '16px', cursor: 'pointer', transition: 'all 0.3s', fontWeight: 'bold' }} onMouseOver={e=>e.currentTarget.style.background='rgba(255,255,255,0.08)'} onMouseOut={e=>e.currentTarget.style.background='rgba(255,255,255,0.03)'}>
                     + Select or Generate Background Image
                   </button>
                 )}
@@ -2070,27 +2070,27 @@ const ProfileDashboard: React.FC<{ user: any }> = ({ user }) => {
         {activeTab === 'my_bookings' && user && (
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} style={{ display: 'flex', flexDirection: 'column', gap: '30px' }}>
             <div style={{ background: 'rgba(255,255,255,0.03)', borderRadius: '24px', padding: '30px', border: '1px solid rgba(255,255,255,0.05)' }}>
-              <h2 style={{ fontSize: '24px', margin: '0 0 20px 0', color: '#fff', display: 'flex', alignItems: 'center', gap: '10px' }}>
+              <h2 style={{ fontSize: '24px', margin: '0 0 20px 0', color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '10px' }}>
                 <Calendar size={24} color="#ff4d85" /> Upcoming Calls (Purchased)
               </h2>
               {purchasedBookings.length === 0 ? (
-                <p style={{ color: '#888', fontStyle: 'italic' }}>You have not booked any calls yet.</p>
+                <p style={{ color: 'var(--text-muted)', fontStyle: 'italic' }}>You have not booked any calls yet.</p>
               ) : (
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '20px' }}>
                   {purchasedBookings.map((b, i) => (
                     <div key={i} style={{ background: 'rgba(0,0,0,0.4)', borderRadius: '16px', padding: '20px', border: '1px solid rgba(255,255,255,0.05)' }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px' }}>
-                        <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: '#ff4d85', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontWeight: 'bold' }}>
+                        <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: '#ff4d85', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-primary)', fontWeight: 'bold' }}>
                            {b.creator?.full_name?.charAt(0) || '?'}
                         </div>
                         <div>
-                          <div style={{ color: '#fff', fontWeight: 'bold' }}>{b.creator?.full_name}</div>
-                          <div style={{ color: '#888', fontSize: '13px' }}>@{b.creator?.username}</div>
+                          <div style={{ color: 'var(--text-primary)', fontWeight: 'bold' }}>{b.creator?.full_name}</div>
+                          <div style={{ color: 'var(--text-muted)', fontSize: '13px' }}>@{b.creator?.username}</div>
                         </div>
                       </div>
                       <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '20px' }}>
-                        <div style={{ color: '#fff', fontSize: '14px', display: 'flex', alignItems: 'center', gap: '8px' }}><Calendar size={14} color="#aaa" /> {b.date}</div>
-                        <div style={{ color: '#fff', fontSize: '14px', display: 'flex', alignItems: 'center', gap: '8px' }}><Clock size={14} color="#aaa" /> {b.time}</div>
+                        <div style={{ color: 'var(--text-primary)', fontSize: '14px', display: 'flex', alignItems: 'center', gap: '8px' }}><Calendar size={14} color="#aaa" /> {b.date}</div>
+                        <div style={{ color: 'var(--text-primary)', fontSize: '14px', display: 'flex', alignItems: 'center', gap: '8px' }}><Clock size={14} color="#aaa" /> {b.time}</div>
                         <div style={{ color: '#ff4d85', fontSize: '14px', display: 'flex', alignItems: 'center', gap: '8px', fontWeight: 'bold' }}><Video size={14} /> {b.meeting_type?.replace('_', ' ')}</div>
                       </div>
                       <button onClick={() => window.open(b.meeting_link || `https://meet.jit.si/vibe_${b.id}`, '_blank')} style={{ width: '100%', padding: '12px', background: '#00ff88', color: '#000', border: 'none', borderRadius: '12px', fontWeight: 'bold', cursor: 'pointer', transition: '0.2s' }} onMouseOver={e=>e.currentTarget.style.transform='scale(1.02)'} onMouseOut={e=>e.currentTarget.style.transform='scale(1)'}>
@@ -2104,11 +2104,11 @@ const ProfileDashboard: React.FC<{ user: any }> = ({ user }) => {
 
             {viewMode === 'edit' && (
               <div style={{ background: 'rgba(255,255,255,0.03)', borderRadius: '24px', padding: '30px', border: '1px solid rgba(255,255,255,0.05)' }}>
-                <h2 style={{ fontSize: '24px', margin: '0 0 20px 0', color: '#fff', display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <h2 style={{ fontSize: '24px', margin: '0 0 20px 0', color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '10px' }}>
                   <Activity size={24} color="#00ff88" /> Incoming Bookings (Your Schedule)
                 </h2>
                 {receivedBookings.length === 0 ? (
-                  <p style={{ color: '#888', fontStyle: 'italic' }}>No one has booked a call with you yet.</p>
+                  <p style={{ color: 'var(--text-muted)', fontStyle: 'italic' }}>No one has booked a call with you yet.</p>
                 ) : (
                   <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '20px' }}>
                     {receivedBookings.map((b, i) => (
@@ -2118,13 +2118,13 @@ const ProfileDashboard: React.FC<{ user: any }> = ({ user }) => {
                              {b.buyer?.full_name?.charAt(0) || b.guest_name.charAt(0)}
                           </div>
                           <div>
-                            <div style={{ color: '#fff', fontWeight: 'bold' }}>{b.buyer?.full_name || b.guest_name}</div>
-                            <div style={{ color: '#888', fontSize: '13px' }}>Paid: ${b.price}</div>
+                            <div style={{ color: 'var(--text-primary)', fontWeight: 'bold' }}>{b.buyer?.full_name || b.guest_name}</div>
+                            <div style={{ color: 'var(--text-muted)', fontSize: '13px' }}>Paid: ${b.price}</div>
                           </div>
                         </div>
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '20px' }}>
-                          <div style={{ color: '#fff', fontSize: '14px', display: 'flex', alignItems: 'center', gap: '8px' }}><Calendar size={14} color="#aaa" /> {b.date}</div>
-                          <div style={{ color: '#fff', fontSize: '14px', display: 'flex', alignItems: 'center', gap: '8px' }}><Clock size={14} color="#aaa" /> {b.time}</div>
+                          <div style={{ color: 'var(--text-primary)', fontSize: '14px', display: 'flex', alignItems: 'center', gap: '8px' }}><Calendar size={14} color="#aaa" /> {b.date}</div>
+                          <div style={{ color: 'var(--text-primary)', fontSize: '14px', display: 'flex', alignItems: 'center', gap: '8px' }}><Clock size={14} color="#aaa" /> {b.time}</div>
                           <div style={{ color: '#00ff88', fontSize: '14px', display: 'flex', alignItems: 'center', gap: '8px', fontWeight: 'bold' }}><Video size={14} /> {b.meeting_type?.replace('_', ' ')}</div>
                         </div>
                         <button onClick={() => window.open(b.meeting_link || `https://meet.jit.si/vibe_${b.id}`, '_blank')} style={{ width: '100%', padding: '12px', background: 'transparent', border: '1px solid #00ff88', color: '#00ff88', borderRadius: '12px', fontWeight: 'bold', cursor: 'pointer', transition: '0.2s' }} onMouseOver={e=>{e.currentTarget.style.background='#00ff88'; e.currentTarget.style.color='#000'}} onMouseOut={e=>{e.currentTarget.style.background='transparent'; e.currentTarget.style.color='#00ff88'}}>
@@ -2149,34 +2149,34 @@ const ProfileDashboard: React.FC<{ user: any }> = ({ user }) => {
               <div style={{ background: 'rgba(0, 255, 136, 0.05)', borderRadius: '24px', padding: '30px', border: '1px solid rgba(0, 255, 136, 0.2)', gridColumn: 'span 2', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <div>
                   <h3 style={{ margin: '0 0 8px 0', fontSize: '18px', color: '#00ff88', display: 'flex', alignItems: 'center', gap: '8px' }}><Wallet size={20}/> Available Network Balance</h3>
-                  <div style={{ fontSize: '48px', fontWeight: 900, color: '#fff' }}>
+                  <div style={{ fontSize: '48px', fontWeight: 900, color: 'var(--text-primary)' }}>
                     ${walletBalance.toFixed(2)}
                   </div>
-                  <p style={{ margin: '8px 0 0 0', color: '#888', fontSize: '14px' }}>Available to withdraw, or use for platform subscriptions.</p>
+                  <p style={{ margin: '8px 0 0 0', color: 'var(--text-muted)', fontSize: '14px' }}>Available to withdraw, or use for platform subscriptions.</p>
                 </div>
                 <div style={{ display: 'flex', gap: '16px', flexDirection: 'column' }}>
                   <button style={{ padding: '14px 24px', borderRadius: '12px', background: '#00ff88', color: '#000', fontWeight: 'bold', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px', fontSize: '15px', transition: 'all 0.2s' }} onClick={() => { alert('Funds securely routed to your connected bank account.'); setWalletBalance(0); }}>
                     <ArrowUpRight size={18}/> Withdraw Funds
                   </button>
-                  <button style={{ padding: '14px 24px', borderRadius: '12px', background: 'rgba(255,255,255,0.1)', color: '#fff', fontWeight: 'bold', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px', fontSize: '15px' }} onClick={() => setWalletBalance(prev => prev + 100)}>
+                  <button style={{ padding: '14px 24px', borderRadius: '12px', background: 'rgba(255,255,255,0.1)', color: 'var(--text-primary)', fontWeight: 'bold', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px', fontSize: '15px' }} onClick={() => setWalletBalance(prev => prev + 100)}>
                     <ArrowDownLeft size={18}/> Deposit $100
                   </button>
                 </div>
               </div>
 
               <div style={{ background: 'linear-gradient(135deg, rgba(99,91,255,0.1), rgba(0,0,0,0.4))', borderRadius: '24px', padding: '30px', border: '1px solid rgba(99,91,255,0.2)', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
-                <h4 style={{ margin: '0 0 16px 0', fontSize: '16px', color: '#fff', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <h4 style={{ margin: '0 0 16px 0', fontSize: '16px', color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '8px' }}>
                   <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#635BFF" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14 8h-4a2 2 0 0 0 0 4h4a2 2 0 0 1 0 4h-4"/><path d="M12 6v12"/></svg>
                   Stripe Payouts
                 </h4>
-                <div style={{ color: '#aaa', fontSize: '14px', lineHeight: 1.5, marginBottom: '20px' }}>
+                <div style={{ color: 'var(--text-secondary)', fontSize: '14px', lineHeight: 1.5, marginBottom: '20px' }}>
                   {profile?.stripe_account_id 
                     ? "Your channel is securely connected to Stripe. Payouts are routed directly to your bank." 
                     : "Connect your bank via Stripe Express to receive direct deposits from subscribers, tips, and bookings."}
                 </div>
                 
                 {profile?.stripe_account_id ? (
-                  <button style={{ padding: '12px 24px', background: 'rgba(255,255,255,0.1)', color: '#fff', border: 'none', borderRadius: '12px', fontWeight: 'bold', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', cursor: 'pointer' }}>
+                  <button style={{ padding: '12px 24px', background: 'rgba(255,255,255,0.1)', color: 'var(--text-primary)', border: 'none', borderRadius: '12px', fontWeight: 'bold', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', cursor: 'pointer' }}>
                     <CheckCircle size={16} color="#00ff88" /> Connected
                   </button>
                 ) : (
@@ -2200,7 +2200,7 @@ const ProfileDashboard: React.FC<{ user: any }> = ({ user }) => {
                       btn.innerHTML = ogText;
                       btn.style.opacity = '1';
                     }
-                  }} style={{ padding: '14px 24px', background: '#635BFF', color: '#fff', border: 'none', borderRadius: '12px', fontWeight: 'bold', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', cursor: 'pointer', transition: '0.2s' }} onMouseOver={e=>e.currentTarget.style.transform='translateY(-2px)'} onMouseOut={e=>e.currentTarget.style.transform='translateY(0)'}>
+                  }} style={{ padding: '14px 24px', background: '#635BFF', color: 'var(--text-primary)', border: 'none', borderRadius: '12px', fontWeight: 'bold', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', cursor: 'pointer', transition: '0.2s' }} onMouseOver={e=>e.currentTarget.style.transform='translateY(-2px)'} onMouseOut={e=>e.currentTarget.style.transform='translateY(0)'}>
                     <ArrowUpRight size={18} /> Setup Stripe Payouts
                   </button>
                 )}
@@ -2212,7 +2212,7 @@ const ProfileDashboard: React.FC<{ user: any }> = ({ user }) => {
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
               
               <div style={{ background: 'rgba(255,255,255,0.03)', borderRadius: '24px', padding: '30px', border: '1px solid rgba(255,255,255,0.05)' }}>
-                <h3 style={{ margin: '0 0 20px 0', fontSize: '20px', color: '#fff', display: 'flex', alignItems: 'center', gap: '8px' }}><Activity size={20} color="#ff4d85"/> Recent Collections</h3>
+                <h3 style={{ margin: '0 0 20px 0', fontSize: '20px', color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '8px' }}><Activity size={20} color="#ff4d85"/> Recent Collections</h3>
                 
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
                   {[
@@ -2226,8 +2226,8 @@ const ProfileDashboard: React.FC<{ user: any }> = ({ user }) => {
                   ].map(tx => (
                     <div key={tx.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingBottom: '16px', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
                       <div>
-                        <div style={{ fontWeight: 'bold', color: '#fff', fontSize: '15px' }}>{tx.title}</div>
-                        <div style={{ color: '#888', fontSize: '13px', marginTop: '4px' }}>{tx.type}</div>
+                        <div style={{ fontWeight: 'bold', color: 'var(--text-primary)', fontSize: '15px' }}>{tx.title}</div>
+                        <div style={{ color: 'var(--text-muted)', fontSize: '13px', marginTop: '4px' }}>{tx.type}</div>
                       </div>
                       <div style={{ color: tx.color, fontWeight: 'bold', fontSize: '16px' }}>{tx.amount}</div>
                     </div>
@@ -2236,21 +2236,21 @@ const ProfileDashboard: React.FC<{ user: any }> = ({ user }) => {
               </div>
 
               <div style={{ background: 'rgba(255,255,255,0.03)', borderRadius: '24px', padding: '30px', border: '1px solid rgba(255,255,255,0.05)' }}>
-                <h3 style={{ margin: '0 0 20px 0', fontSize: '20px', color: '#fff', display: 'flex', alignItems: 'center', gap: '8px' }}><ArrowUpRight size={20} color="#ff4d85"/> Payable Subscriptions</h3>
+                <h3 style={{ margin: '0 0 20px 0', fontSize: '20px', color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '8px' }}><ArrowUpRight size={20} color="#ff4d85"/> Payable Subscriptions</h3>
                 
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
                   {[].length > 0 ? [].map((sub: any) => (
                     <div key={sub.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '16px', background: 'rgba(0,0,0,0.4)', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.02)' }}>
                       <div>
-                        <div style={{ fontWeight: 'bold', color: '#fff', fontSize: '15px' }}>{sub.creator}</div>
-                        <div style={{ color: '#888', fontSize: '13px', marginTop: '6px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                        <div style={{ fontWeight: 'bold', color: 'var(--text-primary)', fontSize: '15px' }}>{sub.creator}</div>
+                        <div style={{ color: 'var(--text-muted)', fontSize: '13px', marginTop: '6px', display: 'flex', alignItems: 'center', gap: '6px' }}>
                           <span style={{ color: paySubsWithWallet ? '#00ff88' : '#888' }}>{sub.status}</span> • {sub.due}
                         </div>
                       </div>
-                      <div style={{ color: '#fff', fontWeight: 'bold', fontSize: '16px' }}>{sub.amount}</div>
+                      <div style={{ color: 'var(--text-primary)', fontWeight: 'bold', fontSize: '16px' }}>{sub.amount}</div>
                     </div>
                   )) : (
-                    <div style={{ color: '#888', fontStyle: 'italic', padding: '16px 0' }}>No active payable subscriptions.</div>
+                    <div style={{ color: 'var(--text-muted)', fontStyle: 'italic', padding: '16px 0' }}>No active payable subscriptions.</div>
                   )}
                 </div>
               </div>
@@ -2276,7 +2276,7 @@ const ProfileDashboard: React.FC<{ user: any }> = ({ user }) => {
               <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                 <label style={{ color: '#ff4d85', fontSize: '14px', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '8px' }}><Wand size={16}/> AI Generator</label>
                 <div style={{ display: 'flex', gap: '10px' }}>
-                  <input type="text" id="ai-prompt-input" placeholder="e.g. Cyberpunk DJ with neon glasses..." style={{ flex: 1, background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.1)', padding: '14px', borderRadius: '12px', color: '#fff', outline: 'none', fontSize: '15px' }} />
+                  <input type="text" id="ai-prompt-input" placeholder="e.g. Cyberpunk DJ with neon glasses..." style={{ flex: 1, background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.1)', padding: '14px', borderRadius: '12px', color: 'var(--text-primary)', outline: 'none', fontSize: '15px' }} />
                   <button onClick={() => {
                     const prompt = (document.getElementById('ai-prompt-input') as HTMLInputElement).value;
                     if (prompt) {
@@ -2288,24 +2288,24 @@ const ProfileDashboard: React.FC<{ user: any }> = ({ user }) => {
                       setSaving(true);
                       setTimeout(() => setSaving(false), 500);
                     }
-                  }} style={{ padding: '0 24px', background: 'linear-gradient(135deg, #8A2BE2, #ff4d85)', color: '#fff', border: 'none', borderRadius: '12px', fontWeight: 'bold', cursor: 'pointer' }}>Dream Engine</button>
+                  }} style={{ padding: '0 24px', background: 'linear-gradient(135deg, #8A2BE2, #ff4d85)', color: 'var(--text-primary)', border: 'none', borderRadius: '12px', fontWeight: 'bold', cursor: 'pointer' }}>Dream Engine</button>
                 </div>
               </div>
 
-              <div style={{ textAlign: 'center', color: '#888', fontSize: '12px', fontWeight: 'bold', textTransform: 'uppercase', margin: '6px 0', opacity: 0.5 }}>— OR —</div>
+              <div style={{ textAlign: 'center', color: 'var(--text-muted)', fontSize: '12px', fontWeight: 'bold', textTransform: 'uppercase', margin: '6px 0', opacity: 0.5 }}>— OR —</div>
 
               {/* Option 2: Upload from Computer */}
               <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                 <label style={{ color: '#ccc', fontSize: '14px', fontWeight: 'bold' }}>Upload Direct File via Network</label>
                 <div style={{ display: 'flex', gap: '10px' }}>
-                  <label style={{ flex: 1, padding: '14px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: '#fff', textAlign: 'center', borderRadius: '12px', cursor: 'pointer', fontWeight: 'bold', transition: 'background 0.2s' }}>
+                  <label style={{ flex: 1, padding: '14px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: 'var(--text-primary)', textAlign: 'center', borderRadius: '12px', cursor: 'pointer', fontWeight: 'bold', transition: 'background 0.2s' }}>
                     {saving ? 'Uploading to Supabase...' : 'Choose Image File off Computer...'}
                     <input type="file" accept="image/*" onChange={handleFileUpload} style={{ display: 'none' }} disabled={saving} />
                   </label>
                 </div>
               </div>
               
-              <button onClick={() => setShowImageModal(false)} style={{ position: 'absolute', top: '24px', right: '24px', background: 'none', border: 'none', color: '#888', cursor: 'pointer', outline: 'none' }}>✕</button>
+              <button onClick={() => setShowImageModal(false)} style={{ position: 'absolute', top: '24px', right: '24px', background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', outline: 'none' }}>✕</button>
             </motion.div>
           </div>
         )}
@@ -2320,9 +2320,9 @@ const ProfileDashboard: React.FC<{ user: any }> = ({ user }) => {
         {showTipModal && (
           <div style={{ position: 'fixed', inset: 0, zIndex: 99999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }}>
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.8)', backdropFilter: 'blur(5px)' }} onClick={() => setShowTipModal(false)} />
-            <motion.div initial={{ scale: 0.9, opacity: 0, y: 20 }} animate={{ scale: 1, opacity: 1, y: 0 }} exit={{ scale: 0.9, opacity: 0, y: 20 }} style={{ position: 'relative', background: '#111', border: '1px solid rgba(255,255,255,0.1)', padding: '30px', borderRadius: '24px', width: '100%', maxWidth: '400px', display: 'flex', flexDirection: 'column', gap: '20px', boxShadow: '0 20px 40px rgba(0,0,0,0.5)' }}>
+            <motion.div initial={{ scale: 0.9, opacity: 0, y: 20 }} animate={{ scale: 1, opacity: 1, y: 0 }} exit={{ scale: 0.9, opacity: 0, y: 20 }} style={{ position: 'relative', background: 'var(--bg-surface)', border: '1px solid rgba(255,255,255,0.1)', padding: '30px', borderRadius: '24px', width: '100%', maxWidth: '400px', display: 'flex', flexDirection: 'column', gap: '20px', boxShadow: '0 20px 40px rgba(0,0,0,0.5)' }}>
               <h2 style={{ margin: 0, fontSize: '24px', display: 'flex', alignItems: 'center', gap: '8px' }}>💰 Send a Tip</h2>
-              <p style={{ margin: 0, color: '#aaa', fontSize: '14px' }}>Support the live stream. Tokens are transferred via your internal active wallet balance.</p>
+              <p style={{ margin: 0, color: 'var(--text-secondary)', fontSize: '14px' }}>Support the live stream. Tokens are transferred via your internal active wallet balance.</p>
               
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
                 {[5, 10, 20, 50].map(amt => (
@@ -2331,7 +2331,7 @@ const ProfileDashboard: React.FC<{ user: any }> = ({ user }) => {
                   </button>
                 ))}
               </div>
-              <input type="number" placeholder="Custom Amount" value={tipAmount} onChange={e => setTipAmount(Number(e.target.value))} style={{ width: '100%', padding: '14px', background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.1)', color: '#fff', borderRadius: '12px', fontSize: '16px', outline: 'none' }} />
+              <input type="number" placeholder="Custom Amount" value={tipAmount} onChange={e => setTipAmount(Number(e.target.value))} style={{ width: '100%', padding: '14px', background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.1)', color: 'var(--text-primary)', borderRadius: '12px', fontSize: '16px', outline: 'none' }} />
               
               <button onClick={() => {
                 const stored = JSON.parse(localStorage.getItem('vibe_network_ledger') || '[]');
@@ -2358,21 +2358,21 @@ const ProfileDashboard: React.FC<{ user: any }> = ({ user }) => {
         {guestSetup.show && (
           <div style={{ position: 'fixed', inset: 0, zIndex: 99999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }}>
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.95)', backdropFilter: 'blur(20px)' }} />
-            <motion.div initial={{ scale: 0.9, opacity: 0, y: 20 }} animate={{ scale: 1, opacity: 1, y: 0 }} exit={{ scale: 0.9, opacity: 0, y: 20 }} style={{ position: 'relative', background: '#0a0a0a', border: '1px solid rgba(255,255,255,0.1)', padding: '40px', borderRadius: '30px', width: '100%', maxWidth: '440px', display: 'flex', flexDirection: 'column', gap: '24px', boxShadow: '0 20px 100px rgba(0,0,255,0.1)' }}>
+            <motion.div initial={{ scale: 0.9, opacity: 0, y: 20 }} animate={{ scale: 1, opacity: 1, y: 0 }} exit={{ scale: 0.9, opacity: 0, y: 20 }} style={{ position: 'relative', background: 'var(--bg-color)', border: '1px solid rgba(255,255,255,0.1)', padding: '40px', borderRadius: '30px', width: '100%', maxWidth: '440px', display: 'flex', flexDirection: 'column', gap: '24px', boxShadow: '0 20px 100px rgba(0,0,255,0.1)' }}>
               <div style={{ textAlign: 'center' }}>
                 <div style={{ width: 60, height: 60, borderRadius: '50%', background: 'rgba(0,85,255,0.2)', color: '#0055ff', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px' }}><Camera size={30} /></div>
                 <h2 style={{ margin: '0 0 8px 0', fontSize: '24px' }}>Join the Stream</h2>
-                <p style={{ margin: 0, color: '#aaa', fontSize: '14px', lineHeight: 1.5 }}>You've been invited to join the broadcast. Please enter your display info so the audience knows who you are.</p>
+                <p style={{ margin: 0, color: 'var(--text-secondary)', fontSize: '14px', lineHeight: 1.5 }}>You've been invited to join the broadcast. Please enter your display info so the audience knows who you are.</p>
               </div>
               
               <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
                 <div>
-                  <label style={{ display: 'block', marginBottom: '8px', color: '#fff', fontSize: '14px', fontWeight: 'bold' }}>Your Full Name</label>
-                  <input type="text" placeholder="e.g. Jane Doe" value={guestSetup.name} onChange={e => setGuestSetup({...guestSetup, name: e.target.value})} style={{ width: '100%', padding: '14px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: '#fff', borderRadius: '12px', fontSize: '15px', outline: 'none' }} />
+                  <label style={{ display: 'block', marginBottom: '8px', color: 'var(--text-primary)', fontSize: '14px', fontWeight: 'bold' }}>Your Full Name</label>
+                  <input type="text" placeholder="e.g. Jane Doe" value={guestSetup.name} onChange={e => setGuestSetup({...guestSetup, name: e.target.value})} style={{ width: '100%', padding: '14px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: 'var(--text-primary)', borderRadius: '12px', fontSize: '15px', outline: 'none' }} />
                 </div>
                 <div>
-                  <label style={{ display: 'block', marginBottom: '8px', color: '#fff', fontSize: '14px', fontWeight: 'bold' }}>Professional Title</label>
-                  <input type="text" placeholder="e.g. Chief Marketing Officer" value={guestSetup.title} onChange={e => setGuestSetup({...guestSetup, title: e.target.value})} style={{ width: '100%', padding: '14px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: '#fff', borderRadius: '12px', fontSize: '15px', outline: 'none' }} />
+                  <label style={{ display: 'block', marginBottom: '8px', color: 'var(--text-primary)', fontSize: '14px', fontWeight: 'bold' }}>Professional Title</label>
+                  <input type="text" placeholder="e.g. Chief Marketing Officer" value={guestSetup.title} onChange={e => setGuestSetup({...guestSetup, title: e.target.value})} style={{ width: '100%', padding: '14px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: 'var(--text-primary)', borderRadius: '12px', fontSize: '15px', outline: 'none' }} />
                 </div>
               </div>
 
@@ -2399,7 +2399,7 @@ const ProfileDashboard: React.FC<{ user: any }> = ({ user }) => {
                 } else {
                   alert('Please fill out both your Name and Title to join.');
                 }
-              }} style={{ padding: '16px', background: '#0055ff', color: '#fff', border: 'none', borderRadius: '12px', fontWeight: '900', fontSize: '16px', cursor: 'pointer', transition: '0.2s', marginTop: '10px' }} onMouseOver={e=>e.currentTarget.style.transform='scale(1.02)'} onMouseOut={e=>e.currentTarget.style.transform='scale(1)'}>
+              }} style={{ padding: '16px', background: '#0055ff', color: 'var(--text-primary)', border: 'none', borderRadius: '12px', fontWeight: '900', fontSize: '16px', cursor: 'pointer', transition: '0.2s', marginTop: '10px' }} onMouseOver={e=>e.currentTarget.style.transform='scale(1.02)'} onMouseOut={e=>e.currentTarget.style.transform='scale(1)'}>
                 Connect Audio & Video &rarr;
               </button>
             </motion.div>

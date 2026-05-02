@@ -128,7 +128,7 @@ export default function LiveChat({ streamId }: { streamId: string }) {
         <h3 style={{ margin: 0, fontSize: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
           Live Chat <span style={{ width: '8px', height: '8px', background: '#ff0055', borderRadius: '50%', display: 'inline-block' }}></span>
         </h3>
-        <span style={{ fontSize: '12px', color: '#888' }}>{viewersCount} watching</span>
+        <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>{viewersCount} watching</span>
       </div>
 
       <div ref={autoScrollRef} style={{ flex: 1, overflowY: 'auto', overflowX: 'hidden', padding: '16px', display: 'flex', flexDirection: 'column', gap: '12px', scrollBehavior: 'smooth', maxHeight: '450px' }}>
@@ -148,13 +148,13 @@ export default function LiveChat({ streamId }: { streamId: string }) {
         ))}
       </div>
 
-      <form onSubmit={handleSend} style={{ padding: '16px', borderTop: '1px solid rgba(255,255,255,0.1)', display: 'flex', gap: '8px', background: '#111' }}>
+      <form onSubmit={handleSend} style={{ padding: '16px', borderTop: '1px solid rgba(255,255,255,0.1)', display: 'flex', gap: '8px', background: 'var(--bg-surface)' }}>
         <input 
           type="text"
           value={input}
           onChange={e => setInput(e.target.value)}
           placeholder="Send a message..."
-          style={{ flex: 1, background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '24px', padding: '10px 16px', color: '#fff', outline: 'none' }}
+          style={{ flex: 1, background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '24px', padding: '10px 16px', color: 'var(--text-primary)', outline: 'none' }}
         />
         <button type="submit" disabled={!input.trim()} style={{ background: input.trim() ? '#00ff88' : 'rgba(255,255,255,0.1)', color: '#000', border: 'none', borderRadius: '50%', width: '40px', height: '40px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: input.trim() ? 'pointer' : 'default', transition: '0.2s' }}>
           <Send size={16} />

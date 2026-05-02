@@ -18,7 +18,7 @@ const Sidebar: React.FC = () => {
       position: 'fixed',
       left: 0,
       top: 0,
-      background: '#0a0a0a',
+      background: 'var(--bg-color)',
       borderRight: '1px solid rgba(255,255,255,0.05)',
       display: 'flex',
       flexDirection: 'column',

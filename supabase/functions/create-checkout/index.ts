@@ -45,8 +45,8 @@ serve(async (req) => {
       ],
       mode: 'payment',
       // Redirect URLs after Stripe processes the payment
-      success_url: `${req.headers.get('origin') || 'http://localhost:5173'}?checkout=success`,
-      cancel_url: `${req.headers.get('origin') || 'http://localhost:5173'}?checkout=canceled`,
+      success_url: `${req.headers.get('origin') || `${req.headers.get('origin') || 'https://vibenetwork.tv'}`}?checkout=success`,
+      cancel_url: `${req.headers.get('origin') || `${req.headers.get('origin') || 'https://vibenetwork.tv'}`}?checkout=canceled`,
       metadata: {
         creatorId: creatorId,
         itemName: itemName

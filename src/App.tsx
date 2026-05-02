@@ -1,3 +1,4 @@
+import { useEffect, useState, lazy, Suspense } from 'react';
 import { ASSETS } from './data';
 import { getCategoriesWithVideos } from './api';
 import Navbar from './components/Navbar';
@@ -5,19 +6,18 @@ import Hero from './components/Hero';
 import WhatsOnNow from './components/WhatsOnNow';
 import SliderSection from './components/SliderSection';
 import AuthModal from './components/AuthModal';
-import ProfileDashboard from './components/ProfileDashboard';
-import BusinessAdminDashboard from './components/BusinessAdminDashboard';
+const ProfileDashboard = lazy(() => import('./components/ProfileDashboard'));
+const BusinessAdminDashboard = lazy(() => import('./components/BusinessAdminDashboard'));
 import EndUserAuthModal from './components/EndUserAuthModal';
-import MasterAdminDashboard from './components/MasterAdminDashboard';
-import LiveChat from './components/LiveChat';
-import MoreInfo from './components/MoreInfo';
-import Contact from './components/Contact';
-import VirtualCallRoom from './components/VirtualCallRoom';
-import Marketplace from './components/Marketplace';
-import ProductPage from './components/ProductPage';
+const MasterAdminDashboard = lazy(() => import('./components/MasterAdminDashboard'));
+const LiveChat = lazy(() => import('./components/LiveChat'));
+const MoreInfo = lazy(() => import('./components/MoreInfo'));
+const Contact = lazy(() => import('./components/Contact'));
+const VirtualCallRoom = lazy(() => import('./components/VirtualCallRoom'));
+const Marketplace = lazy(() => import('./components/Marketplace'));
+const ProductPage = lazy(() => import('./components/ProductPage'));
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { WhiteLabelContext } from './context/WhiteLabelContext';
-import { useEffect, useState } from 'react';
 import { supabase, storageKey } from './supabaseClient';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X } from 'lucide-react';
@@ -225,19 +225,23 @@ function App() {
           <div style={{ background: 'var(--bg-color)', minHeight: '100vh', color: 'var(--text-primary)', overflowX: 'hidden' }}>
             <Navbar user={user} onLoginClick={() => setShowEndUserAuthModal(true)} onAdminClick={() => setShowAdminPanel(true)} />
           
-          <Routes>
-            <Route path="/" element={
-               <WhiteLabelHome wlConfig={wlConfig} categories={categories} user={user} activeVideo={activeVideo} setActiveVideo={setActiveVideo} />
-            } />
-            <Route path="/marketplace" element={<Marketplace />} />
-            <Route path="/product/:productId" element={<ProductPage />} />
-            <Route path="/profile" element={<ProfileDashboard user={user} />} />
-            <Route path="/profile/:creatorId" element={<ProfileDashboard user={user} />} />
-            <Route path="/call/:callId" element={<VirtualCallRoom />} />
-          </Routes>
+          <Suspense fallback={<div style={{ height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-secondary)' }}>Loading interface...</div>}>
+            <Routes>
+              <Route path="/" element={
+                 <WhiteLabelHome wlConfig={wlConfig} categories={categories} user={user} activeVideo={activeVideo} setActiveVideo={setActiveVideo} />
+              } />
+              <Route path="/marketplace" element={<Marketplace />} />
+              <Route path="/product/:productId" element={<ProductPage />} />
+              <Route path="/profile" element={<ProfileDashboard user={user} />} />
+              <Route path="/profile/:creatorId" element={<ProfileDashboard user={user} />} />
+              <Route path="/call/:callId" element={<VirtualCallRoom />} />
+            </Routes>
+          </Suspense>
           
           {showAdminPanel && user && (
-            <BusinessAdminDashboard onClose={() => setShowAdminPanel(false)} />
+            <Suspense fallback={null}>
+              <BusinessAdminDashboard onClose={() => setShowAdminPanel(false)} />
+            </Suspense>
           )}
 
           <AnimatePresence>
@@ -266,30 +270,34 @@ function App() {
             )}
           </AnimatePresence>
 
-          <Routes>
-            <Route path="/master-admin" element={<MasterAdminDashboard />} />
-            {/* <Route path="/director" element={<DirectorStudio />} /> */}
-            <Route path="*" element={
-              <>
-                <Navbar 
-                  user={user} 
-                  onLoginClick={() => setShowAuthModal(true)} 
-                  onAdminClick={() => window.location.href = '/master-admin'}
-                />
-                <Routes>
-                  <Route path="/" element={<Home categories={categories} activeVideo={activeVideo} setActiveVideo={setActiveVideo} user={user} />} />
-                  <Route path="/marketplace" element={<Marketplace />} />
-                  <Route path="/product/:productId" element={<ProductPage />} />
-                  <Route path="/about" element={<MoreInfo />} />
-                  <Route path="/more-info" element={<MoreInfo />} />
-                  <Route path="/contact" element={<Contact />} />
-                  <Route path="/profile" element={<ProfileDashboard user={user} />} />
-                  <Route path="/profile/:creatorId" element={<ProfileDashboard user={user} />} />
-                  <Route path="/call/:callId" element={<VirtualCallRoom />} />
-                </Routes>
-              </>
-            } />
-          </Routes>
+          <Suspense fallback={<div style={{ height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-secondary)' }}>Loading platform...</div>}>
+            <Routes>
+              <Route path="/master-admin" element={<MasterAdminDashboard />} />
+              {/* <Route path="/director" element={<DirectorStudio />} /> */}
+              <Route path="*" element={
+                <>
+                  <Navbar 
+                    user={user} 
+                    onLoginClick={() => setShowAuthModal(true)} 
+                    onAdminClick={() => window.location.href = '/master-admin'}
+                  />
+                  <Suspense fallback={<div style={{ height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-secondary)' }}>Loading interface...</div>}>
+                    <Routes>
+                      <Route path="/" element={<Home categories={categories} activeVideo={activeVideo} setActiveVideo={setActiveVideo} user={user} />} />
+                      <Route path="/marketplace" element={<Marketplace />} />
+                      <Route path="/product/:productId" element={<ProductPage />} />
+                      <Route path="/about" element={<MoreInfo />} />
+                      <Route path="/more-info" element={<MoreInfo />} />
+                      <Route path="/contact" element={<Contact />} />
+                      <Route path="/profile" element={<ProfileDashboard user={user} />} />
+                      <Route path="/profile/:creatorId" element={<ProfileDashboard user={user} />} />
+                      <Route path="/call/:callId" element={<VirtualCallRoom />} />
+                    </Routes>
+                  </Suspense>
+                </>
+              } />
+            </Routes>
+          </Suspense>
         </div>
       </Router>
     </WhiteLabelContext.Provider>
@@ -419,6 +427,7 @@ function Home({ categories, activeVideo, setActiveVideo, user }: any) {
                       style={{ width: '100%', height: '100%', border: 'none' }}
                       allow="autoplay; encrypted-media; fullscreen"
                       allowFullScreen
+                      loading="lazy"
                     />
                   );
                 }
@@ -434,7 +443,9 @@ function Home({ categories, activeVideo, setActiveVideo, user }: any) {
               </div>
               {/* Chat Pane */}
               <div style={{ flexShrink: 0, background: 'var(--bg-color)', borderRadius: '0 16px 16px 0', overflow: 'hidden' }}>
-                 <LiveChat streamId={activeVideo.id || 'global'} />
+                 <Suspense fallback={<div style={{ padding: '20px', color: 'var(--text-muted)' }}>Loading chat...</div>}>
+                   <LiveChat streamId={activeVideo.id || 'global'} />
+                 </Suspense>
               </div>
             </motion.div>
             
@@ -606,7 +617,7 @@ function WhiteLabelHome({ wlConfig, categories, user, activeVideo, setActiveVide
                   <button onClick={() => setActiveVideo(null)} style={{ background: 'none', border: 'none', color: 'var(--text-primary)', cursor: 'pointer', opacity: 0.7, padding: '8px' }} onMouseOver={e=>e.currentTarget.style.opacity='1'} onMouseOut={e=>e.currentTarget.style.opacity='0.7'}><X size={32} /></button>
                 </div>
                 <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '0 40px 40px', gap: '20px' }} onClick={e => e.stopPropagation()}>
-                  <div style={{ flex: 1, maxWidth: '1200px', height: '100%', background: '#000', borderRadius: '16px', overflow: 'hidden', boxShadow: '0 20px 40px rgba(0,0,0,0.5)' }}>
+                  <div style={{ flex: 1, maxWidth: '1200px', height: '100%', background: 'var(--bg-color)', borderRadius: '16px', overflow: 'hidden', boxShadow: '0 20px 40px rgba(0,0,0,0.5)' }}>
                     {(() => {
                       const match = activeVideo.videoUrl.match(/^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/);
                       const ytId = (match && match[2].length === 11) ? match[2] : null;
@@ -618,6 +629,7 @@ function WhiteLabelHome({ wlConfig, categories, user, activeVideo, setActiveVide
                             style={{ width: '100%', height: '100%', border: 'none' }}
                             allow="autoplay; encrypted-media; fullscreen"
                             allowFullScreen
+                            loading="lazy"
                           />
                         );
                       }
@@ -640,7 +652,7 @@ function WhiteLabelHome({ wlConfig, categories, user, activeVideo, setActiveVide
                        return (
                           <div key={idx} style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '24px', padding: '60px', display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', gap: '24px', maxWidth: '600px', margin: '0 auto', width: '100%' }}>
                              <h2 style={{ fontSize: '36px', color: wlConfig.accent || '#fff', margin: 0 }}>Contact Us</h2>
-                             <p style={{ color: '#aaa', fontSize: '16px', margin: '0 0 10px 0' }}>Reach out to our team at {wlConfig.contactEmail || 'sales@vibenetwork.tv'} or call {wlConfig.contactPhone || '1-800-VIBE-NET'}. Address: {wlConfig.contactAddress || '123 Enterprise Way, Silicon Valley'}</p>
+                             <p style={{ color: 'var(--text-secondary)', fontSize: '16px', margin: '0 0 10px 0' }}>Reach out to our team at {wlConfig.contactEmail || 'sales@vibenetwork.tv'} or call {wlConfig.contactPhone || '1-800-VIBE-NET'}. Address: {wlConfig.contactAddress || '123 Enterprise Way, Silicon Valley'}</p>
                              <form style={{ display: 'flex', flexDirection: 'column', gap: '16px', width: '100%' }} onSubmit={async (e) => {
                                  e.preventDefault();
                                  const form = e.target as HTMLFormElement;
@@ -662,8 +674,8 @@ function WhiteLabelHome({ wlConfig, categories, user, activeVideo, setActiveVide
                                    alert('Message securely dispatched to network administrators!');
                                  }
                              }}>
-                                <input name="email" type="email" placeholder="Your Email Address" required style={{ width: '100%', padding: '16px', borderRadius: '12px', background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.1)', color: '#fff', fontSize: '16px', outline: 'none' }} />
-                                <textarea name="message" placeholder="How can we help your business scale?" required rows={4} style={{ width: '100%', padding: '16px', borderRadius: '12px', background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.1)', color: '#fff', fontSize: '16px', outline: 'none', resize: 'vertical' }} />
+                                <input name="email" type="email" placeholder="Your Email Address" required style={{ width: '100%', padding: '16px', borderRadius: '12px', background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.1)', color: 'var(--text-primary)', fontSize: '16px', outline: 'none' }} />
+                                <textarea name="message" placeholder="How can we help your business scale?" required rows={4} style={{ width: '100%', padding: '16px', borderRadius: '12px', background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.1)', color: 'var(--text-primary)', fontSize: '16px', outline: 'none', resize: 'vertical' }} />
                                 <button type="submit" style={{ padding: '16px', background: wlConfig.accent || '#fff', color: '#000', fontWeight: 'bold', fontSize: '16px', border: 'none', borderRadius: '12px', cursor: 'pointer', transition: 'all 0.2s' }}>Send Encrypted Message</button>
                              </form>
                           </div>
@@ -672,7 +684,7 @@ function WhiteLabelHome({ wlConfig, categories, user, activeVideo, setActiveVide
                    return (
                       <div key={idx} style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '24px', padding: '60px', display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', gap: '20px', maxWidth: '800px', margin: '0 auto', width: '100%' }}>
                          <h2 style={{ fontSize: '36px', color: wlConfig.accent || '#fff', margin: 0 }}>{title}</h2>
-                         <p style={{ color: '#aaa', fontSize: '18px', maxWidth: '600px' }}>This is the autogenerated structural block for your requested <b>{title}</b> modular section. Connect your CMS to deploy actual structured content here.</p>
+                         <p style={{ color: 'var(--text-secondary)', fontSize: '18px', maxWidth: '600px' }}>This is the autogenerated structural block for your requested <b>{title}</b> modular section. Connect your CMS to deploy actual structured content here.</p>
                       </div>
                    );
                 })}

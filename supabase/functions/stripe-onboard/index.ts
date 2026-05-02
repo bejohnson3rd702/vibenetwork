@@ -69,8 +69,8 @@ serve(async (req) => {
 
     const accountLink = await stripe.accountLinks.create({
       account: accountId,
-      refresh_url: return_url || "http://localhost:5174",
-      return_url: return_url || "http://localhost:5174",
+      refresh_url: return_url || `${req.headers.get('origin') || 'https://vibenetwork.tv'}`,
+      return_url: return_url || `${req.headers.get('origin') || 'https://vibenetwork.tv'}`,
       type: "account_onboarding",
     });
 
