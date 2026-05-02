@@ -275,3 +275,5 @@ CREATE POLICY "Public Access" ON storage.objects FOR SELECT USING (bucket_id = '
 DROP POLICY IF EXISTS "Auth Insert" ON storage.objects;
 CREATE POLICY "Auth Insert" ON storage.objects FOR INSERT WITH CHECK (bucket_id = 'images' AND auth.role() = 'authenticated');
 
+ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS platform_fee_percentage NUMERIC DEFAULT 15.00;
+ALTER TABLE public.whitelabel_configs ADD COLUMN IF NOT EXISTS platform_fee_percentage NUMERIC DEFAULT 15.00;
