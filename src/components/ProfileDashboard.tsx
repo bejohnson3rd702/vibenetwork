@@ -1011,9 +1011,13 @@ const ProfileDashboard: React.FC<{ user: any }> = ({ user }) => {
             <div style={{ display: 'flex', gap: '8px', background: 'rgba(255,255,255,0.03)', padding: '8px', borderRadius: '100px', border: '1px solid rgba(255,255,255,0.05)', flexWrap: 'wrap', backdropFilter: 'blur(20px)' }}>
               {[
                 { id: 'feed', label: 'Content Feed' },
+                { id: 'store', label: 'Store' },
                 { id: 'live', label: 'Live Stream' },
+                { id: 'booking', label: 'Booking' },
+                { id: 'series', label: 'Episodes' },
+                { id: 'courses', label: 'Masterclasses' },
                 { id: 'flipbook', label: 'Flip Book' }
-              ].map(tab => (
+              ].concat(isOwnProfile ? [{ id: 'my_bookings', label: 'My Bookings' }] : []).map(tab => (
                 <button 
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id as any)}
