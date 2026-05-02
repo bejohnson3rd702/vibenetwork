@@ -1,4 +1,4 @@
-import { GENRE_CATEGORIES as MOCK_CATEGORIES, ASSETS } from './data';
+import { ASSETS } from './data';
 import { getCategoriesWithVideos } from './api';
 import Navbar from './components/Navbar';
 import Hero from './components/Hero';
@@ -25,7 +25,7 @@ import { X } from 'lucide-react';
 
 function App() {
   const [activeVideo, setActiveVideo] = useState<any>(null);
-  const [categories, setCategories] = useState<any[]>(MOCK_CATEGORIES);
+  const [categories, setCategories] = useState<any[]>([]);
   
   const [user, setUser] = useState<any>(null);
   const [showAuthModal, setShowAuthModal] = useState(false);
@@ -208,9 +208,7 @@ function App() {
       }
 
       const freshCategories = await getCategoriesWithVideos(loadedTenantId);
-      if (freshCategories && freshCategories.length > 0) {
-        setCategories(freshCategories);
-      }
+      setCategories(freshCategories || []);
     }
     initPlatform();
   }, []);
