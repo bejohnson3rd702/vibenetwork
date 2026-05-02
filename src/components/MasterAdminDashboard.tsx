@@ -312,17 +312,13 @@ export default function MasterAdminDashboard() {
                                Save
                              </button>
                          </div>
-                         <button onClick={(e) => {
-                            const btn = e.currentTarget;
-                            const isAllowed = btn.innerText.includes('Allowed');
-                            btn.innerText = isAllowed ? 'Block Global' : 'Allowed Global';
-                            btn.style.background = isAllowed ? 'rgba(255,255,255,0.05)' : 'rgba(0,85,255,0.2)';
-                            btn.style.color = isAllowed ? '#fff' : '#0055ff';
-                            showToast(`Whitelabel Global Directory Access has been ${isAllowed ? 'Disabled' : 'Granted'}.`, 'success');
-                         }} style={{ padding: '10px 20px', background: 'rgba(255,255,255,0.05)', color: '#fff', border: 'none', borderRadius: '8px', fontWeight: 'bold', cursor: 'pointer', transition: '0.2s' }}>
-                            Allow Global
+                         <button onClick={() => {
+                            if(brandConfig.domain) window.open(`http://${brandConfig.domain}`, '_blank');
+                            else showToast('No domain configured for this tenant', 'error');
+                         }} style={{ padding: '10px 20px', background: 'rgba(0,85,255,0.1)', color: '#0055ff', border: '1px solid rgba(0,85,255,0.2)', borderRadius: '8px', fontWeight: 'bold', cursor: 'pointer', transition: '0.2s' }}>
+                            Visit Tenant Portal
                          </button>
-                         <button style={{ padding: '10px 20px', background: 'rgba(0,255,136,0.1)', color: '#00ff88', border: 'none', borderRadius: '8px', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px' }}><Play size={16}/> Active</button>
+                         <span style={{ padding: '10px 20px', background: 'rgba(0,255,136,0.1)', color: '#00ff88', borderRadius: '8px', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '6px', fontSize: '13px' }}><Play size={16}/> LIVE</span>
                       </div>
                    </div>
                  ))}
@@ -339,13 +335,27 @@ export default function MasterAdminDashboard() {
                   </div>
                   <p style={{ color: '#888', marginBottom: '32px', fontSize: '16px', lineHeight: 1.6 }}>Direct connection established to the primary Supabase cluster. Use caution when executing raw SQL directives against the production fleet.</p>
                   
-                  <div style={{ background: '#000', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px', padding: '20px', fontFamily: 'monospace', color: '#4CAF50', height: '200px' }}>
-                     root@vibe-network-db:~# _<br/>
-                     {isRestarting && <span style={{ color: '#ffaa00' }}>{">>>"} SYSTEM RESTART INITIATED...</span>}
+                  <div style={{ background: '#000', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px', padding: '20px', fontFamily: 'monospace', color: '#4CAF50', height: '200px', overflowY: 'auto' }}>
+                     root@vibe-network-db:~# SELECT count(*) FROM system_logs; <br/>
+                     <span style={{ color: '#fff' }}>-> {systemLogs.length} audit records found in telemetry index.</span><br/><br/>
+                     {isRestarting && <span style={{ color: '#ffaa00' }}>{">>>"} SYSTEM LOGS TRUNCATED IN PRODUCTION DATABASE...</span>}
                   </div>
-                  <button onClick={() => setIsRestarting(true)} style={{ marginTop: '20px', padding: '16px 32px', background: isRestarting ? '#333' : '#ff0000', color: '#fff', fontWeight: 'bold', border: 'none', borderRadius: '12px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <button onClick={async () => {
+                     const btn = document.getElementById('purge-logs-btn') as HTMLButtonElement;
+                     if(btn) { btn.innerText = 'Purging...'; btn.style.background = '#333'; }
+                     const { error } = await supabase!.from('system_logs').delete().neq('id', '00000000-0000-0000-0000-000000000000');
+                     if(error) {
+                        showToast('Failed to truncate logs: ' + error.message, 'error');
+                        if(btn) { btn.innerText = 'Purge System Logs'; btn.style.background = '#ff0000'; }
+                        return;
+                     }
+                     logSystemEvent('ALERT', 'Master Admin manually purged all system logs.');
+                     setSystemLogs([]);
+                     setIsRestarting(true);
+                     setTimeout(() => setIsRestarting(false), 5000);
+                  }} id="purge-logs-btn" style={{ marginTop: '20px', padding: '16px 32px', background: isRestarting ? '#333' : '#ff0000', color: '#fff', fontWeight: 'bold', border: 'none', borderRadius: '12px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px', transition: '0.2s' }}>
                      {isRestarting ? <CheckCircle size={20} /> : <StopCircle size={20} />} 
-                     {isRestarting ? 'Cluster Queued for Restart' : 'Force Cluster Restart'}
+                     {isRestarting ? 'Telemetry Logs Purged' : 'Purge All System Logs'}
                   </button>
                </div>
              </motion.div>
@@ -515,7 +525,7 @@ export default function MasterAdminDashboard() {
                         <th style={{ padding: '16px 12px' }}>Status</th>
                         <th style={{ padding: '16px 12px' }}>Network Tier</th>
                         <th style={{ padding: '16px 12px' }}>Platform Fee %</th>
-                        <th style={{ padding: '16px 12px' }}>Vibe Indexing</th>
+                        <th style={{ padding: '16px 12px' }}>System Privileges</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -526,7 +536,9 @@ export default function MasterAdminDashboard() {
                           <td style={{ padding: '16px 12px', fontFamily: 'monospace', color: '#0055ff', fontSize: '12px' }}>{user.id.split('-')[0]}</td>
                           <td style={{ padding: '16px 12px', fontWeight: 'bold' }}>{user.username || user.full_name || 'Unassigned Profile'}</td>
                           <td style={{ padding: '16px 12px' }}>
-                            <span style={{ background: 'rgba(0,255,136,0.1)', color: '#00ff88', padding: '4px 8px', borderRadius: '6px', fontSize: '11px', fontWeight: 'bold' }}>ACTIVE</span>
+                            <span style={{ background: user.is_admin ? 'rgba(255,215,0,0.1)' : 'rgba(0,255,136,0.1)', color: user.is_admin ? '#FFD700' : '#00ff88', padding: '4px 8px', borderRadius: '6px', fontSize: '11px', fontWeight: 'bold' }}>
+                               {user.is_admin ? 'ADMINISTRATOR' : 'ACTIVE'}
+                            </span>
                           </td>
                           <td style={{ padding: '16px 12px', color: user.whitelabel_id ? '#0055ff' : '#ccc', fontSize: '14px', fontWeight: 'bold' }}>{user.whitelabel_id ? 'Enterprise Tenant' : 'Platform Creator'}</td>
                           <td style={{ padding: '16px 12px' }}>
@@ -566,7 +578,7 @@ export default function MasterAdminDashboard() {
                                   btn.innerText = '...';
                                   const { data, error } = await supabase!.from('profiles').update({ platform_fee_percentage: val }).eq('id', user.id).select();
                                   if (error || !data || data.length === 0) {
-                                     showToast('Failed to save (Permission Denied): ' + (error?.message || 'Row Level Security blocked the update. Refresh the page to elevate your permissions and try again.'), 'error');
+                                     showToast('Failed to save (Permission Denied): ' + (error?.message || 'Row Level Security blocked the update.'), 'error');
                                      btn.innerText = 'Save';
                                      return;
                                   }
@@ -581,15 +593,21 @@ export default function MasterAdminDashboard() {
                              </div>
                           </td>
                           <td style={{ padding: '16px 12px' }}>
-                             <button onClick={(e) => {
+                             <button onClick={async (e) => {
                                 const btn = e.currentTarget;
-                                const isGlobal = btn.innerText === 'Global';
-                                btn.innerText = isGlobal ? 'Hidden' : 'Global';
-                                btn.style.background = isGlobal ? 'rgba(255,255,255,0.05)' : 'rgba(255,215,0,0.1)';
-                                btn.style.color = isGlobal ? '#888' : '#FFD700';
-                                showToast(`Profile global indexing visibility has been ${isGlobal ? 'revoked' : 'granted'}.`, 'success');
-                             }} style={{ padding: '6px 12px', background: 'rgba(255,255,255,0.05)', color: '#888', border: 'none', borderRadius: '8px', fontWeight: 'bold', fontSize: '12px', cursor: 'pointer', transition: '0.2s' }}>
-                                Hidden
+                                const willBeAdmin = !user.is_admin;
+                                btn.innerText = '...';
+                                const { error } = await supabase!.from('profiles').update({ is_admin: willBeAdmin }).eq('id', user.id);
+                                if (error) {
+                                   showToast('Failed to update admin status', 'error');
+                                   btn.innerText = willBeAdmin ? 'Grant Admin' : 'Revoke Admin';
+                                   return;
+                                }
+                                setUsersList(prev => prev.map(u => u.id === user.id ? { ...u, is_admin: willBeAdmin } : u));
+                                showToast(`${user.username || 'User'} is ${willBeAdmin ? 'now an Admin' : 'no longer an Admin'}.`, 'success');
+                                logSystemEvent('WARN', `Master Admin changed privileges for ${user.id} to is_admin=${willBeAdmin}`);
+                             }} style={{ padding: '6px 12px', background: user.is_admin ? 'rgba(255,0,0,0.1)' : 'rgba(0,255,136,0.1)', color: user.is_admin ? '#ff0000' : '#00ff88', border: 'none', borderRadius: '8px', fontWeight: 'bold', fontSize: '12px', cursor: 'pointer', transition: '0.2s' }}>
+                                {user.is_admin ? 'Revoke Admin' : 'Grant Admin'}
                              </button>
                           </td>
                         </tr>
@@ -631,15 +649,77 @@ export default function MasterAdminDashboard() {
              </motion.div>
           )}
 
-          {activeTab === 'analytics' && (
-             <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} style={{ display: 'flex', flexDirection: 'column', gap: '30px', alignItems: 'center', justifyContent: 'center', height: '400px' }}>
-                <BarChart3 size={64} color="#0055ff" />
-                <h3 style={{ margin: 0, fontSize: '24px', color: '#fff' }}>Global Analytics Engine</h3>
-                <p style={{ color: '#888', maxWidth: '400px', textAlign: 'center', lineHeight: 1.5 }}>
-                   The real-time analytics aggregation cluster is currently compiling telemetry from the Whitelabel nodes. Full graphical reporting will be available shortly.
-                </p>
+          {activeTab === 'analytics' && (() => {
+             const platformGross = ledgerData.reduce((sum, tx) => sum + Number(tx.amount || 0), 0);
+             let vibeRevenue = 0;
+             let creatorEarnings = 0;
+             let whitelabelRevenue = 0;
+
+             ledgerData.forEach(tx => {
+                const profile = tx.profiles ? (Array.isArray(tx.profiles) ? tx.profiles[0] : tx.profiles) : null;
+                const wlId = profile?.whitelabel_id;
+                const wlConfig = whitelabelsList.find(wl => wl?.id === wlId);
+                const isDirect = !wlId;
+                const gross = Number(tx.amount || 0);
+                const wlFeePercent = isDirect ? 0 : Number(wlConfig?.platform_fee_percentage ?? globalSettings?.global_whitelabel_fee ?? 15);
+                const vFeePercent = Number(profile?.platform_fee_percentage ?? globalSettings?.global_vibe_fee ?? 15);
+                const totalFeePercent = vFeePercent + wlFeePercent;
+                const creatorCutPercent = 100 - totalFeePercent;
+
+                creatorEarnings += (gross * (creatorCutPercent / 100));
+                vibeRevenue += (gross * (vFeePercent / 100));
+                if (!isDirect) whitelabelRevenue += (gross * (wlFeePercent / 100));
+             });
+
+             return (
+             <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} style={{ display: 'flex', flexDirection: 'column', gap: '30px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <h3 style={{ margin: 0, fontSize: '24px' }}>Real-Time Global Analytics</h3>
+                  <button onClick={() => showToast('Analytics Sync Complete', 'success')} style={{ background: '#0055ff', color: '#fff', border: 'none', padding: '12px 24px', borderRadius: '12px', fontWeight: 'bold', cursor: 'pointer' }}>Sync Telemetry</button>
+                </div>
+
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '20px' }}>
+                   {/* Total Volume */}
+                   <div style={{ background: '#111', padding: '24px', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.05)', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                     <span style={{ color: '#888', fontWeight: 'bold', fontSize: '14px' }}>Total Platform Gross Volume</span>
+                     <span style={{ fontSize: '32px', color: '#fff', fontWeight: 900 }}>${platformGross.toFixed(2)}</span>
+                   </div>
+                   
+                   {/* Vibe Revenue */}
+                   <div style={{ background: 'rgba(0,85,255,0.05)', padding: '24px', borderRadius: '16px', border: '1px solid rgba(0,85,255,0.2)', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                     <span style={{ color: '#0055ff', fontWeight: 'bold', fontSize: '14px' }}>Net Vibe Network Revenue</span>
+                     <span style={{ fontSize: '32px', color: '#0055ff', fontWeight: 900 }}>${vibeRevenue.toFixed(2)}</span>
+                   </div>
+
+                   {/* Creator Earnings */}
+                   <div style={{ background: 'rgba(0,255,136,0.05)', padding: '24px', borderRadius: '16px', border: '1px solid rgba(0,255,136,0.2)', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                     <span style={{ color: '#00ff88', fontWeight: 'bold', fontSize: '14px' }}>Total Creator Payouts</span>
+                     <span style={{ fontSize: '32px', color: '#00ff88', fontWeight: 900 }}>${creatorEarnings.toFixed(2)}</span>
+                   </div>
+
+                   {/* WL Revenue */}
+                   <div style={{ background: 'rgba(255,215,0,0.05)', padding: '24px', borderRadius: '16px', border: '1px solid rgba(255,215,0,0.2)', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                     <span style={{ color: '#FFD700', fontWeight: 'bold', fontSize: '14px' }}>Whitelabel Tenant Yields</span>
+                     <span style={{ fontSize: '32px', color: '#FFD700', fontWeight: 900 }}>${whitelabelRevenue.toFixed(2)}</span>
+                   </div>
+                </div>
+
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
+                   <div style={{ background: '#111', padding: '24px', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.05)' }}>
+                     <h4 style={{ margin: '0 0 16px 0', color: '#fff', fontSize: '18px' }}>Network Nodes</h4>
+                     <div style={{ display: 'flex', justifyContent: 'space-between', padding: '12px 0', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+                        <span style={{ color: '#888' }}>Total Registered Profiles</span>
+                        <span style={{ color: '#fff', fontWeight: 'bold' }}>{dbStats.networks}</span>
+                     </div>
+                     <div style={{ display: 'flex', justifyContent: 'space-between', padding: '12px 0' }}>
+                        <span style={{ color: '#888' }}>Active Whitelabel Tenants</span>
+                        <span style={{ color: '#fff', fontWeight: 'bold' }}>{dbStats.whitelabels}</span>
+                     </div>
+                   </div>
+                </div>
              </motion.div>
-          )}
+             );
+          })()}
 
           {activeTab === 'accounting' && (
              <ErrorBoundary>
