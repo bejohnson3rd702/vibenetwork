@@ -1017,7 +1017,7 @@ const ProfileDashboard: React.FC<{ user: any }> = ({ user }) => {
                 { id: 'series', label: 'Episodes' },
                 { id: 'courses', label: 'Masterclasses' },
                 { id: 'flipbook', label: 'Flip Book' }
-              ].concat(isOwnProfile ? [{ id: 'my_bookings', label: 'My Bookings' }] : []).map(tab => (
+              ].concat((isOwnProfile && viewMode === 'edit') ? [{ id: 'my_bookings', label: 'My Bookings' }] : []).map(tab => (
                 <button 
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id as any)}
@@ -1042,7 +1042,7 @@ const ProfileDashboard: React.FC<{ user: any }> = ({ user }) => {
                 </button>
               )}
 
-              {isOwnProfile && (
+              {isOwnProfile && viewMode === 'edit' && (
                 <button 
                   onClick={() => setActiveTab('wallet')}
                   style={{ position: 'relative', background: 'none', border: 'none', padding: '12px 24px', color: activeTab === 'wallet' ? '#00ff88' : '#888', fontSize: '15px', fontWeight: 'bold', cursor: 'pointer', borderRadius: '100px', display: 'flex', alignItems: 'center', gap: '8px', transition: 'color 0.3s' }}
