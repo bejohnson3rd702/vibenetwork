@@ -576,7 +576,7 @@ export default function MasterAdminDashboard() {
              </motion.div>
           )}
 
-          {activeTab === 'logs' && (
+           {activeTab === 'logs' && (
              <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} style={{ background: '#0a0a0a', padding: '24px', borderRadius: '16px', border: '1px solid #333' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '20px', borderBottom: '1px solid #222', paddingBottom: '12px' }}>
                   <Terminal size={20} color="#00ff88" />
@@ -595,6 +595,16 @@ export default function MasterAdminDashboard() {
                   @keyframes blinker { 50% { opacity: 0; } }
                   .blink { animation: blinker 1s linear infinite; }
                 `}</style>
+             </motion.div>
+          )}
+
+          {activeTab === 'analytics' && (
+             <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} style={{ display: 'flex', flexDirection: 'column', gap: '30px', alignItems: 'center', justifyContent: 'center', height: '400px' }}>
+                <BarChart3 size={64} color="#0055ff" />
+                <h3 style={{ margin: 0, fontSize: '24px', color: '#fff' }}>Global Analytics Engine</h3>
+                <p style={{ color: '#888', maxWidth: '400px', textAlign: 'center', lineHeight: 1.5 }}>
+                   The real-time analytics aggregation cluster is currently compiling telemetry from the Whitelabel nodes. Full graphical reporting will be available shortly.
+                </p>
              </motion.div>
           )}
 
@@ -719,7 +729,7 @@ export default function MasterAdminDashboard() {
                            if (!tx) return null;
                            const profile = tx.profiles ? (Array.isArray(tx.profiles) ? tx.profiles[0] : tx.profiles) : null;
                            const wlId = profile?.whitelabel_id;
-                           const wlConfig = whitelabelsList.find(wl => wl.id === wlId);
+                           const wlConfig = whitelabelsList.find(wl => wl?.id === wlId);
                            
                            const isDirect = !wlId;
                            const origin = isDirect ? 'Direct Vibe' : 'Whitelabel';
