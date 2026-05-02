@@ -23,6 +23,18 @@ const ProductPage: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [purchasing, setPurchasing] = useState(false);
   const [error, setError] = useState('');
+  
+  // Physical Product Variants
+  const [selectedSize, setSelectedSize] = useState('M');
+  const [selectedColor, setSelectedColor] = useState('Black');
+  
+  const SIZES = ['S', 'M', 'L', 'XL', '2XL'];
+  const COLORS = [
+    { name: 'Black', hex: '#111' },
+    { name: 'White', hex: '#fff' },
+    { name: 'Navy', hex: '#1e3a8a' },
+    { name: 'Red', hex: '#dc2626' }
+  ];
 
   useEffect(() => {
     const fetchProduct = async () => {
@@ -66,7 +78,11 @@ const ProductPage: React.FC = () => {
           returnUrl: window.location.href,
           extraMetadata: {
             product_id: product.id,
-            product_type: product.type
+            product_type: product.type,
+            ...(product.type?.toLowerCase() === 'physical' ? {
+              size: selectedSize,
+              color: selectedColor
+            } : {})
           }
         })
       });
@@ -140,6 +156,68 @@ const ProductPage: React.FC = () => {
              </div>
 
              <div style={{ padding: '32px', background: 'rgba(255,255,255,0.02)', borderRadius: '24px', border: '1px solid rgba(255,255,255,0.05)', marginBottom: '32px' }}>
+               
+               {product.type?.toLowerCase() === 'physical' && (
+                 <div style={{ marginBottom: '32px' }}>
+                   {/* Color Selection */}
+                   <div style={{ marginBottom: '24px' }}>
+                     <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '12px' }}>
+                       <span style={{ fontWeight: 'bold', fontSize: '15px' }}>Color</span>
+                       <span style={{ color: '#aaa', fontSize: '14px' }}>{selectedColor}</span>
+                     </div>
+                     <div style={{ display: 'flex', gap: '12px' }}>
+                       {COLORS.map(c => (
+                         <button 
+                           key={c.name}
+                           onClick={() => setSelectedColor(c.name)}
+                           style={{ 
+                             width: '40px', 
+                             height: '40px', 
+                             borderRadius: '50%', 
+                             background: c.hex, 
+                             border: selectedColor === c.name ? `2px solid ${wlConfig?.accent || '#b829ea'}` : '2px solid rgba(255,255,255,0.1)',
+                             cursor: 'pointer',
+                             boxShadow: selectedColor === c.name ? `0 0 15px ${wlConfig?.accent || '#b829ea'}66` : 'none',
+                             transition: 'all 0.2s'
+                           }}
+                           aria-label={c.name}
+                         />
+                       ))}
+                     </div>
+                   </div>
+
+                   {/* Size Selection */}
+                   <div>
+                     <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '12px' }}>
+                       <span style={{ fontWeight: 'bold', fontSize: '15px' }}>Size</span>
+                       <span style={{ color: '#aaa', fontSize: '14px', textDecoration: 'underline', cursor: 'pointer' }}>Size Guide</span>
+                     </div>
+                     <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+                       {SIZES.map(s => (
+                         <button
+                           key={s}
+                           onClick={() => setSelectedSize(s)}
+                           style={{
+                             flex: '1 1 calc(20% - 8px)',
+                             padding: '12px 0',
+                             background: selectedSize === s ? (wlConfig?.accent || '#b829ea') : 'rgba(255,255,255,0.05)',
+                             color: selectedSize === s ? '#000' : '#fff',
+                             border: '1px solid',
+                             borderColor: selectedSize === s ? (wlConfig?.accent || '#b829ea') : 'rgba(255,255,255,0.1)',
+                             borderRadius: '12px',
+                             fontWeight: 'bold',
+                             cursor: 'pointer',
+                             transition: 'all 0.2s'
+                           }}
+                         >
+                           {s}
+                         </button>
+                       ))}
+                     </div>
+                   </div>
+                 </div>
+               )}
+
                <div style={{ fontSize: '48px', fontWeight: 900, color: '#fff', marginBottom: '8px' }}>
                  ${Number(product.price).toFixed(2)}
                </div>
