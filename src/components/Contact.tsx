@@ -100,7 +100,7 @@ const Contact: React.FC = () => {
                 </div>
                 <div>
                   <div style={{ fontSize: '12px', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '4px' }}>Email Us</div>
-                  <div style={{ fontSize: '16px', fontWeight: 600 }}>enterprise@vibenetwork.tv</div>
+                  <div style={{ fontSize: '16px', fontWeight: 600 }}>{wlConfig?.contactEmail || 'enterprise@vibenetwork.tv'}</div>
                 </div>
               </div>
               
@@ -110,7 +110,7 @@ const Contact: React.FC = () => {
                 </div>
                 <div>
                   <div style={{ fontSize: '12px', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '4px' }}>Call Us</div>
-                  <div style={{ fontSize: '16px', fontWeight: 600 }}>+1 (800) 555-VIBE</div>
+                  <div style={{ fontSize: '16px', fontWeight: 600 }}>{wlConfig?.contactPhone || '+1 (800) 555-VIBE'}</div>
                 </div>
               </div>
               
@@ -120,7 +120,7 @@ const Contact: React.FC = () => {
                 </div>
                 <div>
                   <div style={{ fontSize: '12px', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '4px' }}>Headquarters</div>
-                  <div style={{ fontSize: '16px', fontWeight: 600 }}>1200 Tech Ave, Suite 400<br/>San Francisco, CA 94107</div>
+                  <div style={{ fontSize: '16px', fontWeight: 600 }}>{wlConfig?.contactAddress ? wlConfig.contactAddress.split('\n').map((line: string, i: number) => <React.Fragment key={i}>{line}<br/></React.Fragment>) : <React.Fragment>1200 Tech Ave, Suite 400<br/>San Francisco, CA 94107</React.Fragment>}</div>
                 </div>
               </div>
             </div>

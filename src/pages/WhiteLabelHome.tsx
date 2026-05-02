@@ -145,39 +145,7 @@ export default function WhiteLabelHome({ wlConfig, categories, user, activeVideo
                 {wlConfig.customSections.split(',').map((section: string, idx: number) => {
                    const title = section.trim();
                    if (!title) return null;
-                   if (title === 'Contact Us Form') {
-                       return (
-                          <div key={idx} style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '24px', padding: '60px', display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', gap: '24px', maxWidth: '600px', margin: '0 auto', width: '100%' }}>
-                             <h2 style={{ fontSize: '36px', color: wlConfig.accent || '#fff', margin: 0 }}>Contact Us</h2>
-                             <p style={{ color: 'var(--text-secondary)', fontSize: '16px', margin: '0 0 10px 0' }}>Reach out to our team at {wlConfig.contactEmail || 'sales@vibenetwork.tv'} or call {wlConfig.contactPhone || '1-800-VIBE-NET'}. Address: {wlConfig.contactAddress || '123 Enterprise Way, Silicon Valley'}</p>
-                             <form style={{ display: 'flex', flexDirection: 'column', gap: '16px', width: '100%' }} onSubmit={async (e) => {
-                                 e.preventDefault();
-                                 const form = e.target as HTMLFormElement;
-                                 const email = (form.elements.namedItem('email') as HTMLInputElement).value;
-                                 const msg = (form.elements.namedItem('message') as HTMLTextAreaElement).value;
-                                 
-                                 const { error } = await supabase.from('network_leads').insert([
-                                   {
-                                     whitelabel_id: wlConfig.id,
-                                     email: email,
-                                     message: msg
-                                   }
-                                 ]);
 
-                                 if (error) {
-                                   alert('Failed to send message. Please try again later.');
-                                 } else {
-                                   form.reset();
-                                   alert('Message securely dispatched to network administrators!');
-                                 }
-                             }}>
-                                <input name="email" type="email" placeholder="Your Email Address" required style={{ width: '100%', padding: '16px', borderRadius: '12px', background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.1)', color: 'var(--text-primary)', fontSize: '16px', outline: 'none' }} />
-                                <textarea name="message" placeholder="How can we help your business scale?" required rows={4} style={{ width: '100%', padding: '16px', borderRadius: '12px', background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.1)', color: 'var(--text-primary)', fontSize: '16px', outline: 'none', resize: 'vertical' }} />
-                                <button type="submit" style={{ padding: '16px', background: wlConfig.accent || '#fff', color: '#000', fontWeight: 'bold', fontSize: '16px', border: 'none', borderRadius: '12px', cursor: 'pointer', transition: 'all 0.2s' }}>Send Encrypted Message</button>
-                             </form>
-                          </div>
-                       );
-                   }
                    return (
                       <div key={idx} style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '24px', padding: '60px', display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', gap: '20px', maxWidth: '800px', margin: '0 auto', width: '100%' }}>
                          <h2 style={{ fontSize: '36px', color: wlConfig.accent || '#fff', margin: 0 }}>{title}</h2>

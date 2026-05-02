@@ -253,6 +253,7 @@ function App() {
                  <WhiteLabelHome wlConfig={wlConfig} categories={categories} user={user} activeVideo={activeVideo} setActiveVideo={setActiveVideo} />
               } />
               <Route path="/marketplace" element={<Marketplace />} />
+              <Route path="/contact" element={<Contact />} />
               <Route path="/product/:productId" element={<ProductPage />} />
               <Route path="/profile" element={<ProfileDashboard user={user} />} />
               <Route path="/profile/:creatorId" element={<ProfileDashboard user={user} />} />
