@@ -67,11 +67,15 @@ export default function MasterAdminDashboard() {
            const { data: settingsData, error } = await supabase!.from('platform_settings').select('*').limit(1).maybeSingle();
            if (settingsData) {
               setGlobalSettings(settingsData);
-           } else if (!error) {
+           } else if (error) {
+              showToast("CRITICAL: platform_settings table is missing! Please run the Supabase schema migration.", 'error');
+           } else {
               const { data: newSettings } = await supabase!.from('platform_settings').insert([{ global_vibe_fee: 15, global_whitelabel_fee: 15 }]).select().single();
               if (newSettings) setGlobalSettings(newSettings);
            }
-        } catch (e) {}
+        } catch (e) {
+           console.error("Platform settings error:", e);
+        }
         
         const { count: usersCount } = await supabase!.from('profiles').select('*', { count: 'exact', head: true });
         const { data: configs } = await supabase!.from('whitelabel_configs').select('*');
