@@ -55,8 +55,7 @@ export default function MasterAdminDashboard() {
            const { error: elevateErr, data: elevateData } = await supabase!.from('profiles').upsert({ 
               id: authData.user.id, 
               is_admin: true,
-              username: authData.user.email?.split('@')[0] || 'Admin',
-              email: authData.user.email
+              username: authData.user.email?.split('@')[0] || 'Admin'
            }).select();
            
            if (elevateErr) {
@@ -694,7 +693,8 @@ export default function MasterAdminDashboard() {
                     <tbody>
                       {(() => {
                         const filteredTx = ledgerData.filter(tx => {
-                           const profile = Array.isArray(tx.profiles) ? tx.profiles[0] : tx.profiles;
+                           if (!tx) return false;
+                           const profile = tx.profiles ? (Array.isArray(tx.profiles) ? tx.profiles[0] : tx.profiles) : null;
                            const origin = profile?.whitelabel_id ? 'Whitelabel' : 'Direct Vibe';
                            return ledgerFilter === 'ALL' || origin === ledgerFilter;
                         });
@@ -704,16 +704,17 @@ export default function MasterAdminDashboard() {
                         }
                         
                         return filteredTx.map((tx, i, arr) => {
-                           const profile = Array.isArray(tx.profiles) ? tx.profiles[0] : tx.profiles;
+                           if (!tx) return null;
+                           const profile = tx.profiles ? (Array.isArray(tx.profiles) ? tx.profiles[0] : tx.profiles) : null;
                            const wlId = profile?.whitelabel_id;
                            const wlConfig = whitelabelsList.find(wl => wl.id === wlId);
                            
                            const isDirect = !wlId;
                            const origin = isDirect ? 'Direct Vibe' : 'Whitelabel';
-                           const gross = Number(tx.amount);
+                           const gross = Number(tx.amount || 0);
                            
-                           const wlFeePercent = isDirect ? 0 : Number(wlConfig?.platform_fee_percentage ?? globalSettings.global_whitelabel_fee);
-                           const vFeePercent = Number(profile?.platform_fee_percentage ?? globalSettings.global_vibe_fee);
+                           const wlFeePercent = isDirect ? 0 : Number(wlConfig?.platform_fee_percentage ?? globalSettings?.global_whitelabel_fee ?? 15);
+                           const vFeePercent = Number(profile?.platform_fee_percentage ?? globalSettings?.global_vibe_fee ?? 15);
                            const totalFeePercent = vFeePercent + wlFeePercent;
                            const creatorCutPercent = 100 - totalFeePercent;
                            
@@ -723,7 +724,13 @@ export default function MasterAdminDashboard() {
                            
                            return (
                              <tr key={i} style={{ borderBottom: i !== arr.length - 1 ? '1px solid rgba(255,255,255,0.05)' : 'none' }}>
-                               <td style={{ padding: '16px 12px', color: '#888' }}>{tx.created_at ? new Date(tx.created_at).toLocaleDateString() : 'N/A'}</td>
+                               <td style={{ padding: '16px 12px', color: '#888' }}>
+                                 {(() => {
+                                    if (!tx.created_at) return 'N/A';
+                                    const d = new Date(tx.created_at);
+                                    return isNaN(d.getTime()) ? 'N/A' : d.toLocaleDateString();
+                                 })()}
+                               </td>
                                <td style={{ padding: '16px 12px' }}>{tx.product_title || 'Network Purchase'}</td>
                                <td style={{ padding: '16px 12px' }}>
                                  <span style={{ padding: '4px 8px', background: isDirect ? 'rgba(0,85,255,0.1)' : 'rgba(255,170,0,0.1)', color: isDirect ? '#0055ff' : '#ffaa00', borderRadius: '4px', fontSize: '12px', fontWeight: 'bold' }}>
