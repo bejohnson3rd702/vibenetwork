@@ -25,16 +25,11 @@ const ProductPage: React.FC = () => {
   const [error, setError] = useState('');
   
   // Physical Product Variants
-  const [selectedSize, setSelectedSize] = useState('M');
-  const [selectedColor, setSelectedColor] = useState('Black');
+  const [selectedSize, setSelectedSize] = useState('');
+  const [selectedColor, setSelectedColor] = useState('');
   
-  const SIZES = ['S', 'M', 'L', 'XL', '2XL'];
-  const COLORS = [
-    { name: 'Black', hex: '#111' },
-    { name: 'White', hex: '#fff' },
-    { name: 'Navy', hex: '#1e3a8a' },
-    { name: 'Red', hex: '#dc2626' }
-  ];
+  const defaultSizes = ['S', 'M', 'L', 'XL', '2XL'];
+  const defaultColors = ['Black', 'White', 'Navy', 'Red'];
 
   useEffect(() => {
     const fetchProduct = async () => {
@@ -47,6 +42,10 @@ const ProductPage: React.FC = () => {
         
       if (data && !error) {
         setProduct(data);
+        const initialSizes = data.variants?.sizes?.length ? data.variants.sizes : defaultSizes;
+        const initialColors = data.variants?.colors?.length ? data.variants.colors : defaultColors;
+        setSelectedSize(initialSizes[0] || '');
+        setSelectedColor(initialColors[0] || '');
       } else {
         setError('Product not found or unavailable.');
       }
@@ -165,23 +164,25 @@ const ProductPage: React.FC = () => {
                        <span style={{ fontWeight: 'bold', fontSize: '15px' }}>Color</span>
                        <span style={{ color: '#aaa', fontSize: '14px' }}>{selectedColor}</span>
                      </div>
-                     <div style={{ display: 'flex', gap: '12px' }}>
-                       {COLORS.map(c => (
+                     <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
+                       {(product.variants?.colors?.length ? product.variants.colors : defaultColors).map((c: string) => (
                          <button 
-                           key={c.name}
-                           onClick={() => setSelectedColor(c.name)}
+                           key={c}
+                           onClick={() => setSelectedColor(c)}
                            style={{ 
-                             width: '40px', 
-                             height: '40px', 
-                             borderRadius: '50%', 
-                             background: c.hex, 
-                             border: selectedColor === c.name ? `2px solid ${wlConfig?.accent || '#b829ea'}` : '2px solid rgba(255,255,255,0.1)',
+                             padding: '10px 20px', 
+                             borderRadius: '20px', 
+                             background: selectedColor === c ? 'rgba(255,255,255,0.1)' : 'rgba(255,255,255,0.02)', 
+                             border: selectedColor === c ? `2px solid ${wlConfig?.accent || '#b829ea'}` : '1px solid rgba(255,255,255,0.1)',
+                             color: selectedColor === c ? '#fff' : '#ccc',
                              cursor: 'pointer',
-                             boxShadow: selectedColor === c.name ? `0 0 15px ${wlConfig?.accent || '#b829ea'}66` : 'none',
-                             transition: 'all 0.2s'
+                             boxShadow: selectedColor === c ? `0 0 15px ${wlConfig?.accent || '#b829ea'}66` : 'none',
+                             transition: 'all 0.2s',
+                             fontWeight: 'bold'
                            }}
-                           aria-label={c.name}
-                         />
+                         >
+                           {c}
+                         </button>
                        ))}
                      </div>
                    </div>
@@ -193,7 +194,7 @@ const ProductPage: React.FC = () => {
                        <span style={{ color: '#aaa', fontSize: '14px', textDecoration: 'underline', cursor: 'pointer' }}>Size Guide</span>
                      </div>
                      <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
-                       {SIZES.map(s => (
+                       {(product.variants?.sizes?.length ? product.variants.sizes : defaultSizes).map((s: string) => (
                          <button
                            key={s}
                            onClick={() => setSelectedSize(s)}

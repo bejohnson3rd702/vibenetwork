@@ -72,6 +72,7 @@ CREATE TABLE IF NOT EXISTS public.products (
     price NUMERIC NOT NULL,
     type TEXT NOT NULL,
     image_url TEXT,
+    variants JSONB DEFAULT '{}'::jsonb,
     creator_id UUID REFERENCES public.profiles(id) ON DELETE CASCADE,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );

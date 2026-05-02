@@ -430,7 +430,7 @@ const ProfileDashboard: React.FC<{ user: any }> = ({ user }) => {
   const [requestFeature, setRequestFeature] = useState(false);
 
   // Store internal state MUST be above early returns!
-  const [newProduct, setNewProduct] = useState({ title: '', price: '19.99', type: 'digital', image_url: '' });
+  const [newProduct, setNewProduct] = useState({ title: '', price: '19.99', type: 'digital', image_url: '', sizes: '', colors: '' });
   const [courses, setCourses] = useState<any[]>([]);
   const [purchasedBookings, setPurchasedBookings] = useState<any[]>([]);
   const [receivedBookings, setReceivedBookings] = useState<any[]>([]);
@@ -724,7 +724,11 @@ const ProfileDashboard: React.FC<{ user: any }> = ({ user }) => {
       title: newProduct.title,
       price: parseFloat(newProduct.price),
       type: newProduct.type,
-      image_url: newProduct.image_url || 'https://picsum.photos/400/400'
+      image_url: newProduct.image_url || 'https://picsum.photos/400/400',
+      variants: newProduct.type === 'physical' ? {
+        sizes: newProduct.sizes.split(',').map(s => s.trim()).filter(Boolean),
+        colors: newProduct.colors.split(',').map(c => c.trim()).filter(Boolean)
+      } : {}
     };
 
     try {
@@ -739,7 +743,7 @@ const ProfileDashboard: React.FC<{ user: any }> = ({ user }) => {
       setProducts(prev => [...prev, { ...productInsert, id: Math.random().toString() }]);
     }
 
-    setNewProduct({ title: '', price: '19.99', type: 'digital', image_url: '' });
+    setNewProduct({ title: '', price: '19.99', type: 'digital', image_url: '', sizes: '', colors: '' });
     setSaving(false);
   };
 
@@ -1171,6 +1175,19 @@ const ProfileDashboard: React.FC<{ user: any }> = ({ user }) => {
                   <option value="digital">Digital Download / Ticket</option>
                   <option value="physical">Physical Merch (Ships)</option>
                 </select>
+
+                {newProduct.type === 'physical' && (
+                  <div style={{ gridColumn: '1 / -1', display: 'grid', gap: '16px', gridTemplateColumns: '1fr 1fr', background: 'rgba(255,255,255,0.02)', padding: '16px', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.05)' }}>
+                    <div>
+                      <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', color: '#ccc' }}>Available Sizes (comma separated)</label>
+                      <input type="text" placeholder="e.g. S, M, L, XL" value={newProduct.sizes} onChange={e => setNewProduct({...newProduct, sizes: e.target.value})} style={{ width: '100%', background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.1)', padding: '12px', borderRadius: '8px', color: '#fff', outline: 'none', fontSize: '14px' }} />
+                    </div>
+                    <div>
+                      <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', color: '#ccc' }}>Available Colors (comma separated)</label>
+                      <input type="text" placeholder="e.g. Black, White, Red" value={newProduct.colors} onChange={e => setNewProduct({...newProduct, colors: e.target.value})} style={{ width: '100%', background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.1)', padding: '12px', borderRadius: '8px', color: '#fff', outline: 'none', fontSize: '14px' }} />
+                    </div>
+                  </div>
+                )}
 
                 <div style={{ display: 'flex', gap: '12px', gridColumn: '1 / -1' }}>
                   {newProduct.image_url ? (
