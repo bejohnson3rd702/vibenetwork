@@ -32,6 +32,8 @@ export default function MasterAdminDashboard() {
   }
   const [ledgerFilter, setLedgerFilter] = useState('ALL');
   const [loading, setLoading] = useState(false);
+  const [broadcastSource, setBroadcastSource] = useState<'youtube' | 'upload'>('youtube');
+  const [broadcastFileUrl, setBroadcastFileUrl] = useState('');
 
   async function fetchUsers() {
      setLoading(true);
@@ -249,16 +251,38 @@ export default function MasterAdminDashboard() {
                  <h3 style={{ margin: 0, fontSize: '24px' }}>Live Now TV Programming</h3>
                </div>
                <div style={{ background: '#111', padding: '30px', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.05)' }}>
-                 <h4 style={{ margin: '0 0 20px 0', fontSize: '18px' }}>Inject YouTube Broadcast</h4>
+                 <div style={{ display: 'flex', gap: '16px', marginBottom: '20px', flexWrap: 'wrap', alignItems: 'center' }}>
+                    <h4 style={{ margin: 0, fontSize: '18px' }}>Inject Broadcast</h4>
+                    <div style={{ display: 'flex', gap: '8px', background: 'rgba(255,255,255,0.05)', padding: '4px', borderRadius: '8px' }}>
+                       <button onClick={() => setBroadcastSource('youtube')} style={{ background: broadcastSource === 'youtube' ? '#0055ff' : 'transparent', color: '#fff', border: 'none', padding: '6px 12px', borderRadius: '6px', cursor: 'pointer', fontWeight: 'bold' }}>YouTube Link</button>
+                       <button onClick={() => setBroadcastSource('upload')} style={{ background: broadcastSource === 'upload' ? '#0055ff' : 'transparent', color: '#fff', border: 'none', padding: '6px 12px', borderRadius: '6px', cursor: 'pointer', fontWeight: 'bold' }}>Upload Video</button>
+                    </div>
+                 </div>
                  <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                    <input type="text" placeholder="YouTube Video URL (e.g. https://youtube.com/watch...)" style={{ background: '#000', border: '1px solid #333', padding: '16px', borderRadius: '8px', color: '#fff', fontSize: '15px' }} id="yt-url" />
+                    {broadcastSource === 'youtube' ? (
+                       <input type="text" placeholder="YouTube Video URL (e.g. https://youtube.com/watch...)" style={{ background: '#000', border: '1px solid #333', padding: '16px', borderRadius: '8px', color: '#fff', fontSize: '15px' }} id="yt-url" />
+                    ) : (
+                       <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+                         <input type="file" id="broadcastVideoUpload" accept="video/*" style={{ display: 'none' }} onChange={(e) => {
+                             if (e.target.files && e.target.files[0]) {
+                               setBroadcastFileUrl(URL.createObjectURL(e.target.files[0]));
+                             }
+                         }} />
+                         <button onClick={() => document.getElementById('broadcastVideoUpload')?.click()} style={{ padding: '16px', background: 'rgba(255,255,255,0.1)', color: '#fff', border: '1px solid rgba(255,255,255,0.2)', borderRadius: '8px', fontWeight: 'bold', fontSize: '15px', cursor: 'pointer', flex: 1 }}>
+                            {broadcastFileUrl ? 'Change Video' : 'Select Video File'}
+                         </button>
+                       </div>
+                    )}
                     <input type="text" placeholder="Broadcast Title" style={{ background: '#000', border: '1px solid #333', padding: '16px', borderRadius: '8px', color: '#fff', fontSize: '15px' }} id="yt-title" />
+                    {broadcastSource === 'upload' && (
+                       <textarea placeholder="Broadcast Description" rows={3} style={{ background: '#000', border: '1px solid #333', padding: '16px', borderRadius: '8px', color: '#fff', fontSize: '15px', resize: 'vertical' }} id="yt-desc" />
+                    )}
                     <input type="text" placeholder="Broadcast Time (e.g. LIVE, UP NEXT, 2:00 PM)" style={{ background: '#000', border: '1px solid #333', padding: '16px', borderRadius: '8px', color: '#fff', fontSize: '15px' }} id="yt-time" />
                     <button onClick={async () => {
-                       const url = (document.getElementById('yt-url') as HTMLInputElement).value;
+                       const url = broadcastSource === 'youtube' ? (document.getElementById('yt-url') as HTMLInputElement).value : broadcastFileUrl;
                        const title = (document.getElementById('yt-title') as HTMLInputElement).value;
                        const time = (document.getElementById('yt-time') as HTMLInputElement).value;
-                       if(!url || !title) return alert('Enter URL and Title');
+                       if(!url || !title) return alert(broadcastSource === 'youtube' ? 'Enter URL and Title' : 'Select Video and Enter Title');
                        const { data: existingCat } = await supabase!.from('categories').select('id').eq('title', 'Live Network Schedule').single();
                        let targetCatId = existingCat?.id;
                        if (!targetCatId) {
@@ -273,8 +297,10 @@ export default function MasterAdminDashboard() {
                        });
                        if (error) return alert(`Failed to insert broadcast: ${error.message}`);
                        alert('Successfully injected broadcast into global live slate!');
-                       (document.getElementById('yt-url') as HTMLInputElement).value = '';
+                       if (broadcastSource === 'youtube') (document.getElementById('yt-url') as HTMLInputElement).value = '';
+                       setBroadcastFileUrl('');
                        (document.getElementById('yt-title') as HTMLInputElement).value = '';
+                       if (document.getElementById('yt-desc')) (document.getElementById('yt-desc') as HTMLTextAreaElement).value = '';
                        (document.getElementById('yt-time') as HTMLInputElement).value = '';
                     }} style={{ background: '#0055ff', color: '#fff', border: 'none', padding: '16px', borderRadius: '8px', fontWeight: 'bold', cursor: 'pointer', fontSize: '15px' }}>
                        Deploy Broadcast
