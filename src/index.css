@@ -211,4 +211,7 @@ html[data-theme="light"] .btn-primary {
   .mobile-w-full {
     width: 100% !important;
   }
+  .no-margin-mobile {
+    margin: 0 !important;
+  }
 }
