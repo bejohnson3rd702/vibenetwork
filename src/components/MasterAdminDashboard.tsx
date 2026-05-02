@@ -748,11 +748,11 @@ export default function MasterAdminDashboard() {
                                     return;
                                  }
                                  btn.innerText = '...';
-                                 const { error } = await supabase!.from('platform_settings').update({ global_vibe_fee: val }).eq('id', globalSettings.id);
-                                 if (error) {
-                                    showToast('Failed to save setting: ' + error.message, 'error');
+                                 const { data, error } = await supabase!.from('platform_settings').update({ global_vibe_fee: val }).eq('id', globalSettings.id).select();
+                                 if (error || !data || data.length === 0) {
+                                    showToast('Failed to save setting (Permission Denied): ' + (error?.message || 'RLS Blocked'), 'error');
                                     btn.innerText = 'Save';
-                                    logSystemEvent('ERROR', `Failed to update Vibe Network Fee to ${val}%: ${error.message}`);
+                                    logSystemEvent('ERROR', `Failed to update Vibe Network Fee to ${val}%`);
                                     return;
                                  }
                                  setGlobalSettings(prev => ({ ...prev, global_vibe_fee: val }));
@@ -793,11 +793,11 @@ export default function MasterAdminDashboard() {
                                     return;
                                  }
                                  btn.innerText = '...';
-                                 const { error } = await supabase!.from('platform_settings').update({ global_whitelabel_fee: val }).eq('id', globalSettings.id);
-                                 if (error) {
-                                    showToast('Failed to save setting: ' + error.message, 'error');
+                                 const { data, error } = await supabase!.from('platform_settings').update({ global_whitelabel_fee: val }).eq('id', globalSettings.id).select();
+                                 if (error || !data || data.length === 0) {
+                                    showToast('Failed to save setting (Permission Denied): ' + (error?.message || 'RLS Blocked'), 'error');
                                     btn.innerText = 'Save';
-                                    logSystemEvent('ERROR', `Failed to update Whitelabel Fee to ${val}%: ${error.message}`);
+                                    logSystemEvent('ERROR', `Failed to update Whitelabel Fee to ${val}%`);
                                     return;
                                  }
                                  setGlobalSettings(prev => ({ ...prev, global_whitelabel_fee: val }));
@@ -823,11 +823,11 @@ export default function MasterAdminDashboard() {
                                     return;
                                  }
                                  btn.innerText = '...';
-                                 const { error } = await supabase!.from('platform_settings').update({ global_vibe_fee: val }).eq('id', globalSettings.id);
-                                 if (error) {
-                                    showToast('Failed to save setting: ' + error.message, 'error');
+                                 const { data, error } = await supabase!.from('platform_settings').update({ global_vibe_fee: val }).eq('id', globalSettings.id).select();
+                                 if (error || !data || data.length === 0) {
+                                    showToast('Failed to save setting (Permission Denied): ' + (error?.message || 'RLS Blocked'), 'error');
                                     btn.innerText = 'Save';
-                                    logSystemEvent('ERROR', `Failed to update Vibe Network Fee to ${val}%: ${error.message}`);
+                                    logSystemEvent('ERROR', `Failed to update Vibe Network Fee to ${val}%`);
                                     return;
                                  }
                                  setGlobalSettings(prev => ({ ...prev, global_vibe_fee: val }));
