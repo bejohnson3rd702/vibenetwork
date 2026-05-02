@@ -72,17 +72,9 @@ export default function MasterAdminDashboard() {
         const { data: authData } = await supabase!.auth.getUser();
         if (authData?.user) {
            setCurrentUser(authData.user);
-           const { error: elevateErr, data: elevateData } = await supabase!.from('profiles').upsert({ 
-              id: authData.user.id, 
-              is_admin: true,
-              username: authData.user.email?.split('@')[0] || 'Admin'
-           }).select();
-           
-           if (elevateErr) {
-              console.error("Auto-elevation failed:", elevateErr);
-              showToast("Auto-elevation failed: " + elevateErr.message, 'error');
-           } else {
-              console.log("Auto-elevated successfully:", elevateData);
+           const { data: profileData } = await supabase!.from('profiles').select('is_admin').eq('id', authData.user.id).single();
+           if (!profileData?.is_admin) {
+              showToast("WARNING: You are not an admin. Operations may fail due to Row Level Security.", 'error');
            }
         } else {
            showToast("You are not logged in! You must be logged in to access the Global Ledger.", 'error');
