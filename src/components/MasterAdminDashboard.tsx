@@ -653,28 +653,58 @@ export default function MasterAdminDashboard() {
                         </div>
                         <div style={{ background: 'rgba(0,85,255,0.05)', border: '1px solid rgba(0,85,255,0.2)', padding: '16px', borderRadius: '12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                            <span style={{ color: '#aaa', fontWeight: 'bold' }}>Global Whitelabel Fee Default</span>
-                           <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                              <input type="number" defaultValue={globalSettings.global_whitelabel_fee} onBlur={async (e) => {
-                                 const val = parseFloat(e.target.value);
-                                 if (!isNaN(val) && globalSettings.id) {
-                                    await supabase!.from('platform_settings').update({ global_whitelabel_fee: val }).eq('id', globalSettings.id);
-                                    setGlobalSettings(prev => ({ ...prev, global_whitelabel_fee: val }));
+                           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                              <input id="global-wl-fee" type="number" defaultValue={globalSettings.global_whitelabel_fee} style={{ background: 'transparent', border: '1px solid rgba(0,85,255,0.3)', color: '#0055ff', fontSize: '20px', fontWeight: 900, width: '80px', textAlign: 'center', outline: 'none', borderRadius: '8px', padding: '4px' }} />
+                              <span style={{ fontSize: '20px', color: '#0055ff', fontWeight: 900 }}>%</span>
+                              <button onClick={async (e) => {
+                                 const btn = e.currentTarget;
+                                 const val = parseFloat((document.getElementById('global-wl-fee') as HTMLInputElement).value);
+                                 if (isNaN(val) || !globalSettings.id) {
+                                    if (!globalSettings.id) showToast('Settings row not initialized in database.', 'error');
+                                    return;
                                  }
-                              }} style={{ background: 'transparent', border: 'none', color: '#0055ff', fontSize: '24px', fontWeight: 900, width: '60px', textAlign: 'right', outline: 'none' }} />
-                              <span style={{ fontSize: '24px', color: '#0055ff', fontWeight: 900 }}>%</span>
+                                 btn.innerText = '...';
+                                 const { error } = await supabase!.from('platform_settings').update({ global_whitelabel_fee: val }).eq('id', globalSettings.id);
+                                 if (error) {
+                                    showToast('Failed to save setting: ' + error.message, 'error');
+                                    btn.innerText = 'Save';
+                                    return;
+                                 }
+                                 setGlobalSettings(prev => ({ ...prev, global_whitelabel_fee: val }));
+                                 btn.innerText = 'Saved';
+                                 btn.style.color = '#00ff88';
+                                 setTimeout(() => { btn.innerText = 'Save'; btn.style.color = '#0055ff'; }, 2000);
+                              }} style={{ background: 'rgba(0,85,255,0.1)', color: '#0055ff', border: '1px solid rgba(0,85,255,0.2)', padding: '6px 16px', borderRadius: '8px', fontWeight: 'bold', cursor: 'pointer', transition: '0.2s', marginLeft: '10px' }}>
+                                 Save
+                              </button>
                            </div>
                         </div>
                         <div style={{ background: 'rgba(255,215,0,0.05)', border: '1px solid rgba(255,215,0,0.2)', padding: '16px', borderRadius: '12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                            <span style={{ color: '#aaa', fontWeight: 'bold' }}>Global Vibe Network Gateway Default</span>
-                           <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                              <input type="number" defaultValue={globalSettings.global_vibe_fee} onBlur={async (e) => {
-                                 const val = parseFloat(e.target.value);
-                                 if (!isNaN(val) && globalSettings.id) {
-                                    await supabase!.from('platform_settings').update({ global_vibe_fee: val }).eq('id', globalSettings.id);
-                                    setGlobalSettings(prev => ({ ...prev, global_vibe_fee: val }));
+                           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                              <input id="global-vibe-fee" type="number" defaultValue={globalSettings.global_vibe_fee} style={{ background: 'transparent', border: '1px solid rgba(255,215,0,0.3)', color: '#FFD700', fontSize: '20px', fontWeight: 900, width: '80px', textAlign: 'center', outline: 'none', borderRadius: '8px', padding: '4px' }} />
+                              <span style={{ fontSize: '20px', color: '#FFD700', fontWeight: 900 }}>%</span>
+                              <button onClick={async (e) => {
+                                 const btn = e.currentTarget;
+                                 const val = parseFloat((document.getElementById('global-vibe-fee') as HTMLInputElement).value);
+                                 if (isNaN(val) || !globalSettings.id) {
+                                    if (!globalSettings.id) showToast('Settings row not initialized in database.', 'error');
+                                    return;
                                  }
-                              }} style={{ background: 'transparent', border: 'none', color: '#FFD700', fontSize: '24px', fontWeight: 900, width: '60px', textAlign: 'right', outline: 'none' }} />
-                              <span style={{ fontSize: '24px', color: '#FFD700', fontWeight: 900 }}>%</span>
+                                 btn.innerText = '...';
+                                 const { error } = await supabase!.from('platform_settings').update({ global_vibe_fee: val }).eq('id', globalSettings.id);
+                                 if (error) {
+                                    showToast('Failed to save setting: ' + error.message, 'error');
+                                    btn.innerText = 'Save';
+                                    return;
+                                 }
+                                 setGlobalSettings(prev => ({ ...prev, global_vibe_fee: val }));
+                                 btn.innerText = 'Saved';
+                                 btn.style.color = '#00ff88';
+                                 setTimeout(() => { btn.innerText = 'Save'; btn.style.color = '#FFD700'; }, 2000);
+                              }} style={{ background: 'rgba(255,215,0,0.1)', color: '#FFD700', border: '1px solid rgba(255,215,0,0.2)', padding: '6px 16px', borderRadius: '8px', fontWeight: 'bold', cursor: 'pointer', transition: '0.2s', marginLeft: '10px' }}>
+                                 Save
+                              </button>
                            </div>
                         </div>
                      </div>
