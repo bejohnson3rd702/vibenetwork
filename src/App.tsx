@@ -14,6 +14,7 @@ const Contact = lazy(() => import('./components/Contact'));
 const VirtualCallRoom = lazy(() => import('./components/VirtualCallRoom'));
 const Marketplace = lazy(() => import('./components/Marketplace'));
 const ProductPage = lazy(() => import('./components/ProductPage'));
+const CookieConsent = lazy(() => import('./components/CookieConsent'));
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { WhiteLabelContext } from './context/WhiteLabelContext';
 import { supabase, storageKey } from './supabaseClient';
@@ -274,6 +275,10 @@ function App() {
                <EndUserAuthModal onClose={() => setShowEndUserAuthModal(false)} />
              )}
           </AnimatePresence>
+          
+          <Suspense fallback={null}>
+             <CookieConsent />
+          </Suspense>
         </div>
       </Router>
       </WhiteLabelContext.Provider>
@@ -322,6 +327,10 @@ function App() {
                 </>
               } />
             </Routes>
+          </Suspense>
+
+          <Suspense fallback={null}>
+             <CookieConsent />
           </Suspense>
         </div>
       </Router>
