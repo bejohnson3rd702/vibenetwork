@@ -700,7 +700,19 @@ export default function MasterAdminDashboard() {
                         });
                         
                         if (filteredTx.length === 0) {
-                           return <tr><td colSpan={7} style={{ padding: '30px', textAlign: 'center', color: '#888' }}>No recent traffic detected for this filter tier.</td></tr>;
+                           return (
+                             <tr>
+                               <td colSpan={7} style={{ padding: '60px', textAlign: 'center' }}>
+                                 <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '16px' }}>
+                                    <AlertCircle size={48} color="#FFD700" />
+                                    <h3 style={{ margin: 0, color: '#fff', fontSize: '24px' }}>Ledger is Empty</h3>
+                                    <p style={{ color: '#aaa', margin: 0, fontSize: '16px', maxWidth: '400px' }}>
+                                       There are exactly 0 transactions in your Supabase 'ledger' table for this filter tier. The Global Ledger is fully functional, it is just waiting for real Stripe payments!
+                                    </p>
+                                 </div>
+                               </td>
+                             </tr>
+                           );
                         }
                         
                         return filteredTx.map((tx, i, arr) => {
