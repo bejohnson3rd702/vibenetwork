@@ -2,7 +2,7 @@ import React, { useEffect, useState, useRef } from 'react';
 import { supabase } from '../supabaseClient';
 import { motion, AnimatePresence } from 'framer-motion';
 import { LogOut, Camera, Lock, Unlock, Image as ImageIcon, Star, ShieldCheck, Eye, Edit2, Wand, Calendar, Edit3, Clock, CheckCircle, Heart, MessageCircle, Wallet, ArrowUpRight, ArrowDownLeft, Activity, Monitor, Settings, Video, DollarSign } from 'lucide-react';
-import LiveChat from './LiveChat';
+const LiveChat = React.lazy(() => import('./LiveChat'));
 import { useNavigate, useParams, useLocation } from 'react-router-dom';
 import Peer from 'peerjs';
 import { loadStripe } from '@stripe/stripe-js';
@@ -1400,7 +1400,9 @@ const ProfileDashboard: React.FC<{ user: any }> = ({ user }) => {
                   )}
                 </div>
                  <div style={{ flexShrink: 0 }}>
-                    <LiveChat streamId={profile?.username || 'profile'} />
+                    <React.Suspense fallback={<div style={{ padding: '20px', color: 'var(--text-secondary)' }}>Loading chat...</div>}>
+                      <LiveChat streamId={profile?.username || 'profile'} />
+                    </React.Suspense>
                  </div>
               </div>
               {localGuestData && (

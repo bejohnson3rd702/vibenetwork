@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Play } from 'lucide-react';
-import LiveChat from './LiveChat';
 
 import { getLiveSchedule } from '../api';
 
