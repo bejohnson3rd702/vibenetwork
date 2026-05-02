@@ -89,7 +89,7 @@ const ProductPage: React.FC = () => {
     setPurchasing(false);
   };
 
-  if (loading) return <div style={{ paddingTop: '120px', textAlign: 'center', color: '#888' }}>Loading product...</div>;
+  if (loading) return <div style={{ paddingTop: '120px', textAlign: 'center', color: 'var(--text-muted)' }}>Loading product...</div>;
   if (error || !product) return <div style={{ paddingTop: '120px', textAlign: 'center', color: '#ff4444' }}>{error}</div>;
 
   const getTypeIcon = () => {
@@ -102,10 +102,10 @@ const ProductPage: React.FC = () => {
   };
 
   return (
-    <div style={{ minHeight: '100vh', background: 'var(--bg-color)', paddingTop: '100px', paddingBottom: '80px', color: '#fff' }}>
+    <div style={{ minHeight: '100vh', background: 'var(--bg-color)', paddingTop: '100px', paddingBottom: '80px', color: 'var(--text-primary)' }}>
       <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '0 5%' }}>
         
-        <button onClick={() => navigate(-1)} style={{ display: 'flex', alignItems: 'center', gap: '8px', background: 'transparent', border: 'none', color: '#888', cursor: 'pointer', marginBottom: '40px', fontSize: '16px', fontWeight: 600 }}>
+        <button onClick={() => navigate(-1)} style={{ display: 'flex', alignItems: 'center', gap: '8px', background: 'transparent', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', marginBottom: '40px', fontSize: '16px', fontWeight: 600 }}>
           <ArrowLeft size={20} /> Back to Marketplace
         </button>
 
@@ -142,7 +142,7 @@ const ProductPage: React.FC = () => {
                  alt={product.creator.username}
                  style={{ width: '32px', height: '32px', borderRadius: '50%', border: '1px solid rgba(255,255,255,0.2)' }}
                />
-               <span style={{ color: '#aaa', fontSize: '16px', fontWeight: 500 }}>By @{product.creator.username}</span>
+               <span style={{ color: 'var(--text-secondary)', fontSize: '16px', fontWeight: 500 }}>By @{product.creator.username}</span>
              </div>
 
              <div style={{ padding: '32px', background: 'rgba(255,255,255,0.02)', borderRadius: '24px', border: '1px solid rgba(255,255,255,0.05)', marginBottom: '32px' }}>
@@ -153,7 +153,7 @@ const ProductPage: React.FC = () => {
                    <div style={{ marginBottom: '24px' }}>
                      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '12px' }}>
                        <span style={{ fontWeight: 'bold', fontSize: '15px' }}>Color</span>
-                       <span style={{ color: '#aaa', fontSize: '14px' }}>{selectedColor}</span>
+                       <span style={{ color: 'var(--text-secondary)', fontSize: '14px' }}>{selectedColor}</span>
                      </div>
                      <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
                        {(product.variants?.colors?.length ? product.variants.colors : defaultColors).map((c: string) => (
@@ -165,7 +165,7 @@ const ProductPage: React.FC = () => {
                              borderRadius: '20px', 
                              background: selectedColor === c ? 'rgba(255,255,255,0.1)' : 'rgba(255,255,255,0.02)', 
                              border: selectedColor === c ? `2px solid ${wlConfig?.accent || 'var(--accent-primary)'}` : '1px solid rgba(255,255,255,0.1)',
-                             color: selectedColor === c ? '#fff' : '#ccc',
+                             color: selectedColor === c ? 'var(--text-primary)' : 'var(--text-secondary)',
                              cursor: 'pointer',
                              boxShadow: selectedColor === c ? `0 0 15px ${wlConfig?.accent || 'var(--accent-primary)'}66` : 'none',
                              transition: 'all 0.2s',
@@ -182,7 +182,7 @@ const ProductPage: React.FC = () => {
                    <div>
                      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '12px' }}>
                        <span style={{ fontWeight: 'bold', fontSize: '15px' }}>Size</span>
-                       <span style={{ color: '#aaa', fontSize: '14px', textDecoration: 'underline', cursor: 'pointer' }}>Size Guide</span>
+                       <span style={{ color: 'var(--text-secondary)', fontSize: '14px', textDecoration: 'underline', cursor: 'pointer' }}>Size Guide</span>
                      </div>
                      <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
                        {(product.variants?.sizes?.length ? product.variants.sizes : defaultSizes).map((s: string) => (
@@ -193,7 +193,7 @@ const ProductPage: React.FC = () => {
                              flex: '1 1 calc(20% - 8px)',
                              padding: '12px 0',
                              background: selectedSize === s ? (wlConfig?.accent || 'var(--accent-primary)') : 'rgba(255,255,255,0.05)',
-                             color: selectedSize === s ? '#000' : '#fff',
+                             color: selectedSize === s ? '#000' : 'var(--text-primary)',
                              border: '1px solid',
                              borderColor: selectedSize === s ? (wlConfig?.accent || 'var(--accent-primary)') : 'rgba(255,255,255,0.1)',
                              borderRadius: '12px',
@@ -210,10 +210,10 @@ const ProductPage: React.FC = () => {
                  </div>
                )}
 
-               <div style={{ fontSize: '48px', fontWeight: 900, color: '#fff', marginBottom: '8px' }}>
+               <div style={{ fontSize: '48px', fontWeight: 900, color: 'var(--text-primary)', marginBottom: '8px' }}>
                  ${Number(product.price).toFixed(2)}
                </div>
-               <div style={{ color: '#888', fontSize: '14px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+               <div style={{ color: 'var(--text-muted)', fontSize: '14px', display: 'flex', alignItems: 'center', gap: '6px' }}>
                  <ShieldCheck size={16} color="#4CAF50" /> Secure transaction via Stripe
                </div>
 
@@ -248,8 +248,8 @@ const ProductPage: React.FC = () => {
                </button>
              </div>
 
-             <div style={{ color: '#888', fontSize: '15px', lineHeight: 1.6 }}>
-               <h3 style={{ color: '#fff', fontSize: '20px', marginBottom: '12px' }}>Description</h3>
+             <div style={{ color: 'var(--text-muted)', fontSize: '15px', lineHeight: 1.6 }}>
+               <h3 style={{ color: 'var(--text-primary)', fontSize: '20px', marginBottom: '12px' }}>Description</h3>
                <p>
                  Purchase this premium {product.type?.toLowerCase()} securely. Upon successful payment, you will receive full access or tracking information directly to your registered email address. 
                </p>

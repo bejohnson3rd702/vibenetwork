@@ -45,7 +45,7 @@ const Marketplace: React.FC = () => {
   });
 
   return (
-    <div style={{ minHeight: '100vh', background: 'var(--bg-color)', paddingTop: '100px', paddingBottom: '80px', color: '#fff' }}>
+    <div style={{ minHeight: '100vh', background: 'var(--bg-color)', paddingTop: '100px', paddingBottom: '80px', color: 'var(--text-primary)' }}>
       {/* Marketplace Header */}
       <div style={{ textAlign: 'center', marginBottom: '60px', padding: '0 20px' }}>
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
@@ -54,7 +54,7 @@ const Marketplace: React.FC = () => {
              <span style={{ fontSize: '13px', fontWeight: 'bold', letterSpacing: '1px', color: wlConfig?.accent || 'var(--accent-primary)', textTransform: 'uppercase' }}>Network Marketplace</span>
           </div>
           <h1 style={{ fontSize: '48px', margin: '0 0 16px 0', fontWeight: 900 }}>Discover & Collect</h1>
-          <p style={{ color: '#aaa', fontSize: '18px', maxWidth: '600px', margin: '0 auto' }}>
+          <p style={{ color: 'var(--text-secondary)', fontSize: '18px', maxWidth: '600px', margin: '0 auto' }}>
             Support creators directly. Purchase exclusive digital downloads, physical merch, beats, and premium courses.
           </p>
         </motion.div>
@@ -72,7 +72,7 @@ const Marketplace: React.FC = () => {
                  placeholder="Search products, beats, creators..." 
                  value={searchQuery}
                  onChange={(e) => setSearchQuery(e.target.value)}
-                 style={{ width: '100%', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.1)', padding: '16px 16px 16px 48px', borderRadius: '16px', color: '#fff', fontSize: '16px', outline: 'none' }}
+                 style={{ width: '100%', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.1)', padding: '16px 16px 16px 48px', borderRadius: '16px', color: 'var(--text-primary)', fontSize: '16px', outline: 'none' }}
                />
              </div>
              <div style={{ display: 'flex', gap: '8px', overflowX: 'auto', paddingBottom: '8px' }}>
@@ -83,7 +83,7 @@ const Marketplace: React.FC = () => {
                     style={{ 
                       padding: '12px 24px', 
                       background: activeFilter === filter ? (wlConfig?.accent || 'var(--accent-primary)') : 'rgba(255,255,255,0.05)', 
-                      color: activeFilter === filter ? '#000' : '#fff', 
+                      color: activeFilter === filter ? '#000' : 'var(--text-primary)', 
                       border: 'none', 
                       borderRadius: '12px', 
                       fontWeight: 'bold', 
@@ -101,12 +101,12 @@ const Marketplace: React.FC = () => {
 
         {/* Product Grid */}
         {loading ? (
-          <div style={{ textAlign: 'center', padding: '100px', color: '#888' }}>Loading marketplace...</div>
+          <div style={{ textAlign: 'center', padding: '100px', color: 'var(--text-muted)' }}>Loading marketplace...</div>
         ) : filteredProducts.length === 0 ? (
           <div style={{ textAlign: 'center', padding: '100px', background: 'rgba(255,255,255,0.02)', borderRadius: '24px', border: '1px dashed rgba(255,255,255,0.1)' }}>
             <ShoppingBag size={48} color="#444" style={{ marginBottom: '16px' }} />
             <h3 style={{ fontSize: '24px', margin: '0 0 8px 0' }}>No Products Found</h3>
-            <p style={{ color: '#888' }}>Try adjusting your search or filters.</p>
+            <p style={{ color: 'var(--text-muted)' }}>Try adjusting your search or filters.</p>
           </div>
         ) : (
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '30px' }}>
@@ -158,7 +158,7 @@ const Marketplace: React.FC = () => {
                        alt={product.creator?.username} 
                        style={{ width: '28px', height: '28px', borderRadius: '50%', border: '1px solid rgba(255,255,255,0.2)' }} 
                      />
-                     <span style={{ color: '#aaa', fontSize: '14px', fontWeight: 500 }}>@{product.creator?.username}</span>
+                     <span style={{ color: 'var(--text-secondary)', fontSize: '14px', fontWeight: 500 }}>@{product.creator?.username}</span>
                    </div>
                    
                    <h3 style={{ margin: '0 0 16px 0', fontSize: '20px', fontWeight: 'bold', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden', height: '48px' }}>
@@ -166,7 +166,7 @@ const Marketplace: React.FC = () => {
                    </h3>
 
                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: '16px', borderTop: '1px solid rgba(255,255,255,0.05)' }}>
-                      <div style={{ fontSize: '24px', fontWeight: 900, color: '#fff' }}>
+                      <div style={{ fontSize: '24px', fontWeight: 900, color: 'var(--text-primary)' }}>
                         ${Number(product.price).toFixed(2)}
                       </div>
                       <button style={{ width: '40px', height: '40px', borderRadius: '50%', background: wlConfig?.accent || 'var(--accent-primary)', border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: '#000' }}>
