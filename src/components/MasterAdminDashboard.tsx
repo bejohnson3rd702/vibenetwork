@@ -7,6 +7,7 @@ import {
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../supabaseClient';
+import { ErrorBoundary } from './ErrorBoundary';
 
 export default function MasterAdminDashboard() {
   const navigate = useNavigate();
@@ -609,6 +610,7 @@ export default function MasterAdminDashboard() {
           )}
 
           {activeTab === 'accounting' && (
+             <ErrorBoundary>
              <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} style={{ display: 'flex', flexDirection: 'column', gap: '30px' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                   <h3 style={{ margin: 0, fontSize: '24px' }}>Automated Global Ledger & Payout Splits</h3>
@@ -771,6 +773,7 @@ export default function MasterAdminDashboard() {
                   </table>
                 </div>
              </motion.div>
+             </ErrorBoundary>
           )}
           
         </div>
