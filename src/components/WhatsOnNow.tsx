@@ -52,16 +52,16 @@ const ScheduleRow: React.FC<{ item: any, isActive: boolean, onClick: () => void 
 };
 
 const FALLBACK_10_YOUTUBE = [
-  { id: 'fb1', title: 'Start with Why - Simon Sinek', time: 'LIVE', image: 'https://image.pollinations.ai/prompt/corporate%20leader%20on%20stage%20presentation?width=800&height=600&nologo=true', video_url: 'https://www.youtube.com/watch?v=u4ZoJKF_VuA', tags: ['Leadership', 'Business'] },
-  { id: 'fb2', title: 'Warren Buffett: Best Investing Advice', time: 'UP NEXT', image: 'https://image.pollinations.ai/prompt/wall%20street%20bull%20statue%20cinematic?width=800&height=600&nologo=true', video_url: 'https://www.youtube.com/watch?v=SjB-Bf3g-A0', tags: ['Finance', 'Markets'] },
-  { id: 'fb3', title: 'Peter Thiel: Competition is for Losers', time: '1:00 PM EST', image: 'https://image.pollinations.ai/prompt/modern%20startup%20office%20glass%20walls?width=800&height=600&nologo=true', video_url: 'https://www.youtube.com/watch?v=3Fx5Q8xGU8k', tags: ['Startups', 'Strategy'] },
-  { id: 'fb4', title: 'Steve Jobs 2007 iPhone Keynote', time: '2:30 PM EST', image: 'https://image.pollinations.ai/prompt/minimalist%20stage%20spotlight%20dark?width=800&height=600&nologo=true', video_url: 'https://www.youtube.com/watch?v=VQKMoT-6P4s', tags: ['Keynote', 'Tech'] },
-  { id: 'fb5', title: 'How to Pitch a VC - Y Combinator', time: '4:00 PM EST', image: 'https://image.pollinations.ai/prompt/venture%20capital%20boardroom%20meeting?width=800&height=600&nologo=true', video_url: 'https://www.youtube.com/watch?v=pDJaT69p5pY', tags: ['Venture', 'Pitching'] },
-  { id: 'fb6', title: 'Ray Dalio: Principles for Success', time: '5:30 PM EST', image: 'https://image.pollinations.ai/prompt/global%20economy%20abstract%20hologram?width=800&height=600&nologo=true', video_url: 'https://www.youtube.com/watch?v=B9XGUpQZY38', tags: ['Economy', 'Success'] },
-  { id: 'fb7', title: 'Elon Musk: Advice to Entrepreneurs', time: '7:00 PM EST', image: 'https://image.pollinations.ai/prompt/futuristic%20spaceship%20factory?width=800&height=600&nologo=true', video_url: 'https://www.youtube.com/watch?v=cK2gO5LzEGE', tags: ['Innovation', 'Founder'] },
-  { id: 'fb8', title: 'Bill Gates & Warren Buffett', time: '8:30 PM EST', image: 'https://image.pollinations.ai/prompt/two%20businessmen%20shaking%20hands%20silhouette?width=800&height=600&nologo=true', video_url: 'https://www.youtube.com/watch?v=iE1hGzO6y2I', tags: ['Business', 'Wealth'] },
-  { id: 'fb9', title: 'Naval Ravikant: How to get rich', time: '10:00 PM EST', image: 'https://image.pollinations.ai/prompt/zen%20meditation%20modern%20home%20office?width=800&height=600&nologo=true', video_url: 'https://www.youtube.com/watch?v=1-TZqOsVCNM', tags: ['Mindset', 'Growth'] },
-  { id: 'fb10', title: 'Steve Jobs: Stanford Commencement', time: '11:00 PM EST', image: 'https://image.pollinations.ai/prompt/stanford%20university%20graduates%20throwing%20caps?width=800&height=600&nologo=true', video_url: 'https://www.youtube.com/watch?v=UF8uR6Z6KLc', tags: ['Motivation', 'Career'] }
+  { id: 'fb1', title: 'Start with Why - Simon Sinek', time: 'LIVE', image: 'https://images.unsplash.com/photo-1542744173-8e7e53415bb0?auto=format&fit=crop&w=800&q=80', video_url: 'https://www.youtube.com/watch?v=u4ZoJKF_VuA', tags: ['Leadership', 'Business'] },
+  { id: 'fb2', title: 'Warren Buffett: Best Investing Advice', time: 'UP NEXT', image: 'https://images.unsplash.com/photo-1590283603385-18ff388834b6?auto=format&fit=crop&w=800&q=80', video_url: 'https://www.youtube.com/watch?v=SjB-Bf3g-A0', tags: ['Finance', 'Markets'] },
+  { id: 'fb3', title: 'Peter Thiel: Competition is for Losers', time: '1:00 PM EST', image: 'https://images.unsplash.com/photo-1497215728101-856f4ea42174?auto=format&fit=crop&w=800&q=80', video_url: 'https://www.youtube.com/watch?v=3Fx5Q8xGU8k', tags: ['Startups', 'Strategy'] },
+  { id: 'fb4', title: 'Steve Jobs 2007 iPhone Keynote', time: '2:30 PM EST', image: 'https://images.unsplash.com/photo-1519389950473-47ba0277781c?auto=format&fit=crop&w=800&q=80', video_url: 'https://www.youtube.com/watch?v=VQKMoT-6P4s', tags: ['Keynote', 'Tech'] },
+  { id: 'fb5', title: 'How to Pitch a VC - Y Combinator', time: '4:00 PM EST', image: 'https://images.unsplash.com/photo-1556761175-5973dc0f32e7?auto=format&fit=crop&w=800&q=80', video_url: 'https://www.youtube.com/watch?v=pDJaT69p5pY', tags: ['Venture', 'Pitching'] },
+  { id: 'fb6', title: 'Ray Dalio: Principles for Success', time: '5:30 PM EST', image: 'https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?auto=format&fit=crop&w=800&q=80', video_url: 'https://www.youtube.com/watch?v=B9XGUpQZY38', tags: ['Economy', 'Success'] },
+  { id: 'fb7', title: 'Elon Musk: Advice to Entrepreneurs', time: '7:00 PM EST', image: 'https://images.unsplash.com/photo-1541888081682-1262d556d610?auto=format&fit=crop&w=800&q=80', video_url: 'https://www.youtube.com/watch?v=cK2gO5LzEGE', tags: ['Innovation', 'Founder'] },
+  { id: 'fb8', title: 'Bill Gates & Warren Buffett', time: '8:30 PM EST', image: 'https://images.unsplash.com/photo-1556761175-197675f284bd?auto=format&fit=crop&w=800&q=80', video_url: 'https://www.youtube.com/watch?v=iE1hGzO6y2I', tags: ['Business', 'Wealth'] },
+  { id: 'fb9', title: 'Naval Ravikant: How to get rich', time: '10:00 PM EST', image: 'https://images.unsplash.com/photo-1499750310107-5fef28a66643?auto=format&fit=crop&w=800&q=80', video_url: 'https://www.youtube.com/watch?v=1-TZqOsVCNM', tags: ['Mindset', 'Growth'] },
+  { id: 'fb10', title: 'Steve Jobs: Stanford Commencement', time: '11:00 PM EST', image: 'https://images.unsplash.com/photo-1523240795612-9a054b0db644?auto=format&fit=crop&w=800&q=80', video_url: 'https://www.youtube.com/watch?v=UF8uR6Z6KLc', tags: ['Motivation', 'Career'] }
 ];
 
 const WhatsOnNow: React.FC = () => {
@@ -141,7 +141,7 @@ const WhatsOnNow: React.FC = () => {
   if (scheduleItems.length === 0) return null;
 
   return (
-    <section className="px-mobile-sm py-mobile-sm" style={{ maxWidth: '1400px', margin: '80px auto 40px', padding: '0 40px' }}>
+    <section id="whats-on-now" className="px-mobile-sm py-mobile-sm" style={{ maxWidth: '1400px', margin: '80px auto 40px', padding: '0 40px' }}>
       
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '30px' }}>
         <h2 style={{ 

@@ -35,13 +35,16 @@ export async function getCategoriesWithVideos(tenantId?: string) {
   if (typeof window !== 'undefined') {
     const localNetworks = JSON.parse(localStorage.getItem('vibe_local_networks') || '[]');
     localNetworks.forEach((n: any) => {
-      mappedNetworks.unshift({
-        id: 'wl_' + n.id,
-        title: n.name || 'Tenant Platform',
-        image: n.logoImage || n.logo || `https://ui-avatars.com/api/?name=${encodeURIComponent(n.name || 'W')}&background=0D8ABC&color=fff`,
-        tags: ['Firm', 'Test'],
-        linkUrl: `/?tenant=${n.id}`
-      });
+      // deduplicate
+      if (!mappedNetworks.find(existing => existing.id === 'wl_' + n.id)) {
+        mappedNetworks.unshift({
+          id: 'wl_' + n.id,
+          title: n.name || 'Tenant Platform',
+          image: n.logoImage || n.logo || `https://ui-avatars.com/api/?name=${encodeURIComponent(n.name || 'W')}&background=0D8ABC&color=fff`,
+          tags: ['Firm', 'Test'],
+          linkUrl: `/?tenant=${n.id}`
+        });
+      }
     });
   }
 

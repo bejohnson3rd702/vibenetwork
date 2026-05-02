@@ -121,7 +121,7 @@ const Navbar: React.FC<NavbarProps> = ({ user, onLoginClick, onAdminClick }) => 
             }}
             onClick={toggleTheme} 
           />
-          <Search size={20} color={appAccent || "white"} style={{ cursor: 'pointer' }} />
+          <Search size={20} color={appAccent || "white"} style={{ cursor: 'pointer' }} onClick={() => alert('Global Search & Discovery Engine coming in v2.0!')} />
         </div>
         <div className="hide-on-mobile" style={{ display: 'flex', alignItems: 'center', gap: '8px', borderLeft: '1px solid rgba(255,255,255,0.2)', paddingLeft: '24px' }}>
           {user ? (

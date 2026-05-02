@@ -28,9 +28,9 @@ const Hero: React.FC = () => {
       />
       
       {/* Sleek Mesh Overlays */}
-      <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to right, rgba(2,2,2,0.95) 0%, rgba(2,2,2,0.4) 50%, rgba(2,2,2,0.95) 100%)', zIndex: 1 }} />
+      <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to right, rgba(var(--bg-rgb),0.95) 0%, rgba(var(--bg-rgb),0.4) 50%, rgba(var(--bg-rgb),0.95) 100%)', zIndex: 1 }} />
       <div style={{ position: 'absolute', inset: 0, background: 'radial-gradient(ellipse at 50% -20%, rgba(211, 84, 0, 0.25), transparent 70%)', zIndex: 1, mixBlendMode: 'screen' }} />
-      <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to bottom, transparent 30%, #000000 100%)', zIndex: 1 }} />
+      <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to bottom, transparent 30%, var(--bg-color) 100%)', zIndex: 1 }} />
       
       {/* Floating Orbital Glow */}
       <motion.div 
@@ -61,7 +61,7 @@ const Hero: React.FC = () => {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 0.4 }}
           style={{ 
-            fontSize: '85px', fontWeight: 900, lineHeight: 1.05, letterSpacing: '-2px', color: '#ffffff',
+            fontSize: '85px', fontWeight: 900, lineHeight: 1.05, letterSpacing: '-2px', color: 'var(--text-primary)',
             margin: '0 0 24px 0', textShadow: '0 20px 40px rgba(0,0,0,0.5)'
           }}
         >
@@ -78,7 +78,7 @@ const Hero: React.FC = () => {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 0.6 }}
           style={{ 
-            fontSize: '22px', color: 'rgba(255,255,255,0.7)', maxWidth: '750px', 
+            fontSize: '22px', color: 'var(--text-secondary)', maxWidth: '750px', 
             margin: '0 0 50px 0', lineHeight: 1.6, fontWeight: 500
           }}
         >
@@ -116,8 +116,8 @@ const Hero: React.FC = () => {
               style={{ 
                 display: 'flex', alignItems: 'center', gap: '12px', padding: '18px 40px', 
                 fontSize: '14px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '2px', 
-                background: 'rgba(255,255,255,0.03)', backdropFilter: 'blur(10px)', color: '#ffffff',
-                border: '1px solid rgba(255,255,255,0.1)', borderRadius: '14px', cursor: 'pointer', transition: 'all 0.3s ease'
+                background: 'rgba(100,100,100,0.1)', backdropFilter: 'blur(10px)', color: 'var(--text-primary)',
+                border: '1px solid rgba(100,100,100,0.2)', borderRadius: '14px', cursor: 'pointer', transition: 'all 0.3s ease'
               }}
             >
               More Info
