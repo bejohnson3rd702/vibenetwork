@@ -630,11 +630,35 @@ export default function MasterAdminDashboard() {
                      <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                         <div style={{ background: 'rgba(0,255,136,0.05)', border: '1px solid rgba(0,255,136,0.2)', padding: '16px', borderRadius: '12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                            <span style={{ color: '#aaa', fontWeight: 'bold' }}>Creator / Profile Split</span>
-                           <span style={{ fontSize: '24px', color: '#00ff88', fontWeight: 900 }}>70%</span>
+                           <span style={{ fontSize: '24px', color: '#00ff88', fontWeight: 900 }}>{100 - Number(globalSettings?.global_vibe_fee ?? 15)}%</span>
                         </div>
                         <div style={{ background: 'rgba(255,215,0,0.05)', border: '1px solid rgba(255,215,0,0.2)', padding: '16px', borderRadius: '12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                            <span style={{ color: '#aaa', fontWeight: 'bold' }}>Vibe Network (Platform Fee)</span>
-                           <span style={{ fontSize: '24px', color: '#FFD700', fontWeight: 900 }}>30%</span>
+                           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                              <input id="global-vibe-fee-1" type="number" defaultValue={globalSettings.global_vibe_fee} style={{ background: 'transparent', border: '1px solid rgba(255,215,0,0.3)', color: '#FFD700', fontSize: '20px', fontWeight: 900, width: '80px', textAlign: 'center', outline: 'none', borderRadius: '8px', padding: '4px' }} />
+                              <span style={{ fontSize: '20px', color: '#FFD700', fontWeight: 900 }}>%</span>
+                              <button onClick={async (e) => {
+                                 const btn = e.currentTarget;
+                                 const val = parseFloat((document.getElementById('global-vibe-fee-1') as HTMLInputElement).value);
+                                 if (isNaN(val) || !globalSettings.id) {
+                                    if (!globalSettings.id) showToast('Settings row not initialized in database.', 'error');
+                                    return;
+                                 }
+                                 btn.innerText = '...';
+                                 const { error } = await supabase!.from('platform_settings').update({ global_vibe_fee: val }).eq('id', globalSettings.id);
+                                 if (error) {
+                                    showToast('Failed to save setting: ' + error.message, 'error');
+                                    btn.innerText = 'Save';
+                                    return;
+                                 }
+                                 setGlobalSettings(prev => ({ ...prev, global_vibe_fee: val }));
+                                 btn.innerText = 'Saved';
+                                 btn.style.color = '#00ff88';
+                                 setTimeout(() => { btn.innerText = 'Save'; btn.style.color = '#FFD700'; }, 2000);
+                              }} style={{ background: 'rgba(255,215,0,0.1)', color: '#FFD700', border: '1px solid rgba(255,215,0,0.2)', padding: '6px 16px', borderRadius: '8px', fontWeight: 'bold', cursor: 'pointer', transition: '0.2s', marginLeft: '10px' }}>
+                                 Save
+                              </button>
+                           </div>
                         </div>
                      </div>
                    </div>
@@ -649,7 +673,7 @@ export default function MasterAdminDashboard() {
                      <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                         <div style={{ background: 'rgba(0,255,136,0.05)', border: '1px solid rgba(0,255,136,0.2)', padding: '16px', borderRadius: '12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                            <span style={{ color: '#aaa', fontWeight: 'bold' }}>Creator / Profile Split</span>
-                           <span style={{ fontSize: '24px', color: '#00ff88', fontWeight: 900 }}>70%</span>
+                           <span style={{ fontSize: '24px', color: '#00ff88', fontWeight: 900 }}>{100 - Number(globalSettings?.global_vibe_fee ?? 15) - Number(globalSettings?.global_whitelabel_fee ?? 15)}%</span>
                         </div>
                         <div style={{ background: 'rgba(0,85,255,0.05)', border: '1px solid rgba(0,85,255,0.2)', padding: '16px', borderRadius: '12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                            <span style={{ color: '#aaa', fontWeight: 'bold' }}>Global Whitelabel Fee Default</span>
