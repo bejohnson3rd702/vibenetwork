@@ -748,7 +748,7 @@ export default function MasterAdminDashboard() {
                                     return;
                                  }
                                  btn.innerText = '...';
-                                 const { data, error } = await supabase!.from('platform_settings').update({ global_vibe_fee: val }).eq('id', globalSettings.id).select();
+                                 const { data, error } = await supabase!.from('platform_settings').update({ global_vibe_fee: val }).neq('id', '00000000-0000-0000-0000-000000000000').select();
                                  if (error || !data || data.length === 0) {
                                     showToast('Failed to save setting (Permission Denied): ' + (error?.message || 'RLS Blocked'), 'error');
                                     btn.innerText = 'Save';
@@ -793,7 +793,7 @@ export default function MasterAdminDashboard() {
                                     return;
                                  }
                                  btn.innerText = '...';
-                                 const { data, error } = await supabase!.from('platform_settings').update({ global_whitelabel_fee: val }).eq('id', globalSettings.id).select();
+                                 const { data, error } = await supabase!.from('platform_settings').update({ global_whitelabel_fee: val }).neq('id', '00000000-0000-0000-0000-000000000000').select();
                                  if (error || !data || data.length === 0) {
                                     showToast('Failed to save setting (Permission Denied): ' + (error?.message || 'RLS Blocked'), 'error');
                                     btn.innerText = 'Save';
@@ -823,7 +823,7 @@ export default function MasterAdminDashboard() {
                                     return;
                                  }
                                  btn.innerText = '...';
-                                 const { data, error } = await supabase!.from('platform_settings').update({ global_vibe_fee: val }).eq('id', globalSettings.id).select();
+                                 const { data, error } = await supabase!.from('platform_settings').update({ global_vibe_fee: val }).neq('id', '00000000-0000-0000-0000-000000000000').select();
                                  if (error || !data || data.length === 0) {
                                     showToast('Failed to save setting (Permission Denied): ' + (error?.message || 'RLS Blocked'), 'error');
                                     btn.innerText = 'Save';
