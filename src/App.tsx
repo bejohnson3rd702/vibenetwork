@@ -278,7 +278,7 @@ function App() {
                   onAdminClick={() => window.location.href = '/master-admin'}
                 />
                 <Routes>
-                  <Route path="/" element={<Home categories={categories} activeVideo={activeVideo} setActiveVideo={setActiveVideo} />} />
+                  <Route path="/" element={<Home categories={categories} activeVideo={activeVideo} setActiveVideo={setActiveVideo} user={user} />} />
                   <Route path="/marketplace" element={<Marketplace />} />
                   <Route path="/product/:productId" element={<ProductPage />} />
                   <Route path="/about" element={<MoreInfo />} />
@@ -298,7 +298,7 @@ function App() {
 }
 
 // Separate the massive homepage into a stateless component for router cleanliness
-function Home({ categories, activeVideo, setActiveVideo }: any) {
+function Home({ categories, activeVideo, setActiveVideo, user }: any) {
   // const navigate = useNavigate();
 
   return (
