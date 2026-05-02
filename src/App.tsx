@@ -6,7 +6,6 @@ import WhatsOnNow from './components/WhatsOnNow';
 import SliderSection from './components/SliderSection';
 import AuthModal from './components/AuthModal';
 import ProfileDashboard from './components/ProfileDashboard';
-import DirectorStudio from './components/DirectorStudio';
 import BusinessAdminDashboard from './components/BusinessAdminDashboard';
 import EndUserAuthModal from './components/EndUserAuthModal';
 import MasterAdminDashboard from './components/MasterAdminDashboard';
@@ -354,7 +353,7 @@ function Home({ categories, activeVideo, setActiveVideo, user }: any) {
               </p>
               <div className="flex-col-mobile" style={{ display: 'flex', gap: '20px', width: '100%' }}>
                 <button className="mobile-w-full" onClick={() => user ? (window.location.href = '/profile') : window.dispatchEvent(new CustomEvent('open_auth', { detail: { isLogin: false, role: 'business' } }))} style={{ padding: '18px 40px', background: '#fff', color: '#000', border: 'none', borderRadius: '12px', fontWeight: 900, letterSpacing: '1px', textTransform: 'uppercase', fontSize: '14px', cursor: 'pointer', boxShadow: '0 10px 30px rgba(255,255,255,0.2)' }}>{user ? 'Go to Network Dashboard' : 'Create Network'}</button>
-                <button className="mobile-w-full" onClick={() => user ? (window.location.href = '/profile') : window.dispatchEvent(new CustomEvent('open_auth', { detail: { isLogin: false, role: 'influencer' } }))} style={{ padding: '18px 40px', background: 'var(--bg-surface)', color: 'var(--text-primary)', border: '1px solid rgba(255,255,255,0.2)', borderRadius: '12px', fontWeight: 900, letterSpacing: '1px', textTransform: 'uppercase', fontSize: '14px', cursor: 'pointer', backdropFilter: 'blur(10px)' }}>{user ? 'Go to Creator Studio' : 'Create a Profile'}</button>
+                <button className="mobile-w-full" onClick={() => user ? (window.location.href = '/profile') : window.dispatchEvent(new CustomEvent('open_auth', { detail: { isLogin: false, role: 'influencer' } }))} style={{ padding: '18px 40px', background: 'var(--bg-surface)', color: 'var(--text-primary)', border: '1px solid rgba(255,255,255,0.2)', borderRadius: '12px', fontWeight: 900, letterSpacing: '1px', textTransform: 'uppercase', fontSize: '14px', cursor: 'pointer', backdropFilter: 'blur(10px)' }}>{user ? 'Go to Profile' : 'Create a Profile'}</button>
               </div>
             </div>
           </div>
