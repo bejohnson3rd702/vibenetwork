@@ -53,9 +53,9 @@ serve(async (req) => {
       }
     });
 
-    // Return the generated Session ID to the frontend
+    // Return the generated Session ID and URL to the frontend
     return new Response(
-      JSON.stringify({ sessionId: session.id }),
+      JSON.stringify({ sessionId: session.id, url: session.url }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 }
     );
 

@@ -9,9 +9,10 @@ interface AuthModalProps {
   onSuccess: (user: any) => void;
   defaultIsLogin?: boolean;
   defaultRole?: 'viewer' | 'influencer' | 'business';
+  defaultShowWizard?: boolean;
 }
 
-const AuthModal: React.FC<AuthModalProps> = ({ onClose, onSuccess, defaultIsLogin = true, defaultRole = 'viewer' }) => {
+const AuthModal: React.FC<AuthModalProps> = ({ onClose, onSuccess, defaultIsLogin = true, defaultRole = 'viewer', defaultShowWizard = false }) => {
   const { wlConfig: activeTenantConfig, setWlConfig: setGlobalWlDeploy } = useWhiteLabel();
   const [isLogin, setIsLogin] = useState(defaultIsLogin);
   const [email, setEmail] = useState('');
@@ -26,7 +27,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ onClose, onSuccess, defaultIsLogi
   const btnColor = activeTenantConfig?.btnPrimary || '#fff';
 
   // Business Wizard State
-  const [showBusinessWizard, setShowBusinessWizard] = useState(false);
+  const [showBusinessWizard, setShowBusinessWizard] = useState(defaultShowWizard);
   const [wizardStep, setWizardStep] = useState(0);
   const [wlConfig, setWlConfig] = useState({ name: '', domain: '', bg: '#000', accent: '#ff4d85', heroImage: '', logoImage: '', sliderCount: 4, customSections: '', heroCopy: '' });
   const [chatHistory, setChatHistory] = useState<{sender: 'bot'|'user', text: string, imagePreview?: string}[]>([
@@ -105,17 +106,43 @@ const AuthModal: React.FC<AuthModalProps> = ({ onClose, onSuccess, defaultIsLogi
           }
         }
       });
-      if (error) setErrorMSG(error.message);
+      if (error) {
+        setErrorMSG(error.message);
+        setLoading(false);
+      }
       else if (data.user) {
         onSuccess(data.user);
         if (role === 'business') {
-           setShowBusinessWizard(true);
+           // Redirect to Stripe Paywall before creating the network
+           try {
+             const { data: checkoutData, error: checkoutError } = await supabase!.functions.invoke('create-checkout', {
+               body: {
+                 itemName: 'Vibe Enterprise Network Setup',
+                 amount: 9900, // $99.00
+                 creatorId: data.user.id // Used internally to identify buyer in this context
+               }
+             });
+             
+             if (checkoutError) throw checkoutError;
+             
+             if (checkoutData?.url) {
+                window.location.href = checkoutData.url;
+             } else {
+                // Fallback to wizard if edge function responds improperly
+                setShowBusinessWizard(true);
+                setLoading(false);
+             }
+           } catch (e: any) {
+             console.error("Stripe checkout error:", e);
+             setErrorMSG("Payment system error. Please try again or contact support.");
+             setLoading(false);
+           }
         } else {
            onClose();
+           setLoading(false);
         }
       }
     }
-    setLoading(false);
   };
 
   return (

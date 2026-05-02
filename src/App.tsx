@@ -32,7 +32,7 @@ function App() {
   
   const [user, setUser] = useState<any>(null);
   const [showAuthModal, setShowAuthModal] = useState(false);
-  const [authDefaults, setAuthDefaults] = useState({ isLogin: true, role: 'viewer' as 'viewer' | 'influencer' | 'business' });
+  const [authDefaults, setAuthDefaults] = useState({ isLogin: true, role: 'viewer' as 'viewer' | 'influencer' | 'business', showWizard: false });
   const [wlConfig, setWlConfig] = useState<any>(null);
   const [isTenantMode, setIsTenantMode] = useState(false);
   const [showAdminPanel, setShowAdminPanel] = useState(false);
@@ -41,9 +41,9 @@ function App() {
   useEffect(() => {
     const handleOpenAuth = (e: any) => {
       if (e.detail) {
-        setAuthDefaults({ isLogin: e.detail.isLogin ?? true, role: e.detail.role ?? 'viewer' });
+        setAuthDefaults({ isLogin: e.detail.isLogin ?? true, role: e.detail.role ?? 'viewer', showWizard: e.detail.showWizard ?? false });
       } else {
-        setAuthDefaults({ isLogin: true, role: 'viewer' });
+        setAuthDefaults({ isLogin: true, role: 'viewer', showWizard: false });
       }
       setShowAuthModal(true);
     };
@@ -61,6 +61,16 @@ function App() {
     supabase!.auth.onAuthStateChange(
       (_event, session) => {
         setUser(session?.user || null);
+        
+        // Handle Stripe Checkout Return for Business Owners
+        if (session?.user?.user_metadata?.role === 'business') {
+           const urlParams = new URLSearchParams(window.location.search);
+           if (urlParams.get('checkout') === 'success') {
+              window.dispatchEvent(new CustomEvent('open_auth', { detail: { showWizard: true, role: 'business', isLogin: false } }));
+              // Clean URL
+              window.history.replaceState({}, document.title, window.location.pathname);
+           }
+        }
       }
     );
 
@@ -302,6 +312,7 @@ function App() {
                 onSuccess={(u) => setUser(u)} 
                 defaultIsLogin={authDefaults.isLogin}
                 defaultRole={authDefaults.role}
+                defaultShowWizard={authDefaults.showWizard}
               />
             )}
           </AnimatePresence>
