@@ -440,7 +440,14 @@ export default function MasterAdminDashboard() {
                                   
                                   const originalText = btn.innerText;
                                   btn.innerText = '...';
-                                  await supabase!.from('profiles').update({ platform_fee_percentage: val }).eq('id', user.id);
+                                  const { error } = await supabase!.from('profiles').update({ platform_fee_percentage: val }).eq('id', user.id);
+                                  if (error) {
+                                     alert('Failed to save: ' + error.message);
+                                     btn.innerText = 'Save';
+                                     return;
+                                  }
+                                  
+                                  setUsersList(prev => prev.map(u => u.id === user.id ? { ...u, platform_fee_percentage: val } : u));
                                   btn.innerText = 'Saved';
                                   btn.style.color = '#00ff88';
                                   setTimeout(() => { btn.innerText = 'Save'; btn.style.color = '#0055ff'; }, 2000);
