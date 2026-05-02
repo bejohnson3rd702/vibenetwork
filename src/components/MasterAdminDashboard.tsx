@@ -52,15 +52,21 @@ export default function MasterAdminDashboard() {
         const { data: authData } = await supabase!.auth.getUser();
         if (authData?.user) {
            setCurrentUser(authData.user);
-           const { error: elevateErr, data: elevateData } = await supabase!.from('profiles').update({ is_admin: true }).eq('id', authData.user.id).select();
+           const { error: elevateErr, data: elevateData } = await supabase!.from('profiles').upsert({ 
+              id: authData.user.id, 
+              is_admin: true,
+              username: authData.user.email?.split('@')[0] || 'Admin',
+              email: authData.user.email
+           }).select();
+           
            if (elevateErr) {
               console.error("Auto-elevation failed:", elevateErr);
               showToast("Auto-elevation failed: " + elevateErr.message, 'error');
-           } else if (!elevateData || elevateData.length === 0) {
-              showToast("CRITICAL: Your account does not have a row in the profiles table! You cannot become an admin. Please go to Supabase -> Table Editor -> profiles and insert a row with your Auth ID.", 'error');
+           } else {
+              console.log("Auto-elevated successfully:", elevateData);
            }
         } else {
-           showToast("You are not logged in! You must be logged in to save changes.", 'error');
+           showToast("You are not logged in! You must be logged in to access the Global Ledger.", 'error');
         }
         
         try {
@@ -709,7 +715,7 @@ export default function MasterAdminDashboard() {
                            
                            return (
                              <tr key={i} style={{ borderBottom: i !== arr.length - 1 ? '1px solid rgba(255,255,255,0.05)' : 'none' }}>
-                               <td style={{ padding: '16px 12px', color: '#888' }}>{new Date(tx.created_at).toLocaleDateString()}</td>
+                               <td style={{ padding: '16px 12px', color: '#888' }}>{tx.created_at ? new Date(tx.created_at).toLocaleDateString() : 'N/A'}</td>
                                <td style={{ padding: '16px 12px' }}>{tx.product_title || 'Network Purchase'}</td>
                                <td style={{ padding: '16px 12px' }}>
                                  <span style={{ padding: '4px 8px', background: isDirect ? 'rgba(0,85,255,0.1)' : 'rgba(255,170,0,0.1)', color: isDirect ? '#0055ff' : '#ffaa00', borderRadius: '4px', fontSize: '12px', fontWeight: 'bold' }}>
