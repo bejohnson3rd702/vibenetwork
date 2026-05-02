@@ -34,6 +34,7 @@ export default function MasterAdminDashboard() {
   const [loading, setLoading] = useState(false);
   const [broadcastSource, setBroadcastSource] = useState<'youtube' | 'upload'>('youtube');
   const [broadcastFileUrl, setBroadcastFileUrl] = useState('');
+  const [globalSettings, setGlobalSettings] = useState({ id: '', global_vibe_fee: 15, global_whitelabel_fee: 15 });
 
   async function fetchUsers() {
      setLoading(true);
@@ -48,6 +49,16 @@ export default function MasterAdminDashboard() {
         if (authData?.user) {
            await supabase!.from('profiles').update({ is_admin: true }).eq('id', authData.user.id);
         }
+        
+        try {
+           const { data: settingsData, error } = await supabase!.from('platform_settings').select('*').limit(1).maybeSingle();
+           if (settingsData) {
+              setGlobalSettings(settingsData);
+           } else if (!error) {
+              const { data: newSettings } = await supabase!.from('platform_settings').insert([{ global_vibe_fee: 15, global_whitelabel_fee: 15 }]).select().single();
+              if (newSettings) setGlobalSettings(newSettings);
+           }
+        } catch (e) {}
         
         const { count: usersCount } = await supabase!.from('profiles').select('*', { count: 'exact', head: true });
         const { data: configs } = await supabase!.from('whitelabel_configs').select('*');
@@ -598,12 +609,30 @@ export default function MasterAdminDashboard() {
                            <span style={{ fontSize: '24px', color: '#00ff88', fontWeight: 900 }}>70%</span>
                         </div>
                         <div style={{ background: 'rgba(0,85,255,0.05)', border: '1px solid rgba(0,85,255,0.2)', padding: '16px', borderRadius: '12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                           <span style={{ color: '#aaa', fontWeight: 'bold' }}>Enterprise Whitelabel Fee</span>
-                           <span style={{ fontSize: '24px', color: '#0055ff', fontWeight: 900 }}>15%</span>
+                           <span style={{ color: '#aaa', fontWeight: 'bold' }}>Global Whitelabel Fee Default</span>
+                           <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                              <input type="number" defaultValue={globalSettings.global_whitelabel_fee} onBlur={async (e) => {
+                                 const val = parseFloat(e.target.value);
+                                 if (!isNaN(val) && globalSettings.id) {
+                                    await supabase!.from('platform_settings').update({ global_whitelabel_fee: val }).eq('id', globalSettings.id);
+                                    setGlobalSettings(prev => ({ ...prev, global_whitelabel_fee: val }));
+                                 }
+                              }} style={{ background: 'transparent', border: 'none', color: '#0055ff', fontSize: '24px', fontWeight: 900, width: '60px', textAlign: 'right', outline: 'none' }} />
+                              <span style={{ fontSize: '24px', color: '#0055ff', fontWeight: 900 }}>%</span>
+                           </div>
                         </div>
                         <div style={{ background: 'rgba(255,215,0,0.05)', border: '1px solid rgba(255,215,0,0.2)', padding: '16px', borderRadius: '12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                           <span style={{ color: '#aaa', fontWeight: 'bold' }}>Vibe Network (Gateway Fee)</span>
-                           <span style={{ fontSize: '24px', color: '#FFD700', fontWeight: 900 }}>15%</span>
+                           <span style={{ color: '#aaa', fontWeight: 'bold' }}>Global Vibe Network Gateway Default</span>
+                           <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                              <input type="number" defaultValue={globalSettings.global_vibe_fee} onBlur={async (e) => {
+                                 const val = parseFloat(e.target.value);
+                                 if (!isNaN(val) && globalSettings.id) {
+                                    await supabase!.from('platform_settings').update({ global_vibe_fee: val }).eq('id', globalSettings.id);
+                                    setGlobalSettings(prev => ({ ...prev, global_vibe_fee: val }));
+                                 }
+                              }} style={{ background: 'transparent', border: 'none', color: '#FFD700', fontSize: '24px', fontWeight: 900, width: '60px', textAlign: 'right', outline: 'none' }} />
+                              <span style={{ fontSize: '24px', color: '#FFD700', fontWeight: 900 }}>%</span>
+                           </div>
                         </div>
                      </div>
                    </div>
@@ -652,12 +681,13 @@ export default function MasterAdminDashboard() {
                            const wlConfig = whitelabelsList.find(wl => wl.id === wlId);
                            
                            const isDirect = tx.origin === 'Direct Vibe';
-                           const wlFeePercent = isDirect ? 0 : Number(wlConfig?.platform_fee_percentage || 15);
-                           const totalFeePercent = tx.vibeFeePercent + wlFeePercent;
+                           const wlFeePercent = isDirect ? 0 : Number(wlConfig?.platform_fee_percentage || globalSettings.global_whitelabel_fee);
+                           const vFeePercent = Number(tx.profiles?.platform_fee_percentage || globalSettings.global_vibe_fee);
+                           const totalFeePercent = vFeePercent + wlFeePercent;
                            const creatorCutPercent = 100 - totalFeePercent;
                            
                            const creatorCut = (tx.gross * (creatorCutPercent / 100)).toFixed(2);
-                           const vibeCut = (tx.gross * (tx.vibeFeePercent / 100)).toFixed(2);
+                           const vibeCut = (tx.gross * (vFeePercent / 100)).toFixed(2);
                            const wlCut = isDirect ? 'N/A' : '$' + (tx.gross * (wlFeePercent / 100)).toFixed(2);
                            
                            return (
@@ -670,7 +700,7 @@ export default function MasterAdminDashboard() {
                                  </span>
                                </td>
                                <td style={{ padding: '16px 12px', fontWeight: 'bold' }}>${tx.gross.toFixed(2)}</td>
-                               <td style={{ padding: '16px 12px', color: '#0055ff', fontWeight: 'bold' }}>${vibeCut} <span style={{fontSize:'10px', color:'#0055ff', opacity:0.7}}>({tx.vibeFeePercent}%)</span></td>
+                               <td style={{ padding: '16px 12px', color: '#0055ff', fontWeight: 'bold' }}>${vibeCut} <span style={{fontSize:'10px', color:'#0055ff', opacity:0.7}}>({vFeePercent}%)</span></td>
                                <td style={{ padding: '16px 12px', color: '#ffaa00', fontWeight: 'bold' }}>{wlCut} {!isDirect && <span style={{fontSize:'10px', color:'#ffaa00', opacity:0.7}}>({wlFeePercent}%)</span>}</td>
                                <td style={{ padding: '16px 12px', color: '#00ff88', fontWeight: 'bold' }}>${creatorCut} <span style={{fontSize:'10px', color:'#00ff88', opacity:0.7}}>({creatorCutPercent}%)</span></td>
                              </tr>

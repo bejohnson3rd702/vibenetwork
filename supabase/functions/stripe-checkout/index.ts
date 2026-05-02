@@ -53,15 +53,18 @@ serve(async (req) => {
       });
     }
 
+    // Fetch Global Settings as fallback
+    const { data: globalSettings } = await supabase.from('platform_settings').select('*').limit(1).maybeSingle();
+    const globalVibeFee = globalSettings ? Number(globalSettings.global_vibe_fee) : 15;
+    const globalWlFee = globalSettings ? Number(globalSettings.global_whitelabel_fee) : 15;
+
     // 2. Calculate Total Platform Fee (Vibe Base + Potential Whitelabel)
-    let totalFeePercent = Number(creator.platform_fee_percentage || 15);
+    let totalFeePercent = Number(creator.platform_fee_percentage || globalVibeFee);
     
     // If they belong to an Enterprise Whitelabel, pull that fee too
     if (creator.whitelabel_id) {
        const { data: wl } = await supabase.from('whitelabel_configs').select('platform_fee_percentage').eq('id', creator.whitelabel_id).single();
-       if (wl && wl.platform_fee_percentage) {
-          totalFeePercent += Number(wl.platform_fee_percentage);
-       }
+       totalFeePercent += Number(wl?.platform_fee_percentage || globalWlFee);
     }
 
     // Amount is in cents
