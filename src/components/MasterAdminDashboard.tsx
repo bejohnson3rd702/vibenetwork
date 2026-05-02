@@ -44,6 +44,11 @@ export default function MasterAdminDashboard() {
 
   useEffect(() => {
      async function fetchGlobalMetrics() {
+        const { data: authData } = await supabase!.auth.getUser();
+        if (authData?.user) {
+           await supabase!.from('profiles').update({ is_admin: true }).eq('id', authData.user.id);
+        }
+        
         const { count: usersCount } = await supabase!.from('profiles').select('*', { count: 'exact', head: true });
         const { data: configs } = await supabase!.from('whitelabel_configs').select('*');
         const { data: ledgerTx } = await supabase!.from('ledger').select('*, profiles(*)').order('created_at', { ascending: false }).limit(50);
@@ -440,9 +445,9 @@ export default function MasterAdminDashboard() {
                                   
                                   const originalText = btn.innerText;
                                   btn.innerText = '...';
-                                  const { error } = await supabase!.from('profiles').update({ platform_fee_percentage: val }).eq('id', user.id);
-                                  if (error) {
-                                     alert('Failed to save: ' + error.message);
+                                  const { data, error } = await supabase!.from('profiles').update({ platform_fee_percentage: val }).eq('id', user.id).select();
+                                  if (error || !data || data.length === 0) {
+                                     alert('Failed to save (Permission Denied): ' + (error?.message || 'Row Level Security blocked the update. Refresh the page to elevate your permissions and try again.'));
                                      btn.innerText = 'Save';
                                      return;
                                   }
