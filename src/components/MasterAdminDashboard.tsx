@@ -647,8 +647,12 @@ export default function MasterAdminDashboard() {
                         }
                         
                         return filteredTx.map((tx, i, arr) => {
+                           const originalTx = ledgerData.find(ltx => Number(ltx.amount) === tx.gross && new Date(ltx.created_at).toLocaleDateString() === tx.time);
+                           const wlId = originalTx?.profiles?.whitelabel_id;
+                           const wlConfig = whitelabelsList.find(wl => wl.id === wlId);
+                           
                            const isDirect = tx.origin === 'Direct Vibe';
-                           const wlFeePercent = isDirect ? 0 : 15; // Assumption based on standard whitelabel rate
+                           const wlFeePercent = isDirect ? 0 : Number(wlConfig?.platform_fee_percentage || 15);
                            const totalFeePercent = tx.vibeFeePercent + wlFeePercent;
                            const creatorCutPercent = 100 - totalFeePercent;
                            
@@ -658,15 +662,17 @@ export default function MasterAdminDashboard() {
                            
                            return (
                              <tr key={i} style={{ borderBottom: i !== arr.length - 1 ? '1px solid rgba(255,255,255,0.05)' : 'none' }}>
-                               <td style={{ padding: '16px 12px', color: '#888', fontSize: '13px' }}>{tx.time}</td>
-                               <td style={{ padding: '16px 12px', fontWeight: 'bold' }}>{tx.source}</td>
+                               <td style={{ padding: '16px 12px', color: '#888' }}>{tx.time}</td>
+                               <td style={{ padding: '16px 12px' }}>{tx.source}</td>
                                <td style={{ padding: '16px 12px' }}>
-                                 <span style={{ padding: '4px 8px', borderRadius: '6px', fontSize: '11px', fontWeight: 'bold', background: isDirect ? 'rgba(255,215,0,0.1)' : 'rgba(0,85,255,0.1)', color: isDirect ? '#FFD700' : '#0055ff' }}>{tx.origin}</span>
+                                 <span style={{ padding: '4px 8px', background: isDirect ? 'rgba(0,85,255,0.1)' : 'rgba(255,170,0,0.1)', color: isDirect ? '#0055ff' : '#ffaa00', borderRadius: '4px', fontSize: '12px', fontWeight: 'bold' }}>
+                                   {tx.origin}
+                                 </span>
                                </td>
-                               <td style={{ padding: '16px 12px', fontWeight: 'bold' }}>${Number(tx.gross).toFixed(2)}</td>
-                               <td style={{ padding: '16px 12px', color: '#888' }}>{wlCut}</td>
-                               <td style={{ padding: '16px 12px', color: '#FFD700', fontWeight: 'bold' }}>+${vibeCut}</td>
-                               <td style={{ padding: '16px 12px', color: '#00ff88', fontWeight: 'bold' }}>${creatorCut}</td>
+                               <td style={{ padding: '16px 12px', fontWeight: 'bold' }}>${tx.gross.toFixed(2)}</td>
+                               <td style={{ padding: '16px 12px', color: '#0055ff', fontWeight: 'bold' }}>${vibeCut} <span style={{fontSize:'10px', color:'#0055ff', opacity:0.7}}>({tx.vibeFeePercent}%)</span></td>
+                               <td style={{ padding: '16px 12px', color: '#ffaa00', fontWeight: 'bold' }}>{wlCut} {!isDirect && <span style={{fontSize:'10px', color:'#ffaa00', opacity:0.7}}>({wlFeePercent}%)</span>}</td>
+                               <td style={{ padding: '16px 12px', color: '#00ff88', fontWeight: 'bold' }}>${creatorCut} <span style={{fontSize:'10px', color:'#00ff88', opacity:0.7}}>({creatorCutPercent}%)</span></td>
                              </tr>
                            );
                         });
