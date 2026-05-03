@@ -592,8 +592,15 @@ const ProfileDashboard: React.FC<{ user: any }> = ({ user }) => {
       
       if (imageTarget === 'avatar') {
         setAvatarUrl(data.publicUrl);
+        await supabase!.from('profiles').update({ avatar_url: data.publicUrl }).eq('id', user.id);
+        setProfile((prev: any) => prev ? { ...prev, avatar_url: data.publicUrl } : null);
       } else if (imageTarget === 'homepage') {
-        setHomepageImageUrl(prev => prev ? prev + ',' + data.publicUrl : data.publicUrl);
+        setHomepageImageUrl((prev) => {
+          const newUrls = prev ? prev + ',' + data.publicUrl : data.publicUrl;
+          supabase!.from('profiles').update({ homepage_image_url: newUrls }).eq('id', user.id);
+          setProfile((p: any) => p ? { ...p, homepage_image_url: newUrls } : null);
+          return newUrls;
+        });
       }
       setShowImageModal(false);
     } catch (error: any) {
