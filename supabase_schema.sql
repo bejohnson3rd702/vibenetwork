@@ -89,6 +89,24 @@ CREATE TABLE IF NOT EXISTS public.posts (
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
+-- 6a. Post Likes
+CREATE TABLE IF NOT EXISTS public.post_likes (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    post_id UUID REFERENCES public.posts(id) ON DELETE CASCADE,
+    user_id UUID REFERENCES public.profiles(id) ON DELETE CASCADE,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    UNIQUE(post_id, user_id)
+);
+
+-- 6b. Post Comments
+CREATE TABLE IF NOT EXISTS public.post_comments (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    post_id UUID REFERENCES public.posts(id) ON DELETE CASCADE,
+    user_id UUID REFERENCES public.profiles(id) ON DELETE CASCADE,
+    content TEXT NOT NULL,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
 -- Enable Row Level Security (RLS)
 ALTER TABLE public.whitelabel_configs ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
@@ -96,6 +114,8 @@ ALTER TABLE public.categories ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.videos ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.products ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.posts ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.post_likes ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.post_comments ENABLE ROW LEVEL SECURITY;
 
 -- Create Policies (Public Read Access)
 DROP POLICY IF EXISTS "Allow public read access for whitelabel_configs" ON public.whitelabel_configs;
@@ -110,6 +130,10 @@ DROP POLICY IF EXISTS "Allow public read access for products" ON public.products
 CREATE POLICY "Allow public read access for products" ON public.products FOR SELECT USING (true);
 DROP POLICY IF EXISTS "Allow public read access for posts" ON public.posts;
 CREATE POLICY "Allow public read access for posts" ON public.posts FOR SELECT USING (true);
+DROP POLICY IF EXISTS "Allow public read access for post_likes" ON public.post_likes;
+CREATE POLICY "Allow public read access for post_likes" ON public.post_likes FOR SELECT USING (true);
+DROP POLICY IF EXISTS "Allow public read access for post_comments" ON public.post_comments;
+CREATE POLICY "Allow public read access for post_comments" ON public.post_comments FOR SELECT USING (true);
 
 -- Create Policies (Authenticated Insert/Update for own data)
 DROP POLICY IF EXISTS "Allow users to update own profile" ON public.profiles;
@@ -127,11 +151,25 @@ CREATE POLICY "Allow users to delete own posts" ON public.posts FOR DELETE USING
 DROP POLICY IF EXISTS "Allow users to delete own products" ON public.products;
 CREATE POLICY "Allow users to delete own products" ON public.products FOR DELETE USING (auth.uid() = creator_id);
 
+DROP POLICY IF EXISTS "Allow users to insert own likes" ON public.post_likes;
+CREATE POLICY "Allow users to insert own likes" ON public.post_likes FOR INSERT WITH CHECK (auth.uid() = user_id);
+DROP POLICY IF EXISTS "Allow users to delete own likes" ON public.post_likes;
+CREATE POLICY "Allow users to delete own likes" ON public.post_likes FOR DELETE USING (auth.uid() = user_id);
+
+DROP POLICY IF EXISTS "Allow users to insert own comments" ON public.post_comments;
+CREATE POLICY "Allow users to insert own comments" ON public.post_comments FOR INSERT WITH CHECK (auth.uid() = user_id);
+DROP POLICY IF EXISTS "Allow users to delete own comments" ON public.post_comments;
+CREATE POLICY "Allow users to delete own comments" ON public.post_comments FOR DELETE USING (auth.uid() = user_id);
+
 -- Optional: Allow permissive insert for testing phase (Uncomment if needed)
 DROP POLICY IF EXISTS "Testing Insert All" ON public.products;
 CREATE POLICY "Testing Insert All" ON public.products FOR INSERT WITH CHECK (true);
 DROP POLICY IF EXISTS "Testing Insert All" ON public.posts;
 CREATE POLICY "Testing Insert All" ON public.posts FOR INSERT WITH CHECK (true);
+DROP POLICY IF EXISTS "Testing Insert All" ON public.post_likes;
+CREATE POLICY "Testing Insert All" ON public.post_likes FOR INSERT WITH CHECK (true);
+DROP POLICY IF EXISTS "Testing Insert All" ON public.post_comments;
+CREATE POLICY "Testing Insert All" ON public.post_comments FOR INSERT WITH CHECK (true);
 
 -- Admin Global Access Bypasses (Requires is_admin = true on the user's profile)
 DROP POLICY IF EXISTS "Admins can update any profile" ON public.profiles;

@@ -430,6 +430,9 @@ const ProfileDashboard: React.FC<{ user: any }> = ({ user }) => {
   const [requestFeature, setRequestFeature] = useState(false);
   const [postMediaUrl, setPostMediaUrl] = useState('');
   const [uploadingPostMedia, setUploadingPostMedia] = useState(false);
+  
+  // Interactions
+  const [commentTexts, setCommentTexts] = useState<Record<string, string>>({});
 
   // Store internal state MUST be above early returns!
   const [newProduct, setNewProduct] = useState({ title: '', price: '19.99', type: 'digital', image_url: '', sizes: '', colors: '' });
@@ -491,13 +494,27 @@ const ProfileDashboard: React.FC<{ user: any }> = ({ user }) => {
         }
         
         // Load Feed Posts
-        const { data: postsData } = await supabase!.from('posts').select('*').eq('creator_id', targetProfileId).order('created_at', { ascending: false });
+        let postsData: any[] | null = null;
+        try {
+          const { data, error } = await supabase!.from('posts').select('*, post_likes(user_id), post_comments(*, user:profiles(username, avatar_url))').eq('creator_id', targetProfileId).order('created_at', { ascending: false });
+          if (!error) postsData = data;
+          else {
+             const fallback = await supabase!.from('posts').select('*').eq('creator_id', targetProfileId).order('created_at', { ascending: false });
+             postsData = fallback.data;
+          }
+        } catch {
+          const fallback = await supabase!.from('posts').select('*').eq('creator_id', targetProfileId).order('created_at', { ascending: false });
+          postsData = fallback.data;
+        }
+
         if (postsData && postsData.length > 0) {
           setFeed(postsData.map((p: any) => ({
             id: p.id,
             title: p.content || p.title,
             locked: p.is_locked || false,
-            likes: p.likes || 0,
+            likes: p.post_likes ? p.post_likes.length : (p.likes || 0),
+            hasLiked: p.post_likes ? p.post_likes.some((l: any) => l.user_id === user?.id) : false,
+            comments: p.post_comments ? p.post_comments.map((c: any) => ({ id: c.id, text: c.content, user: c.user?.username || 'User', avatar: c.user?.avatar_url || '' })) : [],
             date: p.created_at ? new Date(p.created_at).toLocaleDateString() : 'Just now',
             img: p.image_url || null
           })));
@@ -805,6 +822,42 @@ const ProfileDashboard: React.FC<{ user: any }> = ({ user }) => {
     setPostTitle('');
     setPostMediaUrl('');
     alert(requestFeature ? 'Post Submitted & Feature Requested to Admins!' : 'Content Published Successfully!');
+  };
+
+  const handleLike = async (postId: string) => {
+    if (!user) { alert('Please log in to interact.'); return; }
+    
+    const targetPost = feed.find(p => p.id === postId);
+    if (!targetPost) return;
+
+    if (targetPost.hasLiked) {
+      // Unlike
+      setFeed(feed.map(p => p.id === postId ? { ...p, likes: Math.max(0, p.likes - 1), hasLiked: false } : p));
+      await supabase!.from('post_likes').delete().match({ post_id: postId, user_id: user.id }).catch(() => {});
+    } else {
+      // Like
+      setFeed(feed.map(p => p.id === postId ? { ...p, likes: p.likes + 1, hasLiked: true } : p));
+      await supabase!.from('post_likes').insert([{ post_id: postId, user_id: user.id }]).catch(() => {});
+    }
+  };
+
+  const handleComment = async (postId: string) => {
+    if (!user) { alert('Please log in to comment.'); return; }
+    const text = commentTexts[postId]?.trim();
+    if (!text) return;
+
+    const newComment = { id: Date.now().toString(), text, user: profile?.username || user.email?.split('@')[0] || 'User', avatar: profile?.avatar_url || '' };
+    
+    // Optimistic UI update
+    setFeed(feed.map(p => p.id === postId ? { ...p, comments: [...(p.comments || []), newComment] } : p));
+    setCommentTexts(prev => ({ ...prev, [postId]: '' }));
+
+    // Send to DB
+    try {
+       await supabase!.from('post_comments').insert([{ post_id: postId, user_id: user.id, content: text }]);
+    } catch {
+       // Silently fail if table doesn't exist
+    }
   };
 
   const enhanceText = async (field: 'bio' | 'post') => {
@@ -1216,6 +1269,62 @@ const ProfileDashboard: React.FC<{ user: any }> = ({ user }) => {
                   </div>
                 )}
               </div>
+
+              {/* Engagement Section (Likes & Comments) */}
+              {(!post.locked || isSubscribed || isOwnProfile) && (
+                <div style={{ padding: '16px 20px', borderTop: '1px solid rgba(255,255,255,0.05)', background: 'rgba(0,0,0,0.2)' }}>
+                  <div style={{ display: 'flex', gap: '24px', marginBottom: '16px' }}>
+                    <button 
+                      onClick={() => handleLike(post.id)}
+                      style={{ background: 'none', border: 'none', color: post.hasLiked ? '#ff4d85' : 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontWeight: 'bold', transition: 'color 0.2s' }}
+                    >
+                      <Heart size={20} fill={post.hasLiked ? '#ff4d85' : 'none'} /> {post.likes || 0}
+                    </button>
+                    <button 
+                      style={{ background: 'none', border: 'none', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontWeight: 'bold' }}
+                    >
+                      <MessageCircle size={20} /> {post.comments?.length || 0}
+                    </button>
+                  </div>
+
+                  {/* Comments List */}
+                  {post.comments && post.comments.length > 0 && (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginBottom: '16px', maxHeight: '200px', overflowY: 'auto' }}>
+                      {post.comments.map((c: any) => (
+                        <div key={c.id} style={{ display: 'flex', gap: '12px' }}>
+                          <img src={c.avatar || `https://ui-avatars.com/api/?name=${c.user}&background=random`} alt={c.user} style={{ width: 28, height: 28, borderRadius: '50%' }} />
+                          <div style={{ background: 'rgba(255,255,255,0.05)', padding: '8px 12px', borderRadius: '12px', fontSize: '14px' }}>
+                            <strong style={{ display: 'block', color: '#fff', marginBottom: '2px', fontSize: '13px' }}>{c.user}</strong>
+                            <span style={{ color: 'var(--text-muted)' }}>{c.text}</span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  {/* Add Comment Input */}
+                  <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+                    <img src={profile?.avatar_url || (user ? `https://ui-avatars.com/api/?name=${user.email?.charAt(0)}&background=random` : 'https://ui-avatars.com/api/?name=Guest')} alt="You" style={{ width: 32, height: 32, borderRadius: '50%' }} />
+                    <input 
+                      type="text" 
+                      placeholder="Add a comment..."
+                      value={commentTexts[post.id] || ''}
+                      onChange={(e) => setCommentTexts(prev => ({ ...prev, [post.id]: e.target.value }))}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') handleComment(post.id);
+                      }}
+                      style={{ flex: 1, background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', padding: '10px 16px', borderRadius: '20px', color: '#fff', outline: 'none' }}
+                    />
+                    <button 
+                      onClick={() => handleComment(post.id)}
+                      disabled={!commentTexts[post.id]?.trim()}
+                      style={{ background: commentTexts[post.id]?.trim() ? '#ff4d85' : 'rgba(255,255,255,0.1)', border: 'none', borderRadius: '50%', width: 36, height: 36, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', cursor: commentTexts[post.id]?.trim() ? 'pointer' : 'not-allowed', transition: 'background 0.2s' }}
+                    >
+                      <ArrowUpRight size={18} />
+                    </button>
+                  </div>
+                </div>
+              )}
 
             </motion.div>
           ))}
