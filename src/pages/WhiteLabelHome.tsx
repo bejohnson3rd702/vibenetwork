@@ -18,7 +18,7 @@ export default function WhiteLabelHome({ wlConfig, categories, user, activeVideo
     <div style={{
        width: '100%', minHeight: '100vh', 
        backgroundColor: 'var(--bg-color)',
-       display:'flex', flexDirection: 'column', alignItems:'center', justifyContent:'center', position: 'relative',
+       display:'flex', flexDirection: 'column', alignItems:'center', justifyContent:'flex-start', position: 'relative',
        textAlign: 'center', overflow: 'hidden'
     }}>
        {/* Background Mesh & Image Layer */}
@@ -35,7 +35,8 @@ export default function WhiteLabelHome({ wlConfig, categories, user, activeVideo
        <div style={{ position: 'absolute', inset: 0, background: `radial-gradient(circle at 50% 30%, ${wlConfig.accent || 'var(--accent-primary)'}44, transparent 60%)`, zIndex: 1, mixBlendMode: 'screen' }} />
        <div style={{ position: 'absolute', inset: 0, background: `linear-gradient(to bottom, transparent 40%, ${wlConfig.bg || 'var(--bg-color)'} 100%)`, zIndex: 1 }} />
        
-       <div className="px-mobile-sm py-mobile-sm" style={{ zIndex: 2, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '32px', marginTop: '60px' }}>
+       {/* Hero Text Section (Min Height to clear viewport and center properly) */}
+       <div className="px-mobile-sm py-mobile-sm" style={{ zIndex: 2, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '75vh', width: '100%', paddingTop: '120px', gap: '32px' }}>
           <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, delay: 0.2, ease: [0.16, 1, 0.3, 1] }} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '16px' }}>
             <div style={{ padding: '8px 16px', background: 'var(--bg-surface)', backdropFilter: 'blur(10px)', border: `1px solid ${wlConfig.accent || 'var(--accent-primary)'}44`, borderRadius: '30px', display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
               <div style={{ width: 8, height: 8, borderRadius: '50%', background: wlConfig.accent || 'var(--accent-primary)', boxShadow: `0 0 10px ${wlConfig.accent || 'var(--accent-primary)'}` }} />
@@ -57,6 +58,7 @@ export default function WhiteLabelHome({ wlConfig, categories, user, activeVideo
           </motion.div>
        </div>
        
+       {/* Featured Content Sliders Section */}
        <div id="featured-content" style={{ position: 'relative', zIndex: 2, width: '100%', paddingBottom: '80px' }}>
           
           <div id="slider-section-container">
