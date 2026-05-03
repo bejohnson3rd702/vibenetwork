@@ -18,6 +18,7 @@ const CookieConsent = lazy(() => import('./components/CookieConsent'));
 const TermsOfService = lazy(() => import('./components/TermsOfService'));
 const PrivacyPolicy = lazy(() => import('./components/PrivacyPolicy'));
 const Footer = lazy(() => import('./components/Footer'));
+const FoodTruck = lazy(() => import('./pages/FoodTruck'));
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { WhiteLabelContext } from './context/WhiteLabelContext';
 import { supabase, storageKey } from './supabaseClient';
@@ -276,6 +277,7 @@ function App() {
               <Route path="/profile" element={<ProfileDashboard user={user} />} />
               <Route path="/profile/:creatorId" element={<ProfileDashboard user={user} />} />
               <Route path="/call/:callId" element={<VirtualCallRoom />} />
+              <Route path="/food-truck" element={<FoodTruck />} />
             </Routes>
           </Suspense>
           
@@ -341,6 +343,7 @@ function App() {
                       <Route path="/profile" element={<ProfileDashboard user={user} />} />
                       <Route path="/profile/:creatorId" element={<ProfileDashboard user={user} />} />
                       <Route path="/call/:callId" element={<VirtualCallRoom />} />
+                      <Route path="/food-truck" element={<FoodTruck />} />
                     </Routes>
                   </Suspense>
                 </>
