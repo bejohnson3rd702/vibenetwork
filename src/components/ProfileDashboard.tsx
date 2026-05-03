@@ -428,6 +428,8 @@ const ProfileDashboard: React.FC<{ user: any }> = ({ user }) => {
   const [postTitle, setPostTitle] = useState('');
   const [isLocked, setIsLocked] = useState(true);
   const [requestFeature, setRequestFeature] = useState(false);
+  const [postMediaUrl, setPostMediaUrl] = useState('');
+  const [uploadingPostMedia, setUploadingPostMedia] = useState(false);
 
   // Store internal state MUST be above early returns!
   const [newProduct, setNewProduct] = useState({ title: '', price: '19.99', type: 'digital', image_url: '', sizes: '', colors: '' });
@@ -757,16 +759,32 @@ const ProfileDashboard: React.FC<{ user: any }> = ({ user }) => {
     setSaving(false);
   };
 
+  const handlePostMediaUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    try {
+      if (!event.target.files || event.target.files.length === 0) return;
+      setUploadingPostMedia(true);
+      const file = event.target.files[0];
+      const filePath = `${user?.id}/post_${Math.random()}.${file.name.split('.').pop()}`;
+      await supabase!.storage.from('images').upload(filePath, file);
+      const { data } = supabase!.storage.from('images').getPublicUrl(filePath);
+      setPostMediaUrl(data.publicUrl);
+    } catch {
+      alert('Upload failed. Did you run the storage buckets script?');
+    } finally {
+      setUploadingPostMedia(false);
+    }
+  };
+
   const handlePostSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!postTitle.trim()) return;
+    if (!postTitle.trim() && !postMediaUrl) return;
     
     const newPost = {
       creator_id: targetProfileId,
       content: postTitle,
       is_locked: isLocked,
       likes: 0,
-      image_url: 'https://vibenetwork.tv/wp-content/uploads/2026/02/mukap-vibe-tv-networkk_11zon.png'
+      image_url: postMediaUrl || 'https://vibenetwork.tv/wp-content/uploads/2026/02/mukap-vibe-tv-networkk_11zon.png'
     };
     
     // Add to supabase
@@ -785,6 +803,7 @@ const ProfileDashboard: React.FC<{ user: any }> = ({ user }) => {
       }, ...feed]);
     }
     setPostTitle('');
+    setPostMediaUrl('');
     alert(requestFeature ? 'Post Submitted & Feature Requested to Admins!' : 'Content Published Successfully!');
   };
 
@@ -1089,10 +1108,19 @@ const ProfileDashboard: React.FC<{ user: any }> = ({ user }) => {
             </div>
             
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '20px', paddingTop: '20px', borderTop: '1px solid rgba(255,255,255,0.05)' }}>
-              <div style={{ display: 'flex', gap: '16px' }}>
-                <button type="button" style={{ display: 'flex', alignItems: 'center', gap: '8px', background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer' }}>
-                  <ImageIcon size={18} /> Media
-                </button>
+              <div style={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
+                <label style={{ display: 'flex', alignItems: 'center', gap: '8px', background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer' }}>
+                  <input type="file" accept="image/*" onChange={handlePostMediaUpload} style={{ display: 'none' }} disabled={uploadingPostMedia} />
+                  <ImageIcon size={18} /> {uploadingPostMedia ? 'Uploading...' : 'Media'}
+                </label>
+                
+                {postMediaUrl && (
+                  <div style={{ position: 'relative', width: '40px', height: '40px', borderRadius: '8px', overflow: 'hidden' }}>
+                    <img src={postMediaUrl} alt="Preview" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                    <button type="button" onClick={() => setPostMediaUrl('')} style={{ position: 'absolute', top: 2, right: 2, background: 'rgba(0,0,0,0.5)', color: '#fff', border: 'none', borderRadius: '50%', padding: '2px', cursor: 'pointer' }}>×</button>
+                  </div>
+                )}
+                
                 <label style={{ display: 'flex', alignItems: 'center', gap: '8px', color: isLocked ? '#FFD700' : '#4CAF50', cursor: 'pointer', fontSize: '14px' }}>
                   <input type="checkbox" checked={isLocked} onChange={(e) => setIsLocked(e.target.checked)} style={{ display: 'none' }} />
                   {isLocked ? <><Lock size={16} /> Sub. Only</> : <><Unlock size={16} /> Free</>}
@@ -1103,7 +1131,7 @@ const ProfileDashboard: React.FC<{ user: any }> = ({ user }) => {
                 </label>
               </div>
               
-              <button disabled={!postTitle.trim()} type="submit" style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '10px 24px', background: postTitle.trim() ? '#fff' : 'rgba(255,255,255,0.1)', color: postTitle.trim() ? '#000' : '#888', border: 'none', borderRadius: '20px', fontWeight: 'bold', cursor: postTitle.trim() ? 'pointer' : 'not-allowed' }}>
+              <button disabled={(!postTitle.trim() && !postMediaUrl) || uploadingPostMedia} type="submit" style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '10px 24px', background: (postTitle.trim() || postMediaUrl) ? '#fff' : 'rgba(255,255,255,0.1)', color: (postTitle.trim() || postMediaUrl) ? '#000' : '#888', border: 'none', borderRadius: '20px', fontWeight: 'bold', cursor: (postTitle.trim() || postMediaUrl) ? 'pointer' : 'not-allowed' }}>
                 Post Content
               </button>
             </div>
