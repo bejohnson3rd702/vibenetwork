@@ -1164,7 +1164,7 @@ const ProfileDashboard: React.FC<{ user: any }> = ({ user }) => {
 
               {/* Post Body (Content + Media) */}
               <div style={{ position: 'relative' }}>
-                <div style={{ filter: post.locked && !isOwnProfile && !isSubscribed ? 'blur(8px)' : 'none', opacity: post.locked && !isOwnProfile && !isSubscribed ? 0.4 : 1, transition: 'all 0.3s' }}>
+                <div style={{ filter: post.locked && (!isSubscribed || isOwnProfile) ? 'blur(8px)' : 'none', opacity: post.locked && (!isSubscribed || isOwnProfile) ? 0.4 : 1, transition: 'all 0.3s' }} id={`post-content-${post.id}`}>
                   {/* Post Content / Title */}
                   <div style={{ padding: '0 20px 20px 20px', fontSize: '16px', lineHeight: 1.5 }}>
                     {post.title}
@@ -1177,23 +1177,41 @@ const ProfileDashboard: React.FC<{ user: any }> = ({ user }) => {
                 </div>
 
                 {/* Locked Overlay */}
-                {post.locked && !isOwnProfile && !isSubscribed && (
-                  <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', zIndex: 10, padding: '20px', textAlign: 'center' }}>
+                {post.locked && (!isSubscribed || isOwnProfile) && (
+                  <div id={`post-overlay-${post.id}`} style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', zIndex: 10, padding: '20px', textAlign: 'center' }}>
                     <div style={{ background: 'rgba(0,0,0,0.8)', padding: '30px 40px', borderRadius: '24px', border: '1px solid rgba(255,215,0,0.2)', display: 'flex', flexDirection: 'column', alignItems: 'center', boxShadow: '0 20px 40px rgba(0,0,0,0.5)' }}>
                       <Lock size={48} color="#FFD700" style={{ marginBottom: '16px' }} />
                       <h3 style={{ color: '#fff', fontSize: '20px', margin: '0 0 16px 0' }}>Subscriber Exclusive</h3>
-                      <button 
-                        onClick={() => {
-                          if (!user) { alert('Please log in to subscribe.'); return; }
-                          handleStripeCheckout('Monthly Subscription', Number(subPrice));
-                          setIsSubscribed(true);
-                        }}
-                        style={{ padding: '12px 30px', background: '#FFD700', border: 'none', borderRadius: '20px', color: '#000', fontWeight: 'bold', cursor: 'pointer', fontSize: '16px', transition: 'transform 0.2s' }}
-                        onMouseOver={e=>e.currentTarget.style.transform='scale(1.05)'}
-                        onMouseOut={e=>e.currentTarget.style.transform='scale(1)'}
-                      >
-                        Subscribe for ${subPrice}/mo to unlock
-                      </button>
+                      
+                      {isOwnProfile ? (
+                        <button 
+                          onClick={() => {
+                            const content = document.getElementById(`post-content-${post.id}`);
+                            const overlay = document.getElementById(`post-overlay-${post.id}`);
+                            if (content && overlay) {
+                              content.style.filter = 'none';
+                              content.style.opacity = '1';
+                              overlay.style.display = 'none';
+                            }
+                          }}
+                          style={{ padding: '12px 30px', background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.2)', borderRadius: '20px', color: '#fff', fontWeight: 'bold', cursor: 'pointer', fontSize: '14px', transition: 'all 0.2s' }}
+                        >
+                          Reveal (Creator Preview)
+                        </button>
+                      ) : (
+                        <button 
+                          onClick={() => {
+                            if (!user) { alert('Please log in to subscribe.'); return; }
+                            handleStripeCheckout('Monthly Subscription', Number(subPrice));
+                            setIsSubscribed(true);
+                          }}
+                          style={{ padding: '12px 30px', background: '#FFD700', border: 'none', borderRadius: '20px', color: '#000', fontWeight: 'bold', cursor: 'pointer', fontSize: '16px', transition: 'transform 0.2s' }}
+                          onMouseOver={e=>e.currentTarget.style.transform='scale(1.05)'}
+                          onMouseOut={e=>e.currentTarget.style.transform='scale(1)'}
+                        >
+                          Subscribe for ${subPrice}/mo to unlock
+                        </button>
+                      )}
                     </div>
                   </div>
                 )}
