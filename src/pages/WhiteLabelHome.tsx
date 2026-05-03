@@ -63,7 +63,7 @@ export default function WhiteLabelHome({ wlConfig, categories, user, activeVideo
           
           <div id="slider-section-container">
             {(() => {
-              const displayCategories = [...categories];
+              const displayCategories = categories.filter((c: any) => c.title !== 'Live DJ Sets');
               if (user) {
                 displayCategories.unshift({
                   title: 'Network Executives',
