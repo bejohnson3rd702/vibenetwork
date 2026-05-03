@@ -908,7 +908,7 @@ const ProfileDashboard: React.FC<{ user: any }> = ({ user }) => {
                 <div style={{ 
                   position: 'relative', zIndex: 1,
                   width: '140px', height: '140px', borderRadius: '50%', 
-                  background: avatarUrl ? `url(${avatarUrl})` : 'linear-gradient(135deg, #FF0055, #8A2BE2)',
+                  backgroundImage: avatarUrl ? `url(${avatarUrl})` : 'linear-gradient(135deg, #FF0055, #8A2BE2)',
                   backgroundSize: 'cover', backgroundPosition: 'center',
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
                   fontSize: '56px', fontWeight: 'bold', border: '4px solid rgba(255,255,255,0.2)', boxShadow: '0 10px 30px rgba(0,0,0,0.5)'
