@@ -24,3 +24,9 @@ dist-ssr
 *.sw?
 node-v*.tar.gz
 .vercel
+
+# macOS metadata
+._*
+
+# node binaries
+node-v*/
