@@ -955,10 +955,10 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
   const totalSlots = (showHost ? 1 : 0) + visibleGuests.length;
   
   return (
-    <div style={{ minHeight: '100vh', background: 'var(--bg-color)', color: 'var(--text-primary)', position: 'relative' }}>
+    <div style={{ minHeight: '100vh', background: isNetworkLevel ? 'transparent' : 'var(--bg-color)', color: 'var(--text-primary)', position: 'relative' }}>
       
       {/* Immersive Hero Banner */}
-      {!isGuestMode && (
+      {!isGuestMode && !isNetworkLevel && (
         <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '400px', zIndex: 0 }}>
           <div style={{ position: 'absolute', inset: 0, backgroundImage: `url(${(homepageImageUrl ? homepageImageUrl.split(',')[currentBgIndex] : null) || profile?.avatar_url || 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&q=80&w=2500'})`, backgroundSize: 'cover', backgroundPosition: 'center', filter: 'brightness(0.6) saturate(1.2)', transition: 'background-image 1s ease-in-out' }} />
           <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to bottom, transparent 30%, #050505 100%)' }} />
@@ -968,7 +968,7 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
       )}
 
       {/* Main Content Wrapper */}
-      <div style={{ position: 'relative', zIndex: 1, paddingTop: isGuestMode ? '80px' : '200px' }}>
+      <div style={{ position: 'relative', zIndex: 1, paddingTop: isGuestMode || isNetworkLevel ? '80px' : '200px' }}>
       
         {/* View Toggle Bar (Only for account owner) */}
         {isOwnProfile && isInfluencer && !isNetworkLevel && (
@@ -996,7 +996,7 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
           {!isGuestMode && (
             <>
           {/* Glassmorphic Creator Header */}
-          <div style={{ background: 'rgba(15, 15, 15, 0.4)', backdropFilter: 'blur(24px)', padding: '40px', borderRadius: '32px', border: '1px solid rgba(255,255,255,0.08)', position: 'relative', boxShadow: '0 20px 40px rgba(0,0,0,0.4)' }}>
+          <div style={{ background: isNetworkLevel ? 'transparent' : 'rgba(15, 15, 15, 0.4)', backdropFilter: isNetworkLevel ? 'none' : 'blur(24px)', padding: isNetworkLevel ? '0 40px 40px' : '40px', borderRadius: '32px', border: isNetworkLevel ? 'none' : '1px solid rgba(255,255,255,0.08)', position: 'relative', boxShadow: isNetworkLevel ? 'none' : '0 20px 40px rgba(0,0,0,0.4)' }}>
             
             {isOwnProfile && (
               <button onClick={async () => { await supabase!.auth.signOut(); window.location.href = '/' + window.location.search; }} style={{ position: 'absolute', top: 30, right: 30, background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: 'var(--text-primary)', padding: '8px 16px', borderRadius: '20px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px', backdropFilter: 'blur(10px)', transition: 'background 0.2s' }} onMouseOver={e => e.currentTarget.style.background = 'rgba(255,255,255,0.1)'} onMouseOut={e => e.currentTarget.style.background = 'rgba(255,255,255,0.05)'}>
