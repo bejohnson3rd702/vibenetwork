@@ -109,7 +109,9 @@ function App() {
               contactPhone: e.detail.contactPhone,
               contactAddress: e.detail.contactAddress,
               enableWatchLive: e.detail.enableWatchLive !== undefined ? e.detail.enableWatchLive : true,
-              enableBooking: e.detail.enableBooking !== undefined ? e.detail.enableBooking : false
+              enableBooking: e.detail.enableBooking !== undefined ? e.detail.enableBooking : false,
+              heroLayoutMode: e.detail.heroLayoutMode || 'verbiage',
+              heroVideoUrl: e.detail.heroVideoUrl || ''
            }
          }).select().single();
 
@@ -195,7 +197,9 @@ function App() {
               contactAddress: localTenant.theme?.contactAddress || localTenant.contactAddress,
               owner_id: localTenant.owner_id,
               enableWatchLive: localTenant.theme?.enableWatchLive !== undefined ? localTenant.theme.enableWatchLive : (localTenant.enableWatchLive !== undefined ? localTenant.enableWatchLive : true),
-              enableBooking: localTenant.theme?.enableBooking !== undefined ? localTenant.theme.enableBooking : (localTenant.enableBooking !== undefined ? localTenant.enableBooking : false)
+              enableBooking: localTenant.theme?.enableBooking !== undefined ? localTenant.theme.enableBooking : (localTenant.enableBooking !== undefined ? localTenant.enableBooking : false),
+              heroLayoutMode: localTenant.theme?.heroLayoutMode || localTenant.heroLayoutMode || 'verbiage',
+              heroVideoUrl: localTenant.theme?.heroVideoUrl || localTenant.heroVideoUrl || ''
            });
         } else {
            query = query.eq('id', forceTenant).limit(1);
@@ -220,7 +224,9 @@ function App() {
               heroCopy: mConf.theme?.heroCopy || null,
               owner_id: mConf.owner_id,
               enableWatchLive: mConf.theme?.enableWatchLive !== undefined ? mConf.theme.enableWatchLive : true,
-              enableBooking: mConf.theme?.enableBooking !== undefined ? mConf.theme.enableBooking : false
+              enableBooking: mConf.theme?.enableBooking !== undefined ? mConf.theme.enableBooking : false,
+              heroLayoutMode: mConf.theme?.heroLayoutMode || 'verbiage',
+              heroVideoUrl: mConf.theme?.heroVideoUrl || ''
            });
         }
       }
@@ -247,7 +253,9 @@ function App() {
              contactAddress: dbConf.theme?.contactAddress,
              owner_id: dbConf.owner_id,
              enableWatchLive: dbConf.theme?.enableWatchLive !== undefined ? dbConf.theme.enableWatchLive : (dbConf.enableWatchLive !== undefined ? dbConf.enableWatchLive : true),
-             enableBooking: dbConf.theme?.enableBooking !== undefined ? dbConf.theme.enableBooking : (dbConf.enableBooking !== undefined ? dbConf.enableBooking : false)
+             enableBooking: dbConf.theme?.enableBooking !== undefined ? dbConf.theme.enableBooking : (dbConf.enableBooking !== undefined ? dbConf.enableBooking : false),
+             heroLayoutMode: dbConf.theme?.heroLayoutMode || 'verbiage',
+             heroVideoUrl: dbConf.theme?.heroVideoUrl || ''
           });
         }
       }

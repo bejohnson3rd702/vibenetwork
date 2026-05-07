@@ -16,6 +16,8 @@ export interface WhiteLabelConfig {
   owner_id?: string;
   enableWatchLive?: boolean;
   enableBooking?: boolean;
+  heroLayoutMode?: 'verbiage' | 'video' | 'slider';
+  heroVideoUrl?: string;
 }
 
 interface WhiteLabelContextProps {

@@ -74,16 +74,16 @@ export default function BusinessAdminDashboard({ onClose }: { onClose: () => voi
   const [uploadStatus, setUploadStatus] = useState<string | null>(null);
 
   const [heroCopy, setHeroCopy] = useState(wlConfig.heroCopy || '');
-  const [btnPrimary, setBtnPrimary] = useState('Access Admin Dashboard');
-  
   const [selectedLead, setSelectedLead] = useState<any>(null);
   const [leads, setLeads] = useState<any[]>([]);
-
-  const [contactEmail, setContactEmail] = useState(wlConfig.contactEmail || 'sales@vibenetwork.tv');
-  const [contactPhone, setContactPhone] = useState(wlConfig.contactPhone || '1-800-VIBE-NET');
-  const [contactAddress, setContactAddress] = useState(wlConfig.contactAddress || '123 Enterprise Way, Silicon Valley');
-  const [enableWatchLive, setEnableWatchLive] = useState(wlConfig.enableWatchLive !== false);
-  const [enableBooking, setEnableBooking] = useState(wlConfig.enableBooking || false);
+  const [btnPrimary, setBtnPrimary] = useState(wlConfig.btnPrimary || 'Access Admin Dashboard');
+  const [contactEmail, setContactEmail] = useState(wlConfig.contactEmail || '');
+  const [contactPhone, setContactPhone] = useState(wlConfig.contactPhone || '');
+  const [contactAddress, setContactAddress] = useState(wlConfig.contactAddress || '');
+  const [enableWatchLive, setEnableWatchLive] = useState(wlConfig?.enableWatchLive ?? true);
+  const [enableBooking, setEnableBooking] = useState(wlConfig?.enableBooking ?? false);
+  const [heroLayoutMode, setHeroLayoutMode] = useState<'verbiage' | 'video' | 'slider'>(wlConfig?.heroLayoutMode || 'verbiage');
+  const [heroVideoUrl, setHeroVideoUrl] = useState(wlConfig?.heroVideoUrl || '');
 
   useEffect(() => {
      const loadLeads = async () => {
@@ -108,7 +108,9 @@ export default function BusinessAdminDashboard({ onClose }: { onClose: () => voi
            contactPhone,
            contactAddress,
            enableWatchLive,
-           enableBooking
+           enableBooking,
+           heroLayoutMode,
+           heroVideoUrl
         }
      }));
      alert("Live Architecture Successfully Deployed to Master Server!");
@@ -167,7 +169,27 @@ export default function BusinessAdminDashboard({ onClose }: { onClose: () => voi
                   <p style={{ color: 'var(--text-muted)', fontSize: '18px', lineHeight: 1.5 }}>Tune the primary verbiage, dynamic CTA buttons, and background master layers of the main site entry point.</p>
                 </div>
                 
-                <AiTextArea label="Hero Marketing Verbiage" defaultValue={wlConfig.heroCopy} accent={wlConfig.accent} onChange={(v) => setHeroCopy(v)} />
+                <div style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)', padding: '24px 30px', borderRadius: '20px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                   <h3 style={{ margin: '0 0 4px 0', fontSize: '20px' }}>Hero Layout Mode</h3>
+                   <p style={{ margin: 0, color: 'var(--text-muted)', fontSize: '15px', marginBottom: '10px' }}>Choose the primary format for the center of the hero section.</p>
+                   <select value={heroLayoutMode} onChange={(e: any) => setHeroLayoutMode(e.target.value)} style={{ padding: '14px', background: 'rgba(0,0,0,0.5)', color: 'var(--text-primary)', border: '1px solid rgba(255,255,255,0.2)', borderRadius: '12px', fontSize: '16px', outline: 'none' }}>
+                      <option value="verbiage">Verbiage (Standard Title & Subtext)</option>
+                      <option value="video">Welcome Video (Embedded Player)</option>
+                      <option value="slider">Video Slider (Mini Carousel)</option>
+                   </select>
+                </div>
+
+                {heroLayoutMode === 'video' && (
+                  <div style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)', padding: '24px 30px', borderRadius: '20px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                     <h3 style={{ margin: '0 0 4px 0', fontSize: '20px' }}>Welcome Video URL</h3>
+                     <p style={{ margin: 0, color: 'var(--text-muted)', fontSize: '15px', marginBottom: '10px' }}>Enter a YouTube URL to embed in the center of the hero section.</p>
+                     <input type="text" value={heroVideoUrl} onChange={(e) => setHeroVideoUrl(e.target.value)} placeholder="e.g. https://youtube.com/watch?v=..." style={{ width: '100%', padding: '14px', background: 'rgba(0,0,0,0.5)', color: 'var(--text-primary)', border: '1px solid rgba(255,255,255,0.2)', borderRadius: '12px', fontSize: '16px', outline: 'none' }} />
+                  </div>
+                )}
+
+                {heroLayoutMode === 'verbiage' && (
+                  <AiTextArea label="Hero Marketing Verbiage" defaultValue={wlConfig.heroCopy} accent={wlConfig.accent} onChange={(v) => setHeroCopy(v)} />
+                )}
 
                 <div style={{ display: 'flex', gap: '20px' }}>
                    <AiInput label="Primary Button Text" defaultValue="Access Admin Dashboard" accent={wlConfig.accent} onChange={(v) => setBtnPrimary(v)} />
