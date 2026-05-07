@@ -194,8 +194,8 @@ function App() {
               contactPhone: localTenant.theme?.contactPhone || localTenant.contactPhone,
               contactAddress: localTenant.theme?.contactAddress || localTenant.contactAddress,
               owner_id: localTenant.owner_id,
-              enableWatchLive: localTenant.theme?.enableWatchLive !== undefined ? localTenant.theme.enableWatchLive : true,
-              enableBooking: localTenant.theme?.enableBooking !== undefined ? localTenant.theme.enableBooking : false
+              enableWatchLive: localTenant.theme?.enableWatchLive !== undefined ? localTenant.theme.enableWatchLive : (localTenant.enableWatchLive !== undefined ? localTenant.enableWatchLive : true),
+              enableBooking: localTenant.theme?.enableBooking !== undefined ? localTenant.theme.enableBooking : (localTenant.enableBooking !== undefined ? localTenant.enableBooking : false)
            });
         } else {
            query = query.eq('id', forceTenant).limit(1);
@@ -246,8 +246,8 @@ function App() {
              contactPhone: dbConf.theme?.contactPhone,
              contactAddress: dbConf.theme?.contactAddress,
              owner_id: dbConf.owner_id,
-             enableWatchLive: dbConf.theme?.enableWatchLive !== undefined ? dbConf.theme.enableWatchLive : true,
-             enableBooking: dbConf.theme?.enableBooking !== undefined ? dbConf.theme.enableBooking : false
+             enableWatchLive: dbConf.theme?.enableWatchLive !== undefined ? dbConf.theme.enableWatchLive : (dbConf.enableWatchLive !== undefined ? dbConf.enableWatchLive : true),
+             enableBooking: dbConf.theme?.enableBooking !== undefined ? dbConf.theme.enableBooking : (dbConf.enableBooking !== undefined ? dbConf.enableBooking : false)
           });
         }
       }
