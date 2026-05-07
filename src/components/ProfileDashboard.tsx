@@ -971,7 +971,7 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
       <div style={{ position: 'relative', zIndex: 1, paddingTop: isGuestMode || isNetworkLevel ? '80px' : '200px' }}>
       
         {/* View Toggle Bar (Only for account owner) */}
-        {isOwnProfile && isInfluencer && !isNetworkLevel && (
+        {isOwnProfile && isInfluencer && (
           <div style={{ padding: '12px', display: 'flex', justifyContent: 'center', position: 'relative', zIndex: 100, marginBottom: '20px' }}>
             <div style={{ display: 'flex', background: 'rgba(0,0,0,0.4)', backdropFilter: 'blur(12px)', borderRadius: '30px', padding: '4px', border: '1px solid rgba(255,255,255,0.1)', boxShadow: '0 8px 32px rgba(0,0,0,0.2)' }}>
               <button 
@@ -1442,7 +1442,7 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
                     <h4 style={{ margin: '0 0 12px 0', fontSize: '16px', lineHeight: 1.4, flex: 1 }}>{product.title}</h4>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                       <span style={{ fontSize: '18px', fontWeight: 'bold', color: 'var(--text-primary)' }}>${parseFloat(product.price).toFixed(2)}</span>
-                      {viewMode === 'edit' && !isNetworkLevel ? (
+                      {viewMode === 'edit' ? (
                         <button style={{ padding: '6px 12px', background: 'rgba(255,255,255,0.1)', border: 'none', borderRadius: '8px', color: 'var(--text-primary)', fontSize: '12px', fontWeight: 'bold', cursor: 'pointer' }}>Edit</button>
                       ) : (
                         <button style={{ padding: '8px 16px', background: '#fff', border: 'none', borderRadius: '20px', color: '#000', fontSize: '13px', fontWeight: 'bold', cursor: 'pointer' }}>Buy Now</button>
