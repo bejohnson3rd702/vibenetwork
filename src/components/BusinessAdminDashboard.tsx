@@ -266,6 +266,12 @@ export default function BusinessAdminDashboard({ onClose }: { onClose: () => voi
                    </label>
                 </div>
 
+                <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '30px' }}>
+                   <button onClick={executeHeroSaveDeploy} style={{ padding: '14px 32px', background: wlConfig.accent || '#0055ff', color: '#fff', border: 'none', borderRadius: '12px', cursor: 'pointer', fontWeight: 'bold', fontSize: '16px', boxShadow: `0 8px 25px ${wlConfig.accent || '#0055ff'}44` }}>
+                      Save & Deploy Features
+                   </button>
+                </div>
+
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
                    {(wlConfig.customSections ? wlConfig.customSections.split(',') : ['Default About Base']).map((sec: string, idx: number) => (
                       <div key={idx} style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)', padding: '30px', borderRadius: '20px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
