@@ -170,7 +170,8 @@ function App() {
               logoImage: localTenant.logo || localTenant.theme?.logoImage || localTenant.logoImage || null,
               contactEmail: localTenant.theme?.contactEmail || localTenant.contactEmail,
               contactPhone: localTenant.theme?.contactPhone || localTenant.contactPhone,
-              contactAddress: localTenant.theme?.contactAddress || localTenant.contactAddress
+              contactAddress: localTenant.theme?.contactAddress || localTenant.contactAddress,
+              owner_id: localTenant.owner_id
            });
         } else {
            query = query.eq('id', forceTenant).limit(1);
@@ -192,7 +193,8 @@ function App() {
               name: mConf.name || 'Vibe Network',
               domain: 'vibenetwork.tv',
               heroImage: mConf.theme?.heroImage || null,
-              heroCopy: mConf.theme?.heroCopy || null
+              heroCopy: mConf.theme?.heroCopy || null,
+              owner_id: mConf.owner_id
            });
         }
       }
@@ -216,7 +218,8 @@ function App() {
              logoImage: dbConf.logo || dbConf.theme?.logoImage || null,
              contactEmail: dbConf.theme?.contactEmail,
              contactPhone: dbConf.theme?.contactPhone,
-             contactAddress: dbConf.theme?.contactAddress
+             contactAddress: dbConf.theme?.contactAddress,
+             owner_id: dbConf.owner_id
           });
         }
       }

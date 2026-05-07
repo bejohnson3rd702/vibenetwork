@@ -13,6 +13,7 @@ export interface WhiteLabelConfig {
   customSections?: string;
   heroImage?: string;
   logoImage?: string;
+  owner_id?: string;
 }
 
 interface WhiteLabelContextProps {
