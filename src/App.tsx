@@ -116,7 +116,12 @@ function App() {
          if (wlError) {
             console.warn('DB upsert failed (likely RLS). Falling back to local storage sync.', wlError);
             const localNetworks = JSON.parse(localStorage.getItem('vibe_local_networks') || '[]');
-            localNetworks.push({ ...e.detail, id: newId, owner_id: currentSession?.user?.id });
+            const existingIndex = localNetworks.findIndex((n: any) => n.id === newId);
+            if (existingIndex >= 0) {
+               localNetworks[existingIndex] = { ...e.detail, id: newId, owner_id: currentSession?.user?.id };
+            } else {
+               localNetworks.push({ ...e.detail, id: newId, owner_id: currentSession?.user?.id });
+            }
             localStorage.setItem('vibe_local_networks', JSON.stringify(localNetworks));
          } else if (wlData) {
             finalId = wlData.id;
@@ -125,19 +130,26 @@ function App() {
                await supabase!.from('profiles').update({ whitelabel_id: finalId }).eq('id', session.user.id);
             }
          }
-         // Ensure the business owner stays logged into their newly created White Label!
-         const masterToken = localStorage.getItem(storageKey);
-         if (masterToken) {
-            localStorage.setItem(`sb-${finalId}-auth-token`, masterToken);
-            // Log them out of the master Vibe site locally so they don't bleed back into the public network
-            localStorage.removeItem(storageKey);
-         }
          
-         setTimeout(() => {
-            window.open(`/?tenant=${finalId}`, '_blank');
-            // Clean up the master site's UI after launching the network
+         // Only run the initialization logic if this is a NEW network creation
+         if (!e.detail.id) {
+            // Ensure the business owner stays logged into their newly created White Label!
+            const masterToken = localStorage.getItem(storageKey);
+            if (masterToken) {
+               localStorage.setItem(`sb-${finalId}-auth-token`, masterToken);
+               // Log them out of the master Vibe site locally so they don't bleed back into the public network
+               localStorage.removeItem(storageKey);
+            }
+            
+            setTimeout(() => {
+               window.open(`/?tenant=${finalId}`, '_blank');
+               // Clean up the master site's UI after launching the network
+               setTimeout(() => { window.location.reload(); }, 500);
+            }, 1000);
+         } else {
+            // It's an update. Just reload the current window so changes take effect
             setTimeout(() => { window.location.reload(); }, 500);
-         }, 1000);
+         }
        } catch (err) {
          console.error('Failed to sync whitelabel config', err);
          setTimeout(() => { window.location.reload(); }, 1000);
