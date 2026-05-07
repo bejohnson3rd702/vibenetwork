@@ -954,6 +954,14 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
   const showHost = directorLayout !== 'isolate_guest';
   const totalSlots = (showHost ? 1 : 0) + visibleGuests.length;
   
+  const handleToggleProductVisibility = async (e: React.MouseEvent, productId: string, currentStatus: boolean) => {
+    e.stopPropagation();
+    const { error } = await supabase!.from('products').update({ hidden_from_network: !currentStatus }).eq('id', productId);
+    if (!error) {
+      setProducts(products.map(p => p.id === productId ? { ...p, hidden_from_network: !currentStatus } : p));
+    }
+  };
+
   return (
     <div style={{ minHeight: '100vh', background: isNetworkLevel ? 'transparent' : 'var(--bg-color)', color: 'var(--text-primary)', position: 'relative' }}>
       
@@ -1419,42 +1427,56 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
           )}
 
           {/* Store Grid */}
-          {products.length === 0 ? (
-             <div style={{ textAlign: 'center', padding: '60px 20px', background: 'rgba(0,0,0,0.2)', borderRadius: '24px', border: '1px solid rgba(255,255,255,0.05)' }}>
-               <h3 style={{ fontSize: '20px', marginTop: 0, color: 'var(--text-muted)' }}>Store is Empty</h3>
-               <p style={{ color: '#555', marginBottom: 0 }}>This creator hasn't listed any products yet.</p>
-             </div>
-          ) : (
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))', gap: '20px' }}>
-              {products.map(product => (
-                <motion.div onClick={() => navigate(`/product/${product.id}${window.location.search}`)} initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} key={product.id} className="store-card" style={{ background: 'var(--bg-surface)', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.05)', overflow: 'hidden', display: 'flex', flexDirection: 'column', transition: 'all 0.3s ease', cursor: 'pointer' }}>
-                  <div style={{ width: '100%', aspectRatio: '1/1', background: `url("${product.image_url}")`, backgroundSize: 'cover', backgroundPosition: 'center' }} />
-                  <div style={{ padding: '20px', display: 'flex', flexDirection: 'column', flex: 1 }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '8px' }}>
-                      <div style={{ fontSize: '10px', textTransform: 'uppercase', color: product.type === 'physical' ? '#ff4d85' : '#8A2BE2', fontWeight: 'bold', letterSpacing: '1px' }}>
-                        {product.type === 'physical' ? 'Physical Merch' : 'Digital Release'}
-                      </div>
-                      {product.creator && (
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                          <img src={product.creator.avatar_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(product.creator.username || 'C')}&background=random`} alt={product.creator.username} style={{ width: '20px', height: '20px', borderRadius: '50%', border: '1px solid rgba(255,255,255,0.2)' }} />
-                          <span style={{ color: 'var(--text-secondary)', fontSize: '12px', fontWeight: 500 }}>@{product.creator.username}</span>
+          {(() => {
+            const visibleProducts = products.filter(p => (isNetworkLevel && isOwnProfile && viewMode === 'edit') ? true : !p.hidden_from_network);
+            if (visibleProducts.length === 0) {
+              return (
+                 <div style={{ textAlign: 'center', padding: '60px 20px', background: 'rgba(0,0,0,0.2)', borderRadius: '24px', border: '1px solid rgba(255,255,255,0.05)' }}>
+                   <h3 style={{ fontSize: '20px', marginTop: 0, color: 'var(--text-muted)' }}>Store is Empty</h3>
+                   <p style={{ color: '#555', marginBottom: 0 }}>There are no visible products available.</p>
+                 </div>
+              );
+            }
+            return (
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))', gap: '20px' }}>
+                {visibleProducts.map(product => (
+                  <motion.div onClick={() => navigate(`/product/${product.id}${window.location.search}`)} initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} key={product.id} className="store-card" style={{ background: 'var(--bg-surface)', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.05)', overflow: 'hidden', display: 'flex', flexDirection: 'column', transition: 'all 0.3s ease', cursor: 'pointer', position: 'relative' }}>
+                    {isNetworkLevel && isOwnProfile && viewMode === 'edit' && (
+                      <button 
+                        onClick={(e) => handleToggleProductVisibility(e, product.id, product.hidden_from_network)}
+                        style={{ position: 'absolute', top: 10, right: 10, padding: '6px 12px', background: product.hidden_from_network ? 'rgba(255,0,0,0.8)' : 'rgba(0,0,0,0.6)', color: '#fff', border: 'none', borderRadius: '8px', fontSize: '12px', cursor: 'pointer', zIndex: 10, backdropFilter: 'blur(10px)' }}
+                      >
+                        {product.hidden_from_network ? 'Hidden' : 'Hide from Network'}
+                      </button>
+                    )}
+                    <div style={{ width: '100%', aspectRatio: '1/1', background: `url("${product.image_url}")`, backgroundSize: 'cover', backgroundPosition: 'center', filter: product.hidden_from_network ? 'grayscale(100%) opacity(0.5)' : 'none' }} />
+                    <div style={{ padding: '20px', display: 'flex', flexDirection: 'column', flex: 1, opacity: product.hidden_from_network ? 0.5 : 1 }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '8px' }}>
+                        <div style={{ fontSize: '10px', textTransform: 'uppercase', color: product.type === 'physical' ? '#ff4d85' : '#8A2BE2', fontWeight: 'bold', letterSpacing: '1px' }}>
+                          {product.type === 'physical' ? 'Physical Merch' : 'Digital Release'}
                         </div>
-                      )}
+                        {product.creator && (
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                            <img src={product.creator.avatar_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(product.creator.username || 'C')}&background=random`} alt={product.creator.username} style={{ width: '20px', height: '20px', borderRadius: '50%', border: '1px solid rgba(255,255,255,0.2)' }} />
+                            <span style={{ color: 'var(--text-secondary)', fontSize: '12px', fontWeight: 500 }}>@{product.creator.username}</span>
+                          </div>
+                        )}
+                      </div>
+                      <h4 style={{ margin: '0 0 12px 0', fontSize: '16px', lineHeight: 1.4, flex: 1 }}>{product.title}</h4>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <span style={{ fontSize: '18px', fontWeight: 'bold', color: 'var(--text-primary)' }}>${parseFloat(product.price).toFixed(2)}</span>
+                        {viewMode === 'edit' ? (
+                          <button style={{ padding: '6px 12px', background: 'rgba(255,255,255,0.1)', border: 'none', borderRadius: '8px', color: 'var(--text-primary)', fontSize: '12px', fontWeight: 'bold', cursor: 'pointer' }}>Edit</button>
+                        ) : (
+                          <button style={{ padding: '8px 16px', background: '#fff', border: 'none', borderRadius: '20px', color: '#000', fontSize: '13px', fontWeight: 'bold', cursor: 'pointer' }}>Buy Now</button>
+                        )}
+                      </div>
                     </div>
-                    <h4 style={{ margin: '0 0 12px 0', fontSize: '16px', lineHeight: 1.4, flex: 1 }}>{product.title}</h4>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <span style={{ fontSize: '18px', fontWeight: 'bold', color: 'var(--text-primary)' }}>${parseFloat(product.price).toFixed(2)}</span>
-                      {viewMode === 'edit' ? (
-                        <button style={{ padding: '6px 12px', background: 'rgba(255,255,255,0.1)', border: 'none', borderRadius: '8px', color: 'var(--text-primary)', fontSize: '12px', fontWeight: 'bold', cursor: 'pointer' }}>Edit</button>
-                      ) : (
-                        <button style={{ padding: '8px 16px', background: '#fff', border: 'none', borderRadius: '20px', color: '#000', fontSize: '13px', fontWeight: 'bold', cursor: 'pointer' }}>Buy Now</button>
-                      )}
-                    </div>
-                  </div>
-                </motion.div>
-              ))}
-            </div>
-          )}
+                  </motion.div>
+                ))}
+              </div>
+            );
+          })()}
         </div>
         )}
 
@@ -1827,7 +1849,7 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '40px' }}>
                 {/* Calendar View */}
                 <div>
-                  <h4 style={{ margin: '0 0 20px 0', color: 'var(--text-primary)', fontSize: '18px' }}>1. Select a Date (April)</h4>
+                  <h4 style={{ margin: '0 0 20px 0', color: 'var(--text-primary)', fontSize: '18px' }}>1. Select a Date ({new Date().toLocaleString('default', { month: 'long' })})</h4>
                   <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: '10px', textAlign: 'center' }}>
                     {['Sun','Mon','Tue','Wed','Thu','Fri','Sat'].map((day, i) => (
                       <div key={i} style={{ color: 'var(--text-muted)', fontSize: '12px', fontWeight: 'bold', padding: '10px 0', textTransform: 'uppercase' }}>{day}</div>
@@ -1871,7 +1893,7 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
                   
                   {isOwnProfile && viewMode === 'edit' && selectedDate ? (
                     <div style={{ marginBottom: '24px', padding: '16px', background: 'rgba(255,255,255,0.02)', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.05)' }}>
-                      <h5 style={{ margin: '0 0 12px 0', fontSize: '14px', color: 'var(--text-secondary)' }}>Add Timeslot for April {selectedDate}</h5>
+                      <h5 style={{ margin: '0 0 12px 0', fontSize: '14px', color: 'var(--text-secondary)' }}>Add Timeslot for {new Date().toLocaleString('default', { month: 'long' })} {selectedDate}</h5>
                       <div style={{ display: 'flex', gap: '8px' }}>
                         <input type="time" value={newTimeInput} onChange={e => setNewTimeInput(e.target.value)} style={{ flex: 1, background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.1)', padding: '10px', borderRadius: '8px', color: 'var(--text-primary)', outline: 'none' }} />
                         <button 
@@ -1969,7 +1991,12 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
                       </div>
                       <input type="text" placeholder="Your Name" style={{ width: '100%', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', padding: '14px', borderRadius: '8px', color: 'var(--text-primary)', marginBottom: '12px', outline: 'none' }} />
                       <input type="text" placeholder="Purpose of Meeting (e.g. Mixing Advice)" style={{ width: '100%', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', padding: '14px', borderRadius: '8px', color: 'var(--text-primary)', marginBottom: '20px', outline: 'none' }} />
-                      <button onClick={() => { handleStripeCheckout(`${bookingType === 'virtual' ? `1-on-1 Virtual Call (${virtualCallType === 'video' ? 'Video' : 'Audio'})` : 'Physical Meeting'} (April ${selectedDate} at ${selectedTime}) - ${bookingDuration} Hour(s)`, Number(bookingPrice) * bookingDuration, { is_booking: true, date: `April ${selectedDate}`, time: selectedTime, duration: bookingDuration, meeting_type: bookingType === 'virtual' ? `virtual_${virtualCallType}` : 'physical' }); setSelectedTime(null); setSelectedDate(null); }} style={{ width: '100%', padding: '16px', background: 'linear-gradient(135deg, #ff4d85, #8A2BE2)', color: 'var(--text-primary)', border: 'none', borderRadius: '12px', fontWeight: 'bold', fontSize: '16px', cursor: 'pointer', boxShadow: '0 10px 20px rgba(138,43,226,0.3)', transition: 'transform 0.2s' }} onMouseOver={e=>e.currentTarget.style.transform='scale(1.02)'} onMouseOut={e=>e.currentTarget.style.transform='scale(1)'}>
+                      <button onClick={() => { 
+                        const monthName = new Date().toLocaleString('default', { month: 'long' });
+                        handleStripeCheckout(`${bookingType === 'virtual' ? `1-on-1 Virtual Call (${virtualCallType === 'video' ? 'Video' : 'Audio'})` : 'Physical Meeting'} (${monthName} ${selectedDate} at ${selectedTime}) - ${bookingDuration} Hour(s)`, Number(bookingPrice) * bookingDuration, { is_booking: true, date: `${monthName} ${selectedDate}`, time: selectedTime, duration: bookingDuration, meeting_type: bookingType === 'virtual' ? `virtual_${virtualCallType}` : 'physical' }); 
+                        setSelectedTime(null); 
+                        setSelectedDate(null); 
+                      }} style={{ width: '100%', padding: '16px', background: 'linear-gradient(135deg, #ff4d85, #8A2BE2)', color: 'var(--text-primary)', border: 'none', borderRadius: '12px', fontWeight: 'bold', fontSize: '16px', cursor: 'pointer', boxShadow: '0 10px 20px rgba(138,43,226,0.3)', transition: 'transform 0.2s' }} onMouseOver={e=>e.currentTarget.style.transform='scale(1.02)'} onMouseOut={e=>e.currentTarget.style.transform='scale(1)'}>
                         Book Now (${(Number(bookingPrice) * bookingDuration).toFixed(2)})
                       </button>
                     </motion.div>

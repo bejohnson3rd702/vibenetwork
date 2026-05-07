@@ -384,6 +384,7 @@ CREATE TABLE IF NOT EXISTS public.products (
     type TEXT DEFAULT 'digital',
     image_url TEXT,
     variants JSONB,
+    hidden_from_network BOOLEAN DEFAULT false,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 ALTER TABLE public.products ENABLE ROW LEVEL SECURITY;
