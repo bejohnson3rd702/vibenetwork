@@ -115,16 +115,18 @@ function App() {
            }
          }).select().single();
 
+         // Always update the local storage cache so it doesn't get stale if DB succeeds!
+         const localNetworks = JSON.parse(localStorage.getItem('vibe_local_networks') || '[]');
+         const existingIndex = localNetworks.findIndex((n: any) => n.id === newId);
+         if (existingIndex >= 0) {
+            localNetworks[existingIndex] = { ...e.detail, id: finalId || newId, owner_id: currentSession?.user?.id };
+         } else {
+            localNetworks.push({ ...e.detail, id: finalId || newId, owner_id: currentSession?.user?.id });
+         }
+         localStorage.setItem('vibe_local_networks', JSON.stringify(localNetworks));
+
          if (wlError) {
             console.warn('DB upsert failed (likely RLS). Falling back to local storage sync.', wlError);
-            const localNetworks = JSON.parse(localStorage.getItem('vibe_local_networks') || '[]');
-            const existingIndex = localNetworks.findIndex((n: any) => n.id === newId);
-            if (existingIndex >= 0) {
-               localNetworks[existingIndex] = { ...e.detail, id: newId, owner_id: currentSession?.user?.id };
-            } else {
-               localNetworks.push({ ...e.detail, id: newId, owner_id: currentSession?.user?.id });
-            }
-            localStorage.setItem('vibe_local_networks', JSON.stringify(localNetworks));
          } else if (wlData) {
             finalId = wlData.id;
             const { data: { session } } = await supabase!.auth.getSession();
