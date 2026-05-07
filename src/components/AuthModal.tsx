@@ -22,6 +22,8 @@ const AuthModal: React.FC<AuthModalProps> = ({ onClose, onSuccess, defaultIsLogi
   
   const [errorMSG, setErrorMSG] = useState('');
   const [loading, setLoading] = useState(false);
+  const [isForgotPassword, setIsForgotPassword] = useState(false);
+  const [resetSent, setResetSent] = useState(false);
   
   const accentColor = activeTenantConfig?.accent || '#ff4d85';
   const btnColor = activeTenantConfig?.btnPrimary || '#fff';
@@ -45,6 +47,24 @@ const AuthModal: React.FC<AuthModalProps> = ({ onClose, onSuccess, defaultIsLogi
     e.preventDefault();
     setLoading(true);
     setErrorMSG('');
+
+    if (isForgotPassword) {
+      if (!email) {
+        setErrorMSG('Please enter your email address.');
+        setLoading(false);
+        return;
+      }
+      const { error } = await supabase!.auth.resetPasswordForEmail(email, {
+        redirectTo: window.location.origin + '/reset-password',
+      });
+      if (error) {
+        setErrorMSG(error.message);
+      } else {
+        setResetSent(true);
+      }
+      setLoading(false);
+      return;
+    }
 
     if (isLogin) {
       // Login flow
@@ -180,10 +200,10 @@ const AuthModal: React.FC<AuthModalProps> = ({ onClose, onSuccess, defaultIsLogi
         </button>
 
         <h2 style={{ fontSize: '32px', fontWeight: 'bold', marginBottom: '8px', color: 'var(--text-primary)' }}>
-          {isLogin ? 'Welcome Back' : 'Join Vibe'}
+          {isForgotPassword ? 'Reset Password' : isLogin ? 'Welcome Back' : 'Join Vibe'}
         </h2>
         <p style={{ color: '#ccc', marginBottom: '32px', fontSize: '15px' }}>
-          {isLogin ? 'Sign in to access your Vibe Favorites.' : 'Create an account to start streaming.'}
+          {isForgotPassword ? "Enter your email to reset your password. (Forgot username? Your email is all you need to log in!)" : isLogin ? 'Sign in to access your Vibe Favorites.' : 'Create an account to start streaming.'}
         </p>
 
         {errorMSG && (
@@ -194,48 +214,64 @@ const AuthModal: React.FC<AuthModalProps> = ({ onClose, onSuccess, defaultIsLogi
 
         <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
           
-          {!isLogin && (
-            <div style={{ position: 'relative' }}>
-              <AtSign size={18} style={{ position: 'absolute', left: '16px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
-              <input 
-                type="text" placeholder="Choose a Username" required
-                value={username} onChange={e => setUsername(e.target.value)}
-                style={{
-                  width: '100%', padding: '16px 16px 16px 44px', boxSizing: 'border-box',
-                  background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.1)',
-                  borderRadius: '12px', color: 'var(--text-primary)', fontSize: '16px', outline: 'none'
-                }}
-              />
+          {resetSent ? (
+            <div style={{ padding: '20px', background: 'rgba(0,255,136,0.1)', border: '1px solid rgba(0,255,136,0.3)', borderRadius: '12px', color: '#00ff88', textAlign: 'center' }}>
+              A password reset link has been sent to your email!
             </div>
+          ) : (
+            <>
+              {!isLogin && !isForgotPassword && (
+                <div style={{ position: 'relative' }}>
+                  <AtSign size={18} style={{ position: 'absolute', left: '16px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
+                  <input 
+                    type="text" placeholder="Choose a Username" required
+                    value={username} onChange={e => setUsername(e.target.value)}
+                    style={{
+                      width: '100%', padding: '16px 16px 16px 44px', boxSizing: 'border-box',
+                      background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.1)',
+                      borderRadius: '12px', color: 'var(--text-primary)', fontSize: '16px', outline: 'none'
+                    }}
+                  />
+                </div>
+              )}
+
+              <div style={{ position: 'relative' }}>
+                <Mail size={18} style={{ position: 'absolute', left: '16px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
+                <input 
+                  type="email" placeholder="Email Address" required
+                  value={email} onChange={e => setEmail(e.target.value)}
+                  style={{
+                    width: '100%', padding: '16px 16px 16px 44px', boxSizing: 'border-box',
+                    background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.1)',
+                    borderRadius: '12px', color: 'var(--text-primary)', fontSize: '16px', outline: 'none'
+                  }}
+                />
+              </div>
+
+              {!isForgotPassword && (
+                <div style={{ position: 'relative' }}>
+                  <Lock size={18} style={{ position: 'absolute', left: '16px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
+                  <input 
+                    type="password" placeholder="Password" required
+                    value={password} onChange={e => setPassword(e.target.value)}
+                    style={{
+                      width: '100%', padding: '16px 16px 16px 44px', boxSizing: 'border-box',
+                      background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.1)',
+                      borderRadius: '12px', color: 'var(--text-primary)', fontSize: '16px', outline: 'none'
+                    }}
+                  />
+                </div>
+              )}
+
+              {!isForgotPassword && isLogin && (
+                <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '-10px' }}>
+                  <span onClick={() => { setIsForgotPassword(true); setErrorMSG(''); }} style={{ color: 'var(--text-muted)', fontSize: '13px', cursor: 'pointer' }}>Forgot Password?</span>
+                </div>
+              )}
+            </>
           )}
 
-          <div style={{ position: 'relative' }}>
-            <Mail size={18} style={{ position: 'absolute', left: '16px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
-            <input 
-              type="email" placeholder="Email Address" required
-              value={email} onChange={e => setEmail(e.target.value)}
-              style={{
-                width: '100%', padding: '16px 16px 16px 44px', boxSizing: 'border-box',
-                background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.1)',
-                borderRadius: '12px', color: 'var(--text-primary)', fontSize: '16px', outline: 'none'
-              }}
-            />
-          </div>
-
-          <div style={{ position: 'relative' }}>
-            <Lock size={18} style={{ position: 'absolute', left: '16px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
-            <input 
-              type="password" placeholder="Password" required
-              value={password} onChange={e => setPassword(e.target.value)}
-              style={{
-                width: '100%', padding: '16px 16px 16px 44px', boxSizing: 'border-box',
-                background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.1)',
-                borderRadius: '12px', color: 'var(--text-primary)', fontSize: '16px', outline: 'none'
-              }}
-            />
-          </div>
-
-          {!isLogin && (
+          {!isForgotPassword && !isLogin && (
             <div style={{ marginTop: '10px' }}>
               <p style={{ color: '#ccc', fontSize: '14px', marginBottom: '10px' }}>Account Type</p>
               <div style={{ display: 'flex', gap: '8px' }}>
@@ -292,18 +328,29 @@ const AuthModal: React.FC<AuthModalProps> = ({ onClose, onSuccess, defaultIsLogi
               opacity: loading ? 0.7 : 1
             }}
           >
-            {loading ? 'Processing...' : (isLogin ? 'Sign In' : 'Create Profile')}
+            {loading ? 'Processing...' : isForgotPassword ? 'Send Reset Link' : (isLogin ? 'Sign In' : 'Create Profile')}
           </button>
         </form>
 
         <p style={{ textAlign: 'center', marginTop: '24px', color: 'var(--text-muted)', fontSize: '14px' }}>
-          {isLogin ? "Don't have an account? " : "Already have an account? "}
-          <span 
-            onClick={() => setIsLogin(!isLogin)} 
-            style={{ color: 'var(--text-primary)', fontWeight: 'bold', cursor: 'pointer' }}
-          >
-            {isLogin ? 'Sign Up' : 'Sign In'}
-          </span>
+          {isForgotPassword ? (
+            <span 
+              onClick={() => { setIsForgotPassword(false); setErrorMSG(''); }} 
+              style={{ color: 'var(--text-primary)', fontWeight: 'bold', cursor: 'pointer' }}
+            >
+              Back to Login
+            </span>
+          ) : (
+            <>
+              {isLogin ? "Don't have an account? " : "Already have an account? "}
+              <span 
+                onClick={() => { setIsLogin(!isLogin); setErrorMSG(''); }} 
+                style={{ color: 'var(--text-primary)', fontWeight: 'bold', cursor: 'pointer' }}
+              >
+                {isLogin ? 'Sign Up' : 'Sign In'}
+              </span>
+            </>
+          )}
         </p>
 
         {showBusinessWizard && (

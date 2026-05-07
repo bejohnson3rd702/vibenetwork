@@ -16,6 +16,8 @@ export default function EndUserAuthModal({ onClose }: EndUserAuthModalProps) {
   const [errorMsg, setErrorMsg] = useState('');
   const [username, setUsername] = useState('');
   const [role, setRole] = useState<'viewer' | 'influencer'>('viewer');
+  const [isForgotPassword, setIsForgotPassword] = useState(false);
+  const [resetSent, setResetSent] = useState(false);
 
   // Use the whitelabel primary color, fallback to a standard B2B blue
   const accentColor = wlConfig?.accent || '#0055ff';
@@ -26,6 +28,18 @@ export default function EndUserAuthModal({ onClose }: EndUserAuthModalProps) {
     setErrorMsg('');
 
     try {
+      if (isForgotPassword) {
+        if (!email) {
+          throw new Error('Please enter your email address.');
+        }
+        const { error } = await supabase!.auth.resetPasswordForEmail(email, {
+          redirectTo: window.location.origin + '/reset-password',
+        });
+        if (error) throw error;
+        setResetSent(true);
+        return;
+      }
+
       if (isLogin) {
         const { data, error } = await supabase!.auth.signInWithPassword({ email, password });
         if (error) throw error;
@@ -113,10 +127,10 @@ export default function EndUserAuthModal({ onClose }: EndUserAuthModalProps) {
              )}
           </div>
           <h2 style={{ margin: 0, fontSize: '28px', color: 'var(--text-primary)', fontWeight: 900 }}>
-             {isLogin ? 'Access Portal' : 'Register Account'}
+             {isForgotPassword ? 'Reset Password' : isLogin ? 'Access Portal' : 'Register Account'}
           </h2>
           <p style={{ color: 'var(--text-secondary)', margin: '8px 0 0 0', fontSize: '15px' }}>
-             Secure entry to the {wlConfig?.name || 'Enterprise'} environment.
+             {isForgotPassword ? 'Enter your email to receive a secure reset link. (Forgot username? Your email is all you need to log in!)' : isLogin ? `Secure entry to the ${wlConfig?.name || 'Enterprise'} environment.` : `Secure entry to the ${wlConfig?.name || 'Enterprise'} environment.`}
           </p>
         </div>
 
@@ -128,23 +142,29 @@ export default function EndUserAuthModal({ onClose }: EndUserAuthModalProps) {
               </div>
            )}
 
-           {!isLogin && (
-             <div>
-               <div style={{ position: 'relative' }}>
-                 <AtSign size={20} color="#666" style={{ position: 'absolute', left: '16px', top: '50%', transform: 'translateY(-50%)' }} />
-                 <input 
-                   type="text" 
-                   value={username}
-                   onChange={e=>setUsername(e.target.value)}
-                   required
-                   placeholder="Choose a Username" 
-                   style={{ width: '100%', background: 'var(--bg-color)', border: '1px solid rgba(255,255,255,0.1)', color: 'var(--text-primary)', padding: '16px 16px 16px 48px', borderRadius: '12px', fontSize: '16px', outline: 'none', transition: 'border-color 0.2s', boxSizing: 'border-box' }} 
-                   onFocus={e=>e.currentTarget.style.borderColor = accentColor}
-                   onBlur={e=>e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)'}
-                 />
-               </div>
+           {resetSent ? (
+             <div style={{ background: 'rgba(0, 255, 136, 0.1)', color: '#00ff88', padding: '16px', borderRadius: '8px', fontSize: '14px', border: '1px solid rgba(0, 255, 136, 0.2)', textAlign: 'center' }}>
+                A secure password reset link has been dispatched to your email address!
              </div>
-           )}
+           ) : (
+             <>
+               {!isLogin && !isForgotPassword && (
+                 <div>
+                   <div style={{ position: 'relative' }}>
+                     <AtSign size={20} color="#666" style={{ position: 'absolute', left: '16px', top: '50%', transform: 'translateY(-50%)' }} />
+                     <input 
+                       type="text" 
+                       value={username}
+                       onChange={e=>setUsername(e.target.value)}
+                       required
+                       placeholder="Choose a Username" 
+                       style={{ width: '100%', background: 'var(--bg-color)', border: '1px solid rgba(255,255,255,0.1)', color: 'var(--text-primary)', padding: '16px 16px 16px 48px', borderRadius: '12px', fontSize: '16px', outline: 'none', transition: 'border-color 0.2s', boxSizing: 'border-box' }} 
+                       onFocus={e=>e.currentTarget.style.borderColor = accentColor}
+                       onBlur={e=>e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)'}
+                     />
+                   </div>
+                 </div>
+               )}
 
            <div>
               <label style={{ display: 'block', color: 'var(--text-muted)', fontSize: '13px', fontWeight: 'bold', textTransform: 'uppercase', marginBottom: '8px', letterSpacing: '1px' }}>Global Credentials</label>
@@ -163,23 +183,31 @@ export default function EndUserAuthModal({ onClose }: EndUserAuthModalProps) {
               </div>
            </div>
 
-           <div>
-              <div style={{ position: 'relative' }}>
-                 <Lock size={20} color="#666" style={{ position: 'absolute', left: '16px', top: '50%', transform: 'translateY(-50%)' }} />
-                 <input 
-                   type="password" 
-                   value={password}
-                   onChange={e=>setPassword(e.target.value)}
-                   required
-                   placeholder="••••••••" 
-                   style={{ width: '100%', background: 'var(--bg-color)', border: '1px solid rgba(255,255,255,0.1)', color: 'var(--text-primary)', padding: '16px 16px 16px 48px', borderRadius: '12px', fontSize: '16px', outline: 'none', transition: 'border-color 0.2s', boxSizing: 'border-box' }} 
-                   onFocus={e=>e.currentTarget.style.borderColor = accentColor}
-                   onBlur={e=>e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)'}
-                 />
+            {!isForgotPassword && (
+              <div>
+                 <div style={{ position: 'relative' }}>
+                    <Lock size={20} color="#666" style={{ position: 'absolute', left: '16px', top: '50%', transform: 'translateY(-50%)' }} />
+                    <input 
+                      type="password" 
+                      value={password}
+                      onChange={e=>setPassword(e.target.value)}
+                      required
+                      placeholder="••••••••" 
+                      style={{ width: '100%', background: 'var(--bg-color)', border: '1px solid rgba(255,255,255,0.1)', color: 'var(--text-primary)', padding: '16px 16px 16px 48px', borderRadius: '12px', fontSize: '16px', outline: 'none', transition: 'border-color 0.2s', boxSizing: 'border-box' }} 
+                      onFocus={e=>e.currentTarget.style.borderColor = accentColor}
+                      onBlur={e=>e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)'}
+                    />
+                 </div>
               </div>
-           </div>
+            )}
 
-           {!isLogin && (
+            {!isForgotPassword && isLogin && (
+              <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '-10px' }}>
+                <span onClick={() => { setIsForgotPassword(true); setErrorMsg(''); }} style={{ color: 'var(--text-muted)', fontSize: '13px', cursor: 'pointer', transition: '0.2s' }} onMouseOver={e=>e.currentTarget.style.color='var(--text-primary)'} onMouseOut={e=>e.currentTarget.style.color='var(--text-muted)'}>Forgot Credentials?</span>
+              </div>
+            )}
+
+           {!isLogin && !isForgotPassword && (
              <div style={{ marginTop: '5px' }}>
                <p style={{ color: '#ccc', fontSize: '14px', marginBottom: '10px' }}>Account Type</p>
                <div style={{ display: 'flex', gap: '8px' }}>
@@ -227,12 +255,22 @@ export default function EndUserAuthModal({ onClose }: EndUserAuthModalProps) {
 
         <div style={{ padding: '0 30px 30px 30px', textAlign: 'center' }}>
            <p style={{ color: 'var(--text-muted)', fontSize: '14px', margin: 0 }}>
-             {isLogin ? "Need remote access?" : "Already provisioned?"}
-             <button 
-                onClick={() => { setIsLogin(!isLogin); setErrorMsg(''); }}
-                style={{ background: 'none', border: 'none', color: accentColor, fontWeight: 'bold', marginLeft: '6px', cursor: 'pointer' }}>
-                {isLogin ? "Register Account" : "Login Here"}
-             </button>
+             {isForgotPassword ? (
+               <button 
+                  onClick={() => { setIsForgotPassword(false); setErrorMsg(''); }}
+                  style={{ background: 'none', border: 'none', color: accentColor, fontWeight: 'bold', cursor: 'pointer' }}>
+                  Return to Login
+               </button>
+             ) : (
+               <>
+                 {isLogin ? "Need remote access?" : "Already provisioned?"}
+                 <button 
+                    onClick={() => { setIsLogin(!isLogin); setErrorMsg(''); }}
+                    style={{ background: 'none', border: 'none', color: accentColor, fontWeight: 'bold', marginLeft: '6px', cursor: 'pointer' }}>
+                    {isLogin ? "Register Account" : "Login Here"}
+                 </button>
+               </>
+             )}
            </p>
         </div>
       </div>
