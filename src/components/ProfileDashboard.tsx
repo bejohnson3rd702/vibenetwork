@@ -968,7 +968,7 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
       )}
 
       {/* Main Content Wrapper */}
-      <div style={{ position: 'relative', zIndex: 1, paddingTop: isGuestMode || isNetworkLevel ? '80px' : '200px' }}>
+      <div style={{ position: 'relative', zIndex: 1, paddingTop: isNetworkLevel ? '0px' : (isGuestMode ? '80px' : '200px') }}>
       
         {/* View Toggle Bar (Only for account owner) */}
         {isOwnProfile && isInfluencer && (

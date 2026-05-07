@@ -28,16 +28,20 @@ export default function WhiteLabelHome({ wlConfig, categories, user, activeVideo
   }, [wlConfig.heroLayoutMode, wlConfig.heroVideoTitle]);
 
   return (
-    <div style={{ background: wlConfig.bg || 'var(--bg-color)', minHeight: '100vh', width: '100%', overflowX: 'hidden' }}>
+    <div style={{ background: wlConfig.bg || 'var(--bg-color)', minHeight: '100vh', width: '100%', overflowX: 'hidden', position: 'relative' }}>
        {/* Master Hero Background Layer */}
-       <motion.img 
-         initial={{ scale: 1.1, opacity: 0 }}
-         animate={{ scale: 1, opacity: 1 }}
-         transition={{ duration: 1.5, ease: 'easeOut' }}
-         src={wlConfig.heroImage || `https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&q=80&w=2500`} 
-         alt="Atmospheric Hero Background" 
-         style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', objectFit: 'cover', zIndex: 0, filter: 'brightness(0.3) contrast(1.2) saturate(1.3)' }} 
-       />
+       <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '120vh', zIndex: 0 }}>
+         <motion.img 
+           initial={{ scale: 1.1, opacity: 0 }}
+           animate={{ scale: 1, opacity: 1 }}
+           transition={{ duration: 1.5, ease: 'easeOut' }}
+           src={wlConfig.heroImage || `https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&q=80&w=2500`} 
+           alt="Atmospheric Hero Background" 
+           style={{ width: '100%', height: '100%', objectFit: 'cover', filter: 'brightness(0.3) contrast(1.2) saturate(1.3)' }} 
+         />
+         {/* Soft fade into network profile background */}
+         <div style={{ position: 'absolute', bottom: 0, left: 0, width: '100%', height: '300px', background: `linear-gradient(to bottom, transparent 0%, ${wlConfig.bg || 'var(--bg-color)'} 100%)`, pointerEvents: 'none' }} />
+       </div>
        {/* Darkening filter applied directly to image for sharp readability without soft overlays */}
 
        {/* Hero Text Section (Min Height to clear viewport and center properly) */}
