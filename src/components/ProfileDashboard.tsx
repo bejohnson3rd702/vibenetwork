@@ -487,12 +487,25 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
         if (data.genre) setSelectedGenre(data.genre);
         if (data.sub_price) setSubPrice(data.sub_price);
         
-        // Also load products for this creator
-        const { data: prodData } = await supabase!.from('products').select('*').eq('creator_id', targetProfileId);
-        if (prodData && prodData.length > 0) {
-          setProducts(prodData);
+        // Also load products for this creator or network
+        if (isNetworkLevel) {
+          const query = supabase!.from('products').select('*, creator:profiles!inner(username, avatar_url, whitelabel_id)');
+          if (wlConfig?.domain && wlConfig.domain !== 'vibenetwork.tv') {
+            query.eq('creator.whitelabel_id', wlConfig.id);
+          }
+          const { data: prodData } = await query.order('created_at', { ascending: false });
+          if (prodData && prodData.length > 0) {
+            setProducts(prodData);
+          } else {
+            setProducts([]);
+          }
         } else {
-          setProducts([]);
+          const { data: prodData } = await supabase!.from('products').select('*').eq('creator_id', targetProfileId);
+          if (prodData && prodData.length > 0) {
+            setProducts(prodData);
+          } else {
+            setProducts([]);
+          }
         }
         
         // Load Feed Posts
@@ -1415,13 +1428,21 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
                 <motion.div onClick={() => navigate(`/product/${product.id}${window.location.search}`)} initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} key={product.id} className="store-card" style={{ background: 'var(--bg-surface)', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.05)', overflow: 'hidden', display: 'flex', flexDirection: 'column', transition: 'all 0.3s ease', cursor: 'pointer' }}>
                   <div style={{ width: '100%', aspectRatio: '1/1', background: `url("${product.image_url}")`, backgroundSize: 'cover', backgroundPosition: 'center' }} />
                   <div style={{ padding: '20px', display: 'flex', flexDirection: 'column', flex: 1 }}>
-                    <div style={{ fontSize: '10px', textTransform: 'uppercase', color: product.type === 'physical' ? '#ff4d85' : '#8A2BE2', fontWeight: 'bold', letterSpacing: '1px', marginBottom: '8px' }}>
-                      {product.type === 'physical' ? 'Physical Merch' : 'Digital Release'}
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '8px' }}>
+                      <div style={{ fontSize: '10px', textTransform: 'uppercase', color: product.type === 'physical' ? '#ff4d85' : '#8A2BE2', fontWeight: 'bold', letterSpacing: '1px' }}>
+                        {product.type === 'physical' ? 'Physical Merch' : 'Digital Release'}
+                      </div>
+                      {product.creator && (
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                          <img src={product.creator.avatar_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(product.creator.username || 'C')}&background=random`} alt={product.creator.username} style={{ width: '20px', height: '20px', borderRadius: '50%', border: '1px solid rgba(255,255,255,0.2)' }} />
+                          <span style={{ color: 'var(--text-secondary)', fontSize: '12px', fontWeight: 500 }}>@{product.creator.username}</span>
+                        </div>
+                      )}
                     </div>
                     <h4 style={{ margin: '0 0 12px 0', fontSize: '16px', lineHeight: 1.4, flex: 1 }}>{product.title}</h4>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                       <span style={{ fontSize: '18px', fontWeight: 'bold', color: 'var(--text-primary)' }}>${parseFloat(product.price).toFixed(2)}</span>
-                      {viewMode === 'edit' ? (
+                      {viewMode === 'edit' && !isNetworkLevel ? (
                         <button style={{ padding: '6px 12px', background: 'rgba(255,255,255,0.1)', border: 'none', borderRadius: '8px', color: 'var(--text-primary)', fontSize: '12px', fontWeight: 'bold', cursor: 'pointer' }}>Edit</button>
                       ) : (
                         <button style={{ padding: '8px 16px', background: '#fff', border: 'none', borderRadius: '20px', color: '#000', fontSize: '13px', fontWeight: 'bold', cursor: 'pointer' }}>Buy Now</button>
