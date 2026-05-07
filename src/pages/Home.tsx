@@ -73,10 +73,12 @@ export default function Home({ categories, activeVideo, setActiveVideo, user }: 
               <p className="hero-sub-mobile" style={{ color: 'var(--text-secondary)', maxWidth: '550px', marginBottom: '40px', fontSize: '18px', lineHeight: 1.6 }}>
                 Create an administrative account today to instantly provision high-end corporate streaming platforms, global architecture networks, and executive live-broadcast tools.
               </p>
-              <div className="flex-col-mobile" style={{ display: 'flex', gap: '20px', width: '100%' }}>
-                <button className="mobile-w-full" onClick={() => user ? (window.location.href = '/profile') : window.dispatchEvent(new CustomEvent('open_auth', { detail: { isLogin: false, role: 'business' } }))} style={{ padding: '18px 40px', background: '#fff', color: '#000', border: 'none', borderRadius: '12px', fontWeight: 900, letterSpacing: '1px', textTransform: 'uppercase', fontSize: '14px', cursor: 'pointer', boxShadow: '0 10px 30px rgba(255,255,255,0.2)' }}>{user ? 'Go to Network Dashboard' : 'Create Network'}</button>
-                <button className="mobile-w-full" onClick={() => user ? (window.location.href = '/profile') : window.dispatchEvent(new CustomEvent('open_auth', { detail: { isLogin: false, role: 'influencer' } }))} style={{ padding: '18px 40px', background: 'var(--bg-surface)', color: 'var(--text-primary)', border: '1px solid rgba(255,255,255,0.2)', borderRadius: '12px', fontWeight: 900, letterSpacing: '1px', textTransform: 'uppercase', fontSize: '14px', cursor: 'pointer', backdropFilter: 'blur(10px)' }}>{user ? 'Go to Profile' : 'Create a Profile'}</button>
-              </div>
+              {!user && (
+                <div className="flex-col-mobile" style={{ display: 'flex', gap: '20px', width: '100%' }}>
+                  <button className="mobile-w-full" onClick={() => window.dispatchEvent(new CustomEvent('open_auth', { detail: { isLogin: false, role: 'business' } }))} style={{ padding: '18px 40px', background: '#fff', color: '#000', border: 'none', borderRadius: '12px', fontWeight: 900, letterSpacing: '1px', textTransform: 'uppercase', fontSize: '14px', cursor: 'pointer', boxShadow: '0 10px 30px rgba(255,255,255,0.2)' }}>Create Network</button>
+                  <button className="mobile-w-full" onClick={() => window.dispatchEvent(new CustomEvent('open_auth', { detail: { isLogin: false, role: 'influencer' } }))} style={{ padding: '18px 40px', background: 'var(--bg-surface)', color: 'var(--text-primary)', border: '1px solid rgba(255,255,255,0.2)', borderRadius: '12px', fontWeight: 900, letterSpacing: '1px', textTransform: 'uppercase', fontSize: '14px', cursor: 'pointer', backdropFilter: 'blur(10px)' }}>Create a Profile</button>
+                </div>
+              )}
             </div>
           </div>
         </section>
