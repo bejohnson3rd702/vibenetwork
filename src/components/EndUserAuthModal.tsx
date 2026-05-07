@@ -45,7 +45,7 @@ export default function EndUserAuthModal({ onClose }: EndUserAuthModalProps) {
         if (error) throw error;
         
         // Strict Login DB Isolation Check
-        if (data.user?.user_metadata?.whitelabel_id !== wlConfig?.id) {
+        if (data.user?.user_metadata?.whitelabel_id !== wlConfig?.id && data.user?.id !== wlConfig?.owner_id && data.user?.user_metadata?.role !== 'admin') {
            await supabase!.auth.signOut();
            throw new Error("Invalid credentials for this network.");
         }
