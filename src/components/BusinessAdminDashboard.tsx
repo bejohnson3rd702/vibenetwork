@@ -224,10 +224,7 @@ export default function BusinessAdminDashboard({ onClose }: { onClose: () => voi
                   <AiTextArea label="Hero Marketing Verbiage" defaultValue={wlConfig.heroCopy} accent={wlConfig.accent} onChange={(v) => setHeroCopy(v)} />
                 )}
 
-                <div style={{ display: 'flex', gap: '20px' }}>
-                   <AiInput label="Primary Button Text" defaultValue="Access Admin Dashboard" accent={wlConfig.accent} onChange={(v) => setBtnPrimary(v)} />
-                   <AiInput label="Secondary Button (+ Add)" defaultValue="" placeholder="e.g. Subscribe Now" accent={wlConfig.accent} />
-                </div>
+
 
                 <div style={{ height: '2px', background: 'rgba(255,255,255,0.05)' }} />
                 <button onClick={executeHeroSaveDeploy} style={{ padding: '18px 40px', background: wlConfig.accent, color: 'var(--text-primary)', fontWeight: 'bold', border: 'none', borderRadius: '12px', fontSize: '16px', cursor: 'pointer', maxWidth: '300px', boxShadow: `0 8px 30px ${wlConfig.accent}44` }}>Save & Deploy to Live Site</button>
