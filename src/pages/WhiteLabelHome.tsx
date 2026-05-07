@@ -51,7 +51,7 @@ export default function WhiteLabelHome({ wlConfig, categories, user, activeVideo
               <Sparkles size={16} color={wlConfig.accent || 'var(--accent-primary)'} style={{ filter: `drop-shadow(0 0 8px ${wlConfig.accent || 'var(--accent-primary)'})` }} />
               <span style={{ fontSize: '13px', fontWeight: 700, letterSpacing: '2px', textTransform: 'uppercase', color: '#fff' }}>Live Network Initialized</span>
             </motion.div>
-            <h1 className="hero-title-mobile" style={{ fontSize: '100px', fontWeight: '900', margin: 0, letterSpacing: '-4px', lineHeight: 1.1, textAlign: 'center', textShadow: '0 20px 40px rgba(0,0,0,0.8)', background: `linear-gradient(135deg, #ffffff 0%, rgba(255,255,255,0.5) 100%)`, WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', filter: 'drop-shadow(0px 10px 20px rgba(0,0,0,0.5))' }}>
+            <h1 className="hero-title-mobile" style={{ fontSize: '70px', fontWeight: '900', margin: 0, letterSpacing: '-4px', lineHeight: 1.1, textAlign: 'center', textShadow: '0 20px 40px rgba(0,0,0,0.8)', background: `linear-gradient(135deg, #ffffff 0%, rgba(255,255,255,0.5) 100%)`, WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', filter: 'drop-shadow(0px 10px 20px rgba(0,0,0,0.5))' }}>
               {wlConfig.name}
             </h1>
           </motion.div>
