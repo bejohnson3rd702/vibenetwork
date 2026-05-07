@@ -106,7 +106,7 @@ function App() {
          if (wlError) {
             console.warn('DB upsert failed (likely RLS). Falling back to local storage sync.', wlError);
             const localNetworks = JSON.parse(localStorage.getItem('vibe_local_networks') || '[]');
-            localNetworks.push({ ...e.detail, id: newId });
+            localNetworks.push({ ...e.detail, id: newId, owner_id: currentSession?.user?.id });
             localStorage.setItem('vibe_local_networks', JSON.stringify(localNetworks));
          } else if (wlData) {
             finalId = wlData.id;
