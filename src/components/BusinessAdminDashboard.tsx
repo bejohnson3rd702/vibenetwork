@@ -82,6 +82,8 @@ export default function BusinessAdminDashboard({ onClose }: { onClose: () => voi
   const [contactEmail, setContactEmail] = useState(wlConfig.contactEmail || 'sales@vibenetwork.tv');
   const [contactPhone, setContactPhone] = useState(wlConfig.contactPhone || '1-800-VIBE-NET');
   const [contactAddress, setContactAddress] = useState(wlConfig.contactAddress || '123 Enterprise Way, Silicon Valley');
+  const [enableWatchLive, setEnableWatchLive] = useState(wlConfig.enableWatchLive !== false);
+  const [enableBooking, setEnableBooking] = useState(wlConfig.enableBooking || false);
 
   useEffect(() => {
      const loadLeads = async () => {
@@ -104,7 +106,9 @@ export default function BusinessAdminDashboard({ onClose }: { onClose: () => voi
            btnPrimary: btnPrimary,
            contactEmail,
            contactPhone,
-           contactAddress
+           contactAddress,
+           enableWatchLive,
+           enableBooking
         }
      }));
      alert("Live Architecture Successfully Deployed to Master Server!");
@@ -240,6 +244,28 @@ export default function BusinessAdminDashboard({ onClose }: { onClose: () => voi
                    <button style={{ padding: '16px 24px', background: '#fff', color: '#000', fontWeight: 'bold', border: 'none', borderRadius: '12px', cursor: 'pointer' }}>+ Spawn New Section</button>
                 </div>
                 
+                <div style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)', padding: '24px 30px', borderRadius: '20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '30px' }}>
+                   <div>
+                      <h3 style={{ margin: '0 0 4px 0', fontSize: '20px' }}>Watch Live Feature</h3>
+                      <p style={{ margin: 0, color: 'var(--text-muted)', fontSize: '15px' }}>Enable or disable the Watch Live player and broadcast sections on the network.</p>
+                   </div>
+                   <label style={{ display: 'flex', alignItems: 'center', cursor: 'pointer', background: 'rgba(0,0,0,0.5)', padding: '12px 24px', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.1)', gap: '12px' }}>
+                      <input type="checkbox" checked={enableWatchLive} onChange={(e) => setEnableWatchLive(e.target.checked)} style={{ width: '20px', height: '20px', accentColor: wlConfig.accent }} />
+                      <span style={{ fontWeight: 'bold' }}>{enableWatchLive ? 'Enabled' : 'Disabled'}</span>
+                   </label>
+                </div>
+
+                <div style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)', padding: '24px 30px', borderRadius: '20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '30px' }}>
+                   <div>
+                      <h3 style={{ margin: '0 0 4px 0', fontSize: '20px' }}>Booking Feature</h3>
+                      <p style={{ margin: 0, color: 'var(--text-muted)', fontSize: '15px' }}>Enable or disable the hourly Booking button on the header.</p>
+                   </div>
+                   <label style={{ display: 'flex', alignItems: 'center', cursor: 'pointer', background: 'rgba(0,0,0,0.5)', padding: '12px 24px', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.1)', gap: '12px' }}>
+                      <input type="checkbox" checked={enableBooking} onChange={(e) => setEnableBooking(e.target.checked)} style={{ width: '20px', height: '20px', accentColor: wlConfig.accent }} />
+                      <span style={{ fontWeight: 'bold' }}>{enableBooking ? 'Enabled' : 'Disabled'}</span>
+                   </label>
+                </div>
+
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
                    {(wlConfig.customSections ? wlConfig.customSections.split(',') : ['Default About Base']).map((sec: string, idx: number) => (
                       <div key={idx} style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)', padding: '30px', borderRadius: '20px', display: 'flex', flexDirection: 'column', gap: '20px' }}>

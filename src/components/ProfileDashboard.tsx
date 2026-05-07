@@ -36,7 +36,7 @@ const ProfileDashboard: React.FC<{ user: any }> = ({ user }) => {
   const [currentBannerIndex, setCurrentBannerIndex] = useState(0);
   const [currentBgIndex, setCurrentBgIndex] = useState(0);
   const [saving, setSaving] = useState(false);
-  const [activeTab, setActiveTab] = useState<'feed' | 'store' | 'live' | 'booking' | 'series' | 'courses' | 'wallet' | 'flipbook' | 'appearance' | 'my_bookings'>('feed');
+  const [activeTab, setActiveTab] = useState<'feed' | 'store' | 'live' | 'booking' | 'series' | 'courses' | 'wallet' | 'flipbook' | 'appearance' | 'my_bookings' | 'networks'>('feed');
   const [walletBalance, setWalletBalance] = useState(() => (typeof window !== 'undefined' ? Number(localStorage.getItem('vibe_host_wallet') || 0.00) : 0.00));
   const [paySubsWithWallet, setPaySubsWithWallet] = useState(true);
   const [isSubscribed, setIsSubscribed] = useState(false);
@@ -441,6 +441,7 @@ const ProfileDashboard: React.FC<{ user: any }> = ({ user }) => {
   const [receivedBookings, setReceivedBookings] = useState<any[]>([]);
   const [newCourse, setNewCourse] = useState({ title: '', price: '', modules: '', hours: '', img: '' });
   const [uploadingProductImg, setUploadingProductImg] = useState(false);
+  const [myNetworks, setMyNetworks] = useState<any[]>([]);
 
   // Real Feed Data
   const [feed, setFeed] = useState<any[]>([]);
@@ -542,6 +543,23 @@ const ProfileDashboard: React.FC<{ user: any }> = ({ user }) => {
         if (user) {
            const { data: pBookings } = await supabase!.from('bookings').select('*, creator:profiles!creator_id(username, full_name, avatar_url)').eq('buyer_id', user.id);
            setPurchasedBookings(pBookings || []);
+           
+           // Load Owned Networks
+           const { data: networks } = await supabase!.from('whitelabel_configs').select('*').eq('owner_id', user.id);
+           
+           // Merge with local storage networks
+           const localNetworks = JSON.parse(localStorage.getItem('vibe_local_networks') || '[]');
+           const myLocal = localNetworks.filter((n: any) => n.owner_id === user.id);
+           
+           // Combine, avoiding duplicates by ID
+           const combined = [...(networks || [])];
+           myLocal.forEach((ln: any) => {
+              if (!combined.find(n => n.id === ln.id)) {
+                 combined.push(ln);
+              }
+           });
+           
+           setMyNetworks(combined);
         }
 
         if (isOwnProfile && user) {
@@ -1099,7 +1117,7 @@ const ProfileDashboard: React.FC<{ user: any }> = ({ user }) => {
                 { id: 'series', label: 'Episodes' },
                 { id: 'courses', label: 'Masterclasses' },
                 { id: 'flipbook', label: 'Flip Book' }
-              ].concat(user ? [{ id: 'my_bookings', label: 'My Bookings' }] : []).map(tab => (
+              ].concat(user ? [{ id: 'my_bookings', label: 'My Bookings' }] : []).concat(myNetworks.length > 0 ? [{ id: 'networks', label: 'My Networks' }] : []).map(tab => (
                 <button 
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id as any)}
@@ -2313,6 +2331,35 @@ const ProfileDashboard: React.FC<{ user: any }> = ({ user }) => {
                 )}
               </div>
             )}
+          </motion.div>
+        )}
+
+        {/* --- MY NETWORKS TAB --- */}
+        {activeTab === 'networks' && myNetworks.length > 0 && (
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <h2 style={{ fontSize: '24px', margin: 0, color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '10px' }}>
+                  <Monitor size={24} color="#00ff88" /> My Enterprise Networks
+                </h2>
+             </div>
+             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '20px' }}>
+                {myNetworks.map((network, index) => (
+                  <div key={index} style={{ background: 'rgba(255,255,255,0.03)', borderRadius: '20px', padding: '24px', border: '1px solid rgba(255,255,255,0.1)', display: 'flex', flexDirection: 'column', gap: '16px', position: 'relative', overflow: 'hidden' }}>
+                     <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '4px', background: network.theme?.accent || network.accent || '#00ff88' }} />
+                     
+                     <div>
+                        <h3 style={{ margin: '0 0 4px 0', fontSize: '20px', fontWeight: 'bold', color: 'var(--text-primary)' }}>{network.name || 'Vibe Network'}</h3>
+                        <p style={{ margin: 0, color: 'var(--text-muted)', fontSize: '13px' }}>{network.domain || 'localhost'}</p>
+                     </div>
+                     
+                     <div style={{ display: 'flex', gap: '12px', marginTop: '10px' }}>
+                        <button onClick={() => window.location.href = `/?tenant=${network.id}`} style={{ flex: 1, padding: '12px', background: '#fff', color: '#000', border: 'none', borderRadius: '12px', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
+                           <ArrowUpRight size={16} /> Open Network
+                        </button>
+                     </div>
+                  </div>
+                ))}
+             </div>
           </motion.div>
         )}
 

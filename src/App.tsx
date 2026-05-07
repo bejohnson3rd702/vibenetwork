@@ -9,6 +9,7 @@ const BusinessAdminDashboard = lazy(() => import('./components/BusinessAdminDash
 import EndUserAuthModal from './components/EndUserAuthModal';
 const MasterAdminDashboard = lazy(() => import('./components/MasterAdminDashboard'));
 const LiveChat = lazy(() => import('./components/LiveChat'));
+const BookingModal = lazy(() => import('./components/BookingModal'));
 const MoreInfo = lazy(() => import('./components/MoreInfo'));
 const Contact = lazy(() => import('./components/Contact'));
 const VirtualCallRoom = lazy(() => import('./components/VirtualCallRoom'));
@@ -38,6 +39,13 @@ function App() {
   const [isTenantMode, setIsTenantMode] = useState(false);
   const [showAdminPanel, setShowAdminPanel] = useState(false);
   const [showEndUserAuthModal, setShowEndUserAuthModal] = useState(false);
+  const [showBookingModal, setShowBookingModal] = useState(false);
+
+  useEffect(() => {
+    const handleOpenBooking = () => setShowBookingModal(true);
+    window.addEventListener('open_booking', handleOpenBooking);
+    return () => window.removeEventListener('open_booking', handleOpenBooking);
+  }, []);
 
   useEffect(() => {
     const handleOpenAuth = (e: any) => {
@@ -99,7 +107,9 @@ function App() {
               logoImage: e.detail.logoImage,
               contactEmail: e.detail.contactEmail,
               contactPhone: e.detail.contactPhone,
-              contactAddress: e.detail.contactAddress
+              contactAddress: e.detail.contactAddress,
+              enableWatchLive: e.detail.enableWatchLive !== undefined ? e.detail.enableWatchLive : true,
+              enableBooking: e.detail.enableBooking !== undefined ? e.detail.enableBooking : false
            }
          }).select().single();
 
@@ -171,7 +181,9 @@ function App() {
               contactEmail: localTenant.theme?.contactEmail || localTenant.contactEmail,
               contactPhone: localTenant.theme?.contactPhone || localTenant.contactPhone,
               contactAddress: localTenant.theme?.contactAddress || localTenant.contactAddress,
-              owner_id: localTenant.owner_id
+              owner_id: localTenant.owner_id,
+              enableWatchLive: localTenant.theme?.enableWatchLive !== undefined ? localTenant.theme.enableWatchLive : true,
+              enableBooking: localTenant.theme?.enableBooking !== undefined ? localTenant.theme.enableBooking : false
            });
         } else {
            query = query.eq('id', forceTenant).limit(1);
@@ -194,7 +206,9 @@ function App() {
               domain: 'vibenetwork.tv',
               heroImage: mConf.theme?.heroImage || null,
               heroCopy: mConf.theme?.heroCopy || null,
-              owner_id: mConf.owner_id
+              owner_id: mConf.owner_id,
+              enableWatchLive: mConf.theme?.enableWatchLive !== undefined ? mConf.theme.enableWatchLive : true,
+              enableBooking: mConf.theme?.enableBooking !== undefined ? mConf.theme.enableBooking : false
            });
         }
       }
@@ -219,7 +233,9 @@ function App() {
              contactEmail: dbConf.theme?.contactEmail,
              contactPhone: dbConf.theme?.contactPhone,
              contactAddress: dbConf.theme?.contactAddress,
-             owner_id: dbConf.owner_id
+             owner_id: dbConf.owner_id,
+             enableWatchLive: dbConf.theme?.enableWatchLive !== undefined ? dbConf.theme.enableWatchLive : true,
+             enableBooking: dbConf.theme?.enableBooking !== undefined ? dbConf.theme.enableBooking : false
           });
         }
       }
@@ -294,6 +310,9 @@ function App() {
              {showEndUserAuthModal && (
                <EndUserAuthModal onClose={() => setShowEndUserAuthModal(false)} />
              )}
+             {showBookingModal && (
+               <BookingModal onClose={() => setShowBookingModal(false)} />
+             )}
           </AnimatePresence>
           
           <Suspense fallback={null}>
@@ -319,6 +338,9 @@ function App() {
                 defaultRole={authDefaults.role}
                 defaultShowWizard={authDefaults.showWizard}
               />
+            )}
+            {showBookingModal && (
+               <BookingModal onClose={() => setShowBookingModal(false)} />
             )}
           </AnimatePresence>
 

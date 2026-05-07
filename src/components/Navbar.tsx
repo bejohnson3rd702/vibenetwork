@@ -82,9 +82,9 @@ const Navbar: React.FC<NavbarProps> = ({ user, onLoginClick, onAdminClick }) => 
             { label: 'Home', path: '/' },
             { label: 'Marketplace', path: '/marketplace' },
             { label: 'About Us', path: '/about' },
-            { label: 'Watch Live', path: '/#whats-on-now' },
+            { label: 'Watch Live', path: '/#whats-on-now', hidden: wlConfig?.enableWatchLive === false },
             { label: 'Contact', path: '/contact' }
-          ].map((item, i) => (
+          ].filter(item => !item.hidden).map((item, i) => (
             <li key={item.label} style={{ 
               cursor: 'pointer',
               color: i === 0 ? 'white' : 'rgba(255,255,255,0.6)',
@@ -111,6 +111,11 @@ const Navbar: React.FC<NavbarProps> = ({ user, onLoginClick, onAdminClick }) => 
 
       <div style={{ display: 'flex', alignItems: 'center', gap: '24px' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
+          {wlConfig?.enableBooking && (
+             <button onClick={() => window.dispatchEvent(new CustomEvent('open_booking'))} style={{ padding: '8px 16px', background: 'transparent', border: `1px solid ${appAccent || 'white'}`, color: 'white', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold', fontSize: '13px' }}>
+               Book Studio Time
+             </button>
+          )}
           <Lightbulb 
             size={22} 
             color={theme === 'dark' ? '#D35400' : '#ffffff'} 

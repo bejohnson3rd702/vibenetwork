@@ -18,9 +18,9 @@ export async function getCategoriesWithVideos(tenantId?: string) {
     { data: profiles },
     { data: videos }
   ] = await Promise.all([
-    supabase.from('whitelabel_configs').select('id, name, domain, logo').limit(7),
+    supabase.from('whitelabel_configs').select('id, name, domain, logo').order('created_at', { ascending: false }).limit(20),
     profilesQuery,
-    supabase.from('videos').select('id, title, image_url, tags, video_url').order('created_at', { ascending: false }).limit(7)
+    supabase.from('videos').select('id, title, image_url, tags, video_url').order('created_at', { ascending: false }).limit(20)
   ]);
 
   const mappedNetworks = (whitelabels || []).map((wl: any) => ({

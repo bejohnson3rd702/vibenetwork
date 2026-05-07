@@ -15,17 +15,21 @@ interface HomeProps {
   user: User | null;
 }
 
+import { useWhiteLabel } from '../context/WhiteLabelContext';
+
 export default function Home({ categories, activeVideo, setActiveVideo, user }: HomeProps) {
-  // const navigate = useNavigate();
+  const { wlConfig } = useWhiteLabel();
 
   return (
     <>
       <Hero />
       <main style={{ background: 'var(--bg-color)', paddingBottom: '100px', zIndex: 10, position: 'relative', width: '100%' }}>
         
-        <div id="whats-on-now">
-          <WhatsOnNow />
-        </div>
+        {wlConfig?.enableWatchLive !== false && (
+          <div id="whats-on-now">
+            <WhatsOnNow />
+          </div>
+        )}
 
         <div id="slider-section-container">
           {categories.map((category: any, index: number) => {

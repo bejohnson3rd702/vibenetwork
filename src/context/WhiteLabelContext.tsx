@@ -14,6 +14,8 @@ export interface WhiteLabelConfig {
   heroImage?: string;
   logoImage?: string;
   owner_id?: string;
+  enableWatchLive?: boolean;
+  enableBooking?: boolean;
 }
 
 interface WhiteLabelContextProps {
