@@ -214,21 +214,37 @@ function App() {
         setIsTenantMode(true);
       } else {
         // Master Platform Mode (localhost or vibenetwork.tv)
-        // We fetch the master config so the Hero component can use it, but we DON'T set isTenantMode=true
+        const localMaster = localNetworks.find((n: any) => n.domain === 'vibenetwork.tv' || n.id === 'master');
+        
         const { data: masterData } = await supabase!.from('whitelabel_configs').select('*').eq('domain', 'vibenetwork.tv').limit(1);
         if (masterData && masterData.length > 0) {
            const mConf = masterData[0];
+           // Merge local Master overrides if they exist (for local dev without DB write access)
            setWlConfig({
               id: mConf.id,
-              name: mConf.name || 'Vibe Network',
+              name: localMaster?.name || mConf.name || 'Vibe Network',
               domain: 'vibenetwork.tv',
-              heroImage: mConf.theme?.heroImage || null,
-              heroCopy: mConf.theme?.heroCopy || null,
+              heroImage: localMaster?.theme?.heroImage || localMaster?.heroImage || mConf.theme?.heroImage || null,
+              heroCopy: localMaster?.theme?.heroCopy || localMaster?.heroCopy || mConf.theme?.heroCopy || null,
               owner_id: mConf.owner_id,
-              enableWatchLive: mConf.theme?.enableWatchLive !== undefined ? mConf.theme.enableWatchLive : true,
-              enableBooking: mConf.theme?.enableBooking !== undefined ? mConf.theme.enableBooking : false,
-              heroLayoutMode: mConf.theme?.heroLayoutMode || 'verbiage',
-              heroVideoUrl: mConf.theme?.heroVideoUrl || ''
+              enableWatchLive: localMaster?.theme?.enableWatchLive !== undefined ? localMaster.theme.enableWatchLive : (localMaster?.enableWatchLive !== undefined ? localMaster.enableWatchLive : (mConf.theme?.enableWatchLive !== undefined ? mConf.theme.enableWatchLive : true)),
+              enableBooking: localMaster?.theme?.enableBooking !== undefined ? localMaster.theme.enableBooking : (localMaster?.enableBooking !== undefined ? localMaster.enableBooking : (mConf.theme?.enableBooking !== undefined ? mConf.theme.enableBooking : false)),
+              heroLayoutMode: localMaster?.theme?.heroLayoutMode || localMaster?.heroLayoutMode || mConf.theme?.heroLayoutMode || 'verbiage',
+              heroVideoUrl: localMaster?.theme?.heroVideoUrl || localMaster?.heroVideoUrl || mConf.theme?.heroVideoUrl || ''
+           });
+        } else if (localMaster) {
+           // Fallback if DB query completely fails but local exists
+           setWlConfig({
+              id: localMaster.id,
+              name: localMaster.name || 'Vibe Network',
+              domain: 'vibenetwork.tv',
+              heroImage: localMaster.theme?.heroImage || localMaster.heroImage || null,
+              heroCopy: localMaster.theme?.heroCopy || localMaster.heroCopy || null,
+              owner_id: localMaster.owner_id,
+              enableWatchLive: localMaster.theme?.enableWatchLive !== undefined ? localMaster.theme.enableWatchLive : (localMaster.enableWatchLive !== undefined ? localMaster.enableWatchLive : true),
+              enableBooking: localMaster.theme?.enableBooking !== undefined ? localMaster.theme.enableBooking : (localMaster.enableBooking !== undefined ? localMaster.enableBooking : false),
+              heroLayoutMode: localMaster.theme?.heroLayoutMode || localMaster.heroLayoutMode || 'verbiage',
+              heroVideoUrl: localMaster.theme?.heroVideoUrl || localMaster.heroVideoUrl || ''
            });
         }
       }
