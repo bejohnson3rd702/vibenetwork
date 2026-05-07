@@ -20,6 +20,7 @@ const TermsOfService = lazy(() => import('./components/TermsOfService'));
 const PrivacyPolicy = lazy(() => import('./components/PrivacyPolicy'));
 const Footer = lazy(() => import('./components/Footer'));
 const FoodTruck = lazy(() => import('./pages/FoodTruck'));
+const ResetPassword = lazy(() => import('./pages/ResetPassword'));
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { WhiteLabelContext } from './context/WhiteLabelContext';
 import { supabase, storageKey } from './supabaseClient';
@@ -340,6 +341,7 @@ function App() {
               <Route path="/profile/:creatorId" element={<ProfileDashboard user={user} />} />
               <Route path="/call/:callId" element={<VirtualCallRoom />} />
               <Route path="/food-truck" element={<FoodTruck />} />
+              <Route path="/reset-password" element={<ResetPassword />} />
             </Routes>
           </Suspense>
           
@@ -412,6 +414,7 @@ function App() {
                       <Route path="/profile/:creatorId" element={<ProfileDashboard user={user} />} />
                       <Route path="/call/:callId" element={<VirtualCallRoom />} />
                       <Route path="/food-truck" element={<FoodTruck />} />
+                      <Route path="/reset-password" element={<ResetPassword />} />
                     </Routes>
                   </Suspense>
                 </>
