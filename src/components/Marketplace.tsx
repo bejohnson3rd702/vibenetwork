@@ -24,6 +24,9 @@ const Marketplace: React.FC = () => {
       // If wlConfig exists and is not vibenetwork.tv, filter by tenant ID
       if (wlConfig?.domain && wlConfig.domain !== 'vibenetwork.tv') {
         query.eq('creator.whitelabel_id', wlConfig.id);
+      } else {
+        // Master Vibe Marketplace: Only show products explicitly featured by Vibe Admins
+        query.contains('variants', { featured_on_vibe: true });
       }
 
       const { data, error } = await query.order('created_at', { ascending: false });

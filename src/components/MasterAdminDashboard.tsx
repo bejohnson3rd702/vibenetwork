@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Globe, Users, Activity, Database, 
   ShieldAlert, Terminal, ChevronRight, BarChart3, 
-  Network, Server, Play, StopCircle, CheckCircle, Wallet, AlertCircle, Mail
+  Network, Server, Play, StopCircle, CheckCircle, Wallet, AlertCircle, Mail, ShoppingBag
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../supabaseClient';
@@ -25,6 +25,7 @@ export default function MasterAdminDashboard() {
   const [categories, setCategories] = useState<any[]>([]);
   const [ledgerData, setLedgerData] = useState<any[]>([]);
   const [globalLeads, setGlobalLeads] = useState<any[]>([]);
+  const [globalProducts, setGlobalProducts] = useState<any[]>([]);
   const [isRestarting, setIsRestarting] = useState(false);
 
   async function fetchCategories() {
@@ -115,6 +116,8 @@ export default function MasterAdminDashboard() {
         }
         fetchUsers();
         fetchCategories();
+        const { data: allProducts } = await supabase!.from('products').select('*, profiles!inner(username, full_name, whitelabel_id)').order('created_at', { ascending: false });
+        if (allProducts) setGlobalProducts(allProducts);
 
         const { data: leadsData } = await supabase!.from('network_leads').select('*, whitelabel_configs(name)').order('created_at', { ascending: false }).limit(100);
         if (leadsData) setGlobalLeads(leadsData);
@@ -163,6 +166,7 @@ export default function MasterAdminDashboard() {
             { id: 'users', icon: <Users size={18} />, label: 'Network Directory' },
             { id: 'database', icon: <Database size={18} />, label: 'Data Clusters' },
             { id: 'analytics', icon: <BarChart3 size={18} />, label: 'Global Analytics' },
+            { id: 'marketplace', icon: <ShoppingBag size={18} />, label: 'Global Marketplace' },
             { id: 'leads', icon: <Mail size={18} />, label: 'Global Leads' },
             { id: 'accounting', icon: <Wallet size={18} />, label: 'Global Ledger' },
             { id: 'logs', icon: <Terminal size={18} />, label: 'System Logs' },
@@ -717,6 +721,73 @@ export default function MasterAdminDashboard() {
              </motion.div>
              );
           })()}
+
+          {activeTab === 'marketplace' && (
+             <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} style={{ display: 'flex', flexDirection: 'column', gap: '30px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                  <div>
+                    <h1 style={{ fontSize: '36px', marginBottom: '12px', fontWeight: '900', letterSpacing: '-1px' }}>Global Marketplace Curation</h1>
+                    <p style={{ color: 'var(--text-muted)', fontSize: '18px', maxWidth: '600px', lineHeight: 1.5 }}>Turn on products from any network in the infrastructure to feature them on the master Vibe Network Marketplace.</p>
+                  </div>
+                </div>
+
+                <div style={{ background: 'var(--bg-surface)', borderRadius: '24px', border: '1px solid rgba(255,255,255,0.05)', overflow: 'hidden' }}>
+                  <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
+                    <thead>
+                      <tr style={{ background: 'rgba(255,255,255,0.02)', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+                        <th style={{ padding: '20px', color: 'var(--text-muted)', fontWeight: 'normal', fontSize: '14px' }}>Product</th>
+                        <th style={{ padding: '20px', color: 'var(--text-muted)', fontWeight: 'normal', fontSize: '14px' }}>Creator</th>
+                        <th style={{ padding: '20px', color: 'var(--text-muted)', fontWeight: 'normal', fontSize: '14px' }}>Price</th>
+                        <th style={{ padding: '20px', color: 'var(--text-muted)', fontWeight: 'normal', fontSize: '14px' }}>Network Origin</th>
+                        <th style={{ padding: '20px', color: 'var(--text-muted)', fontWeight: 'normal', fontSize: '14px', textAlign: 'right' }}>Vibe Marketplace</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {globalProducts.length === 0 ? (
+                         <tr>
+                           <td colSpan={5} style={{ padding: '40px', textAlign: 'center', color: 'var(--text-muted)' }}>No products have been created on the network yet.</td>
+                         </tr>
+                      ) : globalProducts.map((product: any) => {
+                        const isFeatured = product.variants?.featured_on_vibe === true;
+                        return (
+                          <tr key={product.id} style={{ borderBottom: '1px solid rgba(255,255,255,0.02)' }}>
+                            <td style={{ padding: '20px', fontWeight: 'bold' }}>
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                                <img src={product.image_url || `https://ui-avatars.com/api/?name=${product.title}&background=random`} alt={product.title} style={{ width: '40px', height: '40px', borderRadius: '8px', objectFit: 'cover' }} />
+                                {product.title}
+                              </div>
+                            </td>
+                            <td style={{ padding: '20px', color: 'var(--text-muted)' }}>{product.profiles?.username || product.profiles?.full_name || 'Unknown'}</td>
+                            <td style={{ padding: '20px', color: '#00ff88', fontWeight: 'bold' }}>${product.price}</td>
+                            <td style={{ padding: '20px' }}>
+                               {product.profiles?.whitelabel_id ? (
+                                  <span style={{ padding: '6px 12px', background: 'rgba(0,85,255,0.1)', color: '#0055ff', borderRadius: '8px', fontSize: '12px', fontWeight: 'bold' }}>Tenant Network</span>
+                               ) : (
+                                  <span style={{ padding: '6px 12px', background: 'rgba(255,215,0,0.1)', color: '#FFD700', borderRadius: '8px', fontSize: '12px', fontWeight: 'bold' }}>Direct Vibe</span>
+                               )}
+                            </td>
+                            <td style={{ padding: '20px', textAlign: 'right' }}>
+                              <button onClick={async () => {
+                                const newVariants = { ...(product.variants || {}), featured_on_vibe: !isFeatured };
+                                const { error } = await supabase!.from('products').update({ variants: newVariants }).eq('id', product.id);
+                                if (error) {
+                                  showToast('Failed to toggle product visibility: ' + error.message, 'error');
+                                  return;
+                                }
+                                setGlobalProducts(prev => prev.map(p => p.id === product.id ? { ...p, variants: newVariants } : p));
+                                showToast(`${product.title} is ${!isFeatured ? 'now featured on' : 'removed from'} Vibe Marketplace.`, 'success');
+                              }} style={{ padding: '8px 16px', background: isFeatured ? 'rgba(0,255,136,0.1)' : 'rgba(255,255,255,0.05)', color: isFeatured ? '#00ff88' : 'var(--text-muted)', border: 'none', borderRadius: '8px', cursor: 'pointer', fontSize: '13px', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '8px', marginLeft: 'auto' }}>
+                                {isFeatured ? <><CheckCircle size={14} /> Featured</> : 'Turn On'}
+                              </button>
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+             </motion.div>
+          )}
 
           {activeTab === 'leads' && (
             <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} style={{ display: 'flex', flexDirection: 'column', gap: '30px' }}>
