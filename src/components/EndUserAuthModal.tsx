@@ -239,6 +239,8 @@ export default function EndUserAuthModal({ onClose }: EndUserAuthModalProps) {
                  </button>
                </div>
              </div>
+            )}
+            </>
            )}
 
            <button 
