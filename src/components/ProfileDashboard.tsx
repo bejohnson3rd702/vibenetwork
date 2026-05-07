@@ -1120,7 +1120,7 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
                 { id: 'series', label: 'Episodes' },
                 { id: 'courses', label: 'Masterclasses' },
                 { id: 'flipbook', label: 'Flip Book' }
-              ].concat(user ? [{ id: 'my_bookings', label: 'My Bookings' }] : []).concat(myNetworks.length > 0 ? [{ id: 'networks', label: 'My Networks' }] : []).map(tab => (
+              ].concat(user ? [{ id: 'my_bookings', label: 'My Bookings' }] : []).concat((myNetworks.length > 0 && !isNetworkLevel) ? [{ id: 'networks', label: 'My Networks' }] : []).map(tab => (
                 <button 
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id as any)}
@@ -1133,7 +1133,7 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
                 </button>
               ))}
 
-              {isOwnProfile && viewMode === 'edit' && (
+              {isOwnProfile && viewMode === 'edit' && !isNetworkLevel && (
                 <button 
                   onClick={() => setActiveTab('appearance')}
                   style={{ position: 'relative', background: 'none', border: 'none', padding: '12px 24px', color: activeTab === 'appearance' ? '#D35400' : '#888', fontSize: '15px', fontWeight: 'bold', cursor: 'pointer', borderRadius: '100px', display: 'flex', alignItems: 'center', gap: '8px', transition: 'color 0.3s' }}
@@ -1145,7 +1145,7 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
                 </button>
               )}
 
-              {isOwnProfile && viewMode === 'edit' && (
+              {isOwnProfile && viewMode === 'edit' && !isNetworkLevel && (
                 <button 
                   onClick={() => setActiveTab('wallet')}
                   style={{ position: 'relative', background: 'none', border: 'none', padding: '12px 24px', color: activeTab === 'wallet' ? '#00ff88' : '#888', fontSize: '15px', fontWeight: 'bold', cursor: 'pointer', borderRadius: '100px', display: 'flex', alignItems: 'center', gap: '8px', transition: 'color 0.3s' }}
