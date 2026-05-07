@@ -246,12 +246,8 @@ const SliderSection: React.FC<SliderSectionProps> = ({ title, items, delay = 0, 
           }}
           className="hide-scrollbar"
         >
-          {items.map((item, index) => (
-            <motion.div 
-              initial={{ opacity: 0, x: 50 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              viewport={{ once: true, margin: "100px" }}
-              transition={{ duration: 0.6, delay: delay + (index * 0.1), ease: [0.16, 1, 0.3, 1] }}
+          {items.map((item) => (
+            <div 
               className="slider-item-mobile"
               key={item.id} 
               style={{ flexShrink: 0, width: widthVal, height: aspectRatio === '1/1' ? widthVal : 'auto' }}
@@ -263,7 +259,7 @@ const SliderSection: React.FC<SliderSectionProps> = ({ title, items, delay = 0, 
               }}
             >
               <SlideItem item={item} aspectRatio={aspectRatio} />
-            </motion.div>
+            </div>
           ))}
         </div>
       </div>

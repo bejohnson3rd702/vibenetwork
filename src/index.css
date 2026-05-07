@@ -202,7 +202,8 @@ html[data-theme="light"] .btn-primary {
     height: 350px !important;
   }
   .slider-item-mobile {
-    max-width: 85vw !important;
+    width: calc(40vw - 12px) !important;
+    max-width: none !important;
   }
   .text-xs-mobile {
     font-size: 10px !important;
