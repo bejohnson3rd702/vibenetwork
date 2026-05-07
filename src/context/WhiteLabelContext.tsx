@@ -18,6 +18,7 @@ export interface WhiteLabelConfig {
   enableBooking?: boolean;
   heroLayoutMode?: 'verbiage' | 'video' | 'slider';
   heroVideoUrl?: string;
+  heroVideoTitle?: string;
 }
 
 interface WhiteLabelContextProps {

@@ -94,6 +94,11 @@ const Hero: React.FC = () => {
             transition={{ duration: 0.8, delay: 0.6 }}
             style={{ width: '100%', maxWidth: '800px', minHeight: '300px', margin: '0 auto 50px', borderRadius: '24px', overflow: 'hidden', border: `1px solid ${wlConfig.accent || '#fff'}44`, boxShadow: `0 20px 50px ${wlConfig.accent || '#fff'}33`, aspectRatio: '16/9', background: '#000', position: 'relative' }}
           >
+             {wlConfig?.heroVideoTitle && (
+               <div style={{ position: 'absolute', top: 20, left: 24, zIndex: 10, background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(10px)', padding: '8px 16px', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.1)' }}>
+                 <h3 style={{ margin: 0, color: '#fff', fontSize: '18px', fontWeight: 'bold', letterSpacing: '0.5px' }}>{wlConfig.heroVideoTitle}</h3>
+               </div>
+             )}
              {(() => {
                 const url = wlConfig.heroVideoUrl || '';
                 const match = url.match(/^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/);

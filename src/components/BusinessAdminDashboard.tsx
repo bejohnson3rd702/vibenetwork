@@ -84,6 +84,7 @@ export default function BusinessAdminDashboard({ onClose }: { onClose: () => voi
   const [enableBooking, setEnableBooking] = useState(wlConfig?.enableBooking ?? false);
   const [heroLayoutMode, setHeroLayoutMode] = useState<'verbiage' | 'video' | 'slider'>(wlConfig?.heroLayoutMode || 'verbiage');
   const [heroVideoUrl, setHeroVideoUrl] = useState(wlConfig?.heroVideoUrl || '');
+  const [heroVideoTitle, setHeroVideoTitle] = useState(wlConfig?.heroVideoTitle || '');
   const [uploadingHeroVideo, setUploadingHeroVideo] = useState(false);
 
   const handleHeroVideoUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -136,7 +137,8 @@ export default function BusinessAdminDashboard({ onClose }: { onClose: () => voi
            enableWatchLive,
            enableBooking,
            heroLayoutMode,
-           heroVideoUrl
+           heroVideoUrl,
+           heroVideoTitle
         }
      }));
      alert("Live Architecture Successfully Deployed to Master Server!");
@@ -217,6 +219,7 @@ export default function BusinessAdminDashboard({ onClose }: { onClose: () => voi
                            <input type="file" accept="video/*" onChange={handleHeroVideoUpload} style={{ display: 'none' }} disabled={uploadingHeroVideo} />
                         </label>
                      </div>
+                     <input type="text" value={heroVideoTitle} onChange={(e) => setHeroVideoTitle(e.target.value)} placeholder="e.g. Welcome to the Vibe Network" style={{ width: '100%', padding: '14px', background: 'rgba(0,0,0,0.5)', color: 'var(--text-primary)', border: '1px solid rgba(255,255,255,0.2)', borderRadius: '12px', fontSize: '16px', outline: 'none', marginTop: '10px' }} />
                   </div>
                 )}
 
