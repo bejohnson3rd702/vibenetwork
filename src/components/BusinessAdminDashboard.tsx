@@ -84,6 +84,32 @@ export default function BusinessAdminDashboard({ onClose }: { onClose: () => voi
   const [enableBooking, setEnableBooking] = useState(wlConfig?.enableBooking ?? false);
   const [heroLayoutMode, setHeroLayoutMode] = useState<'verbiage' | 'video' | 'slider'>(wlConfig?.heroLayoutMode || 'verbiage');
   const [heroVideoUrl, setHeroVideoUrl] = useState(wlConfig?.heroVideoUrl || '');
+  const [uploadingHeroVideo, setUploadingHeroVideo] = useState(false);
+
+  const handleHeroVideoUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    try {
+      if (!event.target.files || event.target.files.length === 0) return;
+      setUploadingHeroVideo(true);
+      const file = event.target.files[0];
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${Date.now()}_${Math.random()}.${fileExt}`;
+      const filePath = `hero/${fileName}`;
+      
+      const { error: uploadError } = await supabase.storage.from('videos').upload(filePath, file);
+      if (uploadError) throw uploadError;
+      
+      const { data } = supabase.storage.from('videos').getPublicUrl(filePath);
+      if (data?.publicUrl) {
+        setHeroVideoUrl(data.publicUrl);
+        alert('Video uploaded successfully!');
+      }
+    } catch (err: any) {
+      console.error('Error uploading video:', err.message);
+      alert('Upload failed: ' + err.message);
+    } finally {
+      setUploadingHeroVideo(false);
+    }
+  };
 
   useEffect(() => {
      const loadLeads = async () => {
@@ -181,9 +207,16 @@ export default function BusinessAdminDashboard({ onClose }: { onClose: () => voi
 
                 {heroLayoutMode === 'video' && (
                   <div style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)', padding: '24px 30px', borderRadius: '20px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                     <h3 style={{ margin: '0 0 4px 0', fontSize: '20px' }}>Welcome Video URL</h3>
-                     <p style={{ margin: 0, color: 'var(--text-muted)', fontSize: '15px', marginBottom: '10px' }}>Enter a YouTube URL to embed in the center of the hero section.</p>
-                     <input type="text" value={heroVideoUrl} onChange={(e) => setHeroVideoUrl(e.target.value)} placeholder="e.g. https://youtube.com/watch?v=..." style={{ width: '100%', padding: '14px', background: 'rgba(0,0,0,0.5)', color: 'var(--text-primary)', border: '1px solid rgba(255,255,255,0.2)', borderRadius: '12px', fontSize: '16px', outline: 'none' }} />
+                     <h3 style={{ margin: '0 0 4px 0', fontSize: '20px' }}>Welcome Video Source</h3>
+                     <p style={{ margin: 0, color: 'var(--text-muted)', fontSize: '15px', marginBottom: '10px' }}>Enter a YouTube URL OR directly upload a video file to embed in the center of the hero section.</p>
+                     
+                     <div style={{ display: 'flex', gap: '12px' }}>
+                        <input type="text" value={heroVideoUrl} onChange={(e) => setHeroVideoUrl(e.target.value)} placeholder="e.g. https://youtube.com/watch?v=..." style={{ flex: 1, padding: '14px', background: 'rgba(0,0,0,0.5)', color: 'var(--text-primary)', border: '1px solid rgba(255,255,255,0.2)', borderRadius: '12px', fontSize: '16px', outline: 'none' }} />
+                        <label style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '0 24px', background: 'var(--bg-surface)', border: '1px solid rgba(255,255,255,0.2)', borderRadius: '12px', cursor: uploadingHeroVideo ? 'not-allowed' : 'pointer', fontWeight: 'bold' }}>
+                           {uploadingHeroVideo ? 'Uploading...' : 'Upload Video File'}
+                           <input type="file" accept="video/*" onChange={handleHeroVideoUpload} style={{ display: 'none' }} disabled={uploadingHeroVideo} />
+                        </label>
+                     </div>
                   </div>
                 )}
 

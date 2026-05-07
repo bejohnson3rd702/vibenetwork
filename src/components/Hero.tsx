@@ -95,8 +95,10 @@ const Hero: React.FC = () => {
             style={{ width: '100%', maxWidth: '800px', margin: '0 auto 50px', borderRadius: '24px', overflow: 'hidden', border: `1px solid ${wlConfig.accent || '#fff'}44`, boxShadow: `0 20px 50px ${wlConfig.accent || '#fff'}33`, aspectRatio: '16/9', background: '#000', position: 'relative' }}
           >
              {(() => {
-                const match = (wlConfig.heroVideoUrl || '').match(/^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/);
+                const url = wlConfig.heroVideoUrl || '';
+                const match = url.match(/^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/);
                 const ytId = (match && match[2].length === 11) ? match[2] : null;
+                
                 if (ytId) {
                   return (
                     <iframe 
@@ -108,7 +110,19 @@ const Hero: React.FC = () => {
                       style={{ width: '100%', height: '100%', position: 'absolute', inset: 0 }}
                     />
                   );
+                } else if (url && (url.includes('supabase.co') || url.endsWith('.mp4') || url.endsWith('.webm') || url.startsWith('http'))) {
+                  return (
+                    <video 
+                      src={url}
+                      autoPlay 
+                      loop 
+                      muted 
+                      playsInline
+                      style={{ width: '100%', height: '100%', objectFit: 'cover', position: 'absolute', inset: 0 }}
+                    />
+                  );
                 }
+                
                 return <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff' }}>Invalid or missing video URL</div>;
              })()}
           </motion.div>

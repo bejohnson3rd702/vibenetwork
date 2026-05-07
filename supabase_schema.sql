@@ -307,12 +307,13 @@ CREATE POLICY "Allow users to update own courses" ON public.courses FOR UPDATE U
 
 -- 12. Storage Buckets (For avatars, covers, and thumbnails)
 INSERT INTO storage.buckets (id, name, public) VALUES ('images', 'images', true) ON CONFLICT (id) DO NOTHING;
+INSERT INTO storage.buckets (id, name, public) VALUES ('videos', 'videos', true) ON CONFLICT (id) DO NOTHING;
 
 DROP POLICY IF EXISTS "Public Access" ON storage.objects;
-CREATE POLICY "Public Access" ON storage.objects FOR SELECT USING (bucket_id = 'images');
+CREATE POLICY "Public Access" ON storage.objects FOR SELECT USING (bucket_id IN ('images', 'videos'));
 
 DROP POLICY IF EXISTS "Auth Insert" ON storage.objects;
-CREATE POLICY "Auth Insert" ON storage.objects FOR INSERT WITH CHECK (bucket_id = 'images' AND auth.role() = 'authenticated');
+CREATE POLICY "Auth Insert" ON storage.objects FOR INSERT WITH CHECK (bucket_id IN ('images', 'videos') AND auth.role() = 'authenticated');
 
 ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS platform_fee_percentage NUMERIC DEFAULT 15.00;
 ALTER TABLE public.whitelabel_configs ADD COLUMN IF NOT EXISTS platform_fee_percentage NUMERIC DEFAULT 15.00;
