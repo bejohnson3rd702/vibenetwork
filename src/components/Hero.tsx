@@ -101,9 +101,30 @@ const Hero: React.FC = () => {
             style={{ width: '100%', maxWidth: '800px', minHeight: '300px', margin: '0 auto 50px', borderRadius: '24px', overflow: 'hidden', border: `1px solid ${wlConfig.accent || '#fff'}44`, boxShadow: `0 20px 50px ${wlConfig.accent || '#fff'}33`, aspectRatio: '16/9', background: '#000', position: 'relative' }}
           >
              {wlConfig?.heroVideoTitle && (
-               <div style={{ position: 'absolute', top: 20, left: 24, zIndex: 10, background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(10px)', padding: '8px 16px', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.1)' }}>
-                 <h3 style={{ margin: 0, color: '#fff', fontSize: '18px', fontWeight: 'bold', letterSpacing: '0.5px' }}>{wlConfig.heroVideoTitle}</h3>
-               </div>
+               <motion.div 
+                 initial={{ opacity: 0, x: -20 }}
+                 animate={{ opacity: 1, x: 0 }}
+                 transition={{ duration: 0.8, delay: 1 }}
+                 style={{ 
+                   position: 'absolute', top: 24, left: 24, zIndex: 10, 
+                   background: 'linear-gradient(135deg, rgba(0,0,0,0.8), rgba(0,0,0,0.4))', 
+                   backdropFilter: 'blur(20px)', padding: '12px 24px', 
+                   borderRadius: '16px', border: `1px solid ${wlConfig?.accent || 'var(--accent-primary)'}55`,
+                   borderLeft: `4px solid ${wlConfig?.accent || 'var(--accent-primary)'}`,
+                   boxShadow: `0 10px 30px rgba(0,0,0,0.5)`,
+                   display: 'flex', alignItems: 'center', gap: '14px'
+                 }}
+               >
+                 <motion.div 
+                   animate={{ opacity: [1, 0.3, 1] }} 
+                   transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }} 
+                   style={{ width: 10, height: 10, borderRadius: '50%', background: '#ff3366', boxShadow: '0 0 12px #ff3366' }} 
+                 />
+                 <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
+                   <span style={{ fontSize: '11px', color: 'rgba(255,255,255,0.6)', textTransform: 'uppercase', letterSpacing: '2px', marginBottom: '4px', fontWeight: 700 }}>Now Playing</span>
+                   <h3 style={{ margin: 0, color: '#fff', fontSize: '18px', fontWeight: '800', letterSpacing: '0.5px', textShadow: '0 2px 10px rgba(0,0,0,0.8)' }}>{wlConfig.heroVideoTitle}</h3>
+                 </div>
+               </motion.div>
              )}
              {(() => {
                 const url = wlConfig.heroVideoUrl || '';
