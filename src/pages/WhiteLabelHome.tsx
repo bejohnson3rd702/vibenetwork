@@ -51,9 +51,16 @@ export default function WhiteLabelHome({ wlConfig, categories, user, activeVideo
           </motion.div>
           
           {(!wlConfig.heroLayoutMode || wlConfig.heroLayoutMode === 'verbiage') && (
-            <motion.p initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, delay: 0.4, ease: [0.16, 1, 0.3, 1] }} className="hero-sub-mobile" style={{ fontSize: '26px', color: 'rgba(255,255,255,0.7)', maxWidth: '800px', fontWeight: '400', textShadow: '0 10px 20px rgba(0,0,0,0.8)', lineHeight: 1.6 }}>
-              {wlConfig.heroCopy || 'The premiere destination for high quality digital content.'}
-            </motion.p>
+            <>
+              <motion.p initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, delay: 0.4, ease: [0.16, 1, 0.3, 1] }} className="hero-sub-mobile" style={{ fontSize: '26px', color: 'rgba(255,255,255,0.7)', maxWidth: '800px', fontWeight: '400', textShadow: '0 10px 20px rgba(0,0,0,0.8)', lineHeight: 1.6 }}>
+                {wlConfig.heroCopy || 'The premiere destination for high quality digital content.'}
+              </motion.p>
+              <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.8, delay: 0.6, ease: [0.16, 1, 0.3, 1] }} style={{ marginTop: '20px', display: 'flex', gap: '20px', alignItems: 'center' }}>
+                 <button onClick={() => { document.getElementById('featured-content')?.scrollIntoView({ behavior: 'smooth' }); }} style={{ padding: '20px 48px', background: wlConfig.accent || 'var(--accent-primary)', color: 'var(--text-primary)', border: 'none', borderRadius: '16px', fontSize: '18px', fontWeight: 'bold', cursor: 'pointer', boxShadow: `0 10px 30px ${wlConfig.accent || 'var(--accent-primary)'}66`, transition: 'all 0.3s ease' }}>
+                   {wlConfig.btnPrimary === 'Access Admin Dashboard' ? 'Explore Content' : (wlConfig.btnPrimary || 'Explore Content')}
+                 </button>
+              </motion.div>
+            </>
           )}
 
           {wlConfig.heroLayoutMode === 'video' && (
