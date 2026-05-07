@@ -1,5 +1,5 @@
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Play } from 'lucide-react';
+import { X, Play, ChevronRight, Sparkles } from 'lucide-react';
 import { lazy, Suspense } from 'react';
 import { useNavigate } from 'react-router-dom';
 import SliderSection from '../components/SliderSection';
@@ -17,48 +17,56 @@ interface WhiteLabelHomeProps {
 }
 
 export default function WhiteLabelHome({ wlConfig, categories, user, activeVideo, setActiveVideo }: WhiteLabelHomeProps) {
+  const navigate = useNavigate();
   return (
-    <div style={{
-       width: '100%', minHeight: '100vh', 
-       backgroundColor: 'var(--bg-color)',
-       display:'flex', flexDirection: 'column', alignItems:'center', justifyContent:'flex-start', position: 'relative',
-       textAlign: 'center', overflow: 'hidden'
-    }}>
-       {/* Background Mesh & Image Layer */}
+    <div style={{ background: wlConfig.bg || 'var(--bg-color)', minHeight: '100vh', width: '100%', overflowX: 'hidden' }}>
+       {/* Master Hero Background Layer */}
        <motion.img 
          initial={{ scale: 1.1, opacity: 0 }}
          animate={{ scale: 1, opacity: 1 }}
          transition={{ duration: 1.5, ease: 'easeOut' }}
          src={wlConfig.heroImage || `https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&q=80&w=2500`} 
          alt="Atmospheric Hero Background" 
-         style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', objectFit: 'cover', zIndex: 0, filter: 'brightness(0.4) contrast(1.1) saturate(1.2)' }} 
+         style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', objectFit: 'cover', zIndex: 0, filter: 'brightness(0.3) contrast(1.2) saturate(1.3)' }} 
        />
        {/* Complex Gradient Overlays responding dynamically to Tenant Accent */}
        <div style={{ position: 'absolute', inset: 0, background: `linear-gradient(to right, ${wlConfig.bg || 'var(--bg-color)'}dd, transparent)`, zIndex: 1 }} />
        <div style={{ position: 'absolute', inset: 0, background: `radial-gradient(circle at 50% 30%, ${wlConfig.accent || 'var(--accent-primary)'}44, transparent 60%)`, zIndex: 1, mixBlendMode: 'screen' }} />
        <div style={{ position: 'absolute', inset: 0, background: `linear-gradient(to bottom, transparent 40%, ${wlConfig.bg || 'var(--bg-color)'} 100%)`, zIndex: 1 }} />
        
+       {/* Animated Swagg Floating Orbs */}
+       <div style={{ position: 'absolute', inset: 0, overflow: 'hidden', zIndex: 1, pointerEvents: 'none' }}>
+         <motion.div animate={{ x: [0, 50, 0], y: [0, -50, 0], scale: [1, 1.2, 1] }} transition={{ duration: 15, repeat: Infinity, ease: 'easeInOut' }} style={{ position: 'absolute', top: '10%', left: '15%', width: '400px', height: '400px', background: `radial-gradient(circle, ${wlConfig.accent || 'var(--accent-primary)'}33, transparent)`, borderRadius: '50%', filter: 'blur(80px)' }} />
+         <motion.div animate={{ x: [0, -40, 0], y: [0, 60, 0], scale: [1, 1.5, 1] }} transition={{ duration: 20, repeat: Infinity, ease: 'easeInOut' }} style={{ position: 'absolute', bottom: '20%', right: '10%', width: '500px', height: '500px', background: `radial-gradient(circle, #ff005522, transparent)`, borderRadius: '50%', filter: 'blur(100px)' }} />
+       </div>
+
        {/* Hero Text Section (Min Height to clear viewport and center properly) */}
-       <div className="px-mobile-sm py-mobile-sm" style={{ zIndex: 2, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '75vh', width: '100%', paddingTop: '120px', gap: '32px' }}>
-          <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, delay: 0.2, ease: [0.16, 1, 0.3, 1] }} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '16px' }}>
-            <div style={{ padding: '8px 16px', background: 'var(--bg-surface)', backdropFilter: 'blur(10px)', border: `1px solid ${wlConfig.accent || 'var(--accent-primary)'}44`, borderRadius: '30px', display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
-              <div style={{ width: 8, height: 8, borderRadius: '50%', background: wlConfig.accent || 'var(--accent-primary)', boxShadow: `0 0 10px ${wlConfig.accent || 'var(--accent-primary)'}` }} />
-              <span style={{ fontSize: '13px', fontWeight: 600, letterSpacing: '2px', textTransform: 'uppercase', color: wlConfig.accent || 'var(--accent-primary)' }}>Live Network Initialized</span>
-            </div>
-            <h1 className="hero-title-mobile" style={{ fontSize: '96px', fontWeight: '900', margin: 0, letterSpacing: '-3px', lineHeight: 1.1, textShadow: '0 20px 40px rgba(0,0,0,0.8)', background: `linear-gradient(to bottom, #ffffff, rgba(255,255,255,0.7))`, WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
+       <div className="px-mobile-sm py-mobile-sm" style={{ zIndex: 2, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '85vh', width: '100%', paddingTop: '120px', gap: '32px' }}>
+          <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, delay: 0.2, ease: [0.16, 1, 0.3, 1] }} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '20px' }}>
+            <motion.div whileHover={{ scale: 1.05 }} style={{ padding: '10px 20px', background: 'rgba(10,10,10,0.5)', backdropFilter: 'blur(16px)', border: `1px solid ${wlConfig.accent || 'var(--accent-primary)'}66`, borderRadius: '30px', display: 'inline-flex', alignItems: 'center', gap: '10px', boxShadow: `0 0 20px ${wlConfig.accent || 'var(--accent-primary)'}33` }}>
+              <Sparkles size={16} color={wlConfig.accent || 'var(--accent-primary)'} style={{ filter: `drop-shadow(0 0 8px ${wlConfig.accent || 'var(--accent-primary)'})` }} />
+              <span style={{ fontSize: '13px', fontWeight: 700, letterSpacing: '2px', textTransform: 'uppercase', color: '#fff' }}>Live Network Initialized</span>
+            </motion.div>
+            <h1 className="hero-title-mobile" style={{ fontSize: '100px', fontWeight: '900', margin: 0, letterSpacing: '-4px', lineHeight: 1.1, textAlign: 'center', textShadow: '0 20px 40px rgba(0,0,0,0.8)', background: `linear-gradient(135deg, #ffffff 0%, rgba(255,255,255,0.5) 100%)`, WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', filter: 'drop-shadow(0px 10px 20px rgba(0,0,0,0.5))' }}>
               {wlConfig.name}
             </h1>
           </motion.div>
           
           {(!wlConfig.heroLayoutMode || wlConfig.heroLayoutMode === 'verbiage') && (
             <>
-              <motion.p initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, delay: 0.4, ease: [0.16, 1, 0.3, 1] }} className="hero-sub-mobile" style={{ fontSize: '26px', color: 'rgba(255,255,255,0.7)', maxWidth: '800px', fontWeight: '400', textShadow: '0 10px 20px rgba(0,0,0,0.8)', lineHeight: 1.6 }}>
+              <motion.p initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, delay: 0.4, ease: [0.16, 1, 0.3, 1] }} className="hero-sub-mobile" style={{ fontSize: '28px', color: 'rgba(255,255,255,0.8)', maxWidth: '850px', textAlign: 'center', fontWeight: '400', textShadow: '0 10px 20px rgba(0,0,0,0.8)', lineHeight: 1.6 }}>
                 {wlConfig.heroCopy || 'The premiere destination for high quality digital content.'}
               </motion.p>
-              <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.8, delay: 0.6, ease: [0.16, 1, 0.3, 1] }} style={{ marginTop: '20px', display: 'flex', gap: '20px', alignItems: 'center' }}>
-                 <button onClick={() => { document.getElementById('featured-content')?.scrollIntoView({ behavior: 'smooth' }); }} style={{ padding: '20px 48px', background: wlConfig.accent || 'var(--accent-primary)', color: 'var(--text-primary)', border: 'none', borderRadius: '16px', fontSize: '18px', fontWeight: 'bold', cursor: 'pointer', boxShadow: `0 10px 30px ${wlConfig.accent || 'var(--accent-primary)'}66`, transition: 'all 0.3s ease' }}>
+              <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.8, delay: 0.6, ease: [0.16, 1, 0.3, 1] }} style={{ marginTop: '30px', display: 'flex', gap: '20px', alignItems: 'center' }}>
+                 <motion.button 
+                   whileHover={{ scale: 1.05, boxShadow: `0 20px 40px ${wlConfig.accent || 'var(--accent-primary)'}88`, filter: 'brightness(1.1)' }}
+                   whileTap={{ scale: 0.95 }}
+                   onClick={() => { document.getElementById('featured-content')?.scrollIntoView({ behavior: 'smooth' }); }} 
+                   style={{ padding: '22px 54px', background: `linear-gradient(135deg, ${wlConfig.accent || 'var(--accent-primary)'}, rgba(0,0,0,0.8))`, color: '#fff', border: `1px solid ${wlConfig.accent || 'var(--accent-primary)'}44`, borderRadius: '40px', fontSize: '20px', fontWeight: 'bold', cursor: 'pointer', boxShadow: `0 10px 30px ${wlConfig.accent || 'var(--accent-primary)'}55`, transition: 'all 0.3s ease', display: 'flex', alignItems: 'center', gap: '12px' }}
+                 >
                    {wlConfig.btnPrimary === 'Access Admin Dashboard' ? 'Explore Content' : (wlConfig.btnPrimary || 'Explore Content')}
-                 </button>
+                   <ChevronRight size={24} />
+                 </motion.button>
               </motion.div>
             </>
           )}

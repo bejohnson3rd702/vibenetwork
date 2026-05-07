@@ -1,43 +1,35 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Play, ArrowRight } from 'lucide-react';
+import { Play, ArrowRight, ChevronRight, Sparkles } from 'lucide-react';
 import { ASSETS } from '../data';
 import { useWhiteLabel } from '../context/WhiteLabelContext';
 
 const Hero: React.FC = () => {
   const { wlConfig } = useWhiteLabel();
+
   return (
     <div style={{ position: 'relative', width: '100%', minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: 'var(--bg-color)', overflow: 'hidden' }}>
       
-      {/* Dynamic Cinematic Background Layer */}
-      <motion.img 
+      {/* Dynamic Background */}
+      <motion.div 
         initial={{ scale: 1.1, opacity: 0 }}
-        animate={{ scale: 1, opacity: 0.8 }}
+        animate={{ scale: 1, opacity: 1 }}
         transition={{ duration: 2, ease: 'easeOut' }}
-        src={wlConfig?.heroImage || ASSETS.heroMain}
-        alt={wlConfig?.name || "B2B Corporate Master"}
-        style={{
-          position: 'absolute',
-          inset: 0,
-          width: '100%',
-          height: '100%',
-          objectFit: 'cover',
-          zIndex: 0,
-          filter: 'brightness(0.6) contrast(1.1) saturate(1.2)'
-        }}
-      />
+        style={{ position: 'absolute', inset: 0, zIndex: 0 }}
+      >
+        <div style={{ position: 'absolute', inset: 0, backgroundImage: `url(${wlConfig?.heroImage || ASSETS.heroMain})`, backgroundSize: 'cover', backgroundPosition: 'center', filter: 'brightness(0.3) saturate(1.3) contrast(1.1)' }} />
+      </motion.div>
       
       {/* Sleek Mesh Overlays */}
       <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to right, rgba(var(--bg-rgb),0.95) 0%, transparent 50%, rgba(var(--bg-rgb),0.95) 100%)', zIndex: 1 }} />
       <div style={{ position: 'absolute', inset: 0, background: `radial-gradient(ellipse at 50% 0%, ${wlConfig?.accent ? wlConfig.accent + '66' : 'rgba(211, 84, 0, 0.35)'}, transparent 60%)`, zIndex: 1, mixBlendMode: 'screen' }} />
       <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to bottom, transparent 10%, var(--bg-color) 100%)', zIndex: 1 }} />
       
-      {/* Floating Orbital Glow */}
-      <motion.div 
-        animate={{ filter: ['blur(100px)', 'blur(140px)', 'blur(100px)'], scale: [1, 1.2, 1] }}
-        transition={{ duration: 8, repeat: Infinity, ease: 'easeInOut' }}
-        style={{ position: 'absolute', top: '10%', right: '15%', width: '400px', height: '400px', borderRadius: '50%', background: wlConfig?.accent || 'var(--accent-primary)', opacity: 0.15, zIndex: 1 }}
-      />
+      {/* Animated Swagg Floating Orbs */}
+      <div style={{ position: 'absolute', inset: 0, overflow: 'hidden', zIndex: 1, pointerEvents: 'none' }}>
+        <motion.div animate={{ x: [0, 50, 0], y: [0, -50, 0], scale: [1, 1.2, 1] }} transition={{ duration: 15, repeat: Infinity, ease: 'easeInOut' }} style={{ position: 'absolute', top: '10%', right: '15%', width: '400px', height: '400px', background: `radial-gradient(circle, ${wlConfig?.accent || 'var(--accent-primary)'}33, transparent)`, borderRadius: '50%', filter: 'blur(100px)' }} />
+        <motion.div animate={{ x: [0, -40, 0], y: [0, 60, 0], scale: [1, 1.5, 1] }} transition={{ duration: 20, repeat: Infinity, ease: 'easeInOut' }} style={{ position: 'absolute', bottom: '20%', left: '10%', width: '500px', height: '500px', background: `radial-gradient(circle, #ff005522, transparent)`, borderRadius: '50%', filter: 'blur(120px)' }} />
+      </div>
       
       <div className="px-mobile-sm" style={{ position: 'relative', zIndex: 2, width: '100%', maxWidth: '1200px', padding: '0 40px', textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
         
@@ -45,11 +37,12 @@ const Hero: React.FC = () => {
         <motion.div 
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
+          whileHover={{ scale: 1.05 }}
           transition={{ duration: 0.8, delay: 0.2 }}
-          style={{ padding: '8px 24px', background: 'rgba(255,255,255,0.03)', backdropFilter: 'blur(20px)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '100px', display: 'inline-flex', alignItems: 'center', gap: '12px', marginBottom: '40px' }}
+          style={{ padding: '10px 24px', background: 'rgba(255,255,255,0.03)', backdropFilter: 'blur(20px)', border: `1px solid ${wlConfig?.accent || 'rgba(255,255,255,0.08)'}66`, borderRadius: '100px', display: 'inline-flex', alignItems: 'center', gap: '12px', marginBottom: '40px', boxShadow: `0 0 20px ${wlConfig?.accent || 'rgba(255,255,255,0.1)'}33` }}
         >
-          <span style={{ width: 6, height: 6, borderRadius: '50%', background: wlConfig?.accent || 'var(--accent-primary)', boxShadow: `0 0 10px ${wlConfig?.accent || 'var(--accent-primary)'}` }} />
-          <span style={{ fontSize: '12px', fontWeight: 700, letterSpacing: '3px', textTransform: 'uppercase', color: 'rgba(255,255,255,0.8)' }}>
+          <Sparkles size={16} color={wlConfig?.accent || 'var(--accent-primary)'} style={{ filter: `drop-shadow(0 0 8px ${wlConfig?.accent || 'var(--accent-primary)'})` }} />
+          <span style={{ fontSize: '13px', fontWeight: 700, letterSpacing: '3px', textTransform: 'uppercase', color: 'rgba(255,255,255,0.9)' }}>
             The Ultimate White Label Architecture
           </span>
         </motion.div>
@@ -61,30 +54,43 @@ const Hero: React.FC = () => {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 0.4 }}
           style={{ 
-            fontSize: '85px', fontWeight: 900, lineHeight: 1.05, letterSpacing: '-2px', color: 'var(--text-primary)',
-            margin: '0 0 24px 0', textShadow: '0 20px 40px rgba(0,0,0,0.5)'
+            fontSize: '95px', fontWeight: 900, lineHeight: 1.1, letterSpacing: '-3px', color: 'var(--text-primary)',
+            margin: '0 0 24px 0', textShadow: '0 20px 40px rgba(0,0,0,0.8)'
           }}
         >
           {wlConfig?.name ? (
-            <>Welcome to<br/> <span style={{ background: `linear-gradient(135deg, #fff 0%, ${wlConfig?.accent || 'var(--accent-primary)'} 100%)`, WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>{wlConfig.name}</span></>
+            <>Welcome to<br/> <span style={{ background: `linear-gradient(135deg, #fff 0%, ${wlConfig?.accent || 'var(--accent-primary)'} 100%)`, WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', filter: 'drop-shadow(0px 10px 20px rgba(0,0,0,0.5))' }}>{wlConfig.name}</span></>
           ) : (
-            <>Step Into The<br/> <span style={{ background: `linear-gradient(135deg, #fff 0%, ${wlConfig?.accent || 'var(--accent-primary)'} 100%)`, WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>New Dimension</span></>
+            <>Step Into The<br/> <span style={{ background: `linear-gradient(135deg, #fff 0%, ${wlConfig?.accent || 'var(--accent-primary)'} 100%)`, WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', filter: 'drop-shadow(0px 10px 20px rgba(0,0,0,0.5))' }}>New Dimension</span></>
           )}
         </motion.h1>
         
         {(!wlConfig?.heroLayoutMode || wlConfig.heroLayoutMode === 'verbiage') && (
-          <motion.p 
-            className="hero-sub-mobile"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.6 }}
-            style={{ 
-              fontSize: '22px', color: 'var(--text-secondary)', maxWidth: '750px', 
-              margin: '0 0 50px 0', lineHeight: 1.6, fontWeight: 500
-            }}
-          >
-            {wlConfig?.heroCopy || "The highest fidelity, ultra-low latency broadcasting architecture built exclusively for global corporate brands, creators, and enterprise media."}
-          </motion.p>
+          <>
+            <motion.p 
+              className="hero-sub-mobile"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8, delay: 0.6 }}
+              style={{ 
+                fontSize: '24px', color: 'rgba(255,255,255,0.8)', maxWidth: '850px', 
+                margin: '0 0 40px 0', lineHeight: 1.6, fontWeight: 400, textShadow: '0 10px 20px rgba(0,0,0,0.8)'
+              }}
+            >
+              {wlConfig?.heroCopy || "The highest fidelity, ultra-low latency broadcasting architecture built exclusively for global corporate brands, creators, and enterprise media."}
+            </motion.p>
+            <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.8, delay: 0.8, ease: [0.16, 1, 0.3, 1] }} style={{ marginBottom: '50px', display: 'flex', gap: '20px', alignItems: 'center' }}>
+               <motion.button 
+                 whileHover={{ scale: 1.05, boxShadow: `0 20px 40px ${wlConfig?.accent || 'var(--accent-primary)'}88`, filter: 'brightness(1.1)' }}
+                 whileTap={{ scale: 0.95 }}
+                 onClick={() => { document.getElementById('featured-content')?.scrollIntoView({ behavior: 'smooth' }); }} 
+                 style={{ padding: '22px 54px', background: `linear-gradient(135deg, ${wlConfig?.accent || 'var(--accent-primary)'}, rgba(0,0,0,0.8))`, color: '#fff', border: `1px solid ${wlConfig?.accent || 'var(--accent-primary)'}44`, borderRadius: '40px', fontSize: '20px', fontWeight: 'bold', cursor: 'pointer', boxShadow: `0 10px 30px ${wlConfig?.accent || 'var(--accent-primary)'}55`, transition: 'all 0.3s ease', display: 'flex', alignItems: 'center', gap: '12px' }}
+               >
+                 {wlConfig?.btnPrimary === 'Access Admin Dashboard' ? 'Explore Content' : (wlConfig?.btnPrimary || 'Explore Content')}
+                 <ChevronRight size={24} />
+               </motion.button>
+            </motion.div>
+          </>
         )}
 
         {wlConfig?.heroLayoutMode === 'video' && (
