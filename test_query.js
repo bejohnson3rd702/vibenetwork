@@ -6,16 +6,7 @@ const supabase = createClient(
 );
 
 async function run() {
-  const query = supabase.from('products').select('*, creator:profiles!inner(username, avatar_url, whitelabel_id)');
-  query.eq('creator.whitelabel_id', '00000000-0000-0000-0000-000000000001');
-
-  const { data: prodData, error } = await query.order('created_at', { ascending: false });
-  if (error) {
-    console.log('Query Error:', error);
-  } else {
-    console.log('Products Found:', prodData?.length);
-    console.log(prodData);
-  }
+  const { data, error } = await supabase.from('whitelabel_configs').select('id, name, domain, created_at').ilike('name', '%Jamie%');
+  console.log(data);
 }
-
 run();

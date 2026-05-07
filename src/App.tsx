@@ -306,14 +306,15 @@ function App() {
       }
 
       // Update Favicon
-      if (wlConfig.logoImage || wlConfig.logo) {
+      const faviconUrl = wlConfig.faviconImage || wlConfig.theme?.faviconImage || wlConfig.logoImage || wlConfig.logo;
+      if (faviconUrl) {
         let link = document.querySelector("link[rel~='icon']") as HTMLLinkElement;
         if (!link) {
           link = document.createElement('link');
           link.rel = 'icon';
           document.head.appendChild(link);
         }
-        link.href = wlConfig.logoImage || wlConfig.logo;
+        link.href = faviconUrl;
       }
     }
   }, [wlConfig]);
