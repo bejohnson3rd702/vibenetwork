@@ -107,7 +107,7 @@ const Hero: React.FC = () => {
                 if (ytId) {
                   return (
                     <iframe 
-                      src={`https://www.youtube.com/embed/${ytId}?autoplay=1&mute=1&loop=1&playlist=${ytId}`}
+                      src={`https://www.youtube.com/embed/${ytId}?autoplay=1&mute=1&loop=1&playlist=${ytId}&controls=1`}
                       title="Welcome Video"
                       frameBorder="0"
                       allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
@@ -119,6 +119,7 @@ const Hero: React.FC = () => {
                   return (
                     <video 
                       src={url}
+                      controls
                       autoPlay 
                       loop 
                       muted 
