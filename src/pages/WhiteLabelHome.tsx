@@ -1,10 +1,12 @@
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Play } from 'lucide-react';
 import { lazy, Suspense } from 'react';
+import { useNavigate } from 'react-router-dom';
 import SliderSection from '../components/SliderSection';
 import { supabase } from '../supabaseClient';
 import type { WhiteLabelConfig, Category, VideoItem, User } from '../types';
-import ProfileDashboard from '../components/ProfileDashboard';
+
+const ProfileDashboard = lazy(() => import('../components/ProfileDashboard'));
 
 interface WhiteLabelHomeProps {
   wlConfig: WhiteLabelConfig;
@@ -123,7 +125,7 @@ export default function WhiteLabelHome({ wlConfig, categories, user, activeVideo
        
        {/* Full Profile Dashboard Integrated at Network Level */}
        <div style={{ width: '100%', position: 'relative', zIndex: 10 }}>
-          <Suspense fallback={<div style={{ padding: '100px', color: '#fff' }}>Loading Network Modules...</div>}>
+          <Suspense fallback={<div style={{ textAlign: 'center', padding: '100px', color: 'var(--text-muted)' }}>Loading network profile...</div>}>
             <ProfileDashboard user={user} creatorIdOverride={wlConfig.owner_id} isNetworkLevel={true} />
           </Suspense>
        </div>
