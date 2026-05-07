@@ -4,6 +4,7 @@ import { lazy, Suspense } from 'react';
 import SliderSection from '../components/SliderSection';
 import { supabase } from '../supabaseClient';
 import type { WhiteLabelConfig, Category, VideoItem, User } from '../types';
+import ProfileDashboard from '../components/ProfileDashboard';
 
 interface WhiteLabelHomeProps {
   wlConfig: WhiteLabelConfig;
@@ -113,100 +114,68 @@ export default function WhiteLabelHome({ wlConfig, categories, user, activeVideo
                ))}
             </motion.div>
           )}
-          
-          
        </div>
        
-       {/* Featured Content Sliders Section */}
-       <div id="featured-content" style={{ position: 'relative', zIndex: 2, width: '100%', paddingBottom: '80px' }}>
-          
-          <div id="slider-section-container">
-            {(() => {
-              const displayCategories = categories.filter((c: any) => c.title !== 'Live DJ Sets');
-              if (user) {
-                displayCategories.unshift({
-                  title: 'Network Executives',
-                  aspectRatio: '3/4',
-                  items: [
-                    {
-                      id: user.id,
-                      title: user.user_metadata?.username || 'Network Founder',
-                      image: user.user_metadata?.avatar_url || `https://image.pollinations.ai/prompt/professional%20corporate%20headshot%20portrait%20cinematic%20lighting%20startup%20founder?width=400&height=600&nologo=true&seed=${user.id || 'owner'}`,
-                      tags: ['Influencer Channel', 'Executive'],
-                      linkUrl: null
-                    }
-                  ]
-                });
-              }
-              return displayCategories.map((category: any, index: number) => {
-                const isArtist = category.aspectRatio === '3/4' || (category.title && category.title.includes('Artist')) || category.title === 'Network Executives';
-                const ratio = isArtist ? '3/4' : '16/9';
+       {/* Full Profile Dashboard Integrated at Network Level */}
+       <div style={{ width: '100%', position: 'relative', zIndex: 10 }}>
+          <Suspense fallback={<div style={{ padding: '100px', color: '#fff' }}>Loading Network Modules...</div>}>
+            <ProfileDashboard user={user} creatorIdOverride={wlConfig.owner_id} isNetworkLevel={true} />
+          </Suspense>
+       </div>
+       
+       <AnimatePresence>
+         {activeVideo && (
+           <motion.div 
+             initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+             onClick={() => setActiveVideo(null)}
+             style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.95)', zIndex: 1000, display: 'flex', flexDirection: 'column' }}
+           >
+             <div style={{ padding: '24px 40px', display: 'flex', justifyContent: 'flex-end' }}>
+               <button onClick={() => setActiveVideo(null)} style={{ background: 'none', border: 'none', color: 'var(--text-primary)', cursor: 'pointer', opacity: 0.7, padding: '8px' }} onMouseOver={e=>e.currentTarget.style.opacity='1'} onMouseOut={e=>e.currentTarget.style.opacity='0.7'}><X size={32} /></button>
+             </div>
+             <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '0 40px 40px', gap: '20px' }} onClick={e => e.stopPropagation()}>
+               <div style={{ flex: 1, maxWidth: '1200px', height: '100%', background: 'var(--bg-color)', borderRadius: '16px', overflow: 'hidden', boxShadow: '0 20px 40px rgba(0,0,0,0.5)' }}>
+                 {(() => {
+                   const match = activeVideo.videoUrl.match(/^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/);
+                   const ytId = (match && match[2].length === 11) ? match[2] : null;
+                   if (ytId) {
+                     return (
+                       <iframe 
+                         src={`https://www.youtube.com/embed/${ytId}?autoplay=1`}
+                         title={activeVideo.title}
+                         style={{ width: '100%', height: '100%', border: 'none' }}
+                         allow="autoplay; encrypted-media; fullscreen"
+                         allowFullScreen
+                         loading="lazy"
+                       />
+                     );
+                   }
+                   return (
+                     <video src={activeVideo.videoUrl} poster={activeVideo.image} autoPlay controls style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+                   );
+                 })()}
+               </div>
+             </div>
+           </motion.div>
+         )}
+       </AnimatePresence>
+       
+       {wlConfig.customSections && wlConfig.customSections.toLowerCase() !== 'none' && (
+          <div className="px-mobile-sm" style={{ display: 'flex', flexDirection: 'column', gap: '40px', marginTop: '80px', padding: '0 40px', maxWidth: '1400px', margin: '80px auto 0', width: '100%', boxSizing: 'border-box' }}>
+             {wlConfig.customSections.split(',').map((section: string, idx: number) => {
+                const title = section.trim();
+                if (!title) return null;
+                const lTitle = title.toLowerCase();
+                if (lTitle === 'contact us form' || lTitle === 'contact us' || lTitle === 'contact' || lTitle === 'about us' || lTitle === 'about') return null;
+
                 return (
-                    <SliderSection 
-                      key={category.title}
-                      title={category.title} 
-                      items={category.items} 
-                      delay={index * 0.2}
-                      aspectRatio={ratio}
-                      sizeMultiplier={1}
-                      onItemClick={(item) => {
-                        if (item.linkUrl) {
-                          window.location.href = item.linkUrl + window.location.search;
-                        } else if (item.tags && item.tags.includes('Influencer Channel')) {
-                          window.location.href = `/profile/${item.id}${window.location.search}`;
-                        } else {
-                          setActiveVideo(item);
-                        }
-                      }}
-                    />
+                   <div key={idx} style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '24px', padding: '60px', display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', gap: '20px', maxWidth: '800px', margin: '0 auto', width: '100%' }}>
+                      <h2 style={{ fontSize: '36px', color: wlConfig.accent || '#fff', margin: 0 }}>{title}</h2>
+                      <p style={{ color: 'var(--text-secondary)', fontSize: '18px', maxWidth: '600px' }}>This is the autogenerated structural block for your requested <b>{title}</b> modular section. Connect your CMS to deploy actual structured content here.</p>
+                   </div>
                 );
-              });
-            })()}
+             })}
           </div>
-          
-          <AnimatePresence>
-            {activeVideo && (
-              <motion.div 
-                initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-                onClick={() => setActiveVideo(null)}
-                style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.95)', zIndex: 1000, display: 'flex', flexDirection: 'column' }}
-              >
-                <div style={{ padding: '24px 40px', display: 'flex', justifyContent: 'flex-end' }}>
-                  <button onClick={() => setActiveVideo(null)} style={{ background: 'none', border: 'none', color: 'var(--text-primary)', cursor: 'pointer', opacity: 0.7, padding: '8px' }} onMouseOver={e=>e.currentTarget.style.opacity='1'} onMouseOut={e=>e.currentTarget.style.opacity='0.7'}><X size={32} /></button>
-                </div>
-                <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '0 40px 40px', gap: '20px' }} onClick={e => e.stopPropagation()}>
-                  <div style={{ flex: 1, maxWidth: '1200px', height: '100%', background: 'var(--bg-color)', borderRadius: '16px', overflow: 'hidden', boxShadow: '0 20px 40px rgba(0,0,0,0.5)' }}>
-                    {(() => {
-                      const match = activeVideo.videoUrl.match(/^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/);
-                      const ytId = (match && match[2].length === 11) ? match[2] : null;
-                      if (ytId) {
-                        return (
-                          <iframe 
-                            src={`https://www.youtube.com/embed/${ytId}?autoplay=1`}
-                            title={activeVideo.title}
-                            style={{ width: '100%', height: '100%', border: 'none' }}
-                            allow="autoplay; encrypted-media; fullscreen"
-                            allowFullScreen
-                            loading="lazy"
-                          />
-                        );
-                      }
-                      return (
-                        <video src={activeVideo.videoUrl} poster={activeVideo.image} autoPlay controls style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
-                      );
-                    })()}
-                  </div>
-                </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
-          
-          {wlConfig.customSections && wlConfig.customSections.toLowerCase() !== 'none' && (
-             <div className="px-mobile-sm" style={{ display: 'flex', flexDirection: 'column', gap: '40px', marginTop: '80px', padding: '0 40px', maxWidth: '1400px', margin: '80px auto 0', width: '100%', boxSizing: 'border-box' }}>
-                {wlConfig.customSections.split(',').map((section: string, idx: number) => {
-                   const title = section.trim();
-                   if (!title) return null;
-                   const lTitle = title.toLowerCase();
                    if (lTitle === 'contact us form' || lTitle === 'contact us' || lTitle === 'contact' || lTitle === 'about us' || lTitle === 'about') return null;
 
                    return (

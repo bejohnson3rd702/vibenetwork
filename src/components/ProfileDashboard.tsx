@@ -10,9 +10,10 @@ import { useWhiteLabel } from '../context/WhiteLabelContext';
 
 const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLIC_KEY || 'pk_test_placeholder');
 
-const ProfileDashboard: React.FC<{ user: any }> = ({ user }) => {
+const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetworkLevel?: boolean }> = ({ user, creatorIdOverride, isNetworkLevel }) => {
   const navigate = useNavigate();
-  const { creatorId } = useParams();
+  const { creatorId: paramCreatorId } = useParams();
+  const creatorId = creatorIdOverride || paramCreatorId;
   const location = useLocation();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { wlConfig } = useWhiteLabel();
@@ -944,7 +945,7 @@ const ProfileDashboard: React.FC<{ user: any }> = ({ user }) => {
     <div style={{ minHeight: '100vh', background: 'var(--bg-color)', color: 'var(--text-primary)', position: 'relative' }}>
       
       {/* Immersive Hero Banner */}
-      {!isGuestMode && (
+      {!isGuestMode && !isNetworkLevel && (
         <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '400px', zIndex: 0 }}>
           <div style={{ position: 'absolute', inset: 0, backgroundImage: `url(${(homepageImageUrl ? homepageImageUrl.split(',')[currentBgIndex] : null) || profile?.avatar_url || 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&q=80&w=2500'})`, backgroundSize: 'cover', backgroundPosition: 'center', filter: 'brightness(0.6) saturate(1.2)', transition: 'background-image 1s ease-in-out' }} />
           <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to bottom, transparent 30%, #050505 100%)' }} />
@@ -954,10 +955,10 @@ const ProfileDashboard: React.FC<{ user: any }> = ({ user }) => {
       )}
 
       {/* Main Content Wrapper */}
-      <div style={{ position: 'relative', zIndex: 1, paddingTop: isGuestMode ? '80px' : '200px' }}>
+      <div style={{ position: 'relative', zIndex: 1, paddingTop: isNetworkLevel ? '0px' : (isGuestMode ? '80px' : '200px') }}>
       
         {/* View Toggle Bar (Only for account owner) */}
-        {isOwnProfile && isInfluencer && (
+        {isOwnProfile && isInfluencer && !isNetworkLevel && (
           <div style={{ padding: '12px', display: 'flex', justifyContent: 'center', position: 'relative', zIndex: 100, marginBottom: '20px' }}>
             <div style={{ display: 'flex', background: 'rgba(0,0,0,0.4)', backdropFilter: 'blur(12px)', borderRadius: '30px', padding: '4px', border: '1px solid rgba(255,255,255,0.1)', boxShadow: '0 8px 32px rgba(0,0,0,0.2)' }}>
               <button 
@@ -979,7 +980,7 @@ const ProfileDashboard: React.FC<{ user: any }> = ({ user }) => {
         {/* Feed Layout Container */}
         <div style={{ maxWidth: isGuestMode ? '1400px' : '1000px', margin: '0 auto', padding: '0 20px', display: 'flex', flexDirection: 'column', gap: '30px', paddingBottom: '100px' }}>
           
-          {!isGuestMode && (
+          {!isGuestMode && !isNetworkLevel && (
             <>
           {/* Glassmorphic Creator Header */}
           <div style={{ background: 'rgba(15, 15, 15, 0.4)', backdropFilter: 'blur(24px)', padding: '40px', borderRadius: '32px', border: '1px solid rgba(255,255,255,0.08)', position: 'relative', boxShadow: '0 20px 40px rgba(0,0,0,0.4)' }}>
@@ -1105,6 +1106,8 @@ const ProfileDashboard: React.FC<{ user: any }> = ({ user }) => {
               </div>
             </div>
           </div>
+          </>
+          )}
 
           {/* Modern Pill Navigation */}
           <div style={{ display: 'flex', justifyContent: 'center', marginTop: '10px' }}>
@@ -1156,8 +1159,6 @@ const ProfileDashboard: React.FC<{ user: any }> = ({ user }) => {
             </div>
           </div>
 
-            </>
-          )}
         {activeTab === 'feed' && (
           <>
             {/* Content Creation Widget -> ONLY IF EDITING */}
