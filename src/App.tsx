@@ -111,7 +111,8 @@ function App() {
               enableWatchLive: e.detail.enableWatchLive !== undefined ? e.detail.enableWatchLive : true,
               enableBooking: e.detail.enableBooking !== undefined ? e.detail.enableBooking : false,
               heroLayoutMode: e.detail.heroLayoutMode || 'verbiage',
-              heroVideoUrl: e.detail.heroVideoUrl || ''
+              heroVideoUrl: e.detail.heroVideoUrl || '',
+              heroVideoTitle: e.detail.heroVideoTitle || ''
            }
          }).select().single();
 
@@ -201,7 +202,8 @@ function App() {
               enableWatchLive: localTenant.theme?.enableWatchLive !== undefined ? localTenant.theme.enableWatchLive : (localTenant.enableWatchLive !== undefined ? localTenant.enableWatchLive : true),
               enableBooking: localTenant.theme?.enableBooking !== undefined ? localTenant.theme.enableBooking : (localTenant.enableBooking !== undefined ? localTenant.enableBooking : false),
               heroLayoutMode: localTenant.theme?.heroLayoutMode || localTenant.heroLayoutMode || 'verbiage',
-              heroVideoUrl: localTenant.theme?.heroVideoUrl || localTenant.heroVideoUrl || ''
+              heroVideoUrl: localTenant.theme?.heroVideoUrl || localTenant.heroVideoUrl || '',
+              heroVideoTitle: localTenant.theme?.heroVideoTitle || localTenant.heroVideoTitle || ''
            });
         } else {
            query = query.eq('id', forceTenant).limit(1);
@@ -230,7 +232,8 @@ function App() {
               enableWatchLive: localMaster?.theme?.enableWatchLive !== undefined ? localMaster.theme.enableWatchLive : (localMaster?.enableWatchLive !== undefined ? localMaster.enableWatchLive : (mConf.theme?.enableWatchLive !== undefined ? mConf.theme.enableWatchLive : true)),
               enableBooking: localMaster?.theme?.enableBooking !== undefined ? localMaster.theme.enableBooking : (localMaster?.enableBooking !== undefined ? localMaster.enableBooking : (mConf.theme?.enableBooking !== undefined ? mConf.theme.enableBooking : false)),
               heroLayoutMode: localMaster?.theme?.heroLayoutMode || localMaster?.heroLayoutMode || mConf.theme?.heroLayoutMode || 'verbiage',
-              heroVideoUrl: localMaster?.theme?.heroVideoUrl || localMaster?.heroVideoUrl || mConf.theme?.heroVideoUrl || ''
+              heroVideoUrl: localMaster?.theme?.heroVideoUrl || localMaster?.heroVideoUrl || mConf.theme?.heroVideoUrl || '',
+              heroVideoTitle: localMaster?.theme?.heroVideoTitle || localMaster?.heroVideoTitle || mConf.theme?.heroVideoTitle || ''
            });
         } else if (localMaster) {
            // Fallback if DB query completely fails but local exists
@@ -244,7 +247,8 @@ function App() {
               enableWatchLive: localMaster.theme?.enableWatchLive !== undefined ? localMaster.theme.enableWatchLive : (localMaster.enableWatchLive !== undefined ? localMaster.enableWatchLive : true),
               enableBooking: localMaster.theme?.enableBooking !== undefined ? localMaster.theme.enableBooking : (localMaster.enableBooking !== undefined ? localMaster.enableBooking : false),
               heroLayoutMode: localMaster.theme?.heroLayoutMode || localMaster.heroLayoutMode || 'verbiage',
-              heroVideoUrl: localMaster.theme?.heroVideoUrl || localMaster.heroVideoUrl || ''
+              heroVideoUrl: localMaster.theme?.heroVideoUrl || localMaster.heroVideoUrl || '',
+              heroVideoTitle: localMaster.theme?.heroVideoTitle || localMaster.heroVideoTitle || ''
            });
         }
       }
@@ -273,7 +277,8 @@ function App() {
              enableWatchLive: dbConf.theme?.enableWatchLive !== undefined ? dbConf.theme.enableWatchLive : (dbConf.enableWatchLive !== undefined ? dbConf.enableWatchLive : true),
              enableBooking: dbConf.theme?.enableBooking !== undefined ? dbConf.theme.enableBooking : (dbConf.enableBooking !== undefined ? dbConf.enableBooking : false),
              heroLayoutMode: dbConf.theme?.heroLayoutMode || 'verbiage',
-             heroVideoUrl: dbConf.theme?.heroVideoUrl || ''
+             heroVideoUrl: dbConf.theme?.heroVideoUrl || '',
+             heroVideoTitle: dbConf.theme?.heroVideoTitle || ''
           });
         }
       }
