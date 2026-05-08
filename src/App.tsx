@@ -41,7 +41,8 @@ function App() {
   const [isTenantMode, setIsTenantMode] = useState(() => {
     const hostname = window.location.hostname;
     const params = new URLSearchParams(window.location.search);
-    return params.has('tenant') || (hostname !== 'localhost' && hostname !== '127.0.0.1' && hostname !== MASTER_DOMAIN);
+    const isMaster = hostname === 'localhost' || hostname === '127.0.0.1' || hostname === MASTER_DOMAIN || hostname === 'vibenetwork.com' || hostname.includes('vercel.app');
+    return params.has('tenant') || !isMaster;
   });
   const [showAdminPanel, setShowAdminPanel] = useState(false);
   const [showEndUserAuthModal, setShowEndUserAuthModal] = useState(false);
@@ -185,6 +186,7 @@ function App() {
 
       let query = supabase!.from('whitelabel_configs').select('*');
       let isTenant = false;
+      let loadedTenantId = undefined;
       let localNetworks = [];
       try {
         const stored = localStorage.getItem('vibe_local_networks');
@@ -260,7 +262,7 @@ function App() {
               });
            }
         }
-      } else if (hostname !== 'localhost' && hostname !== '127.0.0.1' && hostname !== MASTER_DOMAIN) {
+      } else if (!(hostname === 'localhost' || hostname === '127.0.0.1' || hostname === MASTER_DOMAIN || hostname === 'vibenetwork.com' || hostname.includes('vercel.app'))) {
         query = query.eq('domain', hostname).limit(1);
         isTenant = true;
         setIsTenantMode(true);
@@ -485,7 +487,7 @@ function App() {
   }
 
   return (
-    <WhiteLabelContext.Provider value={{ wlConfig, setWlConfig }}>
+    <WhiteLabelContext.Provider value={{ wlConfig: wlConfig || { id: 'master', name: DEFAULT_PLATFORM_NAME, domain: MASTER_DOMAIN, accent: '#0055ff', bg: 'var(--bg-color)', heroCopy: 'The premiere destination for high quality digital content.', btnPrimary: 'Explore Content', sliderCount: 4, customSections: '', heroImage: null, logoImage: null, owner_id: '', enableWatchLive: true, enableBooking: false, heroLayoutMode: 'video', heroVideoUrl: 'https://www.youtube.com/watch?v=u4ZoJKF_VuA', heroVideoTitle: 'Live Network Broadcast', theme: {} }, setWlConfig }}>
       <Router>
         <div style={{ background: 'var(--content-bg)', minHeight: '100vh', display: 'flex', flexDirection: 'column', overflowX: 'hidden' }}>
           <AnimatePresence>
