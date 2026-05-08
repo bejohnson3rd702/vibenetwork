@@ -513,15 +513,31 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
         // Load Feed Posts
         let postsData: any[] | null = null;
         try {
-          const { data, error } = await supabase!.from('posts').select('*, post_likes(user_id), post_comments(*, user:profiles(username, avatar_url))').eq('creator_id', targetProfileId).order('created_at', { ascending: false });
+          let query = supabase!.from('posts').select('*, creator:profiles!inner(username, avatar_url, whitelabel_id), post_likes(user_id), post_comments(*, user:profiles(username, avatar_url))');
+          
+          if (isNetworkLevel && wlConfig?.id) {
+             query = query.eq('creator.whitelabel_id', wlConfig.id).eq('is_locked', false);
+          } else {
+             query = query.eq('creator_id', targetProfileId);
+          }
+          
+          const { data, error } = await query.order('created_at', { ascending: false });
           if (!error) postsData = data;
           else {
-             const fallback = await supabase!.from('posts').select('*').eq('creator_id', targetProfileId).order('created_at', { ascending: false });
+             let fallbackQuery = supabase!.from('posts').select('*, creator:profiles!inner(username, avatar_url, whitelabel_id)');
+             if (isNetworkLevel && wlConfig?.id) fallbackQuery = fallbackQuery.eq('creator.whitelabel_id', wlConfig.id).eq('is_locked', false);
+             else fallbackQuery = fallbackQuery.eq('creator_id', targetProfileId);
+             
+             const fallback = await fallbackQuery.order('created_at', { ascending: false });
              postsData = fallback.data;
           }
         } catch {
-          const fallback = await supabase!.from('posts').select('*').eq('creator_id', targetProfileId).order('created_at', { ascending: false });
-          postsData = fallback.data;
+             let fallbackQuery = supabase!.from('posts').select('*, creator:profiles!inner(username, avatar_url, whitelabel_id)');
+             if (isNetworkLevel && wlConfig?.id) fallbackQuery = fallbackQuery.eq('creator.whitelabel_id', wlConfig.id).eq('is_locked', false);
+             else fallbackQuery = fallbackQuery.eq('creator_id', targetProfileId);
+             
+             const fallback = await fallbackQuery.order('created_at', { ascending: false });
+             postsData = fallback.data;
         }
 
         if (postsData && postsData.length > 0) {
@@ -533,7 +549,10 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
             hasLiked: p.post_likes ? p.post_likes.some((l: any) => l.user_id === user?.id) : false,
             comments: p.post_comments ? p.post_comments.map((c: any) => ({ id: c.id, text: c.content, user: c.user?.username || 'User', avatar: c.user?.avatar_url || '' })) : [],
             date: p.created_at ? new Date(p.created_at).toLocaleDateString() : 'Just now',
-            img: p.image_url || null
+            img: p.image_url || null,
+            creator_id: p.creator_id,
+            creator_username: p.creator?.username,
+            creator_avatar: p.creator?.avatar_url
           })));
         } else {
           setFeed([]);
@@ -880,7 +899,9 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
     const text = commentTexts[postId]?.trim();
     if (!text) return;
 
-    const newComment = { id: Date.now().toString(), text, user: profile?.username || user.email?.split('@')[0] || 'User', avatar: profile?.avatar_url || '' };
+    const loggedInUsername = user?.user_metadata?.username || user?.email?.split('@')[0] || 'User';
+    const loggedInAvatar = user?.user_metadata?.avatar_url || '';
+    const newComment = { id: Date.now().toString(), text, user: loggedInUsername, avatar: loggedInAvatar };
     
     // Optimistic UI update
     setFeed(feed.map(p => p.id === postId ? { ...p, comments: [...(p.comments || []), newComment] } : p));
@@ -1251,10 +1272,17 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
               
               {/* Post Header */}
               <div style={{ padding: '20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                  <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: '#ff4d85' }} />
+                <div 
+                  style={{ display: 'flex', alignItems: 'center', gap: '12px', cursor: isNetworkLevel ? 'pointer' : 'default' }}
+                  onClick={() => {
+                    if (isNetworkLevel && post.creator_id) {
+                      navigate(`/profile/${post.creator_id}${window.location.search}`);
+                    }
+                  }}
+                >
+                  <img src={post.creator_avatar || profile.avatar_url || `https://ui-avatars.com/api/?name=${post.creator_username || profile.username || 'C'}&background=random`} alt="Avatar" style={{ width: '40px', height: '40px', borderRadius: '50%', objectFit: 'cover' }} />
                   <div>
-                    <h4 style={{ margin: 0, fontSize: '15px' }}>{profile.username || 'Creator'} <ShieldCheck size={14} color="#ff4d85" style={{ display: 'inline', marginLeft: '4px' }} /></h4>
+                    <h4 style={{ margin: 0, fontSize: '15px' }}>{post.creator_username || profile.username || 'Creator'} <ShieldCheck size={14} color="#ff4d85" style={{ display: 'inline', marginLeft: '4px' }} /></h4>
                     <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>{post.date}</span>
                   </div>
                 </div>
@@ -1356,7 +1384,7 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
 
                   {/* Add Comment Input */}
                   <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
-                    <img src={profile?.avatar_url || (user ? `https://ui-avatars.com/api/?name=${user.email?.charAt(0)}&background=random` : 'https://ui-avatars.com/api/?name=Guest')} alt="You" style={{ width: 32, height: 32, borderRadius: '50%' }} />
+                    <img src={user?.user_metadata?.avatar_url || (user ? `https://ui-avatars.com/api/?name=${user.email?.charAt(0)}&background=random` : 'https://ui-avatars.com/api/?name=Guest')} alt="You" style={{ width: 32, height: 32, borderRadius: '50%' }} />
                     <div style={{ flex: 1, position: 'relative', display: 'flex', alignItems: 'center' }}>
                       <input 
                         type="text" 
