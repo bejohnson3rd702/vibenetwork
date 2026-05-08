@@ -37,7 +37,11 @@ function App() {
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [authDefaults, setAuthDefaults] = useState({ isLogin: true, role: 'viewer' as 'viewer' | 'influencer' | 'business', showWizard: false });
   const [wlConfig, setWlConfig] = useState<any>(null);
-  const [isTenantMode, setIsTenantMode] = useState(false);
+  const [isTenantMode, setIsTenantMode] = useState(() => {
+    const hostname = window.location.hostname;
+    const params = new URLSearchParams(window.location.search);
+    return params.has('tenant') || (hostname !== 'localhost' && hostname !== '127.0.0.1' && hostname !== 'vibenetwork.tv');
+  });
   const [showAdminPanel, setShowAdminPanel] = useState(false);
   const [showEndUserAuthModal, setShowEndUserAuthModal] = useState(false);
   const [showBookingModal, setShowBookingModal] = useState(false);
@@ -353,7 +357,9 @@ function App() {
     }
   }, [wlConfig]);
 
-  if (isTenantMode && wlConfig) {
+  if (isTenantMode) {
+    if (!wlConfig) return <div style={{ height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#0b0b0b', color: 'rgba(255,255,255,0.5)' }}>Initializing Network OS...</div>;
+    
     return (
       <WhiteLabelContext.Provider value={{ wlConfig, setWlConfig }}>
         <Router>
