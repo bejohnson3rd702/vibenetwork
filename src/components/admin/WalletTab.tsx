@@ -60,20 +60,21 @@ export const WalletTab = ({ wlConfig }: { wlConfig: any }) => {
           <h3 style={{ margin: '0 0 20px 0', fontSize: '20px', color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '8px' }}><Activity size={20} color={wlConfig.accent}/> Global Revenue Stream</h3>
           
           <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-            {[
-              { id: 1, title: 'Enterprise Subscription (Vertex Tech)', amount: '+$4,999.00', type: 'B2B License', color: '#00ff88' },
-              { id: 2, title: 'Network Event Ticketing (Keynote)', amount: '+$1,250.00', type: 'Pay-Per-View', color: '#0055ff' },
-              { id: 3, title: 'API Access Overage', amount: '+$300.00', type: 'Infrastructure', color: '#FFD700' },
-              { id: 4, title: 'Executive Seat License', amount: '+$199.00', type: 'Subscription', color: '#00ff88' }
-            ].map(tx => (
-              <div key={tx.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingBottom: '16px', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
-                <div>
-                  <div style={{ fontWeight: 'bold', color: 'var(--text-primary)', fontSize: '15px' }}>{tx.title}</div>
-                  <div style={{ color: 'var(--text-muted)', fontSize: '13px', marginTop: '4px' }}>{tx.type}</div>
+            {(() => {
+              const txs: any[] = []; // Empty for now, fetch from ledger DB later
+              if (txs.length === 0) {
+                return <div style={{ color: 'var(--text-muted)', fontSize: '14px', textAlign: 'center', padding: '20px' }}>No revenue settled yet.</div>;
+              }
+              return txs.map((tx: any) => (
+                <div key={tx.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingBottom: '16px', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+                  <div>
+                    <div style={{ fontWeight: 'bold', color: 'var(--text-primary)', fontSize: '15px' }}>{tx.title}</div>
+                    <div style={{ color: 'var(--text-muted)', fontSize: '13px', marginTop: '4px' }}>{tx.type}</div>
+                  </div>
+                  <div style={{ color: tx.color, fontWeight: 'bold', fontSize: '16px' }}>{tx.amount}</div>
                 </div>
-                <div style={{ color: tx.color, fontWeight: 'bold', fontSize: '16px' }}>{tx.amount}</div>
-              </div>
-            ))}
+              ));
+            })()}
           </div>
         </div>
 
@@ -81,20 +82,23 @@ export const WalletTab = ({ wlConfig }: { wlConfig: any }) => {
           <h3 style={{ margin: '0 0 20px 0', fontSize: '20px', color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '8px' }}><ArrowUpRight size={20} color={wlConfig.accent}/> Payable Infrastructure</h3>
           
           <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-            {[
-              { id: 1, creator: 'Vibe Network Operating License', amount: '-$99.00/mo', due: 'Due in 14 days', status: paySubsWithWallet ? 'Covered by Revenue' : 'Corporate Card *4242' },
-              { id: 2, creator: 'AWS Global CDN Routing', amount: '-$450.00/mo', due: 'Due next week', status: paySubsWithWallet ? 'Covered by Revenue' : 'Corporate Card *4242' },
-            ].map(sub => (
-              <div key={sub.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '16px', background: 'rgba(0,0,0,0.4)', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.02)' }}>
-                <div>
-                  <div style={{ fontWeight: 'bold', color: 'var(--text-primary)', fontSize: '15px' }}>{sub.creator}</div>
-                  <div style={{ color: 'var(--text-muted)', fontSize: '13px', marginTop: '6px', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                    <span style={{ color: paySubsWithWallet ? '#00ff88' : '#888' }}>{sub.status}</span> • {sub.due}
+            {(() => {
+              const subs: any[] = []; // Empty for now
+              if (subs.length === 0) {
+                return <div style={{ color: 'var(--text-muted)', fontSize: '14px', textAlign: 'center', padding: '20px' }}>No active infrastructure bills.</div>;
+              }
+              return subs.map((sub: any) => (
+                <div key={sub.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '16px', background: 'rgba(0,0,0,0.4)', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.02)' }}>
+                  <div>
+                    <div style={{ fontWeight: 'bold', color: 'var(--text-primary)', fontSize: '15px' }}>{sub.creator}</div>
+                    <div style={{ color: 'var(--text-muted)', fontSize: '13px', marginTop: '6px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                      <span style={{ color: paySubsWithWallet ? '#00ff88' : '#888' }}>{sub.status}</span> • {sub.due}
+                    </div>
                   </div>
+                  <div style={{ color: 'var(--text-primary)', fontWeight: 'bold', fontSize: '16px' }}>{sub.amount}</div>
                 </div>
-                <div style={{ color: 'var(--text-primary)', fontWeight: 'bold', fontSize: '16px' }}>{sub.amount}</div>
-              </div>
-            ))}
+              ));
+            })()}
           </div>
         </div>
 

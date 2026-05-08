@@ -24,6 +24,7 @@ const ResetPassword = lazy(() => import('./pages/ResetPassword'));
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { WhiteLabelContext } from './context/WhiteLabelContext';
 import { supabase, storageKey } from './supabaseClient';
+import { MASTER_DOMAIN, DEFAULT_PLATFORM_NAME } from './constants';
 import Home from './pages/Home';
 import WhiteLabelHome from './pages/WhiteLabelHome';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -40,7 +41,7 @@ function App() {
   const [isTenantMode, setIsTenantMode] = useState(() => {
     const hostname = window.location.hostname;
     const params = new URLSearchParams(window.location.search);
-    return params.has('tenant') || (hostname !== 'localhost' && hostname !== '127.0.0.1' && hostname !== 'vibenetwork.tv');
+    return params.has('tenant') || (hostname !== 'localhost' && hostname !== '127.0.0.1' && hostname !== MASTER_DOMAIN);
   });
   const [showAdminPanel, setShowAdminPanel] = useState(false);
   const [showEndUserAuthModal, setShowEndUserAuthModal] = useState(false);
@@ -194,7 +195,7 @@ function App() {
            setWlConfig({
               id: dbConf.id,
               name: dbConf.name || 'Vibe B2B Enterprise',
-              domain: dbConf.domain || 'vibenetwork.tv',
+              domain: dbConf.domain || MASTER_DOMAIN,
               accent: dbConf.theme?.accent || '#0055ff',
               bg: dbConf.theme?.bg || 'var(--bg-color)',
               heroCopy: dbConf.theme?.heroCopy || 'The premiere destination for high quality digital content.',
@@ -224,7 +225,7 @@ function App() {
               setWlConfig({
                  id: localTenant.id,
                  name: localTenant.name || 'Vibe B2B Enterprise',
-                 domain: localTenant.domain || 'vibenetwork.tv',
+                 domain: localTenant.domain || MASTER_DOMAIN,
                  accent: localTenant.theme?.accent || localTenant.accent || '#0055ff',
                  bg: localTenant.theme?.bg || localTenant.bg || 'var(--bg-color)',
                  heroCopy: localTenant.theme?.heroCopy || localTenant.heroCopy,
@@ -246,22 +247,22 @@ function App() {
               });
            }
         }
-      } else if (hostname !== 'localhost' && hostname !== '127.0.0.1' && hostname !== 'vibenetwork.tv') {
+      } else if (hostname !== 'localhost' && hostname !== '127.0.0.1' && hostname !== MASTER_DOMAIN) {
         query = query.eq('domain', hostname).limit(1);
         isTenant = true;
         setIsTenantMode(true);
       } else {
-        // Master Platform Mode (localhost or vibenetwork.tv)
-        const localMaster = localNetworks.find((n: any) => n.domain === 'vibenetwork.tv' || n.id === 'master');
+        // Master Platform Mode (localhost or MASTER_DOMAIN)
+        const localMaster = localNetworks.find((n: any) => n.domain === MASTER_DOMAIN || n.id === 'master');
         
-        const { data: masterData } = await supabase!.from('whitelabel_configs').select('*').eq('domain', 'vibenetwork.tv').limit(1);
+        const { data: masterData } = await supabase!.from('whitelabel_configs').select('*').eq('domain', MASTER_DOMAIN).limit(1);
         if (masterData && masterData.length > 0) {
            const mConf = masterData[0];
            // Merge local Master overrides if they exist (for local dev without DB write access)
            setWlConfig({
               id: mConf.id,
-              name: localMaster?.name || mConf.name || 'Vibe Network',
-              domain: 'vibenetwork.tv',
+              name: localMaster?.name || mConf.name || DEFAULT_PLATFORM_NAME,
+              domain: MASTER_DOMAIN,
               heroImage: localMaster?.theme?.heroImage || localMaster?.heroImage || mConf.theme?.heroImage || null,
               heroCopy: localMaster?.theme?.heroCopy || localMaster?.heroCopy || mConf.theme?.heroCopy || null,
               owner_id: mConf.owner_id,
@@ -276,8 +277,8 @@ function App() {
            // Fallback if DB query completely fails but local exists
            setWlConfig({
               id: localMaster.id,
-              name: localMaster.name || 'Vibe Network',
-              domain: 'vibenetwork.tv',
+              name: localMaster.name || DEFAULT_PLATFORM_NAME,
+              domain: MASTER_DOMAIN,
               heroImage: localMaster.theme?.heroImage || localMaster.heroImage || null,
               heroCopy: localMaster.theme?.heroCopy || localMaster.heroCopy || null,
               owner_id: localMaster.owner_id,
@@ -299,7 +300,7 @@ function App() {
           setWlConfig({
              id: dbConf.id,
              name: dbConf.name || 'Vibe B2B Enterprise',
-             domain: dbConf.domain || 'vibenetwork.tv',
+             domain: dbConf.domain || MASTER_DOMAIN,
              accent: dbConf.theme?.accent || '#0055ff',
              bg: dbConf.theme?.bg || 'var(--bg-color)',
              heroCopy: dbConf.theme?.heroCopy || 'The premiere destination for high quality digital content.',
@@ -335,7 +336,7 @@ function App() {
       }
       
       // Dynamic SEO Injection
-      const platformName = wlConfig.name || 'Vibe Network';
+      const platformName = wlConfig.name || DEFAULT_PLATFORM_NAME;
       document.title = platformName;
       
       const metaDescription = document.querySelector('meta[name="description"]');
