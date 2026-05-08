@@ -26,6 +26,8 @@ const Hero: React.FC = () => {
         style={{ position: 'absolute', inset: 0, zIndex: 0 }}
       >
         <div style={{ position: 'absolute', inset: 0, backgroundImage: `url(${wlConfig?.heroImage || ASSETS.heroMain})`, backgroundSize: 'cover', backgroundPosition: 'center', filter: 'brightness(0.3) saturate(1.3) contrast(1.1)' }} />
+        {/* Soft fade into dark content section */}
+        <div style={{ position: 'absolute', bottom: 0, left: 0, width: '100%', height: '350px', background: `linear-gradient(to bottom, transparent 0%, #050505 100%)`, pointerEvents: 'none' }} />
       </motion.div>
       
       {/* Darkening filter applied directly to image for sharp readability without soft overlays */}
