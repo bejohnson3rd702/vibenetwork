@@ -1278,20 +1278,21 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
               
               {/* Post Header */}
               <div style={{ padding: '20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <div 
-                  style={{ display: 'flex', alignItems: 'center', gap: '12px', cursor: isNetworkLevel ? 'pointer' : 'default' }}
+                <motion.div 
+                  whileHover={isNetworkLevel ? { scale: 1.02, backgroundColor: 'rgba(255,255,255,0.03)' } : {}}
+                  style={{ display: 'flex', alignItems: 'center', gap: '12px', cursor: isNetworkLevel ? 'pointer' : 'default', padding: '6px', borderRadius: '12px', marginLeft: '-6px', transition: 'background 0.2s' }}
                   onClick={() => {
                     if (isNetworkLevel && post.creator_id) {
                       navigate(`/profile/${post.creator_id}${window.location.search}`);
                     }
                   }}
                 >
-                  <img src={post.creator_avatar || (!isNetworkLevel ? profile.avatar_url : null) || `https://ui-avatars.com/api/?name=${post.creator_username || (!isNetworkLevel ? profile.username : 'Creator')}&background=random`} alt="Avatar" style={{ width: '40px', height: '40px', borderRadius: '50%', objectFit: 'cover' }} />
+                  <img src={post.creator_avatar || (!isNetworkLevel ? profile.avatar_url : null) || `https://ui-avatars.com/api/?name=${post.creator_username || (!isNetworkLevel ? profile.username : 'Creator')}&background=random`} alt="Avatar" style={{ width: '40px', height: '40px', borderRadius: '50%', objectFit: 'cover', border: '2px solid rgba(255,255,255,0.1)' }} />
                   <div>
                     <h4 style={{ margin: 0, fontSize: '15px' }}>{post.creator_username || (!isNetworkLevel ? profile.username : 'Creator')} <ShieldCheck size={14} color="#ff4d85" style={{ display: 'inline', marginLeft: '4px' }} /></h4>
                     <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>{post.date}</span>
                   </div>
-                </div>
+                </motion.div>
                 {post.locked && (
                   <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px', color: '#FFD700', background: 'rgba(255,215,0,0.1)', padding: '4px 10px', borderRadius: '12px', fontWeight: 'bold' }}>
                     <Lock size={12} /> Subscriber Only
