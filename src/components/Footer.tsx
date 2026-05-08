@@ -11,7 +11,7 @@ const Footer: React.FC = () => {
     <footer style={{
       width: '100%',
       padding: '40px 20px',
-      background: 'rgba(0,0,0,0.5)',
+      background: '#000',
       borderTop: '1px solid rgba(255,255,255,0.05)',
       display: 'flex',
       flexDirection: 'column',
