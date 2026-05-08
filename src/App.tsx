@@ -36,7 +36,7 @@ function App() {
   
   const [user, setUser] = useState<any>(null);
   const [showAuthModal, setShowAuthModal] = useState(false);
-  const [authDefaults, setAuthDefaults] = useState({ isLogin: true, role: 'viewer' as 'viewer' | 'influencer' | 'business', showWizard: false });
+  const [authDefaults, setAuthDefaults] = useState({ isLogin: true, role: 'viewer' as 'viewer' | 'influencer' | 'business', showWizard: false, referredBy: undefined as string | undefined });
   const [wlConfig, setWlConfig] = useState<any>(null);
   const [isTenantMode, setIsTenantMode] = useState(() => {
     const hostname = window.location.hostname;
@@ -56,9 +56,14 @@ function App() {
   useEffect(() => {
     const handleOpenAuth = (e: any) => {
       if (e.detail) {
-        setAuthDefaults({ isLogin: e.detail.isLogin ?? true, role: e.detail.role ?? 'viewer', showWizard: e.detail.showWizard ?? false });
+        setAuthDefaults({ 
+          isLogin: e.detail.isLogin ?? true, 
+          role: e.detail.role ?? 'viewer', 
+          showWizard: e.detail.showWizard ?? false,
+          referredBy: e.detail.referredBy
+        });
       } else {
-        setAuthDefaults({ isLogin: true, role: 'viewer', showWizard: false });
+        setAuthDefaults({ isLogin: true, role: 'viewer', showWizard: false, referredBy: undefined });
       }
       setShowAuthModal(true);
     };
@@ -424,6 +429,7 @@ function App() {
                 defaultIsLogin={authDefaults.isLogin}
                 defaultRole={authDefaults.role}
                 defaultShowWizard={authDefaults.showWizard}
+                referredBy={authDefaults.referredBy}
               />
             )}
             {showBookingModal && (

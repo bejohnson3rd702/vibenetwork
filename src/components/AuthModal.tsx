@@ -11,9 +11,10 @@ interface AuthModalProps {
   defaultIsLogin?: boolean;
   defaultRole?: 'viewer' | 'influencer' | 'business';
   defaultShowWizard?: boolean;
+  referredBy?: string;
 }
 
-const AuthModal: React.FC<AuthModalProps> = ({ onClose, onSuccess, defaultIsLogin = true, defaultRole = 'viewer', defaultShowWizard = false }) => {
+const AuthModal: React.FC<AuthModalProps> = ({ onClose, onSuccess, defaultIsLogin = true, defaultRole = 'viewer', defaultShowWizard = false, referredBy }) => {
   const { wlConfig: activeTenantConfig, setWlConfig: setGlobalWlDeploy } = useWhiteLabel();
   const [isLogin, setIsLogin] = useState(defaultIsLogin);
   const [email, setEmail] = useState('');
@@ -123,7 +124,8 @@ const AuthModal: React.FC<AuthModalProps> = ({ onClose, onSuccess, defaultIsLogi
           data: {
             username,
             role,
-            whitelabel_id: activeTenantConfig?.domain === 'vibenetwork.tv' ? null : activeTenantConfig?.id
+            whitelabel_id: activeTenantConfig?.domain === 'vibenetwork.tv' ? null : activeTenantConfig?.id,
+            referred_by: referredBy || undefined
           }
         }
       });

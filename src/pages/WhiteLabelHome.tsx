@@ -232,6 +232,64 @@ export default function WhiteLabelHome({ wlConfig, categories, user, activeVideo
                })}
             </div>
          )}
+         
+         {/* Global Branded Network CTA */}
+         <div className="px-mobile-sm" style={{ padding: '0 40px', maxWidth: '1400px', margin: '100px auto 60px', width: '100%', boxSizing: 'border-box' }}>
+           <div style={{ 
+             background: `linear-gradient(135deg, ${wlConfig.accent || 'var(--accent-primary)'}22, rgba(0,0,0,0.6))`,
+             border: `1px solid ${wlConfig.accent || 'var(--accent-primary)'}44`,
+             borderRadius: '24px',
+             padding: '60px 40px',
+             display: 'flex',
+             flexDirection: 'column',
+             alignItems: 'center',
+             textAlign: 'center',
+             gap: '30px',
+             boxShadow: `0 20px 60px -10px ${wlConfig.accent || 'var(--accent-primary)'}22`
+           }}>
+             <h2 style={{ fontSize: '42px', fontWeight: 900, color: 'var(--text-primary)', margin: 0, lineHeight: 1.2 }}>
+               Ready to expand your reach?
+             </h2>
+             <p style={{ color: 'var(--text-secondary)', fontSize: '18px', maxWidth: '600px', margin: 0, lineHeight: 1.6 }}>
+               Join <span style={{ color: wlConfig.accent || '#fff', fontWeight: 'bold' }}>{wlConfig.name || 'Vibe Network'}</span> as a creator to monetize your audience, or launch your very own independent streaming architecture.
+             </p>
+             <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap', justifyContent: 'center' }}>
+               <button 
+                 onClick={() => window.dispatchEvent(new CustomEvent('open_auth', { detail: { isLogin: false, role: 'influencer' } }))}
+                 style={{ 
+                   padding: '16px 32px', 
+                   background: wlConfig.accent || 'var(--accent-primary)', 
+                   color: '#fff', 
+                   border: 'none', 
+                   borderRadius: '12px', 
+                   fontWeight: 800, 
+                   fontSize: '15px', 
+                   cursor: 'pointer',
+                   boxShadow: `0 10px 20px -5px ${wlConfig.accent || 'var(--accent-primary)'}66`
+                 }}
+               >
+                 Get Your Own Profile
+               </button>
+               <button 
+                 onClick={() => window.dispatchEvent(new CustomEvent('open_auth', { detail: { isLogin: false, role: 'business', referredBy: wlConfig.id } }))}
+                 style={{ 
+                   padding: '16px 32px', 
+                   background: 'rgba(255,255,255,0.05)', 
+                   color: 'var(--text-primary)', 
+                   border: '1px solid rgba(255,255,255,0.2)', 
+                   borderRadius: '12px', 
+                   fontWeight: 800, 
+                   fontSize: '15px', 
+                   cursor: 'pointer',
+                   backdropFilter: 'blur(10px)'
+                 }}
+               >
+                 Get Your Own Network
+               </button>
+             </div>
+           </div>
+         </div>
+
        </div>
     </div>
   );
