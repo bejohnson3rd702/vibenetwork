@@ -185,9 +185,16 @@ function App() {
 
       let query = supabase!.from('whitelabel_configs').select('*');
       let isTenant = false;
-      let loadedTenantId = undefined;
-
-      const localNetworks = JSON.parse(localStorage.getItem('vibe_local_networks') || '[]');
+      let localNetworks = [];
+      try {
+        const stored = localStorage.getItem('vibe_local_networks');
+        if (stored && stored !== 'undefined') {
+          localNetworks = JSON.parse(stored);
+        }
+      } catch (e) {
+        console.warn('Could not parse local networks', e);
+      }
+      
       if (forceTenant) {
         
         // Always try to fetch from DB first as the absolute source of truth

@@ -1,0 +1,349 @@
+commit fa81c0cf95966c8171b00e09edf4405aa0c4d27d
+Author: Bennie <bennie@Bennies-MacBook-Pro.local>
+Date:   Fri May 8 16:31:24 2026 -0700
+
+    fix: resolve infinite initialization loop by adding absolute fallback state for white label config
+
+diff --git a/src/App.tsx b/src/App.tsx
+index 06ebbe5..84da6fd 100755
+--- a/src/App.tsx
++++ b/src/App.tsx
+@@ -179,7 +179,8 @@ function App() {
+   // Load latest whitelabel config from DB on load, matching domain
+   useEffect(() => {
+     async function initPlatform() {
+-      const hostname = window.location.hostname;
++      try {
++        const hostname = window.location.hostname;
+       const urlParams = new URLSearchParams(window.location.search);
+       const forceTenant = urlParams.get('tenant');
+ 
+@@ -329,8 +330,57 @@ function App() {
+         }
+       }
+ 
++      setWlConfig(prev => {
++        if (prev) return prev;
++        // Ultimate Fallback: if we still haven't found a config from DB or local storage, load defaults
++        return {
++           id: 'master',
++           name: DEFAULT_PLATFORM_NAME,
++           domain: MASTER_DOMAIN,
++           accent: '#0055ff',
++           bg: 'var(--bg-color)',
++           heroCopy: 'The premiere destination for high quality digital content.',
++           btnPrimary: 'Explore Content',
++           sliderCount: 4,
++           customSections: '',
++           heroImage: null,
++           logoImage: null,
++           owner_id: '',
++           enableWatchLive: true,
++           enableBooking: false,
++           heroLayoutMode: 'verbiage',
++           heroVideoUrl: '',
++           heroVideoTitle: '',
++           theme: {}
++        };
++      });
++
+       const freshCategories = await getCategoriesWithVideos(loadedTenantId);
+       setCategories(freshCategories || []);
++      } catch (err) {
++        console.error("Critical error during Network OS initialization", err);
++        // Guarantee the site loads in fallback mode even if DB/network throws an exception
++        setWlConfig({
++           id: 'master',
++           name: DEFAULT_PLATFORM_NAME,
++           domain: MASTER_DOMAIN,
++           accent: '#0055ff',
++           bg: 'var(--bg-color)',
++           heroCopy: 'The premiere destination for high quality digital content.',
++           btnPrimary: 'Explore Content',
++           sliderCount: 4,
++           customSections: '',
++           heroImage: null,
++           logoImage: null,
++           owner_id: '',
++           enableWatchLive: true,
++           enableBooking: false,
++           heroLayoutMode: 'verbiage',
++           heroVideoUrl: '',
++           heroVideoTitle: '',
++           theme: {}
++        });
++      }
+     }
+     initPlatform();
+   }, []);
+
+commit 1b4b37d8b8df230eac78ec1c747a5e3fe624c370
+Author: Bennie <bennie@Bennies-MacBook-Pro.local>
+Date:   Fri May 8 16:25:58 2026 -0700
+
+    fix: resolve out of scope localNetworks reference in app configuration
+
+diff --git a/src/App.tsx b/src/App.tsx
+index b7e45d5..06ebbe5 100755
+--- a/src/App.tsx
++++ b/src/App.tsx
+@@ -187,8 +187,8 @@ function App() {
+       let isTenant = false;
+       let loadedTenantId = undefined;
+ 
++      const localNetworks = JSON.parse(localStorage.getItem('vibe_local_networks') || '[]');
+       if (forceTenant) {
+-        const localNetworks = JSON.parse(localStorage.getItem('vibe_local_networks') || '[]');
+         
+         // Always try to fetch from DB first as the absolute source of truth
+         const { data: dbTenantData } = await supabase!.from('whitelabel_configs').select('*').eq('id', forceTenant).limit(1);
+
+commit 30db868d6b598b5afcfdd2cebb924392a2ea0e84
+Author: Bennie <bennie@Bennies-MacBook-Pro.local>
+Date:   Fri May 8 16:22:00 2026 -0700
+
+    perf: optimize vite chunk splitting and implement premium global loading states
+
+diff --git a/src/App.tsx b/src/App.tsx
+index e9c0222..b7e45d5 100755
+--- a/src/App.tsx
++++ b/src/App.tsx
+@@ -2,6 +2,7 @@ import { useEffect, useState, lazy, Suspense } from 'react';
+ import { ASSETS } from './data';
+ import { getCategoriesWithVideos } from './api';
+ import Navbar from './components/Navbar';
++import LoadingScreen from './components/LoadingScreen';
+ 
+ import AuthModal from './components/AuthModal';
+ const ProfileDashboard = lazy(() => import('./components/ProfileDashboard'));
+@@ -374,7 +375,7 @@ function App() {
+   }, [wlConfig]);
+ 
+   if (isTenantMode) {
+-    if (!wlConfig) return <div style={{ height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--bg-gradient, var(--bg-color))', color: 'var(--text-muted)' }}>Initializing Network OS...</div>;
++    if (!wlConfig) return <LoadingScreen message="Initializing Network OS..." />;
+     
+     return (
+       <WhiteLabelContext.Provider value={{ wlConfig, setWlConfig }}>
+@@ -382,7 +383,7 @@ function App() {
+           <div style={{ background: 'var(--content-bg)', minHeight: '100vh', color: 'var(--text-primary)', overflowX: 'hidden' }}>
+             <Navbar user={user} onLoginClick={() => setShowEndUserAuthModal(true)} onAdminClick={() => setShowAdminPanel(true)} />
+           
+-          <Suspense fallback={<div style={{ height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-secondary)' }}>Loading interface...</div>}>
++          <Suspense fallback={<LoadingScreen message="Loading interface..." />}>
+             <Routes>
+               <Route path="/" element={
+                  <WhiteLabelHome wlConfig={wlConfig} categories={categories} user={user} activeVideo={activeVideo} setActiveVideo={setActiveVideo} />
+@@ -447,7 +448,7 @@ function App() {
+             )}
+           </AnimatePresence>
+ 
+-          <Suspense fallback={<div style={{ height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-secondary)' }}>Loading platform...</div>}>
++          <Suspense fallback={<LoadingScreen message="Loading platform..." />}>
+             <Routes>
+               <Route path="/master-admin" element={<MasterAdminDashboard />} />
+               {/* <Route path="/director" element={<DirectorStudio />} /> */}
+@@ -458,7 +459,7 @@ function App() {
+                     onLoginClick={() => setShowAuthModal(true)} 
+                     onAdminClick={() => window.location.href = '/master-admin'}
+                   />
+-                  <Suspense fallback={<div style={{ height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-secondary)' }}>Loading interface...</div>}>
++                  <Suspense fallback={<LoadingScreen message="Loading interface..." />}>
+                     <Routes>
+                       <Route path="/" element={<Home categories={categories} activeVideo={activeVideo} setActiveVideo={setActiveVideo} user={user} />} />
+                       <Route path="/marketplace" element={<Marketplace />} />
+
+commit 0245c51d0cedf1661bec9e78c4bebca6895dceca
+Author: Bennie <bennie@Bennies-MacBook-Pro.local>
+Date:   Fri May 8 16:09:14 2026 -0700
+
+    fix: enforce pure black content background under hero in dark mode using --content-bg variable
+
+diff --git a/src/App.tsx b/src/App.tsx
+index cab548d..e9c0222 100755
+--- a/src/App.tsx
++++ b/src/App.tsx
+@@ -379,7 +379,7 @@ function App() {
+     return (
+       <WhiteLabelContext.Provider value={{ wlConfig, setWlConfig }}>
+         <Router>
+-          <div style={{ background: 'var(--bg-gradient, var(--bg-color))', minHeight: '100vh', color: 'var(--text-primary)', overflowX: 'hidden' }}>
++          <div style={{ background: 'var(--content-bg)', minHeight: '100vh', color: 'var(--text-primary)', overflowX: 'hidden' }}>
+             <Navbar user={user} onLoginClick={() => setShowEndUserAuthModal(true)} onAdminClick={() => setShowAdminPanel(true)} />
+           
+           <Suspense fallback={<div style={{ height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-secondary)' }}>Loading interface...</div>}>
+@@ -430,7 +430,7 @@ function App() {
+   return (
+     <WhiteLabelContext.Provider value={{ wlConfig, setWlConfig }}>
+       <Router>
+-        <div style={{ background: 'var(--bg-gradient, var(--bg-color))', minHeight: '100vh', display: 'flex', flexDirection: 'column', overflowX: 'hidden' }}>
++        <div style={{ background: 'var(--content-bg)', minHeight: '100vh', display: 'flex', flexDirection: 'column', overflowX: 'hidden' }}>
+           <AnimatePresence>
+             {showAuthModal && (
+               <AuthModal 
+
+commit adaf89e3f8ef1daaed6d50b61f64003a6b07dd36
+Author: Bennie <bennie@Bennies-MacBook-Pro.local>
+Date:   Fri May 8 16:05:34 2026 -0700
+
+    fix: refactor theme engine to strictly enforce dark mode backgrounds and expand light hex checks
+
+diff --git a/src/App.tsx b/src/App.tsx
+index 327aea6..cab548d 100755
+--- a/src/App.tsx
++++ b/src/App.tsx
+@@ -341,14 +341,12 @@ function App() {
+         
+         // Dynamic Light/Dark Mode Toggle
+         const bgHex = wlConfig.bg.toLowerCase().trim();
+-        const lightThemes = ['#f4f4f4', '#ffffff', '#fff', 'white', '#f7f7f7', '#f5f5f5', '#eeeeee', '#e5e5e5', '#fafafa', '#f8f9fa'];
++        const lightThemes = ['#f4f4f4', '#ffffff', '#fff', 'white', '#f7f7f7', '#f5f5f5', '#eeeeee', '#e5e5e5', '#fafafa', '#f8f9fa', '#d1d5db', '#cccccc', '#e0e0e0', '#f0f0f0', '#f3f4f6', '#d3d3d3'];
+         
+         if (lightThemes.includes(bgHex)) {
+            document.documentElement.setAttribute('data-theme', 'light');
+-           document.documentElement.style.setProperty('--bg-gradient', `linear-gradient(to bottom, #d1d5db 0%, #f3f4f6 100%)`);
+         } else {
+            document.documentElement.removeAttribute('data-theme');
+-           document.documentElement.style.setProperty('--bg-gradient', wlConfig.bg);
+         }
+       }
+       
+
+commit e82443a90629c28b57da96c4159ff40ee5c4d1be
+Author: Bennie <bennie@Bennies-MacBook-Pro.local>
+Date:   Fri May 8 15:55:25 2026 -0700
+
+    style: exactly align with user specs for a fully dark mode and a grey-fading light mode hero
+
+diff --git a/src/App.tsx b/src/App.tsx
+index 9f8fc96..327aea6 100755
+--- a/src/App.tsx
++++ b/src/App.tsx
+@@ -345,7 +345,7 @@ function App() {
+         
+         if (lightThemes.includes(bgHex)) {
+            document.documentElement.setAttribute('data-theme', 'light');
+-           document.documentElement.style.setProperty('--bg-gradient', `linear-gradient(145deg, ${wlConfig.bg} 0%, #cbd5e1 100%)`);
++           document.documentElement.style.setProperty('--bg-gradient', `linear-gradient(to bottom, #d1d5db 0%, #f3f4f6 100%)`);
+         } else {
+            document.documentElement.removeAttribute('data-theme');
+            document.documentElement.style.setProperty('--bg-gradient', wlConfig.bg);
+
+commit c8438e537d3d5b551d6367500c48f0a3b4fe51bf
+Author: Bennie <bennie@Bennies-MacBook-Pro.local>
+Date:   Fri May 8 15:50:38 2026 -0700
+
+    fix: resolve nested linear-gradient css error and refine light mode hero transition
+
+diff --git a/src/App.tsx b/src/App.tsx
+index 5d7aa5e..9f8fc96 100755
+--- a/src/App.tsx
++++ b/src/App.tsx
+@@ -345,7 +345,7 @@ function App() {
+         
+         if (lightThemes.includes(bgHex)) {
+            document.documentElement.setAttribute('data-theme', 'light');
+-           document.documentElement.style.setProperty('--bg-gradient', `linear-gradient(145deg, ${wlConfig.bg} 0%, #e2e8f0 100%)`);
++           document.documentElement.style.setProperty('--bg-gradient', `linear-gradient(145deg, ${wlConfig.bg} 0%, #cbd5e1 100%)`);
+         } else {
+            document.documentElement.removeAttribute('data-theme');
+            document.documentElement.style.setProperty('--bg-gradient', wlConfig.bg);
+
+commit 43d45365fe8774c5eb8974b7b38975217869d0c3
+Author: Bennie <bennie@Bennies-MacBook-Pro.local>
+Date:   Fri May 8 15:42:25 2026 -0700
+
+    fix: replace remaining hardcoded dark colors in CTA blocks and dashboards with css variables
+
+diff --git a/src/App.tsx b/src/App.tsx
+index 516a90c..5d7aa5e 100755
+--- a/src/App.tsx
++++ b/src/App.tsx
+@@ -340,8 +340,10 @@ function App() {
+         document.documentElement.style.setProperty('--bg-color', wlConfig.bg);
+         
+         // Dynamic Light/Dark Mode Toggle
+-        const bgHex = wlConfig.bg.toLowerCase();
+-        if (bgHex === '#f4f4f4' || bgHex === '#ffffff' || bgHex === '#fff' || bgHex === 'white' || bgHex === '#f7f7f7') {
++        const bgHex = wlConfig.bg.toLowerCase().trim();
++        const lightThemes = ['#f4f4f4', '#ffffff', '#fff', 'white', '#f7f7f7', '#f5f5f5', '#eeeeee', '#e5e5e5', '#fafafa', '#f8f9fa'];
++        
++        if (lightThemes.includes(bgHex)) {
+            document.documentElement.setAttribute('data-theme', 'light');
+            document.documentElement.style.setProperty('--bg-gradient', `linear-gradient(145deg, ${wlConfig.bg} 0%, #e2e8f0 100%)`);
+         } else {
+@@ -374,7 +376,7 @@ function App() {
+   }, [wlConfig]);
+ 
+   if (isTenantMode) {
+-    if (!wlConfig) return <div style={{ height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#0b0b0b', color: 'rgba(255,255,255,0.5)' }}>Initializing Network OS...</div>;
++    if (!wlConfig) return <div style={{ height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--bg-gradient, var(--bg-color))', color: 'var(--text-muted)' }}>Initializing Network OS...</div>;
+     
+     return (
+       <WhiteLabelContext.Provider value={{ wlConfig, setWlConfig }}>
+
+commit 6a9b289563bfd8be8b36c876f1e7887f87f8c951
+Author: Bennie <bennie@Bennies-MacBook-Pro.local>
+Date:   Fri May 8 15:37:14 2026 -0700
+
+    feat: implement rich light-grey gradient background for light mode
+
+diff --git a/src/App.tsx b/src/App.tsx
+index 0d87c7b..516a90c 100755
+--- a/src/App.tsx
++++ b/src/App.tsx
+@@ -343,8 +343,10 @@ function App() {
+         const bgHex = wlConfig.bg.toLowerCase();
+         if (bgHex === '#f4f4f4' || bgHex === '#ffffff' || bgHex === '#fff' || bgHex === 'white' || bgHex === '#f7f7f7') {
+            document.documentElement.setAttribute('data-theme', 'light');
++           document.documentElement.style.setProperty('--bg-gradient', `linear-gradient(145deg, ${wlConfig.bg} 0%, #e2e8f0 100%)`);
+         } else {
+            document.documentElement.removeAttribute('data-theme');
++           document.documentElement.style.setProperty('--bg-gradient', wlConfig.bg);
+         }
+       }
+       
+@@ -377,7 +379,7 @@ function App() {
+     return (
+       <WhiteLabelContext.Provider value={{ wlConfig, setWlConfig }}>
+         <Router>
+-          <div style={{ background: 'var(--bg-color)', minHeight: '100vh', color: 'var(--text-primary)', overflowX: 'hidden' }}>
++          <div style={{ background: 'var(--bg-gradient, var(--bg-color))', minHeight: '100vh', color: 'var(--text-primary)', overflowX: 'hidden' }}>
+             <Navbar user={user} onLoginClick={() => setShowEndUserAuthModal(true)} onAdminClick={() => setShowAdminPanel(true)} />
+           
+           <Suspense fallback={<div style={{ height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-secondary)' }}>Loading interface...</div>}>
+@@ -428,7 +430,7 @@ function App() {
+   return (
+     <WhiteLabelContext.Provider value={{ wlConfig, setWlConfig }}>
+       <Router>
+-        <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', overflowX: 'hidden' }}>
++        <div style={{ background: 'var(--bg-gradient, var(--bg-color))', minHeight: '100vh', display: 'flex', flexDirection: 'column', overflowX: 'hidden' }}>
+           <AnimatePresence>
+             {showAuthModal && (
+               <AuthModal 
+
+commit b1e5edab77c73efe906262e048f626aa2d6962b4
+Author: Bennie <bennie@Bennies-MacBook-Pro.local>
+Date:   Fri May 8 15:25:41 2026 -0700
+
+    fix: persist light mode data-theme attribute on app load
+
+diff --git a/src/App.tsx b/src/App.tsx
+index de5401b..0d87c7b 100755
+--- a/src/App.tsx
++++ b/src/App.tsx
+@@ -338,6 +338,14 @@ function App() {
+     if (wlConfig) {
+       if (wlConfig.bg) {
+         document.documentElement.style.setProperty('--bg-color', wlConfig.bg);
++        
++        // Dynamic Light/Dark Mode Toggle
++        const bgHex = wlConfig.bg.toLowerCase();
++        if (bgHex === '#f4f4f4' || bgHex === '#ffffff' || bgHex === '#fff' || bgHex === 'white' || bgHex === '#f7f7f7') {
++           document.documentElement.setAttribute('data-theme', 'light');
++        } else {
++           document.documentElement.removeAttribute('data-theme');
++        }
+       }
+       
+       // Dynamic SEO Injection
