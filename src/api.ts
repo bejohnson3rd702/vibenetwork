@@ -66,9 +66,11 @@ export async function getCategoriesWithVideos(tenantId?: string) {
     items: mappedProfiles
   });
 
-  // Dynamically load custom categories and their assigned videos!
-  const { data: dbCategories } = await supabase.from('categories').select('*');
-  const { data: allVideos } = await supabase.from('videos').select('*');
+  // Dynamically load custom categories and their assigned videos using an optimized join
+  const { data: dbCategories } = await supabase
+    .from('categories')
+    .select('*, videos(id, title, image_url, tags, video_url)')
+    .limit(10); // Limit to top 10 custom categories to prevent massive payload sizes
 
   let addedCustom = false;
 
@@ -76,7 +78,7 @@ export async function getCategoriesWithVideos(tenantId?: string) {
     dbCategories.forEach(cat => {
       if (cat.title === 'Live Network Schedule') return;
       
-      const catVideos = (allVideos || []).filter((v: any) => v.category_id === cat.id);
+      const catVideos = cat.videos || [];
       
       if (catVideos.length > 0) {
         addedCustom = true;

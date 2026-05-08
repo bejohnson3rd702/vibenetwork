@@ -50,8 +50,8 @@ const Contact: React.FC = () => {
       overflow: 'hidden'
     }}>
       {/* Background elements */}
-      <div style={{ position: 'absolute', top: '10%', right: '5%', width: '400px', height: '400px', background: accentColor, filter: 'blur(200px)', opacity: 0.15, zIndex: 0, borderRadius: '50%' }} />
-      <div style={{ position: 'absolute', bottom: '10%', left: '5%', width: '300px', height: '300px', background: '#ffffff', filter: 'blur(150px)', opacity: 0.05, zIndex: 0, borderRadius: '50%' }} />
+      <div className="hide-on-mobile" style={{ position: 'absolute', top: '10%', right: '5%', width: '400px', height: '400px', background: accentColor, filter: 'blur(200px)', opacity: 0.15, zIndex: 0, borderRadius: '50%' }} />
+      <div className="hide-on-mobile" style={{ position: 'absolute', bottom: '10%', left: '5%', width: '300px', height: '300px', background: '#ffffff', filter: 'blur(150px)', opacity: 0.05, zIndex: 0, borderRadius: '50%' }} />
 
       <div style={{ maxWidth: '1200px', width: '100%', padding: '0 40px', position: 'relative', zIndex: 2 }}>
         

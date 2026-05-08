@@ -20,7 +20,7 @@ const MoreInfo: React.FC = () => {
       overflow: 'hidden'
     }}>
       {/* Background elements */}
-      <div style={{ position: 'absolute', top: '10%', right: '5%', width: '400px', height: '400px', background: accentColor, filter: 'blur(200px)', opacity: 0.15, zIndex: 0, borderRadius: '50%' }} />
+      <div className="hide-on-mobile" style={{ position: 'absolute', top: '10%', right: '5%', width: '400px', height: '400px', background: accentColor, filter: 'blur(200px)', opacity: 0.15, zIndex: 0, borderRadius: '50%' }} />
 
       <div style={{ maxWidth: '1000px', width: '100%', padding: '0 40px', position: 'relative', zIndex: 2 }}>
         <motion.h1 

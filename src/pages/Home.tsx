@@ -184,7 +184,7 @@ export default function Home({ categories, activeVideo, setActiveVideo, user }: 
       </AnimatePresence>
 
       {/* Decorative Blur Orbs */}
-      <div style={{
+      <div className="hide-on-mobile" style={{
         position: 'fixed',
         top: '20%',
         right: '10%',
@@ -197,7 +197,7 @@ export default function Home({ categories, activeVideo, setActiveVideo, user }: 
         pointerEvents: 'none'
       }} />
       
-      <div style={{
+      <div className="hide-on-mobile" style={{
         position: 'fixed',
         bottom: '10%',
         left: '25%',
