@@ -247,10 +247,10 @@ export default function WhiteLabelHome({ wlConfig, categories, user, activeVideo
              gap: '30px',
              boxShadow: `0 20px 60px -10px ${wlConfig.accent || 'var(--accent-primary)'}22`
            }}>
-             <h2 style={{ fontSize: '42px', fontWeight: 900, color: 'var(--text-primary)', margin: 0, lineHeight: 1.2 }}>
+             <h2 style={{ fontSize: '42px', fontWeight: 900, color: '#fff', margin: 0, lineHeight: 1.2 }}>
                Ready to expand your reach?
              </h2>
-             <p style={{ color: 'var(--text-secondary)', fontSize: '18px', maxWidth: '600px', margin: 0, lineHeight: 1.6 }}>
+             <p style={{ color: 'rgba(255,255,255,0.8)', fontSize: '18px', maxWidth: '600px', margin: 0, lineHeight: 1.6 }}>
                Join <span style={{ color: wlConfig.accent || '#fff', fontWeight: 'bold' }}>{wlConfig.name || 'Vibe Network'}</span> as a creator to monetize your audience, or launch your very own independent streaming architecture.
              </p>
              <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap', justifyContent: 'center' }}>
@@ -275,7 +275,7 @@ export default function WhiteLabelHome({ wlConfig, categories, user, activeVideo
                  style={{ 
                    padding: '16px 32px', 
                    background: 'rgba(255,255,255,0.05)', 
-                   color: 'var(--text-primary)', 
+                   color: '#fff', 
                    border: '1px solid rgba(255,255,255,0.2)', 
                    borderRadius: '12px', 
                    fontWeight: 800, 
