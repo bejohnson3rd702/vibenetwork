@@ -30,15 +30,18 @@ const SlideItem: React.FC<{ item: Item, aspectRatio: string, onClick?: () => voi
       whileHover={{ y: -8 }}
       transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
     >
-      <motion.div 
+      <motion.img 
+        src={item.image}
+        loading="lazy"
+        alt={item.title}
         animate={{ scale: isHovered ? 1.05 : 1 }}
         transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
         style={{
           position: 'absolute',
           inset: 0,
-          backgroundImage: `url("${item.image}")`,
-          backgroundSize: 'cover',
-          backgroundPosition: 'center',
+          width: '100%',
+          height: '100%',
+          objectFit: 'cover',
           zIndex: 0,
         }}
       />
