@@ -16,7 +16,7 @@ const Hero: React.FC = () => {
   }, [wlConfig?.heroLayoutMode, wlConfig?.heroVideoTitle]);
 
   return (
-    <div style={{ position: 'relative', width: '100%', minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: 'var(--bg-color)', overflow: 'hidden' }}>
+    <div style={{ position: 'relative', width: '100%', minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--bg-gradient, var(--bg-color))', overflow: 'hidden' }}>
       
       {/* Dynamic Background */}
       <motion.div 
