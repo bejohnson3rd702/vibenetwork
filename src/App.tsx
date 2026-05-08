@@ -379,7 +379,7 @@ function App() {
     return (
       <WhiteLabelContext.Provider value={{ wlConfig, setWlConfig }}>
         <Router>
-          <div style={{ background: 'var(--bg-gradient, var(--bg-color))', minHeight: '100vh', color: 'var(--text-primary)', overflowX: 'hidden' }}>
+          <div style={{ background: 'var(--content-bg)', minHeight: '100vh', color: 'var(--text-primary)', overflowX: 'hidden' }}>
             <Navbar user={user} onLoginClick={() => setShowEndUserAuthModal(true)} onAdminClick={() => setShowAdminPanel(true)} />
           
           <Suspense fallback={<div style={{ height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-secondary)' }}>Loading interface...</div>}>
@@ -430,7 +430,7 @@ function App() {
   return (
     <WhiteLabelContext.Provider value={{ wlConfig, setWlConfig }}>
       <Router>
-        <div style={{ background: 'var(--bg-gradient, var(--bg-color))', minHeight: '100vh', display: 'flex', flexDirection: 'column', overflowX: 'hidden' }}>
+        <div style={{ background: 'var(--content-bg)', minHeight: '100vh', display: 'flex', flexDirection: 'column', overflowX: 'hidden' }}>
           <AnimatePresence>
             {showAuthModal && (
               <AuthModal 

@@ -1007,7 +1007,7 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
   };
 
   return (
-    <div style={{ minHeight: '100vh', background: isNetworkLevel ? 'transparent' : 'var(--bg-color)', color: 'var(--text-primary)', position: 'relative' }}>
+    <div style={{ minHeight: '100vh', background: isNetworkLevel ? 'transparent' : 'var(--content-bg)', color: 'var(--text-primary)', position: 'relative' }}>
       
       {/* Immersive Hero Banner */}
       {!isGuestMode && !isNetworkLevel && (
