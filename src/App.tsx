@@ -338,6 +338,14 @@ function App() {
     if (wlConfig) {
       if (wlConfig.bg) {
         document.documentElement.style.setProperty('--bg-color', wlConfig.bg);
+        
+        // Dynamic Light/Dark Mode Toggle
+        const bgHex = wlConfig.bg.toLowerCase();
+        if (bgHex === '#f4f4f4' || bgHex === '#ffffff' || bgHex === '#fff' || bgHex === 'white' || bgHex === '#f7f7f7') {
+           document.documentElement.setAttribute('data-theme', 'light');
+        } else {
+           document.documentElement.removeAttribute('data-theme');
+        }
       }
       
       // Dynamic SEO Injection
