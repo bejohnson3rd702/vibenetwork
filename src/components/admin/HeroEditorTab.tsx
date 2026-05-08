@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { supabase } from '../../../supabaseClient';
+import { supabase } from '../../supabaseClient';
 import { AiTextArea } from './AiComponents';
 
 export const HeroEditorTab = ({ wlConfig }: { wlConfig: any }) => {

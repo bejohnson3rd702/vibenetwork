@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { supabase } from '../../../supabaseClient';
+import { supabase } from '../../supabaseClient';
 
 export const BrandingTab = ({ wlConfig }: { wlConfig: any }) => {
   const [logoImage, setLogoImage] = useState(wlConfig?.logoImage || wlConfig?.logo || '');
