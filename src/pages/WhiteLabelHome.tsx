@@ -29,23 +29,24 @@ export default function WhiteLabelHome({ wlConfig, categories, user, activeVideo
 
   return (
     <div style={{ background: wlConfig.bg || 'var(--bg-color)', minHeight: '100vh', width: '100%', overflowX: 'hidden', position: 'relative' }}>
-       {/* Master Hero Background Layer */}
-       <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '120vh', zIndex: 0 }}>
-         <motion.img 
-           initial={{ scale: 1.1, opacity: 0 }}
-           animate={{ scale: 1, opacity: 1 }}
-           transition={{ duration: 1.5, ease: 'easeOut' }}
-           src={wlConfig.heroImage || `https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&q=80&w=2500`} 
-           alt="Atmospheric Hero Background" 
-           style={{ width: '100%', height: '100%', objectFit: 'cover', filter: 'brightness(0.3) contrast(1.2) saturate(1.3)' }} 
-         />
-         {/* Soft fade into network profile background */}
-         <div style={{ position: 'absolute', bottom: 0, left: 0, width: '100%', height: '300px', background: `linear-gradient(to bottom, transparent 0%, ${wlConfig.bg || 'var(--bg-color)'} 100%)`, pointerEvents: 'none' }} />
-       </div>
-       {/* Darkening filter applied directly to image for sharp readability without soft overlays */}
+       {/* Master Hero Wrapper */}
+       <div style={{ position: 'relative', width: '100%', minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', paddingTop: '120px' }}>
+         {/* Background Layer */}
+         <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', zIndex: 0 }}>
+           <motion.img 
+             initial={{ scale: 1.1, opacity: 0 }}
+             animate={{ scale: 1, opacity: 1 }}
+             transition={{ duration: 1.5, ease: 'easeOut' }}
+             src={wlConfig.heroImage || `https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&q=80&w=2500`} 
+             alt="Atmospheric Hero Background" 
+             style={{ width: '100%', height: '100%', objectFit: 'cover', filter: 'brightness(0.3) contrast(1.2) saturate(1.3)' }} 
+           />
+           {/* Soft fade into dark content section */}
+           <div style={{ position: 'absolute', bottom: 0, left: 0, width: '100%', height: '350px', background: `linear-gradient(to bottom, transparent 0%, #050505 100%)`, pointerEvents: 'none' }} />
+         </div>
 
-       {/* Hero Text Section (Min Height to clear viewport and center properly) */}
-       <div className="px-mobile-sm py-mobile-sm" style={{ zIndex: 2, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '85vh', width: '100%', paddingTop: '120px', gap: '32px' }}>
+         {/* Hero Text Section */}
+         <div className="px-mobile-sm py-mobile-sm" style={{ zIndex: 2, position: 'relative', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', width: '100%', gap: '32px' }}>
           <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, delay: 0.2, ease: [0.16, 1, 0.3, 1] }} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '20px' }}>
             <motion.div whileHover={{ scale: 1.05 }} style={{ padding: '10px 20px', background: 'rgba(10,10,10,0.5)', backdropFilter: 'blur(16px)', border: `1px solid ${wlConfig.accent || 'var(--accent-primary)'}66`, borderRadius: '30px', display: 'inline-flex', alignItems: 'center', gap: '10px', boxShadow: `0 0 20px ${wlConfig.accent || 'var(--accent-primary)'}33` }}>
               <Sparkles size={16} color={wlConfig.accent || 'var(--accent-primary)'} style={{ filter: `drop-shadow(0 0 8px ${wlConfig.accent || 'var(--accent-primary)'})` }} />
@@ -167,67 +168,70 @@ export default function WhiteLabelHome({ wlConfig, categories, user, activeVideo
           )}
        </div>
        
-       {/* Full Profile Dashboard Integrated at Network Level */}
-       <div style={{ width: '100%', position: 'relative', zIndex: 10 }}>
-          <Suspense fallback={<div style={{ textAlign: 'center', padding: '100px', color: 'var(--text-muted)' }}>Loading network profile...</div>}>
-            <ProfileDashboard user={user} creatorIdOverride={wlConfig.owner_id} isNetworkLevel={true} />
-          </Suspense>
-       </div>
-       
-       <AnimatePresence>
-         {activeVideo && (
-           <motion.div 
-             initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-             onClick={() => setActiveVideo(null)}
-             style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.95)', zIndex: 1000, display: 'flex', flexDirection: 'column' }}
-           >
-             <div style={{ padding: '24px 40px', display: 'flex', justifyContent: 'flex-end' }}>
-               <button onClick={() => setActiveVideo(null)} style={{ background: 'none', border: 'none', color: 'var(--text-primary)', cursor: 'pointer', opacity: 0.7, padding: '8px' }} onMouseOver={e=>e.currentTarget.style.opacity='1'} onMouseOut={e=>e.currentTarget.style.opacity='0.7'}><X size={32} /></button>
-             </div>
-             <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '0 40px 40px', gap: '20px' }} onClick={e => e.stopPropagation()}>
-               <div style={{ flex: 1, maxWidth: '1200px', height: '100%', background: 'var(--bg-color)', borderRadius: '16px', overflow: 'hidden', boxShadow: '0 20px 40px rgba(0,0,0,0.5)' }}>
-                 {(() => {
-                   const match = activeVideo.videoUrl.match(/^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/);
-                   const ytId = (match && match[2].length === 11) ? match[2] : null;
-                   if (ytId) {
-                     return (
-                       <iframe 
-                         src={`https://www.youtube.com/embed/${ytId}?autoplay=1`}
-                         title={activeVideo.title}
-                         style={{ width: '100%', height: '100%', border: 'none' }}
-                         allow="autoplay; encrypted-media; fullscreen"
-                         allowFullScreen
-                         loading="lazy"
-                       />
-                     );
-                   }
-                   return (
-                     <video src={activeVideo.videoUrl} poster={activeVideo.image} autoPlay controls style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
-                   );
-                 })()}
+       {/* Dark Content Area Below Hero */}
+       <div style={{ background: '#050505', width: '100%', position: 'relative', zIndex: 10, paddingBottom: '100px' }}>
+         {/* Full Profile Dashboard Integrated at Network Level */}
+         <div style={{ width: '100%', position: 'relative' }}>
+            <Suspense fallback={<div style={{ textAlign: 'center', padding: '100px', color: 'var(--text-muted)' }}>Loading network profile...</div>}>
+              <ProfileDashboard user={user} creatorIdOverride={wlConfig.owner_id} isNetworkLevel={true} />
+            </Suspense>
+         </div>
+         
+         <AnimatePresence>
+           {activeVideo && (
+             <motion.div 
+               initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+               onClick={() => setActiveVideo(null)}
+               style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.95)', zIndex: 1000, display: 'flex', flexDirection: 'column' }}
+             >
+               <div style={{ padding: '24px 40px', display: 'flex', justifyContent: 'flex-end' }}>
+                 <button onClick={() => setActiveVideo(null)} style={{ background: 'none', border: 'none', color: 'var(--text-primary)', cursor: 'pointer', opacity: 0.7, padding: '8px' }} onMouseOver={e=>e.currentTarget.style.opacity='1'} onMouseOut={e=>e.currentTarget.style.opacity='0.7'}><X size={32} /></button>
                </div>
-             </div>
-           </motion.div>
-         )}
-       </AnimatePresence>
-       
-       {wlConfig.customSections && wlConfig.customSections.toLowerCase() !== 'none' && (
-          <div className="px-mobile-sm" style={{ display: 'flex', flexDirection: 'column', gap: '40px', marginTop: '80px', padding: '0 40px', maxWidth: '1400px', margin: '80px auto 0', width: '100%', boxSizing: 'border-box' }}>
-             {wlConfig.customSections.split(',').map((section: string, idx: number) => {
-                const title = section.trim();
-                if (!title) return null;
-                const lTitle = title.toLowerCase();
-                if (lTitle === 'contact us form' || lTitle === 'contact us' || lTitle === 'contact' || lTitle === 'about us' || lTitle === 'about') return null;
+               <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '0 40px 40px', gap: '20px' }} onClick={e => e.stopPropagation()}>
+                 <div style={{ flex: 1, maxWidth: '1200px', height: '100%', background: 'var(--bg-color)', borderRadius: '16px', overflow: 'hidden', boxShadow: '0 20px 40px rgba(0,0,0,0.5)' }}>
+                   {(() => {
+                     const match = activeVideo.videoUrl.match(/^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/);
+                     const ytId = (match && match[2].length === 11) ? match[2] : null;
+                     if (ytId) {
+                       return (
+                         <iframe 
+                           src={`https://www.youtube.com/embed/${ytId}?autoplay=1`}
+                           title={activeVideo.title}
+                           style={{ width: '100%', height: '100%', border: 'none' }}
+                           allow="autoplay; encrypted-media; fullscreen"
+                           allowFullScreen
+                           loading="lazy"
+                         />
+                       );
+                     }
+                     return (
+                       <video src={activeVideo.videoUrl} poster={activeVideo.image} autoPlay controls style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+                     );
+                   })()}
+                 </div>
+               </div>
+             </motion.div>
+           )}
+         </AnimatePresence>
+         
+         {wlConfig.customSections && wlConfig.customSections.toLowerCase() !== 'none' && (
+            <div className="px-mobile-sm" style={{ display: 'flex', flexDirection: 'column', gap: '40px', marginTop: '80px', padding: '0 40px', maxWidth: '1400px', margin: '80px auto 0', width: '100%', boxSizing: 'border-box' }}>
+               {wlConfig.customSections.split(',').map((section: string, idx: number) => {
+                  const title = section.trim();
+                  if (!title) return null;
+                  const lTitle = title.toLowerCase();
+                  if (lTitle === 'contact us form' || lTitle === 'contact us' || lTitle === 'contact' || lTitle === 'about us' || lTitle === 'about') return null;
 
-                return (
-                   <div key={idx} style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '24px', padding: '60px', display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', gap: '20px', maxWidth: '800px', margin: '0 auto', width: '100%' }}>
-                      <h2 style={{ fontSize: '36px', color: wlConfig.accent || '#fff', margin: 0 }}>{title}</h2>
-                      <p style={{ color: 'var(--text-secondary)', fontSize: '18px', maxWidth: '600px' }}>This is the autogenerated structural block for your requested <b>{title}</b> modular section. Connect your CMS to deploy actual structured content here.</p>
-                   </div>
-                );
-             })}
-          </div>
-          )}
+                  return (
+                     <div key={idx} style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '24px', padding: '60px', display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', gap: '20px', maxWidth: '800px', margin: '0 auto', width: '100%' }}>
+                        <h2 style={{ fontSize: '36px', color: wlConfig.accent || '#fff', margin: 0 }}>{title}</h2>
+                        <p style={{ color: 'var(--text-secondary)', fontSize: '18px', maxWidth: '600px' }}>This is the autogenerated structural block for your requested <b>{title}</b> modular section. Connect your CMS to deploy actual structured content here.</p>
+                     </div>
+                  );
+               })}
+            </div>
+         )}
+       </div>
     </div>
   );
 }

@@ -6,8 +6,10 @@ export const HeroEditorTab = ({ wlConfig }: { wlConfig: any }) => {
   const [heroCopy, setHeroCopy] = useState(wlConfig.heroCopy || '');
   const [heroLayoutMode, setHeroLayoutMode] = useState<'verbiage' | 'video' | 'slider'>(wlConfig?.heroLayoutMode || 'verbiage');
   const [heroVideoUrl, setHeroVideoUrl] = useState(wlConfig?.heroVideoUrl || '');
-  const [heroVideoTitle, setHeroVideoTitle] = useState(wlConfig?.heroVideoTitle || '');
+  const [heroVideoTitle, setHeroVideoTitle] = useState(wlConfig?.theme?.heroVideoTitle || wlConfig?.heroVideoTitle || '');
+  const [heroImage, setHeroImage] = useState(wlConfig?.theme?.heroImage || '');
   const [uploadingHeroVideo, setUploadingHeroVideo] = useState(false);
+  const [uploadingHeroImage, setUploadingHeroImage] = useState(false);
   const [uploadStatus, setUploadStatus] = useState<string | null>(null);
 
   const handleHeroVideoUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -34,6 +36,30 @@ export const HeroEditorTab = ({ wlConfig }: { wlConfig: any }) => {
     }
   };
 
+  const handleHeroImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    try {
+      if (!event.target.files || event.target.files.length === 0) return;
+      setUploadingHeroImage(true);
+      const file = event.target.files[0];
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${Date.now()}_${Math.random()}.${fileExt}`;
+      const filePath = `hero/${fileName}`;
+      
+      const { error: uploadError } = await supabase.storage.from('images').upload(filePath, file);
+      if (uploadError) throw uploadError;
+      
+      const { data } = supabase.storage.from('images').getPublicUrl(filePath);
+      if (data?.publicUrl) {
+        setHeroImage(data.publicUrl);
+        alert('Image uploaded successfully!');
+      }
+    } catch (err: any) {
+      alert('Upload failed: ' + err.message);
+    } finally {
+      setUploadingHeroImage(false);
+    }
+  };
+
   const executeSave = async () => {
     try {
       setUploadStatus('uploading');
@@ -43,7 +69,8 @@ export const HeroEditorTab = ({ wlConfig }: { wlConfig: any }) => {
         heroCopy,
         heroLayoutMode,
         heroVideoUrl,
-        heroVideoTitle
+        heroVideoTitle,
+        heroImage
       };
 
       const { error } = await supabase.from('whitelabel_configs').update({
@@ -86,6 +113,21 @@ export const HeroEditorTab = ({ wlConfig }: { wlConfig: any }) => {
             <option value="video">Welcome Video (Embedded Player)</option>
             <option value="slider">Video Slider (Mini Carousel)</option>
          </select>
+      </div>
+
+      <div style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)', padding: '24px 30px', borderRadius: '20px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
+         <h3 style={{ margin: '0 0 4px 0', fontSize: '20px' }}>Hero Background Image</h3>
+         <p style={{ margin: 0, color: 'var(--text-muted)', fontSize: '15px', marginBottom: '10px' }}>Upload a custom image to serve as the atmospheric background for the hero section.</p>
+         
+         {heroImage && <img src={heroImage} style={{ width: '100%', maxHeight: '200px', objectFit: 'cover', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.1)' }} alt="Hero Preview" />}
+         
+         <div style={{ display: 'flex', gap: '12px' }}>
+            <input type="text" value={heroImage} onChange={(e) => setHeroImage(e.target.value)} placeholder="e.g. https://images.unsplash.com/..." style={{ flex: 1, padding: '14px', background: 'rgba(0,0,0,0.5)', color: 'var(--text-primary)', border: '1px solid rgba(255,255,255,0.2)', borderRadius: '12px', fontSize: '16px', outline: 'none' }} />
+            <label style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '0 24px', background: 'var(--bg-surface)', border: '1px solid rgba(255,255,255,0.2)', borderRadius: '12px', cursor: uploadingHeroImage ? 'not-allowed' : 'pointer', fontWeight: 'bold' }}>
+               {uploadingHeroImage ? 'Uploading...' : 'Upload Image'}
+               <input type="file" accept="image/*" onChange={handleHeroImageUpload} style={{ display: 'none' }} disabled={uploadingHeroImage} />
+            </label>
+         </div>
       </div>
 
       {heroLayoutMode === 'video' && (
