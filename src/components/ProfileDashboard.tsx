@@ -3,6 +3,7 @@ import { supabase } from '../supabaseClient';
 import { motion, AnimatePresence } from 'framer-motion';
 import { LogOut, Camera, Lock, Unlock, Image as ImageIcon, Star, ShieldCheck, Eye, Edit2, Wand, Calendar, Edit3, Clock, CheckCircle, Heart, MessageCircle, Wallet, ArrowUpRight, ArrowDownLeft, Activity, Monitor, Settings, Video, DollarSign } from 'lucide-react';
 import { DictationButton } from './DictationButton';
+import { EmojiPickerButton } from './EmojiPickerButton';
 const LiveChat = React.lazy(() => import('./LiveChat'));
 import { useNavigate, useParams, useLocation } from 'react-router-dom';
 import Peer from 'peerjs';
@@ -1196,11 +1197,15 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
                   type="text" 
                   placeholder="Drop a new link, upload a video, or announce an upcoming stream..." 
                   value={postTitle} onChange={(e) => setPostTitle(e.target.value)}
-                  style={{ width: '100%', background: 'transparent', border: 'none', color: 'var(--text-primary)', fontSize: '16px', outline: 'none', paddingRight: '100px' }}
+                  style={{ width: '100%', background: 'transparent', border: 'none', color: 'var(--text-primary)', fontSize: '16px', outline: 'none', paddingRight: '150px' }}
                 />
-                <button type="button" onClick={() => enhanceText('post')} disabled={saving} style={{ position: 'absolute', right: '0', top: '50%', transform: 'translateY(-50%)', background: 'linear-gradient(135deg, #8A2BE2, #ff4d85)', color: 'var(--text-primary)', border: 'none', borderRadius: '12px', padding: '6px 12px', fontSize: '12px', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                  <Wand size={14} /> AI Boost
-                </button>
+                <div style={{ position: 'absolute', right: '0', top: '50%', transform: 'translateY(-50%)', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                  <EmojiPickerButton onSelect={(emoji) => setPostTitle(prev => prev + emoji)} />
+                  <DictationButton onResult={(text) => setPostTitle(prev => prev ? `${prev} ${text}` : text)} />
+                  <button type="button" onClick={() => enhanceText('post')} disabled={saving} style={{ background: 'linear-gradient(135deg, #8A2BE2, #ff4d85)', color: 'var(--text-primary)', border: 'none', borderRadius: '12px', padding: '6px 12px', fontSize: '12px', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <Wand size={14} /> AI Boost
+                  </button>
+                </div>
               </div>
             </div>
             
@@ -1351,20 +1356,26 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
                   {/* Add Comment Input */}
                   <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
                     <img src={profile?.avatar_url || (user ? `https://ui-avatars.com/api/?name=${user.email?.charAt(0)}&background=random` : 'https://ui-avatars.com/api/?name=Guest')} alt="You" style={{ width: 32, height: 32, borderRadius: '50%' }} />
-                    <input 
-                      type="text" 
-                      placeholder="Add a comment..."
-                      value={commentTexts[post.id] || ''}
-                      onChange={(e) => setCommentTexts(prev => ({ ...prev, [post.id]: e.target.value }))}
-                      onKeyDown={(e) => {
-                        if (e.key === 'Enter') handleComment(post.id);
-                      }}
-                      style={{ flex: 1, background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', padding: '10px 16px', borderRadius: '20px', color: '#fff', outline: 'none' }}
-                    />
+                    <div style={{ flex: 1, position: 'relative', display: 'flex', alignItems: 'center' }}>
+                      <input 
+                        type="text" 
+                        placeholder="Add a comment..."
+                        value={commentTexts[post.id] || ''}
+                        onChange={(e) => setCommentTexts(prev => ({ ...prev, [post.id]: e.target.value }))}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') handleComment(post.id);
+                        }}
+                        style={{ width: '100%', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', padding: '10px 16px', paddingRight: '80px', borderRadius: '20px', color: '#fff', outline: 'none' }}
+                      />
+                      <div style={{ position: 'absolute', right: '8px', display: 'flex', gap: '4px' }}>
+                        <EmojiPickerButton onSelect={(emoji) => setCommentTexts(prev => ({ ...prev, [post.id]: (prev[post.id] || '') + emoji }))} />
+                        <DictationButton onResult={(text) => setCommentTexts(prev => ({ ...prev, [post.id]: (prev[post.id] || '') ? `${prev[post.id]} ${text}` : text }))} />
+                      </div>
+                    </div>
                     <button 
                       onClick={() => handleComment(post.id)}
                       disabled={!commentTexts[post.id]?.trim()}
-                      style={{ background: commentTexts[post.id]?.trim() ? '#ff4d85' : 'rgba(255,255,255,0.1)', border: 'none', borderRadius: '50%', width: 36, height: 36, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', cursor: commentTexts[post.id]?.trim() ? 'pointer' : 'not-allowed', transition: 'background 0.2s' }}
+                      style={{ background: commentTexts[post.id]?.trim() ? '#ff4d85' : 'rgba(255,255,255,0.1)', border: 'none', borderRadius: '50%', width: 36, height: 36, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', cursor: commentTexts[post.id]?.trim() ? 'pointer' : 'not-allowed', transition: 'background 0.2s', flexShrink: 0 }}
                     >
                       <ArrowUpRight size={18} />
                     </button>

@@ -12,6 +12,7 @@
   "dependencies": {
     "@stripe/stripe-js": "^9.4.0",
     "@supabase/supabase-js": "^2.101.1",
+    "emoji-picker-react": "^4.19.1",
     "framer-motion": "^12.38.0",
     "lucide-react": "^1.7.0",
     "peerjs": "^1.5.5",

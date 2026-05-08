@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Send, User } from 'lucide-react';
 import { supabase } from '../supabaseClient';
 import { DictationButton } from './DictationButton';
+import { EmojiPickerButton } from './EmojiPickerButton';
 
 export default function LiveChat({ streamId }: { streamId: string }) {
   const [messages, setMessages] = useState<{id: string, user: string, text: string, time: string}[]>([]);
@@ -157,7 +158,10 @@ export default function LiveChat({ streamId }: { streamId: string }) {
           placeholder="Send a message..."
           style={{ flex: 1, background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '24px', padding: '10px 16px', color: 'var(--text-primary)', outline: 'none' }}
         />
-        <DictationButton onResult={(text) => setInput(prev => prev ? `${prev} ${text}` : text)} />
+        <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+          <EmojiPickerButton onSelect={(emoji) => setInput(prev => prev + emoji)} />
+          <DictationButton onResult={(text) => setInput(prev => prev ? `${prev} ${text}` : text)} />
+        </div>
         <button type="submit" disabled={!input.trim()} style={{ background: input.trim() ? '#00ff88' : 'rgba(255,255,255,0.1)', color: '#000', border: 'none', borderRadius: '50%', width: '40px', height: '40px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: input.trim() ? 'pointer' : 'default', transition: '0.2s' }}>
           <Send size={16} />
         </button>
