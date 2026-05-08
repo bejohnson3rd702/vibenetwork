@@ -23,7 +23,7 @@ export default function Home({ categories, activeVideo, setActiveVideo, user }: 
   return (
     <>
       <Hero />
-      <main style={{ background: '#050505', paddingBottom: '100px', zIndex: 10, position: 'relative', width: '100%' }}>
+      <main style={{ background: 'var(--bg-color)', paddingBottom: '100px', zIndex: 10, position: 'relative', width: '100%' }}>
         
         {wlConfig?.enableWatchLive !== false && (
           <div id="whats-on-now">
@@ -63,7 +63,7 @@ export default function Home({ categories, activeVideo, setActiveVideo, user }: 
         {/* New content section below sliders */}
         <section style={{ maxWidth: '1400px', margin: '100px auto 40px', padding: '0 40px' }}>
           <div style={{ position: 'relative', borderRadius: '24px', overflow: 'hidden' }}>
-            <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to right, #000 0%, transparent 100%)', zIndex: 1 }} />
+            <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to right, var(--bg-color) 0%, transparent 100%)', zIndex: 1 }} />
             <div style={{ position: 'absolute', inset: 0, backgroundImage: 'url("https://images.unsplash.com/photo-1550751827-4bd374c3f58b?auto=format&fit=crop&w=1200&q=60")', backgroundSize: 'cover', backgroundPosition: 'center', opacity: 0.3, filter: 'brightness(0.6)', zIndex: 0 }} />
             <div style={{ position: 'absolute', right: '-10%', top: '-50%', width: '500px', height: '500px', background: 'var(--accent-primary)', filter: 'blur(150px)', opacity: 0.2, zIndex: 0, borderRadius: '50%' }} />
             
