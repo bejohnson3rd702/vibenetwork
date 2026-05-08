@@ -685,7 +685,7 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
           
           if (isNetworkLevel && wlConfig?.id) {
              const currentTheme = wlConfig.theme || {};
-             supabase!.from('whitelabel_configs').update({ heroImage: data.publicUrl, theme: { ...currentTheme, heroImage: data.publicUrl } }).eq('id', wlConfig.id).then(({error}) => {
+             supabase!.from('whitelabel_configs').update({ theme: { ...currentTheme, heroImage: data.publicUrl } }).eq('id', wlConfig.id).then(({error}) => {
                  if (error) console.error("Error syncing hero image:", error);
              });
           }
@@ -2362,7 +2362,7 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
                         if (isNetworkLevel && wlConfig?.id) {
                            const newHero = newUrls ? newUrls.split(',')[0] : null;
                            const currentTheme = wlConfig.theme || {};
-                           supabase!.from('whitelabel_configs').update({ heroImage: newHero, theme: { ...currentTheme, heroImage: newHero } }).eq('id', wlConfig.id).then();
+                           supabase!.from('whitelabel_configs').update({ theme: { ...currentTheme, heroImage: newHero } }).eq('id', wlConfig.id).then();
                         }
                       }} style={{ position: 'absolute', top: 16, right: 16, padding: '8px 16px', background: 'rgba(255,0,0,0.5)', backdropFilter: 'blur(8px)', color: 'white', borderRadius: '12px', border: 'none', cursor: 'pointer', fontSize: '12px', fontWeight: 'bold' }}>
                         Remove Image
