@@ -672,11 +672,24 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
         setAvatarUrl(data.publicUrl);
         await supabase!.from('profiles').update({ avatar_url: data.publicUrl }).eq('id', user.id);
         setProfile((prev: any) => prev ? { ...prev, avatar_url: data.publicUrl } : null);
+        
+        if (isNetworkLevel && wlConfig?.id) {
+           const currentTheme = wlConfig.theme || {};
+           supabase!.from('whitelabel_configs').update({ logo: data.publicUrl, theme: { ...currentTheme, logoImage: data.publicUrl } }).eq('id', wlConfig.id).then();
+        }
       } else if (imageTarget === 'homepage') {
         setHomepageImageUrl((prev) => {
           const newUrls = prev ? prev + ',' + data.publicUrl : data.publicUrl;
           supabase!.from('profiles').update({ homepage_image_url: newUrls }).eq('id', user.id);
           setProfile((p: any) => p ? { ...p, homepage_image_url: newUrls } : null);
+          
+          if (isNetworkLevel && wlConfig?.id) {
+             const currentTheme = wlConfig.theme || {};
+             supabase!.from('whitelabel_configs').update({ heroImage: data.publicUrl, theme: { ...currentTheme, heroImage: data.publicUrl } }).eq('id', wlConfig.id).then(({error}) => {
+                 if (error) console.error("Error syncing hero image:", error);
+             });
+          }
+          
           return newUrls;
         });
       }
@@ -2341,8 +2354,16 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
                       <button onClick={() => {
                         const arr = homepageImageUrl.split(',').filter(Boolean);
                         arr.splice(currentBgIndex, 1);
-                        setHomepageImageUrl(arr.join(','));
+                        const newUrls = arr.join(',');
+                        setHomepageImageUrl(newUrls);
                         setCurrentBgIndex(0);
+                        supabase!.from('profiles').update({ homepage_image_url: newUrls }).eq('id', user?.id);
+                        
+                        if (isNetworkLevel && wlConfig?.id) {
+                           const newHero = newUrls ? newUrls.split(',')[0] : null;
+                           const currentTheme = wlConfig.theme || {};
+                           supabase!.from('whitelabel_configs').update({ heroImage: newHero, theme: { ...currentTheme, heroImage: newHero } }).eq('id', wlConfig.id).then();
+                        }
                       }} style={{ position: 'absolute', top: 16, right: 16, padding: '8px 16px', background: 'rgba(255,0,0,0.5)', backdropFilter: 'blur(8px)', color: 'white', borderRadius: '12px', border: 'none', cursor: 'pointer', fontSize: '12px', fontWeight: 'bold' }}>
                         Remove Image
                       </button>
