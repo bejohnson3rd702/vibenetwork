@@ -111,11 +111,7 @@ const Navbar: React.FC<NavbarProps> = ({ user, onLoginClick, onAdminClick }) => 
 
       <div style={{ display: 'flex', alignItems: 'center', gap: '24px' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
-          {wlConfig?.enableBooking && (
-             <button onClick={() => window.dispatchEvent(new CustomEvent('open_booking'))} style={{ padding: '8px 16px', background: 'transparent', border: `1px solid ${appAccent || 'white'}`, color: 'white', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold', fontSize: '13px' }}>
-               Book Studio Time
-             </button>
-          )}
+
           <Lightbulb 
             size={22} 
             color={theme === 'dark' ? '#D35400' : '#ffffff'} 
