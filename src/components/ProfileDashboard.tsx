@@ -1043,7 +1043,7 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
         )}
 
         {/* Feed Layout Container */}
-        <div style={{ maxWidth: isGuestMode ? '1400px' : '1000px', margin: '0 auto', padding: '0 20px', display: 'flex', flexDirection: 'column', gap: '30px', paddingBottom: '100px' }}>
+        <div style={{ maxWidth: isGuestMode ? '1200px' : '850px', margin: '0 auto', padding: '0 20px', display: 'flex', flexDirection: 'column', gap: '30px', paddingBottom: '100px' }}>
           
           {!isGuestMode && !isNetworkLevel && (
             <>
