@@ -142,7 +142,7 @@ html[data-theme="light"] {
   --hero-pill-bg: rgba(255,255,255,0.7);
   
   --bg-gradient: linear-gradient(to bottom, #d1d5db 0%, #f3f4f6 100%);
-  --content-bg: transparent;
+  --content-bg: linear-gradient(to bottom, #000000 0%, #9ca3af 40%, #f3f4f6 100%);
 }
 
 html[data-theme="light"] .btn-primary {
