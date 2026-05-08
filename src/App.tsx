@@ -187,8 +187,8 @@ function App() {
       let isTenant = false;
       let loadedTenantId = undefined;
 
+      const localNetworks = JSON.parse(localStorage.getItem('vibe_local_networks') || '[]');
       if (forceTenant) {
-        const localNetworks = JSON.parse(localStorage.getItem('vibe_local_networks') || '[]');
         
         // Always try to fetch from DB first as the absolute source of truth
         const { data: dbTenantData } = await supabase!.from('whitelabel_configs').select('*').eq('id', forceTenant).limit(1);
