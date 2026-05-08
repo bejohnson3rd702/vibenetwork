@@ -11,6 +11,8 @@ export const HeroEditorTab = ({ wlConfig }: { wlConfig: any }) => {
   const [uploadingHeroVideo, setUploadingHeroVideo] = useState(false);
   const [uploadingHeroImage, setUploadingHeroImage] = useState(false);
   const [uploadStatus, setUploadStatus] = useState<string | null>(null);
+  const [aiBgPrompt, setAiBgPrompt] = useState('');
+  const [generatingAiBg, setGeneratingAiBg] = useState(false);
 
   const handleHeroVideoUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     try {
@@ -121,6 +123,54 @@ export const HeroEditorTab = ({ wlConfig }: { wlConfig: any }) => {
          
          {heroImage && <img src={heroImage} style={{ width: '100%', maxHeight: '200px', objectFit: 'cover', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.1)' }} alt="Hero Preview" />}
          
+         <div style={{ background: 'rgba(0,0,0,0.3)', padding: '16px', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.05)', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+            <h4 style={{ margin: 0, fontSize: '14px', color: 'var(--text-muted)' }}>Generate with AI</h4>
+            <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
+               <input type="text" value={aiBgPrompt} onChange={(e) => setAiBgPrompt(e.target.value)} placeholder="e.g. A cyberpunk city skyline at night with neon pink lights..." style={{ flex: 1, minWidth: '300px', padding: '14px', background: 'rgba(0,0,0,0.5)', color: 'var(--text-primary)', border: '1px solid rgba(255,255,255,0.2)', borderRadius: '12px', fontSize: '16px', outline: 'none' }} />
+               <label style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '0 20px', background: 'var(--bg-surface)', border: '1px solid rgba(255,255,255,0.2)', borderRadius: '12px', cursor: uploadingHeroImage ? 'not-allowed' : 'pointer', fontWeight: 'bold' }}>
+                  {uploadingHeroImage ? 'Uploading...' : 'Upload & Remix Image'}
+                  <input type="file" accept="image/*" onChange={async (e) => {
+                     try {
+                        if (!e.target.files || e.target.files.length === 0) return;
+                        setUploadingHeroImage(true);
+                        const file = e.target.files[0];
+                        const fileExt = file.name.split('.').pop();
+                        const fileName = `${Date.now()}_${Math.random()}.${fileExt}`;
+                        const filePath = `hero/${fileName}`;
+                        const { error: uploadError } = await supabase.storage.from('images').upload(filePath, file);
+                        if (uploadError) throw uploadError;
+                        const { data } = supabase.storage.from('images').getPublicUrl(filePath);
+                        if (data?.publicUrl) {
+                           setAiBgPrompt(`Remix and enhance this image into a high quality masterpiece: ${data.publicUrl}`);
+                        }
+                     } catch (err: any) { alert('Upload failed: ' + err.message); } 
+                     finally { setUploadingHeroImage(false); }
+                  }} style={{ display: 'none' }} disabled={uploadingHeroImage} />
+               </label>
+               <button 
+                  onClick={() => {
+                     if (!aiBgPrompt.trim()) return;
+                     setGeneratingAiBg(true);
+                     const imageUrl = `https://image.pollinations.ai/prompt/${encodeURIComponent(aiBgPrompt)}?width=1920&height=1080&nologo=true&seed=${Math.floor(Math.random() * 1000000)}`;
+                     setTimeout(() => {
+                        setHeroImage(imageUrl);
+                        setGeneratingAiBg(false);
+                     }, 1500);
+                  }}
+                  disabled={generatingAiBg || !aiBgPrompt.trim()}
+                  style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '0 24px', background: `linear-gradient(135deg, ${wlConfig?.accent || 'var(--accent-primary)'}, rgba(0,0,0,0.8))`, border: `1px solid ${wlConfig?.accent || 'var(--accent-primary)'}44`, borderRadius: '12px', cursor: (generatingAiBg || !aiBgPrompt.trim()) ? 'not-allowed' : 'pointer', fontWeight: 'bold', color: '#fff' }}
+               >
+                  {generatingAiBg ? 'Generating...' : 'Generate Image'}
+               </button>
+            </div>
+         </div>
+
+         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <div style={{ flex: 1, height: '1px', background: 'rgba(255,255,255,0.1)' }} />
+            <span style={{ color: 'var(--text-muted)', fontSize: '12px', fontWeight: 'bold' }}>OR USE EXISTING</span>
+            <div style={{ flex: 1, height: '1px', background: 'rgba(255,255,255,0.1)' }} />
+         </div>
+
          <div style={{ display: 'flex', gap: '12px' }}>
             <input type="text" value={heroImage} onChange={(e) => setHeroImage(e.target.value)} placeholder="e.g. https://images.unsplash.com/..." style={{ flex: 1, padding: '14px', background: 'rgba(0,0,0,0.5)', color: 'var(--text-primary)', border: '1px solid rgba(255,255,255,0.2)', borderRadius: '12px', fontSize: '16px', outline: 'none' }} />
             <label style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '0 24px', background: 'var(--bg-surface)', border: '1px solid rgba(255,255,255,0.2)', borderRadius: '12px', cursor: uploadingHeroImage ? 'not-allowed' : 'pointer', fontWeight: 'bold' }}>
