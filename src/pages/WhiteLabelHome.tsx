@@ -42,7 +42,7 @@ export default function WhiteLabelHome({ wlConfig, categories, user, activeVideo
              style={{ width: '100%', height: '100%', objectFit: 'cover', filter: 'brightness(0.3) contrast(1.2) saturate(1.3)' }} 
            />
            {/* Soft fade into dark content section */}
-           <div style={{ position: 'absolute', bottom: 0, left: 0, width: '100%', height: '350px', background: `linear-gradient(to bottom, transparent 0%, var(--bg-color) 100%)`, pointerEvents: 'none' }} />
+           <div style={{ position: 'absolute', bottom: 0, left: 0, width: '100%', height: '350px', background: `linear-gradient(to bottom, transparent 0%, var(--bg-gradient, var(--bg-color)) 100%)`, pointerEvents: 'none' }} />
          </div>
 
          {/* Hero Text Section */}
@@ -81,7 +81,7 @@ export default function WhiteLabelHome({ wlConfig, categories, user, activeVideo
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 0.8, delay: 0.6 }}
-              style={{ width: '100%', maxWidth: '800px', minHeight: '300px', margin: '0 auto 50px', borderRadius: '24px', overflow: 'hidden', border: `1px solid ${wlConfig.accent || '#fff'}44`, boxShadow: `0 20px 50px ${wlConfig.accent || '#fff'}33`, aspectRatio: '16/9', background: 'var(--bg-color)', position: 'relative' }}
+              style={{ width: '100%', maxWidth: '800px', minHeight: '300px', margin: '0 auto 50px', borderRadius: '24px', overflow: 'hidden', border: `1px solid ${wlConfig.accent || '#fff'}44`, boxShadow: `0 20px 50px ${wlConfig.accent || '#fff'}33`, aspectRatio: '16/9', background: 'var(--bg-gradient, var(--bg-color))', position: 'relative' }}
             >
                <AnimatePresence>
                  {wlConfig.heroVideoTitle && showVideoTitle && (
