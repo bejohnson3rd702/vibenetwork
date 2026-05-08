@@ -178,7 +178,8 @@ function App() {
   // Load latest whitelabel config from DB on load, matching domain
   useEffect(() => {
     async function initPlatform() {
-      const hostname = window.location.hostname;
+      try {
+        const hostname = window.location.hostname;
       const urlParams = new URLSearchParams(window.location.search);
       const forceTenant = urlParams.get('tenant');
 
@@ -328,8 +329,57 @@ function App() {
         }
       }
 
+      setWlConfig(prev => {
+        if (prev) return prev;
+        // Ultimate Fallback: if we still haven't found a config from DB or local storage, load defaults
+        return {
+           id: 'master',
+           name: DEFAULT_PLATFORM_NAME,
+           domain: MASTER_DOMAIN,
+           accent: '#0055ff',
+           bg: 'var(--bg-color)',
+           heroCopy: 'The premiere destination for high quality digital content.',
+           btnPrimary: 'Explore Content',
+           sliderCount: 4,
+           customSections: '',
+           heroImage: null,
+           logoImage: null,
+           owner_id: '',
+           enableWatchLive: true,
+           enableBooking: false,
+           heroLayoutMode: 'verbiage',
+           heroVideoUrl: '',
+           heroVideoTitle: '',
+           theme: {}
+        };
+      });
+
       const freshCategories = await getCategoriesWithVideos(loadedTenantId);
       setCategories(freshCategories || []);
+      } catch (err) {
+        console.error("Critical error during Network OS initialization", err);
+        // Guarantee the site loads in fallback mode even if DB/network throws an exception
+        setWlConfig({
+           id: 'master',
+           name: DEFAULT_PLATFORM_NAME,
+           domain: MASTER_DOMAIN,
+           accent: '#0055ff',
+           bg: 'var(--bg-color)',
+           heroCopy: 'The premiere destination for high quality digital content.',
+           btnPrimary: 'Explore Content',
+           sliderCount: 4,
+           customSections: '',
+           heroImage: null,
+           logoImage: null,
+           owner_id: '',
+           enableWatchLive: true,
+           enableBooking: false,
+           heroLayoutMode: 'verbiage',
+           heroVideoUrl: '',
+           heroVideoTitle: '',
+           theme: {}
+        });
+      }
     }
     initPlatform();
   }, []);
