@@ -343,8 +343,10 @@ function App() {
         const bgHex = wlConfig.bg.toLowerCase();
         if (bgHex === '#f4f4f4' || bgHex === '#ffffff' || bgHex === '#fff' || bgHex === 'white' || bgHex === '#f7f7f7') {
            document.documentElement.setAttribute('data-theme', 'light');
+           document.documentElement.style.setProperty('--bg-gradient', `linear-gradient(145deg, ${wlConfig.bg} 0%, #e2e8f0 100%)`);
         } else {
            document.documentElement.removeAttribute('data-theme');
+           document.documentElement.style.setProperty('--bg-gradient', wlConfig.bg);
         }
       }
       
@@ -377,7 +379,7 @@ function App() {
     return (
       <WhiteLabelContext.Provider value={{ wlConfig, setWlConfig }}>
         <Router>
-          <div style={{ background: 'var(--bg-color)', minHeight: '100vh', color: 'var(--text-primary)', overflowX: 'hidden' }}>
+          <div style={{ background: 'var(--bg-gradient, var(--bg-color))', minHeight: '100vh', color: 'var(--text-primary)', overflowX: 'hidden' }}>
             <Navbar user={user} onLoginClick={() => setShowEndUserAuthModal(true)} onAdminClick={() => setShowAdminPanel(true)} />
           
           <Suspense fallback={<div style={{ height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-secondary)' }}>Loading interface...</div>}>
@@ -428,7 +430,7 @@ function App() {
   return (
     <WhiteLabelContext.Provider value={{ wlConfig, setWlConfig }}>
       <Router>
-        <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', overflowX: 'hidden' }}>
+        <div style={{ background: 'var(--bg-gradient, var(--bg-color))', minHeight: '100vh', display: 'flex', flexDirection: 'column', overflowX: 'hidden' }}>
           <AnimatePresence>
             {showAuthModal && (
               <AuthModal 

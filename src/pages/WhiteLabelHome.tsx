@@ -28,7 +28,7 @@ export default function WhiteLabelHome({ wlConfig, categories, user, activeVideo
   }, [wlConfig.heroLayoutMode, wlConfig.heroVideoTitle]);
 
   return (
-    <div style={{ background: wlConfig.bg || 'var(--bg-color)', minHeight: '100vh', width: '100%', overflowX: 'hidden', position: 'relative' }}>
+    <div style={{ background: 'var(--bg-gradient, var(--bg-color))', minHeight: '100vh', width: '100%', overflowX: 'hidden', position: 'relative' }}>
        {/* Master Hero Wrapper */}
        <div style={{ position: 'relative', width: '100%', minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', paddingTop: '120px' }}>
          {/* Background Layer */}
@@ -170,7 +170,7 @@ export default function WhiteLabelHome({ wlConfig, categories, user, activeVideo
        </div>
        
        {/* Dark Content Area Below Hero */}
-       <div style={{ background: 'var(--bg-color)', width: '100%', position: 'relative', zIndex: 10, paddingBottom: '100px' }}>
+       <div style={{ background: 'var(--bg-gradient, var(--bg-color))', width: '100%', position: 'relative', zIndex: 10, paddingBottom: '100px' }}>
          {/* Full Profile Dashboard Integrated at Network Level */}
          <div style={{ width: '100%', position: 'relative' }}>
             <Suspense fallback={<div style={{ textAlign: 'center', padding: '100px', color: 'var(--text-muted)' }}>Loading network profile...</div>}>

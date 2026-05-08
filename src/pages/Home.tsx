@@ -23,7 +23,7 @@ export default function Home({ categories, activeVideo, setActiveVideo, user }: 
   return (
     <>
       <Hero />
-      <main style={{ background: 'var(--bg-color)', paddingBottom: '100px', zIndex: 10, position: 'relative', width: '100%' }}>
+      <main style={{ background: 'var(--bg-gradient, var(--bg-color))', paddingBottom: '100px', zIndex: 10, position: 'relative', width: '100%' }}>
         
         {wlConfig?.enableWatchLive !== false && (
           <div id="whats-on-now">
