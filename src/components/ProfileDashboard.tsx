@@ -993,7 +993,7 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
   }
 
   const isGuestMode = new URLSearchParams(location.search).get('guest_invite') === 'true' || localGuestData !== null;
-  const activeGuests = React.useMemo(() => guests.filter(g => g.isLive), [guests]);
+  const activeGuests = guests.filter(g => g.isLive);
   const visibleGuests = directorLayout === 'isolate_host' ? [] : activeGuests;
   const showHost = directorLayout !== 'isolate_guest';
   const totalSlots = (showHost ? 1 : 0) + visibleGuests.length;
@@ -1494,7 +1494,7 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
 
           {/* Store Grid */}
           {(() => {
-            const visibleProducts = React.useMemo(() => products.filter(p => (isNetworkLevel && isOwnProfile && viewMode === 'edit') ? true : !p.hidden_from_network), [products, isNetworkLevel, isOwnProfile, viewMode]);
+            const visibleProducts = products.filter(p => (isNetworkLevel && isOwnProfile && viewMode === 'edit') ? true : !p.hidden_from_network);
             if (visibleProducts.length === 0) {
               return (
                  <div style={{ textAlign: 'center', padding: '60px 20px', background: 'rgba(0,0,0,0.2)', borderRadius: '24px', border: '1px solid rgba(255,255,255,0.05)' }}>

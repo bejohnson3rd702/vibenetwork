@@ -990,12 +990,12 @@ function MasterAdminDashboard() {
                     </thead>
                     <tbody>
                       {(() => {
-                        const filteredTx = React.useMemo(() => ledgerData.filter(tx => {
+                        const filteredTx = ledgerData.filter(tx => {
                            if (!tx) return false;
                            const profile = tx.profiles ? (Array.isArray(tx.profiles) ? tx.profiles[0] : tx.profiles) : null;
                            const origin = profile?.whitelabel_id ? 'Whitelabel' : 'Direct Vibe';
                            return ledgerFilter === 'ALL' || origin === ledgerFilter;
-                        }), [ledgerData, ledgerFilter]);
+                        });
                         
                         if (filteredTx.length === 0) {
                            return (
