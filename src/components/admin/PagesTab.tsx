@@ -11,9 +11,14 @@ export const PagesTab = ({ wlConfig }: { wlConfig: any }) => {
     try {
       setUploadStatus('uploading');
       
-      const { error } = await supabase.from('whitelabel_configs').update({
+      const updatedTheme = {
+        ...wlConfig.theme,
         enableWatchLive,
         enableBooking
+      };
+
+      const { error } = await supabase.from('whitelabel_configs').update({
+        theme: updatedTheme
       }).eq('id', wlConfig.id);
       
       if (error) throw error;
@@ -21,6 +26,7 @@ export const PagesTab = ({ wlConfig }: { wlConfig: any }) => {
       const localNetworks = JSON.parse(localStorage.getItem('vibe_local_networks') || '[]');
       const index = localNetworks.findIndex((n: any) => n.id === wlConfig.id);
       if (index >= 0) {
+        localNetworks[index].theme = updatedTheme;
         localNetworks[index].enableWatchLive = enableWatchLive;
         localNetworks[index].enableBooking = enableBooking;
         localStorage.setItem('vibe_local_networks', JSON.stringify(localNetworks));

@@ -1136,8 +1136,8 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
               {[
                 { id: 'feed', label: 'Content Feed' },
                 { id: 'store', label: 'Store' },
-                { id: 'live', label: 'Live Stream' },
-                { id: 'booking', label: 'Booking' },
+                ...(wlConfig?.enableWatchLive !== false ? [{ id: 'live', label: 'Live Stream' }] : []),
+                ...(wlConfig?.enableBooking !== false ? [{ id: 'booking', label: 'Booking' }] : []),
                 { id: 'series', label: 'Episodes' },
                 { id: 'courses', label: 'Masterclasses' },
                 { id: 'flipbook', label: 'Flip Book' }
