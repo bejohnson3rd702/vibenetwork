@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
+import { DictationButton } from './DictationButton';
 import { Send, Mail, MapPin, Phone } from 'lucide-react';
 import { supabase } from '../supabaseClient';
 import { useWhiteLabel } from '../context/WhiteLabelContext';
@@ -168,7 +169,12 @@ const Contact: React.FC = () => {
 
                 <div>
                   <label style={{ display: 'block', fontSize: '13px', fontWeight: 600, color: 'var(--text-muted)', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '1px' }}>Message</label>
-                  <textarea required value={formData.message} onChange={e => setFormData({...formData, message: e.target.value})} style={{ width: '100%', padding: '16px', background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px', color: 'var(--text-primary)', fontSize: '16px', outline: 'none', minHeight: '150px', resize: 'vertical', transition: 'border 0.2s' }} onFocus={e => e.target.style.borderColor = accentColor} onBlur={e => e.target.style.borderColor = 'rgba(255,255,255,0.1)'} placeholder="Tell us about your streaming needs..." />
+                  <div style={{ position: 'relative' }}>
+                    <textarea required value={formData.message} onChange={e => setFormData({...formData, message: e.target.value})} style={{ width: '100%', padding: '16px', paddingRight: '50px', background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px', color: 'var(--text-primary)', fontSize: '16px', outline: 'none', minHeight: '150px', resize: 'vertical', transition: 'border 0.2s' }} onFocus={e => e.target.style.borderColor = accentColor} onBlur={e => e.target.style.borderColor = 'rgba(255,255,255,0.1)'} placeholder="Tell us about your streaming needs..." />
+                    <div style={{ position: 'absolute', right: '10px', bottom: '15px' }}>
+                      <DictationButton onResult={(text) => setFormData(prev => ({ ...prev, message: prev.message ? `${prev.message} ${text}` : text }))} />
+                    </div>
+                  </div>
                 </div>
 
                 <motion.button 

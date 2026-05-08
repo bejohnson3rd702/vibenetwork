@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { supabase } from '../../supabaseClient';
 import { AiTextArea } from './AiComponents';
+import { DictationButton } from '../DictationButton';
 
 export const HeroEditorTab = ({ wlConfig }: { wlConfig: any }) => {
   const [heroCopy, setHeroCopy] = useState(wlConfig.heroCopy || '');
@@ -126,7 +127,12 @@ export const HeroEditorTab = ({ wlConfig }: { wlConfig: any }) => {
          <div style={{ background: 'rgba(0,0,0,0.3)', padding: '16px', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.05)', display: 'flex', flexDirection: 'column', gap: '12px' }}>
             <h4 style={{ margin: 0, fontSize: '14px', color: 'var(--text-muted)' }}>Generate with AI</h4>
             <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
-               <input type="text" value={aiBgPrompt} onChange={(e) => setAiBgPrompt(e.target.value)} placeholder="e.g. A cyberpunk city skyline at night with neon pink lights..." style={{ flex: 1, minWidth: '300px', padding: '14px', background: 'rgba(0,0,0,0.5)', color: 'var(--text-primary)', border: '1px solid rgba(255,255,255,0.2)', borderRadius: '12px', fontSize: '16px', outline: 'none' }} />
+               <div style={{ flex: 1, minWidth: '300px', position: 'relative', display: 'flex', alignItems: 'center' }}>
+                 <input type="text" value={aiBgPrompt} onChange={(e) => setAiBgPrompt(e.target.value)} placeholder="e.g. A cyberpunk city skyline at night with neon pink lights..." style={{ width: '100%', padding: '14px', paddingRight: '40px', background: 'rgba(0,0,0,0.5)', color: 'var(--text-primary)', border: '1px solid rgba(255,255,255,0.2)', borderRadius: '12px', fontSize: '16px', outline: 'none' }} />
+                 <div style={{ position: 'absolute', right: '8px' }}>
+                   <DictationButton onResult={(text) => setAiBgPrompt(prev => prev ? `${prev} ${text}` : text)} />
+                 </div>
+               </div>
                <label style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '0 20px', background: 'var(--bg-surface)', border: '1px solid rgba(255,255,255,0.2)', borderRadius: '12px', cursor: uploadingHeroImage ? 'not-allowed' : 'pointer', fontWeight: 'bold' }}>
                   {uploadingHeroImage ? 'Uploading...' : 'Upload & Remix Image'}
                   <input type="file" accept="image/*" onChange={async (e) => {

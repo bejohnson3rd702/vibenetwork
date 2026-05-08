@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { supabase } from '../supabaseClient';
 import { X, Lock, Mail, AtSign } from 'lucide-react';
 import { useWhiteLabel } from '../context/WhiteLabelContext';
+import { DictationButton } from './DictationButton';
 
 interface AuthModalProps {
   onClose: () => void;
@@ -566,6 +567,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ onClose, onSuccess, defaultIsLogi
                 
               }} style={{ padding: '20px', background: 'rgba(0,0,0,0.5)', display: 'flex', borderTop: '1px solid rgba(255,255,255,0.1)' }}>
                 <input type="text" value={chatInput} onChange={e => setChatInput(e.target.value)} placeholder="Type your answer here..." style={{ flex: 1, padding: '20px', background: 'transparent', border: 'none', color: 'var(--text-primary)', fontSize: '15px', outline: 'none' }} autoFocus />
+                <DictationButton onResult={(text) => setChatInput(prev => prev ? `${prev} ${text}` : text)} style={{ marginRight: '10px' }} />
                 <button type="submit" id="wizardSubmitBtn" style={{ padding: '0 24px', background: '#fff', color: '#000', border: 'none', fontWeight: 'bold', cursor: 'pointer' }}>Send</button>
               </form>
             )}

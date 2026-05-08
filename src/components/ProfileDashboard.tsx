@@ -2,6 +2,7 @@ import React, { useEffect, useState, useRef } from 'react';
 import { supabase } from '../supabaseClient';
 import { motion, AnimatePresence } from 'framer-motion';
 import { LogOut, Camera, Lock, Unlock, Image as ImageIcon, Star, ShieldCheck, Eye, Edit2, Wand, Calendar, Edit3, Clock, CheckCircle, Heart, MessageCircle, Wallet, ArrowUpRight, ArrowDownLeft, Activity, Monitor, Settings, Video, DollarSign } from 'lucide-react';
+import { DictationButton } from './DictationButton';
 const LiveChat = React.lazy(() => import('./LiveChat'));
 import { useNavigate, useParams, useLocation } from 'react-router-dom';
 import Peer from 'peerjs';
@@ -1104,6 +1105,9 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
                             placeholder="Write a bio to tell your viewers what your channel is about..."
                             style={{ width: '100%', minHeight: '100px', background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '16px', padding: '16px', color: 'var(--text-primary)', resize: 'vertical', fontSize: '15px', outline: 'none', backdropFilter: 'blur(10px)' }}
                           />
+                          <div style={{ position: 'absolute', right: '120px', bottom: '20px' }}>
+                            <DictationButton onResult={(text) => setBio(prev => prev ? `${prev} ${text}` : text)} />
+                          </div>
                           <button type="button" onClick={() => enhanceText('bio')} disabled={saving} style={{ position: 'absolute', right: '16px', bottom: '20px', background: 'linear-gradient(135deg, #8A2BE2, #ff4d85)', color: 'var(--text-primary)', border: 'none', borderRadius: '12px', padding: '8px 16px', fontSize: '13px', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px', boxShadow: '0 4px 15px rgba(255,77,133,0.4)' }}>
                             <Wand size={14} /> AI Boost
                           </button>

@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Sparkles } from 'lucide-react';
+import { DictationButton } from '../DictationButton';
 
 export const AiInput = ({ defaultValue, label, placeholder, accent, onChange }: { defaultValue: string, label: string, placeholder?: string, accent: string, onChange?: (v: string) => void }) => {
    const [val, setVal] = useState(defaultValue || '');
@@ -30,7 +31,16 @@ export const AiInput = ({ defaultValue, label, placeholder, accent, onChange }: 
                 <Sparkles size={14} /> {isAiLoading ? 'Synthesizing...' : 'AI Enhance'}
              </button>
           </div>
-          <input type="text" value={val} onChange={e=>{setVal(e.target.value); if(onChange) onChange(e.target.value);}} placeholder={placeholder || "Type here..."} style={{ width: '100%', background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.1)', color: 'var(--text-primary)', padding: '16px', borderRadius: '12px', fontSize: '16px', outline: 'none' }} />
+          <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
+            <input type="text" value={val} onChange={e=>{setVal(e.target.value); if(onChange) onChange(e.target.value);}} placeholder={placeholder || "Type here..."} style={{ width: '100%', background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.1)', color: 'var(--text-primary)', padding: '16px', paddingRight: '50px', borderRadius: '12px', fontSize: '16px', outline: 'none' }} />
+            <div style={{ position: 'absolute', right: '10px' }}>
+              <DictationButton onResult={(text) => {
+                const newVal = val ? `${val} ${text}` : text;
+                setVal(newVal);
+                if (onChange) onChange(newVal);
+              }} />
+            </div>
+          </div>
        </div>
    )
 }
@@ -61,7 +71,16 @@ export const AiTextArea = ({ defaultValue, label, rows=4, accent, onChange }: { 
                 <Sparkles size={14} /> {isAiLoading ? 'Synthesizing...' : 'AI Re-Write'}
              </button>
           </div>
-          <textarea rows={rows} value={val} onChange={e=>{setVal(e.target.value); if(onChange) onChange(e.target.value);}} placeholder="Type here..." style={{ width: '100%', background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.1)', color: 'var(--text-primary)', padding: '20px', borderRadius: '12px', fontSize: '16px', outline: 'none' }} />
+          <div style={{ position: 'relative' }}>
+            <textarea rows={rows} value={val} onChange={e=>{setVal(e.target.value); if(onChange) onChange(e.target.value);}} placeholder="Type here..." style={{ width: '100%', background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.1)', color: 'var(--text-primary)', padding: '20px', paddingRight: '50px', borderRadius: '12px', fontSize: '16px', outline: 'none' }} />
+            <div style={{ position: 'absolute', right: '10px', bottom: '10px' }}>
+              <DictationButton onResult={(text) => {
+                const newVal = val ? `${val} ${text}` : text;
+                setVal(newVal);
+                if (onChange) onChange(newVal);
+              }} />
+            </div>
+          </div>
        </div>
    )
 }
