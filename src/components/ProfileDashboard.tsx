@@ -993,7 +993,7 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
   }
 
   const isGuestMode = new URLSearchParams(location.search).get('guest_invite') === 'true' || localGuestData !== null;
-  const activeGuests = guests.filter(g => g.isLive);
+  const activeGuests = React.useMemo(() => guests.filter(g => g.isLive), [guests]);
   const visibleGuests = directorLayout === 'isolate_host' ? [] : activeGuests;
   const showHost = directorLayout !== 'isolate_guest';
   const totalSlots = (showHost ? 1 : 0) + visibleGuests.length;
@@ -1261,7 +1261,7 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
                 
                 {postMediaUrl && (
                   <div style={{ position: 'relative', width: '40px', height: '40px', borderRadius: '8px', overflow: 'hidden' }}>
-                    <img src={postMediaUrl} alt="Preview" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                    <img src={postMediaUrl} alt="Preview" loading="lazy" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                     <button type="button" onClick={() => setPostMediaUrl('')} style={{ position: 'absolute', top: 2, right: 2, background: 'rgba(0,0,0,0.5)', color: '#fff', border: 'none', borderRadius: '50%', padding: '2px', cursor: 'pointer' }}>×</button>
                   </div>
                 )}
@@ -1302,7 +1302,7 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
                     }
                   }}
                 >
-                  <img src={post.creator_avatar || (!isNetworkLevel ? profile.avatar_url : null) || `https://ui-avatars.com/api/?name=${post.creator_username || (!isNetworkLevel ? profile.username : 'Creator')}&background=random`} alt="Avatar" style={{ width: '40px', height: '40px', borderRadius: '50%', objectFit: 'cover', border: '2px solid rgba(255,255,255,0.1)' }} />
+                  <img src={post.creator_avatar || (!isNetworkLevel ? profile.avatar_url : null) || `https://ui-avatars.com/api/?name=${post.creator_username || (!isNetworkLevel ? profile.username : 'Creator')}&background=random`} alt="Avatar" loading="lazy" style={{ width: '40px', height: '40px', borderRadius: '50%', objectFit: 'cover', border: '2px solid rgba(255,255,255,0.1)' }} />
                   <div>
                     <h4 style={{ margin: 0, fontSize: '15px' }}>{post.creator_username || (!isNetworkLevel ? profile.username : 'Creator')} <ShieldCheck size={14} color="#ff4d85" style={{ display: 'inline', marginLeft: '4px' }} /></h4>
                     <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>{post.date}</span>
@@ -1326,7 +1326,7 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
                   {/* Post Payload (Image/Video) */}
                   {post.img && (
                     <div style={{ width: '100%', display: 'flex', justifyContent: 'center', background: 'rgba(0,0,0,0.3)', padding: '20px 0', borderTop: '1px solid rgba(255,255,255,0.02)', borderBottom: '1px solid rgba(255,255,255,0.02)' }}>
-                      <img src={post.img} alt="Post content" style={{ maxWidth: '50%', maxHeight: '400px', objectFit: 'contain', borderRadius: '12px', boxShadow: '0 10px 30px rgba(0,0,0,0.4)' }} />
+                      <img src={post.img} alt="Post content" loading="lazy" style={{ maxWidth: '50%', maxHeight: '400px', objectFit: 'contain', borderRadius: '12px', boxShadow: '0 10px 30px rgba(0,0,0,0.4)' }} />
                     </div>
                   )}
                 </div>
@@ -1394,7 +1394,7 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginBottom: '16px', maxHeight: '200px', overflowY: 'auto' }}>
                       {post.comments.map((c: any) => (
                         <div key={c.id} style={{ display: 'flex', gap: '12px' }}>
-                          <img src={c.avatar || `https://ui-avatars.com/api/?name=${c.user}&background=random`} alt={c.user} style={{ width: 28, height: 28, borderRadius: '50%' }} />
+                          <img src={c.avatar || `https://ui-avatars.com/api/?name=${c.user}&background=random`} alt={c.user} loading="lazy" style={{ width: 28, height: 28, borderRadius: '50%' }} />
                           <div style={{ background: 'rgba(255,255,255,0.05)', padding: '8px 12px', borderRadius: '12px', fontSize: '14px' }}>
                             <strong style={{ display: 'block', color: '#fff', marginBottom: '2px', fontSize: '13px' }}>{c.user}</strong>
                             <span style={{ color: 'var(--text-muted)' }}>{c.text}</span>
@@ -1406,7 +1406,7 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
 
                   {/* Add Comment Input */}
                   <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
-                    <img src={user?.user_metadata?.avatar_url || (user ? `https://ui-avatars.com/api/?name=${user.email?.charAt(0)}&background=random` : 'https://ui-avatars.com/api/?name=Guest')} alt="You" style={{ width: 32, height: 32, borderRadius: '50%' }} />
+                    <img src={user?.user_metadata?.avatar_url || (user ? `https://ui-avatars.com/api/?name=${user.email?.charAt(0)}&background=random` : 'https://ui-avatars.com/api/?name=Guest')} alt="You" loading="lazy" style={{ width: 32, height: 32, borderRadius: '50%' }} />
                     <div style={{ flex: 1, position: 'relative', display: 'flex', alignItems: 'center' }}>
                       <input 
                         type="text" 
@@ -1494,7 +1494,7 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
 
           {/* Store Grid */}
           {(() => {
-            const visibleProducts = products.filter(p => (isNetworkLevel && isOwnProfile && viewMode === 'edit') ? true : !p.hidden_from_network);
+            const visibleProducts = React.useMemo(() => products.filter(p => (isNetworkLevel && isOwnProfile && viewMode === 'edit') ? true : !p.hidden_from_network), [products, isNetworkLevel, isOwnProfile, viewMode]);
             if (visibleProducts.length === 0) {
               return (
                  <div style={{ textAlign: 'center', padding: '60px 20px', background: 'rgba(0,0,0,0.2)', borderRadius: '24px', border: '1px solid rgba(255,255,255,0.05)' }}>
@@ -1523,7 +1523,7 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
                         </div>
                         {product.creator && (
                           <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                            <img src={product.creator.avatar_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(product.creator.username || 'C')}&background=random`} alt={product.creator.username} style={{ width: '20px', height: '20px', borderRadius: '50%', border: '1px solid rgba(255,255,255,0.2)' }} />
+                            <img src={product.creator.avatar_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(product.creator.username || 'C')}&background=random`} alt={product.creator.username} loading="lazy" style={{ width: '20px', height: '20px', borderRadius: '50%', border: '1px solid rgba(255,255,255,0.2)' }} />
                             <span style={{ color: 'var(--text-secondary)', fontSize: '12px', fontWeight: 500 }}>@{product.creator.username}</span>
                           </div>
                         )}
