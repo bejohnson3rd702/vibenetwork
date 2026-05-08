@@ -1286,9 +1286,9 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
                     }
                   }}
                 >
-                  <img src={post.creator_avatar || profile.avatar_url || `https://ui-avatars.com/api/?name=${post.creator_username || profile.username || 'C'}&background=random`} alt="Avatar" style={{ width: '40px', height: '40px', borderRadius: '50%', objectFit: 'cover' }} />
+                  <img src={post.creator_avatar || (!isNetworkLevel ? profile.avatar_url : null) || `https://ui-avatars.com/api/?name=${post.creator_username || (!isNetworkLevel ? profile.username : 'Creator')}&background=random`} alt="Avatar" style={{ width: '40px', height: '40px', borderRadius: '50%', objectFit: 'cover' }} />
                   <div>
-                    <h4 style={{ margin: 0, fontSize: '15px' }}>{post.creator_username || profile.username || 'Creator'} <ShieldCheck size={14} color="#ff4d85" style={{ display: 'inline', marginLeft: '4px' }} /></h4>
+                    <h4 style={{ margin: 0, fontSize: '15px' }}>{post.creator_username || (!isNetworkLevel ? profile.username : 'Creator')} <ShieldCheck size={14} color="#ff4d85" style={{ display: 'inline', marginLeft: '4px' }} /></h4>
                     <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>{post.date}</span>
                   </div>
                 </div>
