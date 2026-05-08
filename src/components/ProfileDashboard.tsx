@@ -541,19 +541,25 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
         }
 
         if (postsData && postsData.length > 0) {
-          setFeed(postsData.map((p: any) => ({
-            id: p.id,
-            title: p.content || p.title,
-            locked: p.is_locked || false,
-            likes: p.post_likes ? p.post_likes.length : (p.likes || 0),
-            hasLiked: p.post_likes ? p.post_likes.some((l: any) => l.user_id === user?.id) : false,
-            comments: p.post_comments ? p.post_comments.map((c: any) => ({ id: c.id, text: c.content, user: c.user?.username || 'User', avatar: c.user?.avatar_url || '' })) : [],
-            date: p.created_at ? new Date(p.created_at).toLocaleDateString() : 'Just now',
-            img: p.image_url || null,
-            creator_id: p.creator_id,
-            creator_username: p.creator?.username,
-            creator_avatar: p.creator?.avatar_url
-          })));
+          setFeed(postsData.map((p: any) => {
+            const creatorObj = Array.isArray(p.creator) ? p.creator[0] : p.creator;
+            return {
+              id: p.id,
+              title: p.content || p.title,
+              locked: p.is_locked || false,
+              likes: p.post_likes ? p.post_likes.length : (p.likes || 0),
+              hasLiked: p.post_likes ? p.post_likes.some((l: any) => l.user_id === user?.id) : false,
+              comments: p.post_comments ? p.post_comments.map((c: any) => {
+                const userObj = Array.isArray(c.user) ? c.user[0] : c.user;
+                return { id: c.id, text: c.content, user: userObj?.username || 'User', avatar: userObj?.avatar_url || '' };
+              }) : [],
+              date: p.created_at ? new Date(p.created_at).toLocaleDateString() : 'Just now',
+              img: p.image_url || null,
+              creator_id: p.creator_id,
+              creator_username: creatorObj?.username,
+              creator_avatar: creatorObj?.avatar_url
+            };
+          }));
         } else {
           setFeed([]);
         }
