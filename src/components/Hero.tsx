@@ -25,7 +25,7 @@ const Hero: React.FC = () => {
         transition={{ duration: 2, ease: 'easeOut' }}
         style={{ position: 'absolute', inset: 0, zIndex: 0 }}
       >
-        <div style={{ position: 'absolute', inset: 0, backgroundImage: `url(${wlConfig?.heroImage || ASSETS.heroMain})`, backgroundSize: 'cover', backgroundPosition: 'center', filter: 'brightness(0.3) saturate(1.3) contrast(1.1)' }} />
+        <div style={{ position: 'absolute', inset: 0, backgroundImage: `url(${wlConfig?.heroImage || ASSETS.heroMain})`, backgroundSize: 'cover', backgroundPosition: 'center', filter: 'var(--hero-img-filter)' }} />
         {/* Soft fade into dark content section */}
         <div style={{ position: 'absolute', bottom: 0, left: 0, width: '100%', height: '350px', background: `linear-gradient(to bottom, transparent 0%, var(--bg-gradient, var(--bg-color)) 100%)`, pointerEvents: 'none' }} />
       </motion.div>
@@ -40,10 +40,10 @@ const Hero: React.FC = () => {
           animate={{ opacity: 1, y: 0 }}
           whileHover={{ scale: 1.05 }}
           transition={{ duration: 0.8, delay: 0.2 }}
-          style={{ padding: '10px 24px', background: 'rgba(255,255,255,0.03)', backdropFilter: 'blur(20px)', border: `1px solid ${wlConfig?.accent || 'rgba(255,255,255,0.08)'}66`, borderRadius: '100px', display: 'inline-flex', alignItems: 'center', gap: '12px', marginBottom: '40px', boxShadow: `0 0 20px ${wlConfig?.accent || 'rgba(255,255,255,0.1)'}33` }}
+          style={{ padding: '10px 24px', background: 'var(--hero-pill-bg)', backdropFilter: 'blur(20px)', border: `1px solid ${wlConfig?.accent || 'rgba(255,255,255,0.08)'}66`, borderRadius: '100px', display: 'inline-flex', alignItems: 'center', gap: '12px', marginBottom: '40px', boxShadow: `0 0 20px ${wlConfig?.accent || 'rgba(255,255,255,0.1)'}33` }}
         >
           <Sparkles size={16} color={wlConfig?.accent || 'var(--accent-primary)'} style={{ filter: `drop-shadow(0 0 8px ${wlConfig?.accent || 'var(--accent-primary)'})` }} />
-          <span style={{ fontSize: '13px', fontWeight: 700, letterSpacing: '3px', textTransform: 'uppercase', color: 'rgba(255,255,255,0.9)' }}>
+          <span style={{ fontSize: '13px', fontWeight: 700, letterSpacing: '3px', textTransform: 'uppercase', color: 'var(--text-primary)' }}>
             The Ultimate White Label Architecture
           </span>
         </motion.div>
@@ -56,13 +56,13 @@ const Hero: React.FC = () => {
           transition={{ duration: 0.8, delay: 0.4 }}
           style={{ 
             fontSize: '95px', fontWeight: 900, lineHeight: 1.1, letterSpacing: '-3px', color: 'var(--text-primary)',
-            margin: '0 0 24px 0', textShadow: '0 20px 40px rgba(0,0,0,0.8)'
+            margin: '0 0 24px 0', textShadow: 'var(--hero-text-shadow)'
           }}
         >
           {wlConfig?.name ? (
-            <>Welcome to<br/> <span style={{ background: `linear-gradient(135deg, #fff 0%, ${wlConfig?.accent || 'var(--accent-primary)'} 100%)`, WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', filter: 'drop-shadow(0px 10px 20px rgba(0,0,0,0.5))' }}>{wlConfig.name}</span></>
+            <>Welcome to<br/> <span style={{ background: 'var(--hero-text-gradient)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', filter: 'drop-shadow(0px 10px 20px rgba(0,0,0,0.1))' }}>{wlConfig.name}</span></>
           ) : (
-            <>Step Into The<br/> <span style={{ background: `linear-gradient(135deg, #fff 0%, ${wlConfig?.accent || 'var(--accent-primary)'} 100%)`, WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', filter: 'drop-shadow(0px 10px 20px rgba(0,0,0,0.5))' }}>New Dimension</span></>
+            <>Step Into The<br/> <span style={{ background: 'var(--hero-text-gradient)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', filter: 'drop-shadow(0px 10px 20px rgba(0,0,0,0.1))' }}>New Dimension</span></>
           )}
         </motion.h1>
         
@@ -74,8 +74,8 @@ const Hero: React.FC = () => {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8, delay: 0.6 }}
               style={{ 
-                fontSize: '24px', color: 'rgba(255,255,255,0.8)', maxWidth: '850px', 
-                margin: '0 0 40px 0', lineHeight: 1.6, fontWeight: 400, textShadow: '0 10px 20px rgba(0,0,0,0.8)'
+                fontSize: '24px', color: 'var(--text-secondary)', maxWidth: '850px', 
+                margin: '0 0 40px 0', lineHeight: 1.6, fontWeight: 400, textShadow: 'var(--hero-text-shadow)'
               }}
             >
               {wlConfig?.heroCopy || "The highest fidelity, ultra-low latency broadcasting architecture built exclusively for global corporate brands, creators, and enterprise media."}
