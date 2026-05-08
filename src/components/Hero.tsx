@@ -43,7 +43,7 @@ const Hero: React.FC = () => {
           style={{ padding: '10px 24px', background: 'var(--hero-pill-bg)', backdropFilter: 'blur(20px)', border: `1px solid ${wlConfig?.accent || 'rgba(255,255,255,0.08)'}66`, borderRadius: '100px', display: 'inline-flex', alignItems: 'center', gap: '12px', marginBottom: '40px', boxShadow: `0 0 20px ${wlConfig?.accent || 'rgba(255,255,255,0.1)'}33` }}
         >
           <Sparkles size={16} color={wlConfig?.accent || 'var(--accent-primary)'} style={{ filter: `drop-shadow(0 0 8px ${wlConfig?.accent || 'var(--accent-primary)'})` }} />
-          <span style={{ fontSize: '13px', fontWeight: 700, letterSpacing: '3px', textTransform: 'uppercase', color: 'rgba(255,255,255,0.9)' }}>
+          <span style={{ fontSize: '13px', fontWeight: 700, letterSpacing: '3px', textTransform: 'uppercase', color: 'var(--text-primary)' }}>
             The Ultimate White Label Architecture
           </span>
         </motion.div>
@@ -55,7 +55,7 @@ const Hero: React.FC = () => {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 0.4 }}
           style={{ 
-            fontSize: '95px', fontWeight: 900, lineHeight: 1.1, letterSpacing: '-3px', color: '#ffffff',
+            fontSize: '95px', fontWeight: 900, lineHeight: 1.1, letterSpacing: '-3px', color: 'var(--text-primary)',
             margin: '0 0 24px 0', textShadow: 'var(--hero-text-shadow)'
           }}
         >
@@ -74,7 +74,7 @@ const Hero: React.FC = () => {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8, delay: 0.6 }}
               style={{ 
-                fontSize: '24px', color: 'rgba(255,255,255,0.8)', maxWidth: '850px', 
+                fontSize: '24px', color: 'var(--text-secondary)', maxWidth: '850px', 
                 margin: '0 0 40px 0', lineHeight: 1.6, fontWeight: 400, textShadow: 'var(--hero-text-shadow)'
               }}
             >

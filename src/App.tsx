@@ -345,7 +345,7 @@ function App() {
         
         if (lightThemes.includes(bgHex)) {
            document.documentElement.setAttribute('data-theme', 'light');
-           document.documentElement.style.setProperty('--bg-gradient', `linear-gradient(145deg, ${wlConfig.bg} 0%, #cbd5e1 100%)`);
+           document.documentElement.style.setProperty('--bg-gradient', `linear-gradient(to bottom, #d1d5db 0%, #f3f4f6 100%)`);
         } else {
            document.documentElement.removeAttribute('data-theme');
            document.documentElement.style.setProperty('--bg-gradient', wlConfig.bg);
