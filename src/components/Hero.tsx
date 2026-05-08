@@ -16,7 +16,7 @@ const Hero: React.FC = () => {
   }, [wlConfig?.heroLayoutMode, wlConfig?.heroVideoTitle]);
 
   return (
-    <div style={{ position: 'relative', width: '100%', minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--bg-gradient, var(--bg-color))', overflow: 'hidden' }}>
+    <div style={{ position: 'relative', width: '100%', minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--hero-bg)', overflow: 'hidden' }}>
       
       {/* Dynamic Background */}
       <motion.div 
@@ -27,7 +27,7 @@ const Hero: React.FC = () => {
       >
         <div style={{ position: 'absolute', inset: 0, backgroundImage: `url(${wlConfig?.heroImage || ASSETS.heroMain})`, backgroundSize: 'cover', backgroundPosition: 'center', filter: 'var(--hero-img-filter)' }} />
         {/* Soft fade into dark content section */}
-        <div style={{ position: 'absolute', bottom: 0, left: 0, width: '100%', height: '350px', background: `linear-gradient(to bottom, transparent 0%, var(--bg-color) 100%)`, pointerEvents: 'none' }} />
+        <div style={{ position: 'absolute', bottom: 0, left: 0, width: '100%', height: '350px', background: `linear-gradient(to bottom, transparent 0%, var(--hero-bg) 100%)`, pointerEvents: 'none' }} />
       </motion.div>
       
       {/* Darkening filter applied directly to image for sharp readability without soft overlays */}

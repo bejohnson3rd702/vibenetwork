@@ -13,6 +13,7 @@
   --text-muted: #737373;
   
   --bg-gradient: var(--bg-color);
+  --hero-bg: var(--bg-color);
   --content-bg: #000000;
   
   /* Hero Dynamic Tokens */
@@ -136,12 +137,8 @@ html[data-theme="light"] {
   --text-secondary: #525252;
   --text-muted: #8a8a8a;
   
-  --hero-img-filter: grayscale(1) opacity(0.08) brightness(1.5);
-  --hero-text-gradient: linear-gradient(135deg, #111827 0%, #4b5563 100%);
-  --hero-text-shadow: 0 10px 20px rgba(0,0,0,0.05);
-  --hero-pill-bg: rgba(255,255,255,0.7);
-  
   --bg-gradient: linear-gradient(to bottom, #d1d5db 0%, #f3f4f6 100%);
+  --hero-bg: #000000;
   --content-bg: linear-gradient(to bottom, #000000 0%, #9ca3af 40%, #f3f4f6 100%);
 }
 
