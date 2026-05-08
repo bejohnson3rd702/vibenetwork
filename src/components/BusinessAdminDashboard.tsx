@@ -14,7 +14,7 @@ export default function BusinessAdminDashboard({ onClose }: { onClose: () => voi
   const [activeTab, setActiveTab] = useState('hero');
 
   return (
-     <div style={{ position: 'fixed', inset: 0, background: '#0b0b0b', color: 'var(--text-primary)', zIndex: 999999, display: 'flex', flexDirection: 'column' }}>
+     <div style={{ position: 'fixed', inset: 0, background: 'var(--bg-gradient, var(--bg-color))', color: 'var(--text-primary)', zIndex: 999999, display: 'flex', flexDirection: 'column' }}>
        {/* Header */}
        <div style={{ padding: '20px 40px', borderBottom: '1px solid rgba(255,255,255,0.1)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'var(--bg-color)' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>

@@ -340,8 +340,10 @@ function App() {
         document.documentElement.style.setProperty('--bg-color', wlConfig.bg);
         
         // Dynamic Light/Dark Mode Toggle
-        const bgHex = wlConfig.bg.toLowerCase();
-        if (bgHex === '#f4f4f4' || bgHex === '#ffffff' || bgHex === '#fff' || bgHex === 'white' || bgHex === '#f7f7f7') {
+        const bgHex = wlConfig.bg.toLowerCase().trim();
+        const lightThemes = ['#f4f4f4', '#ffffff', '#fff', 'white', '#f7f7f7', '#f5f5f5', '#eeeeee', '#e5e5e5', '#fafafa', '#f8f9fa'];
+        
+        if (lightThemes.includes(bgHex)) {
            document.documentElement.setAttribute('data-theme', 'light');
            document.documentElement.style.setProperty('--bg-gradient', `linear-gradient(145deg, ${wlConfig.bg} 0%, #e2e8f0 100%)`);
         } else {
@@ -374,7 +376,7 @@ function App() {
   }, [wlConfig]);
 
   if (isTenantMode) {
-    if (!wlConfig) return <div style={{ height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#0b0b0b', color: 'rgba(255,255,255,0.5)' }}>Initializing Network OS...</div>;
+    if (!wlConfig) return <div style={{ height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--bg-gradient, var(--bg-color))', color: 'var(--text-muted)' }}>Initializing Network OS...</div>;
     
     return (
       <WhiteLabelContext.Provider value={{ wlConfig, setWlConfig }}>

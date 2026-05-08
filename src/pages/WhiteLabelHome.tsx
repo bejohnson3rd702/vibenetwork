@@ -155,7 +155,7 @@ export default function WhiteLabelHome({ wlConfig, categories, user, activeVideo
               style={{ width: '100%', maxWidth: '1000px', margin: '0 auto 50px', display: 'flex', gap: '20px', overflowX: 'auto', paddingBottom: '20px', scrollbarWidth: 'none' }}
             >
                {[1, 2, 3].map(i => (
-                  <div key={i} style={{ minWidth: '300px', flex: 1, aspectRatio: '16/9', borderRadius: '20px', background: `linear-gradient(45deg, #111, #222)`, border: `1px solid ${wlConfig.accent || '#fff'}22`, position: 'relative', overflow: 'hidden', boxShadow: '0 10px 30px rgba(0,0,0,0.5)' }}>
+                  <div key={i} style={{ minWidth: '300px', flex: 1, aspectRatio: '16/9', borderRadius: '20px', background: `linear-gradient(45deg, var(--bg-surface), var(--bg-color))`, border: `1px solid ${wlConfig.accent || 'var(--text-primary)'}22`, position: 'relative', overflow: 'hidden', boxShadow: '0 10px 30px rgba(0,0,0,0.5)' }}>
                      <div style={{ position: 'absolute', inset: 0, backgroundImage: `url('https://images.unsplash.com/photo-${1550751827 + i}?auto=format&fit=crop&w=600&q=80')`, backgroundSize: 'cover', opacity: 0.5 }} />
                      <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                         <div style={{ width: 50, height: 50, borderRadius: '50%', background: 'rgba(255,255,255,0.2)', backdropFilter: 'blur(10px)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -236,7 +236,7 @@ export default function WhiteLabelHome({ wlConfig, categories, user, activeVideo
          {/* Global Branded Network CTA */}
          <div className="px-mobile-sm" style={{ padding: '0 40px', maxWidth: '1400px', margin: '100px auto 60px', width: '100%', boxSizing: 'border-box' }}>
            <div style={{ 
-             background: `linear-gradient(135deg, ${wlConfig.accent || 'var(--accent-primary)'}22, rgba(0,0,0,0.6))`,
+             background: `linear-gradient(135deg, ${wlConfig.accent || 'var(--accent-primary)'}22, var(--bg-surface))`,
              border: `1px solid ${wlConfig.accent || 'var(--accent-primary)'}44`,
              borderRadius: '24px',
              padding: '60px 40px',
@@ -247,11 +247,11 @@ export default function WhiteLabelHome({ wlConfig, categories, user, activeVideo
              gap: '30px',
              boxShadow: `0 20px 60px -10px ${wlConfig.accent || 'var(--accent-primary)'}22`
            }}>
-             <h2 style={{ fontSize: '42px', fontWeight: 900, color: '#fff', margin: 0, lineHeight: 1.2 }}>
+             <h2 style={{ fontSize: '42px', fontWeight: 900, color: 'var(--text-primary)', margin: 0, lineHeight: 1.2 }}>
                Ready to expand your reach?
              </h2>
-             <p style={{ color: 'rgba(255,255,255,0.8)', fontSize: '18px', maxWidth: '600px', margin: 0, lineHeight: 1.6 }}>
-               Join <span style={{ color: wlConfig.accent || '#fff', fontWeight: 'bold' }}>{wlConfig.name || 'Vibe Network'}</span> as a creator to monetize your audience, or launch your very own independent streaming architecture.
+             <p style={{ color: 'var(--text-secondary)', fontSize: '18px', maxWidth: '600px', margin: 0, lineHeight: 1.6 }}>
+               Join <span style={{ color: wlConfig.accent || 'var(--text-primary)', fontWeight: 'bold' }}>{wlConfig.name || 'Vibe Network'}</span> as a creator to monetize your audience, or launch your very own independent streaming architecture.
              </p>
              <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap', justifyContent: 'center' }}>
                <button 
@@ -274,9 +274,9 @@ export default function WhiteLabelHome({ wlConfig, categories, user, activeVideo
                  onClick={() => window.dispatchEvent(new CustomEvent('open_auth', { detail: { isLogin: false, role: 'business', referredBy: wlConfig.id } }))}
                  style={{ 
                    padding: '16px 32px', 
-                   background: 'rgba(255,255,255,0.05)', 
-                   color: '#fff', 
-                   border: '1px solid rgba(255,255,255,0.2)', 
+                   background: 'var(--bg-surface)', 
+                   color: 'var(--text-primary)', 
+                   border: '1px solid var(--text-secondary)', 
                    borderRadius: '12px', 
                    fontWeight: 800, 
                    fontSize: '15px', 
