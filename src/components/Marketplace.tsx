@@ -40,12 +40,14 @@ const Marketplace: React.FC = () => {
     fetchMarketplace();
   }, [wlConfig]);
 
-  const filteredProducts = products.filter(p => {
-    const matchesSearch = p.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
-                          p.creator?.username?.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesFilter = activeFilter === 'All' || p.type === activeFilter.toLowerCase();
-    return matchesSearch && matchesFilter;
-  });
+  const filteredProducts = React.useMemo(() => {
+    return products.filter(p => {
+      const matchesSearch = p.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
+                            p.creator?.username?.toLowerCase().includes(searchQuery.toLowerCase());
+      const matchesFilter = activeFilter === 'All' || p.type === activeFilter.toLowerCase();
+      return matchesSearch && matchesFilter;
+    });
+  }, [products, searchQuery, activeFilter]);
 
   return (
     <div style={{ minHeight: '100vh', background: 'var(--bg-color)', paddingTop: '100px', paddingBottom: '80px', color: 'var(--text-primary)' }}>
@@ -159,6 +161,7 @@ const Marketplace: React.FC = () => {
                      <img 
                        src={product.creator?.avatar_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(product.creator?.username || 'C')}&background=random`} 
                        alt={product.creator?.username} 
+                       loading="lazy"
                        style={{ width: '28px', height: '28px', borderRadius: '50%', border: '1px solid rgba(255,255,255,0.2)' }} 
                      />
                      <span style={{ color: 'var(--text-secondary)', fontSize: '14px', fontWeight: 500 }}>@{product.creator?.username}</span>
@@ -186,4 +189,4 @@ const Marketplace: React.FC = () => {
   );
 };
 
-export default Marketplace;
+export default React.memo(Marketplace);

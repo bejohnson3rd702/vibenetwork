@@ -2761,4 +2761,4 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
   );
 };
 
-export default ProfileDashboard;
+export default React.memo(ProfileDashboard);

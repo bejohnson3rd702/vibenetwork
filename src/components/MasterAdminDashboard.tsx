@@ -9,7 +9,7 @@ import { useNavigate } from 'react-router-dom';
 import { supabase } from '../supabaseClient';
 import { ErrorBoundary } from './ErrorBoundary';
 
-export default function MasterAdminDashboard() {
+function MasterAdminDashboard() {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('overview');
 
@@ -990,12 +990,12 @@ export default function MasterAdminDashboard() {
                     </thead>
                     <tbody>
                       {(() => {
-                        const filteredTx = ledgerData.filter(tx => {
+                        const filteredTx = React.useMemo(() => ledgerData.filter(tx => {
                            if (!tx) return false;
                            const profile = tx.profiles ? (Array.isArray(tx.profiles) ? tx.profiles[0] : tx.profiles) : null;
                            const origin = profile?.whitelabel_id ? 'Whitelabel' : 'Direct Vibe';
                            return ledgerFilter === 'ALL' || origin === ledgerFilter;
-                        });
+                        }), [ledgerData, ledgerFilter]);
                         
                         if (filteredTx.length === 0) {
                            return (
@@ -1067,3 +1067,5 @@ export default function MasterAdminDashboard() {
     </div>
   );
 }
+
+export default React.memo(MasterAdminDashboard);
