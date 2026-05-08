@@ -167,6 +167,7 @@ export default function WhiteLabelHome({ wlConfig, categories, user, activeVideo
             </motion.div>
           )}
        </div>
+       </div>
        
        {/* Dark Content Area Below Hero */}
        <div style={{ background: '#050505', width: '100%', position: 'relative', zIndex: 10, paddingBottom: '100px' }}>
