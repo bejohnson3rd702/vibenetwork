@@ -42,7 +42,7 @@ export default function WhiteLabelHome({ wlConfig, categories, user, activeVideo
              style={{ width: '100%', height: '100%', objectFit: 'cover', filter: 'var(--hero-img-filter)' }} 
            />
            {/* Soft fade into dark content section */}
-           <div style={{ position: 'absolute', bottom: 0, left: 0, width: '100%', height: '350px', background: `linear-gradient(to bottom, transparent 0%, var(--bg-gradient, var(--bg-color)) 100%)`, pointerEvents: 'none' }} />
+           <div style={{ position: 'absolute', bottom: 0, left: 0, width: '100%', height: '350px', background: `linear-gradient(to bottom, transparent 0%, var(--bg-color) 100%)`, pointerEvents: 'none' }} />
          </div>
 
          {/* Hero Text Section */}
