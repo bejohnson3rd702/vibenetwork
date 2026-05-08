@@ -1,0 +1,1099 @@
+commit b60958d2b317c75b42efc070254a8ece743cdf17
+Author: Bennie <bennie@Bennies-MacBook-Pro.local>
+Date:   Fri May 8 16:14:17 2026 -0700
+
+    style: enforce dark hero section in light mode and smooth fade into light content
+
+diff --git a/src/components/Hero.tsx b/src/components/Hero.tsx
+index 3c04c49..2fb6048 100755
+--- a/src/components/Hero.tsx
++++ b/src/components/Hero.tsx
+@@ -16,7 +16,7 @@ const Hero: React.FC = () => {
+   }, [wlConfig?.heroLayoutMode, wlConfig?.heroVideoTitle]);
+ 
+   return (
+-    <div style={{ position: 'relative', width: '100%', minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--bg-gradient, var(--bg-color))', overflow: 'hidden' }}>
++    <div style={{ position: 'relative', width: '100%', minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--hero-bg)', overflow: 'hidden' }}>
+       
+       {/* Dynamic Background */}
+       <motion.div 
+@@ -27,7 +27,7 @@ const Hero: React.FC = () => {
+       >
+         <div style={{ position: 'absolute', inset: 0, backgroundImage: `url(${wlConfig?.heroImage || ASSETS.heroMain})`, backgroundSize: 'cover', backgroundPosition: 'center', filter: 'var(--hero-img-filter)' }} />
+         {/* Soft fade into dark content section */}
+-        <div style={{ position: 'absolute', bottom: 0, left: 0, width: '100%', height: '350px', background: `linear-gradient(to bottom, transparent 0%, var(--bg-color) 100%)`, pointerEvents: 'none' }} />
++        <div style={{ position: 'absolute', bottom: 0, left: 0, width: '100%', height: '350px', background: `linear-gradient(to bottom, transparent 0%, var(--hero-bg) 100%)`, pointerEvents: 'none' }} />
+       </motion.div>
+       
+       {/* Darkening filter applied directly to image for sharp readability without soft overlays */}
+
+commit c1af11b25ae5a690b27609a98164e239c4ebe077
+Author: Bennie <bennie@Bennies-MacBook-Pro.local>
+Date:   Fri May 8 15:58:49 2026 -0700
+
+    fix: apply dynamic hero gradient variable to Hero component wrapper and ProfileDashboard
+
+diff --git a/src/components/Hero.tsx b/src/components/Hero.tsx
+index 18fddcd..3c04c49 100755
+--- a/src/components/Hero.tsx
++++ b/src/components/Hero.tsx
+@@ -16,7 +16,7 @@ const Hero: React.FC = () => {
+   }, [wlConfig?.heroLayoutMode, wlConfig?.heroVideoTitle]);
+ 
+   return (
+-    <div style={{ position: 'relative', width: '100%', minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: 'var(--bg-color)', overflow: 'hidden' }}>
++    <div style={{ position: 'relative', width: '100%', minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--bg-gradient, var(--bg-color))', overflow: 'hidden' }}>
+       
+       {/* Dynamic Background */}
+       <motion.div 
+
+commit e82443a90629c28b57da96c4159ff40ee5c4d1be
+Author: Bennie <bennie@Bennies-MacBook-Pro.local>
+Date:   Fri May 8 15:55:25 2026 -0700
+
+    style: exactly align with user specs for a fully dark mode and a grey-fading light mode hero
+
+diff --git a/src/components/Hero.tsx b/src/components/Hero.tsx
+index a8425ac..18fddcd 100755
+--- a/src/components/Hero.tsx
++++ b/src/components/Hero.tsx
+@@ -43,7 +43,7 @@ const Hero: React.FC = () => {
+           style={{ padding: '10px 24px', background: 'var(--hero-pill-bg)', backdropFilter: 'blur(20px)', border: `1px solid ${wlConfig?.accent || 'rgba(255,255,255,0.08)'}66`, borderRadius: '100px', display: 'inline-flex', alignItems: 'center', gap: '12px', marginBottom: '40px', boxShadow: `0 0 20px ${wlConfig?.accent || 'rgba(255,255,255,0.1)'}33` }}
+         >
+           <Sparkles size={16} color={wlConfig?.accent || 'var(--accent-primary)'} style={{ filter: `drop-shadow(0 0 8px ${wlConfig?.accent || 'var(--accent-primary)'})` }} />
+-          <span style={{ fontSize: '13px', fontWeight: 700, letterSpacing: '3px', textTransform: 'uppercase', color: 'rgba(255,255,255,0.9)' }}>
++          <span style={{ fontSize: '13px', fontWeight: 700, letterSpacing: '3px', textTransform: 'uppercase', color: 'var(--text-primary)' }}>
+             The Ultimate White Label Architecture
+           </span>
+         </motion.div>
+@@ -55,7 +55,7 @@ const Hero: React.FC = () => {
+           animate={{ opacity: 1, y: 0 }}
+           transition={{ duration: 0.8, delay: 0.4 }}
+           style={{ 
+-            fontSize: '95px', fontWeight: 900, lineHeight: 1.1, letterSpacing: '-3px', color: '#ffffff',
++            fontSize: '95px', fontWeight: 900, lineHeight: 1.1, letterSpacing: '-3px', color: 'var(--text-primary)',
+             margin: '0 0 24px 0', textShadow: 'var(--hero-text-shadow)'
+           }}
+         >
+@@ -74,7 +74,7 @@ const Hero: React.FC = () => {
+               animate={{ opacity: 1, y: 0 }}
+               transition={{ duration: 0.8, delay: 0.6 }}
+               style={{ 
+-                fontSize: '24px', color: 'rgba(255,255,255,0.8)', maxWidth: '850px', 
++                fontSize: '24px', color: 'var(--text-secondary)', maxWidth: '850px', 
+                 margin: '0 0 40px 0', lineHeight: 1.6, fontWeight: 400, textShadow: 'var(--hero-text-shadow)'
+               }}
+             >
+
+commit 0a43efb1a04adc8af9bc1aca7c1c6add67dfb28f
+Author: Bennie <bennie@Bennies-MacBook-Pro.local>
+Date:   Fri May 8 15:52:40 2026 -0700
+
+    fix: restore white hero text to preserve contrast against dark cinematic hero background
+
+diff --git a/src/components/Hero.tsx b/src/components/Hero.tsx
+index 18fddcd..a8425ac 100755
+--- a/src/components/Hero.tsx
++++ b/src/components/Hero.tsx
+@@ -43,7 +43,7 @@ const Hero: React.FC = () => {
+           style={{ padding: '10px 24px', background: 'var(--hero-pill-bg)', backdropFilter: 'blur(20px)', border: `1px solid ${wlConfig?.accent || 'rgba(255,255,255,0.08)'}66`, borderRadius: '100px', display: 'inline-flex', alignItems: 'center', gap: '12px', marginBottom: '40px', boxShadow: `0 0 20px ${wlConfig?.accent || 'rgba(255,255,255,0.1)'}33` }}
+         >
+           <Sparkles size={16} color={wlConfig?.accent || 'var(--accent-primary)'} style={{ filter: `drop-shadow(0 0 8px ${wlConfig?.accent || 'var(--accent-primary)'})` }} />
+-          <span style={{ fontSize: '13px', fontWeight: 700, letterSpacing: '3px', textTransform: 'uppercase', color: 'var(--text-primary)' }}>
++          <span style={{ fontSize: '13px', fontWeight: 700, letterSpacing: '3px', textTransform: 'uppercase', color: 'rgba(255,255,255,0.9)' }}>
+             The Ultimate White Label Architecture
+           </span>
+         </motion.div>
+@@ -55,7 +55,7 @@ const Hero: React.FC = () => {
+           animate={{ opacity: 1, y: 0 }}
+           transition={{ duration: 0.8, delay: 0.4 }}
+           style={{ 
+-            fontSize: '95px', fontWeight: 900, lineHeight: 1.1, letterSpacing: '-3px', color: 'var(--text-primary)',
++            fontSize: '95px', fontWeight: 900, lineHeight: 1.1, letterSpacing: '-3px', color: '#ffffff',
+             margin: '0 0 24px 0', textShadow: 'var(--hero-text-shadow)'
+           }}
+         >
+@@ -74,7 +74,7 @@ const Hero: React.FC = () => {
+               animate={{ opacity: 1, y: 0 }}
+               transition={{ duration: 0.8, delay: 0.6 }}
+               style={{ 
+-                fontSize: '24px', color: 'var(--text-secondary)', maxWidth: '850px', 
++                fontSize: '24px', color: 'rgba(255,255,255,0.8)', maxWidth: '850px', 
+                 margin: '0 0 40px 0', lineHeight: 1.6, fontWeight: 400, textShadow: 'var(--hero-text-shadow)'
+               }}
+             >
+
+commit c8438e537d3d5b551d6367500c48f0a3b4fe51bf
+Author: Bennie <bennie@Bennies-MacBook-Pro.local>
+Date:   Fri May 8 15:50:38 2026 -0700
+
+    fix: resolve nested linear-gradient css error and refine light mode hero transition
+
+diff --git a/src/components/Hero.tsx b/src/components/Hero.tsx
+index 2f7e442..18fddcd 100755
+--- a/src/components/Hero.tsx
++++ b/src/components/Hero.tsx
+@@ -27,7 +27,7 @@ const Hero: React.FC = () => {
+       >
+         <div style={{ position: 'absolute', inset: 0, backgroundImage: `url(${wlConfig?.heroImage || ASSETS.heroMain})`, backgroundSize: 'cover', backgroundPosition: 'center', filter: 'var(--hero-img-filter)' }} />
+         {/* Soft fade into dark content section */}
+-        <div style={{ position: 'absolute', bottom: 0, left: 0, width: '100%', height: '350px', background: `linear-gradient(to bottom, transparent 0%, var(--bg-gradient, var(--bg-color)) 100%)`, pointerEvents: 'none' }} />
++        <div style={{ position: 'absolute', bottom: 0, left: 0, width: '100%', height: '350px', background: `linear-gradient(to bottom, transparent 0%, var(--bg-color) 100%)`, pointerEvents: 'none' }} />
+       </motion.div>
+       
+       {/* Darkening filter applied directly to image for sharp readability without soft overlays */}
+
+commit 4ce24d406a965534b4be8c4e2243a1aaf3773991
+Author: Bennie <bennie@Bennies-MacBook-Pro.local>
+Date:   Fri May 8 15:47:38 2026 -0700
+
+    style: implement adaptive dynamic hero variables for true light mode rendering
+
+diff --git a/src/components/Hero.tsx b/src/components/Hero.tsx
+index 0826f39..2f7e442 100755
+--- a/src/components/Hero.tsx
++++ b/src/components/Hero.tsx
+@@ -25,7 +25,7 @@ const Hero: React.FC = () => {
+         transition={{ duration: 2, ease: 'easeOut' }}
+         style={{ position: 'absolute', inset: 0, zIndex: 0 }}
+       >
+-        <div style={{ position: 'absolute', inset: 0, backgroundImage: `url(${wlConfig?.heroImage || ASSETS.heroMain})`, backgroundSize: 'cover', backgroundPosition: 'center', filter: 'brightness(0.3) saturate(1.3) contrast(1.1)' }} />
++        <div style={{ position: 'absolute', inset: 0, backgroundImage: `url(${wlConfig?.heroImage || ASSETS.heroMain})`, backgroundSize: 'cover', backgroundPosition: 'center', filter: 'var(--hero-img-filter)' }} />
+         {/* Soft fade into dark content section */}
+         <div style={{ position: 'absolute', bottom: 0, left: 0, width: '100%', height: '350px', background: `linear-gradient(to bottom, transparent 0%, var(--bg-gradient, var(--bg-color)) 100%)`, pointerEvents: 'none' }} />
+       </motion.div>
+@@ -40,10 +40,10 @@ const Hero: React.FC = () => {
+           animate={{ opacity: 1, y: 0 }}
+           whileHover={{ scale: 1.05 }}
+           transition={{ duration: 0.8, delay: 0.2 }}
+-          style={{ padding: '10px 24px', background: 'rgba(255,255,255,0.03)', backdropFilter: 'blur(20px)', border: `1px solid ${wlConfig?.accent || 'rgba(255,255,255,0.08)'}66`, borderRadius: '100px', display: 'inline-flex', alignItems: 'center', gap: '12px', marginBottom: '40px', boxShadow: `0 0 20px ${wlConfig?.accent || 'rgba(255,255,255,0.1)'}33` }}
++          style={{ padding: '10px 24px', background: 'var(--hero-pill-bg)', backdropFilter: 'blur(20px)', border: `1px solid ${wlConfig?.accent || 'rgba(255,255,255,0.08)'}66`, borderRadius: '100px', display: 'inline-flex', alignItems: 'center', gap: '12px', marginBottom: '40px', boxShadow: `0 0 20px ${wlConfig?.accent || 'rgba(255,255,255,0.1)'}33` }}
+         >
+           <Sparkles size={16} color={wlConfig?.accent || 'var(--accent-primary)'} style={{ filter: `drop-shadow(0 0 8px ${wlConfig?.accent || 'var(--accent-primary)'})` }} />
+-          <span style={{ fontSize: '13px', fontWeight: 700, letterSpacing: '3px', textTransform: 'uppercase', color: 'rgba(255,255,255,0.9)' }}>
++          <span style={{ fontSize: '13px', fontWeight: 700, letterSpacing: '3px', textTransform: 'uppercase', color: 'var(--text-primary)' }}>
+             The Ultimate White Label Architecture
+           </span>
+         </motion.div>
+@@ -56,13 +56,13 @@ const Hero: React.FC = () => {
+           transition={{ duration: 0.8, delay: 0.4 }}
+           style={{ 
+             fontSize: '95px', fontWeight: 900, lineHeight: 1.1, letterSpacing: '-3px', color: 'var(--text-primary)',
+-            margin: '0 0 24px 0', textShadow: '0 20px 40px rgba(0,0,0,0.8)'
++            margin: '0 0 24px 0', textShadow: 'var(--hero-text-shadow)'
+           }}
+         >
+           {wlConfig?.name ? (
+-            <>Welcome to<br/> <span style={{ background: `linear-gradient(135deg, #fff 0%, ${wlConfig?.accent || 'var(--accent-primary)'} 100%)`, WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', filter: 'drop-shadow(0px 10px 20px rgba(0,0,0,0.5))' }}>{wlConfig.name}</span></>
++            <>Welcome to<br/> <span style={{ background: 'var(--hero-text-gradient)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', filter: 'drop-shadow(0px 10px 20px rgba(0,0,0,0.1))' }}>{wlConfig.name}</span></>
+           ) : (
+-            <>Step Into The<br/> <span style={{ background: `linear-gradient(135deg, #fff 0%, ${wlConfig?.accent || 'var(--accent-primary)'} 100%)`, WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', filter: 'drop-shadow(0px 10px 20px rgba(0,0,0,0.5))' }}>New Dimension</span></>
++            <>Step Into The<br/> <span style={{ background: 'var(--hero-text-gradient)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', filter: 'drop-shadow(0px 10px 20px rgba(0,0,0,0.1))' }}>New Dimension</span></>
+           )}
+         </motion.h1>
+         
+@@ -74,8 +74,8 @@ const Hero: React.FC = () => {
+               animate={{ opacity: 1, y: 0 }}
+               transition={{ duration: 0.8, delay: 0.6 }}
+               style={{ 
+-                fontSize: '24px', color: 'rgba(255,255,255,0.8)', maxWidth: '850px', 
+-                margin: '0 0 40px 0', lineHeight: 1.6, fontWeight: 400, textShadow: '0 10px 20px rgba(0,0,0,0.8)'
++                fontSize: '24px', color: 'var(--text-secondary)', maxWidth: '850px', 
++                margin: '0 0 40px 0', lineHeight: 1.6, fontWeight: 400, textShadow: 'var(--hero-text-shadow)'
+               }}
+             >
+               {wlConfig?.heroCopy || "The highest fidelity, ultra-low latency broadcasting architecture built exclusively for global corporate brands, creators, and enterprise media."}
+
+commit abf075fa9216b4bbb692bb5b0cae44709b6a0582
+Author: Bennie <bennie@Bennies-MacBook-Pro.local>
+Date:   Fri May 8 15:37:55 2026 -0700
+
+    style: apply rich light-gray gradient background for light mode elements
+
+diff --git a/src/components/Hero.tsx b/src/components/Hero.tsx
+index a510031..0826f39 100755
+--- a/src/components/Hero.tsx
++++ b/src/components/Hero.tsx
+@@ -27,7 +27,7 @@ const Hero: React.FC = () => {
+       >
+         <div style={{ position: 'absolute', inset: 0, backgroundImage: `url(${wlConfig?.heroImage || ASSETS.heroMain})`, backgroundSize: 'cover', backgroundPosition: 'center', filter: 'brightness(0.3) saturate(1.3) contrast(1.1)' }} />
+         {/* Soft fade into dark content section */}
+-        <div style={{ position: 'absolute', bottom: 0, left: 0, width: '100%', height: '350px', background: `linear-gradient(to bottom, transparent 0%, var(--bg-color) 100%)`, pointerEvents: 'none' }} />
++        <div style={{ position: 'absolute', bottom: 0, left: 0, width: '100%', height: '350px', background: `linear-gradient(to bottom, transparent 0%, var(--bg-gradient, var(--bg-color)) 100%)`, pointerEvents: 'none' }} />
+       </motion.div>
+       
+       {/* Darkening filter applied directly to image for sharp readability without soft overlays */}
+
+commit 47f2b2b88e80c00eeb4ebdfd865296a6970e0243
+Author: Bennie <bennie@Bennies-MacBook-Pro.local>
+Date:   Fri May 8 15:28:22 2026 -0700
+
+    fix: replace hardcoded #050505 backgrounds with dynamic css variables for light mode
+
+diff --git a/src/components/Hero.tsx b/src/components/Hero.tsx
+index f0a5a18..a510031 100755
+--- a/src/components/Hero.tsx
++++ b/src/components/Hero.tsx
+@@ -27,7 +27,7 @@ const Hero: React.FC = () => {
+       >
+         <div style={{ position: 'absolute', inset: 0, backgroundImage: `url(${wlConfig?.heroImage || ASSETS.heroMain})`, backgroundSize: 'cover', backgroundPosition: 'center', filter: 'brightness(0.3) saturate(1.3) contrast(1.1)' }} />
+         {/* Soft fade into dark content section */}
+-        <div style={{ position: 'absolute', bottom: 0, left: 0, width: '100%', height: '350px', background: `linear-gradient(to bottom, transparent 0%, #050505 100%)`, pointerEvents: 'none' }} />
++        <div style={{ position: 'absolute', bottom: 0, left: 0, width: '100%', height: '350px', background: `linear-gradient(to bottom, transparent 0%, var(--bg-color) 100%)`, pointerEvents: 'none' }} />
+       </motion.div>
+       
+       {/* Darkening filter applied directly to image for sharp readability without soft overlays */}
+
+commit e33ec7f6be434b54da4b095bc474e275ec817014
+Author: Bennie <bennie@Bennies-MacBook-Pro.local>
+Date:   Fri May 8 11:15:44 2026 -0700
+
+    fix: apply dark background and fade-out to master Vibe Network hero and homepage
+
+diff --git a/src/components/Hero.tsx b/src/components/Hero.tsx
+index 00520b5..f0a5a18 100755
+--- a/src/components/Hero.tsx
++++ b/src/components/Hero.tsx
+@@ -26,6 +26,8 @@ const Hero: React.FC = () => {
+         style={{ position: 'absolute', inset: 0, zIndex: 0 }}
+       >
+         <div style={{ position: 'absolute', inset: 0, backgroundImage: `url(${wlConfig?.heroImage || ASSETS.heroMain})`, backgroundSize: 'cover', backgroundPosition: 'center', filter: 'brightness(0.3) saturate(1.3) contrast(1.1)' }} />
++        {/* Soft fade into dark content section */}
++        <div style={{ position: 'absolute', bottom: 0, left: 0, width: '100%', height: '350px', background: `linear-gradient(to bottom, transparent 0%, #050505 100%)`, pointerEvents: 'none' }} />
+       </motion.div>
+       
+       {/* Darkening filter applied directly to image for sharp readability without soft overlays */}
+
+commit 5f3d0de5d8f59aa2f1a1306483577c41972ad0dc
+Author: Bennie <bennie@Bennies-MacBook-Pro.local>
+Date:   Wed May 6 21:35:12 2026 -0700
+
+    feat: auto-hide video title overlay with slide animation after 10 seconds
+
+diff --git a/src/components/Hero.tsx b/src/components/Hero.tsx
+index 72246d9..00520b5 100755
+--- a/src/components/Hero.tsx
++++ b/src/components/Hero.tsx
+@@ -1,11 +1,19 @@
+-import React from 'react';
+-import { motion } from 'framer-motion';
++import React, { useState, useEffect } from 'react';
++import { motion, AnimatePresence } from 'framer-motion';
+ import { Play, ArrowRight, ChevronRight, Sparkles } from 'lucide-react';
+ import { ASSETS } from '../data';
+ import { useWhiteLabel } from '../context/WhiteLabelContext';
+ 
+ const Hero: React.FC = () => {
+   const { wlConfig } = useWhiteLabel();
++  const [showVideoTitle, setShowVideoTitle] = useState(true);
++
++  useEffect(() => {
++    if (wlConfig?.heroLayoutMode === 'video' && wlConfig?.heroVideoTitle) {
++      const timer = setTimeout(() => setShowVideoTitle(false), 10000);
++      return () => clearTimeout(timer);
++    }
++  }, [wlConfig?.heroLayoutMode, wlConfig?.heroVideoTitle]);
+ 
+   return (
+     <div style={{ position: 'relative', width: '100%', minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: 'var(--bg-color)', overflow: 'hidden' }}>
+@@ -91,32 +99,35 @@ const Hero: React.FC = () => {
+             transition={{ duration: 0.8, delay: 0.6 }}
+             style={{ width: '100%', maxWidth: '800px', minHeight: '300px', margin: '0 auto 50px', borderRadius: '24px', overflow: 'hidden', border: `1px solid ${wlConfig.accent || '#fff'}44`, boxShadow: `0 20px 50px ${wlConfig.accent || '#fff'}33`, aspectRatio: '16/9', background: '#000', position: 'relative' }}
+           >
+-             {wlConfig?.heroVideoTitle && (
+-               <motion.div 
+-                 initial={{ opacity: 0, x: -20 }}
+-                 animate={{ opacity: 1, x: 0 }}
+-                 transition={{ duration: 0.8, delay: 1 }}
+-                 style={{ 
+-                   position: 'absolute', top: 24, left: 24, zIndex: 10, 
+-                   background: 'linear-gradient(135deg, rgba(0,0,0,0.8), rgba(0,0,0,0.4))', 
+-                   backdropFilter: 'blur(20px)', padding: '12px 24px', 
+-                   borderRadius: '16px', border: `1px solid ${wlConfig?.accent || 'var(--accent-primary)'}55`,
+-                   borderLeft: `4px solid ${wlConfig?.accent || 'var(--accent-primary)'}`,
+-                   boxShadow: `0 10px 30px rgba(0,0,0,0.5)`,
+-                   display: 'flex', alignItems: 'center', gap: '14px'
+-                 }}
+-               >
++             <AnimatePresence>
++               {wlConfig?.heroVideoTitle && showVideoTitle && (
+                  <motion.div 
+-                   animate={{ opacity: [1, 0.3, 1] }} 
+-                   transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }} 
+-                   style={{ width: 10, height: 10, borderRadius: '50%', background: '#ff3366', boxShadow: '0 0 12px #ff3366' }} 
+-                 />
+-                 <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
+-                   <span style={{ fontSize: '11px', color: 'rgba(255,255,255,0.6)', textTransform: 'uppercase', letterSpacing: '2px', marginBottom: '4px', fontWeight: 700 }}>Now Playing</span>
+-                   <h3 style={{ margin: 0, color: '#fff', fontSize: '18px', fontWeight: '800', letterSpacing: '0.5px', textShadow: '0 2px 10px rgba(0,0,0,0.8)' }}>{wlConfig.heroVideoTitle}</h3>
+-                 </div>
+-               </motion.div>
+-             )}
++                   initial={{ opacity: 0, x: -20 }}
++                   animate={{ opacity: 1, x: 0 }}
++                   exit={{ opacity: 0, x: 50 }}
++                   transition={{ duration: 0.8 }}
++                   style={{ 
++                     position: 'absolute', top: 24, left: 24, zIndex: 10, 
++                     background: 'linear-gradient(135deg, rgba(0,0,0,0.8), rgba(0,0,0,0.4))', 
++                     backdropFilter: 'blur(20px)', padding: '12px 24px', 
++                     borderRadius: '16px', border: `1px solid ${wlConfig?.accent || 'var(--accent-primary)'}55`,
++                     borderLeft: `4px solid ${wlConfig?.accent || 'var(--accent-primary)'}`,
++                     boxShadow: `0 10px 30px rgba(0,0,0,0.5)`,
++                     display: 'flex', alignItems: 'center', gap: '14px'
++                   }}
++                 >
++                   <motion.div 
++                     animate={{ opacity: [1, 0.3, 1] }} 
++                     transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }} 
++                     style={{ width: 10, height: 10, borderRadius: '50%', background: '#ff3366', boxShadow: '0 0 12px #ff3366' }} 
++                   />
++                   <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
++                     <span style={{ fontSize: '11px', color: 'rgba(255,255,255,0.6)', textTransform: 'uppercase', letterSpacing: '2px', marginBottom: '4px', fontWeight: 700 }}>Now Playing</span>
++                     <h3 style={{ margin: 0, color: '#fff', fontSize: '18px', fontWeight: '800', letterSpacing: '0.5px', textShadow: '0 2px 10px rgba(0,0,0,0.8)' }}>{wlConfig.heroVideoTitle}</h3>
++                   </div>
++                 </motion.div>
++               )}
++             </AnimatePresence>
+              {(() => {
+                 const url = wlConfig.heroVideoUrl || '';
+                 const match = url.match(/^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/);
+
+commit 087d700f108070f5006ea6b1678f741e00fb1b15
+Author: Bennie <bennie@Bennies-MacBook-Pro.local>
+Date:   Wed May 6 21:32:12 2026 -0700
+
+    style: remove soft gradients and orbs from hero background for a sharper aesthetic
+
+diff --git a/src/components/Hero.tsx b/src/components/Hero.tsx
+index 0757dcb..72246d9 100755
+--- a/src/components/Hero.tsx
++++ b/src/components/Hero.tsx
+@@ -20,16 +20,7 @@ const Hero: React.FC = () => {
+         <div style={{ position: 'absolute', inset: 0, backgroundImage: `url(${wlConfig?.heroImage || ASSETS.heroMain})`, backgroundSize: 'cover', backgroundPosition: 'center', filter: 'brightness(0.3) saturate(1.3) contrast(1.1)' }} />
+       </motion.div>
+       
+-      {/* Sleek Mesh Overlays */}
+-      <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to right, rgba(var(--bg-rgb),0.95) 0%, transparent 50%, rgba(var(--bg-rgb),0.95) 100%)', zIndex: 1 }} />
+-      <div style={{ position: 'absolute', inset: 0, background: `radial-gradient(ellipse at 50% 0%, ${wlConfig?.accent ? wlConfig.accent + '66' : 'rgba(211, 84, 0, 0.35)'}, transparent 60%)`, zIndex: 1, mixBlendMode: 'screen' }} />
+-      <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to bottom, transparent 10%, var(--bg-color) 100%)', zIndex: 1 }} />
+-      
+-      {/* Animated Swagg Floating Orbs */}
+-      <div style={{ position: 'absolute', inset: 0, overflow: 'hidden', zIndex: 1, pointerEvents: 'none' }}>
+-        <motion.div animate={{ x: [0, 50, 0], y: [0, -50, 0], scale: [1, 1.2, 1] }} transition={{ duration: 15, repeat: Infinity, ease: 'easeInOut' }} style={{ position: 'absolute', top: '10%', right: '15%', width: '400px', height: '400px', background: `radial-gradient(circle, ${wlConfig?.accent || 'var(--accent-primary)'}33, transparent)`, borderRadius: '50%', filter: 'blur(100px)' }} />
+-        <motion.div animate={{ x: [0, -40, 0], y: [0, 60, 0], scale: [1, 1.5, 1] }} transition={{ duration: 20, repeat: Infinity, ease: 'easeInOut' }} style={{ position: 'absolute', bottom: '20%', left: '10%', width: '500px', height: '500px', background: `radial-gradient(circle, #ff005522, transparent)`, borderRadius: '50%', filter: 'blur(120px)' }} />
+-      </div>
++      {/* Darkening filter applied directly to image for sharp readability without soft overlays */}
+       
+       <div className="px-mobile-sm" style={{ position: 'relative', zIndex: 2, width: '100%', maxWidth: '1200px', padding: '0 40px', textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+         
+
+commit 9693e4af954537c43ebc136a17fa76145d6fa75d
+Author: Bennie <bennie@Bennies-MacBook-Pro.local>
+Date:   Wed May 6 21:30:16 2026 -0700
+
+    style: upgrade hero video title overlay with glassmorphism and animated recording indicator
+
+diff --git a/src/components/Hero.tsx b/src/components/Hero.tsx
+index 224bcce..0757dcb 100755
+--- a/src/components/Hero.tsx
++++ b/src/components/Hero.tsx
+@@ -101,9 +101,30 @@ const Hero: React.FC = () => {
+             style={{ width: '100%', maxWidth: '800px', minHeight: '300px', margin: '0 auto 50px', borderRadius: '24px', overflow: 'hidden', border: `1px solid ${wlConfig.accent || '#fff'}44`, boxShadow: `0 20px 50px ${wlConfig.accent || '#fff'}33`, aspectRatio: '16/9', background: '#000', position: 'relative' }}
+           >
+              {wlConfig?.heroVideoTitle && (
+-               <div style={{ position: 'absolute', top: 20, left: 24, zIndex: 10, background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(10px)', padding: '8px 16px', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.1)' }}>
+-                 <h3 style={{ margin: 0, color: '#fff', fontSize: '18px', fontWeight: 'bold', letterSpacing: '0.5px' }}>{wlConfig.heroVideoTitle}</h3>
+-               </div>
++               <motion.div 
++                 initial={{ opacity: 0, x: -20 }}
++                 animate={{ opacity: 1, x: 0 }}
++                 transition={{ duration: 0.8, delay: 1 }}
++                 style={{ 
++                   position: 'absolute', top: 24, left: 24, zIndex: 10, 
++                   background: 'linear-gradient(135deg, rgba(0,0,0,0.8), rgba(0,0,0,0.4))', 
++                   backdropFilter: 'blur(20px)', padding: '12px 24px', 
++                   borderRadius: '16px', border: `1px solid ${wlConfig?.accent || 'var(--accent-primary)'}55`,
++                   borderLeft: `4px solid ${wlConfig?.accent || 'var(--accent-primary)'}`,
++                   boxShadow: `0 10px 30px rgba(0,0,0,0.5)`,
++                   display: 'flex', alignItems: 'center', gap: '14px'
++                 }}
++               >
++                 <motion.div 
++                   animate={{ opacity: [1, 0.3, 1] }} 
++                   transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }} 
++                   style={{ width: 10, height: 10, borderRadius: '50%', background: '#ff3366', boxShadow: '0 0 12px #ff3366' }} 
++                 />
++                 <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
++                   <span style={{ fontSize: '11px', color: 'rgba(255,255,255,0.6)', textTransform: 'uppercase', letterSpacing: '2px', marginBottom: '4px', fontWeight: 700 }}>Now Playing</span>
++                   <h3 style={{ margin: 0, color: '#fff', fontSize: '18px', fontWeight: '800', letterSpacing: '0.5px', textShadow: '0 2px 10px rgba(0,0,0,0.8)' }}>{wlConfig.heroVideoTitle}</h3>
++                 </div>
++               </motion.div>
+              )}
+              {(() => {
+                 const url = wlConfig.heroVideoUrl || '';
+
+commit 1687195a67f07acad32cdc13ae43b31daedc4dfc
+Author: Bennie <bennie@Bennies-MacBook-Pro.local>
+Date:   Wed May 6 21:27:38 2026 -0700
+
+    feat: add swagg and modern aesthetics to hero sections
+
+diff --git a/src/components/Hero.tsx b/src/components/Hero.tsx
+index 284b3f3..224bcce 100755
+--- a/src/components/Hero.tsx
++++ b/src/components/Hero.tsx
+@@ -1,43 +1,35 @@
+ import React from 'react';
+ import { motion } from 'framer-motion';
+-import { Play, ArrowRight } from 'lucide-react';
++import { Play, ArrowRight, ChevronRight, Sparkles } from 'lucide-react';
+ import { ASSETS } from '../data';
+ import { useWhiteLabel } from '../context/WhiteLabelContext';
+ 
+ const Hero: React.FC = () => {
+   const { wlConfig } = useWhiteLabel();
++
+   return (
+     <div style={{ position: 'relative', width: '100%', minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: 'var(--bg-color)', overflow: 'hidden' }}>
+       
+-      {/* Dynamic Cinematic Background Layer */}
+-      <motion.img 
++      {/* Dynamic Background */}
++      <motion.div 
+         initial={{ scale: 1.1, opacity: 0 }}
+-        animate={{ scale: 1, opacity: 0.8 }}
++        animate={{ scale: 1, opacity: 1 }}
+         transition={{ duration: 2, ease: 'easeOut' }}
+-        src={wlConfig?.heroImage || ASSETS.heroMain}
+-        alt={wlConfig?.name || "B2B Corporate Master"}
+-        style={{
+-          position: 'absolute',
+-          inset: 0,
+-          width: '100%',
+-          height: '100%',
+-          objectFit: 'cover',
+-          zIndex: 0,
+-          filter: 'brightness(0.6) contrast(1.1) saturate(1.2)'
+-        }}
+-      />
++        style={{ position: 'absolute', inset: 0, zIndex: 0 }}
++      >
++        <div style={{ position: 'absolute', inset: 0, backgroundImage: `url(${wlConfig?.heroImage || ASSETS.heroMain})`, backgroundSize: 'cover', backgroundPosition: 'center', filter: 'brightness(0.3) saturate(1.3) contrast(1.1)' }} />
++      </motion.div>
+       
+       {/* Sleek Mesh Overlays */}
+       <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to right, rgba(var(--bg-rgb),0.95) 0%, transparent 50%, rgba(var(--bg-rgb),0.95) 100%)', zIndex: 1 }} />
+       <div style={{ position: 'absolute', inset: 0, background: `radial-gradient(ellipse at 50% 0%, ${wlConfig?.accent ? wlConfig.accent + '66' : 'rgba(211, 84, 0, 0.35)'}, transparent 60%)`, zIndex: 1, mixBlendMode: 'screen' }} />
+       <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to bottom, transparent 10%, var(--bg-color) 100%)', zIndex: 1 }} />
+       
+-      {/* Floating Orbital Glow */}
+-      <motion.div 
+-        animate={{ filter: ['blur(100px)', 'blur(140px)', 'blur(100px)'], scale: [1, 1.2, 1] }}
+-        transition={{ duration: 8, repeat: Infinity, ease: 'easeInOut' }}
+-        style={{ position: 'absolute', top: '10%', right: '15%', width: '400px', height: '400px', borderRadius: '50%', background: wlConfig?.accent || 'var(--accent-primary)', opacity: 0.15, zIndex: 1 }}
+-      />
++      {/* Animated Swagg Floating Orbs */}
++      <div style={{ position: 'absolute', inset: 0, overflow: 'hidden', zIndex: 1, pointerEvents: 'none' }}>
++        <motion.div animate={{ x: [0, 50, 0], y: [0, -50, 0], scale: [1, 1.2, 1] }} transition={{ duration: 15, repeat: Infinity, ease: 'easeInOut' }} style={{ position: 'absolute', top: '10%', right: '15%', width: '400px', height: '400px', background: `radial-gradient(circle, ${wlConfig?.accent || 'var(--accent-primary)'}33, transparent)`, borderRadius: '50%', filter: 'blur(100px)' }} />
++        <motion.div animate={{ x: [0, -40, 0], y: [0, 60, 0], scale: [1, 1.5, 1] }} transition={{ duration: 20, repeat: Infinity, ease: 'easeInOut' }} style={{ position: 'absolute', bottom: '20%', left: '10%', width: '500px', height: '500px', background: `radial-gradient(circle, #ff005522, transparent)`, borderRadius: '50%', filter: 'blur(120px)' }} />
++      </div>
+       
+       <div className="px-mobile-sm" style={{ position: 'relative', zIndex: 2, width: '100%', maxWidth: '1200px', padding: '0 40px', textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+         
+@@ -45,11 +37,12 @@ const Hero: React.FC = () => {
+         <motion.div 
+           initial={{ opacity: 0, y: -20 }}
+           animate={{ opacity: 1, y: 0 }}
++          whileHover={{ scale: 1.05 }}
+           transition={{ duration: 0.8, delay: 0.2 }}
+-          style={{ padding: '8px 24px', background: 'rgba(255,255,255,0.03)', backdropFilter: 'blur(20px)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '100px', display: 'inline-flex', alignItems: 'center', gap: '12px', marginBottom: '40px' }}
++          style={{ padding: '10px 24px', background: 'rgba(255,255,255,0.03)', backdropFilter: 'blur(20px)', border: `1px solid ${wlConfig?.accent || 'rgba(255,255,255,0.08)'}66`, borderRadius: '100px', display: 'inline-flex', alignItems: 'center', gap: '12px', marginBottom: '40px', boxShadow: `0 0 20px ${wlConfig?.accent || 'rgba(255,255,255,0.1)'}33` }}
+         >
+-          <span style={{ width: 6, height: 6, borderRadius: '50%', background: wlConfig?.accent || 'var(--accent-primary)', boxShadow: `0 0 10px ${wlConfig?.accent || 'var(--accent-primary)'}` }} />
+-          <span style={{ fontSize: '12px', fontWeight: 700, letterSpacing: '3px', textTransform: 'uppercase', color: 'rgba(255,255,255,0.8)' }}>
++          <Sparkles size={16} color={wlConfig?.accent || 'var(--accent-primary)'} style={{ filter: `drop-shadow(0 0 8px ${wlConfig?.accent || 'var(--accent-primary)'})` }} />
++          <span style={{ fontSize: '13px', fontWeight: 700, letterSpacing: '3px', textTransform: 'uppercase', color: 'rgba(255,255,255,0.9)' }}>
+             The Ultimate White Label Architecture
+           </span>
+         </motion.div>
+@@ -61,30 +54,43 @@ const Hero: React.FC = () => {
+           animate={{ opacity: 1, y: 0 }}
+           transition={{ duration: 0.8, delay: 0.4 }}
+           style={{ 
+-            fontSize: '85px', fontWeight: 900, lineHeight: 1.05, letterSpacing: '-2px', color: 'var(--text-primary)',
+-            margin: '0 0 24px 0', textShadow: '0 20px 40px rgba(0,0,0,0.5)'
++            fontSize: '95px', fontWeight: 900, lineHeight: 1.1, letterSpacing: '-3px', color: 'var(--text-primary)',
++            margin: '0 0 24px 0', textShadow: '0 20px 40px rgba(0,0,0,0.8)'
+           }}
+         >
+           {wlConfig?.name ? (
+-            <>Welcome to<br/> <span style={{ background: `linear-gradient(135deg, #fff 0%, ${wlConfig?.accent || 'var(--accent-primary)'} 100%)`, WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>{wlConfig.name}</span></>
++            <>Welcome to<br/> <span style={{ background: `linear-gradient(135deg, #fff 0%, ${wlConfig?.accent || 'var(--accent-primary)'} 100%)`, WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', filter: 'drop-shadow(0px 10px 20px rgba(0,0,0,0.5))' }}>{wlConfig.name}</span></>
+           ) : (
+-            <>Step Into The<br/> <span style={{ background: `linear-gradient(135deg, #fff 0%, ${wlConfig?.accent || 'var(--accent-primary)'} 100%)`, WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>New Dimension</span></>
++            <>Step Into The<br/> <span style={{ background: `linear-gradient(135deg, #fff 0%, ${wlConfig?.accent || 'var(--accent-primary)'} 100%)`, WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', filter: 'drop-shadow(0px 10px 20px rgba(0,0,0,0.5))' }}>New Dimension</span></>
+           )}
+         </motion.h1>
+         
+         {(!wlConfig?.heroLayoutMode || wlConfig.heroLayoutMode === 'verbiage') && (
+-          <motion.p 
+-            className="hero-sub-mobile"
+-            initial={{ opacity: 0, y: 20 }}
+-            animate={{ opacity: 1, y: 0 }}
+-            transition={{ duration: 0.8, delay: 0.6 }}
+-            style={{ 
+-              fontSize: '22px', color: 'var(--text-secondary)', maxWidth: '750px', 
+-              margin: '0 0 50px 0', lineHeight: 1.6, fontWeight: 500
+-            }}
+-          >
+-            {wlConfig?.heroCopy || "The highest fidelity, ultra-low latency broadcasting architecture built exclusively for global corporate brands, creators, and enterprise media."}
+-          </motion.p>
++          <>
++            <motion.p 
++              className="hero-sub-mobile"
++              initial={{ opacity: 0, y: 20 }}
++              animate={{ opacity: 1, y: 0 }}
++              transition={{ duration: 0.8, delay: 0.6 }}
++              style={{ 
++                fontSize: '24px', color: 'rgba(255,255,255,0.8)', maxWidth: '850px', 
++                margin: '0 0 40px 0', lineHeight: 1.6, fontWeight: 400, textShadow: '0 10px 20px rgba(0,0,0,0.8)'
++              }}
++            >
++              {wlConfig?.heroCopy || "The highest fidelity, ultra-low latency broadcasting architecture built exclusively for global corporate brands, creators, and enterprise media."}
++            </motion.p>
++            <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.8, delay: 0.8, ease: [0.16, 1, 0.3, 1] }} style={{ marginBottom: '50px', display: 'flex', gap: '20px', alignItems: 'center' }}>
++               <motion.button 
++                 whileHover={{ scale: 1.05, boxShadow: `0 20px 40px ${wlConfig?.accent || 'var(--accent-primary)'}88`, filter: 'brightness(1.1)' }}
++                 whileTap={{ scale: 0.95 }}
++                 onClick={() => { document.getElementById('featured-content')?.scrollIntoView({ behavior: 'smooth' }); }} 
++                 style={{ padding: '22px 54px', background: `linear-gradient(135deg, ${wlConfig?.accent || 'var(--accent-primary)'}, rgba(0,0,0,0.8))`, color: '#fff', border: `1px solid ${wlConfig?.accent || 'var(--accent-primary)'}44`, borderRadius: '40px', fontSize: '20px', fontWeight: 'bold', cursor: 'pointer', boxShadow: `0 10px 30px ${wlConfig?.accent || 'var(--accent-primary)'}55`, transition: 'all 0.3s ease', display: 'flex', alignItems: 'center', gap: '12px' }}
++               >
++                 {wlConfig?.btnPrimary === 'Access Admin Dashboard' ? 'Explore Content' : (wlConfig?.btnPrimary || 'Explore Content')}
++                 <ChevronRight size={24} />
++               </motion.button>
++            </motion.div>
++          </>
+         )}
+ 
+         {wlConfig?.heroLayoutMode === 'video' && (
+
+commit 962286f89d6bc4f0c6fb04e680f1e9aaa30a850a
+Author: Bennie <bennie@Bennies-MacBook-Pro.local>
+Date:   Wed May 6 21:20:51 2026 -0700
+
+    feat: add video controls to hero video player
+
+diff --git a/src/components/Hero.tsx b/src/components/Hero.tsx
+index 5f9b32a..284b3f3 100755
+--- a/src/components/Hero.tsx
++++ b/src/components/Hero.tsx
+@@ -107,7 +107,7 @@ const Hero: React.FC = () => {
+                 if (ytId) {
+                   return (
+                     <iframe 
+-                      src={`https://www.youtube.com/embed/${ytId}?autoplay=1&mute=1&loop=1&playlist=${ytId}`}
++                      src={`https://www.youtube.com/embed/${ytId}?autoplay=1&mute=1&loop=1&playlist=${ytId}&controls=1`}
+                       title="Welcome Video"
+                       frameBorder="0"
+                       allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+@@ -119,6 +119,7 @@ const Hero: React.FC = () => {
+                   return (
+                     <video 
+                       src={url}
++                      controls
+                       autoPlay 
+                       loop 
+                       muted 
+
+commit 62af8b9f4c5f79d906b77c3d1ef87975d8eaa94e
+Author: Bennie <bennie@Bennies-MacBook-Pro.local>
+Date:   Wed May 6 20:59:33 2026 -0700
+
+    feat: add customizable hero video title overlay
+
+diff --git a/src/components/Hero.tsx b/src/components/Hero.tsx
+index 1aeb483..5f9b32a 100755
+--- a/src/components/Hero.tsx
++++ b/src/components/Hero.tsx
+@@ -94,6 +94,11 @@ const Hero: React.FC = () => {
+             transition={{ duration: 0.8, delay: 0.6 }}
+             style={{ width: '100%', maxWidth: '800px', minHeight: '300px', margin: '0 auto 50px', borderRadius: '24px', overflow: 'hidden', border: `1px solid ${wlConfig.accent || '#fff'}44`, boxShadow: `0 20px 50px ${wlConfig.accent || '#fff'}33`, aspectRatio: '16/9', background: '#000', position: 'relative' }}
+           >
++             {wlConfig?.heroVideoTitle && (
++               <div style={{ position: 'absolute', top: 20, left: 24, zIndex: 10, background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(10px)', padding: '8px 16px', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.1)' }}>
++                 <h3 style={{ margin: 0, color: '#fff', fontSize: '18px', fontWeight: 'bold', letterSpacing: '0.5px' }}>{wlConfig.heroVideoTitle}</h3>
++               </div>
++             )}
+              {(() => {
+                 const url = wlConfig.heroVideoUrl || '';
+                 const match = url.match(/^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/);
+
+commit 1a7521170fdfacb617ddef0c85452fca39239142
+Author: Bennie <bennie@Bennies-MacBook-Pro.local>
+Date:   Wed May 6 20:12:44 2026 -0700
+
+    fix: Resolve master domain local fallback and video height collapse
+
+diff --git a/src/components/Hero.tsx b/src/components/Hero.tsx
+index fd5a87d..1aeb483 100755
+--- a/src/components/Hero.tsx
++++ b/src/components/Hero.tsx
+@@ -92,7 +92,7 @@ const Hero: React.FC = () => {
+             initial={{ opacity: 0, scale: 0.95 }}
+             animate={{ opacity: 1, scale: 1 }}
+             transition={{ duration: 0.8, delay: 0.6 }}
+-            style={{ width: '100%', maxWidth: '800px', margin: '0 auto 50px', borderRadius: '24px', overflow: 'hidden', border: `1px solid ${wlConfig.accent || '#fff'}44`, boxShadow: `0 20px 50px ${wlConfig.accent || '#fff'}33`, aspectRatio: '16/9', background: '#000', position: 'relative' }}
++            style={{ width: '100%', maxWidth: '800px', minHeight: '300px', margin: '0 auto 50px', borderRadius: '24px', overflow: 'hidden', border: `1px solid ${wlConfig.accent || '#fff'}44`, boxShadow: `0 20px 50px ${wlConfig.accent || '#fff'}33`, aspectRatio: '16/9', background: '#000', position: 'relative' }}
+           >
+              {(() => {
+                 const url = wlConfig.heroVideoUrl || '';
+
+commit a06a1228a10ee40008aaee790b7aa5a00fd60106
+Author: Bennie <bennie@Bennies-MacBook-Pro.local>
+Date:   Wed May 6 19:51:25 2026 -0700
+
+    feat: Support raw file uploads for Hero Welcome Video
+
+diff --git a/src/components/Hero.tsx b/src/components/Hero.tsx
+index 902aa31..fd5a87d 100755
+--- a/src/components/Hero.tsx
++++ b/src/components/Hero.tsx
+@@ -95,8 +95,10 @@ const Hero: React.FC = () => {
+             style={{ width: '100%', maxWidth: '800px', margin: '0 auto 50px', borderRadius: '24px', overflow: 'hidden', border: `1px solid ${wlConfig.accent || '#fff'}44`, boxShadow: `0 20px 50px ${wlConfig.accent || '#fff'}33`, aspectRatio: '16/9', background: '#000', position: 'relative' }}
+           >
+              {(() => {
+-                const match = (wlConfig.heroVideoUrl || '').match(/^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/);
++                const url = wlConfig.heroVideoUrl || '';
++                const match = url.match(/^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/);
+                 const ytId = (match && match[2].length === 11) ? match[2] : null;
++                
+                 if (ytId) {
+                   return (
+                     <iframe 
+@@ -108,7 +110,19 @@ const Hero: React.FC = () => {
+                       style={{ width: '100%', height: '100%', position: 'absolute', inset: 0 }}
+                     />
+                   );
++                } else if (url && (url.includes('supabase.co') || url.endsWith('.mp4') || url.endsWith('.webm') || url.startsWith('http'))) {
++                  return (
++                    <video 
++                      src={url}
++                      autoPlay 
++                      loop 
++                      muted 
++                      playsInline
++                      style={{ width: '100%', height: '100%', objectFit: 'cover', position: 'absolute', inset: 0 }}
++                    />
++                  );
+                 }
++                
+                 return <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff' }}>Invalid or missing video URL</div>;
+              })()}
+           </motion.div>
+
+commit 8ac05474c1ce4590f6f22a770f018b357ad58a94
+Author: Bennie <bennie@Bennies-MacBook-Pro.local>
+Date:   Wed May 6 19:47:16 2026 -0700
+
+    feat: Add dynamic Hero Layout Mode (Verbiage, Video, Slider)
+
+diff --git a/src/components/Hero.tsx b/src/components/Hero.tsx
+index a536433..902aa31 100755
+--- a/src/components/Hero.tsx
++++ b/src/components/Hero.tsx
+@@ -72,18 +72,67 @@ const Hero: React.FC = () => {
+           )}
+         </motion.h1>
+         
+-        <motion.p 
+-          className="hero-sub-mobile"
+-          initial={{ opacity: 0, y: 20 }}
+-          animate={{ opacity: 1, y: 0 }}
+-          transition={{ duration: 0.8, delay: 0.6 }}
+-          style={{ 
+-            fontSize: '22px', color: 'var(--text-secondary)', maxWidth: '750px', 
+-            margin: '0 0 50px 0', lineHeight: 1.6, fontWeight: 500
+-          }}
+-        >
+-          {wlConfig?.heroCopy || "The highest fidelity, ultra-low latency broadcasting architecture built exclusively for global corporate brands, creators, and enterprise media."}
+-        </motion.p>
++        {(!wlConfig?.heroLayoutMode || wlConfig.heroLayoutMode === 'verbiage') && (
++          <motion.p 
++            className="hero-sub-mobile"
++            initial={{ opacity: 0, y: 20 }}
++            animate={{ opacity: 1, y: 0 }}
++            transition={{ duration: 0.8, delay: 0.6 }}
++            style={{ 
++              fontSize: '22px', color: 'var(--text-secondary)', maxWidth: '750px', 
++              margin: '0 0 50px 0', lineHeight: 1.6, fontWeight: 500
++            }}
++          >
++            {wlConfig?.heroCopy || "The highest fidelity, ultra-low latency broadcasting architecture built exclusively for global corporate brands, creators, and enterprise media."}
++          </motion.p>
++        )}
++
++        {wlConfig?.heroLayoutMode === 'video' && (
++          <motion.div
++            initial={{ opacity: 0, scale: 0.95 }}
++            animate={{ opacity: 1, scale: 1 }}
++            transition={{ duration: 0.8, delay: 0.6 }}
++            style={{ width: '100%', maxWidth: '800px', margin: '0 auto 50px', borderRadius: '24px', overflow: 'hidden', border: `1px solid ${wlConfig.accent || '#fff'}44`, boxShadow: `0 20px 50px ${wlConfig.accent || '#fff'}33`, aspectRatio: '16/9', background: '#000', position: 'relative' }}
++          >
++             {(() => {
++                const match = (wlConfig.heroVideoUrl || '').match(/^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/);
++                const ytId = (match && match[2].length === 11) ? match[2] : null;
++                if (ytId) {
++                  return (
++                    <iframe 
++                      src={`https://www.youtube.com/embed/${ytId}?autoplay=1&mute=1&loop=1&playlist=${ytId}`}
++                      title="Welcome Video"
++                      frameBorder="0"
++                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
++                      allowFullScreen
++                      style={{ width: '100%', height: '100%', position: 'absolute', inset: 0 }}
++                    />
++                  );
++                }
++                return <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff' }}>Invalid or missing video URL</div>;
++             })()}
++          </motion.div>
++        )}
++
++        {wlConfig?.heroLayoutMode === 'slider' && (
++          <motion.div
++            initial={{ opacity: 0, y: 20 }}
++            animate={{ opacity: 1, y: 0 }}
++            transition={{ duration: 0.8, delay: 0.6 }}
++            style={{ width: '100%', maxWidth: '1000px', margin: '0 auto 50px', display: 'flex', gap: '20px', overflowX: 'auto', paddingBottom: '20px', scrollbarWidth: 'none' }}
++          >
++             {[1, 2, 3].map(i => (
++                <div key={i} style={{ minWidth: '300px', flex: 1, aspectRatio: '16/9', borderRadius: '20px', background: `linear-gradient(45deg, #111, #222)`, border: `1px solid ${wlConfig.accent || '#fff'}22`, position: 'relative', overflow: 'hidden', boxShadow: '0 10px 30px rgba(0,0,0,0.5)' }}>
++                   <div style={{ position: 'absolute', inset: 0, backgroundImage: `url('https://images.unsplash.com/photo-${1550751827 + i}?auto=format&fit=crop&w=600&q=80')`, backgroundSize: 'cover', opacity: 0.5 }} />
++                   <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
++                      <div style={{ width: 50, height: 50, borderRadius: '50%', background: 'rgba(255,255,255,0.2)', backdropFilter: 'blur(10px)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
++                         <Play fill="white" size={24} />
++                      </div>
++                   </div>
++                </div>
++             ))}
++          </motion.div>
++        )}
+           
+           <motion.div 
+             initial={{ opacity: 0, y: 20 }}
+
+commit a0b237d4dce644e6bb2dc4816eeef2dc974e8ebb
+Author: Bennie <bennie@Bennies-MacBook-Pro.local>
+Date:   Mon May 4 15:11:59 2026 -0700
+
+    chore: Ignore node binaries and stage current UI updates
+
+diff --git a/src/components/Hero.tsx b/src/components/Hero.tsx
+old mode 100644
+new mode 100755
+
+commit 1989a880c54a575eaf7cd1bad4b86f2a2c1aea17
+Author: Bennie <bennie@Bennies-MacBook-Pro.local>
+Date:   Sat May 2 15:57:01 2026 -0700
+
+    style(hero): switch hero asset to high-energy DJ party aesthetic to match Vibe branding
+
+diff --git a/src/components/Hero.tsx b/src/components/Hero.tsx
+index c7d778c..a536433 100644
+--- a/src/components/Hero.tsx
++++ b/src/components/Hero.tsx
+@@ -23,13 +23,13 @@ const Hero: React.FC = () => {
+           height: '100%',
+           objectFit: 'cover',
+           zIndex: 0,
+-          filter: 'brightness(0.35) contrast(1.3) saturate(1.2)'
++          filter: 'brightness(0.6) contrast(1.1) saturate(1.2)'
+         }}
+       />
+       
+       {/* Sleek Mesh Overlays */}
+-      <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to right, rgba(var(--bg-rgb),0.98) 0%, rgba(var(--bg-rgb),0.2) 50%, rgba(var(--bg-rgb),0.98) 100%)', zIndex: 1 }} />
+-      <div style={{ position: 'absolute', inset: 0, background: `radial-gradient(ellipse at 50% 0%, ${wlConfig?.accent ? wlConfig.accent + '22' : 'rgba(211, 84, 0, 0.15)'}, transparent 60%)`, zIndex: 1 }} />
++      <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to right, rgba(var(--bg-rgb),0.95) 0%, transparent 50%, rgba(var(--bg-rgb),0.95) 100%)', zIndex: 1 }} />
++      <div style={{ position: 'absolute', inset: 0, background: `radial-gradient(ellipse at 50% 0%, ${wlConfig?.accent ? wlConfig.accent + '66' : 'rgba(211, 84, 0, 0.35)'}, transparent 60%)`, zIndex: 1, mixBlendMode: 'screen' }} />
+       <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to bottom, transparent 10%, var(--bg-color) 100%)', zIndex: 1 }} />
+       
+       {/* Floating Orbital Glow */}
+
+commit b969e86f08d9408ed82331815c09b9e59bfef37e
+Author: Bennie <bennie@Bennies-MacBook-Pro.local>
+Date:   Sat May 2 15:55:13 2026 -0700
+
+    chore(hero): restore original corporate office background image and adjust CSS filters to maintain contrast without washing out
+
+diff --git a/src/components/Hero.tsx b/src/components/Hero.tsx
+index d3ab724..c7d778c 100644
+--- a/src/components/Hero.tsx
++++ b/src/components/Hero.tsx
+@@ -23,14 +23,14 @@ const Hero: React.FC = () => {
+           height: '100%',
+           objectFit: 'cover',
+           zIndex: 0,
+-          filter: 'brightness(0.6) contrast(1.1) saturate(1.2)'
++          filter: 'brightness(0.35) contrast(1.3) saturate(1.2)'
+         }}
+       />
+       
+       {/* Sleek Mesh Overlays */}
+-      <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to right, rgba(var(--bg-rgb),0.95) 0%, transparent 50%, rgba(var(--bg-rgb),0.95) 100%)', zIndex: 1 }} />
+-      <div style={{ position: 'absolute', inset: 0, background: `radial-gradient(ellipse at 50% -20%, ${wlConfig?.accent ? wlConfig.accent + '88' : 'rgba(211, 84, 0, 0.45)'}, transparent 70%)`, zIndex: 1, mixBlendMode: 'screen' }} />
+-      <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to bottom, transparent 30%, var(--bg-color) 100%)', zIndex: 1 }} />
++      <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to right, rgba(var(--bg-rgb),0.98) 0%, rgba(var(--bg-rgb),0.2) 50%, rgba(var(--bg-rgb),0.98) 100%)', zIndex: 1 }} />
++      <div style={{ position: 'absolute', inset: 0, background: `radial-gradient(ellipse at 50% 0%, ${wlConfig?.accent ? wlConfig.accent + '22' : 'rgba(211, 84, 0, 0.15)'}, transparent 60%)`, zIndex: 1 }} />
++      <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to bottom, transparent 10%, var(--bg-color) 100%)', zIndex: 1 }} />
+       
+       {/* Floating Orbital Glow */}
+       <motion.div 
+
+commit 6cde1366ad3236d67d339b33f09b29a8ed88d908
+Author: Bennie <bennie@Bennies-MacBook-Pro.local>
+Date:   Sat May 2 15:48:52 2026 -0700
+
+    feat(hero): make hero background gradients, typography, and buttons fully reactive to dynamic whitelabel accent colors
+
+diff --git a/src/components/Hero.tsx b/src/components/Hero.tsx
+index 0f16b51..d3ab724 100644
+--- a/src/components/Hero.tsx
++++ b/src/components/Hero.tsx
+@@ -29,14 +29,14 @@ const Hero: React.FC = () => {
+       
+       {/* Sleek Mesh Overlays */}
+       <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to right, rgba(var(--bg-rgb),0.95) 0%, transparent 50%, rgba(var(--bg-rgb),0.95) 100%)', zIndex: 1 }} />
+-      <div style={{ position: 'absolute', inset: 0, background: 'radial-gradient(ellipse at 50% -20%, rgba(211, 84, 0, 0.35), transparent 70%)', zIndex: 1, mixBlendMode: 'screen' }} />
++      <div style={{ position: 'absolute', inset: 0, background: `radial-gradient(ellipse at 50% -20%, ${wlConfig?.accent ? wlConfig.accent + '88' : 'rgba(211, 84, 0, 0.45)'}, transparent 70%)`, zIndex: 1, mixBlendMode: 'screen' }} />
+       <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to bottom, transparent 30%, var(--bg-color) 100%)', zIndex: 1 }} />
+       
+       {/* Floating Orbital Glow */}
+       <motion.div 
+         animate={{ filter: ['blur(100px)', 'blur(140px)', 'blur(100px)'], scale: [1, 1.2, 1] }}
+         transition={{ duration: 8, repeat: Infinity, ease: 'easeInOut' }}
+-        style={{ position: 'absolute', top: '10%', right: '15%', width: '400px', height: '400px', borderRadius: '50%', background: 'var(--accent-primary)', opacity: 0.15, zIndex: 1 }}
++        style={{ position: 'absolute', top: '10%', right: '15%', width: '400px', height: '400px', borderRadius: '50%', background: wlConfig?.accent || 'var(--accent-primary)', opacity: 0.15, zIndex: 1 }}
+       />
+       
+       <div className="px-mobile-sm" style={{ position: 'relative', zIndex: 2, width: '100%', maxWidth: '1200px', padding: '0 40px', textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+@@ -48,7 +48,7 @@ const Hero: React.FC = () => {
+           transition={{ duration: 0.8, delay: 0.2 }}
+           style={{ padding: '8px 24px', background: 'rgba(255,255,255,0.03)', backdropFilter: 'blur(20px)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '100px', display: 'inline-flex', alignItems: 'center', gap: '12px', marginBottom: '40px' }}
+         >
+-          <span style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--accent-primary)', boxShadow: '0 0 10px var(--accent-primary)' }} />
++          <span style={{ width: 6, height: 6, borderRadius: '50%', background: wlConfig?.accent || 'var(--accent-primary)', boxShadow: `0 0 10px ${wlConfig?.accent || 'var(--accent-primary)'}` }} />
+           <span style={{ fontSize: '12px', fontWeight: 700, letterSpacing: '3px', textTransform: 'uppercase', color: 'rgba(255,255,255,0.8)' }}>
+             The Ultimate White Label Architecture
+           </span>
+@@ -66,9 +66,9 @@ const Hero: React.FC = () => {
+           }}
+         >
+           {wlConfig?.name ? (
+-            <>Welcome to<br/> <span style={{ background: 'linear-gradient(135deg, #fff 0%, var(--accent-primary) 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>{wlConfig.name}</span></>
++            <>Welcome to<br/> <span style={{ background: `linear-gradient(135deg, #fff 0%, ${wlConfig?.accent || 'var(--accent-primary)'} 100%)`, WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>{wlConfig.name}</span></>
+           ) : (
+-            <>Step Into The<br/> <span style={{ background: 'linear-gradient(135deg, #fff 0%, var(--accent-primary) 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>New Dimension</span></>
++            <>Step Into The<br/> <span style={{ background: `linear-gradient(135deg, #fff 0%, ${wlConfig?.accent || 'var(--accent-primary)'} 100%)`, WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>New Dimension</span></>
+           )}
+         </motion.h1>
+         
+@@ -100,8 +100,8 @@ const Hero: React.FC = () => {
+               style={{ 
+                 display: 'flex', alignItems: 'center', gap: '12px', padding: '18px 40px', 
+                 fontSize: '14px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '2px',
+-                background: 'var(--accent-primary)', color: 'var(--text-primary)', border: 'none', borderRadius: '14px',
+-                cursor: 'pointer', boxShadow: '0 10px 30px rgba(211, 84, 0, 0.4)', transition: 'all 0.3s ease'
++                background: wlConfig?.accent || 'var(--accent-primary)', color: 'var(--text-primary)', border: 'none', borderRadius: '14px',
++                cursor: 'pointer', boxShadow: `0 10px 30px ${wlConfig?.accent ? wlConfig.accent + '66' : 'rgba(211, 84, 0, 0.4)'}`, transition: 'all 0.3s ease'
+               }}
+             >
+               <Play fill="white" size={18} />
+
+commit e004e2ebcb0e61199ceb9ed3b11efc8094f5cd43
+Author: Bennie <bennie@Bennies-MacBook-Pro.local>
+Date:   Sat May 2 15:46:58 2026 -0700
+
+    style(hero): replace boring meeting room image with premium abstract cinematic mesh and restore glowing gradients
+
+diff --git a/src/components/Hero.tsx b/src/components/Hero.tsx
+index 41555b7..0f16b51 100644
+--- a/src/components/Hero.tsx
++++ b/src/components/Hero.tsx
+@@ -23,14 +23,14 @@ const Hero: React.FC = () => {
+           height: '100%',
+           objectFit: 'cover',
+           zIndex: 0,
+-          filter: 'brightness(0.35) contrast(1.3) saturate(1.2)'
++          filter: 'brightness(0.6) contrast(1.1) saturate(1.2)'
+         }}
+       />
+       
+       {/* Sleek Mesh Overlays */}
+-      <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to right, rgba(var(--bg-rgb),0.98) 0%, rgba(var(--bg-rgb),0.2) 50%, rgba(var(--bg-rgb),0.98) 100%)', zIndex: 1 }} />
+-      <div style={{ position: 'absolute', inset: 0, background: 'radial-gradient(ellipse at 50% 0%, rgba(211, 84, 0, 0.15), transparent 60%)', zIndex: 1 }} />
+-      <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to bottom, transparent 10%, var(--bg-color) 100%)', zIndex: 1 }} />
++      <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to right, rgba(var(--bg-rgb),0.95) 0%, transparent 50%, rgba(var(--bg-rgb),0.95) 100%)', zIndex: 1 }} />
++      <div style={{ position: 'absolute', inset: 0, background: 'radial-gradient(ellipse at 50% -20%, rgba(211, 84, 0, 0.35), transparent 70%)', zIndex: 1, mixBlendMode: 'screen' }} />
++      <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to bottom, transparent 30%, var(--bg-color) 100%)', zIndex: 1 }} />
+       
+       {/* Floating Orbital Glow */}
+       <motion.div 
+
+commit f6898780e0a7a3525aab2882dec606d198d2869a
+Author: Bennie <bennie@Bennies-MacBook-Pro.local>
+Date:   Sat May 2 15:44:01 2026 -0700
+
+    style(hero): fix washed out background image by removing screen blend mode and darkening base filter
+
+diff --git a/src/components/Hero.tsx b/src/components/Hero.tsx
+index ce724e5..41555b7 100644
+--- a/src/components/Hero.tsx
++++ b/src/components/Hero.tsx
+@@ -12,7 +12,7 @@ const Hero: React.FC = () => {
+       {/* Dynamic Cinematic Background Layer */}
+       <motion.img 
+         initial={{ scale: 1.1, opacity: 0 }}
+-        animate={{ scale: 1, opacity: 0.6 }}
++        animate={{ scale: 1, opacity: 0.8 }}
+         transition={{ duration: 2, ease: 'easeOut' }}
+         src={wlConfig?.heroImage || ASSETS.heroMain}
+         alt={wlConfig?.name || "B2B Corporate Master"}
+@@ -23,14 +23,14 @@ const Hero: React.FC = () => {
+           height: '100%',
+           objectFit: 'cover',
+           zIndex: 0,
+-          filter: 'brightness(0.5) contrast(1.2)'
++          filter: 'brightness(0.35) contrast(1.3) saturate(1.2)'
+         }}
+       />
+       
+       {/* Sleek Mesh Overlays */}
+-      <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to right, rgba(var(--bg-rgb),0.95) 0%, rgba(var(--bg-rgb),0.4) 50%, rgba(var(--bg-rgb),0.95) 100%)', zIndex: 1 }} />
+-      <div style={{ position: 'absolute', inset: 0, background: 'radial-gradient(ellipse at 50% -20%, rgba(211, 84, 0, 0.25), transparent 70%)', zIndex: 1, mixBlendMode: 'screen' }} />
+-      <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to bottom, transparent 30%, var(--bg-color) 100%)', zIndex: 1 }} />
++      <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to right, rgba(var(--bg-rgb),0.98) 0%, rgba(var(--bg-rgb),0.2) 50%, rgba(var(--bg-rgb),0.98) 100%)', zIndex: 1 }} />
++      <div style={{ position: 'absolute', inset: 0, background: 'radial-gradient(ellipse at 50% 0%, rgba(211, 84, 0, 0.15), transparent 60%)', zIndex: 1 }} />
++      <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to bottom, transparent 10%, var(--bg-color) 100%)', zIndex: 1 }} />
+       
+       {/* Floating Orbital Glow */}
+       <motion.div 
+
+commit 0e9049ebdb52b967eb1f0f6224a2ddc44a8e6c18
+Author: Bennie <bennie@Bennies-MacBook-Pro.local>
+Date:   Sat May 2 14:28:03 2026 -0700
+
+    fix(router): preserve tenant query parameters across SPA navigation to prevent network session bleed
+
+diff --git a/src/components/Hero.tsx b/src/components/Hero.tsx
+index c64e6c7..ce724e5 100644
+--- a/src/components/Hero.tsx
++++ b/src/components/Hero.tsx
+@@ -110,7 +110,7 @@ const Hero: React.FC = () => {
+             
+             {/* Secondary Glass Button */}
+             <motion.button 
+-              onClick={() => window.location.href = '/more-info'}
++              onClick={() => window.location.href = `/more-info${window.location.search}`}
+               whileHover={{ scale: 1.05, y: -2, backgroundColor: 'rgba(255,255,255,0.1)' }}
+               whileTap={{ scale: 0.95 }}
+               style={{ 
+
+commit 48e607e67bd9cfd6f4203d83d2162387c1dad173
+Author: Bennie <bennie@Bennies-MacBook-Pro.local>
+Date:   Sat May 2 13:36:06 2026 -0700
+
+    feat(perf): implement route code-splitting, lazy assets, fix hardcoded variables
+
+diff --git a/src/components/Hero.tsx b/src/components/Hero.tsx
+index 60bf4c7..c64e6c7 100644
+--- a/src/components/Hero.tsx
++++ b/src/components/Hero.tsx
+@@ -100,7 +100,7 @@ const Hero: React.FC = () => {
+               style={{ 
+                 display: 'flex', alignItems: 'center', gap: '12px', padding: '18px 40px', 
+                 fontSize: '14px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '2px',
+-                background: 'var(--accent-primary)', color: '#ffffff', border: 'none', borderRadius: '14px',
++                background: 'var(--accent-primary)', color: 'var(--text-primary)', border: 'none', borderRadius: '14px',
+                 cursor: 'pointer', boxShadow: '0 10px 30px rgba(211, 84, 0, 0.4)', transition: 'all 0.3s ease'
+               }}
+             >
+
+commit 04ec48ab9e3d634cd0f297eb8aced6a4d8cfed72
+Author: Bennie <bennie@Bennies-MacBook-Pro.local>
+Date:   Sat May 2 00:44:55 2026 -0700
+
+    fix: resolve frontend UI/UX bugs
+
+diff --git a/src/components/Hero.tsx b/src/components/Hero.tsx
+index 2eeeace..60bf4c7 100644
+--- a/src/components/Hero.tsx
++++ b/src/components/Hero.tsx
+@@ -28,9 +28,9 @@ const Hero: React.FC = () => {
+       />
+       
+       {/* Sleek Mesh Overlays */}
+-      <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to right, rgba(2,2,2,0.95) 0%, rgba(2,2,2,0.4) 50%, rgba(2,2,2,0.95) 100%)', zIndex: 1 }} />
++      <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to right, rgba(var(--bg-rgb),0.95) 0%, rgba(var(--bg-rgb),0.4) 50%, rgba(var(--bg-rgb),0.95) 100%)', zIndex: 1 }} />
+       <div style={{ position: 'absolute', inset: 0, background: 'radial-gradient(ellipse at 50% -20%, rgba(211, 84, 0, 0.25), transparent 70%)', zIndex: 1, mixBlendMode: 'screen' }} />
+-      <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to bottom, transparent 30%, #000000 100%)', zIndex: 1 }} />
++      <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to bottom, transparent 30%, var(--bg-color) 100%)', zIndex: 1 }} />
+       
+       {/* Floating Orbital Glow */}
+       <motion.div 
+@@ -61,7 +61,7 @@ const Hero: React.FC = () => {
+           animate={{ opacity: 1, y: 0 }}
+           transition={{ duration: 0.8, delay: 0.4 }}
+           style={{ 
+-            fontSize: '85px', fontWeight: 900, lineHeight: 1.05, letterSpacing: '-2px', color: '#ffffff',
++            fontSize: '85px', fontWeight: 900, lineHeight: 1.05, letterSpacing: '-2px', color: 'var(--text-primary)',
+             margin: '0 0 24px 0', textShadow: '0 20px 40px rgba(0,0,0,0.5)'
+           }}
+         >
+@@ -78,7 +78,7 @@ const Hero: React.FC = () => {
+           animate={{ opacity: 1, y: 0 }}
+           transition={{ duration: 0.8, delay: 0.6 }}
+           style={{ 
+-            fontSize: '22px', color: 'rgba(255,255,255,0.7)', maxWidth: '750px', 
++            fontSize: '22px', color: 'var(--text-secondary)', maxWidth: '750px', 
+             margin: '0 0 50px 0', lineHeight: 1.6, fontWeight: 500
+           }}
+         >
+@@ -116,8 +116,8 @@ const Hero: React.FC = () => {
+               style={{ 
+                 display: 'flex', alignItems: 'center', gap: '12px', padding: '18px 40px', 
+                 fontSize: '14px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '2px', 
+-                background: 'rgba(255,255,255,0.03)', backdropFilter: 'blur(10px)', color: '#ffffff',
+-                border: '1px solid rgba(255,255,255,0.1)', borderRadius: '14px', cursor: 'pointer', transition: 'all 0.3s ease'
++                background: 'rgba(100,100,100,0.1)', backdropFilter: 'blur(10px)', color: 'var(--text-primary)',
++                border: '1px solid rgba(100,100,100,0.2)', borderRadius: '14px', cursor: 'pointer', transition: 'all 0.3s ease'
+               }}
+             >
+               More Info
+
+commit cd71c8608eccb64f2d345047ecc8b4689266aba5
+Author: Bennie <bennie@Bennies-MacBook-Pro.local>
+Date:   Fri May 1 20:12:41 2026 -0700
+
+    fix: resolve mobile layout breaking on home page and hero components
+
+diff --git a/src/components/Hero.tsx b/src/components/Hero.tsx
+index e57ce13..2eeeace 100644
+--- a/src/components/Hero.tsx
++++ b/src/components/Hero.tsx
+@@ -56,6 +56,7 @@ const Hero: React.FC = () => {
+         
+         {/* Massive 3D Typography */}
+         <motion.h1 
++          className="hero-title-mobile"
+           initial={{ opacity: 0, y: 30 }}
+           animate={{ opacity: 1, y: 0 }}
+           transition={{ duration: 0.8, delay: 0.4 }}
+@@ -72,6 +73,7 @@ const Hero: React.FC = () => {
+         </motion.h1>
+         
+         <motion.p 
++          className="hero-sub-mobile"
+           initial={{ opacity: 0, y: 20 }}
+           animate={{ opacity: 1, y: 0 }}
+           transition={{ duration: 0.8, delay: 0.6 }}

@@ -2,6 +2,7 @@ import { useEffect, useState, lazy, Suspense } from 'react';
 import { ASSETS } from './data';
 import { getCategoriesWithVideos } from './api';
 import Navbar from './components/Navbar';
+import LoadingScreen from './components/LoadingScreen';
 
 import AuthModal from './components/AuthModal';
 const ProfileDashboard = lazy(() => import('./components/ProfileDashboard'));
@@ -178,23 +179,15 @@ function App() {
   // Load latest whitelabel config from DB on load, matching domain
   useEffect(() => {
     async function initPlatform() {
-      try {
-        const hostname = window.location.hostname;
+      const hostname = window.location.hostname;
       const urlParams = new URLSearchParams(window.location.search);
       const forceTenant = urlParams.get('tenant');
 
       let query = supabase!.from('whitelabel_configs').select('*');
       let isTenant = false;
-      let localNetworks = [];
-      try {
-        const stored = localStorage.getItem('vibe_local_networks');
-        if (stored && stored !== 'undefined') {
-          localNetworks = JSON.parse(stored);
-        }
-      } catch (e) {
-        console.warn('Could not parse local networks', e);
-      }
-      
+      let loadedTenantId = undefined;
+
+      const localNetworks = JSON.parse(localStorage.getItem('vibe_local_networks') || '[]');
       if (forceTenant) {
         
         // Always try to fetch from DB first as the absolute source of truth
@@ -336,57 +329,8 @@ function App() {
         }
       }
 
-      setWlConfig(prev => {
-        if (prev) return prev;
-        // Ultimate Fallback: if we still haven't found a config from DB or local storage, load defaults
-        return {
-           id: 'master',
-           name: DEFAULT_PLATFORM_NAME,
-           domain: MASTER_DOMAIN,
-           accent: '#0055ff',
-           bg: 'var(--bg-color)',
-           heroCopy: 'The premiere destination for high quality digital content.',
-           btnPrimary: 'Explore Content',
-           sliderCount: 4,
-           customSections: '',
-           heroImage: null,
-           logoImage: null,
-           owner_id: '',
-           enableWatchLive: true,
-           enableBooking: false,
-           heroLayoutMode: 'video',
-           heroVideoUrl: 'https://www.youtube.com/watch?v=u4ZoJKF_VuA',
-           heroVideoTitle: 'Live Network Broadcast',
-           theme: {}
-        };
-      });
-
       const freshCategories = await getCategoriesWithVideos(loadedTenantId);
       setCategories(freshCategories || []);
-      } catch (err) {
-        console.error("Critical error during Network OS initialization", err);
-        // Guarantee the site loads in fallback mode even if DB/network throws an exception
-        setWlConfig({
-           id: 'master',
-           name: DEFAULT_PLATFORM_NAME,
-           domain: MASTER_DOMAIN,
-           accent: '#0055ff',
-           bg: 'var(--bg-color)',
-           heroCopy: 'The premiere destination for high quality digital content.',
-           btnPrimary: 'Explore Content',
-           sliderCount: 4,
-           customSections: '',
-           heroImage: null,
-           logoImage: null,
-           owner_id: '',
-           enableWatchLive: true,
-           enableBooking: false,
-           heroLayoutMode: 'video',
-           heroVideoUrl: 'https://www.youtube.com/watch?v=u4ZoJKF_VuA',
-           heroVideoTitle: 'Live Network Broadcast',
-           theme: {}
-        });
-      }
     }
     initPlatform();
   }, []);
@@ -431,7 +375,7 @@ function App() {
   }, [wlConfig]);
 
   if (isTenantMode) {
-    if (!wlConfig) return <div style={{ height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--bg-gradient, var(--bg-color))', color: 'var(--text-muted)' }}>Initializing Network OS...</div>;
+    if (!wlConfig) return <LoadingScreen message="Initializing Network OS..." />;
     
     return (
       <WhiteLabelContext.Provider value={{ wlConfig, setWlConfig }}>
@@ -439,7 +383,7 @@ function App() {
           <div style={{ background: 'var(--content-bg)', minHeight: '100vh', color: 'var(--text-primary)', overflowX: 'hidden' }}>
             <Navbar user={user} onLoginClick={() => setShowEndUserAuthModal(true)} onAdminClick={() => setShowAdminPanel(true)} />
           
-          <Suspense fallback={<div style={{ height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-secondary)' }}>Loading interface...</div>}>
+          <Suspense fallback={<LoadingScreen message="Loading interface..." />}>
             <Routes>
               <Route path="/" element={
                  <WhiteLabelHome wlConfig={wlConfig} categories={categories} user={user} activeVideo={activeVideo} setActiveVideo={setActiveVideo} />
@@ -504,7 +448,7 @@ function App() {
             )}
           </AnimatePresence>
 
-          <Suspense fallback={<div style={{ height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-secondary)' }}>Loading platform...</div>}>
+          <Suspense fallback={<LoadingScreen message="Loading platform..." />}>
             <Routes>
               <Route path="/master-admin" element={<MasterAdminDashboard />} />
               {/* <Route path="/director" element={<DirectorStudio />} /> */}
@@ -515,7 +459,7 @@ function App() {
                     onLoginClick={() => setShowAuthModal(true)} 
                     onAdminClick={() => window.location.href = '/master-admin'}
                   />
-                  <Suspense fallback={<div style={{ height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-secondary)' }}>Loading interface...</div>}>
+                  <Suspense fallback={<LoadingScreen message="Loading interface..." />}>
                     <Routes>
                       <Route path="/" element={<Home categories={categories} activeVideo={activeVideo} setActiveVideo={setActiveVideo} user={user} />} />
                       <Route path="/marketplace" element={<Marketplace />} />
