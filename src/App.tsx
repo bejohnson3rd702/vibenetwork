@@ -178,38 +178,69 @@ function App() {
 
       if (forceTenant) {
         const localNetworks = JSON.parse(localStorage.getItem('vibe_local_networks') || '[]');
-        const localTenant = localNetworks.find((n: any) => n.id === forceTenant);
         
-        if (localTenant) {
+        // Always try to fetch from DB first as the absolute source of truth
+        const { data: dbTenantData } = await supabase!.from('whitelabel_configs').select('*').eq('id', forceTenant).limit(1);
+        
+        if (dbTenantData && dbTenantData.length > 0) {
            isTenant = true;
            setIsTenantMode(true);
            loadedTenantId = forceTenant;
+           const dbConf = dbTenantData[0];
            setWlConfig({
-              id: localTenant.id,
-              name: localTenant.name || 'Vibe B2B Enterprise',
-              domain: localTenant.domain || 'vibenetwork.tv',
-              accent: localTenant.theme?.accent || localTenant.accent || '#0055ff',
-              bg: localTenant.theme?.bg || localTenant.bg || 'var(--bg-color)',
-              heroCopy: localTenant.theme?.heroCopy || localTenant.heroCopy,
-              btnPrimary: localTenant.theme?.btnPrimary || localTenant.btnPrimary,
-              sliderCount: localTenant.theme?.sliderCount || localTenant.sliderCount || 4,
-              customSections: localTenant.theme?.customSections || localTenant.customSections || 'Platform Architecture,Success Stories',
-              heroImage: localTenant.theme?.heroImage || localTenant.heroImage,
-              logoImage: localTenant.logo || localTenant.theme?.logoImage || localTenant.logoImage || null,
-              contactEmail: localTenant.theme?.contactEmail || localTenant.contactEmail,
-              contactPhone: localTenant.theme?.contactPhone || localTenant.contactPhone,
-              contactAddress: localTenant.theme?.contactAddress || localTenant.contactAddress,
-              owner_id: localTenant.owner_id,
-              enableWatchLive: localTenant.theme?.enableWatchLive !== undefined ? localTenant.theme.enableWatchLive : (localTenant.enableWatchLive !== undefined ? localTenant.enableWatchLive : true),
-              enableBooking: localTenant.theme?.enableBooking !== undefined ? localTenant.theme.enableBooking : (localTenant.enableBooking !== undefined ? localTenant.enableBooking : false),
-              heroLayoutMode: localTenant.theme?.heroLayoutMode || localTenant.heroLayoutMode || 'verbiage',
-              heroVideoUrl: localTenant.theme?.heroVideoUrl || localTenant.heroVideoUrl || '',
-              heroVideoTitle: localTenant.theme?.heroVideoTitle || localTenant.heroVideoTitle || ''
+              id: dbConf.id,
+              name: dbConf.name || 'Vibe B2B Enterprise',
+              domain: dbConf.domain || 'vibenetwork.tv',
+              accent: dbConf.theme?.accent || '#0055ff',
+              bg: dbConf.theme?.bg || 'var(--bg-color)',
+              heroCopy: dbConf.theme?.heroCopy || 'The premiere destination for high quality digital content.',
+              btnPrimary: dbConf.theme?.btnPrimary || 'Explore Content',
+              sliderCount: dbConf.theme?.sliderCount || 4,
+              customSections: dbConf.theme?.customSections || 'Platform Architecture,Success Stories',
+              heroImage: dbConf.theme?.heroImage || null,
+              logoImage: dbConf.logo || dbConf.theme?.logoImage || null,
+              contactEmail: dbConf.theme?.contactEmail,
+              contactPhone: dbConf.theme?.contactPhone,
+              contactAddress: dbConf.theme?.contactAddress,
+              owner_id: dbConf.owner_id,
+              enableWatchLive: dbConf.theme?.enableWatchLive !== undefined ? dbConf.theme.enableWatchLive : (dbConf.enableWatchLive !== undefined ? dbConf.enableWatchLive : true),
+              enableBooking: dbConf.theme?.enableBooking !== undefined ? dbConf.theme.enableBooking : (dbConf.enableBooking !== undefined ? dbConf.enableBooking : false),
+              heroLayoutMode: dbConf.theme?.heroLayoutMode || 'verbiage',
+              heroVideoUrl: dbConf.theme?.heroVideoUrl || '',
+              heroVideoTitle: dbConf.theme?.heroVideoTitle || '',
+              theme: dbConf.theme || {}
            });
         } else {
-           query = query.eq('id', forceTenant).limit(1);
-           isTenant = true;
-           setIsTenantMode(true);
+           // Fallback to local storage for completely un-published preview networks
+           const localTenant = localNetworks.find((n: any) => n.id === forceTenant);
+           if (localTenant) {
+              isTenant = true;
+              setIsTenantMode(true);
+              loadedTenantId = forceTenant;
+              setWlConfig({
+                 id: localTenant.id,
+                 name: localTenant.name || 'Vibe B2B Enterprise',
+                 domain: localTenant.domain || 'vibenetwork.tv',
+                 accent: localTenant.theme?.accent || localTenant.accent || '#0055ff',
+                 bg: localTenant.theme?.bg || localTenant.bg || 'var(--bg-color)',
+                 heroCopy: localTenant.theme?.heroCopy || localTenant.heroCopy,
+                 btnPrimary: localTenant.theme?.btnPrimary || localTenant.btnPrimary,
+                 sliderCount: localTenant.theme?.sliderCount || localTenant.sliderCount || 4,
+                 customSections: localTenant.theme?.customSections || localTenant.customSections || 'Platform Architecture,Success Stories',
+                 heroImage: localTenant.theme?.heroImage || localTenant.heroImage,
+                 logoImage: localTenant.logo || localTenant.theme?.logoImage || localTenant.logoImage || null,
+                 contactEmail: localTenant.theme?.contactEmail || localTenant.contactEmail,
+                 contactPhone: localTenant.theme?.contactPhone || localTenant.contactPhone,
+                 contactAddress: localTenant.theme?.contactAddress || localTenant.contactAddress,
+                 owner_id: localTenant.owner_id,
+                 enableWatchLive: localTenant.theme?.enableWatchLive !== undefined ? localTenant.theme.enableWatchLive : (localTenant.enableWatchLive !== undefined ? localTenant.enableWatchLive : true),
+                 enableBooking: localTenant.theme?.enableBooking !== undefined ? localTenant.theme.enableBooking : (localTenant.enableBooking !== undefined ? localTenant.enableBooking : false),
+                 heroLayoutMode: localTenant.theme?.heroLayoutMode || localTenant.heroLayoutMode || 'verbiage',
+                 heroVideoUrl: localTenant.theme?.heroVideoUrl || localTenant.heroVideoUrl || '',
+                 heroVideoTitle: localTenant.theme?.heroVideoTitle || localTenant.heroVideoTitle || '',
+                 theme: localTenant.theme || {}
+              });
+           }
         }
       } else if (hostname !== 'localhost' && hostname !== '127.0.0.1' && hostname !== 'vibenetwork.tv') {
         query = query.eq('domain', hostname).limit(1);
@@ -234,7 +265,8 @@ function App() {
               enableBooking: localMaster?.theme?.enableBooking !== undefined ? localMaster.theme.enableBooking : (localMaster?.enableBooking !== undefined ? localMaster.enableBooking : (mConf.theme?.enableBooking !== undefined ? mConf.theme.enableBooking : false)),
               heroLayoutMode: localMaster?.theme?.heroLayoutMode || localMaster?.heroLayoutMode || mConf.theme?.heroLayoutMode || 'verbiage',
               heroVideoUrl: localMaster?.theme?.heroVideoUrl || localMaster?.heroVideoUrl || mConf.theme?.heroVideoUrl || '',
-              heroVideoTitle: localMaster?.theme?.heroVideoTitle || localMaster?.heroVideoTitle || mConf.theme?.heroVideoTitle || ''
+              heroVideoTitle: localMaster?.theme?.heroVideoTitle || localMaster?.heroVideoTitle || mConf.theme?.heroVideoTitle || '',
+              theme: mConf.theme || localMaster?.theme || {}
            });
         } else if (localMaster) {
            // Fallback if DB query completely fails but local exists
@@ -249,7 +281,8 @@ function App() {
               enableBooking: localMaster.theme?.enableBooking !== undefined ? localMaster.theme.enableBooking : (localMaster.enableBooking !== undefined ? localMaster.enableBooking : false),
               heroLayoutMode: localMaster.theme?.heroLayoutMode || localMaster.heroLayoutMode || 'verbiage',
               heroVideoUrl: localMaster.theme?.heroVideoUrl || localMaster.heroVideoUrl || '',
-              heroVideoTitle: localMaster.theme?.heroVideoTitle || localMaster.heroVideoTitle || ''
+              heroVideoTitle: localMaster.theme?.heroVideoTitle || localMaster.heroVideoTitle || '',
+              theme: localMaster.theme || {}
            });
         }
       }
@@ -279,7 +312,8 @@ function App() {
              enableBooking: dbConf.theme?.enableBooking !== undefined ? dbConf.theme.enableBooking : (dbConf.enableBooking !== undefined ? dbConf.enableBooking : false),
              heroLayoutMode: dbConf.theme?.heroLayoutMode || 'verbiage',
              heroVideoUrl: dbConf.theme?.heroVideoUrl || '',
-             heroVideoTitle: dbConf.theme?.heroVideoTitle || ''
+             heroVideoTitle: dbConf.theme?.heroVideoTitle || '',
+             theme: dbConf.theme || {}
           });
         }
       }
