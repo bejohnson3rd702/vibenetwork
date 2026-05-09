@@ -8,6 +8,7 @@ import {
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../supabaseClient';
 import { ErrorBoundary } from './ErrorBoundary';
+import { BrandingTab } from './admin/BrandingTab';
 
 function MasterAdminDashboard() {
   const navigate = useNavigate();
@@ -167,7 +168,8 @@ function MasterAdminDashboard() {
           {[
             { id: 'overview', icon: <Activity size={18} />, label: 'Pulse' },
             { id: 'live-now', icon: <Play size={18} />, label: 'Live Now TV' },
-            { id: 'app-builder', icon: <Globe size={18} />, label: 'Homepage Builder' },
+            { id: 'app-builder', icon: <ShoppingBag size={18} />, label: 'App Builder' },
+            { id: 'branding', icon: <Globe size={18} />, label: 'Platform Branding' },
             { id: 'networks', icon: <Network size={18} />, label: 'Whitelabel Fleet' },
             { id: 'users', icon: <Users size={18} />, label: 'Network Directory' },
             { id: 'database', icon: <Database size={18} />, label: 'Data Clusters' },
@@ -252,12 +254,12 @@ function MasterAdminDashboard() {
                </div>
 
                <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                 {whitelabelsList.length === 0 ? (
+                 {whitelabelsList.filter(wl => wl.domain !== 'vibenetwork.tv' && wl.domain !== 'vibenetwork.com').length === 0 ? (
                     <div style={{ background: 'var(--bg-surface)', padding: '40px', borderRadius: '16px', border: '1px dashed rgba(255,255,255,0.1)', textAlign: 'center', color: 'var(--text-muted)' }}>
                        No active tenants detected in the database. 
                        <br/>Did you run the <b>create_whitelabels_table.sql</b> script?
                     </div>
-                 ) : whitelabelsList.map((brandConfig, i) => (
+                 ) : whitelabelsList.filter(wl => wl.domain !== 'vibenetwork.tv' && wl.domain !== 'vibenetwork.com').map((brandConfig, i) => (
                    <div key={brandConfig.id || i} style={{ background: 'var(--bg-surface)', padding: '24px', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
                          <div style={{ width: '60px', height: '60px', background: brandConfig.accent || `linear-gradient(135deg, hsl(${(i * 50) % 360}, 100%, 50%), hsl(${((i * 50) + 60) % 360}, 100%, 50%))`, borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-primary)', fontWeight: 'bold' }}>
@@ -433,45 +435,42 @@ function MasterAdminDashboard() {
              </motion.div>
           )}
 
+          {activeTab === 'branding' && (
+             <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} style={{ display: 'flex', flexDirection: 'column', gap: '30px' }}>
+               <BrandingTab wlConfig={whitelabelsList.find(wl => wl.domain === 'vibenetwork.tv') || { id: 'master', domain: 'vibenetwork.tv', theme: {} }} />
+             </motion.div>
+          )}
+
           {activeTab === 'app-builder' && (
              <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} style={{ display: 'flex', flexDirection: 'column', gap: '30px' }}>
                
-               {/* 1. Global Brand Settings */}
                <div style={{ background: 'var(--bg-surface)', padding: '30px', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.05)' }}>
-                 <h4 style={{ margin: '0 0 20px 0', fontSize: '18px', color: '#ff4d85' }}>1. Global Brand & Hero Settings</h4>
+                 <h4 style={{ margin: '0 0 20px 0', fontSize: '18px', color: '#ff4d85' }}>Global Brand & Hero Settings</h4>
                  <p style={{ color: 'var(--text-muted)', marginBottom: '20px' }}>Update the master platform brand name and the cinematic hero banner seen by all logged-out visitors.</p>
                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
                     <input type="text" placeholder="Platform Name (e.g. Vibe Network)" style={{ background: 'var(--bg-color)', border: '1px solid var(--bg-surface-hover)', padding: '16px', borderRadius: '8px', color: 'var(--text-primary)', fontSize: '15px' }} id="global-name" />
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '16px', background: 'var(--bg-color)', border: '1px solid var(--bg-surface-hover)', padding: '0 16px', borderRadius: '8px' }}>
-                       <span style={{ color: 'var(--text-muted)' }}>Accent Color:</span>
-                       <input type="color" id="global-accent" defaultValue={whitelabelsList.find(wl => wl.domain === 'vibenetwork.tv')?.accent || whitelabelsList.find(wl => wl.domain === 'vibenetwork.tv')?.theme?.accent || "#0055ff"} style={{ width: '40px', height: '40px', padding: '0', border: 'none', background: 'transparent', cursor: 'pointer' }} />
-                    </div>
-                    <input type="text" placeholder="Hero Image URL (e.g. https://...)" style={{ background: 'var(--bg-color)', border: '1px solid var(--bg-surface-hover)', padding: '16px', borderRadius: '8px', color: 'var(--text-primary)', fontSize: '15px', gridColumn: 'span 2' }} id="global-hero-img" />
+                    <input type="text" placeholder="Hero Image URL (e.g. https://...)" style={{ background: 'var(--bg-color)', border: '1px solid var(--bg-surface-hover)', padding: '16px', borderRadius: '8px', color: 'var(--text-primary)', fontSize: '15px' }} id="global-hero-img" />
                     <textarea placeholder="Hero Copy (e.g. Welcome to the ultimate network...)" style={{ background: 'var(--bg-color)', border: '1px solid var(--bg-surface-hover)', padding: '16px', borderRadius: '8px', color: 'var(--text-primary)', fontSize: '15px', gridColumn: 'span 2', height: '100px' }} id="global-hero-copy" />
                  </div>
                  <button onClick={async () => {
                     const name = (document.getElementById('global-name') as HTMLInputElement).value;
-                    const accent = (document.getElementById('global-accent') as HTMLInputElement).value;
                     const heroImage = (document.getElementById('global-hero-img') as HTMLInputElement).value;
                     const heroCopy = (document.getElementById('global-hero-copy') as HTMLTextAreaElement).value;
                     if(!name) return showToast('Platform Name is required', 'error');
                     
                     const { data: existing } = await supabase!.from('whitelabel_configs').select('id, theme').eq('domain', 'vibenetwork.tv').limit(1);
-                    const updatePayload: any = { name, accent };
                     
                     if (existing && existing.length > 0) {
                       const currentTheme = existing[0].theme || {};
-                      const themeObj = { ...currentTheme, heroImage: heroImage || currentTheme.heroImage, heroCopy: heroCopy || currentTheme.heroCopy, accent: accent };
-                      await supabase!.from('whitelabel_configs').update({ name, accent, theme: themeObj }).eq('id', existing[0].id);
+                      const themeObj = { ...currentTheme, heroImage: heroImage || currentTheme.heroImage, heroCopy: heroCopy || currentTheme.heroCopy };
+                      await supabase!.from('whitelabel_configs').update({ name, theme: themeObj }).eq('id', existing[0].id);
                     } else {
-                      const fallbackTheme = { heroImage: heroImage || '', heroCopy: heroCopy || '', accent };
-                      await supabase!.from('whitelabel_configs').insert([{ name, domain: 'vibenetwork.tv', accent, theme: fallbackTheme }]);
+                      const fallbackTheme = { heroImage: heroImage || '', heroCopy: heroCopy || '' };
+                      await supabase!.from('whitelabel_configs').insert([{ name, domain: 'vibenetwork.tv', theme: fallbackTheme }]);
                     }
-                    showToast('Global Brand Settings Updated! Refresh the homepage to see changes.', 'success');
-                 }} style={{ marginTop: '20px', background: '#0055ff', color: 'var(--text-primary)', border: 'none', padding: '16px 24px', borderRadius: '8px', fontWeight: 'bold', cursor: 'pointer' }}>Save Brand Settings</button>
+                    showToast('Global Hero Settings Updated! Refresh the homepage to see changes.', 'success');
+                 }} style={{ marginTop: '20px', background: '#0055ff', color: 'var(--text-primary)', border: 'none', padding: '16px 24px', borderRadius: '8px', fontWeight: 'bold', cursor: 'pointer' }}>Save Hero Settings</button>
                </div>
-
-               {/* 2. Category Sliders */}
                <div style={{ background: 'var(--bg-surface)', padding: '30px', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.05)' }}>
                  <h4 style={{ margin: '0 0 20px 0', fontSize: '18px', color: '#00ff88' }}>2. Create Content Slider (Category)</h4>
                  <p style={{ color: 'var(--text-muted)', marginBottom: '20px' }}>Every category creates a new horizontal scrolling slider row on the homepage.</p>

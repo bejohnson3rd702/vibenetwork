@@ -35,13 +35,34 @@ export const BrandingTab = ({ wlConfig }: { wlConfig: any }) => {
   const executeSave = async () => {
     try {
       setUploadStatus('uploading');
-      const { error } = await supabase.from('whitelabel_configs').update({
-        logo: logoImage,
-        accent: accentColor,
-        theme: { ...wlConfig.theme, accent: accentColor, faviconImage: faviconImage }
-      }).eq('id', wlConfig.id);
       
-      if (error) throw error;
+      if (wlConfig.id === 'master') {
+        const { data: existing } = await supabase.from('whitelabel_configs').select('id, theme').eq('domain', 'vibenetwork.tv').limit(1);
+        if (existing && existing.length > 0) {
+          const { error } = await supabase.from('whitelabel_configs').update({
+            logo: logoImage,
+            accent: accentColor,
+            theme: { ...(existing[0].theme || {}), accent: accentColor, faviconImage: faviconImage }
+          }).eq('id', existing[0].id);
+          if (error) throw error;
+        } else {
+          const { error } = await supabase.from('whitelabel_configs').insert([{
+            name: 'Vibe Network',
+            domain: 'vibenetwork.tv',
+            logo: logoImage,
+            accent: accentColor,
+            theme: { accent: accentColor, faviconImage: faviconImage }
+          }]);
+          if (error) throw error;
+        }
+      } else {
+        const { error } = await supabase.from('whitelabel_configs').update({
+          logo: logoImage,
+          accent: accentColor,
+          theme: { ...wlConfig.theme, accent: accentColor, faviconImage: faviconImage }
+        }).eq('id', wlConfig.id);
+        if (error) throw error;
+      }
       
       const localNetworks = JSON.parse(localStorage.getItem('vibe_local_networks') || '[]');
       const index = localNetworks.findIndex((n: any) => n.id === wlConfig.id);

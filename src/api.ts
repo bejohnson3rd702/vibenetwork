@@ -23,7 +23,7 @@ export async function getCategoriesWithVideos(tenantId?: string) {
     supabase.from('videos').select('id, title, image_url, tags, video_url').order('created_at', { ascending: false }).limit(20)
   ]);
 
-  const mappedNetworks = (whitelabels || []).map((wl: any) => ({
+  const mappedNetworks = (whitelabels || []).filter((wl: any) => wl.domain !== 'vibenetwork.tv' && wl.domain !== 'vibenetwork.com').map((wl: any) => ({
     id: 'wl_' + wl.id,
     title: wl.name || wl.domain || 'Tenant Platform',
     image: wl.theme?.heroImage || wl.logo || `https://ui-avatars.com/api/?name=${encodeURIComponent(wl.name || 'W')}&background=0D8ABC&color=fff`,
