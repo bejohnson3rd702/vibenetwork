@@ -6,8 +6,11 @@ const supabase = createClient(
 );
 
 async function run() {
-  const { data, error } = await supabase.from('whitelabel_configs').select('*').eq('domain', 'sacredserpent.vibenetwork.tv');
-  console.log(JSON.stringify(data, null, 2));
+  const req = await fetch('https://fimzetmvrmbmdggvqzpr.supabase.co/rest/v1/', {
+    headers: { apikey: supabase.supabaseKey }
+  });
+  const data = await req.json();
+  console.log(Object.keys(data.paths).filter(p => p.startsWith('/rpc/')));
 }
 
 run();

@@ -6,7 +6,7 @@ const supabase = createClient(
 );
 
 async function run() {
-  const { data, error } = await supabase.from('whitelabel_configs').select('*').eq('domain', 'sacredserpent.vibenetwork.tv');
+  const { data } = await supabase.from('profiles').select('*').limit(1);
   console.log(JSON.stringify(data, null, 2));
 }
 

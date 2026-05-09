@@ -6,8 +6,8 @@ const supabase = createClient(
 );
 
 async function run() {
-  const { data, error } = await supabase.from('whitelabel_configs').select('*').eq('domain', 'sacredserpent.vibenetwork.tv');
-  console.log(JSON.stringify(data, null, 2));
+  const { data, error } = await supabase.rpc('get_policies', {});
+  console.log(data, error);
 }
 
 run();

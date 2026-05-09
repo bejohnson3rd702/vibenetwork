@@ -26,12 +26,27 @@ export const WalletTab = ({ wlConfig }: { wlConfig: any }) => {
 
   const handleSaveProfileChanges = async () => {
     setIsSavingProfiles(true);
-    const updates = Object.entries(pendingProfileChanges).map(async ([profileId, val]) => {
-       return supabase.from('profiles').update({ platform_fee_percentage: val }).eq('id', profileId);
+    
+    // Store in whitelabel_configs theme to bypass RLS on profiles table
+    const currentTheme = wlConfig.theme || {};
+    const updatedCreatorSplits = { ...(currentTheme.creator_splits || {}) };
+    
+    Object.entries(pendingProfileChanges).forEach(([profileId, val]) => {
+       updatedCreatorSplits[profileId] = val;
     });
-    await Promise.all(updates);
-    setPendingProfileChanges({});
+
+    const newTheme = { ...currentTheme, creator_splits: updatedCreatorSplits };
+    
+    const { error } = await supabase.from('whitelabel_configs').update({ theme: newTheme }).eq('id', wlConfig.id);
+    
     setIsSavingProfiles(false);
+    
+    if (error) {
+       alert(`Failed to save. Error: ${error.message}`);
+    } else {
+       setPendingProfileChanges({});
+       alert('Saved successfully!');
+    }
   };
 
   const handleFeeChange = async (val: number) => {
@@ -132,17 +147,17 @@ export const WalletTab = ({ wlConfig }: { wlConfig: any }) => {
                   </div>
                 </div>
                 
-                <div style={{ display: 'flex', alignItems: 'center', gap: '16px', width: '200px' }}>
+                 <div style={{ display: 'flex', alignItems: 'center', gap: '16px', width: '200px' }}>
                    <input 
                      type="range" 
                      min="0" 
                      max="30" 
-                     value={profile.platform_fee_percentage !== null ? profile.platform_fee_percentage : feePercentage} 
+                     value={pendingProfileChanges[profile.id] !== undefined ? pendingProfileChanges[profile.id] : (wlConfig.theme?.creator_splits?.[profile.id] ?? profile.platform_fee_percentage ?? feePercentage)} 
                      onChange={(e) => handleProfileFeeChange(profile.id, Number(e.target.value))}
                      style={{ flex: 1, accentColor: wlConfig.accent, cursor: 'pointer' }}
                    />
                    <div style={{ fontSize: '18px', fontWeight: 'bold', color: wlConfig.accent, width: '40px', textAlign: 'right' }}>
-                     {profile.platform_fee_percentage !== null ? profile.platform_fee_percentage : feePercentage}%
+                     {pendingProfileChanges[profile.id] !== undefined ? pendingProfileChanges[profile.id] : (wlConfig.theme?.creator_splits?.[profile.id] ?? profile.platform_fee_percentage ?? feePercentage)}%
                    </div>
                 </div>
               </div>

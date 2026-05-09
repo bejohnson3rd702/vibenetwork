@@ -13,7 +13,7 @@ export default function BookingModal({ onClose, profile }: { onClose: () => void
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     // Simulate submission & revenue flow
-    const feePercentage = profile?.platform_fee_percentage !== undefined && profile?.platform_fee_percentage !== null ? profile.platform_fee_percentage : (wlConfig?.platform_fee_percentage || 0);
+    const feePercentage = wlConfig?.theme?.creator_splits?.[profile?.id] ?? profile?.platform_fee_percentage ?? wlConfig?.platform_fee_percentage ?? 0;
     const grossRevenue = 49 * hours; // Simulated $49/hr
     
     let creatorCut = 0;
