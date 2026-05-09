@@ -76,7 +76,7 @@ export async function getCategoriesWithVideos(tenantId?: string) {
 
   if (dbCategories) {
     dbCategories.forEach(cat => {
-      if (cat.title === 'Live Network Schedule') return;
+      if (['Live Network Schedule', 'Featured DJ Sets', 'Underground Mixes'].includes(cat.title)) return;
       
       const catVideos = cat.videos || [];
       

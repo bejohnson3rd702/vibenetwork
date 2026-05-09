@@ -108,7 +108,7 @@ export default function WhiteLabelHome({ wlConfig, categories, user, activeVideo
                   if (ytId) {
                     return (
                       <iframe 
-                        src={`https://www.youtube.com/embed/${ytId}?autoplay=1&mute=1&loop=1&playlist=${ytId}&controls=0&modestbranding=1&rel=0`}
+                        src={`https://www.youtube.com/embed/${ytId}?autoplay=1&mute=1&loop=1&playlist=${ytId}&controls=1`}
                         title="Welcome Video"
                         frameBorder="0"
                         allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
@@ -181,9 +181,9 @@ export default function WhiteLabelHome({ wlConfig, categories, user, activeVideo
                    if (ytId) {
                      return (
                        <iframe 
-                         src={`https://www.youtube.com/embed/${ytId}?autoplay=1&modestbranding=1&rel=0&controls=0`}
+                         src={`https://www.youtube.com/embed/${ytId}?autoplay=1`}
                          title={activeVideo.title}
-                         style={{ width: '120%', height: '120%', position: 'absolute', top: '-10%', left: '-10%', border: 'none', pointerEvents: 'none' }}
+                         style={{ width: '100%', height: '100%', border: 'none' }}
                          allow="autoplay; encrypted-media; fullscreen"
                          allowFullScreen
                          loading="lazy"

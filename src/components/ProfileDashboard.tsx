@@ -68,7 +68,7 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
   const [cameraStatus, setCameraStatus] = useState<'idle'|'loading'|'active'|'error'>('idle');
   const [cameraDebugData, setCameraDebugData] = useState<string>('');
   const [liveCountdown, setLiveCountdown] = useState<number | null>(null);
-  const [liveEmbedUrl, setLiveEmbedUrl] = useState('https://www.youtube.com/embed/jfKfPfyJRdk?autoplay=1&mute=0&modestbranding=1&rel=0&controls=0');
+  const [liveEmbedUrl, setLiveEmbedUrl] = useState('https://www.youtube.com/embed/jfKfPfyJRdk?autoplay=1&mute=0');
   const [streamSource, setStreamSource] = useState<'url' | 'camera'>('url');
   const [guests, setGuests] = useState<{id: string, name: string, title: string, isLive: boolean}[]>([]);
   const [guestSetup, setGuestSetup] = useState<{show: boolean, name: string, title: string}>({show: false, name: '', title: ''});
