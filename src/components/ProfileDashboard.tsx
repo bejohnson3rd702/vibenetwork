@@ -39,7 +39,8 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
   const [currentBannerIndex, setCurrentBannerIndex] = useState(0);
   const [currentBgIndex, setCurrentBgIndex] = useState(0);
   const [saving, setSaving] = useState(false);
-  const [activeTab, setActiveTab] = useState<'feed' | 'store' | 'live' | 'booking' | 'series' | 'courses' | 'wallet' | 'flipbook' | 'appearance' | 'my_bookings' | 'networks'>('feed');
+  const [activeTab, setActiveTab] = useState<'feed' | 'store' | 'live' | 'booking' | 'series' | 'courses' | 'wallet' | 'flipbook' | 'appearance' | 'my_bookings' | 'networks' | 'members'>('feed');
+  const [networkProfiles, setNetworkProfiles] = useState<any[]>([]);
   const [walletBalance, setWalletBalance] = useState(() => (typeof window !== 'undefined' ? Number(localStorage.getItem('vibe_host_wallet') || 0.00) : 0.00));
   const [paySubsWithWallet, setPaySubsWithWallet] = useState(true);
   const [isSubscribed, setIsSubscribed] = useState(false);
@@ -95,6 +96,18 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
       setGuestSetup({ show: true, name: '', title: '' }); // Show Green Room Prompt
     }
   }, [location.search]);
+
+  useEffect(() => {
+    if (isNetworkLevel && wlConfig?.id) {
+      supabase.from('profiles')
+        .select('id, username, avatar_url, role')
+        .eq('whitelabel_id', wlConfig.id)
+        .then(({ data }) => {
+          if (data) setNetworkProfiles(data);
+        });
+    }
+  }, [isNetworkLevel, wlConfig?.id]);
+
   // Auto-rotate flipbook banner
   useEffect(() => {
     if (!flipbookImages) return;
@@ -1189,7 +1202,7 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
                 { id: 'series', label: 'Episodes' },
                 { id: 'courses', label: 'Masterclasses' },
                 { id: 'flipbook', label: 'Flip Book' }
-              ].concat(user ? [{ id: 'my_bookings', label: 'My Bookings' }] : []).concat((myNetworks.length > 0 && !isNetworkLevel) ? [{ id: 'networks', label: 'My Networks' }] : []).map(tab => (
+              ].concat(isNetworkLevel ? [{ id: 'members', label: 'Network Profiles' }] : []).concat(user ? [{ id: 'my_bookings', label: 'My Bookings' }] : []).concat((myNetworks.length > 0 && !isNetworkLevel) ? [{ id: 'networks', label: 'My Networks' }] : []).map(tab => (
                 <button 
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id as any)}
@@ -2458,6 +2471,31 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
               </div>
             )}
           </motion.div>
+        )}
+        {/* --- NETWORK PROFILES TAB --- */}
+        {activeTab === 'members' && isNetworkLevel && (
+           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} style={{ display: 'flex', flexDirection: 'column', gap: '24px', padding: '20px' }}>
+              <h2 style={{ fontSize: '28px', color: 'var(--text-primary)', margin: '0 0 8px 0', fontWeight: 'bold' }}>{wlConfig?.name} Profiles</h2>
+              <p style={{ color: 'var(--text-secondary)', marginBottom: '32px' }}>Explore the creators and members within this exclusive network.</p>
+              
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(120px, 1fr))', gap: '24px' }}>
+                 {networkProfiles.length > 0 ? networkProfiles.map(p => (
+                    <div key={p.id} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '12px', background: 'rgba(255,255,255,0.03)', padding: '20px 10px', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.05)', transition: '0.2s', cursor: 'pointer' }} onMouseOver={e=>e.currentTarget.style.background='rgba(255,255,255,0.08)'} onMouseOut={e=>e.currentTarget.style.background='rgba(255,255,255,0.03)'}>
+                       <img 
+                         src={p.avatar_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(p.username || 'User')}&background=random`} 
+                         alt={p.username} 
+                         style={{ width: '80px', height: '80px', borderRadius: '50%', objectFit: 'cover', border: `2px solid ${wlConfig?.accent || '#fff'}55` }}
+                       />
+                       <div style={{ textAlign: 'center' }}>
+                         <div style={{ color: '#fff', fontWeight: 'bold', fontSize: '14px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '100px' }}>{p.username || 'Anonymous'}</div>
+                         <div style={{ color: wlConfig?.accent || 'var(--text-muted)', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '1px', marginTop: '4px', fontWeight: 700 }}>{p.role}</div>
+                       </div>
+                    </div>
+                 )) : (
+                    <div style={{ gridColumn: '1 / -1', textAlign: 'center', padding: '40px', color: 'var(--text-muted)' }}>No profiles found for this network yet.</div>
+                 )}
+              </div>
+           </motion.div>
         )}
 
         {/* --- MY NETWORKS TAB --- */}

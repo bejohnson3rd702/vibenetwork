@@ -19,19 +19,6 @@ interface WhiteLabelHomeProps {
 export default function WhiteLabelHome({ wlConfig, categories, user, activeVideo, setActiveVideo }: WhiteLabelHomeProps) {
   const navigate = useNavigate();
   const [showVideoTitle, setShowVideoTitle] = useState(true);
-  const [showProfilesModal, setShowProfilesModal] = useState(false);
-  const [networkProfiles, setNetworkProfiles] = useState<any[]>([]);
-
-  useEffect(() => {
-    if (wlConfig.id) {
-      supabase.from('profiles')
-        .select('id, username, avatar_url, role')
-        .eq('whitelabel_id', wlConfig.id)
-        .then(({ data }) => {
-          if (data) setNetworkProfiles(data);
-        });
-    }
-  }, [wlConfig.id]);
 
   useEffect(() => {
     if (wlConfig.heroLayoutMode === 'video' && wlConfig.heroVideoTitle) {
@@ -76,32 +63,6 @@ export default function WhiteLabelHome({ wlConfig, categories, user, activeVideo
               </motion.p>
             </>
           )}
-
-          <motion.button 
-             initial={{ opacity: 0, y: 20 }} 
-             animate={{ opacity: 1, y: 0 }} 
-             transition={{ duration: 0.8, delay: 0.5 }}
-             onClick={() => setShowProfilesModal(true)}
-             style={{ 
-               padding: '14px 28px', 
-               background: wlConfig.accent || 'var(--accent-primary)', 
-               color: '#fff', 
-               fontWeight: 'bold', 
-               border: 'none', 
-               borderRadius: '30px', 
-               fontSize: '16px',
-               cursor: 'pointer',
-               boxShadow: `0 10px 20px ${wlConfig.accent || 'var(--accent-primary)'}44`,
-               transition: 'transform 0.2s, filter 0.2s',
-               zIndex: 10
-             }}
-             onMouseOver={e => e.currentTarget.style.filter = 'brightness(1.1)'}
-             onMouseOut={e => e.currentTarget.style.filter = 'brightness(1)'}
-             whileHover={{ scale: 1.05 }}
-             whileTap={{ scale: 0.95 }}
-          >
-             {wlConfig.name} Profiles ({networkProfiles.length})
-          </motion.button>
 
           {wlConfig.heroLayoutMode === 'video' && (
             <motion.div
@@ -202,46 +163,6 @@ export default function WhiteLabelHome({ wlConfig, categories, user, activeVideo
           </Suspense>
        </div>
        
-       <AnimatePresence>
-         {showProfilesModal && (
-            <motion.div 
-              initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-              onClick={() => setShowProfilesModal(false)}
-              style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(10px)', zIndex: 100000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }}
-            >
-              <motion.div 
-                initial={{ scale: 0.9, y: 20 }} animate={{ scale: 1, y: 0 }} exit={{ scale: 0.9, y: 20 }}
-                onClick={e => e.stopPropagation()}
-                style={{ width: '100%', maxWidth: '800px', background: 'var(--bg-surface)', border: `1px solid ${wlConfig.accent || '#fff'}44`, borderRadius: '24px', padding: '40px', position: 'relative', maxHeight: '80vh', overflowY: 'auto', boxShadow: `0 30px 60px ${wlConfig.accent || '#fff'}22` }}
-              >
-                 <button onClick={() => setShowProfilesModal(false)} style={{ position: 'absolute', top: 24, right: 24, background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', padding: '8px' }}>
-                   <X size={28} />
-                 </button>
-                 <h2 style={{ fontSize: '28px', color: 'var(--text-primary)', margin: '0 0 8px 0', fontWeight: 'bold' }}>{wlConfig.name} Profiles</h2>
-                 <p style={{ color: 'var(--text-secondary)', marginBottom: '32px' }}>Explore the creators and members within this exclusive network.</p>
-                 
-                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(120px, 1fr))', gap: '24px' }}>
-                    {networkProfiles.length > 0 ? networkProfiles.map(p => (
-                       <div key={p.id} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '12px', background: 'rgba(255,255,255,0.03)', padding: '20px 10px', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.05)', transition: '0.2s', cursor: 'pointer' }} onMouseOver={e=>e.currentTarget.style.background='rgba(255,255,255,0.08)'} onMouseOut={e=>e.currentTarget.style.background='rgba(255,255,255,0.03)'}>
-                          <img 
-                            src={p.avatar_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(p.username || 'User')}&background=random`} 
-                            alt={p.username} 
-                            style={{ width: '80px', height: '80px', borderRadius: '50%', objectFit: 'cover', border: `2px solid ${wlConfig.accent || '#fff'}55` }}
-                          />
-                          <div style={{ textAlign: 'center' }}>
-                            <div style={{ color: '#fff', fontWeight: 'bold', fontSize: '14px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '100px' }}>{p.username || 'Anonymous'}</div>
-                            <div style={{ color: wlConfig.accent || 'var(--text-muted)', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '1px', marginTop: '4px', fontWeight: 700 }}>{p.role}</div>
-                          </div>
-                       </div>
-                    )) : (
-                       <div style={{ gridColumn: '1 / -1', textAlign: 'center', padding: '40px', color: 'var(--text-muted)' }}>No profiles found for this network yet.</div>
-                    )}
-                 </div>
-              </motion.div>
-            </motion.div>
-         )}
-       </AnimatePresence>
-
        <AnimatePresence>
          {activeVideo && (
            <motion.div 
