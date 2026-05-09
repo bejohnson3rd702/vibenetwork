@@ -18,7 +18,7 @@ export async function getCategoriesWithVideos(tenantId?: string) {
     { data: profiles },
     { data: videos }
   ] = await Promise.all([
-    supabase.from('whitelabel_configs').select('id, name, domain, logo').order('created_at', { ascending: false }).limit(20),
+    supabase.from('whitelabel_configs').select('id, name, domain, logo, theme').order('created_at', { ascending: false }).limit(20),
     profilesQuery,
     supabase.from('videos').select('id, title, image_url, tags, video_url').order('created_at', { ascending: false }).limit(20)
   ]);
@@ -26,7 +26,7 @@ export async function getCategoriesWithVideos(tenantId?: string) {
   const mappedNetworks = (whitelabels || []).map((wl: any) => ({
     id: 'wl_' + wl.id,
     title: wl.name || wl.domain || 'Tenant Platform',
-    image: wl.logo || `https://ui-avatars.com/api/?name=${encodeURIComponent(wl.name || 'W')}&background=0D8ABC&color=fff`,
+    image: wl.theme?.heroImage || wl.logo || `https://ui-avatars.com/api/?name=${encodeURIComponent(wl.name || 'W')}&background=0D8ABC&color=fff`,
     tags: ['Firm'],
     linkUrl: `/?tenant=${wl.id}`
   }));
