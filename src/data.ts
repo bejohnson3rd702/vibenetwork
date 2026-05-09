@@ -17,7 +17,7 @@ const DJ_IMAGES = [
 
 const getRealImg = (idx: number) => DJ_IMAGES[idx % DJ_IMAGES.length];
 
-export const MOCK_VIDEO = 'http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4';
+export const MOCK_VIDEO = 'https://www.youtube.com/watch?v=-5s1q7RhsME';
 
 export const SCHEDULE_ITEMS = [
   { id: 101, title: 'Boiler Room London Live', time: '8:00 PM EST', image: getRealImg(3), tags: ['Live', 'House'] },
