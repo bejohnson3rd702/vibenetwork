@@ -141,7 +141,12 @@ function MasterAdminDashboard() {
   ];
 
   return (
-    <div style={{ minHeight: '100vh', background: 'var(--bg-color)', color: 'var(--text-primary)', display: 'flex' }}>
+    <div style={{ width: '100vw', height: '100vh', background: 'var(--bg-color)', display: 'flex', color: 'var(--text-primary)', overflow: 'hidden', position: 'relative' }}>
+      
+      {/* Floating Exit Button */}
+      <button onClick={() => navigate('/')} style={{ position: 'absolute', top: 24, right: 24, width: '40px', height: '40px', borderRadius: '50%', background: 'var(--bg-surface-hover)', border: '1px solid rgba(255,255,255,0.1)', color: 'var(--text-primary)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', zIndex: 100, transition: '0.2s' }} onMouseOver={e => e.currentTarget.style.background = '#ff3366'} onMouseOut={e => e.currentTarget.style.background = 'var(--bg-surface-hover)'}>
+         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+      </button>
       
       {/* Sidebar Command Center */}
       <div style={{ 
