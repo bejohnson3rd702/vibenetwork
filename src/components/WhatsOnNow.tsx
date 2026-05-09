@@ -52,15 +52,15 @@ const ScheduleRow: React.FC<{ item: any, isActive: boolean, onClick: () => void 
 
 const FALLBACK_10_YOUTUBE = [
   { id: 'fb1', title: 'Fred Again.. - Studio Live Session', time: 'LIVE', image: 'https://images.unsplash.com/photo-1598387181032-a3103a2db5b3?auto=format&fit=crop&w=800&q=80', video_url: 'https://www.youtube.com/watch?v=c0-hvjV2A5Y', tags: ['Electronic', 'Live Set'] },
-  { id: 'fb2', title: 'Lofi Hip Hop Radio - Relax/Study', time: 'UP NEXT', image: 'https://images.unsplash.com/photo-1571266028243-3716f02d2d2e?auto=format&fit=crop&w=800&q=80', video_url: 'https://www.youtube.com/watch?v=jfKfPfyJRdk', tags: ['Hip Hop', 'Chill'] },
-  { id: 'fb3', title: 'Chillhop Radio - Jazzy & Lofi', time: '1:00 PM EST', image: 'https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?auto=format&fit=crop&w=800&q=80', video_url: 'https://www.youtube.com/watch?v=5yx6BWlEVcY', tags: ['Deep House', 'Sunset'] },
-  { id: 'fb4', title: 'Spinnin Records - 24/7 Mix', time: '2:30 PM EST', image: 'https://images.unsplash.com/photo-1470229722913-7c0e2dbbafd3?auto=format&fit=crop&w=800&q=80', video_url: 'https://www.youtube.com/watch?v=qH3fETPsqXU', tags: ['EDM', 'Main Stage'] },
-  { id: 'fb5', title: 'Lofi Hip Hop - Sleep/Chill', time: '4:00 PM EST', image: 'https://images.unsplash.com/photo-1514525253161-7a46d19cd819?auto=format&fit=crop&w=800&q=80', video_url: 'https://www.youtube.com/watch?v=DWcJFNfaw9c', tags: ['Electronic', 'Studio'] },
-  { id: 'fb6', title: 'Chill Radio 24/7', time: '5:30 PM EST', image: 'https://images.unsplash.com/photo-1506157786151-b8491531f063?auto=format&fit=crop&w=800&q=80', video_url: 'https://www.youtube.com/watch?v=21qNxnCS8WU', tags: ['Hip Hop', 'Anthems'] },
-  { id: 'fb7', title: 'Lofi Hip Hop - Chill/Study', time: '7:00 PM EST', image: 'https://images.unsplash.com/photo-1526478806334-5fd488fcaabc?auto=format&fit=crop&w=800&q=80', video_url: 'https://www.youtube.com/watch?v=7NOSDKb0HlU', tags: ['Techno', 'Ibiza'] },
-  { id: 'fb8', title: 'Calm Piano Radio', time: '8:30 PM EST', image: 'https://images.unsplash.com/photo-1429962714451-bb934ecdc4ec?auto=format&fit=crop&w=800&q=80', video_url: 'https://www.youtube.com/watch?v=tfBVp0Zi2iE', tags: ['Afro House', 'Rooftop'] },
-  { id: 'fb9', title: 'Morning Coffee - Lofi Mix', time: '10:00 PM EST', image: 'https://images.unsplash.com/photo-1493225457124-a1a2a5f275bd?auto=format&fit=crop&w=800&q=80', video_url: 'https://www.youtube.com/watch?v=1fueZCTYkpA', tags: ['Rap', 'Concert'] },
-  { id: 'fb10', title: 'Dark Ambient Radio', time: '11:00 PM EST', image: 'https://images.unsplash.com/photo-1558369178-6656d78216fc?auto=format&fit=crop&w=800&q=80', video_url: 'https://www.youtube.com/watch?v=S_MOd40zlYU', tags: ['House', 'Club'] }
+  { id: 'fb2', title: 'NCS Release - Electronic Mix', time: 'UP NEXT', image: 'https://images.unsplash.com/photo-1571266028243-3716f02d2d2e?auto=format&fit=crop&w=800&q=80', video_url: 'https://www.youtube.com/watch?v=TW9d8vYrVFQ', tags: ['Hip Hop', 'Chill'] },
+  { id: 'fb3', title: 'NCS Release - Deep House', time: '1:00 PM EST', image: 'https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?auto=format&fit=crop&w=800&q=80', video_url: 'https://www.youtube.com/watch?v=TFmk45vUD38', tags: ['Deep House', 'Sunset'] },
+  { id: 'fb4', title: 'NCS Release - Main Stage EDM', time: '2:30 PM EST', image: 'https://images.unsplash.com/photo-1470229722913-7c0e2dbbafd3?auto=format&fit=crop&w=800&q=80', video_url: 'https://www.youtube.com/watch?v=K4DyBUG242c', tags: ['EDM', 'Main Stage'] },
+  { id: 'fb5', title: 'NCS Release - Studio Session', time: '4:00 PM EST', image: 'https://images.unsplash.com/photo-1514525253161-7a46d19cd819?auto=format&fit=crop&w=800&q=80', video_url: 'https://www.youtube.com/watch?v=3nQNiWdeH2Q', tags: ['Electronic', 'Studio'] },
+  { id: 'fb6', title: 'NCS Release - Anthem Mix', time: '5:30 PM EST', image: 'https://images.unsplash.com/photo-1506157786151-b8491531f063?auto=format&fit=crop&w=800&q=80', video_url: 'https://www.youtube.com/watch?v=B-m7X1-T1hQ', tags: ['Hip Hop', 'Anthems'] },
+  { id: 'fb7', title: 'NCS Release - Ibiza Techno', time: '7:00 PM EST', image: 'https://images.unsplash.com/photo-1526478806334-5fd488fcaabc?auto=format&fit=crop&w=800&q=80', video_url: 'https://www.youtube.com/watch?v=zyXmsVwZqX4', tags: ['Techno', 'Ibiza'] },
+  { id: 'fb8', title: 'NCS Release - Rooftop Mix', time: '8:30 PM EST', image: 'https://images.unsplash.com/photo-1429962714451-bb934ecdc4ec?auto=format&fit=crop&w=800&q=80', video_url: 'https://www.youtube.com/watch?v=pytdWKT-NV4', tags: ['Afro House', 'Rooftop'] },
+  { id: 'fb9', title: 'NCS Release - Concert Rap', time: '10:00 PM EST', image: 'https://images.unsplash.com/photo-1493225457124-a1a2a5f275bd?auto=format&fit=crop&w=800&q=80', video_url: 'https://www.youtube.com/watch?v=eBaGlo1b3ZY', tags: ['Rap', 'Concert'] },
+  { id: 'fb10', title: 'NCS Release - Club Afterhours', time: '11:00 PM EST', image: 'https://images.unsplash.com/photo-1558369178-6656d78216fc?auto=format&fit=crop&w=800&q=80', video_url: 'https://www.youtube.com/watch?v=U9pGr6KMdyg', tags: ['House', 'Club'] }
 ];
 
 const WhatsOnNow: React.FC = () => {
@@ -176,7 +176,7 @@ const WhatsOnNow: React.FC = () => {
         <div className="tv-video-mobile" style={{ flex: '1 1 auto', position: 'relative', background: 'var(--bg-color)', pointerEvents: 'auto' }}>
           {(() => {
              const activeItem = scheduleItems[activeIndex];
-             const activeUrl = activeItem?.video_url || 'https://www.youtube.com/watch?v=jfKfPfyJRdk';
+             const activeUrl = activeItem?.video_url || 'https://www.youtube.com/watch?v=c0-hvjV2A5Y';
              const youtubeMatch = activeUrl.match(/^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/);
              const youtubeId = (youtubeMatch && youtubeMatch[2].length === 11) ? youtubeMatch[2] : null;
 
