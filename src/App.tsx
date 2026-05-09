@@ -283,9 +283,9 @@ function App() {
               owner_id: mConf.owner_id,
               enableWatchLive: localMaster?.theme?.enableWatchLive !== undefined ? localMaster.theme.enableWatchLive : (localMaster?.enableWatchLive !== undefined ? localMaster.enableWatchLive : (mConf.theme?.enableWatchLive !== undefined ? mConf.theme.enableWatchLive : true)),
               enableBooking: localMaster?.theme?.enableBooking !== undefined ? localMaster.theme.enableBooking : (localMaster?.enableBooking !== undefined ? localMaster.enableBooking : (mConf.theme?.enableBooking !== undefined ? mConf.theme.enableBooking : false)),
-              heroLayoutMode: 'video',
-              heroVideoUrl: localMaster?.theme?.heroVideoUrl || localMaster?.heroVideoUrl || mConf.theme?.heroVideoUrl || 'https://www.youtube.com/watch?v=u4ZoJKF_VuA',
-              heroVideoTitle: localMaster?.theme?.heroVideoTitle || localMaster?.heroVideoTitle || mConf.theme?.heroVideoTitle || 'Live Network Broadcast',
+              heroLayoutMode: localMaster?.theme?.heroLayoutMode || localMaster?.heroLayoutMode || mConf.theme?.heroLayoutMode || 'verbiage',
+              heroVideoUrl: localMaster?.theme?.heroVideoUrl || localMaster?.heroVideoUrl || mConf.theme?.heroVideoUrl || '',
+              heroVideoTitle: localMaster?.theme?.heroVideoTitle || localMaster?.heroVideoTitle || mConf.theme?.heroVideoTitle || '',
               theme: mConf.theme || localMaster?.theme || {}
            });
         } else if (localMaster) {
@@ -299,9 +299,9 @@ function App() {
               owner_id: localMaster.owner_id,
               enableWatchLive: localMaster.theme?.enableWatchLive !== undefined ? localMaster.theme.enableWatchLive : (localMaster.enableWatchLive !== undefined ? localMaster.enableWatchLive : true),
               enableBooking: localMaster.theme?.enableBooking !== undefined ? localMaster.theme.enableBooking : (localMaster.enableBooking !== undefined ? localMaster.enableBooking : false),
-              heroLayoutMode: 'video',
-              heroVideoUrl: localMaster.theme?.heroVideoUrl || localMaster.heroVideoUrl || 'https://www.youtube.com/watch?v=u4ZoJKF_VuA',
-              heroVideoTitle: localMaster.theme?.heroVideoTitle || localMaster.heroVideoTitle || 'Live Network Broadcast',
+              heroLayoutMode: localMaster.theme?.heroLayoutMode || localMaster.heroLayoutMode || 'verbiage',
+              heroVideoUrl: localMaster.theme?.heroVideoUrl || localMaster.heroVideoUrl || '',
+              heroVideoTitle: localMaster.theme?.heroVideoTitle || localMaster.heroVideoTitle || '',
               theme: localMaster.theme || {}
            });
         }
@@ -356,9 +356,9 @@ function App() {
            owner_id: '',
            enableWatchLive: true,
            enableBooking: false,
-           heroLayoutMode: 'video',
-           heroVideoUrl: 'https://www.youtube.com/watch?v=u4ZoJKF_VuA',
-           heroVideoTitle: 'Live Network Broadcast',
+           heroLayoutMode: 'verbiage',
+           heroVideoUrl: '',
+           heroVideoTitle: '',
            theme: {}
         };
       });
@@ -383,9 +383,9 @@ function App() {
            owner_id: '',
            enableWatchLive: true,
            enableBooking: false,
-           heroLayoutMode: 'video',
-           heroVideoUrl: 'https://www.youtube.com/watch?v=u4ZoJKF_VuA',
-           heroVideoTitle: 'Live Network Broadcast',
+           heroLayoutMode: 'verbiage',
+           heroVideoUrl: '',
+           heroVideoTitle: '',
            theme: {}
         });
       }
@@ -487,7 +487,7 @@ function App() {
   }
 
   return (
-    <WhiteLabelContext.Provider value={{ wlConfig: wlConfig || { id: 'master', name: DEFAULT_PLATFORM_NAME, domain: MASTER_DOMAIN, accent: '#0055ff', bg: 'var(--bg-color)', heroCopy: 'The premiere destination for high quality digital content.', btnPrimary: 'Explore Content', sliderCount: 4, customSections: '', heroImage: null, logoImage: null, owner_id: '', enableWatchLive: true, enableBooking: false, heroLayoutMode: 'video', heroVideoUrl: 'https://www.youtube.com/watch?v=u4ZoJKF_VuA', heroVideoTitle: 'Live Network Broadcast', theme: {} }, setWlConfig }}>
+    <WhiteLabelContext.Provider value={{ wlConfig: wlConfig || { id: 'master', name: DEFAULT_PLATFORM_NAME, domain: MASTER_DOMAIN, accent: '#0055ff', bg: 'var(--bg-color)', heroCopy: 'The premiere destination for high quality digital content.', btnPrimary: 'Explore Content', sliderCount: 4, customSections: '', heroImage: null, logoImage: null, owner_id: '', enableWatchLive: true, enableBooking: false, heroLayoutMode: 'verbiage', heroVideoUrl: '', heroVideoTitle: '', theme: {} }, setWlConfig }}>
       <Router>
         <div style={{ background: 'var(--content-bg)', minHeight: '100vh', display: 'flex', flexDirection: 'column', overflowX: 'hidden' }}>
           <AnimatePresence>
