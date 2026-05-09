@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { Wallet, ArrowUpRight, Activity, Percent } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { Wallet, ArrowUpRight, Activity, Percent, Users } from 'lucide-react';
 import { supabase } from '../../supabaseClient';
 
 export const WalletTab = ({ wlConfig }: { wlConfig: any }) => {
@@ -7,6 +7,20 @@ export const WalletTab = ({ wlConfig }: { wlConfig: any }) => {
   const [paySubsWithWallet, setPaySubsWithWallet] = useState(true);
   const [feePercentage, setFeePercentage] = useState(wlConfig.platform_fee_percentage || 0);
   const [isSavingFee, setIsSavingFee] = useState(false);
+  const [profiles, setProfiles] = useState<any[]>([]);
+
+  useEffect(() => {
+    if (wlConfig?.id) {
+       supabase.from('profiles').select('id, username, avatar_url, platform_fee_percentage').eq('whitelabel_id', wlConfig.id).then(({ data }) => {
+          if (data) setProfiles(data);
+       });
+    }
+  }, [wlConfig?.id]);
+
+  const handleProfileFeeChange = async (profileId: string, val: number) => {
+     setProfiles(prev => prev.map(p => p.id === profileId ? { ...p, platform_fee_percentage: val } : p));
+     await supabase.from('profiles').update({ platform_fee_percentage: val }).eq('id', profileId);
+  };
 
   const handleFeeChange = async (val: number) => {
     setFeePercentage(val);
@@ -65,10 +79,10 @@ export const WalletTab = ({ wlConfig }: { wlConfig: any }) => {
         {/* Network Platform Fee Editor */}
         <div style={{ background: 'rgba(255,255,255,0.03)', borderRadius: '24px', padding: '30px', border: '1px solid rgba(255,255,255,0.05)', gridColumn: 'span 2', display: 'flex', flexDirection: 'column', gap: '16px' }}>
           <h4 style={{ margin: 0, fontSize: '18px', color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <Percent size={20} color={wlConfig.accent} /> Profile Revenue Split %
+            <Percent size={20} color={wlConfig.accent} /> Default Profile Revenue Split %
           </h4>
           <div style={{ color: 'var(--text-secondary)', fontSize: '14px', lineHeight: 1.5 }}>
-            Set the revenue split you automatically collect from your creators' earnings. If set to 0%, creators do not have access to an internal wallet. All revenue they generate goes directly to your Network Ledger for you to disperse manually. Maximum fee is 30%.
+            Set the default revenue split you automatically collect from your NEW creators' earnings. If set to 0%, creators do not have access to an internal wallet. All revenue they generate goes directly to your Network Ledger for you to disperse manually. Maximum fee is 30%.
           </div>
           
           <div style={{ display: 'flex', alignItems: 'center', gap: '20px', marginTop: '10px' }}>
@@ -86,6 +100,43 @@ export const WalletTab = ({ wlConfig }: { wlConfig: any }) => {
              {isSavingFee && <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>Saving...</span>}
           </div>
         </div>
+      </div>
+      
+      {/* Individual Creator Splitting */}
+      <div style={{ background: 'rgba(255,255,255,0.03)', borderRadius: '24px', padding: '30px', border: '1px solid rgba(255,255,255,0.05)' }}>
+        <h3 style={{ margin: '0 0 20px 0', fontSize: '20px', color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '8px' }}><Users size={20} color={wlConfig.accent}/> Individual Creator Overrides</h3>
+        
+        {profiles.length === 0 ? (
+          <div style={{ color: 'var(--text-muted)', fontSize: '14px', textAlign: 'center', padding: '20px' }}>No active creators found on this network.</div>
+        ) : (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+            {profiles.map(profile => (
+              <div key={profile.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '16px', background: 'rgba(0,0,0,0.4)', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.02)' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                  <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: 'rgba(255,255,255,0.1)', backgroundImage: `url(${profile.avatar_url})`, backgroundSize: 'cover', backgroundPosition: 'center' }} />
+                  <div>
+                    <div style={{ fontWeight: 'bold', color: 'var(--text-primary)', fontSize: '15px' }}>{profile.username || 'Unnamed'}</div>
+                    <div style={{ color: 'var(--text-muted)', fontSize: '13px', marginTop: '4px' }}>Custom Override</div>
+                  </div>
+                </div>
+                
+                <div style={{ display: 'flex', alignItems: 'center', gap: '16px', width: '200px' }}>
+                   <input 
+                     type="range" 
+                     min="0" 
+                     max="30" 
+                     value={profile.platform_fee_percentage !== null ? profile.platform_fee_percentage : feePercentage} 
+                     onChange={(e) => handleProfileFeeChange(profile.id, Number(e.target.value))}
+                     style={{ flex: 1, accentColor: wlConfig.accent, cursor: 'pointer' }}
+                   />
+                   <div style={{ fontSize: '18px', fontWeight: 'bold', color: wlConfig.accent, width: '40px', textAlign: 'right' }}>
+                     {profile.platform_fee_percentage !== null ? profile.platform_fee_percentage : feePercentage}%
+                   </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
 
       {/* Income Streams */}

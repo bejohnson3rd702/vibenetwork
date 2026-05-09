@@ -47,9 +47,17 @@ function App() {
   const [showAdminPanel, setShowAdminPanel] = useState(false);
   const [showEndUserAuthModal, setShowEndUserAuthModal] = useState(false);
   const [showBookingModal, setShowBookingModal] = useState(false);
+  const [bookingProfile, setBookingProfile] = useState<any>(null);
 
   useEffect(() => {
-    const handleOpenBooking = () => setShowBookingModal(true);
+    const handleOpenBooking = (e: any) => {
+       if (e.detail?.profile) {
+          setBookingProfile(e.detail.profile);
+       } else {
+          setBookingProfile(null);
+       }
+       setShowBookingModal(true);
+    };
     window.addEventListener('open_booking', handleOpenBooking);
     return () => window.removeEventListener('open_booking', handleOpenBooking);
   }, []);
@@ -489,7 +497,7 @@ function App() {
                <EndUserAuthModal onClose={() => setShowEndUserAuthModal(false)} />
              )}
              {showBookingModal && (
-               <BookingModal onClose={() => setShowBookingModal(false)} />
+               <BookingModal onClose={() => setShowBookingModal(false)} profile={bookingProfile} />
              )}
           </AnimatePresence>
           
@@ -519,7 +527,7 @@ function App() {
               />
             )}
             {showBookingModal && (
-               <BookingModal onClose={() => setShowBookingModal(false)} />
+               <BookingModal onClose={() => setShowBookingModal(false)} profile={bookingProfile} />
             )}
           </AnimatePresence>
 

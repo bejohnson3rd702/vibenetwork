@@ -1227,7 +1227,7 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
                 </button>
               )}
 
-              {isOwnProfile && viewMode === 'edit' && !isNetworkLevel && (wlConfig?.platform_fee_percentage || 0) > 0 && (
+              {isOwnProfile && viewMode === 'edit' && !isNetworkLevel && (profile?.platform_fee_percentage !== undefined && profile?.platform_fee_percentage !== null ? profile.platform_fee_percentage : (wlConfig?.platform_fee_percentage || 0)) > 0 && (
                 <button 
                   onClick={() => setActiveTab('wallet')}
                   style={{ position: 'relative', background: 'none', border: 'none', padding: '12px 24px', color: activeTab === 'wallet' ? '#00ff88' : '#888', fontSize: '15px', fontWeight: 'bold', cursor: 'pointer', borderRadius: '100px', display: 'flex', alignItems: 'center', gap: '8px', transition: 'color 0.3s' }}
@@ -2544,7 +2544,7 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
         )}
 
         {/* --- WALLET SUBSCRIPTION & EARNINGS TAB --- */}
-        {activeTab === 'wallet' && isOwnProfile && viewMode === 'edit' && (wlConfig?.platform_fee_percentage || 0) > 0 && (
+        {activeTab === 'wallet' && isOwnProfile && viewMode === 'edit' && (profile?.platform_fee_percentage !== undefined && profile?.platform_fee_percentage !== null ? profile.platform_fee_percentage : (wlConfig?.platform_fee_percentage || 0)) > 0 && (
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
             
             {/* Top Balance Row */}
@@ -2738,7 +2738,7 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
               <input type="number" placeholder="Custom Amount" value={tipAmount} onChange={e => setTipAmount(Number(e.target.value))} style={{ width: '100%', padding: '14px', background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.1)', color: 'var(--text-primary)', borderRadius: '12px', fontSize: '16px', outline: 'none' }} />
               
               <button onClick={() => {
-                const feePercentage = wlConfig?.platform_fee_percentage || 0;
+                const feePercentage = profile?.platform_fee_percentage !== undefined && profile?.platform_fee_percentage !== null ? profile.platform_fee_percentage : (wlConfig?.platform_fee_percentage || 0);
                 let creatorCut = 0;
                 let networkCut = 0;
                 

@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { X, Calendar, Clock, Upload, Image as ImageIcon } from 'lucide-react';
 import { useWhiteLabel } from '../context/WhiteLabelContext';
 
-export default function BookingModal({ onClose }: { onClose: () => void }) {
+export default function BookingModal({ onClose, profile }: { onClose: () => void, profile?: any }) {
   const { wlConfig } = useWhiteLabel();
   const [date, setDate] = useState('');
   const [time, setTime] = useState('');
@@ -13,7 +13,7 @@ export default function BookingModal({ onClose }: { onClose: () => void }) {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     // Simulate submission & revenue flow
-    const feePercentage = wlConfig?.platform_fee_percentage || 0;
+    const feePercentage = profile?.platform_fee_percentage !== undefined && profile?.platform_fee_percentage !== null ? profile.platform_fee_percentage : (wlConfig?.platform_fee_percentage || 0);
     const grossRevenue = 49 * hours; // Simulated $49/hr
     
     let creatorCut = 0;
