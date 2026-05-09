@@ -37,8 +37,7 @@ export const BrandingTab = ({ wlConfig }: { wlConfig: any }) => {
       setUploadStatus('uploading');
       const { error } = await supabase.from('whitelabel_configs').update({
         logo: logoImage,
-        accent: accentColor,
-        theme: { ...wlConfig.theme, faviconImage: faviconImage }
+        theme: { ...wlConfig.theme, accent: accentColor, faviconImage: faviconImage }
       }).eq('id', wlConfig.id);
       
       if (error) throw error;
@@ -47,8 +46,8 @@ export const BrandingTab = ({ wlConfig }: { wlConfig: any }) => {
       const index = localNetworks.findIndex((n: any) => n.id === wlConfig.id);
       if (index >= 0) {
         localNetworks[index].logo = logoImage;
-        localNetworks[index].accent = accentColor;
         if (!localNetworks[index].theme) localNetworks[index].theme = {};
+        localNetworks[index].theme.accent = accentColor;
         localNetworks[index].theme.faviconImage = faviconImage;
         localStorage.setItem('vibe_local_networks', JSON.stringify(localNetworks));
       }
