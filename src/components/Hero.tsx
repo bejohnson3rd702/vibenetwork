@@ -78,17 +78,7 @@ const Hero: React.FC = () => {
             >
               {wlConfig?.heroCopy || "The highest fidelity, ultra-low latency broadcasting architecture built exclusively for global corporate brands, creators, and enterprise media."}
             </motion.p>
-            <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.8, delay: 0.8, ease: [0.16, 1, 0.3, 1] }} style={{ marginBottom: '50px', display: 'flex', gap: '20px', alignItems: 'center' }}>
-               <motion.button 
-                 whileHover={{ scale: 1.05, boxShadow: `0 20px 40px ${wlConfig?.accent || 'var(--accent-primary)'}88`, filter: 'brightness(1.1)' }}
-                 whileTap={{ scale: 0.95 }}
-                 onClick={() => { document.getElementById('featured-content')?.scrollIntoView({ behavior: 'smooth' }); }} 
-                 style={{ padding: '22px 54px', background: `linear-gradient(135deg, ${wlConfig?.accent || 'var(--accent-primary)'}, rgba(0,0,0,0.8))`, color: '#fff', border: `1px solid ${wlConfig?.accent || 'var(--accent-primary)'}44`, borderRadius: '40px', fontSize: '20px', fontWeight: 'bold', cursor: 'pointer', boxShadow: `0 10px 30px ${wlConfig?.accent || 'var(--accent-primary)'}55`, transition: 'all 0.3s ease', display: 'flex', alignItems: 'center', gap: '12px' }}
-               >
-                 {wlConfig?.btnPrimary === 'Access Admin Dashboard' ? 'Explore Content' : (wlConfig?.btnPrimary || 'Explore Content')}
-                 <ChevronRight size={24} />
-               </motion.button>
-            </motion.div>
+
           </>
         )}
 
