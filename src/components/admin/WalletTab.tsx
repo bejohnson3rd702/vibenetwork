@@ -68,7 +68,7 @@ export const WalletTab = ({ wlConfig }: { wlConfig: any }) => {
             <Percent size={20} color={wlConfig.accent} /> Network Platform Fee
           </h4>
           <div style={{ color: 'var(--text-secondary)', fontSize: '14px', lineHeight: 1.5 }}>
-            Set the revenue split you automatically collect from your creators' earnings. If set to 0%, the wallet features are completely disabled/hidden on their profiles, making your platform completely free for them to use. Maximum fee is 30%.
+            Set the revenue split you automatically collect from your creators' earnings. If set to 0%, creators do not have access to an internal wallet. All revenue they generate goes directly to your Network Ledger for you to disperse manually. Maximum fee is 30%.
           </div>
           
           <div style={{ display: 'flex', alignItems: 'center', gap: '20px', marginTop: '10px' }}>
@@ -96,17 +96,22 @@ export const WalletTab = ({ wlConfig }: { wlConfig: any }) => {
           
           <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
             {(() => {
-              const txs: any[] = []; // Empty for now, fetch from ledger DB later
+              let txs: any[] = [];
+              if (typeof window !== 'undefined') {
+                 try {
+                    txs = JSON.parse(localStorage.getItem('vibe_network_ledger') || '[]');
+                 } catch (e) {}
+              }
               if (txs.length === 0) {
                 return <div style={{ color: 'var(--text-muted)', fontSize: '14px', textAlign: 'center', padding: '20px' }}>No revenue settled yet.</div>;
               }
-              return txs.map((tx: any) => (
-                <div key={tx.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingBottom: '16px', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+              return txs.map((tx: any, idx: number) => (
+                <div key={tx.id || idx} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingBottom: '16px', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
                   <div>
-                    <div style={{ fontWeight: 'bold', color: 'var(--text-primary)', fontSize: '15px' }}>{tx.title}</div>
-                    <div style={{ color: 'var(--text-muted)', fontSize: '13px', marginTop: '4px' }}>{tx.type}</div>
+                    <div style={{ fontWeight: 'bold', color: 'var(--text-primary)', fontSize: '15px' }}>{tx.title || tx.source}</div>
+                    <div style={{ color: 'var(--text-muted)', fontSize: '13px', marginTop: '4px' }}>{tx.type || tx.origin}</div>
                   </div>
-                  <div style={{ color: tx.color, fontWeight: 'bold', fontSize: '16px' }}>{tx.amount}</div>
+                  <div style={{ color: tx.color || '#00ff88', fontWeight: 'bold', fontSize: '16px' }}>{tx.amount || `+$${tx.gross?.toFixed(2)}`}</div>
                 </div>
               ));
             })()}

@@ -12,7 +12,35 @@ export default function BookingModal({ onClose }: { onClose: () => void }) {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    // Simulate submission
+    // Simulate submission & revenue flow
+    const feePercentage = wlConfig?.platform_fee_percentage || 0;
+    const grossRevenue = 49 * hours; // Simulated $49/hr
+    
+    let creatorCut = 0;
+    let networkCut = 0;
+    
+    if (feePercentage === 0) {
+       networkCut = grossRevenue;
+       creatorCut = 0;
+    } else {
+       networkCut = grossRevenue * (feePercentage / 100);
+       creatorCut = grossRevenue - networkCut;
+    }
+
+    if (typeof window !== 'undefined') {
+       const stored = JSON.parse(localStorage.getItem('vibe_network_ledger') || '[]');
+       stored.unshift({ id: Date.now(), title: `Booking Reservation`, type: `${hours} Hour Studio Slot`, amount: `+$${networkCut.toFixed(2)}`, color: '#00ff88' });
+       localStorage.setItem('vibe_network_ledger', JSON.stringify(stored));
+       
+       const currentNetWallet = Number(localStorage.getItem('vibe_network_wallet') || 10500);
+       localStorage.setItem('vibe_network_wallet', String(currentNetWallet + networkCut));
+
+       if (creatorCut > 0) {
+          const currentHostWallet = Number(localStorage.getItem('vibe_host_wallet') || 0);
+          localStorage.setItem('vibe_host_wallet', String(currentHostWallet + creatorCut));
+       }
+    }
+
     setTimeout(() => {
        setSubmitted(true);
        setTimeout(() => onClose(), 2000);

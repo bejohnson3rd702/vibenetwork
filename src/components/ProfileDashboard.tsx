@@ -2738,19 +2738,36 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
               <input type="number" placeholder="Custom Amount" value={tipAmount} onChange={e => setTipAmount(Number(e.target.value))} style={{ width: '100%', padding: '14px', background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.1)', color: 'var(--text-primary)', borderRadius: '12px', fontSize: '16px', outline: 'none' }} />
               
               <button onClick={() => {
+                const feePercentage = wlConfig?.platform_fee_percentage || 0;
+                let creatorCut = 0;
+                let networkCut = 0;
+                
+                if (feePercentage === 0) {
+                   networkCut = Number(tipAmount);
+                   creatorCut = 0;
+                } else {
+                   networkCut = Number(tipAmount) * (feePercentage / 100);
+                   creatorCut = Number(tipAmount) - networkCut;
+                }
+
                 const stored = JSON.parse(localStorage.getItem('vibe_network_ledger') || '[]');
-                stored.unshift({ time: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}), source: 'Host Streamer Dashboard', origin: 'Direct Vibe', gross: Number(tipAmount) });
+                stored.unshift({ id: Date.now(), title: `Tip to ${profile?.username || 'Creator'}`, type: 'Live Stream Tip', amount: `+$${networkCut.toFixed(2)}`, color: '#00ff88' });
                 localStorage.setItem('vibe_network_ledger', JSON.stringify(stored));
                 
-                const newBalance = walletBalance + Number(tipAmount);
-                setWalletBalance(newBalance);
-                localStorage.setItem('vibe_host_wallet', String(newBalance));
+                const currentNetWallet = Number(localStorage.getItem('vibe_network_wallet') || 10500);
+                localStorage.setItem('vibe_network_wallet', String(currentNetWallet + networkCut));
 
-                alert(`Successfully tipped $${tipAmount}! View progress in Wallet.`);
+                if (creatorCut > 0) {
+                   const newBalance = walletBalance + creatorCut;
+                   setWalletBalance(newBalance);
+                   localStorage.setItem('vibe_host_wallet', String(newBalance));
+                }
+
+                alert(`Successfully completed $${tipAmount} transaction!`);
                 setShowTipModal(false);
                 setTipAmount('');
               }} style={{ padding: '16px', background: 'linear-gradient(45deg, #00ff88, #00bbff)', color: '#000', border: 'none', borderRadius: '12px', fontWeight: '900', fontSize: '16px', cursor: 'pointer' }} disabled={!tipAmount}>
-                Confirm Tip &rarr;
+                Confirm Transaction &rarr;
               </button>
             </motion.div>
           </div>
