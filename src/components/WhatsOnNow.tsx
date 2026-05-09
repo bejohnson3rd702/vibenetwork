@@ -176,7 +176,7 @@ const WhatsOnNow: React.FC = () => {
         <div className="tv-video-mobile" style={{ flex: '1 1 auto', position: 'relative', background: 'var(--bg-color)', pointerEvents: 'auto' }}>
           {(() => {
              const activeItem = scheduleItems[activeIndex];
-             const activeUrl = activeItem?.video_url || 'https://www.youtube.com/watch?v=u4ZoJKF_VuA';
+             const activeUrl = activeItem?.video_url || 'https://www.youtube.com/watch?v=jfKfPfyJRdk';
              const youtubeMatch = activeUrl.match(/^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/);
              const youtubeId = (youtubeMatch && youtubeMatch[2].length === 11) ? youtubeMatch[2] : null;
 
