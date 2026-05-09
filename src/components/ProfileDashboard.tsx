@@ -2478,17 +2478,33 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
               <h2 style={{ fontSize: '28px', color: 'var(--text-primary)', margin: '0 0 8px 0', fontWeight: 'bold' }}>{wlConfig?.name} Profiles</h2>
               <p style={{ color: 'var(--text-secondary)', marginBottom: '32px' }}>Explore the creators and members within this exclusive network.</p>
               
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(120px, 1fr))', gap: '24px' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(160px, 1fr))', gap: '20px' }}>
                  {networkProfiles.length > 0 ? networkProfiles.map(p => (
-                    <div key={p.id} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '12px', background: 'rgba(255,255,255,0.03)', padding: '20px 10px', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.05)', transition: '0.2s', cursor: 'pointer' }} onMouseOver={e=>e.currentTarget.style.background='rgba(255,255,255,0.08)'} onMouseOut={e=>e.currentTarget.style.background='rgba(255,255,255,0.03)'}>
+                    <div 
+                      key={p.id} 
+                      onClick={() => navigate(`/profile/${p.id}`)}
+                      style={{ 
+                        aspectRatio: '3/4',
+                        borderRadius: '16px', 
+                        overflow: 'hidden',
+                        position: 'relative',
+                        cursor: 'pointer',
+                        boxShadow: '0 10px 20px rgba(0,0,0,0.5)',
+                        transition: 'transform 0.3s' 
+                      }} 
+                      onMouseOver={e=>e.currentTarget.style.transform='translateY(-5px)'} 
+                      onMouseOut={e=>e.currentTarget.style.transform='translateY(0)'}
+                    >
                        <img 
                          src={p.avatar_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(p.username || 'User')}&background=random`} 
                          alt={p.username} 
-                         style={{ width: '80px', height: '80px', borderRadius: '50%', objectFit: 'cover', border: `2px solid ${wlConfig?.accent || '#fff'}55` }}
+                         style={{ width: '100%', height: '100%', objectFit: 'cover', position: 'absolute', inset: 0 }}
                        />
-                       <div style={{ textAlign: 'center' }}>
-                         <div style={{ color: '#fff', fontWeight: 'bold', fontSize: '14px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '100px' }}>{p.username || 'Anonymous'}</div>
-                         <div style={{ color: wlConfig?.accent || 'var(--text-muted)', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '1px', marginTop: '4px', fontWeight: 700 }}>{p.role}</div>
+                       <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(0,0,0,0.95) 0%, rgba(0,0,0,0) 60%)' }} />
+                       
+                       <div style={{ position: 'absolute', bottom: 0, left: 0, width: '100%', padding: '16px', textAlign: 'left', zIndex: 2 }}>
+                         <div style={{ color: '#fff', fontWeight: 'bold', fontSize: '15px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', textShadow: '0 2px 4px rgba(0,0,0,0.8)' }}>{p.username || 'Anonymous'}</div>
+                         <div style={{ color: wlConfig?.accent || '#00ff88', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '1px', marginTop: '4px', fontWeight: 800, textShadow: '0 2px 4px rgba(0,0,0,0.8)' }}>{p.role}</div>
                        </div>
                     </div>
                  )) : (
