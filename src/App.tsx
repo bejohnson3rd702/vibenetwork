@@ -283,7 +283,7 @@ function App() {
               owner_id: mConf.owner_id,
               enableWatchLive: localMaster?.theme?.enableWatchLive !== undefined ? localMaster.theme.enableWatchLive : (localMaster?.enableWatchLive !== undefined ? localMaster.enableWatchLive : (mConf.theme?.enableWatchLive !== undefined ? mConf.theme.enableWatchLive : true)),
               enableBooking: localMaster?.theme?.enableBooking !== undefined ? localMaster.theme.enableBooking : (localMaster?.enableBooking !== undefined ? localMaster.enableBooking : (mConf.theme?.enableBooking !== undefined ? mConf.theme.enableBooking : false)),
-              heroLayoutMode: localMaster?.theme?.heroLayoutMode || localMaster?.heroLayoutMode || mConf.theme?.heroLayoutMode || 'video',
+              heroLayoutMode: 'video',
               heroVideoUrl: localMaster?.theme?.heroVideoUrl || localMaster?.heroVideoUrl || mConf.theme?.heroVideoUrl || 'https://www.youtube.com/watch?v=u4ZoJKF_VuA',
               heroVideoTitle: localMaster?.theme?.heroVideoTitle || localMaster?.heroVideoTitle || mConf.theme?.heroVideoTitle || 'Live Network Broadcast',
               theme: mConf.theme || localMaster?.theme || {}
@@ -299,7 +299,7 @@ function App() {
               owner_id: localMaster.owner_id,
               enableWatchLive: localMaster.theme?.enableWatchLive !== undefined ? localMaster.theme.enableWatchLive : (localMaster.enableWatchLive !== undefined ? localMaster.enableWatchLive : true),
               enableBooking: localMaster.theme?.enableBooking !== undefined ? localMaster.theme.enableBooking : (localMaster.enableBooking !== undefined ? localMaster.enableBooking : false),
-              heroLayoutMode: localMaster.theme?.heroLayoutMode || localMaster.heroLayoutMode || 'video',
+              heroLayoutMode: 'video',
               heroVideoUrl: localMaster.theme?.heroVideoUrl || localMaster.heroVideoUrl || 'https://www.youtube.com/watch?v=u4ZoJKF_VuA',
               heroVideoTitle: localMaster.theme?.heroVideoTitle || localMaster.heroVideoTitle || 'Live Network Broadcast',
               theme: localMaster.theme || {}
