@@ -242,6 +242,7 @@ function App() {
               heroLayoutMode: dbConf.theme?.heroLayoutMode || 'verbiage',
               heroVideoUrl: dbConf.theme?.heroVideoUrl || '',
               heroVideoTitle: dbConf.theme?.heroVideoTitle || '',
+              platform_fee_percentage: dbConf.platform_fee_percentage || 0,
               theme: dbConf.theme || {}
            });
         } else {
@@ -272,6 +273,7 @@ function App() {
                  heroLayoutMode: localTenant.theme?.heroLayoutMode || localTenant.heroLayoutMode || 'verbiage',
                  heroVideoUrl: localTenant.theme?.heroVideoUrl || localTenant.heroVideoUrl || '',
                  heroVideoTitle: localTenant.theme?.heroVideoTitle || localTenant.heroVideoTitle || '',
+                 platform_fee_percentage: localTenant.platform_fee_percentage || 0,
                  theme: localTenant.theme || {}
               });
            }
@@ -347,6 +349,7 @@ function App() {
              heroLayoutMode: dbConf.theme?.heroLayoutMode || 'verbiage',
              heroVideoUrl: dbConf.theme?.heroVideoUrl || '',
              heroVideoTitle: dbConf.theme?.heroVideoTitle || '',
+             platform_fee_percentage: dbConf.platform_fee_percentage || 0,
              theme: dbConf.theme || {}
           });
         }

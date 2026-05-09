@@ -19,6 +19,7 @@ export interface WhiteLabelConfig {
   heroLayoutMode?: 'verbiage' | 'video' | 'slider';
   heroVideoUrl?: string;
   heroVideoTitle?: string;
+  platform_fee_percentage?: number;
 }
 
 interface WhiteLabelContextProps {

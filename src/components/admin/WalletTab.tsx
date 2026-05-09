@@ -1,9 +1,19 @@
 import { useState } from 'react';
-import { Wallet, ArrowUpRight, Activity } from 'lucide-react';
+import { Wallet, ArrowUpRight, Activity, Percent } from 'lucide-react';
+import { supabase } from '../../supabaseClient';
 
 export const WalletTab = ({ wlConfig }: { wlConfig: any }) => {
   const [walletBalance, setWalletBalance] = useState(() => (typeof window !== 'undefined' ? Number(localStorage.getItem('vibe_network_wallet') || 10500.00) : 10500.00));
   const [paySubsWithWallet, setPaySubsWithWallet] = useState(true);
+  const [feePercentage, setFeePercentage] = useState(wlConfig.platform_fee_percentage || 0);
+  const [isSavingFee, setIsSavingFee] = useState(false);
+
+  const handleFeeChange = async (val: number) => {
+    setFeePercentage(val);
+    setIsSavingFee(true);
+    await supabase.from('whitelabel_configs').update({ platform_fee_percentage: val }).eq('id', wlConfig.id);
+    setIsSavingFee(false);
+  };
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
@@ -50,6 +60,31 @@ export const WalletTab = ({ wlConfig }: { wlConfig: any }) => {
             <input type="checkbox" checked={paySubsWithWallet} onChange={(e) => setPaySubsWithWallet(e.target.checked)} style={{ width: '20px', height: '20px', accentColor: wlConfig.accent }} />
             <span style={{ color: 'var(--text-primary)', fontWeight: 'bold' }}>Auto-Pay from Balance</span>
           </label>
+        </div>
+
+        {/* Network Platform Fee Editor */}
+        <div style={{ background: 'rgba(255,255,255,0.03)', borderRadius: '24px', padding: '30px', border: '1px solid rgba(255,255,255,0.05)', gridColumn: 'span 2', display: 'flex', flexDirection: 'column', gap: '16px' }}>
+          <h4 style={{ margin: 0, fontSize: '18px', color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <Percent size={20} color={wlConfig.accent} /> Network Platform Fee
+          </h4>
+          <div style={{ color: 'var(--text-secondary)', fontSize: '14px', lineHeight: 1.5 }}>
+            Set the revenue split you automatically collect from your creators' earnings. If set to 0%, the wallet features are completely disabled/hidden on their profiles, making your platform completely free for them to use. Maximum fee is 30%.
+          </div>
+          
+          <div style={{ display: 'flex', alignItems: 'center', gap: '20px', marginTop: '10px' }}>
+             <input 
+               type="range" 
+               min="0" 
+               max="30" 
+               value={feePercentage} 
+               onChange={(e) => handleFeeChange(Number(e.target.value))}
+               style={{ flex: 1, accentColor: wlConfig.accent, cursor: 'pointer' }}
+             />
+             <div style={{ fontSize: '24px', fontWeight: '900', color: wlConfig.accent, width: '60px', textAlign: 'right' }}>
+               {feePercentage}%
+             </div>
+             {isSavingFee && <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>Saving...</span>}
+          </div>
         </div>
       </div>
 
