@@ -65,7 +65,7 @@ export const WalletTab = ({ wlConfig }: { wlConfig: any }) => {
         {/* Network Platform Fee Editor */}
         <div style={{ background: 'rgba(255,255,255,0.03)', borderRadius: '24px', padding: '30px', border: '1px solid rgba(255,255,255,0.05)', gridColumn: 'span 2', display: 'flex', flexDirection: 'column', gap: '16px' }}>
           <h4 style={{ margin: 0, fontSize: '18px', color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <Percent size={20} color={wlConfig.accent} /> Network Platform Fee
+            <Percent size={20} color={wlConfig.accent} /> Profile Revenue Split %
           </h4>
           <div style={{ color: 'var(--text-secondary)', fontSize: '14px', lineHeight: 1.5 }}>
             Set the revenue split you automatically collect from your creators' earnings. If set to 0%, creators do not have access to an internal wallet. All revenue they generate goes directly to your Network Ledger for you to disperse manually. Maximum fee is 30%.
