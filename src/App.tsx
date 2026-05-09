@@ -103,8 +103,9 @@ function App() {
          let finalId = newId;
 
          const { data: { session: currentSession } } = await supabase!.auth.getSession();
-         const { data: wlData, error: wlError } = await supabase!.from('whitelabel_configs').upsert({
-           id: newId.includes('test_wl') ? undefined : newId, // allow DB to gen_random_uuid if test
+         const isNew = newId.includes('test_wl');
+         
+         const payload = {
            owner_id: currentSession?.user?.id,
            name: e.detail.name,
            domain: e.detail.domain,
@@ -126,7 +127,20 @@ function App() {
               heroVideoUrl: e.detail.heroVideoUrl || '',
               heroVideoTitle: e.detail.heroVideoTitle || ''
            }
-         }).select().single();
+         };
+
+         let wlData = null;
+         let wlError = null;
+
+         if (isNew) {
+             const { data, error } = await supabase!.from('whitelabel_configs').insert(payload).select().single();
+             wlData = data;
+             wlError = error;
+         } else {
+             const { data, error } = await supabase!.from('whitelabel_configs').update(payload).eq('id', newId).select().single();
+             wlData = data;
+             wlError = error;
+         }
 
          // Always update the local storage cache so it doesn't get stale if DB succeeds!
          const localNetworks = JSON.parse(localStorage.getItem('vibe_local_networks') || '[]');
