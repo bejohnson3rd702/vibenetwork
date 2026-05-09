@@ -491,16 +491,8 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
         setProfile(data);
         setBio(data.bio || 'Welcome to my official channel!');
         setAvatarUrl(data.avatar_url || '');
-        const baseMockImages = [
-          'https://images.unsplash.com/photo-1473093295043-cdd812d0e601?auto=format&fit=crop&q=80&w=1200',
-          'https://images.unsplash.com/photo-1551183053-bf91a1d81141?auto=format&fit=crop&q=80&w=1200',
-          'https://images.unsplash.com/photo-1563379926898-05f4575a45d8?auto=format&fit=crop&q=80&w=1200',
-          'https://images.unsplash.com/photo-1608897013039-887f214b985c?auto=format&fit=crop&q=80&w=1200',
-          'https://images.unsplash.com/photo-1598866594230-a7018322ca21?auto=format&fit=crop&q=80&w=1200'
-        ];
-        const pastaMockImages = Array.from({length: 20}).map((_, i) => baseMockImages[i % 5]).join(',');
-        setHomepageImageUrl(data.homepage_image_url || baseMockImages[0]);
-        setFlipbookImages(data.flipbook_images || pastaMockImages);
+        setHomepageImageUrl(data.homepage_image_url || '');
+        setFlipbookImages(data.flipbook_images || '');
         if (data.genre) setSelectedGenre(data.genre);
         if (data.sub_price) setSubPrice(data.sub_price);
         
