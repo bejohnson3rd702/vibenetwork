@@ -1,5 +1,5 @@
 import { supabase } from './supabaseClient';
-import { GENRE_CATEGORIES } from './data';
+
 export async function getCategoriesWithVideos(tenantId?: string) {
   if (!supabase) return [];
 
@@ -66,17 +66,77 @@ export async function getCategoriesWithVideos(tenantId?: string) {
     items: mappedProfiles
   });
 
-  GENRE_CATEGORIES.forEach(cat => {
-    categoriesToReturn.push({
-      title: cat.title,
-      aspectRatio: '16/9',
-      items: cat.items
+  // Dynamically load custom categories and their assigned videos using an optimized join
+  const { data: dbCategories } = await supabase
+    .from('categories')
+    .select('*, videos(id, title, image_url, tags, video_url)')
+    .limit(10); // Limit to top 10 custom categories to prevent massive payload sizes
+
+  let addedCustom = false;
+
+  if (dbCategories) {
+    dbCategories.forEach(cat => {
+      if (cat.title === 'Live Network Schedule') return;
+      
+      const catVideos = cat.videos || [];
+      
+      if (catVideos.length > 0) {
+        addedCustom = true;
+        // Prevent duplicate sliders if the database has duplicate categories
+        if (!categoriesToReturn.find(c => c.title === cat.title)) {
+          categoriesToReturn.push({
+            title: cat.title,
+            aspectRatio: '16/9',
+            items: catVideos.map((vid: any) => ({
+              id: vid.id,
+              title: vid.title,
+              image: vid.image_url,
+              tags: vid.tags || [],
+              videoUrl: vid.video_url
+            }))
+          });
+        }
+      }
     });
-  });
+  }
+
+  // Fallback if no custom categories have videos yet
+  if (!addedCustom) {
+    categoriesToReturn.push({
+      title: 'New Content',
+      aspectRatio: '16/9',
+      items: mappedContent
+    });
+  }
 
   return categoriesToReturn;
 }
 
 export async function getLiveSchedule() {
-  return [];
+  if (!supabase) return [];
+
+  const { data: category, error: catError } = await supabase
+    .from('categories')
+    .select('id')
+    .eq('title', 'Live Network Schedule')
+    .single();
+
+  if (catError || !category) return [];
+
+  const { data: videos, error: vidError } = await supabase
+    .from('videos')
+    .select('id, title, stream_time, image_url, tags, video_url')
+    .eq('category_id', category.id)
+    .order('stream_time', { ascending: true }); // Can sort chronologically in real apps
+
+  if (vidError) return [];
+
+  return videos.map(vid => ({
+    id: vid.id,
+    title: vid.title,
+    time: vid.stream_time || 'Just Added',
+    image: vid.image_url,
+    tags: vid.tags || [],
+    video_url: vid.video_url
+  }));
 }
