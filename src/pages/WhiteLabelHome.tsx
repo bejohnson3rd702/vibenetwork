@@ -61,17 +61,6 @@ export default function WhiteLabelHome({ wlConfig, categories, user, activeVideo
               <motion.p initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, delay: 0.4, ease: [0.16, 1, 0.3, 1] }} className="hero-sub-mobile" style={{ fontSize: '28px', color: 'rgba(255,255,255,0.8)', maxWidth: '850px', textAlign: 'center', fontWeight: '400', textShadow: '0 10px 20px rgba(0,0,0,0.8)', lineHeight: 1.6 }}>
                 {wlConfig.heroCopy || 'The premiere destination for high quality digital content.'}
               </motion.p>
-              <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.8, delay: 0.6, ease: [0.16, 1, 0.3, 1] }} style={{ marginTop: '30px', display: 'flex', gap: '20px', alignItems: 'center' }}>
-                 <motion.button 
-                   whileHover={{ scale: 1.05, boxShadow: `0 20px 40px ${wlConfig.accent || 'var(--accent-primary)'}88`, filter: 'brightness(1.1)' }}
-                   whileTap={{ scale: 0.95 }}
-                   onClick={() => { document.getElementById('featured-content')?.scrollIntoView({ behavior: 'smooth' }); }} 
-                   style={{ padding: '22px 54px', background: `linear-gradient(135deg, ${wlConfig.accent || 'var(--accent-primary)'}, rgba(0,0,0,0.8))`, color: '#fff', border: `1px solid ${wlConfig.accent || 'var(--accent-primary)'}44`, borderRadius: '40px', fontSize: '20px', fontWeight: 'bold', cursor: 'pointer', boxShadow: `0 10px 30px ${wlConfig.accent || 'var(--accent-primary)'}55`, transition: 'all 0.3s ease', display: 'flex', alignItems: 'center', gap: '12px' }}
-                 >
-                   {wlConfig.btnPrimary === 'Access Admin Dashboard' ? 'Explore Content' : (wlConfig.btnPrimary || 'Explore Content')}
-                   <ChevronRight size={24} />
-                 </motion.button>
-              </motion.div>
             </>
           )}
 
