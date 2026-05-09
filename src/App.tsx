@@ -21,6 +21,7 @@ const PrivacyPolicy = lazy(() => import('./components/PrivacyPolicy'));
 const Footer = lazy(() => import('./components/Footer'));
 const FoodTruck = lazy(() => import('./pages/FoodTruck'));
 const ResetPassword = lazy(() => import('./pages/ResetPassword'));
+const Community = lazy(() => import('./pages/Community'));
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { WhiteLabelContext } from './context/WhiteLabelContext';
 import { supabase, storageKey } from './supabaseClient';
@@ -471,6 +472,7 @@ function App() {
               <Route path="/" element={
                  <WhiteLabelHome wlConfig={wlConfig} categories={categories} user={user} activeVideo={activeVideo} setActiveVideo={setActiveVideo} />
               } />
+              <Route path="/community" element={<Community user={user} />} />
               <Route path="/marketplace" element={<Marketplace />} />
               <Route path="/contact" element={<Contact />} />
               <Route path="/about" element={<MoreInfo />} />
