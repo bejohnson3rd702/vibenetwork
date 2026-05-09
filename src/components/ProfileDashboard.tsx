@@ -41,6 +41,7 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
   const [currentBgIndex, setCurrentBgIndex] = useState(0);
   const [saving, setSaving] = useState(false);
   const [activeTab, setActiveTab] = useState<'feed' | 'store' | 'live' | 'booking' | 'series' | 'courses' | 'wallet' | 'flipbook' | 'appearance' | 'my_bookings' | 'networks' | 'members' | 'community'>('feed');
+  const [expandedComments, setExpandedComments] = useState<Record<string, boolean>>({});
   const [networkProfiles, setNetworkProfiles] = useState<any[]>([]);
   const [walletBalance, setWalletBalance] = useState(() => (typeof window !== 'undefined' ? Number(localStorage.getItem('vibe_host_wallet') || 0.00) : 0.00));
   const [paySubsWithWallet, setPaySubsWithWallet] = useState(true);
@@ -1405,8 +1406,8 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
 
                   {/* Comments List */}
                   {post.comments && post.comments.length > 0 && (
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginBottom: '16px', maxHeight: '200px', overflowY: 'auto' }}>
-                      {post.comments.map((c: any) => (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginBottom: '16px' }}>
+                      {(expandedComments[post.id] ? post.comments : post.comments.slice(0, 2)).map((c: any) => (
                         <div key={c.id} style={{ display: 'flex', gap: '12px' }}>
                           <img src={c.avatar || `https://ui-avatars.com/api/?name=${c.user}&background=random`} alt={c.user} loading="lazy" style={{ width: 28, height: 28, borderRadius: '50%' }} />
                           <div style={{ background: 'rgba(255,255,255,0.05)', padding: '8px 12px', borderRadius: '12px', fontSize: '14px' }}>
@@ -1415,6 +1416,14 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
                           </div>
                         </div>
                       ))}
+                      {post.comments.length > 2 && (
+                        <button 
+                          onClick={() => setExpandedComments(prev => ({ ...prev, [post.id]: !prev[post.id] }))}
+                          style={{ background: 'none', border: 'none', color: 'var(--text-muted)', fontSize: '13px', fontWeight: 'bold', cursor: 'pointer', textAlign: 'left', padding: '0 40px' }}
+                        >
+                          {expandedComments[post.id] ? 'Hide comments' : `View all ${post.comments.length} comments`}
+                        </button>
+                      )}
                     </div>
                   )}
 
