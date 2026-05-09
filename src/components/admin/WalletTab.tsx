@@ -8,6 +8,8 @@ export const WalletTab = ({ wlConfig }: { wlConfig: any }) => {
   const [feePercentage, setFeePercentage] = useState(wlConfig.platform_fee_percentage || 0);
   const [isSavingFee, setIsSavingFee] = useState(false);
   const [profiles, setProfiles] = useState<any[]>([]);
+  const [pendingProfileChanges, setPendingProfileChanges] = useState<{ [key: string]: number }>({});
+  const [isSavingProfiles, setIsSavingProfiles] = useState(false);
 
   useEffect(() => {
     if (wlConfig?.id) {
@@ -17,9 +19,19 @@ export const WalletTab = ({ wlConfig }: { wlConfig: any }) => {
     }
   }, [wlConfig?.id]);
 
-  const handleProfileFeeChange = async (profileId: string, val: number) => {
+  const handleProfileFeeChange = (profileId: string, val: number) => {
      setProfiles(prev => prev.map(p => p.id === profileId ? { ...p, platform_fee_percentage: val } : p));
-     await supabase.from('profiles').update({ platform_fee_percentage: val }).eq('id', profileId);
+     setPendingProfileChanges(prev => ({ ...prev, [profileId]: val }));
+  };
+
+  const handleSaveProfileChanges = async () => {
+    setIsSavingProfiles(true);
+    const updates = Object.entries(pendingProfileChanges).map(async ([profileId, val]) => {
+       return supabase.from('profiles').update({ platform_fee_percentage: val }).eq('id', profileId);
+    });
+    await Promise.all(updates);
+    setPendingProfileChanges({});
+    setIsSavingProfiles(false);
   };
 
   const handleFeeChange = async (val: number) => {
@@ -135,6 +147,13 @@ export const WalletTab = ({ wlConfig }: { wlConfig: any }) => {
                 </div>
               </div>
             ))}
+          </div>
+        )}
+        {Object.keys(pendingProfileChanges).length > 0 && (
+          <div style={{ marginTop: '20px', display: 'flex', justifyContent: 'flex-end' }}>
+             <button onClick={handleSaveProfileChanges} disabled={isSavingProfiles} style={{ padding: '12px 24px', background: wlConfig.accent, color: 'var(--text-primary)', border: 'none', borderRadius: '12px', fontWeight: 'bold', cursor: 'pointer', transition: '0.2s', opacity: isSavingProfiles ? 0.7 : 1 }}>
+               {isSavingProfiles ? 'Saving Changes...' : 'Save Creator Splits'}
+             </button>
           </div>
         )}
       </div>
