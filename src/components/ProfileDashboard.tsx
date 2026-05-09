@@ -5,6 +5,7 @@ import { LogOut, Camera, Lock, Unlock, Image as ImageIcon, Star, ShieldCheck, Ey
 import { DictationButton } from './DictationButton';
 import { EmojiPickerButton } from './EmojiPickerButton';
 const LiveChat = React.lazy(() => import('./LiveChat'));
+import Community from '../pages/Community';
 import { useNavigate, useParams, useLocation } from 'react-router-dom';
 import Peer from 'peerjs';
 import { loadStripe } from '@stripe/stripe-js';
@@ -39,7 +40,7 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
   const [currentBannerIndex, setCurrentBannerIndex] = useState(0);
   const [currentBgIndex, setCurrentBgIndex] = useState(0);
   const [saving, setSaving] = useState(false);
-  const [activeTab, setActiveTab] = useState<'feed' | 'store' | 'live' | 'booking' | 'series' | 'courses' | 'wallet' | 'flipbook' | 'appearance' | 'my_bookings' | 'networks' | 'members'>('feed');
+  const [activeTab, setActiveTab] = useState<'feed' | 'store' | 'live' | 'booking' | 'series' | 'courses' | 'wallet' | 'flipbook' | 'appearance' | 'my_bookings' | 'networks' | 'members' | 'community'>('feed');
   const [networkProfiles, setNetworkProfiles] = useState<any[]>([]);
   const [walletBalance, setWalletBalance] = useState(() => (typeof window !== 'undefined' ? Number(localStorage.getItem('vibe_host_wallet') || 0.00) : 0.00));
   const [paySubsWithWallet, setPaySubsWithWallet] = useState(true);
@@ -1202,7 +1203,7 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
                 { id: 'series', label: 'Episodes' },
                 { id: 'courses', label: 'Masterclasses' },
                 { id: 'flipbook', label: 'Flip Book' }
-              ].concat(isNetworkLevel ? [{ id: 'members', label: 'Network Profiles' }] : []).concat(user ? [{ id: 'my_bookings', label: 'My Bookings' }] : []).concat((myNetworks.length > 0 && !isNetworkLevel) ? [{ id: 'networks', label: 'My Networks' }] : []).map(tab => (
+              ].concat(isNetworkLevel ? [{ id: 'members', label: 'Network Profiles' }, { id: 'community', label: 'Community' }] : []).concat(user ? [{ id: 'my_bookings', label: 'My Bookings' }] : []).concat((myNetworks.length > 0 && !isNetworkLevel) ? [{ id: 'networks', label: 'My Networks' }] : []).map(tab => (
                 <button 
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id as any)}
@@ -2511,6 +2512,13 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
                     <div style={{ gridColumn: '1 / -1', textAlign: 'center', padding: '40px', color: 'var(--text-muted)' }}>No profiles found for this network yet.</div>
                  )}
               </div>
+           </motion.div>
+        )}
+
+        {/* --- COMMUNITY TAB --- */}
+        {activeTab === 'community' && isNetworkLevel && (
+           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} style={{ marginTop: '20px' }}>
+              <Community user={user} />
            </motion.div>
         )}
 

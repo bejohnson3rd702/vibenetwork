@@ -472,7 +472,6 @@ function App() {
               <Route path="/" element={
                  <WhiteLabelHome wlConfig={wlConfig} categories={categories} user={user} activeVideo={activeVideo} setActiveVideo={setActiveVideo} />
               } />
-              <Route path="/community" element={<Community user={user} />} />
               <Route path="/marketplace" element={<Marketplace />} />
               <Route path="/contact" element={<Contact />} />
               <Route path="/about" element={<MoreInfo />} />

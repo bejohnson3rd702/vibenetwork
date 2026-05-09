@@ -101,7 +101,7 @@ export default function Community({ user }: { user: any }) {
   }
 
   return (
-    <div style={{ minHeight: '100vh', background: 'var(--bg-main)', paddingTop: '100px', display: 'flex', color: '#fff' }}>
+    <div style={{ height: 'calc(100vh - 120px)', minHeight: '600px', background: 'rgba(0,0,0,0.4)', borderRadius: '24px', display: 'flex', color: '#fff', overflow: 'hidden', border: '1px solid rgba(255,255,255,0.05)' }}>
       {/* Sidebar - Channels */}
       <div style={{ width: '280px', background: 'rgba(0,0,0,0.5)', borderRight: '1px solid rgba(255,255,255,0.05)', padding: '20px', display: 'flex', flexDirection: 'column' }}>
         <h2 style={{ fontSize: '20px', fontWeight: 'bold', marginBottom: '24px', display: 'flex', alignItems: 'center', gap: '8px' }}>
@@ -135,7 +135,7 @@ export default function Community({ user }: { user: any }) {
       </div>
 
       {/* Main Chat Area */}
-      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', height: 'calc(100vh - 100px)' }}>
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', height: '100%' }}>
         {/* Channel Header */}
         <div style={{ padding: '20px 30px', borderBottom: '1px solid rgba(255,255,255,0.05)', background: 'rgba(255,255,255,0.02)' }}>
           <h3 style={{ margin: 0, fontSize: '24px', display: 'flex', alignItems: 'center', gap: '8px' }}>

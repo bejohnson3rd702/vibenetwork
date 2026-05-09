@@ -81,7 +81,6 @@ const Navbar: React.FC<NavbarProps> = ({ user, onLoginClick, onAdminClick }) => 
           {[
             { label: 'Home', path: '/' },
             { label: 'Marketplace', path: '/marketplace', hidden: Boolean(wlConfig?.domain && wlConfig.domain !== 'vibenetwork.tv') },
-            { label: 'Community', path: '/community' },
             { label: 'About Us', path: '/about' },
             { label: 'Watch Live', path: '/#whats-on-now', hidden: wlConfig?.enableWatchLive === false },
             { label: 'Contact', path: '/contact' }
