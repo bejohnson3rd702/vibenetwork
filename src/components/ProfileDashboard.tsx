@@ -481,12 +481,50 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
     else if (viewMode === 'public' && isOwnProfile) setViewMode('edit');
 
     async function loadProfile() {
-      const { data, error } = await supabase!
-        .from('profiles')
-        .select('*')
-        .eq('id', targetProfileId)
-        .single();
+      // Create all promise queries to run in parallel
+      const profilePromise = supabase!.from('profiles').select('*').eq('id', targetProfileId).single();
       
+      let prodQuery = supabase!.from('products').select(isNetworkLevel ? '*, creator:profiles!inner(username, avatar_url, whitelabel_id)' : '*');
+      if (isNetworkLevel) {
+        if (wlConfig?.domain && wlConfig.domain !== 'vibenetwork.tv') prodQuery = prodQuery.eq('creator.whitelabel_id', wlConfig.id);
+      } else {
+        prodQuery = prodQuery.eq('creator_id', targetProfileId);
+      }
+      const productsPromise = prodQuery.order('created_at', { ascending: false });
+
+      let postsQuery = supabase!.from('posts').select('*, creator:profiles!inner(username, avatar_url, whitelabel_id), post_likes(user_id), post_comments(*, user:profiles(username, avatar_url))');
+      if (isNetworkLevel && wlConfig?.id) postsQuery = postsQuery.eq('creator.whitelabel_id', wlConfig.id).eq('is_locked', false);
+      else postsQuery = postsQuery.eq('creator_id', targetProfileId);
+      const postsPromise = postsQuery.order('created_at', { ascending: false });
+
+      const seriesPromise = supabase!.from('series').select('*, episodes(*)').eq('creator_id', targetProfileId);
+      const coursesPromise = supabase!.from('courses').select('*').eq('creator_id', targetProfileId);
+
+      const pBookingsPromise = user ? supabase!.from('bookings').select('*, creator:profiles!creator_id(username, full_name, avatar_url)').eq('buyer_id', user.id) : Promise.resolve({ data: null });
+      const networksPromise = user ? supabase!.from('whitelabel_configs').select('*').eq('owner_id', user.id) : Promise.resolve({ data: null });
+      const rBookingsPromise = (isOwnProfile && user) ? supabase!.from('bookings').select('*, buyer:profiles!buyer_id(username, full_name, avatar_url)').eq('creator_id', user.id) : Promise.resolve({ data: null });
+
+      // Run all in parallel
+      const [
+        { data, error },
+        { data: prodData },
+        { data: postsDataRaw, error: postsError },
+        { data: seriesData },
+        { data: coursesData },
+        { data: pBookings },
+        { data: networks },
+        { data: rBookings }
+      ] = await Promise.all([
+        profilePromise,
+        productsPromise,
+        postsPromise,
+        seriesPromise,
+        coursesPromise,
+        pBookingsPromise,
+        networksPromise,
+        rBookingsPromise
+      ]);
+
       if (!error && data) {
         setProfile(data);
         setBio(data.bio || 'Welcome to my official channel!');
@@ -496,49 +534,10 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
         if (data.genre) setSelectedGenre(data.genre);
         if (data.sub_price) setSubPrice(data.sub_price);
         
-        // Also load products for this creator or network
-        if (isNetworkLevel) {
-          const query = supabase!.from('products').select('*, creator:profiles!inner(username, avatar_url, whitelabel_id)');
-          if (wlConfig?.domain && wlConfig.domain !== 'vibenetwork.tv') {
-            query.eq('creator.whitelabel_id', wlConfig.id);
-          }
-          const { data: prodData } = await query.order('created_at', { ascending: false });
-          if (prodData && prodData.length > 0) {
-            setProducts(prodData);
-          } else {
-            setProducts([]);
-          }
-        } else {
-          const { data: prodData } = await supabase!.from('products').select('*').eq('creator_id', targetProfileId);
-          if (prodData && prodData.length > 0) {
-            setProducts(prodData);
-          } else {
-            setProducts([]);
-          }
-        }
+        setProducts(prodData || []);
         
-        // Load Feed Posts
-        let postsData: any[] | null = null;
-        try {
-          let query = supabase!.from('posts').select('*, creator:profiles!inner(username, avatar_url, whitelabel_id), post_likes(user_id), post_comments(*, user:profiles(username, avatar_url))');
-          
-          if (isNetworkLevel && wlConfig?.id) {
-             query = query.eq('creator.whitelabel_id', wlConfig.id).eq('is_locked', false);
-          } else {
-             query = query.eq('creator_id', targetProfileId);
-          }
-          
-          const { data, error } = await query.order('created_at', { ascending: false });
-          if (!error) postsData = data;
-          else {
-             let fallbackQuery = supabase!.from('posts').select('*, creator:profiles!inner(username, avatar_url, whitelabel_id)');
-             if (isNetworkLevel && wlConfig?.id) fallbackQuery = fallbackQuery.eq('creator.whitelabel_id', wlConfig.id).eq('is_locked', false);
-             else fallbackQuery = fallbackQuery.eq('creator_id', targetProfileId);
-             
-             const fallback = await fallbackQuery.order('created_at', { ascending: false });
-             postsData = fallback.data;
-          }
-        } catch {
+        let postsData = postsDataRaw;
+        if (postsError) {
              let fallbackQuery = supabase!.from('posts').select('*, creator:profiles!inner(username, avatar_url, whitelabel_id)');
              if (isNetworkLevel && wlConfig?.id) fallbackQuery = fallbackQuery.eq('creator.whitelabel_id', wlConfig.id).eq('is_locked', false);
              else fallbackQuery = fallbackQuery.eq('creator_id', targetProfileId);
@@ -571,47 +570,23 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
           setFeed([]);
         }
 
-        // Load Series with Episodes
-        const { data: seriesData } = await supabase!.from('series').select('*, episodes(*)').eq('creator_id', targetProfileId);
-        if (seriesData && seriesData.length > 0) {
-          setSeriesList(seriesData);
-        } else {
-          setSeriesList([]);
-        }
+        setSeriesList(seriesData || []);
+        setCourses(coursesData || []);
 
-        // Load Courses
-        const { data: coursesData } = await supabase!.from('courses').select('*').eq('creator_id', targetProfileId);
-        if (coursesData && coursesData.length > 0) {
-          setCourses(coursesData);
-        } else {
-          setCourses([]);
-        }
-
-        // Load Bookings
         if (user) {
-           const { data: pBookings } = await supabase!.from('bookings').select('*, creator:profiles!creator_id(username, full_name, avatar_url)').eq('buyer_id', user.id);
            setPurchasedBookings(pBookings || []);
            
-           // Load Owned Networks
-           const { data: networks } = await supabase!.from('whitelabel_configs').select('*').eq('owner_id', user.id);
-           
-           // Merge with local storage networks
            const localNetworks = JSON.parse(localStorage.getItem('vibe_local_networks') || '[]');
            const myLocal = localNetworks.filter((n: any) => n.owner_id === user.id);
            
-           // Combine, avoiding duplicates by ID
            const combined = [...(networks || [])];
            myLocal.forEach((ln: any) => {
-              if (!combined.find(n => n.id === ln.id)) {
-                 combined.push(ln);
-              }
+              if (!combined.find(n => n.id === ln.id)) combined.push(ln);
            });
-           
            setMyNetworks(combined);
         }
 
         if (isOwnProfile && user) {
-           const { data: rBookings } = await supabase!.from('bookings').select('*, buyer:profiles!buyer_id(username, full_name, avatar_url)').eq('creator_id', user.id);
            setReceivedBookings(rBookings || []);
         }
       } else if (isOwnProfile) {
