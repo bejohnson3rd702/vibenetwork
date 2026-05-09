@@ -35,6 +35,7 @@ function MasterAdminDashboard() {
   const [ledgerFilter, setLedgerFilter] = useState('ALL');
   const [loading, setLoading] = useState(false);
   const [broadcastSource, setBroadcastSource] = useState<'youtube' | 'upload'>('youtube');
+  const [broadcastFileUrl, setBroadcastFileUrl] = useState('');
   const [currentUser, setCurrentUser] = useState<any>(null);
   const [globalSettings, setGlobalSettings] = useState<any>({ id: '', global_vibe_fee: 15, global_whitelabel_fee: 15, global_vibe_fee_whitelabel: 15 });
   const [systemLogs, setSystemLogs] = useState<any[]>([]);
