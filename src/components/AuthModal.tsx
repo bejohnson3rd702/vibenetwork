@@ -157,7 +157,8 @@ const AuthModal: React.FC<AuthModalProps> = ({ onClose, onSuccess, defaultIsLogi
              }
            } catch (e: any) {
              console.error("Stripe checkout error:", e);
-             setErrorMSG("Payment system error. Please try again or contact support.");
+             // Fallback to wizard if edge function fails or isn't deployed yet
+             setShowBusinessWizard(true);
              setLoading(false);
            }
         } else {
