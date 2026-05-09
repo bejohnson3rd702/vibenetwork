@@ -31,7 +31,34 @@ export default function Home({ categories, activeVideo, setActiveVideo, user }: 
           </div>
         )}
 
-        <div id="slider-section-container" style={{ display: 'none' }}></div>
+        <div id="slider-section-container">
+          {categories.map((category: any, index: number) => {
+            const isArtist = category.aspectRatio === '3/4' || category.title.includes('Artist');
+          const ratio = isArtist ? '3/4' : '16/9';
+          const multiplier = 1; 
+          return (
+            <SliderSection 
+              key={category.title} 
+              title={category.title} 
+              items={category.items} 
+              delay={index * 0.2}
+              aspectRatio={ratio}
+              sizeMultiplier={multiplier}
+              onItemClick={(item) => {
+                if (item.linkUrl) {
+                  window.location.href = item.linkUrl + window.location.search;
+                } else if (item.tags && item.tags.includes('Influencer Channel')) {
+                  // Force a hard redirect specifically for Influencer profiles from the Swiper slider
+                  // This entirely bypasses any nested DOM event swallowing bugs from swiper/react wrapper
+                  window.location.href = `/profile/${item.id}${window.location.search}`;
+                } else {
+                  setActiveVideo(item);
+                }
+              }}
+            />
+          );
+        })}
+        </div>
 
         {/* New content section below sliders */}
         <section style={{ maxWidth: '1400px', margin: '100px auto 40px', padding: '0 40px' }}>
