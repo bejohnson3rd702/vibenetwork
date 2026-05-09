@@ -663,7 +663,7 @@ function MasterAdminDashboard() {
                 const wlConfig = whitelabelsList.find(wl => wl?.id === wlId);
                 const isDirect = !wlId;
                 const gross = Number(tx.amount || 0);
-                const wlFeePercent = isDirect ? 0 : Number(wlConfig?.platform_fee_percentage ?? globalSettings?.global_whitelabel_fee ?? 15);
+                const wlFeePercent = isDirect ? 0 : Number(wlConfig?.theme?.creator_splits?.[profile?.id] ?? wlConfig?.platform_fee_percentage ?? globalSettings?.global_whitelabel_fee ?? 15);
                 const vFeePercent = Number(profile?.platform_fee_percentage ?? globalSettings?.global_vibe_fee ?? 15);
                 const totalFeePercent = vFeePercent + wlFeePercent;
                 const creatorCutPercent = 100 - totalFeePercent;
@@ -1024,7 +1024,7 @@ function MasterAdminDashboard() {
                            const origin = isDirect ? 'Direct Vibe' : 'Whitelabel';
                            const gross = Number(tx.amount || 0);
                            
-                           const wlFeePercent = isDirect ? 0 : Number(wlConfig?.platform_fee_percentage ?? globalSettings?.global_whitelabel_fee ?? 15);
+                           const wlFeePercent = isDirect ? 0 : Number(wlConfig?.theme?.creator_splits?.[profile?.id] ?? wlConfig?.platform_fee_percentage ?? globalSettings?.global_whitelabel_fee ?? 15);
                            const vFeePercent = Number(profile?.platform_fee_percentage ?? (isDirect ? globalSettings?.global_vibe_fee : globalSettings?.global_vibe_fee_whitelabel) ?? 15);
                            const totalFeePercent = vFeePercent + wlFeePercent;
                            const creatorCutPercent = 100 - totalFeePercent;
