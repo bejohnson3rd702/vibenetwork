@@ -174,7 +174,7 @@ export default function WhiteLabelHome({ wlConfig, categories, user, activeVideo
                <button onClick={() => setActiveVideo(null)} style={{ background: 'none', border: 'none', color: 'var(--text-primary)', cursor: 'pointer', opacity: 0.7, padding: '8px' }} onMouseOver={e=>e.currentTarget.style.opacity='1'} onMouseOut={e=>e.currentTarget.style.opacity='0.7'}><X size={32} /></button>
              </div>
              <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '0 40px 40px', gap: '20px' }} onClick={e => e.stopPropagation()}>
-               <div style={{ flex: 1, maxWidth: '1200px', height: '100%', background: 'var(--bg-color)', borderRadius: '16px', overflow: 'hidden', boxShadow: '0 20px 40px rgba(0,0,0,0.5)' }}>
+               <div style={{ flex: 1, maxWidth: '1200px', height: '100%', background: 'var(--bg-color)', borderRadius: '16px', overflow: 'hidden', boxShadow: '0 20px 40px rgba(0,0,0,0.5)', position: 'relative' }}>
                  {(() => {
                    const match = activeVideo.videoUrl.match(/^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/);
                    const ytId = (match && match[2].length === 11) ? match[2] : null;
@@ -183,7 +183,7 @@ export default function WhiteLabelHome({ wlConfig, categories, user, activeVideo
                        <iframe 
                          src={`https://www.youtube.com/embed/${ytId}?autoplay=1&modestbranding=1&rel=0&controls=0`}
                          title={activeVideo.title}
-                         style={{ width: '100%', height: '100%', border: 'none' }}
+                         style={{ width: '120%', height: '120%', position: 'absolute', top: '-10%', left: '-10%', border: 'none', pointerEvents: 'none' }}
                          allow="autoplay; encrypted-media; fullscreen"
                          allowFullScreen
                          loading="lazy"

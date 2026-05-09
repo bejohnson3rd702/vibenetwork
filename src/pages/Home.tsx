@@ -131,7 +131,7 @@ export default function Home({ categories, activeVideo, setActiveVideo, user }: 
               exit={{ scale: 0.9, y: 20 }}
               style={{ width: '90%', maxWidth: '1400px', height: '70vh', position: 'relative', borderRadius: '16px', overflow: 'hidden', boxShadow: '0 20px 50px rgba(0,0,0,0.5)', display: 'flex' }}
             >
-              <div style={{ flex: 1, height: '100%' }}>
+              <div style={{ flex: 1, height: '100%', position: 'relative', overflow: 'hidden', borderRadius: '16px' }}>
               {(() => {
                 const match = activeVideo.videoUrl.match(/^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/);
                 const ytId = (match && match[2].length === 11) ? match[2] : null;
@@ -140,7 +140,7 @@ export default function Home({ categories, activeVideo, setActiveVideo, user }: 
                     <iframe 
                       src={`https://www.youtube.com/embed/${ytId}?autoplay=1&modestbranding=1&rel=0&controls=0`}
                       title={activeVideo.title}
-                      style={{ width: '100%', height: '100%', border: 'none' }}
+                      style={{ width: '120%', height: '120%', position: 'absolute', top: '-10%', left: '-10%', border: 'none', pointerEvents: 'none' }}
                       allow="autoplay; encrypted-media; fullscreen"
                       allowFullScreen
                       loading="lazy"
