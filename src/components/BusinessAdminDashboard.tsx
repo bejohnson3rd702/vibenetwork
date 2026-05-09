@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { X, Users, Film, Layout, Mail, Type, Sparkles } from 'lucide-react';
 import { useWhiteLabel } from '../context/WhiteLabelContext';
 
