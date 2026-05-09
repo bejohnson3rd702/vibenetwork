@@ -1068,4 +1068,4 @@ function MasterAdminDashboard() {
   );
 }
 
-export default React.memo(MasterAdminDashboard);
+export default MasterAdminDashboard;
