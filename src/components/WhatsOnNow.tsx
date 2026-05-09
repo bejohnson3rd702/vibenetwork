@@ -51,16 +51,16 @@ const ScheduleRow: React.FC<{ item: any, isActive: boolean, onClick: () => void 
 };
 
 const FALLBACK_10_YOUTUBE = [
-  { id: 'fb1', title: 'Kaytranada - Boiler Room Montreal (House/Hip Hop)', time: 'LIVE', image: 'https://images.unsplash.com/photo-1571266028243-3716f02d2d2e?auto=format&fit=crop&w=800&q=80', video_url: 'https://www.youtube.com/watch?v=u4ZoJKF_VuA', tags: ['House', 'Live Set'] },
-  { id: 'fb2', title: 'Metro Boomin - Live at Coachella (Hip Hop Mix)', time: 'UP NEXT', image: 'https://images.unsplash.com/photo-1514525253161-7a46d19cd819?auto=format&fit=crop&w=800&q=80', video_url: 'https://www.youtube.com/watch?v=SjB-Bf3g-A0', tags: ['Hip Hop', 'Festival'] },
-  { id: 'fb3', title: 'Peggy Gou - Sunset Deep House Set', time: '1:00 PM EST', image: 'https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?auto=format&fit=crop&w=800&q=80', video_url: 'https://www.youtube.com/watch?v=3Fx5Q8xGU8k', tags: ['Deep House', 'Sunset'] },
-  { id: 'fb4', title: 'DJ Snake - Ultra Miami Main Stage', time: '2:30 PM EST', image: 'https://images.unsplash.com/photo-1470229722913-7c0e2dbbafd3?auto=format&fit=crop&w=800&q=80', video_url: 'https://www.youtube.com/watch?v=VQKMoT-6P4s', tags: ['EDM', 'Main Stage'] },
-  { id: 'fb5', title: 'Fred Again.. - Studio Live Session', time: '4:00 PM EST', image: 'https://images.unsplash.com/photo-1598387181032-a3103a2db5b3?auto=format&fit=crop&w=800&q=80', video_url: 'https://www.youtube.com/watch?v=pDJaT69p5pY', tags: ['Electronic', 'Studio'] },
-  { id: 'fb6', title: 'DJ Khaled - Hip Hop All Stars Mix', time: '5:30 PM EST', image: 'https://images.unsplash.com/photo-1506157786151-b8491531f063?auto=format&fit=crop&w=800&q=80', video_url: 'https://www.youtube.com/watch?v=B9XGUpQZY38', tags: ['Hip Hop', 'Anthems'] },
-  { id: 'fb7', title: 'Carl Cox - Ibiza Residency (Techno/House)', time: '7:00 PM EST', image: 'https://images.unsplash.com/photo-1526478806334-5fd488fcaabc?auto=format&fit=crop&w=800&q=80', video_url: 'https://www.youtube.com/watch?v=cK2gO5LzEGE', tags: ['Techno', 'Ibiza'] },
-  { id: 'fb8', title: 'Black Coffee - Rooftop House Set', time: '8:30 PM EST', image: 'https://images.unsplash.com/photo-1429962714451-bb934ecdc4ec?auto=format&fit=crop&w=800&q=80', video_url: 'https://www.youtube.com/watch?v=iE1hGzO6y2I', tags: ['Afro House', 'Rooftop'] },
-  { id: 'fb9', title: 'Travis Scott - Cactus Jack Mix', time: '10:00 PM EST', image: 'https://images.unsplash.com/photo-1493225457124-a1a2a5f275bd?auto=format&fit=crop&w=800&q=80', video_url: 'https://www.youtube.com/watch?v=1-TZqOsVCNM', tags: ['Rap', 'Concert'] },
-  { id: 'fb10', title: 'David Guetta - Afterhours Club Mix', time: '11:00 PM EST', image: 'https://images.unsplash.com/photo-1558369178-6656d78216fc?auto=format&fit=crop&w=800&q=80', video_url: 'https://www.youtube.com/watch?v=UF8uR6Z6KLc', tags: ['House', 'Club'] }
+  { id: 'fb1', title: 'Kaytranada - Boiler Room Montreal (House/Hip Hop)', time: 'LIVE', image: 'https://images.unsplash.com/photo-1571266028243-3716f02d2d2e?auto=format&fit=crop&w=800&q=80', video_url: 'https://www.youtube.com/watch?v=-5s1q7RhsME', tags: ['House', 'Live Set'] },
+  { id: 'fb2', title: 'Metro Boomin - Live at Coachella (Hip Hop Mix)', time: 'UP NEXT', image: 'https://images.unsplash.com/photo-1514525253161-7a46d19cd819?auto=format&fit=crop&w=800&q=80', video_url: 'https://www.youtube.com/watch?v=O1R1B0n-sGE', tags: ['Hip Hop', 'Festival'] },
+  { id: 'fb3', title: 'Peggy Gou - Sunset Deep House Set', time: '1:00 PM EST', image: 'https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?auto=format&fit=crop&w=800&q=80', video_url: 'https://www.youtube.com/watch?v=7M1rO6p-U30', tags: ['Deep House', 'Sunset'] },
+  { id: 'fb4', title: 'DJ Snake - Ultra Miami Main Stage', time: '2:30 PM EST', image: 'https://images.unsplash.com/photo-1470229722913-7c0e2dbbafd3?auto=format&fit=crop&w=800&q=80', video_url: 'https://www.youtube.com/watch?v=pC3bK6wZJ9c', tags: ['EDM', 'Main Stage'] },
+  { id: 'fb5', title: 'Fred Again.. - Studio Live Session', time: '4:00 PM EST', image: 'https://images.unsplash.com/photo-1598387181032-a3103a2db5b3?auto=format&fit=crop&w=800&q=80', video_url: 'https://www.youtube.com/watch?v=c0-hvjV2A5Y', tags: ['Electronic', 'Studio'] },
+  { id: 'fb6', title: 'DJ Khaled - Hip Hop All Stars Mix', time: '5:30 PM EST', image: 'https://images.unsplash.com/photo-1506157786151-b8491531f063?auto=format&fit=crop&w=800&q=80', video_url: 'https://www.youtube.com/watch?v=2v-k90l6OqM', tags: ['Hip Hop', 'Anthems'] },
+  { id: 'fb7', title: 'Carl Cox - Ibiza Residency (Techno/House)', time: '7:00 PM EST', image: 'https://images.unsplash.com/photo-1526478806334-5fd488fcaabc?auto=format&fit=crop&w=800&q=80', video_url: 'https://www.youtube.com/watch?v=yW6bYk8pGvE', tags: ['Techno', 'Ibiza'] },
+  { id: 'fb8', title: 'Black Coffee - Rooftop House Set', time: '8:30 PM EST', image: 'https://images.unsplash.com/photo-1429962714451-bb934ecdc4ec?auto=format&fit=crop&w=800&q=80', video_url: 'https://www.youtube.com/watch?v=zJvH20F63Yc', tags: ['Afro House', 'Rooftop'] },
+  { id: 'fb9', title: 'Travis Scott - Cactus Jack Mix', time: '10:00 PM EST', image: 'https://images.unsplash.com/photo-1493225457124-a1a2a5f275bd?auto=format&fit=crop&w=800&q=80', video_url: 'https://www.youtube.com/watch?v=uJ_1HMmZtcQ', tags: ['Rap', 'Concert'] },
+  { id: 'fb10', title: 'David Guetta - Afterhours Club Mix', time: '11:00 PM EST', image: 'https://images.unsplash.com/photo-1558369178-6656d78216fc?auto=format&fit=crop&w=800&q=80', video_url: 'https://www.youtube.com/watch?v=Q74z7E7k-zI', tags: ['House', 'Club'] }
 ];
 
 const WhatsOnNow: React.FC = () => {
@@ -78,12 +78,7 @@ const WhatsOnNow: React.FC = () => {
             v.video_url && 
             !v.video_url.includes('bbb.mp4') && 
             !v.video_url.includes('w3schools')
-          ).map((v: any) => {
-            if (v.image && v.image.includes('unsplash.com')) {
-               return { ...v, image: `https://image.pollinations.ai/prompt/corporate%20boardroom%20presentation%20cinematic?width=800&height=600&nologo=true` };
-            }
-            return v;
-          });
+          );
           
           if (genuineInjections.length > 0) {
             finalItems = genuineInjections;
