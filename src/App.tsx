@@ -283,9 +283,9 @@ function App() {
               owner_id: mConf.owner_id,
               enableWatchLive: localMaster?.theme?.enableWatchLive !== undefined ? localMaster.theme.enableWatchLive : (localMaster?.enableWatchLive !== undefined ? localMaster.enableWatchLive : (mConf.theme?.enableWatchLive !== undefined ? mConf.theme.enableWatchLive : true)),
               enableBooking: localMaster?.theme?.enableBooking !== undefined ? localMaster.theme.enableBooking : (localMaster?.enableBooking !== undefined ? localMaster.enableBooking : (mConf.theme?.enableBooking !== undefined ? mConf.theme.enableBooking : false)),
-              heroLayoutMode: localMaster?.theme?.heroLayoutMode || localMaster?.heroLayoutMode || mConf.theme?.heroLayoutMode || 'verbiage',
-              heroVideoUrl: localMaster?.theme?.heroVideoUrl || localMaster?.heroVideoUrl || mConf.theme?.heroVideoUrl || '',
-              heroVideoTitle: localMaster?.theme?.heroVideoTitle || localMaster?.heroVideoTitle || mConf.theme?.heroVideoTitle || '',
+              heroLayoutMode: 'verbiage',
+              heroVideoUrl: '',
+              heroVideoTitle: '',
               theme: mConf.theme || localMaster?.theme || {}
            });
         } else if (localMaster) {
@@ -299,9 +299,9 @@ function App() {
               owner_id: localMaster.owner_id,
               enableWatchLive: localMaster.theme?.enableWatchLive !== undefined ? localMaster.theme.enableWatchLive : (localMaster.enableWatchLive !== undefined ? localMaster.enableWatchLive : true),
               enableBooking: localMaster.theme?.enableBooking !== undefined ? localMaster.theme.enableBooking : (localMaster.enableBooking !== undefined ? localMaster.enableBooking : false),
-              heroLayoutMode: localMaster.theme?.heroLayoutMode || localMaster.heroLayoutMode || 'verbiage',
-              heroVideoUrl: localMaster.theme?.heroVideoUrl || localMaster.heroVideoUrl || '',
-              heroVideoTitle: localMaster.theme?.heroVideoTitle || localMaster.heroVideoTitle || '',
+              heroLayoutMode: 'verbiage',
+              heroVideoUrl: '',
+              heroVideoTitle: '',
               theme: localMaster.theme || {}
            });
         }
