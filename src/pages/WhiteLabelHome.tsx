@@ -58,9 +58,9 @@ export default function WhiteLabelHome({ wlConfig, categories, user, activeVideo
           
           {(!wlConfig.heroLayoutMode || wlConfig.heroLayoutMode === 'verbiage') && (
             <>
-              <motion.p initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, delay: 0.4, ease: [0.16, 1, 0.3, 1] }} className="hero-sub-mobile" style={{ fontSize: '28px', color: 'rgba(255,255,255,0.8)', maxWidth: '850px', textAlign: 'center', fontWeight: '400', textShadow: '0 10px 20px rgba(0,0,0,0.8)', lineHeight: 1.6 }}>
+              <p className="hero-sub-mobile" style={{ fontSize: '28px', color: 'rgba(255,255,255,0.8)', maxWidth: '850px', textAlign: 'center', fontWeight: '400', textShadow: '0 10px 20px rgba(0,0,0,0.8)', lineHeight: 1.6, animation: 'fadeIn 1s ease-out 0.4s forwards', opacity: 0 }}>
                 {wlConfig.heroCopy || 'The premiere destination for high quality digital content.'}
-              </motion.p>
+              </p>
             </>
           )}
 
