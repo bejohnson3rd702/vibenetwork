@@ -437,25 +437,30 @@ function MasterAdminDashboard() {
                  <p style={{ color: 'var(--text-muted)', marginBottom: '20px' }}>Update the master platform brand name and the cinematic hero banner seen by all logged-out visitors.</p>
                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
                     <input type="text" placeholder="Platform Name (e.g. Vibe Network)" style={{ background: 'var(--bg-color)', border: '1px solid var(--bg-surface-hover)', padding: '16px', borderRadius: '8px', color: 'var(--text-primary)', fontSize: '15px' }} id="global-name" />
-                    <input type="text" placeholder="Hero Image URL (e.g. https://...)" style={{ background: 'var(--bg-color)', border: '1px solid var(--bg-surface-hover)', padding: '16px', borderRadius: '8px', color: 'var(--text-primary)', fontSize: '15px' }} id="global-hero-img" />
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '16px', background: 'var(--bg-color)', border: '1px solid var(--bg-surface-hover)', padding: '0 16px', borderRadius: '8px' }}>
+                       <span style={{ color: 'var(--text-muted)' }}>Accent Color:</span>
+                       <input type="color" id="global-accent" defaultValue={whitelabelsList.find(wl => wl.domain === 'vibenetwork.tv')?.accent || whitelabelsList.find(wl => wl.domain === 'vibenetwork.tv')?.theme?.accent || "#0055ff"} style={{ width: '40px', height: '40px', padding: '0', border: 'none', background: 'transparent', cursor: 'pointer' }} />
+                    </div>
+                    <input type="text" placeholder="Hero Image URL (e.g. https://...)" style={{ background: 'var(--bg-color)', border: '1px solid var(--bg-surface-hover)', padding: '16px', borderRadius: '8px', color: 'var(--text-primary)', fontSize: '15px', gridColumn: 'span 2' }} id="global-hero-img" />
                     <textarea placeholder="Hero Copy (e.g. Welcome to the ultimate network...)" style={{ background: 'var(--bg-color)', border: '1px solid var(--bg-surface-hover)', padding: '16px', borderRadius: '8px', color: 'var(--text-primary)', fontSize: '15px', gridColumn: 'span 2', height: '100px' }} id="global-hero-copy" />
                  </div>
                  <button onClick={async () => {
                     const name = (document.getElementById('global-name') as HTMLInputElement).value;
+                    const accent = (document.getElementById('global-accent') as HTMLInputElement).value;
                     const heroImage = (document.getElementById('global-hero-img') as HTMLInputElement).value;
                     const heroCopy = (document.getElementById('global-hero-copy') as HTMLTextAreaElement).value;
                     if(!name) return showToast('Platform Name is required', 'error');
                     
                     const { data: existing } = await supabase!.from('whitelabel_configs').select('id, theme').eq('domain', 'vibenetwork.tv').limit(1);
-                    const updatePayload: any = { name };
+                    const updatePayload: any = { name, accent };
                     
                     if (existing && existing.length > 0) {
                       const currentTheme = existing[0].theme || {};
-                      const themeObj = { ...currentTheme, heroImage: heroImage || currentTheme.heroImage, heroCopy: heroCopy || currentTheme.heroCopy };
-                      await supabase!.from('whitelabel_configs').update({ name, theme: themeObj }).eq('id', existing[0].id);
+                      const themeObj = { ...currentTheme, heroImage: heroImage || currentTheme.heroImage, heroCopy: heroCopy || currentTheme.heroCopy, accent: accent };
+                      await supabase!.from('whitelabel_configs').update({ name, accent, theme: themeObj }).eq('id', existing[0].id);
                     } else {
-                      const fallbackTheme = { heroImage: heroImage || '', heroCopy: heroCopy || '' };
-                      await supabase!.from('whitelabel_configs').insert([{ name, domain: 'vibenetwork.tv', theme: fallbackTheme }]);
+                      const fallbackTheme = { heroImage: heroImage || '', heroCopy: heroCopy || '', accent };
+                      await supabase!.from('whitelabel_configs').insert([{ name, domain: 'vibenetwork.tv', accent, theme: fallbackTheme }]);
                     }
                     showToast('Global Brand Settings Updated! Refresh the homepage to see changes.', 'success');
                  }} style={{ marginTop: '20px', background: '#0055ff', color: 'var(--text-primary)', border: 'none', padding: '16px 24px', borderRadius: '8px', fontWeight: 'bold', cursor: 'pointer' }}>Save Brand Settings</button>
