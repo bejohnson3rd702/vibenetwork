@@ -186,12 +186,12 @@ const WhatsOnNow: React.FC = () => {
                      key={youtubeId}
                      width="100%" 
                      height="100%" 
-                     src={`https://www.youtube.com/embed/${youtubeId}?autoplay=1&mute=1&playsinline=1&loop=1&playlist=${youtubeId}&controls=1`} 
+                     src={`https://www.youtube.com/embed/${youtubeId}?autoplay=1&mute=1&playsinline=1&loop=1&playlist=${youtubeId}&controls=0&modestbranding=1&rel=0`} 
                      title={`${activeItem?.title || 'YouTube Player'}`} 
                      frameBorder="0" 
                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
                      allowFullScreen
-                     style={{ border: 'none', background: 'var(--bg-color)', position: 'absolute', top: 0, left: 0, width: '100%', height: '100%' }}
+                     style={{ border: 'none', background: 'var(--bg-color)', position: 'absolute', top: '-10%', left: '-10%', width: '120%', height: '120%', pointerEvents: 'none' }}
                    />
                 );
              }
