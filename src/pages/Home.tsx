@@ -138,7 +138,7 @@ export default function Home({ categories, activeVideo, setActiveVideo, user }: 
                 if (ytId) {
                   return (
                     <iframe 
-                      src={`https://www.youtube.com/embed/${ytId}?autoplay=1`}
+                      src={`https://www.youtube.com/embed/${ytId}?autoplay=1&modestbranding=1&rel=0&controls=0`}
                       title={activeVideo.title}
                       style={{ width: '100%', height: '100%', border: 'none' }}
                       allow="autoplay; encrypted-media; fullscreen"
