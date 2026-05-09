@@ -421,6 +421,10 @@ function App() {
 
   useEffect(() => {
     if (wlConfig) {
+      if (wlConfig.accent) {
+         document.documentElement.style.setProperty('--accent-primary', wlConfig.accent);
+      }
+      
       if (wlConfig.bg) {
         document.documentElement.style.setProperty('--bg-color', wlConfig.bg);
         
