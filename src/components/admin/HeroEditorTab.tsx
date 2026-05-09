@@ -1,10 +1,11 @@
 import { useState } from 'react';
 import { supabase } from '../../supabaseClient';
-import { AiTextArea } from './AiComponents';
+import { AiTextArea, AiInput } from './AiComponents';
 import { DictationButton } from '../DictationButton';
 
 export const HeroEditorTab = ({ wlConfig }: { wlConfig: any }) => {
   const [heroCopy, setHeroCopy] = useState(wlConfig.heroCopy || '');
+  const [heroTitle, setHeroTitle] = useState(wlConfig?.theme?.heroTitle || wlConfig?.name || '');
   const [heroLayoutMode, setHeroLayoutMode] = useState<'verbiage' | 'video' | 'slider'>(wlConfig?.heroLayoutMode || 'verbiage');
   const [heroVideoUrl, setHeroVideoUrl] = useState(wlConfig?.heroVideoUrl || '');
   const [heroVideoTitle, setHeroVideoTitle] = useState(wlConfig?.theme?.heroVideoTitle || wlConfig?.heroVideoTitle || '');
@@ -70,6 +71,7 @@ export const HeroEditorTab = ({ wlConfig }: { wlConfig: any }) => {
       const updatedTheme = {
         ...wlConfig.theme,
         heroCopy,
+        heroTitle,
         heroLayoutMode,
         heroVideoUrl,
         heroVideoTitle,
@@ -116,6 +118,13 @@ export const HeroEditorTab = ({ wlConfig }: { wlConfig: any }) => {
             <option value="video">Welcome Video (Embedded Player)</option>
             <option value="slider">Video Slider (Mini Carousel)</option>
          </select>
+         
+         {heroLayoutMode === 'verbiage' && (
+            <div style={{ marginTop: '16px', display: 'flex', flexDirection: 'column', gap: '24px', borderTop: '1px solid rgba(255,255,255,0.1)', paddingTop: '24px' }}>
+               <AiInput label="Hero Title" defaultValue={heroTitle} placeholder="e.g. Vibe Network" accent={wlConfig.accent} onChange={(v) => setHeroTitle(v)} />
+               <AiTextArea label="Hero Marketing Verbiage" defaultValue={heroCopy} accent={wlConfig.accent} onChange={(v) => setHeroCopy(v)} />
+            </div>
+         )}
       </div>
 
       <div style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)', padding: '24px 30px', borderRadius: '20px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
@@ -202,9 +211,6 @@ export const HeroEditorTab = ({ wlConfig }: { wlConfig: any }) => {
         </div>
       )}
 
-      {heroLayoutMode === 'verbiage' && (
-        <AiTextArea label="Hero Marketing Verbiage" defaultValue={heroCopy} accent={wlConfig.accent} onChange={(v) => setHeroCopy(v)} />
-      )}
 
       <div style={{ height: '2px', background: 'rgba(255,255,255,0.05)' }} />
       <button onClick={executeSave} disabled={uploadStatus === 'uploading'} style={{ padding: '18px 40px', background: wlConfig.accent, color: 'var(--text-primary)', fontWeight: 'bold', border: 'none', borderRadius: '12px', fontSize: '16px', cursor: 'pointer', maxWidth: '300px', boxShadow: `0 8px 30px ${wlConfig.accent}44` }}>
