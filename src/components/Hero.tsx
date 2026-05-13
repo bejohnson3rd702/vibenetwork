@@ -58,9 +58,9 @@ const Hero: React.FC = () => {
           }}
         >
           {wlConfig?.name ? (
-            <>Welcome to<br/> <span style={{ backgroundImage: `linear-gradient(135deg, #fff 0%, ${wlConfig?.accent || 'var(--accent-primary)'} 100%)`, WebkitBackgroundClip: 'text', backgroundClip: 'text', WebkitTextFillColor: 'transparent', color: 'transparent' }}>{wlConfig.name}</span></>
+            <>Welcome to<br/> <span style={{ backgroundImage: `linear-gradient(135deg, #fff 0%, ${wlConfig?.accent || 'var(--accent-primary)'} 100%)`, WebkitBackgroundClip: 'text', backgroundClip: 'text', WebkitTextFillColor: 'transparent', color: 'transparent', textShadow: 'none' }}>{wlConfig.name}</span></>
           ) : (
-            <>Step Into The<br/> <span style={{ backgroundImage: `linear-gradient(135deg, #fff 0%, ${wlConfig?.accent || 'var(--accent-primary)'} 100%)`, WebkitBackgroundClip: 'text', backgroundClip: 'text', WebkitTextFillColor: 'transparent', color: 'transparent' }}>New Dimension</span></>
+            <>Step Into The<br/> <span style={{ backgroundImage: `linear-gradient(135deg, #fff 0%, ${wlConfig?.accent || 'var(--accent-primary)'} 100%)`, WebkitBackgroundClip: 'text', backgroundClip: 'text', WebkitTextFillColor: 'transparent', color: 'transparent', textShadow: 'none' }}>New Dimension</span></>
           )}
         </motion.h1>
         
