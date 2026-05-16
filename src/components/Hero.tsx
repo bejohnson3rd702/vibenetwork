@@ -53,9 +53,9 @@ const Hero: React.FC = () => {
           }}
         >
           {wlConfig?.theme?.heroTitle || wlConfig?.name ? (
-            <>Welcome to<br/> <span style={{ color: wlConfig?.accent || 'var(--accent-primary)', textShadow: '0 4px 20px rgba(0,0,0,0.8)' }}>{(wlConfig?.theme?.heroTitle || wlConfig.name)?.toUpperCase()}</span></>
+            <><span style={{ color: wlConfig?.accent || 'var(--accent-primary)' }}>Welcome to</span><br/> <span style={{ color: '#fff', textShadow: '0 4px 20px rgba(0,0,0,0.8)' }}>{(wlConfig?.theme?.heroTitle || wlConfig.name)?.toUpperCase()}</span></>
           ) : (
-            <>Step Into The<br/> <span style={{ color: wlConfig?.accent || 'var(--accent-primary)', textShadow: '0 4px 20px rgba(0,0,0,0.8)' }}>New Dimension</span></>
+            <><span style={{ color: wlConfig?.accent || 'var(--accent-primary)' }}>Step Into The</span><br/> <span style={{ color: '#fff', textShadow: '0 4px 20px rgba(0,0,0,0.8)' }}>New Dimension</span></>
           )}
         </h1>
         
