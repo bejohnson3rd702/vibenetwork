@@ -2,11 +2,12 @@ import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { DictationButton } from './DictationButton';
 import { Send, Mail, MapPin, Phone } from 'lucide-react';
-import { supabase } from '../supabaseClient';
 import { useWhiteLabel } from '../context/WhiteLabelContext';
+import { useToast } from '../context/ToastContext';
 
 const Contact: React.FC = () => {
   const { wlConfig } = useWhiteLabel();
+  const toast = useToast();
   const accentColor = wlConfig?.accent || 'var(--accent-primary)';
   const [formData, setFormData] = useState({ name: '', email: '', subject: '', message: '' });
   const [isSent, setIsSent] = useState(false);
@@ -30,7 +31,7 @@ const Contact: React.FC = () => {
     setIsSending(false);
     
     if (error) {
-       alert("Failed to send message: " + error.message);
+       toast.error("Failed to send message: " + error.message);
     } else {
        setIsSent(true);
        setFormData({ name: '', email: '', subject: '', message: '' });

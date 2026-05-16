@@ -9,10 +9,8 @@ const Hero: React.FC = () => {
   const [showVideoTitle, setShowVideoTitle] = useState(true);
 
   useEffect(() => {
-    if (wlConfig?.heroLayoutMode === 'video' && wlConfig?.heroVideoTitle) {
-      const timer = setTimeout(() => setShowVideoTitle(false), 10000);
-      return () => clearTimeout(timer);
-    }
+    // Keep the video title overlay visible permanently
+    setShowVideoTitle(true);
   }, [wlConfig?.heroLayoutMode, wlConfig?.heroVideoTitle]);
 
   return (
@@ -47,22 +45,19 @@ const Hero: React.FC = () => {
         </motion.div>
         
         {/* Massive 3D Typography */}
-        <motion.h1 
+        <h1 
           className="hero-title-mobile"
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.4 }}
           style={{ 
             fontSize: '95px', fontWeight: 900, lineHeight: 1.1, letterSpacing: '-3px', color: 'var(--text-primary)',
-            margin: '0 0 24px 0', textShadow: '0 20px 40px rgba(0,0,0,0.8)'
+            margin: '0 0 24px 0'
           }}
         >
-          {wlConfig?.name ? (
-            <>Welcome to<br/> <span style={{ backgroundImage: `linear-gradient(135deg, #fff 0%, ${wlConfig?.accent || 'var(--accent-primary)'} 100%)`, WebkitBackgroundClip: 'text', backgroundClip: 'text', WebkitTextFillColor: 'transparent', color: 'transparent', textShadow: 'none' }}>{wlConfig.name}</span></>
+          {wlConfig?.theme?.heroTitle || wlConfig?.name ? (
+            <>Welcome to<br/> <span style={{ color: wlConfig?.accent || 'var(--accent-primary)', textShadow: '0 4px 20px rgba(0,0,0,0.8)' }}>{wlConfig?.theme?.heroTitle || wlConfig.name}</span></>
           ) : (
-            <>Step Into The<br/> <span style={{ backgroundImage: `linear-gradient(135deg, #fff 0%, ${wlConfig?.accent || 'var(--accent-primary)'} 100%)`, WebkitBackgroundClip: 'text', backgroundClip: 'text', WebkitTextFillColor: 'transparent', color: 'transparent', textShadow: 'none' }}>New Dimension</span></>
+            <>Step Into The<br/> <span style={{ color: wlConfig?.accent || 'var(--accent-primary)', textShadow: '0 4px 20px rgba(0,0,0,0.8)' }}>New Dimension</span></>
           )}
-        </motion.h1>
+        </h1>
         
         {(!wlConfig?.heroLayoutMode || wlConfig.heroLayoutMode === 'verbiage') && (
           <>

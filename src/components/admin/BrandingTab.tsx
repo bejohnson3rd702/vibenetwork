@@ -1,7 +1,9 @@
 import { useState } from 'react';
 import { supabase } from '../../supabaseClient';
+import { useToast } from '../../context/ToastContext';
 
 export const BrandingTab = ({ wlConfig }: { wlConfig: any }) => {
+  const toast = useToast();
   const [logoImage, setLogoImage] = useState(wlConfig?.logoImage || wlConfig?.logo || '');
   const [faviconImage, setFaviconImage] = useState(wlConfig?.theme?.faviconImage || '');
   const [accentColor, setAccentColor] = useState(wlConfig?.accent || '#D35400');
@@ -26,7 +28,7 @@ export const BrandingTab = ({ wlConfig }: { wlConfig: any }) => {
         setUrl(data.publicUrl);
       }
     } catch (err: any) {
-      alert('Upload failed: ' + err.message);
+      toast.error('Upload failed: ' + err.message);
     } finally {
       setUploading(false);
     }
@@ -76,10 +78,10 @@ export const BrandingTab = ({ wlConfig }: { wlConfig: any }) => {
       
       setUploadStatus('success');
       setTimeout(() => setUploadStatus(null), 3000);
-      alert('Branding Successfully Deployed!');
+      toast.success('Branding Successfully Deployed!');
       setTimeout(() => window.location.reload(), 1000);
     } catch (e: any) {
-      alert('Save failed: ' + e.message);
+      toast.error('Save failed: ' + e.message);
       setUploadStatus(null);
     }
   };

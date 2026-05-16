@@ -1,7 +1,9 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '../../supabaseClient';
+import { useToast } from '../../context/ToastContext';
 
 export const InboxTab = ({ wlConfig }: { wlConfig: any }) => {
+  const toast = useToast();
   const [contactEmail, setContactEmail] = useState(wlConfig.contactEmail || '');
   const [contactPhone, setContactPhone] = useState(wlConfig.contactPhone || '');
   const [contactAddress, setContactAddress] = useState(wlConfig.contactAddress || '');
@@ -46,10 +48,10 @@ export const InboxTab = ({ wlConfig }: { wlConfig: any }) => {
 
       setUploadStatus('success');
       setTimeout(() => setUploadStatus(null), 3000);
-      alert('Routing Table Successfully Deployed!');
+      toast.success('Routing Table Successfully Deployed!');
       setTimeout(() => window.location.reload(), 1000);
     } catch (e: any) {
-      alert('Save failed: ' + e.message);
+      toast.error('Save failed: ' + e.message);
       setUploadStatus(null);
     }
   };

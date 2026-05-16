@@ -23,10 +23,12 @@ const FoodTruck = lazy(() => import('./pages/FoodTruck'));
 const ResetPassword = lazy(() => import('./pages/ResetPassword'));
 const Community = lazy(() => import('./pages/Community'));
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { Helmet } from 'react-helmet-async';
 import { WhiteLabelContext } from './context/WhiteLabelContext';
 import { supabase, storageKey } from './supabaseClient';
 import { MASTER_DOMAIN, DEFAULT_PLATFORM_NAME } from './constants';
 import Home from './pages/Home';
+import { normalizeWlConfig } from './lib/whitelabel';
 import WhiteLabelHome from './pages/WhiteLabelHome';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X } from 'lucide-react';
@@ -230,30 +232,7 @@ function App() {
            setIsTenantMode(true);
            loadedTenantId = forceTenant;
            const dbConf = dbTenantData[0];
-           setWlConfig({
-              id: dbConf.id,
-              name: dbConf.name || 'Vibe B2B Enterprise',
-              domain: dbConf.domain || MASTER_DOMAIN,
-              accent: dbConf.accent || dbConf.theme?.accent || '#0055ff',
-              bg: dbConf.theme?.bg || 'var(--bg-color)',
-              heroCopy: dbConf.theme?.heroCopy || 'The premiere destination for high quality digital content.',
-              btnPrimary: dbConf.theme?.btnPrimary || 'Explore Content',
-              sliderCount: dbConf.theme?.sliderCount || 4,
-              customSections: dbConf.theme?.customSections || '',
-              heroImage: dbConf.theme?.heroImage || null,
-              logoImage: dbConf.logo || dbConf.theme?.logoImage || null,
-              contactEmail: dbConf.theme?.contactEmail,
-              contactPhone: dbConf.theme?.contactPhone,
-              contactAddress: dbConf.theme?.contactAddress,
-              owner_id: dbConf.owner_id,
-              enableWatchLive: dbConf.theme?.enableWatchLive !== undefined ? dbConf.theme.enableWatchLive : (dbConf.enableWatchLive !== undefined ? dbConf.enableWatchLive : true),
-              enableBooking: dbConf.theme?.enableBooking !== undefined ? dbConf.theme.enableBooking : (dbConf.enableBooking !== undefined ? dbConf.enableBooking : false),
-              heroLayoutMode: dbConf.theme?.heroLayoutMode || 'verbiage',
-              heroVideoUrl: dbConf.theme?.heroVideoUrl || '',
-              heroVideoTitle: dbConf.theme?.heroVideoTitle || '',
-              platform_fee_percentage: dbConf.platform_fee_percentage || 0,
-              theme: dbConf.theme || {}
-           });
+           setWlConfig(normalizeWlConfig(dbConf, { name: dbConf.name || 'Vibe B2B Enterprise' }));
         } else {
            // Fallback to local storage for completely un-published preview networks
            const localTenant = localNetworks.find((n: any) => n.id === forceTenant);
@@ -261,30 +240,7 @@ function App() {
               isTenant = true;
               setIsTenantMode(true);
               loadedTenantId = forceTenant;
-              setWlConfig({
-                 id: localTenant.id,
-                 name: localTenant.name || 'Vibe B2B Enterprise',
-                 domain: localTenant.domain || MASTER_DOMAIN,
-                 accent: localTenant.theme?.accent || localTenant.accent || '#0055ff',
-                 bg: localTenant.theme?.bg || localTenant.bg || 'var(--bg-color)',
-                 heroCopy: localTenant.theme?.heroCopy || localTenant.heroCopy,
-                 btnPrimary: localTenant.theme?.btnPrimary || localTenant.btnPrimary,
-                 sliderCount: localTenant.theme?.sliderCount || localTenant.sliderCount || 4,
-                 customSections: localTenant.theme?.customSections || localTenant.customSections || '',
-                 heroImage: localTenant.theme?.heroImage || localTenant.heroImage,
-                 logoImage: localTenant.logo || localTenant.theme?.logoImage || localTenant.logoImage || null,
-                 contactEmail: localTenant.theme?.contactEmail || localTenant.contactEmail,
-                 contactPhone: localTenant.theme?.contactPhone || localTenant.contactPhone,
-                 contactAddress: localTenant.theme?.contactAddress || localTenant.contactAddress,
-                 owner_id: localTenant.owner_id,
-                 enableWatchLive: localTenant.theme?.enableWatchLive !== undefined ? localTenant.theme.enableWatchLive : (localTenant.enableWatchLive !== undefined ? localTenant.enableWatchLive : true),
-                 enableBooking: localTenant.theme?.enableBooking !== undefined ? localTenant.theme.enableBooking : (localTenant.enableBooking !== undefined ? localTenant.enableBooking : false),
-                 heroLayoutMode: localTenant.theme?.heroLayoutMode || localTenant.heroLayoutMode || 'verbiage',
-                 heroVideoUrl: localTenant.theme?.heroVideoUrl || localTenant.heroVideoUrl || '',
-                 heroVideoTitle: localTenant.theme?.heroVideoTitle || localTenant.heroVideoTitle || '',
-                 platform_fee_percentage: localTenant.platform_fee_percentage || 0,
-                 theme: localTenant.theme || {}
-              });
+              setWlConfig(normalizeWlConfig(localTenant, { name: localTenant.name || 'Vibe B2B Enterprise' }));
            }
         }
       } else if (!(hostname === 'localhost' || hostname === '127.0.0.1' || hostname === MASTER_DOMAIN || hostname === 'vibenetwork.com' || hostname.includes('vercel.app'))) {
@@ -299,40 +255,10 @@ function App() {
         if (masterData && masterData.length > 0) {
            const mConf = masterData[0];
            // Merge local Master overrides if they exist (for local dev without DB write access)
-           setWlConfig({
-              id: mConf.id,
-              name: localMaster?.name || mConf.name || DEFAULT_PLATFORM_NAME,
-              domain: MASTER_DOMAIN,
-              accent: localMaster?.accent || localMaster?.theme?.accent || mConf.accent || mConf.theme?.accent || '#D35400',
-              bg: localMaster?.bg || localMaster?.theme?.bg || mConf.bg || mConf.theme?.bg || 'var(--bg-color)',
-              heroImage: localMaster?.theme?.heroImage || localMaster?.heroImage || mConf.theme?.heroImage || null,
-              heroCopy: localMaster?.theme?.heroCopy || localMaster?.heroCopy || mConf.theme?.heroCopy || null,
-              owner_id: mConf.owner_id,
-              enableWatchLive: true,
-              enableBooking: localMaster?.theme?.enableBooking !== undefined ? localMaster.theme.enableBooking : (localMaster?.enableBooking !== undefined ? localMaster.enableBooking : (mConf.theme?.enableBooking !== undefined ? mConf.theme.enableBooking : false)),
-              heroLayoutMode: 'verbiage',
-              heroVideoUrl: '',
-              heroVideoTitle: '',
-              theme: mConf.theme || localMaster?.theme || {}
-           });
+           setWlConfig(normalizeWlConfig({ ...mConf, ...localMaster }, { accent: localMaster?.accent || localMaster?.theme?.accent || mConf.accent || mConf.theme?.accent || '#D35400', enableWatchLive: true }));
         } else if (localMaster) {
            // Fallback if DB query completely fails but local exists
-           setWlConfig({
-              id: localMaster.id,
-              name: localMaster.name || DEFAULT_PLATFORM_NAME,
-              domain: MASTER_DOMAIN,
-              accent: localMaster.accent || localMaster.theme?.accent || '#D35400',
-              bg: localMaster.bg || localMaster.theme?.bg || 'var(--bg-color)',
-              heroImage: localMaster.theme?.heroImage || localMaster.heroImage || null,
-              heroCopy: localMaster.theme?.heroCopy || localMaster.heroCopy || null,
-              owner_id: localMaster.owner_id,
-              enableWatchLive: true,
-              enableBooking: localMaster.theme?.enableBooking !== undefined ? localMaster.theme.enableBooking : (localMaster.enableBooking !== undefined ? localMaster.enableBooking : false),
-              heroLayoutMode: 'verbiage',
-              heroVideoUrl: '',
-              heroVideoTitle: '',
-              theme: localMaster.theme || {}
-           });
+           setWlConfig(normalizeWlConfig(localMaster, { accent: localMaster.accent || localMaster.theme?.accent || '#D35400', enableWatchLive: true }));
         }
       }
 
@@ -341,56 +267,14 @@ function App() {
         if (data && data.length > 0) {
           const dbConf = data[0];
           loadedTenantId = dbConf.id;
-          setWlConfig({
-             id: dbConf.id,
-             name: dbConf.name || 'Vibe B2B Enterprise',
-             domain: dbConf.domain || MASTER_DOMAIN,
-             accent: dbConf.accent || dbConf.theme?.accent || '#0055ff',
-             bg: dbConf.theme?.bg || 'var(--bg-color)',
-             heroCopy: dbConf.theme?.heroCopy || 'The premiere destination for high quality digital content.',
-             btnPrimary: dbConf.theme?.btnPrimary || 'Explore Content',
-             sliderCount: dbConf.theme?.sliderCount || 4,
-             customSections: dbConf.theme?.customSections || '',
-             heroImage: dbConf.theme?.heroImage || null,
-             logoImage: dbConf.logo || dbConf.theme?.logoImage || null,
-             contactEmail: dbConf.theme?.contactEmail,
-             contactPhone: dbConf.theme?.contactPhone,
-             contactAddress: dbConf.theme?.contactAddress,
-             owner_id: dbConf.owner_id,
-             enableWatchLive: dbConf.theme?.enableWatchLive !== undefined ? dbConf.theme.enableWatchLive : (dbConf.enableWatchLive !== undefined ? dbConf.enableWatchLive : true),
-             enableBooking: dbConf.theme?.enableBooking !== undefined ? dbConf.theme.enableBooking : (dbConf.enableBooking !== undefined ? dbConf.enableBooking : false),
-             heroLayoutMode: dbConf.theme?.heroLayoutMode || 'verbiage',
-             heroVideoUrl: dbConf.theme?.heroVideoUrl || '',
-             heroVideoTitle: dbConf.theme?.heroVideoTitle || '',
-             platform_fee_percentage: dbConf.platform_fee_percentage || 0,
-             theme: dbConf.theme || {}
-          });
+          setWlConfig(normalizeWlConfig(dbConf, { name: dbConf.name || 'Vibe B2B Enterprise' }));
         }
       }
 
       setWlConfig(prev => {
         if (prev) return prev;
         // Ultimate Fallback: if we still haven't found a config from DB or local storage, load defaults
-        return {
-           id: 'master',
-           name: DEFAULT_PLATFORM_NAME,
-           domain: MASTER_DOMAIN,
-           accent: '#0055ff',
-           bg: 'var(--bg-color)',
-           heroCopy: 'The premiere destination for high quality digital content.',
-           btnPrimary: 'Explore Content',
-           sliderCount: 4,
-           customSections: '',
-           heroImage: null,
-           logoImage: null,
-           owner_id: '',
-           enableWatchLive: true,
-           enableBooking: false,
-           heroLayoutMode: 'verbiage',
-           heroVideoUrl: '',
-           heroVideoTitle: '',
-           theme: {}
-        };
+        return normalizeWlConfig({});
       });
 
       const freshCategories = await getCategoriesWithVideos(loadedTenantId);
@@ -398,26 +282,7 @@ function App() {
       } catch (err) {
         console.error("Critical error during Network OS initialization", err);
         // Guarantee the site loads in fallback mode even if DB/network throws an exception
-        setWlConfig({
-           id: 'master',
-           name: DEFAULT_PLATFORM_NAME,
-           domain: MASTER_DOMAIN,
-           accent: '#0055ff',
-           bg: 'var(--bg-color)',
-           heroCopy: 'The premiere destination for high quality digital content.',
-           btnPrimary: 'Explore Content',
-           sliderCount: 4,
-           customSections: '',
-           heroImage: null,
-           logoImage: null,
-           owner_id: '',
-           enableWatchLive: true,
-           enableBooking: false,
-           heroLayoutMode: 'verbiage',
-           heroVideoUrl: '',
-           heroVideoTitle: '',
-           theme: {}
-        });
+        setWlConfig(normalizeWlConfig({}));
       }
     }
     initPlatform();
@@ -473,6 +338,13 @@ function App() {
       <WhiteLabelContext.Provider value={{ wlConfig, setWlConfig }}>
         <Router>
           <div style={{ background: 'var(--content-bg)', minHeight: '100vh', color: 'var(--text-primary)', overflowX: 'hidden' }}>
+            <Helmet>
+              <title>{wlConfig.name || 'Vibe Network'}</title>
+              <meta name="description" content={wlConfig.heroCopy || 'The premiere destination for high quality digital content.'} />
+              <meta property="og:title" content={wlConfig.name || 'Vibe Network'} />
+              <meta property="og:description" content={wlConfig.heroCopy || 'The premiere destination for high quality digital content.'} />
+              <meta property="og:image" content={wlConfig.logoImage || wlConfig.heroImage || 'https://vibenetwork.tv/og-image.jpg'} />
+            </Helmet>
             <Navbar user={user} onLoginClick={() => setShowEndUserAuthModal(true)} onAdminClick={() => setShowAdminPanel(true)} />
           
           <Suspense fallback={<div style={{ height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-secondary)' }}>Loading interface...</div>}>
@@ -521,9 +393,15 @@ function App() {
   }
 
   return (
-    <WhiteLabelContext.Provider value={{ wlConfig: wlConfig || { id: 'master', name: DEFAULT_PLATFORM_NAME, domain: MASTER_DOMAIN, accent: '#0055ff', bg: 'var(--bg-color)', heroCopy: 'The premiere destination for high quality digital content.', btnPrimary: 'Explore Content', sliderCount: 4, customSections: '', heroImage: null, logoImage: null, owner_id: '', enableWatchLive: true, enableBooking: false, heroLayoutMode: 'verbiage', heroVideoUrl: '', heroVideoTitle: '', theme: {} }, setWlConfig }}>
+    <WhiteLabelContext.Provider value={{ wlConfig: wlConfig || normalizeWlConfig({}), setWlConfig }}>
       <Router>
         <div style={{ background: 'var(--content-bg)', minHeight: '100vh', display: 'flex', flexDirection: 'column', overflowX: 'hidden' }}>
+          <Helmet>
+            <title>Vibe Network OS</title>
+            <meta name="description" content="The premiere destination for high quality digital content." />
+            <meta property="og:title" content="Vibe Network OS" />
+            <meta property="og:description" content="The premiere destination for high quality digital content." />
+          </Helmet>
           <AnimatePresence>
             {showAuthModal && (
               <AuthModal 

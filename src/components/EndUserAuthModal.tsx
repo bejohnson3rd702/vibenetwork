@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { supabase } from '../supabaseClient';
-import { X, Mail, Lock, ShieldCheck, ArrowRight, Loader, AtSign } from 'lucide-react';
 import { useWhiteLabel } from '../context/WhiteLabelContext';
+import { useToast } from '../context/ToastContext';
+
 
 interface EndUserAuthModalProps {
   onClose: () => void;
@@ -9,6 +10,8 @@ interface EndUserAuthModalProps {
 
 export default function EndUserAuthModal({ onClose }: EndUserAuthModalProps) {
   const { wlConfig } = useWhiteLabel();
+  const toast = useToast();
+
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isLogin, setIsLogin] = useState(true);
@@ -64,7 +67,8 @@ export default function EndUserAuthModal({ onClose }: EndUserAuthModalProps) {
           }
         });
         if (error) throw error;
-        alert('Check your email to verify your account!');
+        toast.success('Check your email to verify your account!');
+
         onClose();
       }
     } catch (err: any) {

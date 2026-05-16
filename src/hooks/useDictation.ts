@@ -1,6 +1,8 @@
 import { useState, useEffect, useCallback } from 'react';
+import { useToast } from '../context/ToastContext';
 
 export function useDictation(onResult: (text: string) => void) {
+  const toast = useToast();
   const [isListening, setIsListening] = useState(false);
   const [supported, setSupported] = useState(true);
 
@@ -12,7 +14,7 @@ export function useDictation(onResult: (text: string) => void) {
 
   const toggleListening = useCallback(() => {
     if (!supported) {
-      alert('Speech recognition is not supported in this browser.');
+      toast.error('Speech recognition is not supported in this browser.');
       return;
     }
 

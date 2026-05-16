@@ -9,6 +9,7 @@ import { useNavigate } from 'react-router-dom';
 import { supabase } from '../supabaseClient';
 import { ErrorBoundary } from './ErrorBoundary';
 import { BrandingTab } from './admin/BrandingTab';
+import { AnalyticsTab } from './admin/AnalyticsTab';
 
 function MasterAdminDashboard() {
   const navigate = useNavigate();
@@ -684,8 +685,10 @@ function MasterAdminDashboard() {
 
              return (
              <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} style={{ display: 'flex', flexDirection: 'column', gap: '30px' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <h3 style={{ margin: 0, fontSize: '24px' }}>Real-Time Global Analytics</h3>
+                <AnalyticsTab wlConfig={{ accent: '#0055ff', name: 'Global Vibe' }} />
+                
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '20px' }}>
+                  <h3 style={{ margin: 0, fontSize: '24px' }}>Real-Time Global Revenue Splits</h3>
                   <button onClick={() => showToast('Analytics Sync Complete', 'success')} style={{ background: '#0055ff', color: 'var(--text-primary)', border: 'none', padding: '12px 24px', borderRadius: '12px', fontWeight: 'bold', cursor: 'pointer' }}>Sync Telemetry</button>
                 </div>
 
@@ -835,7 +838,7 @@ function MasterAdminDashboard() {
                         <td style={{ padding: '20px', fontWeight: 'bold' }}>{lead.email}</td>
                         <td style={{ padding: '20px', color: 'var(--text-muted)', fontSize: '14px', maxWidth: '300px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{lead.message}</td>
                         <td style={{ padding: '20px', textAlign: 'right' }}>
-                          <button onClick={() => alert('Full Message:\n\n' + lead.message)} style={{ padding: '8px 16px', background: 'rgba(255,255,255,0.1)', color: 'var(--text-primary)', border: 'none', borderRadius: '8px', cursor: 'pointer', fontSize: '13px' }}>Read</button>
+                          <button onClick={() => showToast('Full Message:\n\n' + lead.message, 'success')} style={{ padding: '8px 16px', background: 'rgba(255,255,255,0.1)', color: 'var(--text-primary)', border: 'none', borderRadius: '8px', cursor: 'pointer', fontSize: '13px' }}>Read</button>
                         </td>
                       </tr>
                     ))}

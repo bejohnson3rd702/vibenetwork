@@ -3,10 +3,12 @@ import { useParams, useNavigate } from 'react-router-dom';
 import Peer from 'peerjs';
 import { Mic, MicOff, Video, VideoOff, PhoneOff } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { useToast } from '../context/ToastContext';
 
 const VirtualCallRoom: React.FC = () => {
   const { callId } = useParams();
   const navigate = useNavigate();
+  const toast = useToast();
   
   const [peerId, setPeerId] = useState<string>('');
   const [targetId, setTargetId] = useState<string>('');
@@ -48,7 +50,7 @@ const VirtualCallRoom: React.FC = () => {
       })
       .catch((err) => {
         console.error('Failed to get local stream', err);
-        alert("Camera or Microphone access denied. Please allow permissions to join the call.");
+        toast.error("Camera or Microphone access denied. Please allow permissions to join the call.");
       });
 
     peerInstance.current = peer;

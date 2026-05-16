@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { supabase } from '../supabaseClient';
 import { useWhiteLabel } from '../context/WhiteLabelContext';
+import { useToast } from '../context/ToastContext';
 import { motion } from 'framer-motion';
 import { ShoppingBag, ArrowLeft, ShieldCheck, Download, Package, Music, CreditCard } from 'lucide-react';
 
@@ -9,6 +10,7 @@ const ProductPage: React.FC = () => {
   const { productId } = useParams();
   const navigate = useNavigate();
   const { wlConfig } = useWhiteLabel();
+  const toast = useToast();
   
   const [product, setProduct] = useState<any>(null);
   const [loading, setLoading] = useState(true);
@@ -84,7 +86,7 @@ const ProductPage: React.FC = () => {
       }
     } catch (err: any) {
       console.error('Checkout error:', err);
-      alert('Checkout failed: ' + err.message);
+      toast.error('Checkout failed: ' + err.message);
     }
     setPurchasing(false);
   };

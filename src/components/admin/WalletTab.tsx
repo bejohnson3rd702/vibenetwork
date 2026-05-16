@@ -1,8 +1,10 @@
 import { useState, useEffect } from 'react';
 import { Wallet, ArrowUpRight, Activity, Percent, Users } from 'lucide-react';
 import { supabase } from '../../supabaseClient';
+import { useToast } from '../../context/ToastContext';
 
 export const WalletTab = ({ wlConfig }: { wlConfig: any }) => {
+  const toast = useToast();
   const [walletBalance, setWalletBalance] = useState(() => (typeof window !== 'undefined' ? Number(localStorage.getItem('vibe_network_wallet') || 10500.00) : 10500.00));
   const [paySubsWithWallet, setPaySubsWithWallet] = useState(true);
   const [feePercentage, setFeePercentage] = useState(wlConfig.platform_fee_percentage || 0);
@@ -42,10 +44,10 @@ export const WalletTab = ({ wlConfig }: { wlConfig: any }) => {
     setIsSavingProfiles(false);
     
     if (error) {
-       alert(`Failed to save. Error: ${error.message}`);
+       toast.error(`Failed to save. Error: ${error.message}`);
     } else {
        setPendingProfileChanges({});
-       alert('Saved successfully!');
+       toast.success('Saved successfully!');
     }
   };
 
@@ -72,7 +74,7 @@ export const WalletTab = ({ wlConfig }: { wlConfig: any }) => {
             <p style={{ margin: '8px 0 0 0', color: 'var(--text-muted)', fontSize: '14px' }}>Enterprise funds available for secure off-ramping.</p>
           </div>
           <div style={{ display: 'flex', gap: '16px', flexDirection: 'column' }}>
-            <button style={{ padding: '14px 24px', borderRadius: '12px', background: wlConfig.accent, color: 'var(--text-primary)', fontWeight: 'bold', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px', fontSize: '15px', transition: 'all 0.2s' }} onClick={() => { alert('Funds securely routed to your connected corporate account.'); setWalletBalance(0); localStorage.setItem('vibe_network_wallet', '0'); }}>
+            <button style={{ padding: '14px 24px', borderRadius: '12px', background: wlConfig.accent, color: 'var(--text-primary)', fontWeight: 'bold', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px', fontSize: '15px', transition: 'all 0.2s' }} onClick={() => { toast.success('Funds securely routed to your connected corporate account.'); setWalletBalance(0); localStorage.setItem('vibe_network_wallet', '0'); }}>
               <ArrowUpRight size={18}/> Initiate Withdrawal
             </button>
           </div>
@@ -87,7 +89,7 @@ export const WalletTab = ({ wlConfig }: { wlConfig: any }) => {
             Connect your bank via Stripe Express to receive direct deposits from network revenue.
           </div>
           <button onClick={async () => {
-            alert('Redirecting to Stripe Connect onboarding...');
+            toast.info('Redirecting to Stripe Connect onboarding...');
           }} style={{ padding: '12px', borderRadius: '12px', background: '#635BFF', color: '#fff', border: 'none', cursor: 'pointer', fontWeight: 'bold' }}>
             Connect Bank Account
           </button>

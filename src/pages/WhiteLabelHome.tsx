@@ -21,10 +21,8 @@ export default function WhiteLabelHome({ wlConfig, categories, user, activeVideo
   const [showVideoTitle, setShowVideoTitle] = useState(true);
 
   useEffect(() => {
-    if (wlConfig.heroLayoutMode === 'video' && wlConfig.heroVideoTitle) {
-      const timer = setTimeout(() => setShowVideoTitle(false), 10000);
-      return () => clearTimeout(timer);
-    }
+    // Keep the video title overlay visible permanently
+    setShowVideoTitle(true);
   }, [wlConfig.heroLayoutMode, wlConfig.heroVideoTitle]);
 
   return (
@@ -46,15 +44,15 @@ export default function WhiteLabelHome({ wlConfig, categories, user, activeVideo
 
        {/* Hero Text Section (Min Height to clear viewport and center properly) */}
        <div className="px-mobile-sm py-mobile-sm" style={{ zIndex: 2, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '85vh', width: '100%', paddingTop: '120px', gap: '32px' }}>
-          <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, delay: 0.2, ease: [0.16, 1, 0.3, 1] }} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '20px' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '20px' }}>
             <motion.div whileHover={{ scale: 1.05 }} style={{ padding: '10px 20px', background: 'rgba(10,10,10,0.5)', backdropFilter: 'blur(16px)', border: `1px solid ${wlConfig.accent || 'var(--accent-primary)'}66`, borderRadius: '30px', display: 'inline-flex', alignItems: 'center', gap: '10px', boxShadow: `0 0 20px ${wlConfig.accent || 'var(--accent-primary)'}33` }}>
               <Sparkles size={16} color={wlConfig.accent || 'var(--accent-primary)'} style={{ filter: `drop-shadow(0 0 8px ${wlConfig.accent || 'var(--accent-primary)'})` }} />
               <span style={{ fontSize: '13px', fontWeight: 700, letterSpacing: '2px', textTransform: 'uppercase', color: '#fff' }}>Live Network Initialized</span>
             </motion.div>
-            <h1 className="hero-title-mobile" style={{ fontSize: '70px', fontWeight: '900', margin: 0, letterSpacing: '-4px', lineHeight: 1.1, textAlign: 'center', background: `linear-gradient(135deg, #ffffff 0%, rgba(255,255,255,0.5) 100%)`, WebkitBackgroundClip: 'text', backgroundClip: 'text', WebkitTextFillColor: 'transparent', color: 'transparent' }}>
+            <h1 className="hero-title-mobile" style={{ fontSize: '70px', fontWeight: '900', margin: 0, letterSpacing: '-4px', lineHeight: 1.1, textAlign: 'center', color: wlConfig.accent || '#ffffff', textShadow: '0 4px 20px rgba(0,0,0,0.8)' }}>
               {wlConfig.theme?.heroTitle || wlConfig.name}
             </h1>
-          </motion.div>
+          </div>
           
           {(!wlConfig.heroLayoutMode || wlConfig.heroLayoutMode === 'verbiage') && (
             <>

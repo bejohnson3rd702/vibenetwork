@@ -1,9 +1,11 @@
 import { useState } from 'react';
 import { supabase } from '../../supabaseClient';
+import { useToast } from '../../context/ToastContext';
 import { AiTextArea, AiInput } from './AiComponents';
 import { DictationButton } from '../DictationButton';
 
 export const HeroEditorTab = ({ wlConfig }: { wlConfig: any }) => {
+  const toast = useToast();
   const [heroCopy, setHeroCopy] = useState(wlConfig.heroCopy || '');
   const [heroTitle, setHeroTitle] = useState(wlConfig?.theme?.heroTitle || wlConfig?.name || '');
   const [heroLayoutMode, setHeroLayoutMode] = useState<'verbiage' | 'video' | 'slider'>(wlConfig?.heroLayoutMode || 'verbiage');
@@ -31,10 +33,10 @@ export const HeroEditorTab = ({ wlConfig }: { wlConfig: any }) => {
       const { data } = supabase.storage.from('videos').getPublicUrl(filePath);
       if (data?.publicUrl) {
         setHeroVideoUrl(data.publicUrl);
-        alert('Video uploaded successfully!');
+        toast.success('Video uploaded successfully!');
       }
     } catch (err: any) {
-      alert('Upload failed: ' + err.message);
+      toast.error('Upload failed: ' + err.message);
     } finally {
       setUploadingHeroVideo(false);
     }
@@ -55,10 +57,10 @@ export const HeroEditorTab = ({ wlConfig }: { wlConfig: any }) => {
       const { data } = supabase.storage.from('images').getPublicUrl(filePath);
       if (data?.publicUrl) {
         setHeroImage(data.publicUrl);
-        alert('Image uploaded successfully!');
+        toast.success('Image uploaded successfully!');
       }
     } catch (err: any) {
-      alert('Upload failed: ' + err.message);
+      toast.error('Upload failed: ' + err.message);
     } finally {
       setUploadingHeroImage(false);
     }
@@ -95,10 +97,10 @@ export const HeroEditorTab = ({ wlConfig }: { wlConfig: any }) => {
 
       setUploadStatus('success');
       setTimeout(() => setUploadStatus(null), 3000);
-      alert('Live Architecture Successfully Deployed to Master Server!');
+      toast.success('Live Architecture Successfully Deployed to Master Server!');
       setTimeout(() => window.location.reload(), 1000);
     } catch (e: any) {
-      alert('Save failed: ' + e.message);
+      toast.error('Save failed: ' + e.message);
       setUploadStatus(null);
     }
   };
@@ -158,7 +160,7 @@ export const HeroEditorTab = ({ wlConfig }: { wlConfig: any }) => {
                         if (data?.publicUrl) {
                            setAiBgPrompt(`Remix and enhance this image into a high quality masterpiece: ${data.publicUrl}`);
                         }
-                     } catch (err: any) { alert('Upload failed: ' + err.message); } 
+                     } catch (err: any) { toast.error('Upload failed: ' + err.message); } 
                      finally { setUploadingHeroImage(false); }
                   }} style={{ display: 'none' }} disabled={uploadingHeroImage} />
                </label>

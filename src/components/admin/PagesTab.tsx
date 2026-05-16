@@ -1,8 +1,10 @@
 import { useState } from 'react';
 import { supabase } from '../../supabaseClient';
+import { useToast } from '../../context/ToastContext';
 import { AiTextArea } from './AiComponents';
 
 export const PagesTab = ({ wlConfig }: { wlConfig: any }) => {
+  const toast = useToast();
   const [enableWatchLive, setEnableWatchLive] = useState(wlConfig?.enableWatchLive ?? true);
   const [enableBooking, setEnableBooking] = useState(wlConfig?.enableBooking ?? false);
   const [uploadStatus, setUploadStatus] = useState<string | null>(null);
@@ -34,10 +36,10 @@ export const PagesTab = ({ wlConfig }: { wlConfig: any }) => {
 
       setUploadStatus('success');
       setTimeout(() => setUploadStatus(null), 3000);
-      alert('Features Successfully Deployed!');
+      toast.success('Features Successfully Deployed!');
       setTimeout(() => window.location.reload(), 1000);
     } catch (e: any) {
-      alert('Save failed: ' + e.message);
+      toast.error('Save failed: ' + e.message);
       setUploadStatus(null);
     }
   };

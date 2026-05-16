@@ -8,10 +8,12 @@ import { SlidersTab } from './admin/SlidersTab';
 import { PagesTab } from './admin/PagesTab';
 import { InboxTab } from './admin/InboxTab';
 import { WalletTab } from './admin/WalletTab';
+import { AnalyticsTab } from './admin/AnalyticsTab';
+import { BarChart3 } from 'lucide-react';
 
 export default function BusinessAdminDashboard({ onClose }: { onClose: () => void }) {
   const { wlConfig } = useWhiteLabel();
-  const [activeTab, setActiveTab] = useState('hero');
+  const [activeTab, setActiveTab] = useState('analytics');
 
   return (
      <div style={{ position: 'fixed', inset: 0, background: 'var(--content-bg)', color: 'var(--text-primary)', zIndex: 999999, display: 'flex', flexDirection: 'column' }}>
@@ -29,9 +31,14 @@ export default function BusinessAdminDashboard({ onClose }: { onClose: () => voi
        </div>
        
        <div style={{ display: 'flex', flex: 1, overflow: 'hidden' }}>
-          {/* Sidebar */}
           <div style={{ width: '280px', background: 'var(--bg-color)', borderRight: '1px solid rgba(255,255,255,0.05)', padding: '30px 20px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
              
+             <button onClick={() => setActiveTab('analytics')} style={{ padding: '16px 20px', background: activeTab === 'analytics' ? wlConfig.accent : 'transparent', color: activeTab === 'analytics' ? '#fff' : '#888', border: 'none', borderRadius: '12px', display: 'flex', alignItems: 'center', gap: '16px', cursor: 'pointer', textAlign: 'left', fontWeight: 'bold', fontSize: '15px', transition: '0.2s' }}>
+                <BarChart3 size={22} /> Analytics Engine
+             </button>
+
+             <div style={{ height: '1px', background: 'rgba(255,255,255,0.05)', margin: '10px 0' }} />
+
              <button onClick={() => setActiveTab('hero')} style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '16px 20px', background: activeTab === 'hero' ? 'rgba(255,255,255,0.1)' : 'transparent', border: 'none', color: activeTab === 'hero' ? '#fff' : '#888', borderRadius: '12px', cursor: 'pointer', textAlign: 'left', fontWeight: 'bold' }}>
                 <Type size={22} /> Hero Display Module
              </button>
@@ -61,6 +68,7 @@ export default function BusinessAdminDashboard({ onClose }: { onClose: () => voi
           
           {/* Main Workspace */}
           <div style={{ flex: 1, padding: '60px 80px', overflowY: 'auto' }}>
+            {activeTab === 'analytics' && <AnalyticsTab wlConfig={wlConfig} />}
             {activeTab === 'hero' && <HeroEditorTab wlConfig={wlConfig} />}
             {activeTab === 'branding' && <BrandingTab wlConfig={wlConfig} />}
             {activeTab === 'sliders' && <SlidersTab wlConfig={wlConfig} />}
