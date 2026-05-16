@@ -57,7 +57,7 @@ const Navbar: React.FC<NavbarProps> = ({ user, onLoginClick, onAdminClick }) => 
           {appLogo ? (
             <img src={appLogo} alt={appName} onError={(e) => e.currentTarget.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(appName || 'Vibe')}&background=random`} style={{ height: '36px', objectFit: 'contain', cursor: 'pointer', borderRadius: '4px' }} />
           ) : appName ? (
-            <h1 style={{ margin: 0, fontSize: '24px', color: appAccent || '#fff', fontWeight: 900, textTransform: 'uppercase', letterSpacing: '2px', fontFamily: "'RNS Miles', sans-serif" }}>{appName}</h1>
+            <h1 style={{ margin: 0, fontSize: '24px', color: '#fff', fontWeight: 900, textTransform: 'uppercase', letterSpacing: '2px', fontFamily: "'RNS Miles', sans-serif" }}>{appName}</h1>
           ) : (
             <img 
               src={ASSETS.logo} 
