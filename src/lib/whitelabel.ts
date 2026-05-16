@@ -36,7 +36,7 @@ export function normalizeWlConfig(
     id: raw?.id || 'master',
     name: raw?.name || DEFAULT_PLATFORM_NAME,
     domain: raw?.domain || MASTER_DOMAIN,
-    accent: raw?.accent || theme.accent || '#0055ff',
+    accent: raw?.accent || theme.accent || '#D35400',
     bg: theme.bg || raw?.bg || 'var(--bg-color)',
     heroCopy: theme.heroCopy || raw?.heroCopy || FALLBACK_HERO_COPY,
     btnPrimary: theme.btnPrimary || raw?.btnPrimary || 'Explore Content',
