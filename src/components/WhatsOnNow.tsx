@@ -181,6 +181,7 @@ const WhatsOnNow: React.FC = () => {
                  <video 
                    src="/videos/preroll.mp4"
                    autoPlay
+                   muted
                    playsInline
                    controls={false}
                    onEnded={() => setIsPrerollPlaying(false)}
