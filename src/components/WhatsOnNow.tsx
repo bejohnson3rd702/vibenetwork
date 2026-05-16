@@ -67,6 +67,7 @@ const WhatsOnNow: React.FC = () => {
   const [activeIndex, setActiveIndex] = useState(0);
   const [userManuallySelected, setUserManuallySelected] = useState(false);
   const [scheduleItems, setScheduleItems] = useState<any[]>([]);
+  const [isPrerollPlaying, setIsPrerollPlaying] = useState(true);
 
   React.useEffect(() => {
     async function loadSchedule() {
@@ -175,6 +176,19 @@ const WhatsOnNow: React.FC = () => {
       >
         <div className="tv-video-mobile" style={{ flex: '1 1 auto', position: 'relative', background: 'var(--bg-color)', pointerEvents: 'auto' }}>
           {(() => {
+             if (isPrerollPlaying) {
+               return (
+                 <video 
+                   src="/videos/preroll.mp4"
+                   autoPlay
+                   playsInline
+                   controls={false}
+                   onEnded={() => setIsPrerollPlaying(false)}
+                   style={{ width: '100%', height: '100%', objectFit: 'cover', position: 'absolute', top: 0, left: 0, zIndex: 10, background: '#000' }}
+                 />
+               );
+             }
+
              const activeItem = scheduleItems[activeIndex];
              const activeUrl = activeItem?.video_url || 'https://www.youtube.com/watch?v=c0-hvjV2A5Y';
              const youtubeMatch = activeUrl.match(/^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/);
@@ -266,7 +280,10 @@ const WhatsOnNow: React.FC = () => {
                 item={item} 
                 isActive={activeIndex === idx}
                 onClick={() => {
-                  setActiveIndex(idx);
+                  if (activeIndex !== idx) {
+                    setActiveIndex(idx);
+                    setIsPrerollPlaying(true);
+                  }
                   setUserManuallySelected(true);
                 }}
               />
