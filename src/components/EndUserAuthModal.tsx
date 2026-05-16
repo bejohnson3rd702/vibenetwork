@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { supabase } from '../supabaseClient';
 import { useWhiteLabel } from '../context/WhiteLabelContext';
 import { useToast } from '../context/ToastContext';
+import { X, ShieldCheck, AtSign, Mail, Lock, Loader, ArrowRight } from 'lucide-react';
 
 
 interface EndUserAuthModalProps {
