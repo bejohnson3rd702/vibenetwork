@@ -51,16 +51,16 @@ const ScheduleRow: React.FC<{ item: any, isActive: boolean, onClick: () => void 
 };
 
 const FALLBACK_10_YOUTUBE = [
-  { id: 'fb1', title: 'DJ Nico - Miami Bass & Ghetto Tech Mix', time: 'LIVE', image: 'https://images.unsplash.com/photo-1598387181032-a3103a2db5b3?auto=format&fit=crop&w=800&q=80', video_url: 'https://www.youtube.com/watch?v=treSXuhsjyc', tags: ['Bass', 'Live Set'] },
-  { id: 'fb2', title: 'Nico Blitz - Sunday Cleaning Mix', time: 'UP NEXT', image: 'https://images.unsplash.com/photo-1571266028243-3716f02d2d2e?auto=format&fit=crop&w=800&q=80', video_url: 'https://www.youtube.com/watch?v=MeOs4TdH08Y', tags: ['Hip Hop', 'Hits'] },
-  { id: 'fb3', title: 'DJ LEX - Hip Hop & R&B Bangers', time: '1:00 PM EST', image: 'https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?auto=format&fit=crop&w=800&q=80', video_url: 'https://www.youtube.com/watch?v=dEBkiLIwYFs', tags: ['R&B', 'Live'] },
-  { id: 'fb4', title: 'DJ LEX - Coffee Link Up', time: '2:30 PM EST', image: 'https://images.unsplash.com/photo-1470229722913-7c0e2dbbafd3?auto=format&fit=crop&w=800&q=80', video_url: 'https://www.youtube.com/watch?v=rwzOqYKKIU8', tags: ['Hip Hop', 'Edits'] },
-  { id: 'fb5', title: 'Flavor Town - Morning Disco House Mix', time: '4:00 PM EST', image: 'https://images.unsplash.com/photo-1514525253161-7a46d19cd819?auto=format&fit=crop&w=800&q=80', video_url: 'https://www.youtube.com/watch?v=BKdb1xNEGoY', tags: ['Disco', 'House'] },
-  { id: 'fb6', title: 'Flavor Town - Chill Rooftop House', time: '5:30 PM EST', image: 'https://images.unsplash.com/photo-1506157786151-b8491531f063?auto=format&fit=crop&w=800&q=80', video_url: 'https://www.youtube.com/watch?v=I4QIqm8hCvo', tags: ['House', 'Sunset'] },
-  { id: 'fb7', title: 'Soulection - Full Crate Takeover', time: '7:00 PM EST', image: 'https://images.unsplash.com/photo-1526478806334-5fd488fcaabc?auto=format&fit=crop&w=800&q=80', video_url: 'https://www.youtube.com/watch?v=3gh3eLGVQX0', tags: ['Reggae', 'Blends'] },
-  { id: 'fb8', title: 'Soulection - Sahar Habibi Takeover', time: '8:30 PM EST', image: 'https://images.unsplash.com/photo-1429962714451-bb934ecdc4ec?auto=format&fit=crop&w=800&q=80', video_url: 'https://www.youtube.com/watch?v=ODpLPXCAKDA', tags: ['R&B', 'Classics'] },
-  { id: 'fb9', title: 'DJ Jazzy Jeff - Magnificent Lunch Break', time: '10:00 PM EST', image: 'https://images.unsplash.com/photo-1493225457124-a1a2a5f275bd?auto=format&fit=crop&w=800&q=80', video_url: 'https://www.youtube.com/watch?v=DSna6V9QOxo', tags: ['Live', 'Defected'] },
-  { id: 'fb10', title: 'DJ Jazzy Jeff - Boiler Room Mix', time: '11:00 PM EST', image: 'https://images.unsplash.com/photo-1558369178-6656d78216fc?auto=format&fit=crop&w=800&q=80', video_url: 'https://www.youtube.com/watch?v=IvPdwoppGw4', tags: ['Boiler Room', 'Mix'] }
+  { id: 'fb1', title: 'Fred again.. - Boiler Room London', time: 'LIVE', image: 'https://images.unsplash.com/photo-1598387181032-a3103a2db5b3?auto=format&fit=crop&w=800&q=80', video_url: 'https://www.youtube.com/watch?v=c0-hvjV2A5Y', tags: ['House', 'Live'] },
+  { id: 'fb2', title: 'Peggy Gou - Boiler Room London', time: 'UP NEXT', image: 'https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?auto=format&fit=crop&w=800&q=80', video_url: 'https://www.youtube.com/watch?v=Fa8LQLy4C5A', tags: ['Deep House', 'DJ Set'] },
+  { id: 'fb3', title: 'Solomun - Boiler Room Tulum', time: '1:00 PM EST', image: 'https://images.unsplash.com/photo-1470229722913-7c0e2dbbafd3?auto=format&fit=crop&w=800&q=80', video_url: 'https://www.youtube.com/watch?v=bk6Xst6euQk', tags: ['Techno', 'Tulum'] },
+  { id: 'fb4', title: 'Chris Stussy - Boiler Room Edinburgh', time: '2:30 PM EST', image: 'https://images.unsplash.com/photo-1514525253161-7a46d19cd819?auto=format&fit=crop&w=800&q=80', video_url: 'https://www.youtube.com/watch?v=42XFNGZrpaQ', tags: ['Tech House', 'Live'] },
+  { id: 'fb5', title: 'Ben Böhmer - Cercle Cappadocia', time: '4:00 PM EST', image: 'https://images.unsplash.com/photo-1506157786151-b8491531f063?auto=format&fit=crop&w=800&q=80', video_url: 'https://www.youtube.com/watch?v=RvRhUHTV_8k', tags: ['Melodic House', 'Live'] },
+  { id: 'fb6', title: 'Charli xcx - Boiler Room PARTYGIRL', time: '5:30 PM EST', image: 'https://images.unsplash.com/photo-1526478806334-5fd488fcaabc?auto=format&fit=crop&w=800&q=80', video_url: 'https://www.youtube.com/watch?v=rKPBq_j4buQ', tags: ['Electronic', 'Club'] },
+  { id: 'fb7', title: 'ISOxo - Boiler Room Calgary', time: '7:00 PM EST', image: 'https://images.unsplash.com/photo-1429962714451-bb934ecdc4ec?auto=format&fit=crop&w=800&q=80', video_url: 'https://www.youtube.com/watch?v=3fqz-7T6Y6w', tags: ['Trap', 'EDM'] },
+  { id: 'fb8', title: 'VTSS b2b KI/KI - Boiler Room Glitch', time: '8:30 PM EST', image: '/covers/shm_arena.png', video_url: 'https://www.youtube.com/watch?v=I1mhJjxtJx4', tags: ['Techno', 'B2B'] },
+  { id: 'fb9', title: '3ballMTY - Boiler Room Mexico City', time: '10:00 PM EST', image: '/covers/calvin_festival.png', video_url: 'https://www.youtube.com/watch?v=9Nk9Of8XGtg', tags: ['Electronic', 'Live'] },
+  { id: 'fb10', title: 'horsegiirL - Boiler Room CDMX', time: '11:00 PM EST', image: '/covers/carl_cox.png', video_url: 'https://www.youtube.com/watch?v=Q9FaUe4b0wI', tags: ['Hard Dance', 'Techno'] }
 ];
 
 const WhatsOnNow: React.FC = () => {

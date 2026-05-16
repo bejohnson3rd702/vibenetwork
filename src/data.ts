@@ -31,29 +31,29 @@ export const GENRE_CATEGORIES = [
   {
     title: 'Featured DJ Sets',
     items: [
-      { id: 1, title: 'Kaytranada Live in Montreal', image: getRealImg(4), tags: ['House', 'Live'], videoUrl: MOCK_VIDEO },
-      { id: 2, title: 'Metro Boomin Coachella', image: getRealImg(2), tags: ['Hip Hop', 'Festival'], videoUrl: MOCK_VIDEO },
-      { id: 3, title: 'Peggy Gou Sunset Mix', image: getRealImg(6), tags: ['Deep House', 'Sunset'], videoUrl: MOCK_VIDEO },
-      { id: 4, title: 'DJ Snake Ultra Miami', image: getRealImg(7), tags: ['EDM', 'Live Set'], videoUrl: MOCK_VIDEO },
-      { id: 5, title: 'Fred Again.. Boiler Room', image: getRealImg(0), tags: ['Electronic', 'Club'], videoUrl: MOCK_VIDEO }
+      { id: 1, title: 'Fred Again.. Boiler Room', image: getRealImg(4), tags: ['House', 'Live'], videoUrl: 'https://www.youtube.com/watch?v=3gh3eLGVQX0' },
+      { id: 2, title: 'Peggy Gou Sunset Mix', image: getRealImg(6), tags: ['Deep House', 'Sunset'], videoUrl: 'https://www.youtube.com/watch?v=ODpLPXCAKDA' },
+      { id: 3, title: 'Ben Böhmer Cercle', image: getRealImg(2), tags: ['Deep House', 'Live'], videoUrl: 'https://www.youtube.com/watch?v=RvRhUHTV_8k' },
+      { id: 4, title: 'Solomun Boiler Room', image: getRealImg(7), tags: ['Techno', 'Live Set'], videoUrl: 'https://www.youtube.com/watch?v=bk6Xst6euQk' },
+      { id: 5, title: 'Disclosure Boiler Room', image: getRealImg(0), tags: ['Electronic', 'Club'], videoUrl: 'https://www.youtube.com/watch?v=DSna6V9QOxo' }
     ]
   },
   {
     title: 'Live Concerts & Festivals',
     items: [
-      { id: 6, title: 'Travis Scott Astroworld', image: getRealImg(1), tags: ['Rap', 'Concert'], videoUrl: MOCK_VIDEO },
-      { id: 7, title: 'Tomorrowland Main Stage', image: getRealImg(5), tags: ['Festival', 'EDM'], videoUrl: MOCK_VIDEO },
-      { id: 8, title: 'Rolling Loud Miami', image: getRealImg(2), tags: ['Hip Hop', 'Festival'], videoUrl: MOCK_VIDEO },
-      { id: 9, title: 'Coachella Live Stream', image: getRealImg(3), tags: ['Live', 'Music'], videoUrl: MOCK_VIDEO }
+      { id: 6, title: 'BICEP Live Printworks', image: getRealImg(1), tags: ['Electronica', 'Concert'], videoUrl: 'https://www.youtube.com/watch?v=treSXuhsjyc' },
+      { id: 7, title: 'Fatboy Slim Boiler Room', image: getRealImg(5), tags: ['Big Beat', 'Classic'], videoUrl: 'https://www.youtube.com/watch?v=MeOs4TdH08Y' },
+      { id: 8, title: 'Boris Brejcha Cercle', image: getRealImg(2), tags: ['Minimal Techno', 'Festival'], videoUrl: 'https://www.youtube.com/watch?v=dEBkiLIwYFs' },
+      { id: 9, title: 'Amelie Lens Atomium', image: getRealImg(3), tags: ['Acid Techno', 'Live'], videoUrl: 'https://www.youtube.com/watch?v=rwzOqYKKIU8' }
     ]
   },
   {
     title: 'Underground Mixes',
     items: [
-      { id: 10, title: 'Carl Cox Space Ibiza', image: getRealImg(7), tags: ['Techno', 'Classic'], videoUrl: MOCK_VIDEO },
-      { id: 11, title: 'Black Coffee Rooftop Set', image: getRealImg(6), tags: ['Afro House'], videoUrl: MOCK_VIDEO },
-      { id: 12, title: 'David Guetta Club Mix', image: getRealImg(5), tags: ['House', 'Club'], videoUrl: MOCK_VIDEO },
-      { id: 13, title: 'Tale of Us Afterlife', image: getRealImg(0), tags: ['Melodic Techno'], videoUrl: MOCK_VIDEO }
+      { id: 10, title: 'Carl Cox Boiler Room', image: getRealImg(7), tags: ['Techno', 'Classic'], videoUrl: 'https://www.youtube.com/watch?v=IvPdwoppGw4' },
+      { id: 11, title: 'Black Coffee Cercle', image: getRealImg(6), tags: ['Afro House'], videoUrl: 'https://www.youtube.com/watch?v=BKdb1xNEGoY' },
+      { id: 12, title: 'David Guetta Club Mix', image: getRealImg(5), tags: ['House', 'Club'], videoUrl: 'https://www.youtube.com/watch?v=I4QIqm8hCvo' },
+      { id: 13, title: 'Tale of Us Afterlife', image: getRealImg(0), tags: ['Melodic Techno'], videoUrl: 'https://www.youtube.com/watch?v=3gh3eLGVQX0' }
     ]
   }
 ];

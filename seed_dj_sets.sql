@@ -15,12 +15,17 @@ VALUES
 -- Insert DJ Sets for 'Featured DJ Sets'
 INSERT INTO public.videos (title, video_url, image_url, category_id, tags)
 VALUES 
-('DJ LEX - Coffee Link Up', 'https://www.youtube.com/watch?v=rwzOqYKKIU8', 'https://images.unsplash.com/photo-1571266028243-3716f02d2d2e?auto=format&fit=crop&w=800&q=80', '00000000-0000-0000-0000-000000000002', ARRAY['House', 'Live']),
-('Flavor Town - Chill Rooftop House', 'https://www.youtube.com/watch?v=I4QIqm8hCvo', 'https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?auto=format&fit=crop&w=800&q=80', '00000000-0000-0000-0000-000000000002', ARRAY['Hip Hop', 'Festival']),
-('Soulection - Sahar Habibi Takeover', 'https://www.youtube.com/watch?v=ODpLPXCAKDA', 'https://images.unsplash.com/photo-1470229722913-7c0e2dbbafd3?auto=format&fit=crop&w=800&q=80', '00000000-0000-0000-0000-000000000002', ARRAY['Deep House', 'Sunset']);
+('Fred again.. - Boiler Room London', 'https://www.youtube.com/watch?v=c0-hvjV2A5Y', 'https://images.unsplash.com/photo-1598387181032-a3103a2db5b3?auto=format&fit=crop&w=800&q=80', '00000000-0000-0000-0000-000000000002', ARRAY['House', 'Live']),
+('Peggy Gou - Boiler Room London', 'https://www.youtube.com/watch?v=Fa8LQLy4C5A', 'https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?auto=format&fit=crop&w=800&q=80', '00000000-0000-0000-0000-000000000002', ARRAY['Deep House', 'DJ Set']),
+('Solomun - Boiler Room Tulum', 'https://www.youtube.com/watch?v=bk6Xst6euQk', 'https://images.unsplash.com/photo-1470229722913-7c0e2dbbafd3?auto=format&fit=crop&w=800&q=80', '00000000-0000-0000-0000-000000000002', ARRAY['Techno', 'Tulum']),
+('Chris Stussy - Boiler Room Edinburgh', 'https://www.youtube.com/watch?v=42XFNGZrpaQ', 'https://images.unsplash.com/photo-1514525253161-7a46d19cd819?auto=format&fit=crop&w=800&q=80', '00000000-0000-0000-0000-000000000002', ARRAY['Tech House', 'Live']),
+('Charli xcx - Boiler Room PARTYGIRL', 'https://www.youtube.com/watch?v=rKPBq_j4buQ', 'https://images.unsplash.com/photo-1526478806334-5fd488fcaabc?auto=format&fit=crop&w=800&q=80', '00000000-0000-0000-0000-000000000002', ARRAY['Electronic', 'Club']);
 
 -- Insert DJ Sets for 'Underground Mixes'
 INSERT INTO public.videos (title, video_url, image_url, category_id, tags)
 VALUES 
-('DJ Jazzy Jeff - Magnificent Lunch Break', 'https://www.youtube.com/watch?v=DSna6V9QOxo', 'https://images.unsplash.com/photo-1558369178-6656d78216fc?auto=format&fit=crop&w=800&q=80', '00000000-0000-0000-0000-000000000004', ARRAY['Techno', 'Classic']),
-('DJ Jazzy Jeff - Boiler Room Mix', 'https://www.youtube.com/watch?v=IvPdwoppGw4', 'https://images.unsplash.com/photo-1571266028243-3716f02d2d2e?auto=format&fit=crop&w=800&q=80', '00000000-0000-0000-0000-000000000004', ARRAY['Afro House']);
+('Ben Böhmer - Cercle Cappadocia', 'https://www.youtube.com/watch?v=RvRhUHTV_8k', 'https://images.unsplash.com/photo-1506157786151-b8491531f063?auto=format&fit=crop&w=800&q=80', '00000000-0000-0000-0000-000000000004', ARRAY['Melodic House', 'Live']),
+('ISOxo - Boiler Room Calgary', 'https://www.youtube.com/watch?v=3fqz-7T6Y6w', 'https://images.unsplash.com/photo-1429962714451-bb934ecdc4ec?auto=format&fit=crop&w=800&q=80', '00000000-0000-0000-0000-000000000004', ARRAY['Trap', 'EDM']),
+('VTSS b2b KI/KI - Boiler Room Glitch', 'https://www.youtube.com/watch?v=I1mhJjxtJx4', '/covers/shm_arena.png', '00000000-0000-0000-0000-000000000004', ARRAY['Techno', 'B2B']),
+('3ballMTY - Boiler Room Mexico City', 'https://www.youtube.com/watch?v=9Nk9Of8XGtg', '/covers/calvin_festival.png', '00000000-0000-0000-0000-000000000004', ARRAY['Electronic', 'Live']),
+('horsegiirL - Boiler Room CDMX', 'https://www.youtube.com/watch?v=Q9FaUe4b0wI', '/covers/carl_cox.png', '00000000-0000-0000-0000-000000000004', ARRAY['Hard Dance', 'Techno']);

@@ -157,12 +157,6 @@ export default function Home({ categories, activeVideo, setActiveVideo, user }: 
                 );
               })()}
               </div>
-              {/* Chat Pane */}
-              <div style={{ flexShrink: 0, background: 'var(--bg-color)', borderRadius: '0 16px 16px 0', overflow: 'hidden' }}>
-                 <Suspense fallback={<div style={{ padding: '20px', color: 'var(--text-muted)' }}>Loading chat...</div>}>
-                   <LiveChat streamId={activeVideo.id || 'global'} />
-                 </Suspense>
-              </div>
             </motion.div>
             
             <motion.div 
