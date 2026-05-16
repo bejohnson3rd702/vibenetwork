@@ -672,21 +672,16 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
            supabase!.from('whitelabel_configs').update({ logo: data.publicUrl, theme: { ...currentTheme, logoImage: data.publicUrl } }).eq('id', wlConfig.id).then();
         }
       } else if (imageTarget === 'homepage') {
-        setHomepageImageUrl((prev) => {
-          const newUrls = prev ? prev + ',' + data.publicUrl : data.publicUrl;
-          supabase!.from('profiles').update({ homepage_image_url: newUrls }).eq('id', user.id);
-          setProfile((p: any) => p ? { ...p, homepage_image_url: newUrls } : null);
-          
-          const shouldSync = (isNetworkLevel || user?.id === wlConfig?.owner_id) && wlConfig?.id;
-          if (shouldSync) {
-             const currentTheme = wlConfig.theme || {};
-             supabase!.from('whitelabel_configs').update({ theme: { ...currentTheme, heroImage: data.publicUrl } }).eq('id', wlConfig.id).then(({error}) => {
-                 if (error) console.error("Error syncing hero image:", error);
-             });
-          }
-          
-          return newUrls;
-        });
+        const newUrls = homepageImageUrl ? homepageImageUrl + ',' + data.publicUrl : data.publicUrl;
+        await supabase!.from('profiles').update({ homepage_image_url: newUrls }).eq('id', user.id);
+        setHomepageImageUrl(newUrls);
+        setProfile((p: any) => p ? { ...p, homepage_image_url: newUrls } : null);
+        
+        const shouldSync = (isNetworkLevel || user?.id === wlConfig?.owner_id) && wlConfig?.id;
+        if (shouldSync) {
+           const currentTheme = wlConfig.theme || {};
+           await supabase!.from('whitelabel_configs').update({ theme: { ...currentTheme, heroImage: data.publicUrl } }).eq('id', wlConfig.id);
+        }
       }
       setShowImageModal(false);
     } catch (error: any) {
