@@ -49,7 +49,7 @@ const Hero: React.FC = () => {
           className="hero-title-mobile"
           style={{ 
             fontSize: '95px', fontWeight: 900, lineHeight: 1.1, letterSpacing: '-3px', color: 'var(--text-primary)',
-            margin: '0 0 24px 0'
+            margin: '0 0 24px 0', fontFamily: "'RNS Miles', sans-serif"
           }}
         >
           {wlConfig?.theme?.heroTitle || wlConfig?.name ? (
