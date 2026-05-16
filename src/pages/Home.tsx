@@ -61,7 +61,7 @@ export default function Home({ categories, activeVideo, setActiveVideo, user }: 
         </div>
 
         {/* New content section below sliders */}
-        <section style={{ maxWidth: '1400px', margin: '100px auto 40px', padding: '0 40px' }}>
+        <section style={{ maxWidth: '1400px', margin: '40px auto 40px', padding: '0 40px' }}>
           <div style={{ position: 'relative', borderRadius: '24px', overflow: 'hidden' }}>
             <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to right, #000 0%, transparent 100%)', zIndex: 1 }} />
             <div style={{ position: 'absolute', inset: 0, backgroundImage: 'url("https://images.unsplash.com/photo-1550751827-4bd374c3f58b?auto=format&fit=crop&w=1200&q=60")', backgroundSize: 'cover', backgroundPosition: 'center', opacity: 0.3, filter: 'brightness(0.6)', zIndex: 0 }} />

@@ -210,7 +210,7 @@ const SliderSection: React.FC<SliderSectionProps> = ({ title, items, delay = 0, 
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, margin: "-100px" }}
       transition={{ duration: 0.8, delay, ease: [0.16, 1, 0.3, 1] }}
-      style={{ padding: '0px 0 60px', width: '100%', overflow: 'hidden' }}
+      style={{ padding: '0px 0 20px', width: '100%', overflow: 'hidden' }}
     >
       <div className="px-mobile-sm" style={{ maxWidth: '1400px', margin: '0 auto', padding: '0 40px' }}>
         
