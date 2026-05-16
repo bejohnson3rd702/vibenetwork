@@ -71,7 +71,7 @@ const Hero: React.FC = () => {
                 margin: '0 0 40px 0', lineHeight: 1.6, fontWeight: 400, textShadow: '0 10px 20px rgba(0,0,0,0.8)'
               }}
             >
-              {wlConfig?.heroCopy || "The highest fidelity, ultra-low latency broadcasting architecture built exclusively for global corporate brands, creators, and enterprise media."}
+              {wlConfig?.theme?.heroCopy || wlConfig?.heroCopy || "Built for brands, creators, and enterprise teams that demand instant performance, flawless quality, and infrastructure that scales without compromise."}
             </motion.p>
 
           </>

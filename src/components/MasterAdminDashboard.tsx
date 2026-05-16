@@ -454,22 +454,44 @@ function MasterAdminDashboard() {
                     <textarea placeholder="Hero Copy (e.g. Welcome to the ultimate network...)" style={{ background: 'var(--bg-color)', border: '1px solid var(--bg-surface-hover)', padding: '16px', borderRadius: '8px', color: 'var(--text-primary)', fontSize: '15px', gridColumn: 'span 2', height: '100px' }} id="global-hero-copy" />
                  </div>
                  <button onClick={async () => {
-                    const name = (document.getElementById('global-name') as HTMLInputElement).value;
-                    const heroImage = (document.getElementById('global-hero-img') as HTMLInputElement).value;
-                    const heroCopy = (document.getElementById('global-hero-copy') as HTMLTextAreaElement).value;
-                    if(!name) return showToast('Platform Name is required', 'error');
+                    const nameInput = document.getElementById('global-name') as HTMLInputElement;
+                    const heroImageInput = document.getElementById('global-hero-img') as HTMLInputElement;
+                    const heroCopyInput = document.getElementById('global-hero-copy') as HTMLTextAreaElement;
                     
-                    const { data: existing } = await supabase!.from('whitelabel_configs').select('id, theme').eq('domain', 'vibenetwork.tv').limit(1);
-                    
-                    if (existing && existing.length > 0) {
-                      const currentTheme = existing[0].theme || {};
-                      const themeObj = { ...currentTheme, heroImage: heroImage || currentTheme.heroImage, heroCopy: heroCopy || currentTheme.heroCopy };
-                      await supabase!.from('whitelabel_configs').update({ name, theme: themeObj }).eq('id', existing[0].id);
-                    } else {
-                      const fallbackTheme = { heroImage: heroImage || '', heroCopy: heroCopy || '' };
-                      await supabase!.from('whitelabel_configs').insert([{ name, domain: 'vibenetwork.tv', theme: fallbackTheme }]);
+                    try {
+                      const { data: existing, error: fetchErr } = await supabase!.from('whitelabel_configs').select('*').eq('domain', 'vibenetwork.tv').limit(1);
+                      if (fetchErr) throw fetchErr;
+                      
+                      const finalName = nameInput.value || (existing && existing.length > 0 ? existing[0].name : 'Vibe Network');
+                      let finalConfig;
+
+                      if (existing && existing.length > 0) {
+                        const currentTheme = existing[0].theme || {};
+                        const themeObj = { ...currentTheme, heroImage: heroImageInput.value || currentTheme.heroImage, heroCopy: heroCopyInput.value || currentTheme.heroCopy };
+                        const { data, error } = await supabase!.from('whitelabel_configs').update({ name: finalName, theme: themeObj }).eq('id', existing[0].id).select();
+                        if (error) throw error;
+                        finalConfig = data[0];
+                      } else {
+                        const fallbackTheme = { heroImage: heroImageInput.value || '', heroCopy: heroCopyInput.value || '' };
+                        const { data, error } = await supabase!.from('whitelabel_configs').insert([{ name: finalName, domain: 'vibenetwork.tv', theme: fallbackTheme }]).select();
+                        if (error) throw error;
+                        finalConfig = data[0];
+                      }
+                      
+                      const localNetworks = JSON.parse(localStorage.getItem('vibe_local_networks') || '[]');
+                      const index = localNetworks.findIndex((n: any) => n.domain === 'vibenetwork.tv');
+                      if (index >= 0) {
+                        localNetworks[index] = finalConfig;
+                      } else {
+                        localNetworks.push(finalConfig);
+                      }
+                      localStorage.setItem('vibe_local_networks', JSON.stringify(localNetworks));
+                      
+                      showToast('Global Hero Settings Updated!', 'success');
+                      setTimeout(() => window.location.reload(), 1000);
+                    } catch (err: any) {
+                      showToast('Save failed: ' + err.message, 'error');
                     }
-                    showToast('Global Hero Settings Updated! Refresh the homepage to see changes.', 'success');
                  }} style={{ marginTop: '20px', background: '#0055ff', color: 'var(--text-primary)', border: 'none', padding: '16px 24px', borderRadius: '8px', fontWeight: 'bold', cursor: 'pointer' }}>Save Hero Settings</button>
                </div>
                <div style={{ background: 'var(--bg-surface)', padding: '30px', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.05)' }}>
