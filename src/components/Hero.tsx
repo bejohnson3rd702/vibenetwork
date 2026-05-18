@@ -28,7 +28,7 @@ const Hero: React.FC = () => {
       
       {/* Darkening filter applied directly to image for sharp readability without soft overlays */}
       
-      <div className="px-mobile-sm" style={{ position: 'relative', zIndex: 2, width: '100%', maxWidth: '1200px', padding: '0 40px', textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+      <div className="px-mobile-sm px-tablet-md" style={{ position: 'relative', zIndex: 2, width: '100%', maxWidth: '1200px', padding: '0 40px', textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
         
         {/* Sleek Top Pill */}
         <motion.div 
@@ -46,7 +46,7 @@ const Hero: React.FC = () => {
         
         {/* Massive 3D Typography */}
         <h1 
-          className="hero-title-mobile"
+          className="hero-title-mobile hero-title-tablet"
           style={{ 
             fontSize: '95px', fontWeight: 900, lineHeight: 1.1, letterSpacing: '-3px', color: 'var(--text-primary)',
             margin: '0 0 24px 0', fontFamily: "'RNS Miles', sans-serif"
@@ -62,7 +62,7 @@ const Hero: React.FC = () => {
         {(!wlConfig?.heroLayoutMode || wlConfig.heroLayoutMode === 'verbiage') && (
           <>
             <motion.p 
-              className="hero-sub-mobile"
+              className="hero-sub-mobile hero-sub-tablet"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8, delay: 0.6 }}
@@ -172,7 +172,7 @@ const Hero: React.FC = () => {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.8 }}
-            className="flex-col-mobile gap-mobile-sm" 
+            className="flex-col-mobile flex-col-tablet gap-mobile-sm" 
             style={{ display: 'flex', gap: '20px', justifyContent: 'center' }}
           >
             {/* Primary Sleek Button */}

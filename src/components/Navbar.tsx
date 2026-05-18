@@ -67,7 +67,7 @@ const Navbar: React.FC<NavbarProps> = ({ user, onLoginClick, onAdminClick }) => 
           )}
         </Link>
         
-        <ul className="hide-on-mobile" style={{ 
+        <ul className="hide-on-mobile hide-on-tablet" style={{ 
           display: 'flex', 
           listStyle: 'none', 
           gap: '32px',
@@ -125,7 +125,7 @@ const Navbar: React.FC<NavbarProps> = ({ user, onLoginClick, onAdminClick }) => 
           />
 
         </div>
-        <div className="hide-on-mobile" style={{ display: 'flex', alignItems: 'center', gap: '8px', borderLeft: '1px solid rgba(255,255,255,0.2)', paddingLeft: '24px' }}>
+        <div className="hide-on-mobile hide-on-tablet" style={{ display: 'flex', alignItems: 'center', gap: '8px', borderLeft: '1px solid rgba(255,255,255,0.2)', paddingLeft: '24px' }}>
           {user ? (
             <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
               {((wlConfig?.owner_id && user?.id === wlConfig?.owner_id) || (!wlConfig?.owner_id && user?.user_metadata?.role === 'business') || user?.email?.includes('bennie') || user?.email?.includes('admin') || user?.user_metadata?.role === 'admin') && onAdminClick && (

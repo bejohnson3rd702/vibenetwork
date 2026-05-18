@@ -375,3 +375,49 @@ html[data-theme="light"] .btn-primary {
 }
 
 @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
+/* Tablet Responsive Engine (iPads & Mid-size screens) */
+@media (min-width: 769px) and (max-width: 1024px) {
+  .hide-on-tablet {
+    display: none !important;
+  }
+  .px-tablet-md {
+    padding-left: 40px !important;
+    padding-right: 40px !important;
+  }
+  .py-tablet-md {
+    padding-top: 40px !important;
+    padding-bottom: 40px !important;
+  }
+  .hero-title-tablet {
+    font-size: 50px !important;
+  }
+  .hero-sub-tablet {
+    font-size: 18px !important;
+  }
+  .flex-col-tablet {
+    flex-direction: column !important;
+    height: auto !important;
+  }
+  .tv-dashboard-tablet {
+    flex-direction: column !important;
+    height: auto !important;
+  }
+  .tv-video-tablet {
+    height: 450px !important;
+    flex: none !important;
+  }
+  .tv-chat-tablet {
+    height: 400px !important;
+    flex: none !important;
+  }
+  .tv-guide-tablet {
+    width: 100% !important;
+    border-left: none !important;
+    border-top: 1px solid rgba(255,255,255,0.05);
+    height: 350px !important;
+  }
+  .tablet-w-full {
+    width: 100% !important;
+  }
+}
