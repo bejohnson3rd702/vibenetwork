@@ -116,11 +116,20 @@ function App() {
          const { data: { session: currentSession } } = await supabase!.auth.getSession();
          const isNew = newId.includes('test_wl');
          
+         let defaultFee = 30.00;
+         if (isNew) {
+            const { data: platformSettings } = await supabase!.from('platform_settings').select('global_whitelabel_fee').limit(1).single();
+            if (platformSettings?.global_whitelabel_fee !== undefined) {
+                defaultFee = platformSettings.global_whitelabel_fee;
+            }
+         }
+         
          const payload = {
            owner_id: currentSession?.user?.id,
            name: e.detail.name,
            domain: e.detail.domain,
            logo: e.detail.logoImage,
+           platform_fee_percentage: defaultFee,
            theme: {
               accent: e.detail.accent,
               heroCopy: e.detail.heroCopy,
@@ -136,7 +145,8 @@ function App() {
               enableBooking: e.detail.enableBooking !== undefined ? e.detail.enableBooking : false,
               heroLayoutMode: e.detail.heroLayoutMode || 'verbiage',
               heroVideoUrl: e.detail.heroVideoUrl || '',
-              heroVideoTitle: e.detail.heroVideoTitle || ''
+              heroVideoTitle: e.detail.heroVideoTitle || '',
+              inviteOnly: false
            }
          };
 

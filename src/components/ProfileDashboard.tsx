@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { supabase } from '../supabaseClient';
 import { motion, AnimatePresence } from 'framer-motion';
-import { LogOut, Camera, Lock, Unlock, Image as ImageIcon, Star, ShieldCheck, Eye, Edit2, Wand, Calendar, Edit3, Clock, CheckCircle, Heart, MessageCircle, Wallet, ArrowUpRight, ArrowDownLeft, Activity, Monitor, Settings, Video, DollarSign } from 'lucide-react';
+import { LogOut, Camera, Lock, Unlock, Image as ImageIcon, Star, ShieldCheck, Eye, Edit2, Trash2, Wand, Calendar, Edit3, Clock, CheckCircle, Heart, MessageCircle, Wallet, ArrowUpRight, ArrowDownLeft, Activity, Monitor, Settings, Video, DollarSign } from 'lucide-react';
 import { DictationButton } from './DictationButton';
 import { EmojiPickerButton } from './EmojiPickerButton';
 import EndUserAuthModal from './EndUserAuthModal';
@@ -37,7 +37,7 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
 
   // Editor States
   const [bio, setBio] = useState('');
-  const [subPrice, setSubPrice] = useState(4.99);
+
   const [selectedGenre, setSelectedGenre] = useState('Electronic');
   const [avatarUrl, setAvatarUrl] = useState('');
   const [homepageImageUrl, setHomepageImageUrl] = useState('');
@@ -50,7 +50,7 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
   const [networkProfiles, setNetworkProfiles] = useState<any[]>([]);
   const [walletBalance, setWalletBalance] = useState(() => (typeof window !== 'undefined' ? Number(localStorage.getItem('vibe_host_wallet') || 0.00) : 0.00));
   const [paySubsWithWallet, setPaySubsWithWallet] = useState(true);
-  const [isSubscribed, setIsSubscribed] = useState(false);
+
   const [products, setProducts] = useState<any[]>([]);
   const [selectedDate, setSelectedDate] = useState<number | null>(null);
   const [selectedTime, setSelectedTime] = useState<string | null>(null);
@@ -73,10 +73,15 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
   const [livePrice, setLivePrice] = useState('5.00');
   const [hasPaidForLive, setHasPaidForLive] = useState(false);
   const [previewTimeLeft, setPreviewTimeLeft] = useState(90);
+  const [directorLayout, setDirectorLayout] = useState('grid');
+  const [isSubscribed, setIsSubscribed] = useState(false);
+  const [subPrice, setSubPrice] = useState('9.99');
+  const [deletePostId, setDeletePostId] = useState<string | number | null>(null);
+  const [editPostData, setEditPostData] = useState<{ id: string | number, content: string } | null>(null);
   const [cameraStatus, setCameraStatus] = useState<'idle'|'loading'|'active'|'error'>('idle');
   const [cameraDebugData, setCameraDebugData] = useState<string>('');
   const [liveCountdown, setLiveCountdown] = useState<number | null>(null);
-  const [liveEmbedUrl, setLiveEmbedUrl] = useState('https://www.youtube.com/embed/jfKfPfyJRdk?autoplay=1&mute=0');
+  const [liveEmbedUrl, setLiveEmbedUrl] = useState('');
   const [streamSource, setStreamSource] = useState<'url' | 'camera'>('url');
   const [guests, setGuests] = useState<{id: string, name: string, title: string, isLive: boolean}[]>([]);
   const [guestSetup, setGuestSetup] = useState<{show: boolean, name: string, title: string}>({show: false, name: '', title: ''});
@@ -85,8 +90,7 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
   const [tipAmount, setTipAmount] = useState<number | ''>('');
   const [presenterMode, setPresenterMode] = useState(false);
   const [showExitScreen, setShowExitScreen] = useState(false);
-  const [directorLayout, setDirectorLayout] = useState<'split' | 'isolate_host' | 'isolate_guest'>('split');
-  const [directorLowerThirds, setDirectorLowerThirds] = useState({ active: false, text: '', sub: '' });
+
   const videoRef = useRef<HTMLVideoElement>(null);
   
   const channelRef = useRef<any>(null);
@@ -141,15 +145,15 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
 
   useEffect(() => {
     let timer: NodeJS.Timeout;
-    if (!isOwnProfile && isPlayingLive && !isSubscribed && !hasPaidForLive && previewTimeLeft > 0) {
+    if (!isOwnProfile && isPlayingLive && !hasPaidForLive && previewTimeLeft > 0) {
       timer = setInterval(() => {
         setPreviewTimeLeft(prev => Math.max(0, prev - 1));
       }, 1000);
     }
     return () => clearInterval(timer);
-  }, [isOwnProfile, isPlayingLive, isSubscribed, hasPaidForLive, previewTimeLeft]);
+  }, [isOwnProfile, isPlayingLive, hasPaidForLive, previewTimeLeft]);
 
-  const isPreviewExpired = !isOwnProfile && isPlayingLive && !isSubscribed && !hasPaidForLive && previewTimeLeft === 0;
+  const isPreviewExpired = !isOwnProfile && isPlayingLive && !hasPaidForLive && previewTimeLeft === 0;
 
   useEffect(() => {
     if (!supabase || !targetProfileId) return;
@@ -179,27 +183,7 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
         });
     });
 
-    // Listen for direct structural overrides from Director Studio
-    channel.on('broadcast', { event: 'director_command' }, (payload) => {
-        const { action, guestId, layout, lowerThirds, status } = payload.payload;
-        if (action === 'toggle_guest') {
-            setGuests(current => {
-               const updated = current.map((g: any) => g.id === guestId ? { ...g, isLive: !g.isLive } : g);
-               if (typeof window !== 'undefined') localStorage.setItem('vibe_host_guests_session', JSON.stringify(updated));
-               channel.send({ type: 'broadcast', event: 'host_sync_guests', payload: updated });
-               return updated;
-            });
-        }
-        if (action === 'update_layout') {
-            setDirectorLayout(layout);
-        }
-        if (action === 'update_lower_thirds') {
-            setDirectorLowerThirds(lowerThirds);
-        }
-        if (action === 'set_live_status') {
-            setIsPubliclyLive(status);
-        }
-    });
+
 
     // Listen for guests requesting to join
     channel.on('broadcast', { event: 'guest_interaction' }, (payload) => {
@@ -408,12 +392,7 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
    };
   
   // Scheduler State & DnD Handlers
-  const [scheduledPosts, setScheduledPosts] = useState<any[]>([
-    { id: '1', content: 'Finalizing the Q4 Roadmap rollout presentation. Need marketing signoff on the slide deck.', status: 'draft', date: 'Edited 2 hrs ago', type: 'Executive Update', color: '#0055ff' },
-    { id: '2', content: 'Drafting the release notes for the new multi-tenant API update.', status: 'draft', date: 'Edited yesterday', type: 'Product Release', color: '#ff4d85' },
-    { id: '3', content: 'The Enterprise Developer Conference is officially live! Access the remote broadcast now. 🚀', status: 'scheduled', date: 'TOMORROW, 10:00 AM', type: 'Scheduled', color: '#FFD700', image: 'https://image.pollinations.ai/prompt/corporate%20presentation%20screen%20boardroom%20meeting' },
-    { id: '4', content: "Our SOC-2 Compliance audit has been published successfully.", status: 'published', date: 'POSTED TODAY, 9:00 AM', type: 'Published', color: '#00ff88', likes: '1.2k', comments: '56' }
-  ]);
+  const [scheduledPosts, setScheduledPosts] = useState<any[]>([]);
 
   const handleDragStart = (e: React.DragEvent, id: string) => {
     e.dataTransfer.setData('postId', id);
@@ -506,7 +485,7 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
         setHomepageImageUrl(data.homepage_image_url || '');
         setFlipbookImages(data.flipbook_images || '');
         if (data.genre) setSelectedGenre(data.genre);
-        if (data.sub_price) setSubPrice(data.sub_price);
+
 
         let postsData = postsDataRaw;
         if (postsError) {
@@ -696,7 +675,7 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
     await supabase!.from('profiles').update({
       bio,
       genre: selectedGenre,
-      sub_price: subPrice,
+
       avatar_url: avatarUrl,
       homepage_image_url: homepageImageUrl,
       flipbook_images: flipbookImages,
@@ -731,7 +710,7 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
       title: newSeries.title,
       description: newSeries.description,
       price: parseFloat(newSeries.price),
-      img: newSeries.img || 'https://images.unsplash.com/photo-1611162617474-5b21e879e113?w=400&q=80'
+      img: newSeries.img || ''
     };
 
     try {
@@ -788,7 +767,7 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
       price: parseFloat(newCourse.price),
       modules: parseInt(newCourse.modules || '10'),
       hours: newCourse.hours || '5.0',
-      img: newCourse.img || 'https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?w=400&q=80'
+      img: newCourse.img || ''
     };
 
     try {
@@ -851,6 +830,46 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
       toast.error('Upload failed. Did you run the storage buckets script?');
     } finally {
       setUploadingPostMedia(false);
+    }
+  };
+
+  const handleDeletePost = (postId: string | number) => {
+    setDeletePostId(postId);
+  };
+
+  const confirmDeletePost = async () => {
+    if (!deletePostId) return;
+    const postId = deletePostId;
+    setDeletePostId(null);
+    
+    // Optimistic delete
+    setFeed(feed.filter(p => p.id !== postId));
+    
+    try {
+      await supabase!.from('posts').delete().eq('id', postId);
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
+  const handleEditPost = (postId: string | number, currentContent: string) => {
+    setEditPostData({ id: postId, content: currentContent });
+  };
+
+  const confirmEditPost = async (newContent: string) => {
+    if (!editPostData) return;
+    const postId = editPostData.id;
+    setEditPostData(null);
+    
+    if (!newContent || newContent === editPostData.content) return;
+
+    // Optimistic update
+    setFeed(feed.map(p => p.id === postId ? { ...p, title: newContent } : p));
+
+    try {
+      await supabase!.from('posts').update({ content: newContent }).eq('id', postId);
+    } catch (e) {
+      console.error(e);
     }
   };
 
@@ -1009,7 +1028,7 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
       {/* Immersive Hero Banner */}
       {!isGuestMode && !isNetworkLevel && (
         <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '400px', zIndex: 0 }}>
-          <div style={{ position: 'absolute', inset: 0, backgroundImage: `url(${(homepageImageUrl ? homepageImageUrl.split(',')[currentBgIndex] : null) || 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&q=80&w=2500'})`, backgroundSize: 'cover', backgroundPosition: 'center', filter: 'var(--hero-img-filter)', transition: 'background-image 1s ease-in-out' }} />
+          <div style={{ position: 'absolute', inset: 0, backgroundImage: homepageImageUrl ? `url(${homepageImageUrl.split(',')[currentBgIndex]})` : 'none', backgroundSize: 'cover', backgroundPosition: 'center', filter: 'var(--hero-img-filter)', transition: 'background-image 1s ease-in-out' }} />
           <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to bottom, transparent 30%, var(--hero-bg) 100%)' }} />
           {/* Dynamic Glowing Accent */}
           <div style={{ position: 'absolute', inset: 0, background: 'radial-gradient(circle at 50% 50%, rgba(255, 77, 133, 0.2), transparent 70%)', mixBlendMode: 'screen' }} />
@@ -1096,42 +1115,11 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
                             <option>AI Automation</option>
                             <option>B2B Marketplace</option>
                           </select>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 16px', background: 'rgba(255,215,0,0.1)', color: '#FFD700', border: '1px solid rgba(255,215,0,0.3)', borderRadius: '24px', fontSize: '13px', fontWeight: 'bold' }}>
-                            $<input type="number" value={subPrice} step="0.50" onChange={(e) => setSubPrice(parseFloat(e.target.value))} style={{ width: '45px', background: 'none', border: 'none', color: '#FFD700', outline: 'none', fontWeight: 'bold', fontSize: '14px' }} />/month
-                          </div>
                         </>
                       ) : (
                         <>
                           <span style={{ padding: '8px 16px', background: 'rgba(255,255,255,0.1)', color: 'var(--text-primary)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '24px', fontSize: '13px', backdropFilter: 'blur(10px)' }}>{selectedGenre}</span>
-                          {!isOwnProfile && (
-                            <button 
-                              onClick={() => {
-                                if (!user) { toast.info('Please log in to subscribe.'); return; }
-                                if (!isSubscribed) {
-                                  handleStripeCheckout('Monthly Subscription', Number(subPrice));
-                                  setIsSubscribed(true);
-                                } else {
-                                  setIsSubscribed(false);
-                                }
-                              }}
-                              style={{ 
-                                background: isSubscribed ? 'rgba(255, 215, 0, 0.1)' : 'linear-gradient(135deg, #FFD700, #FFA500)', 
-                                color: isSubscribed ? '#FFD700' : '#000', 
-                                border: isSubscribed ? '1px solid #FFD700' : 'none', 
-                                padding: '8px 24px', 
-                                borderRadius: '24px', 
-                                fontWeight: 'bold', 
-                                cursor: 'pointer',
-                                display: 'flex',
-                                alignItems: 'center',
-                                gap: '8px',
-                                boxShadow: isSubscribed ? 'none' : '0 10px 20px rgba(255,215,0,0.3)',
-                                transition: 'all 0.2s'
-                              }}
-                            >
-                              {isSubscribed ? <><CheckCircle size={16} /> Subscribed</> : <><Star size={16} /> Subscribe ${subPrice}/mo</>}
-                            </button>
-                          )}
+
                         </>
                       )}
                     </div>
@@ -1181,7 +1169,7 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
               {[
                 { id: 'feed', label: 'Content Feed' },
                 { id: 'store', label: 'Store' },
-                ...(wlConfig?.enableWatchLive !== false ? [{ id: 'live', label: 'Live Stream' }] : []),
+                { id: 'live', label: 'Live Stream' },
                 ...(wlConfig?.enableBooking !== false ? [{ id: 'booking', label: 'Booking' }] : []),
                 { id: 'series', label: 'Episodes' },
                 { id: 'courses', label: 'Masterclasses' },
@@ -1305,16 +1293,22 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
                     <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>{post.date}</span>
                   </div>
                 </motion.div>
-                {post.locked && (
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px', color: '#FFD700', background: 'rgba(255,215,0,0.1)', padding: '4px 10px', borderRadius: '12px', fontWeight: 'bold' }}>
-                    <Lock size={12} /> Subscriber Only
+
+                {((post.creator_id === user?.id) || (isOwnProfile && !isNetworkLevel) || (isNetworkLevel && targetProfileId === user?.id)) && viewMode === 'edit' && (
+                  <div style={{ display: 'flex', gap: '8px' }}>
+                    <button onClick={() => handleEditPost(post.id, post.title)} style={{ background: 'rgba(255,255,255,0.05)', border: 'none', color: 'var(--text-primary)', cursor: 'pointer', padding: '8px', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: '0.2s' }} onMouseOver={e=>e.currentTarget.style.background='rgba(255,255,255,0.1)'} onMouseOut={e=>e.currentTarget.style.background='rgba(255,255,255,0.05)'} title="Edit Post">
+                      <Edit2 size={16} />
+                    </button>
+                    <button onClick={() => handleDeletePost(post.id)} style={{ background: 'rgba(255,50,50,0.1)', border: 'none', color: '#ff4444', cursor: 'pointer', padding: '8px', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: '0.2s' }} onMouseOver={e=>e.currentTarget.style.background='rgba(255,50,50,0.2)'} onMouseOut={e=>e.currentTarget.style.background='rgba(255,50,50,0.1)'} title="Delete Post">
+                      <Trash2 size={16} />
+                    </button>
                   </div>
                 )}
               </div>
 
               {/* Post Body (Content + Media) */}
               <div style={{ position: 'relative' }}>
-                <div style={{ filter: post.locked && (!isSubscribed || isOwnProfile) ? 'blur(8px)' : 'none', opacity: post.locked && (!isSubscribed || isOwnProfile) ? 0.4 : 1, transition: 'all 0.3s' }} id={`post-content-${post.id}`}>
+                <div style={{ transition: 'all 0.3s' }} id={`post-content-${post.id}`}>
                   {/* Post Content / Title */}
                   <div style={{ padding: '0 20px 20px 20px', fontSize: '16px', lineHeight: 1.5 }}>
                     {post.title}
@@ -1327,50 +1321,10 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
                     </div>
                   )}
                 </div>
-
-                {/* Locked Overlay */}
-                {post.locked && (!isSubscribed || isOwnProfile) && (
-                  <div id={`post-overlay-${post.id}`} style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', zIndex: 10, padding: '20px', textAlign: 'center' }}>
-                    <div style={{ background: 'rgba(0,0,0,0.8)', padding: '30px 40px', borderRadius: '24px', border: '1px solid rgba(255,215,0,0.2)', display: 'flex', flexDirection: 'column', alignItems: 'center', boxShadow: '0 20px 40px rgba(0,0,0,0.5)' }}>
-                      <Lock size={48} color="#FFD700" style={{ marginBottom: '16px' }} />
-                      <h3 style={{ color: '#fff', fontSize: '20px', margin: '0 0 16px 0' }}>Subscriber Exclusive</h3>
-                      
-                      {isOwnProfile ? (
-                        <button 
-                          onClick={() => {
-                            const content = document.getElementById(`post-content-${post.id}`);
-                            const overlay = document.getElementById(`post-overlay-${post.id}`);
-                            if (content && overlay) {
-                              content.style.filter = 'none';
-                              content.style.opacity = '1';
-                              overlay.style.display = 'none';
-                            }
-                          }}
-                          style={{ padding: '12px 30px', background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.2)', borderRadius: '20px', color: '#fff', fontWeight: 'bold', cursor: 'pointer', fontSize: '14px', transition: 'all 0.2s' }}
-                        >
-                          Reveal (Creator Preview)
-                        </button>
-                      ) : (
-                        <button 
-                          onClick={() => {
-                            if (!user) { toast.info('Please log in to subscribe.'); return; }
-                            handleStripeCheckout('Monthly Subscription', Number(subPrice));
-                            setIsSubscribed(true);
-                          }}
-                          style={{ padding: '12px 30px', background: '#FFD700', border: 'none', borderRadius: '20px', color: '#000', fontWeight: 'bold', cursor: 'pointer', fontSize: '16px', transition: 'transform 0.2s' }}
-                          onMouseOver={e=>e.currentTarget.style.transform='scale(1.05)'}
-                          onMouseOut={e=>e.currentTarget.style.transform='scale(1)'}
-                        >
-                          Subscribe for ${subPrice}/mo to unlock
-                        </button>
-                      )}
-                    </div>
-                  </div>
-                )}
               </div>
 
               {/* Engagement Section (Likes & Comments) */}
-              {(!post.locked || isSubscribed || isOwnProfile) && (
+              {true && (
                 <div style={{ padding: '16px 20px', borderTop: '1px solid rgba(255,255,255,0.05)', background: 'rgba(0,0,0,0.2)' }}>
                   <div style={{ display: 'flex', gap: '24px', marginBottom: '16px' }}>
                     <button 
@@ -1559,7 +1513,7 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
             livePrice={livePrice} previewTimeLeft={previewTimeLeft} presenterMode={presenterMode}
             activeGuests={activeGuests} totalSlots={totalSlots} showHost={showHost}
             cameraStatus={cameraStatus} videoRef={videoRef} profile={profile} visibleGuests={visibleGuests}
-            directorLowerThirds={directorLowerThirds} homepageImageUrl={homepageImageUrl} channelRef={channelRef}
+            homepageImageUrl={homepageImageUrl} channelRef={channelRef}
             setShowExitScreen={setShowExitScreen} viewMode={viewMode} creatorId={creatorId} user={user}
             guests={guests} subPrice={subPrice} setLivePrice={setLivePrice} setStreamSource={setStreamSource}
             setLiveEmbedUrl={setLiveEmbedUrl} setIsPlayingLive={setIsPlayingLive} setIsPubliclyLive={setIsPubliclyLive}
@@ -2387,6 +2341,8 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
         )}
       </AnimatePresence>
 
+
+
       <style>{`
         .camera-overlay:hover { opacity: 1 !important; }
       `}</style>
@@ -2499,6 +2455,50 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
           </div>
         )}
       </AnimatePresence>
+
+      {/* Delete Post Modal */}
+      <AnimatePresence>
+        {deletePostId && (
+          <div style={{ position: 'fixed', inset: 0, zIndex: 99999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }}>
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.8)', backdropFilter: 'blur(10px)' }} onClick={() => setDeletePostId(null)} />
+            
+            <motion.div initial={{ scale: 0.9, opacity: 0, y: 20 }} animate={{ scale: 1, opacity: 1, y: 0 }} exit={{ scale: 0.9, opacity: 0, y: 20 }} style={{ position: 'relative', background: 'rgba(20,20,20,0.95)', border: `1px solid ${wlConfig?.accent || 'var(--accent-primary)'}44`, padding: '40px', borderRadius: '24px', width: '100%', maxWidth: '400px', display: 'flex', flexDirection: 'column', gap: '20px', boxShadow: `0 20px 40px ${wlConfig?.accent || 'var(--accent-primary)'}22` }}>
+              <h2 style={{ margin: 0, fontSize: '24px', color: '#ff4444' }}>Delete Post</h2>
+              <p style={{ margin: 0, color: 'var(--text-secondary)', fontSize: '15px' }}>Are you sure you want to permanently delete this post? This action cannot be undone.</p>
+              
+              <div style={{ display: 'flex', gap: '12px', marginTop: '10px' }}>
+                <button onClick={() => setDeletePostId(null)} style={{ flex: 1, padding: '12px', background: 'rgba(255,255,255,0.1)', color: '#fff', border: 'none', borderRadius: '12px', fontWeight: 'bold', cursor: 'pointer', transition: '0.2s' }} onMouseOver={e=>e.currentTarget.style.background='rgba(255,255,255,0.15)'} onMouseOut={e=>e.currentTarget.style.background='rgba(255,255,255,0.1)'}>Cancel</button>
+                <button onClick={confirmDeletePost} style={{ flex: 1, padding: '12px', background: '#ff4444', color: '#fff', border: 'none', borderRadius: '12px', fontWeight: 'bold', cursor: 'pointer', transition: '0.2s' }} onMouseOver={e=>e.currentTarget.style.background='#ff6666'} onMouseOut={e=>e.currentTarget.style.background='#ff4444'}>Delete</button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* Edit Post Modal */}
+      <AnimatePresence>
+        {editPostData && (
+          <div style={{ position: 'fixed', inset: 0, zIndex: 99999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }}>
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.8)', backdropFilter: 'blur(10px)' }} onClick={() => setEditPostData(null)} />
+            
+            <motion.div initial={{ scale: 0.9, opacity: 0, y: 20 }} animate={{ scale: 1, opacity: 1, y: 0 }} exit={{ scale: 0.9, opacity: 0, y: 20 }} style={{ position: 'relative', background: 'rgba(20,20,20,0.95)', border: `1px solid ${wlConfig?.accent || 'var(--accent-primary)'}44`, padding: '30px', borderRadius: '24px', width: '100%', maxWidth: '500px', display: 'flex', flexDirection: 'column', gap: '20px', boxShadow: `0 20px 40px ${wlConfig?.accent || 'var(--accent-primary)'}22` }}>
+              <h2 style={{ margin: 0, fontSize: '22px' }}>Edit Post</h2>
+              <textarea 
+                id="edit-post-textarea"
+                defaultValue={editPostData.content} 
+                style={{ width: '100%', minHeight: '120px', background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.1)', padding: '16px', borderRadius: '12px', color: 'var(--text-primary)', outline: 'none', fontSize: '15px', resize: 'vertical', fontFamily: 'inherit' }}
+                onFocus={e=>e.currentTarget.style.borderColor = wlConfig?.accent || 'var(--accent-primary)'}
+                onBlur={e=>e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)'}
+              />
+              <div style={{ display: 'flex', gap: '12px', marginTop: '10px' }}>
+                <button onClick={() => setEditPostData(null)} style={{ flex: 1, padding: '12px', background: 'rgba(255,255,255,0.1)', color: '#fff', border: 'none', borderRadius: '12px', fontWeight: 'bold', cursor: 'pointer', transition: '0.2s' }}>Cancel</button>
+                <button onClick={() => confirmEditPost((document.getElementById('edit-post-textarea') as HTMLTextAreaElement).value)} style={{ flex: 1, padding: '12px', background: wlConfig?.accent || 'var(--accent-primary)', color: '#fff', border: 'none', borderRadius: '12px', fontWeight: 'bold', cursor: 'pointer', transition: '0.2s' }}>Save Changes</button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
       </div>
     </div>
   );

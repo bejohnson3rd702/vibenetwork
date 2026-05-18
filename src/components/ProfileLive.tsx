@@ -26,7 +26,7 @@ export interface ProfileLiveProps {
   videoRef: any;
   profile: any;
   visibleGuests: any[];
-  directorLowerThirds: any;
+
   homepageImageUrl: string;
   channelRef: any;
   setShowExitScreen: (b: boolean) => void;
@@ -54,7 +54,7 @@ export const ProfileLive: React.FC<ProfileLiveProps> = ({
   isSubscribed, isOwnProfile, localGuestData, isPlayingLive, isPubliclyLive,
   streamSource, isPreviewExpired, liveEmbedUrl, hasPaidForLive, livePrice,
   previewTimeLeft, presenterMode, activeGuests, totalSlots, showHost,
-  cameraStatus, videoRef, profile, visibleGuests, directorLowerThirds,
+  cameraStatus, videoRef, profile, visibleGuests,
   homepageImageUrl, channelRef, setShowExitScreen, viewMode, creatorId,
   user, guests, subPrice, setLivePrice, setStreamSource, setLiveEmbedUrl,
   setIsPlayingLive, setIsPubliclyLive, setPresenterMode, setGuests,
@@ -192,26 +192,11 @@ export const ProfileLive: React.FC<ProfileLiveProps> = ({
                          </div>
                        )}
 
-                       {/* Directed Lower Thirds Overlay */}
-                       <AnimatePresence>
-                          {directorLowerThirds.active && isPlayingLive && (
-                             <motion.div initial={{ x: -50, opacity: 0 }} animate={{ x: 0, opacity: 1 }} exit={{ x: -20, opacity: 0 }} style={{ position: 'absolute', bottom: 40, left: 40, zIndex: 90, pointerEvents: 'none' }}>
-                                <div style={{ background: '#00ff88', color: '#000', padding: '10px 20px', fontWeight: '900', fontSize: '20px', display: 'inline-block', boxShadow: '5px 5px 0px rgba(0,0,0,0.3)' }}>
-                                  {directorLowerThirds.text}
-                                </div>
-                                <br />
-                                {directorLowerThirds.sub && (
-                                  <div style={{ background: 'var(--bg-color)', color: 'var(--text-primary)', padding: '6px 20px', display: 'inline-block', fontSize: '14px', borderLeft: '4px solid #00ff88', marginTop: '4px' }}>
-                                     {directorLowerThirds.sub}
-                                  </div>
-                                )}
-                             </motion.div>
-                          )}
-                       </AnimatePresence>
+
                      </>
                   ) : (
                     <>
-                      <img src={homepageImageUrl || "https://vibenetwork.tv/wp-content/uploads/2026/02/silhouette-dj-playing-music_1230721-3514.webp"} alt="Live Stream Thumbnail" style={{ position: 'absolute', width: '100%', height: '100%', objectFit: 'cover', opacity: 0.5, filter: 'blur(2px)' }} />
+                      {homepageImageUrl && <img src={homepageImageUrl} alt="Live Stream Thumbnail" style={{ position: 'absolute', width: '100%', height: '100%', objectFit: 'cover', opacity: 0.5, filter: 'blur(2px)' }} />}
                       <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 10 }}>
                         <button onClick={() => setIsPlayingLive(true)} style={{ width: '80px', height: '80px', borderRadius: '50%', background: 'rgba(255,77,133,0.9)', border: 'none', color: 'var(--text-primary)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 0 20px rgba(255,77,133,0.5)', transition: 'transform 0.2s' }} onMouseOver={e=>e.currentTarget.style.transform='scale(1.1)'} onMouseOut={e=>e.currentTarget.style.transform='scale(1)'}>
                           <svg width="32" height="32" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>

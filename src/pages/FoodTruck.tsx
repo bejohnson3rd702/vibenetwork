@@ -29,7 +29,7 @@ const FoodTruck: React.FC = () => {
       {/* 1. HERO SECTION */}
       <section style={{ position: 'relative', height: '100vh', minHeight: '700px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '20px', textAlign: 'center', overflow: 'hidden' }}>
         {/* Background Image */}
-        <div style={{ position: 'absolute', inset: 0, backgroundImage: 'url("https://images.unsplash.com/photo-1565123409695-4bec56e62744?auto=format&fit=crop&q=80&w=2500")', backgroundSize: 'cover', backgroundPosition: 'center', zIndex: 0 }} />
+        <div style={{ position: 'absolute', inset: 0, backgroundSize: 'cover', backgroundPosition: 'center', zIndex: 0 }} />
         {/* Dark Overlay */}
         <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to bottom, rgba(0,0,0,0.4), #111)', zIndex: 1 }} />
         
@@ -75,7 +75,7 @@ const FoodTruck: React.FC = () => {
           <div style={{ display: 'grid', gap: '20px', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))' }}>
             {/* Menu Item 1 */}
             <div style={{ background: '#1a1a1a', borderRadius: '16px', overflow: 'hidden', border: '1px solid #333' }}>
-              <div style={{ height: '200px', backgroundImage: 'url("https://images.unsplash.com/photo-1551504734-5ee1c4a1479b?auto=format&fit=crop&q=80&w=800")', backgroundSize: 'cover', backgroundPosition: 'center' }} />
+              <div style={{ height: '200px', backgroundSize: 'cover', backgroundPosition: 'center' }} />
               <div style={{ padding: '20px' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '8px' }}>
                   <h3 style={{ margin: 0, fontSize: '20px', fontWeight: '800' }}>Birria Tacos (3)</h3>
@@ -87,7 +87,7 @@ const FoodTruck: React.FC = () => {
 
             {/* Menu Item 2 */}
             <div style={{ background: '#1a1a1a', borderRadius: '16px', overflow: 'hidden', border: '1px solid #333' }}>
-              <div style={{ height: '200px', backgroundImage: 'url("https://images.unsplash.com/photo-1628840042765-356cda07504e?auto=format&fit=crop&q=80&w=800")', backgroundSize: 'cover', backgroundPosition: 'center' }} />
+              <div style={{ height: '200px', backgroundSize: 'cover', backgroundPosition: 'center' }} />
               <div style={{ padding: '20px' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '8px' }}>
                   <h3 style={{ margin: 0, fontSize: '20px', fontWeight: '800' }}>Loaded Asada Fries</h3>
@@ -161,9 +161,9 @@ const FoodTruck: React.FC = () => {
           
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '10px', marginBottom: '60px' }}>
             {/* Fake Instagram Grid */}
-            <div style={{ aspectRatio: '1/1', background: 'url("https://images.unsplash.com/photo-1504544750208-dc0358e63f7f?auto=format&fit=crop&q=80&w=400")', backgroundSize: 'cover', borderRadius: '8px' }} />
-            <div style={{ aspectRatio: '1/1', background: 'url("https://images.unsplash.com/photo-1615865417488-82550186173d?auto=format&fit=crop&q=80&w=400")', backgroundSize: 'cover', borderRadius: '8px' }} />
-            <div style={{ aspectRatio: '1/1', background: 'url("https://images.unsplash.com/photo-1599974579688-8dbdd335c77f?auto=format&fit=crop&q=80&w=400")', backgroundSize: 'cover', borderRadius: '8px' }} />
+            <div style={{ aspectRatio: '1/1', backgroundSize: 'cover', borderRadius: '8px' }} />
+            <div style={{ aspectRatio: '1/1', backgroundSize: 'cover', borderRadius: '8px' }} />
+            <div style={{ aspectRatio: '1/1', backgroundSize: 'cover', borderRadius: '8px' }} />
           </div>
 
           <div style={{ background: '#1a1a1a', padding: '40px 20px', borderRadius: '24px', border: '1px dashed #444' }}>

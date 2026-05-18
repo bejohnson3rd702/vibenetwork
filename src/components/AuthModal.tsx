@@ -35,7 +35,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ onClose, onSuccess, defaultIsLogi
   const [wizardStep, setWizardStep] = useState(0);
   const [wlConfig, setWlConfig] = useState({ name: '', domain: '', bg: '#000', accent: '#ff4d85', heroImage: '', logoImage: '', sliderCount: 4, customSections: '', heroCopy: '' });
   const [chatHistory, setChatHistory] = useState<{sender: 'bot'|'user', text: string, imagePreview?: string}[]>([
-    { sender: 'bot', text: "Welcome to the Beginning of your Business's AI Journey. I am your automated AI setup architect. First off, what is the name of your organization?" }
+    { sender: 'bot', text: "Welcome to Vibe Network Setup. I am your automated setup architect. First off, what is the name of your organization?" }
   ]);
   const [chatInput, setChatInput] = useState('');
   const [selectedSections, setSelectedSections] = useState<string[]>(['Contact Us Form']);
@@ -124,7 +124,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ onClose, onSuccess, defaultIsLogi
           data: {
             username,
             role,
-            whitelabel_id: activeTenantConfig?.domain === 'vibenetwork.tv' ? null : activeTenantConfig?.id,
+            whitelabel_id: (!activeTenantConfig?.id || activeTenantConfig?.id === 'master' || activeTenantConfig?.domain === 'vibenetwork.vercel.app' || activeTenantConfig?.domain === 'vibenetwork.tv') ? null : activeTenantConfig?.id,
             referred_by: referredBy || undefined
           }
         }
@@ -136,6 +136,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ onClose, onSuccess, defaultIsLogi
       else if (data.user) {
         onSuccess(data.user);
         if (role === 'business') {
+           /* Stripe setup commented out for now
            // Redirect to Stripe Paywall before creating the network
            try {
              const { data: checkoutData, error: checkoutError } = await supabase!.functions.invoke('create-checkout', {
@@ -161,6 +162,10 @@ const AuthModal: React.FC<AuthModalProps> = ({ onClose, onSuccess, defaultIsLogi
              setShowBusinessWizard(true);
              setLoading(false);
            }
+           */
+           // Bypass straight to wizard
+           setShowBusinessWizard(true);
+           setLoading(false);
         } else {
            onClose();
            setLoading(false);
@@ -360,7 +365,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ onClose, onSuccess, defaultIsLogi
         {showBusinessWizard && (
           <div style={{ position: 'absolute', inset: 0, background: 'var(--bg-surface)', borderRadius: '24px', zIndex: 10, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
             <div style={{ background: 'var(--bg-color)', padding: '20px', borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
-               <h3 style={{ margin: 0, color: 'var(--text-primary)', fontSize: '18px' }}>🚀 Beginning of your Business's AI Journey</h3>
+               <h3 style={{ margin: 0, color: 'var(--text-primary)', fontSize: '18px' }}>🚀 Vibe Network Configuration</h3>
             </div>
             
             <div style={{ flex: 1, padding: '20px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '16px' }}>
@@ -425,31 +430,23 @@ const AuthModal: React.FC<AuthModalProps> = ({ onClose, onSuccess, defaultIsLogi
                        setWlConfig(c => ({ ...c, name: input }));
                        window.dispatchEvent(new CustomEvent('whitelabel_update', { detail: { name: input } }));
                        document.title = input;
-                       setChatHistory(h => [...h, { sender: 'bot', text: `Brilliant. '${input}' is officially staged. Do you already have a logo, or would you like our AI to generate one for you? (Type 'create one' or 'I have one').` }]);
+                       setChatHistory(h => [...h, { sender: 'bot', text: `Brilliant. '${input}' is officially staged. Please paste the URL of your logo, or type 'skip' to upload it later from your dashboard.` }]);
                        setWizardStep(1);
                        break;
                      }
                      case 1: {
-                       if (input.toLowerCase().includes('create') || input.toLowerCase().includes('yes')) {
-                          setChatHistory(h => [...h, { sender: 'bot', text: `Awesome. Briefly describe what you want the logo to look like (e.g., 'A minimalist white lion logo').` }]);
-                          setWizardStep(1.5);
-                       } else {
-                           const autoDomain = `${wlConfig.name.replace(/\s+/g, '').toLowerCase()}.vibenetwork.tv`;
-                           setWlConfig(c => ({ ...c, domain: autoDomain }));
-                           setChatHistory(h => [...h, { sender: 'bot', text: `Great, we'll use your text name for now and you can upload a logo file later. I've automatically assigned you the isolated subdomain: ${autoDomain}. Next, what are your primary brand colors? (e.g. "Black and Gold" or "Purple and Cyan").` }]);
-                           setWizardStep(3);
+                        let finalLogo = '';
+                        if (input.toLowerCase() !== 'skip') {
+                            finalLogo = input;
                         }
-                       break;
-                     }
-                     case 1.5: {
-                       const logoUrl = `https://image.pollinations.ai/prompt/${encodeURIComponent(input + ' minimal vector logomark isolated')}?width=300&height=300&nologo=true&seed=${Math.floor(Math.random() * 1000000)}`;
-                       setWlConfig(c => ({ ...c, logoImage: logoUrl }));
-                       window.dispatchEvent(new CustomEvent('whitelabel_update', { detail: { logo: logoUrl } }));
-                       const autoDomain = `${wlConfig.name.replace(/\s+/g, '').toLowerCase()}.vibenetwork.tv`;
-                       setWlConfig(c => ({ ...c, domain: autoDomain }));
-                       setChatHistory(h => [...h, { sender: 'bot', text: `Logo locked in! Here's a preview. I've automatically assigned you the isolated subdomain: ${autoDomain}. Next, what are your primary brand colors? (e.g. "Black and Gold" or "Purple and Cyan").`, imagePreview: logoUrl }]);
-                       setWizardStep(3);
-                       break;
+                        const autoDomain = `${wlConfig.name.replace(/\s+/g, '').toLowerCase()}.vibenetwork.tv`;
+                        setWlConfig(c => ({ ...c, domain: autoDomain, logoImage: finalLogo }));
+                        if (finalLogo) {
+                            window.dispatchEvent(new CustomEvent('whitelabel_update', { detail: { logo: finalLogo } }));
+                        }
+                        setChatHistory(h => [...h, { sender: 'bot', text: `Got it! I've automatically assigned you the isolated subdomain: ${autoDomain}. Next, what are your primary brand colors? (e.g. "Black and Gold" or "Purple and Cyan").`, imagePreview: finalLogo || undefined }]);
+                        setWizardStep(3);
+                        break;
                      }
                      case 2: {
                        // Step 2 is now deprecated/skipped.
@@ -462,8 +459,8 @@ const AuthModal: React.FC<AuthModalProps> = ({ onClose, onSuccess, defaultIsLogi
                        const colorMap: Record<string, { bg: string, accent: string }> = {
                          black: { bg: '#050505', accent: '#ffffff' },
                          dark: { bg: '#050505', accent: '#ffffff' },
-                         white: { bg: '#f4f4f4', accent: '#111111' },
-                         light: { bg: '#f4f4f4', accent: '#111111' },
+                         white: { bg: '#050505', accent: '#ffffff' },
+                         light: { bg: '#111111', accent: '#ffffff' },
                          blue: { bg: '#050c24', accent: '#0055ff' },
                          purple: { bg: '#12001a', accent: '#a600ff' },
                          green: { bg: '#001a09', accent: '#00ff44' },
@@ -518,50 +515,38 @@ const AuthModal: React.FC<AuthModalProps> = ({ onClose, onSuccess, defaultIsLogi
                      }
                      case 5: {
                        setWlConfig(c => ({ ...c, customSections: input }));
-                       setChatHistory(h => [...h, { sender: 'bot', text: `Got it. Now, what verbiage do you want in the main Hero section? Need help? Just type 'AI write it' and I'll generate premium marketing copy.` }]);
+                       setChatHistory(h => [...h, { sender: 'bot', text: `Got it. Now, what verbiage do you want in the main Hero section?` }]);
                        setWizardStep(6);
                        break;
                      }
                      case 6: {
-                       let copy = input;
-                       if (input.toLowerCase().includes('ai')) {
-                          copy = `Welcome to the absolute pinnacle of digital media. ${wlConfig.name} is the premier destination for exclusive, high-quality streaming content.`;
-                       }
-                       setWlConfig(c => ({ ...c, heroCopy: copy }));
-                       setChatHistory(h => [...h, { sender: 'bot', text: `Hero verbiage locked! Next, what about the Hero background image? Write a prompt for the AI to design it, or paste an image URL to upload your own.` }]);
+                       setWlConfig(c => ({ ...c, heroCopy: input }));
+                       setChatHistory(h => [...h, { sender: 'bot', text: `Hero verbiage locked! Next, please paste an image URL for your Hero background, or type 'skip' to upload it later.` }]);
                        setWizardStep(7);
                        break;
                      }
                      case 7: {
-                       let imageUrl = input;
-                       if (!input.startsWith('http')) {
-                          imageUrl = `https://image.pollinations.ai/prompt/${encodeURIComponent(input)}?width=1920&height=1080&nologo=true&seed=${Math.floor(Math.random() * 1000000)}`;
+                       let imageUrl = '';
+                       if (input.toLowerCase() !== 'skip') {
+                           imageUrl = input;
                        }
                        setWlConfig(c => ({ ...c, heroImage: imageUrl }));
-                       setChatHistory(h => [...h, 
-                         { sender: 'bot', text: `How does this background look? Type 'yes' to proceed, or write a new prompt to regenerate it!`, imagePreview: imageUrl }
-                       ]);
-                       setWizardStep(7.5);
-                       break;
-                     }
-                     case 7.5: {
-                       const ans = input.toLowerCase();
-                       if (ans === 'yes' || ans === 'y' || ans === 'good' || ans === 'looks good') {
-                          setChatHistory(h => [...h, { sender: 'bot', text: `Beautiful. Final Step: This White Label feature costs $199 for setup and your first month, then $99/mo. Please physically type 'I AGREE' to e-sign the 1-Year Service Agreement and process your invoice.` }]);
-                          setWizardStep(8);
-                       } else {
-                          const newUrl = input.startsWith('http') ? input : `https://image.pollinations.ai/prompt/${encodeURIComponent(input + ' v2 masterpiece')}?width=1920&height=1080&nologo=true&seed=${Math.floor(Math.random() * 1000000)}`;
-                          setWlConfig(c => ({ ...c, heroImage: newUrl }));
-                          setChatHistory(h => [...h, { sender: 'bot', text: `How about this one? Type 'yes' to proceed, or write a new prompt!`, imagePreview: newUrl }]);
-                       }
+                       setChatHistory(h => [...h, { sender: 'bot', text: `Beautiful. Final Step: Please physically type 'I AGREE' to confirm your settings and deploy your network architecture.`, imagePreview: imageUrl || undefined }]);
+                       setWizardStep(8);
                        break;
                      }
                      case 8: {
                        if (input.trim() === 'I AGREE') {
+                          /* Payment processed commented out
                           setChatHistory(h => [...h, { sender: 'bot', text: `Agreement securely executed. Payment processed. All systems go, your White Label architecture is fully staged and ready for administration.` }]);
+                          */
+                          setChatHistory(h => [...h, { sender: 'bot', text: `Confirmed. All systems go, your White Label architecture is fully staged and ready for administration.` }]);
                           setWizardStep(9);
                        } else {
+                          /*
                           setChatHistory(h => [...h, { sender: 'bot', text: `Signature invalid. You must precisely type 'I AGREE' to digitally execute the 1-Year Service contract.` }]);
+                          */
+                          setChatHistory(h => [...h, { sender: 'bot', text: `Input invalid. You must precisely type 'I AGREE' to deploy your network.` }]);
                        }
                        break;
                      }

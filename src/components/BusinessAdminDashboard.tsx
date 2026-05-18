@@ -47,9 +47,11 @@ export default function BusinessAdminDashboard({ onClose }: { onClose: () => voi
                 <Sparkles size={22} /> Global Branding
              </button>
              
+             {/* 
              <button onClick={() => setActiveTab('sliders')} style={{ padding: '16px 20px', background: activeTab === 'sliders' ? wlConfig.accent : 'transparent', color: activeTab === 'sliders' ? '#fff' : '#888', border: 'none', borderRadius: '12px', display: 'flex', alignItems: 'center', gap: '16px', cursor: 'pointer', textAlign: 'left', fontWeight: 'bold', fontSize: '15px', transition: '0.2s' }}>
                 <Film size={22} /> Grid & Sliders Data
              </button>
+             */}
 
              <button onClick={() => setActiveTab('pages')} style={{ padding: '16px 20px', background: activeTab === 'pages' ? wlConfig.accent : 'transparent', color: activeTab === 'pages' ? '#fff' : '#888', border: 'none', borderRadius: '12px', display: 'flex', alignItems: 'center', gap: '16px', cursor: 'pointer', textAlign: 'left', fontWeight: 'bold', fontSize: '15px', transition: '0.2s' }}>
                 <Layout size={22} /> About & Custom Hubs
@@ -71,7 +73,7 @@ export default function BusinessAdminDashboard({ onClose }: { onClose: () => voi
             {activeTab === 'analytics' && <AnalyticsTab wlConfig={wlConfig} />}
             {activeTab === 'hero' && <HeroEditorTab wlConfig={wlConfig} />}
             {activeTab === 'branding' && <BrandingTab wlConfig={wlConfig} />}
-            {activeTab === 'sliders' && <SlidersTab wlConfig={wlConfig} />}
+            {/* {activeTab === 'sliders' && <SlidersTab wlConfig={wlConfig} />} */}
             {activeTab === 'pages' && <PagesTab wlConfig={wlConfig} />}
             {activeTab === 'inbox' && <InboxTab wlConfig={wlConfig} />}
             {activeTab === 'wallet' && <WalletTab wlConfig={wlConfig} />}

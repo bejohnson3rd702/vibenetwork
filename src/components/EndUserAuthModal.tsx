@@ -63,7 +63,7 @@ export default function EndUserAuthModal({ onClose }: EndUserAuthModalProps) {
             data: {
               username,
               role,
-              whitelabel_id: wlConfig?.id
+              whitelabel_id: (!wlConfig?.id || wlConfig?.id === 'master' || wlConfig?.domain === 'vibenetwork.vercel.app' || wlConfig?.domain === 'vibenetwork.tv') ? null : wlConfig?.id
             }
           }
         });

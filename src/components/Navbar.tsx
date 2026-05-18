@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Search, User, Menu, Lightbulb, Wallet, Settings, LogOut } from 'lucide-react';
+import { User, Menu, Lightbulb, Wallet, Settings, LogOut } from 'lucide-react';
 import { ASSETS } from '../data';
 import { Link, useNavigate } from 'react-router-dom';
 import { useWhiteLabel } from '../context/WhiteLabelContext';
@@ -123,7 +123,7 @@ const Navbar: React.FC<NavbarProps> = ({ user, onLoginClick, onAdminClick }) => 
             }}
             onClick={toggleTheme} 
           />
-          <Search size={20} color={appAccent || "white"} style={{ cursor: 'pointer' }} onClick={() => toast.info('Global Search & Discovery Engine coming in v2.0!')} />
+
         </div>
         <div className="hide-on-mobile" style={{ display: 'flex', alignItems: 'center', gap: '8px', borderLeft: '1px solid rgba(255,255,255,0.2)', paddingLeft: '24px' }}>
           {user ? (

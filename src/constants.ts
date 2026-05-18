@@ -1,4 +1,4 @@
-export const MASTER_DOMAIN = import.meta.env.VITE_MASTER_DOMAIN || 'vibenetwork.tv';
+export const MASTER_DOMAIN = import.meta.env.VITE_MASTER_DOMAIN || 'vibenetwork.vercel.app';
 export const DEFAULT_PLATFORM_NAME = import.meta.env.VITE_PLATFORM_NAME || 'Vibe Network';
 
 export const FALLBACK_HERO_COPY = 'The premiere destination for high quality digital content.';
@@ -14,8 +14,8 @@ export const DEFAULT_WHITELABEL_SETUP_FEE = 199.00;
 export const CATEGORY_LIVE_SCHEDULE = 'Live Network Schedule';
 
 export const FALLBACK_IMAGES = {
-  logo: 'https://vibenetwork.tv/wp-content/uploads/2026/02/white-vibe-black-tv-.png',
+  logo: '',
   avatar: 'https://ui-avatars.com/api/?name=',
-  liveThumbnail: 'https://vibenetwork.tv/wp-content/uploads/2026/02/silhouette-dj-playing-music_1230721-3514.webp',
-  postImage: 'https://vibenetwork.tv/wp-content/uploads/2026/02/mukap-vibe-tv-networkk_11zon.png'
+  liveThumbnail: '',
+  postImage: ''
 };
