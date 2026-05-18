@@ -28,7 +28,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ onClose, onSuccess, defaultIsLogi
   const [resetSent, setResetSent] = useState(false);
   
   const accentColor = activeTenantConfig?.accent || '#ff4d85';
-  const btnColor = activeTenantConfig?.btnPrimary || '#fff';
+  const btnColor = activeTenantConfig?.accent || '#fff';
 
   // Business Wizard State
   const [showBusinessWizard, setShowBusinessWizard] = useState(defaultShowWizard);
