@@ -148,9 +148,9 @@ const Navbar: React.FC<NavbarProps> = ({ user, onLoginClick, onAdminClick }) => 
               </Link>
             </div>
           ) : (
-            <div style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px' }} onClick={onLoginClick}>
-              <User size={20} color="white" />
-              <span style={{ fontFamily: 'var(--font-heading)', fontWeight: 600, fontSize: '13px', color: 'white', textTransform: 'uppercase', letterSpacing: '1px' }}>Log In</span>
+            <div style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px', transition: 'opacity 0.2s' }} onMouseOver={e=>e.currentTarget.style.opacity='0.8'} onMouseOut={e=>e.currentTarget.style.opacity='1'} onClick={onLoginClick}>
+              <User size={20} color={appAccent || "white"} />
+              <span style={{ fontFamily: 'var(--font-heading)', fontWeight: 600, fontSize: '13px', color: appAccent || 'white', textTransform: 'uppercase', letterSpacing: '1px' }}>Log In</span>
             </div>
           )}
         </div>
