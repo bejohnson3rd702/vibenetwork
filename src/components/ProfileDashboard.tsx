@@ -1075,7 +1075,7 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
             <div style={{ display: 'flex', gap: '40px', alignItems: 'flex-start', flexWrap: 'wrap' }}>
               
               {/* Profile Picture with Glow */}
-              <div className="group" style={{ position: 'relative', cursor: 'pointer' }} onClick={handleImageClick}>
+              <div className="group" style={{ position: 'relative', cursor: isOwnProfile && viewMode === 'edit' ? 'pointer' : 'default' }} onClick={() => { if (isOwnProfile && viewMode === 'edit') handleImageClick(); }}>
                 <div style={{ position: 'absolute', inset: '-10px', background: 'radial-gradient(circle at 50% 50%, rgba(255, 77, 133, 0.5), transparent 70%)', borderRadius: '50%', zIndex: 0, filter: 'blur(10px)' }} />
                 <div style={{ 
                   position: 'relative', zIndex: 1,
