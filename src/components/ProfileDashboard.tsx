@@ -1549,6 +1549,61 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
           {/* Glassmorphic Creator Header */}
           <div style={{ background: isNetworkLevel ? 'transparent' : 'rgba(15, 15, 15, 0.4)', backdropFilter: isNetworkLevel ? 'none' : 'blur(24px)', padding: isNetworkLevel ? '0 40px 40px' : '40px', borderRadius: '32px', border: isNetworkLevel ? 'none' : '1px solid rgba(255,255,255,0.08)', position: 'relative', boxShadow: isNetworkLevel ? 'none' : '0 20px 40px rgba(0,0,0,0.4)' }}>
             
+            {!isOwnProfile && (
+              <button
+                onClick={handleSubscribe}
+                style={{
+                  position: 'absolute',
+                  bottom: '30px',
+                  right: '30px',
+                  padding: '12px 28px',
+                  background: isSubscribed
+                    ? 'rgba(255,255,255,0.08)'
+                    : 'linear-gradient(135deg, #FF0055, #8A2BE2)',
+                  color: '#fff',
+                  border: isSubscribed ? '1px solid rgba(255,255,255,0.15)' : 'none',
+                  borderRadius: '100px',
+                  fontWeight: 'bold',
+                  fontSize: '15px',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  boxShadow: isSubscribed ? 'none' : '0 8px 25px rgba(255,0,85,0.4)',
+                  transition: 'all 0.3s ease',
+                  backdropFilter: 'blur(10px)',
+                  zIndex: 20
+                }}
+                onMouseOver={e => {
+                  e.currentTarget.style.transform = 'scale(1.05)';
+                  if (!isSubscribed) {
+                    e.currentTarget.style.boxShadow = '0 12px 30px rgba(255,0,85,0.6)';
+                  } else {
+                    e.currentTarget.style.background = 'rgba(255,255,255,0.15)';
+                  }
+                }}
+                onMouseOut={e => {
+                  e.currentTarget.style.transform = 'scale(1)';
+                  if (!isSubscribed) {
+                    e.currentTarget.style.boxShadow = '0 8px 25px rgba(255,0,85,0.4)';
+                  } else {
+                    e.currentTarget.style.background = 'rgba(255,255,255,0.08)';
+                  }
+                }}
+              >
+                {isSubscribed ? (
+                  <>
+                    <CheckCircle size={16} color="#00ff88" />
+                    <span style={{ color: '#00ff88' }}>Subscribed</span>
+                  </>
+                ) : (
+                  <span>
+                    {Number(subPrice) > 0 ? `Subscribe $${Number(subPrice).toFixed(2)}/mo` : 'Subscribe Free'}
+                  </span>
+                )}
+              </button>
+            )}
+
             {isOwnProfile && (
               <button onClick={async () => { await supabase!.auth.signOut(); window.location.href = '/' + window.location.search; }} style={{ position: 'absolute', top: 30, right: 30, background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: 'var(--text-primary)', padding: '8px 16px', borderRadius: '20px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px', backdropFilter: 'blur(10px)', transition: 'background 0.2s' }} onMouseOver={e => e.currentTarget.style.background = 'rgba(255,255,255,0.1)'} onMouseOut={e => e.currentTarget.style.background = 'rgba(255,255,255,0.05)'}>
                 <LogOut size={16} /> Logout
