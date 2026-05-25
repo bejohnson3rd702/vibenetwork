@@ -153,7 +153,11 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
   useEffect(() => {
     const params = new URLSearchParams(location.search);
     const tabParam = params.get('tab');
-    if (tabParam) {
+    const postParam = params.get('post');
+
+    if (postParam) {
+      setActiveTab('feed');
+    } else if (tabParam) {
       const validTabs = ['feed', 'store', 'live', 'booking', 'series', 'courses', 'wallet', 'flipbook', 'appearance', 'my_bookings', 'networks', 'members', 'community', 'security'];
       if (validTabs.includes(tabParam)) {
         setActiveTab(tabParam as any);
@@ -499,22 +503,36 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
       const params = new URLSearchParams(window.location.search);
       const targetPostId = params.get('post');
       if (targetPostId) {
-        setTimeout(() => {
+        let attempts = 0;
+        const maxAttempts = 20; // Check every 250ms for up to 5 seconds
+        
+        const scrollInterval = setInterval(() => {
           const element = document.getElementById(`post-${targetPostId}`);
+          attempts++;
+          
           if (element) {
-            element.scrollIntoView({ behavior: 'smooth', block: 'center' });
-            
-            // Premium neon green dashed highlight animation!
-            element.style.outline = '2px dashed #00ff88';
-            element.style.boxShadow = '0 0 35px rgba(0, 255, 136, 0.4)';
-            element.style.transition = 'all 0.3s ease';
-            
+            clearInterval(scrollInterval);
+            // Element found! Ensure it's rendered, and execute scroll
             setTimeout(() => {
-              element.style.outline = 'none';
-              element.style.boxShadow = 'none';
-            }, 3000);
+              element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+              
+              // Premium neon green dashed highlight animation!
+              element.style.outline = '2px dashed #00ff88';
+              element.style.boxShadow = '0 0 35px rgba(0, 255, 136, 0.4)';
+              element.style.transition = 'all 0.3s ease';
+              
+              setTimeout(() => {
+                element.style.outline = 'none';
+                element.style.boxShadow = 'none';
+              }, 3000);
+            }, 100); // Tiny buffer to ensure layout is stable
+          } else if (attempts >= maxAttempts) {
+            clearInterval(scrollInterval);
+            console.warn(`Could not locate target post element post-${targetPostId} after 5 seconds`);
           }
-        }, 800);
+        }, 250);
+        
+        return () => clearInterval(scrollInterval);
       }
     }
   }, [loading, feed]);
