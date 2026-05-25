@@ -1110,14 +1110,16 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
     }
   };
 
-  const handlePostSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handlePostSubmit = async (e: React.FormEvent, isLockedVal?: boolean) => {
+    if (e && e.preventDefault) e.preventDefault();
     if (!postTitle.trim() && !postMediaUrl) return;
+    
+    const lockedStatus = isLockedVal !== undefined ? isLockedVal : isLocked;
     
     const newPost = {
       creator_id: targetProfileId,
       content: postTitle,
-      is_locked: isLocked,
+      is_locked: lockedStatus,
       likes: 0,
       image_url: postMediaUrl || 'https://vibenetwork.tv/wp-content/uploads/2026/02/mukap-vibe-tv-networkk_11zon.png'
     };
@@ -1127,19 +1129,19 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
     
     if (data && data[0]) {
       setFeed([{ 
-        id: data[0].id, title: data[0].content || postTitle, locked: data[0].is_locked || isLocked, likes: 0, date: 'Just now', 
+        id: data[0].id, title: data[0].content || postTitle, locked: data[0].is_locked || lockedStatus, likes: 0, date: 'Just now', 
         img: data[0].image_url || newPost.image_url
       }, ...feed]);
     } else {
       // Fallback local state if table doesn't exist yet
       setFeed([{ 
-        id: Date.now(), title: postTitle, locked: isLocked, likes: 0, date: 'Just now', 
+        id: Date.now(), title: postTitle, locked: lockedStatus, likes: 0, date: 'Just now', 
         img: newPost.image_url
       }, ...feed]);
     }
     setPostTitle('');
     setPostMediaUrl('');
-    toast.success(requestFeature ? 'Post Submitted & Feature Requested to Admins!' : 'Content Published Successfully!');
+    toast.success('Content Published Successfully!');
   };
 
   const handleLike = async (postId: string) => {
@@ -1510,20 +1512,73 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
                     <button type="button" onClick={() => setPostMediaUrl('')} style={{ position: 'absolute', top: 2, right: 2, background: 'rgba(0,0,0,0.5)', color: '#fff', border: 'none', borderRadius: '50%', padding: '2px', cursor: 'pointer' }}>×</button>
                   </div>
                 )}
-                
-                <label style={{ display: 'flex', alignItems: 'center', gap: '8px', color: isLocked ? '#FFD700' : '#4CAF50', cursor: 'pointer', fontSize: '14px' }}>
-                  <input type="checkbox" checked={isLocked} onChange={(e) => setIsLocked(e.target.checked)} style={{ display: 'none' }} />
-                  {isLocked ? <><Lock size={16} /> Sub. Only</> : <><Unlock size={16} /> Free</>}
-                </label>
-                <label style={{ display: 'flex', alignItems: 'center', gap: '8px', color: requestFeature ? '#ff4d85' : '#888', cursor: 'pointer', fontSize: '14px' }}>
-                  <input type="checkbox" checked={requestFeature} onChange={(e) => setRequestFeature(e.target.checked)} style={{ display: 'none' }} />
-                  <Star size={16} /> Request HP Feature
-                </label>
               </div>
               
-              <button disabled={(!postTitle.trim() && !postMediaUrl) || uploadingPostMedia} type="submit" style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '10px 24px', background: (postTitle.trim() || postMediaUrl) ? '#fff' : 'rgba(255,255,255,0.1)', color: (postTitle.trim() || postMediaUrl) ? '#000' : '#888', border: 'none', borderRadius: '20px', fontWeight: 'bold', cursor: (postTitle.trim() || postMediaUrl) ? 'pointer' : 'not-allowed' }}>
-                Post Content
-              </button>
+              <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+                <button 
+                  type="button"
+                  disabled={(!postTitle.trim() && !postMediaUrl) || uploadingPostMedia} 
+                  onClick={(e) => handlePostSubmit(e, false)}
+                  style={{ 
+                    display: 'flex', 
+                    alignItems: 'center', 
+                    gap: '8px', 
+                    padding: '10px 20px', 
+                    background: (postTitle.trim() || postMediaUrl) ? 'rgba(76, 175, 80, 0.15)' : 'rgba(255,255,255,0.03)', 
+                    color: (postTitle.trim() || postMediaUrl) ? '#4CAF50' : '#666', 
+                    border: (postTitle.trim() || postMediaUrl) ? '1px solid rgba(76, 175, 80, 0.3)' : '1px solid rgba(255,255,255,0.05)', 
+                    borderRadius: '20px', 
+                    fontWeight: 'bold', 
+                    cursor: (postTitle.trim() || postMediaUrl) ? 'pointer' : 'not-allowed',
+                    transition: 'all 0.2s ease',
+                    opacity: (postTitle.trim() || postMediaUrl) ? 1 : 0.5
+                  }}
+                  onMouseOver={e => {
+                    if (postTitle.trim() || postMediaUrl) {
+                      e.currentTarget.style.background = 'rgba(76, 175, 80, 0.25)';
+                    }
+                  }}
+                  onMouseOut={e => {
+                    if (postTitle.trim() || postMediaUrl) {
+                      e.currentTarget.style.background = 'rgba(76, 175, 80, 0.15)';
+                    }
+                  }}
+                >
+                  <Unlock size={16} /> Free Post
+                </button>
+                
+                <button 
+                  type="button"
+                  disabled={(!postTitle.trim() && !postMediaUrl) || uploadingPostMedia} 
+                  onClick={(e) => handlePostSubmit(e, true)}
+                  style={{ 
+                    display: 'flex', 
+                    alignItems: 'center', 
+                    gap: '8px', 
+                    padding: '10px 20px', 
+                    background: (postTitle.trim() || postMediaUrl) ? 'linear-gradient(135deg, #FFD700, #FFA500)' : 'rgba(255,255,255,0.03)', 
+                    color: (postTitle.trim() || postMediaUrl) ? '#000' : '#666', 
+                    border: 'none', 
+                    borderRadius: '20px', 
+                    fontWeight: 'bold', 
+                    cursor: (postTitle.trim() || postMediaUrl) ? 'pointer' : 'not-allowed',
+                    transition: 'all 0.2s ease',
+                    opacity: (postTitle.trim() || postMediaUrl) ? 1 : 0.5
+                  }}
+                  onMouseOver={e => {
+                    if (postTitle.trim() || postMediaUrl) {
+                      e.currentTarget.style.filter = 'brightness(1.1)';
+                    }
+                  }}
+                  onMouseOut={e => {
+                    if (postTitle.trim() || postMediaUrl) {
+                      e.currentTarget.style.filter = 'brightness(1)';
+                    }
+                  }}
+                >
+                  <Lock size={16} /> Sub. Only Post
+                </button>
+              </div>
             </div>
           </form>
         )}
