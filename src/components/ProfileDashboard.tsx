@@ -45,11 +45,33 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
   const [currentBannerIndex, setCurrentBannerIndex] = useState(0);
   const [currentBgIndex, setCurrentBgIndex] = useState(0);
   const [saving, setSaving] = useState(false);
-  const [activeTab, setActiveTab] = useState<'feed' | 'store' | 'live' | 'booking' | 'series' | 'courses' | 'wallet' | 'flipbook' | 'appearance' | 'my_bookings' | 'networks' | 'members' | 'community'>('feed');
+  const [activeTab, setActiveTab] = useState<'feed' | 'store' | 'live' | 'booking' | 'series' | 'courses' | 'wallet' | 'flipbook' | 'appearance' | 'my_bookings' | 'networks' | 'members' | 'community' | 'security'>('feed');
   const [expandedComments, setExpandedComments] = useState<Record<string, boolean>>({});
   const [networkProfiles, setNetworkProfiles] = useState<any[]>([]);
   const [walletBalance, setWalletBalance] = useState(() => (typeof window !== 'undefined' ? Number(localStorage.getItem('vibe_host_wallet') || 0.00) : 0.00));
   const [paySubsWithWallet, setPaySubsWithWallet] = useState(true);
+
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [updatingPassword, setUpdatingPassword] = useState(false);
+
+  const handlePasswordChange = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (newPassword !== confirmPassword) {
+      toast.error('Passwords do not match.');
+      return;
+    }
+    setUpdatingPassword(true);
+    const { error } = await supabase!.auth.updateUser({ password: newPassword });
+    setUpdatingPassword(false);
+    if (error) {
+      toast.error(error.message);
+    } else {
+      toast.success('Password successfully updated!');
+      setNewPassword('');
+      setConfirmPassword('');
+    }
+  };
 
   const [products, setProducts] = useState<any[]>([]);
   const [selectedDate, setSelectedDate] = useState<number | null>(null);
@@ -1107,7 +1129,7 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
                     <div style={{ display: 'flex', gap: '12px', marginBottom: '24px', flexWrap: 'wrap' }}>
                       <span style={{ padding: '8px 16px', background: 'rgba(0,85,255,0.15)', color: '#4da6ff', border: '1px solid rgba(0,85,255,0.3)', borderRadius: '24px', fontSize: '12px', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '1px' }}>Enterprise Profile</span>
                       
-                      {viewMode === 'edit' ? (
+                      {/* {viewMode === 'edit' ? (
                         <>
                           <select aria-label="genre selector" value={selectedGenre} onChange={(e) => setSelectedGenre(e.target.value)} style={{ padding: '8px 16px', background: 'rgba(255,255,255,0.05)', color: 'var(--text-primary)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '24px', fontSize: '13px', outline: 'none', cursor: 'pointer', backdropFilter: 'blur(10px)' }}>
                             <option>SaaS Platform</option>
@@ -1121,7 +1143,7 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
                           <span style={{ padding: '8px 16px', background: 'rgba(255,255,255,0.1)', color: 'var(--text-primary)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '24px', fontSize: '13px', backdropFilter: 'blur(10px)' }}>{selectedGenre}</span>
 
                         </>
-                      )}
+                      )} */}
                     </div>
 
                     {viewMode === 'edit' ? (
@@ -1208,6 +1230,18 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
                     <motion.div layoutId="activetab" style={{ position: 'absolute', inset: 0, background: 'rgba(0,255,136,0.1)', borderRadius: '100px', border: '1px solid rgba(0,255,136,0.4)' }} />
                   )}
                   <span style={{ position: 'relative', zIndex: 1, display: 'flex', alignItems: 'center', gap: '8px' }}><Wallet size={16} /> Wallet</span>
+                </button>
+              )}
+
+              {isOwnProfile && (
+                <button 
+                  onClick={() => setActiveTab('security' as any)}
+                  style={{ position: 'relative', background: 'none', border: 'none', padding: '12px 24px', color: activeTab === 'security' ? '#ff4d85' : '#888', fontSize: '15px', fontWeight: 'bold', cursor: 'pointer', borderRadius: '100px', display: 'flex', alignItems: 'center', gap: '8px', transition: 'color 0.3s' }}
+                >
+                  {activeTab === 'security' && (
+                    <motion.div layoutId="activetab" style={{ position: 'absolute', inset: 0, background: 'rgba(255,77,133,0.1)', borderRadius: '100px', border: '1px solid rgba(255,77,133,0.4)' }} />
+                  )}
+                  <span style={{ position: 'relative', zIndex: 1, display: 'flex', alignItems: 'center', gap: '8px' }}><Lock size={16} /> Security</span>
                 </button>
               )}
             </div>
@@ -2287,6 +2321,59 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
 
             </div>
 
+          </motion.div>
+        )}
+
+        {/* --- SECURITY (PASSWORD UPDATE) TAB --- */}
+        {activeTab === 'security' && isOwnProfile && (
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+            <h2 style={{ fontSize: '24px', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '16px', margin: 0 }}>Security Settings</h2>
+            
+            <div style={{ background: 'rgba(15, 15, 15, 0.4)', backdropFilter: 'blur(24px)', padding: '40px', borderRadius: '32px', border: '1px solid rgba(255,255,255,0.08)', boxShadow: '0 20px 40px rgba(0,0,0,0.4)', maxWidth: '500px', margin: '0 auto', width: '100%', boxSizing: 'border-box' }}>
+               <h3 style={{ margin: '0 0 10px 0', fontSize: '18px', color: '#ff4d85', display: 'flex', alignItems: 'center', gap: '8px' }}><Lock size={20} /> Update Password</h3>
+               <p style={{ color: 'var(--text-muted)', fontSize: '14px', marginBottom: '24px', lineHeight: '1.5' }}>Ensure your account stays secure. Enter a new strong password below to update it.</p>
+               
+               <form onSubmit={handlePasswordChange} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                  <div style={{ position: 'relative' }}>
+                    <Lock size={18} style={{ position: 'absolute', left: '16px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
+                    <input 
+                      type="password" placeholder="New Password" required minLength={6}
+                      value={newPassword} onChange={e => setNewPassword(e.target.value)}
+                      style={{
+                        width: '100%', padding: '16px 16px 16px 44px', boxSizing: 'border-box',
+                        background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.1)',
+                        borderRadius: '12px', color: 'var(--text-primary)', fontSize: '16px', outline: 'none'
+                      }}
+                    />
+                  </div>
+
+                  <div style={{ position: 'relative' }}>
+                    <Lock size={18} style={{ position: 'absolute', left: '16px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
+                    <input 
+                      type="password" placeholder="Confirm New Password" required minLength={6}
+                      value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)}
+                      style={{
+                        width: '100%', padding: '16px 16px 16px 44px', boxSizing: 'border-box',
+                        background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.1)',
+                        borderRadius: '12px', color: 'var(--text-primary)', fontSize: '16px', outline: 'none'
+                      }}
+                    />
+                  </div>
+
+                  <button 
+                    type="submit" 
+                    disabled={updatingPassword}
+                    style={{
+                      width: '100%', padding: '18px', marginTop: '10px',
+                      background: wlConfig?.theme?.accent || wlConfig?.accent || '#ff4d85', color: '#fff', fontWeight: 'bold', fontSize: '16px',
+                      border: 'none', borderRadius: '12px', cursor: updatingPassword ? 'not-allowed' : 'pointer',
+                      opacity: updatingPassword ? 0.7 : 1, transition: 'all 0.2s'
+                    }}
+                  >
+                    {updatingPassword ? 'Updating...' : 'Update Password'}
+                  </button>
+               </form>
+            </div>
           </motion.div>
         )}
 
