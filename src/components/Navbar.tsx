@@ -4,6 +4,7 @@ import { ASSETS } from '../data';
 import { Link, useNavigate } from 'react-router-dom';
 import { useWhiteLabel } from '../context/WhiteLabelContext';
 import { useToast } from '../context/ToastContext';
+import { supabase } from '../supabaseClient';
 
 interface NavbarProps {
   user: any;
