@@ -1274,7 +1274,8 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
     cleanParams.delete('post');
     cleanParams.delete('tab');
     const paramString = cleanParams.toString();
-    const shareUrl = `${window.location.origin}${window.location.pathname}?post=${post.id}${paramString ? '&' + paramString : ''}`;
+    const profilePath = profile?.id ? `/profile/${profile.id}` : window.location.pathname;
+    const shareUrl = `${window.location.origin}${profilePath}?post=${post.id}${paramString ? '&' + paramString : ''}`;
     
     if (navigator.share) {
       try {
@@ -1309,7 +1310,8 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
     cleanParams.delete('post');
     cleanParams.delete('tab');
     const paramString = cleanParams.toString();
-    const shareUrl = `${window.location.origin}${window.location.pathname}?tab=store${paramString ? '&' + paramString : ''}`;
+    const profilePath = profile?.id ? `/profile/${profile.id}` : window.location.pathname;
+    const shareUrl = `${window.location.origin}${profilePath}?tab=store${paramString ? '&' + paramString : ''}`;
     
     if (navigator.share) {
       try {
