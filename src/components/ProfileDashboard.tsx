@@ -368,7 +368,7 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
   useEffect(() => {
      let currentStream: MediaStream | null = null;
 
-     if (isPlayingLive && (streamSource === 'camera' || presenterMode || guests.length > 0)) {
+     if (isOwnProfile && isPlayingLive && (streamSource === 'camera' || presenterMode || guests.length > 0)) {
         if (streamSource === 'camera') {
            setCameraStatus('loading');
            setCameraDebugData('Awaiting OS permission...');
