@@ -64,6 +64,7 @@ export const ProfileLive: React.FC<ProfileLiveProps> = ({
 }) => {
   const toast = useToast();
   const viewerVideoRef = React.useRef<HTMLVideoElement>(null);
+  const [isRemoteConnected, setIsRemoteConnected] = React.useState(false);
 
   React.useEffect(() => {
     if (isOwnProfile || !isPlayingLive || streamSource !== 'camera') return;
@@ -84,6 +85,7 @@ export const ProfileLive: React.FC<ProfileLiveProps> = ({
           
           call.on('stream', (remoteStream: MediaStream) => {
             console.log("WebRTC: Received live camera feed from host!");
+            setIsRemoteConnected(true);
             if (viewerVideoRef.current) {
               viewerVideoRef.current.srcObject = remoteStream;
               viewerVideoRef.current.play().catch(e => console.warn("Video play error:", e));
@@ -92,12 +94,14 @@ export const ProfileLive: React.FC<ProfileLiveProps> = ({
 
           call.on('error', (err: any) => {
             console.error("WebRTC call error, retrying...", err);
+            setIsRemoteConnected(false);
             retryTimeout = setTimeout(connectToHost, 5000);
           });
         });
 
         peer.on('error', (err: any) => {
           console.warn("Peer connection error, retrying...", err);
+          setIsRemoteConnected(false);
           retryTimeout = setTimeout(connectToHost, 5000);
         });
       } catch (e) {
@@ -108,6 +112,7 @@ export const ProfileLive: React.FC<ProfileLiveProps> = ({
     connectToHost();
 
     return () => {
+      setIsRemoteConnected(false);
       if (retryTimeout) clearTimeout(retryTimeout);
       if (call) call.close();
       if (peer) peer.destroy();
@@ -226,12 +231,26 @@ export const ProfileLive: React.FC<ProfileLiveProps> = ({
 
                                 {!isOwnProfile ? (
                                   streamSource === 'camera' ? (
-                                    <video
-                                      ref={viewerVideoRef}
-                                      autoPlay
-                                      playsInline
-                                      style={{ width: '100%', height: '100%', objectFit: 'cover', border: 'none' }}
-                                    />
+                                    <div style={{ width: '100%', height: '100%', position: 'relative' }}>
+                                      {/* WebRTC Host Camera Stream */}
+                                      <video
+                                        ref={viewerVideoRef}
+                                        autoPlay
+                                        playsInline
+                                        style={{ width: '100%', height: '100%', objectFit: 'cover', border: 'none', display: isRemoteConnected ? 'block' : 'none' }}
+                                      />
+                                      {/* Direct Fallback Loop while connecting/blocked */}
+                                      {!isRemoteConnected && (
+                                        <video
+                                          src="https://assets.mixkit.co/videos/preview/mixkit-concert-stage-with-neon-lights-and-smoke-41710-large.mp4"
+                                          autoPlay
+                                          loop
+                                          muted
+                                          playsInline
+                                          style={{ width: '100%', height: '100%', objectFit: 'cover', border: 'none' }}
+                                        />
+                                      )}
+                                    </div>
                                   ) : (
                                     <video
                                       src="https://assets.mixkit.co/videos/preview/mixkit-concert-stage-with-neon-lights-and-smoke-41710-large.mp4"
