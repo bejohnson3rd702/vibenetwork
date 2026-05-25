@@ -622,6 +622,7 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
         setFlipbookImages(data.flipbook_images || '');
         setRefundPolicy(data.refund_policy || 'All sales are final. No refunds are provided for digital downloads or virtual bookings. For physical merchandise, please contact the creator directly.');
         if (data.genre) setSelectedGenre(data.genre);
+        if (data.sub_price != null) setSubPrice(String(data.sub_price));
 
 
         let postsData = postsDataRaw;
@@ -2906,6 +2907,45 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
                     + Select or Generate Background Image
                   </button>
                 )}
+              </div>
+
+              {/* ── Subscription Price ── */}
+              <div style={{ background: 'rgba(0,0,0,0.4)', padding: '24px', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.08)' }}>
+                <h4 style={{ margin: '0 0 8px 0', fontSize: '15px', color: '#D35400', display: 'flex', alignItems: 'center', gap: '10px' }}>
+                  💳 Monthly Subscription Price
+                </h4>
+                <p style={{ color: 'var(--text-secondary)', fontSize: '13px', marginBottom: '16px', lineHeight: 1.5 }}>Set the monthly price fans pay to subscribe to your channel. Leave at $0 for a free channel.</p>
+                <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+                  <div style={{ position: 'relative', flex: 1 }}>
+                    <span style={{ position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)', fontSize: '16px', fontWeight: 'bold' }}>$</span>
+                    <input
+                      id="sub-price-input"
+                      type="number"
+                      min="0"
+                      step="0.01"
+                      value={subPrice}
+                      onChange={e => setSubPrice(e.target.value)}
+                      placeholder="9.99"
+                      style={{ width: '100%', paddingLeft: '32px', padding: '14px 14px 14px 32px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.15)', borderRadius: '10px', color: 'var(--text-primary)', fontSize: '16px', outline: 'none', boxSizing: 'border-box' }}
+                    />
+                  </div>
+                  <button
+                    onClick={async () => {
+                      const price = parseFloat(subPrice) || 0;
+                      const { error } = await supabase!.from('profiles').update({ sub_price: price }).eq('id', user?.id);
+                      if (!error) showToast('Subscription price saved!', 'success');
+                      else showToast('Failed to save price.', 'error');
+                    }}
+                    style={{ padding: '14px 24px', background: 'linear-gradient(135deg, #D35400, #ff6b35)', color: 'white', border: 'none', borderRadius: '10px', fontWeight: 'bold', cursor: 'pointer', fontSize: '14px', whiteSpace: 'nowrap', transition: 'opacity 0.2s' }}
+                    onMouseOver={e => (e.currentTarget.style.opacity = '0.85')}
+                    onMouseOut={e => (e.currentTarget.style.opacity = '1')}
+                  >
+                    Save Price
+                  </button>
+                </div>
+                <p style={{ margin: '10px 0 0 0', color: 'var(--text-muted)', fontSize: '12px' }}>
+                  Current price: <strong style={{ color: Number(subPrice) > 0 ? '#00ff88' : 'var(--text-muted)' }}>{Number(subPrice) > 0 ? `$${Number(subPrice).toFixed(2)}/mo` : 'Free'}</strong>
+                </p>
               </div>
             </div>
           </motion.div>
