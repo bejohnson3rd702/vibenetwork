@@ -315,8 +315,15 @@ html[data-theme="light"] .btn-primary {
   background: var(--text-primary);
 }
 
+.show-on-mobile {
+  display: none !important;
+}
+
 /* Mobile Responsive Engine */
 @media (max-width: 768px) {
+  .show-on-mobile {
+    display: block !important;
+  }
   .hide-on-mobile {
     display: none !important;
   }

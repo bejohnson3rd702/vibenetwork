@@ -155,17 +155,17 @@ const Navbar: React.FC<NavbarProps> = ({ user, onLoginClick, onAdminClick }) => 
             </div>
           )}
         </div>
-        {user && (
-          <div style={{ display: 'flex', alignItems: 'center', marginLeft: '12px', position: 'relative' }}>
-            <Menu size={24} color="white" cursor="pointer" onClick={() => setIsMenuOpen(!isMenuOpen)} />
-            
-            {isMenuOpen && (
-              <div style={{ position: 'absolute', top: '100%', right: 0, marginTop: '24px', background: 'var(--bg-surface)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px', padding: '8px', minWidth: '220px', display: 'flex', flexDirection: 'column', gap: '4px', zIndex: 1000, boxShadow: '0 20px 40px rgba(0,0,0,0.5)' }}>
-                <div style={{ padding: '8px 16px', color: 'var(--text-muted)', fontSize: '13px', fontWeight: 'bold', textTransform: 'uppercase' }}>
-                   System Options
-                </div>
-                
+        <div className={user ? "" : "show-on-mobile"} style={{ display: 'flex', alignItems: 'center', marginLeft: '12px', position: 'relative' }}>
+          <Menu size={24} color="white" cursor="pointer" onClick={() => setIsMenuOpen(!isMenuOpen)} />
+          
+          {isMenuOpen && (
+            <div style={{ position: 'absolute', top: '100%', right: 0, marginTop: '24px', background: 'var(--bg-surface)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px', padding: '8px', minWidth: '220px', display: 'flex', flexDirection: 'column', gap: '4px', zIndex: 1000, boxShadow: '0 20px 40px rgba(0,0,0,0.5)' }}>
+              {user ? (
                 <>
+                  <div style={{ padding: '8px 16px', color: 'var(--text-muted)', fontSize: '13px', fontWeight: 'bold', textTransform: 'uppercase' }}>
+                     System Options
+                  </div>
+                  
                   <Link to={`/profile${window.location.search}${window.location.search ? '&' : '?'}tab=wallet`} onClick={() => setIsMenuOpen(false)} style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '12px 16px', color: 'var(--text-primary)', textDecoration: 'none', fontSize: '14px', borderRadius: '8px', cursor: 'pointer', transition: 'background 0.2s' }} onMouseOver={e => e.currentTarget.style.background='rgba(255,255,255,0.1)'} onMouseOut={e => e.currentTarget.style.background='transparent'}>
                     <Wallet size={16} /> Digital Wallet
                   </Link>
@@ -180,10 +180,20 @@ const Navbar: React.FC<NavbarProps> = ({ user, onLoginClick, onAdminClick }) => 
                     <LogOut size={16} /> Disconnect
                   </div>
                 </>
-              </div>
-            )}
-          </div>
-        )}
+              ) : (
+                <>
+                  <div style={{ padding: '8px 16px', color: 'var(--text-muted)', fontSize: '13px', fontWeight: 'bold', textTransform: 'uppercase' }}>
+                     Welcome Visitor
+                  </div>
+                  
+                  <div onClick={() => { setIsMenuOpen(false); onLoginClick(); }} style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '12px 16px', color: 'var(--text-primary)', textDecoration: 'none', fontSize: '14px', borderRadius: '8px', cursor: 'pointer', transition: 'background 0.2s' }} onMouseOver={e => e.currentTarget.style.background='rgba(255,255,255,0.1)'} onMouseOut={e => e.currentTarget.style.background='transparent'}>
+                    <User size={16} /> Log In / Sign Up
+                  </div>
+                </>
+              )}
+            </div>
+          )}
+        </div>
       </div>
     </nav>
   );
