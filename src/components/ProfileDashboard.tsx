@@ -225,6 +225,15 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
     const channel = supabase.channel(`stream-room-${targetProfileId}`);
     channelRef.current = channel;
 
+    // Listen for live stream status announcements
+    channel.on('broadcast', { event: 'stream_status' }, (payload) => {
+        const { isPlayingLive: hostIsPlaying, isPubliclyLive: hostIsPublic, streamSource: hostSource, liveEmbedUrl: hostUrl } = payload.payload;
+        setIsPlayingLive(hostIsPlaying);
+        setIsPubliclyLive(hostIsPublic);
+        if (hostSource) setStreamSource(hostSource);
+        if (hostUrl !== undefined) setLiveEmbedUrl(hostUrl);
+    });
+
     // Listen for master host sync
     channel.on('broadcast', { event: 'host_sync_guests' }, (payload) => {
         const guestList = payload.payload;
@@ -303,6 +312,34 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
       supabase.removeChannel(channel);
     };
   }, [targetProfileId, user, location.search]);
+
+  // Real-time Live Stream Synchronization Heartbeat
+  useEffect(() => {
+    if (!isOwnProfile || !isPlayingLive) {
+      if (isOwnProfile && !isPlayingLive && channelRef.current) {
+        channelRef.current.send({
+          type: 'broadcast',
+          event: 'stream_status',
+          payload: { isPlayingLive: false, isPubliclyLive: false }
+        });
+      }
+      return;
+    }
+    
+    const broadcastStatus = () => {
+      if (channelRef.current) {
+        channelRef.current.send({
+          type: 'broadcast',
+          event: 'stream_status',
+          payload: { isPlayingLive, isPubliclyLive, streamSource, liveEmbedUrl }
+        });
+      }
+    };
+    broadcastStatus();
+
+    const interval = setInterval(broadcastStatus, 3000);
+    return () => clearInterval(interval);
+  }, [isOwnProfile, isPlayingLive, isPubliclyLive, streamSource, liveEmbedUrl]);
 
   const startLiveStream = () => {
      setLiveCountdown(3);
