@@ -455,7 +455,7 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
   const [commentTexts, setCommentTexts] = useState<Record<string, string>>({});
 
   // Store internal state MUST be above early returns!
-  const [newProduct, setNewProduct] = useState({ title: '', price: '19.99', type: 'digital', image_url: '', sizes: '', colors: '' });
+  const [newProduct, setNewProduct] = useState({ title: '', price: '19.99', type: 'digital', image_url: '', sizes: '', colors: '', is_clothing: false });
   const [courses, setCourses] = useState<any[]>([]);
   const [purchasedBookings, setPurchasedBookings] = useState<any[]>([]);
   const [receivedBookings, setReceivedBookings] = useState<any[]>([]);
@@ -833,8 +833,9 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
       type: newProduct.type,
       image_url: newProduct.image_url || 'https://picsum.photos/400/400',
       variants: newProduct.type === 'physical' ? {
-        sizes: newProduct.sizes.split(',').map(s => s.trim()).filter(Boolean),
-        colors: newProduct.colors.split(',').map(c => c.trim()).filter(Boolean)
+        sizes: newProduct.is_clothing ? newProduct.sizes.split(',').map(s => s.trim()).filter(Boolean) : [],
+        colors: newProduct.colors.split(',').map(c => c.trim()).filter(Boolean),
+        is_clothing: newProduct.is_clothing
       } : {}
     };
 
@@ -850,7 +851,7 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
       setProducts(prev => [...prev, { ...productInsert, id: Math.random().toString() }]);
     }
 
-    setNewProduct({ title: '', price: '19.99', type: 'digital', image_url: '', sizes: '', colors: '' });
+    setNewProduct({ title: '', price: '19.99', type: 'digital', image_url: '', sizes: '', colors: '', is_clothing: false });
     setSaving(false);
   };
 
@@ -1475,11 +1476,25 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
 
                 {newProduct.type === 'physical' && (
                   <div style={{ gridColumn: '1 / -1', display: 'grid', gap: '16px', gridTemplateColumns: '1fr 1fr', background: 'rgba(255,255,255,0.02)', padding: '16px', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.05)' }}>
-                    <div>
-                      <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', color: '#ccc' }}>Available Sizes (comma separated)</label>
-                      <input type="text" placeholder="e.g. S, M, L, XL" value={newProduct.sizes} onChange={e => setNewProduct({...newProduct, sizes: e.target.value})} style={{ width: '100%', background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.1)', padding: '12px', borderRadius: '8px', color: 'var(--text-primary)', outline: 'none', fontSize: '14px' }} />
+                    <div style={{ gridColumn: '1 / -1', display: 'flex', alignItems: 'center', gap: '10px', background: 'rgba(255,255,255,0.02)', padding: '12px 16px', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.05)' }}>
+                      <input 
+                        type="checkbox" 
+                        id="isClothingProduct"
+                        checked={newProduct.is_clothing} 
+                        onChange={e => setNewProduct({...newProduct, is_clothing: e.target.checked, sizes: e.target.checked ? newProduct.sizes : ''})} 
+                        style={{ width: '18px', height: '18px', cursor: 'pointer', accentColor: '#ff4d85' }} 
+                      />
+                      <label htmlFor="isClothingProduct" style={{ color: 'var(--text-primary)', fontSize: '14px', fontWeight: 'bold', cursor: 'pointer' }}>
+                        👕 This is a clothing product (enable size selection)
+                      </label>
                     </div>
-                    <div>
+                    {newProduct.is_clothing && (
+                      <div>
+                        <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', color: '#ccc' }}>Available Sizes (comma separated)</label>
+                        <input type="text" placeholder="e.g. S, M, L, XL" value={newProduct.sizes} onChange={e => setNewProduct({...newProduct, sizes: e.target.value})} style={{ width: '100%', background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.1)', padding: '12px', borderRadius: '8px', color: 'var(--text-primary)', outline: 'none', fontSize: '14px' }} />
+                      </div>
+                    )}
+                    <div style={{ gridColumn: newProduct.is_clothing ? 'auto' : '1 / -1' }}>
                       <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', color: '#ccc' }}>Available Colors (comma separated)</label>
                       <input type="text" placeholder="e.g. Black, White, Red" value={newProduct.colors} onChange={e => setNewProduct({...newProduct, colors: e.target.value})} style={{ width: '100%', background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.1)', padding: '12px', borderRadius: '8px', color: 'var(--text-primary)', outline: 'none', fontSize: '14px' }} />
                     </div>

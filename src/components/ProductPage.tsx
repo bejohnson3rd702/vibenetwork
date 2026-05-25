@@ -35,9 +35,17 @@ const ProductPage: React.FC = () => {
         
       if (data && !error) {
         setProduct(data);
+        const isClothingProduct = data.type?.toLowerCase() === 'physical' && (
+          data.variants?.is_clothing === true || 
+          (data.variants?.is_clothing !== false && 
+            (data.variants?.sizes?.length > 0 || 
+              /shirt|tee|hoodie|hoody|sweatshirt|sweater|jacket|pants|shorts|socks|apparel|clothing/i.test(data.title || '')
+            )
+          )
+        );
         const initialSizes = data.variants?.sizes?.length ? data.variants.sizes : defaultSizes;
         const initialColors = data.variants?.colors?.length ? data.variants.colors : defaultColors;
-        setSelectedSize(initialSizes[0] || '');
+        setSelectedSize(isClothingProduct ? (initialSizes[0] || '') : '');
         setSelectedColor(initialColors[0] || '');
       } else {
         setError('Product not found or unavailable.');
@@ -47,6 +55,15 @@ const ProductPage: React.FC = () => {
 
     if (productId) fetchProduct();
   }, [productId]);
+
+  const isClothing = product?.type?.toLowerCase() === 'physical' && (
+    product.variants?.is_clothing === true || 
+    (product.variants?.is_clothing !== false && 
+      (product.variants?.sizes?.length > 0 || 
+        /shirt|tee|hoodie|hoody|sweatshirt|sweater|jacket|pants|shorts|socks|apparel|clothing/i.test(product.title || '')
+      )
+    )
+  );
 
   const handlePurchase = async () => {
     const { data: { session } } = await supabase.auth.getSession();
@@ -72,7 +89,7 @@ const ProductPage: React.FC = () => {
             product_id: product.id,
             product_type: product.type,
             ...(product.type?.toLowerCase() === 'physical' ? {
-              size: selectedSize,
+              ...(isClothing ? { size: selectedSize } : {}),
               color: selectedColor
             } : {})
           }
@@ -181,34 +198,36 @@ const ProductPage: React.FC = () => {
                    </div>
 
                    {/* Size Selection */}
-                   <div>
-                     <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '12px' }}>
-                       <span style={{ fontWeight: 'bold', fontSize: '15px' }}>Size</span>
-                       <span style={{ color: 'var(--text-secondary)', fontSize: '14px', textDecoration: 'underline', cursor: 'pointer' }}>Size Guide</span>
-                     </div>
-                     <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
-                       {(product.variants?.sizes?.length ? product.variants.sizes : defaultSizes).map((s: string) => (
-                         <button
-                           key={s}
-                           onClick={() => setSelectedSize(s)}
-                           style={{
-                             flex: '1 1 calc(20% - 8px)',
-                             padding: '12px 0',
-                             background: selectedSize === s ? (wlConfig?.accent || 'var(--accent-primary)') : 'rgba(255,255,255,0.05)',
-                             color: selectedSize === s ? '#000' : 'var(--text-primary)',
-                             border: '1px solid',
-                             borderColor: selectedSize === s ? (wlConfig?.accent || 'var(--accent-primary)') : 'rgba(255,255,255,0.1)',
-                             borderRadius: '12px',
-                             fontWeight: 'bold',
-                             cursor: 'pointer',
-                             transition: 'all 0.2s'
-                           }}
-                         >
-                           {s}
-                         </button>
-                       ))}
-                     </div>
-                   </div>
+                    {isClothing && (
+                      <div>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '12px' }}>
+                          <span style={{ fontWeight: 'bold', fontSize: '15px' }}>Size</span>
+                          <span style={{ color: 'var(--text-secondary)', fontSize: '14px', textDecoration: 'underline', cursor: 'pointer' }}>Size Guide</span>
+                        </div>
+                        <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+                          {(product.variants?.sizes?.length ? product.variants.sizes : defaultSizes).map((s: string) => (
+                            <button
+                              key={s}
+                              onClick={() => setSelectedSize(s)}
+                              style={{
+                                flex: '1 1 calc(20% - 8px)',
+                                padding: '12px 0',
+                                background: selectedSize === s ? (wlConfig?.accent || 'var(--accent-primary)') : 'rgba(255,255,255,0.05)',
+                                color: selectedSize === s ? '#000' : 'var(--text-primary)',
+                                border: '1px solid',
+                                borderColor: selectedSize === s ? (wlConfig?.accent || 'var(--accent-primary)') : 'rgba(255,255,255,0.1)',
+                                borderRadius: '12px',
+                                fontWeight: 'bold',
+                                cursor: 'pointer',
+                                transition: 'all 0.2s'
+                              }}
+                            >
+                              {s}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    )}
                  </div>
                )}
 
