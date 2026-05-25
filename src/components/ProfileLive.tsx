@@ -359,11 +359,7 @@ export const ProfileLive: React.FC<ProfileLiveProps> = ({
                 <h3 style={{ fontSize: '28px', margin: '0 0 16px 0', color: 'var(--text-primary)' }}>Exclusive Live Broadcast</h3>
                 <p style={{ color: 'var(--text-secondary)', fontSize: '18px', maxWidth: '450px', margin: '0 auto 40px', lineHeight: 1.5 }}>Subscribe to {profile.username || 'this creator'} to instantly unlock their live streams and premium restricted vault content.</p>
                 <button 
-                  onClick={() => {
-                    if (!user) { toast.info('Please log in to subscribe.'); return; }
-                    handleStripeCheckout('Monthly Subscription', Number(subPrice));
-                    setIsSubscribed(true);
-                  }} 
+                  onClick={handleSubscribe} 
                   style={{ padding: '16px 40px', background: 'linear-gradient(135deg, #ff4d85, #8A2BE2)', color: 'var(--text-primary)', border: 'none', borderRadius: '30px', fontWeight: 'bold', fontSize: '18px', cursor: 'pointer', boxShadow: '0 10px 20px rgba(255,77,133,0.3)', transition: 'transform 0.2s' }} 
                   onMouseOver={e=>e.currentTarget.style.transform='scale(1.05)'} 
                   onMouseOut={e=>e.currentTarget.style.transform='scale(1)'}

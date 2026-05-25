@@ -447,14 +447,16 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
    };
 
    const handleSubscribe = () => {
-     const amount = Number(subPrice);
-     if (isNaN(amount) || amount <= 0) {
-       setIsSubscribed(true);
-       return;
-     }
-     // handleStripeCheckout('Monthly Subscription', amount);
-     setIsSubscribed(true);
-     toast.success('Subscription activated (Demo Mode - Stripe bypassed)');
+      if (!user) {
+        toast.info('Please log in or create an account to subscribe.');
+        window.dispatchEvent(new CustomEvent('open_auth'));
+        return;
+      }
+      setIsSubscribed(true);
+      if (user && targetProfileId) {
+        localStorage.setItem(`vibe_sub_${user.id}_${targetProfileId}`, 'true');
+      }
+      toast.success('Subscription activated (Demo Mode - Stripe bypassed)');
    };
   
   // Scheduler State & DnD Handlers
@@ -625,6 +627,11 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
         setRefundPolicy(data.refund_policy || 'All sales are final. No refunds are provided for digital downloads or virtual bookings. For physical merchandise, please contact the creator directly.');
         if (data.genre) setSelectedGenre(data.genre);
         if (data.sub_price != null) setSubPrice(String(data.sub_price));
+        if (user) {
+          setIsSubscribed(localStorage.getItem(`vibe_sub_${user.id}_${targetProfileId}`) === 'true');
+        } else {
+          setIsSubscribed(false);
+        }
 
 
         let postsData = postsDataRaw;
