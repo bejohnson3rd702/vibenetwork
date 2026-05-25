@@ -1341,6 +1341,15 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
     });
   };
 
+  const handleOpenNetwork = (network: any) => {
+    if (network.domain && !network.domain.includes('localhost') && !network.domain.includes('127.0.0.1')) {
+      const protocol = window.location.protocol;
+      window.location.href = `${protocol}//${network.domain}`;
+    } else {
+      window.location.href = `${window.location.origin}/?tenant=${network.id}`;
+    }
+  };
+
   const handleLike = async (postId: string) => {
     if (!user) { toast.info('Please log in to interact.'); return; }
     
@@ -3030,7 +3039,25 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
              </div>
              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '20px' }}>
                 {myNetworks.map((network, index) => (
-                  <div key={index} style={{ background: 'rgba(255,255,255,0.03)', borderRadius: '20px', padding: '24px', border: '1px solid rgba(255,255,255,0.1)', display: 'flex', flexDirection: 'column', gap: '16px', position: 'relative', overflow: 'hidden' }}>
+                  <div 
+                    key={index} 
+                    onClick={() => handleOpenNetwork(network)}
+                    style={{ 
+                      background: 'rgba(255,255,255,0.03)', 
+                      borderRadius: '20px', 
+                      padding: '24px', 
+                      border: '1px solid rgba(255,255,255,0.1)', 
+                      display: 'flex', 
+                      flexDirection: 'column', 
+                      gap: '16px', 
+                      position: 'relative', 
+                      overflow: 'hidden',
+                      cursor: 'pointer',
+                      transition: 'all 0.2s'
+                    }}
+                    onMouseOver={e => e.currentTarget.style.background = 'rgba(255,255,255,0.06)'}
+                    onMouseOut={e => e.currentTarget.style.background = 'rgba(255,255,255,0.03)'}
+                  >
                      <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '4px', background: network.theme?.accent || network.accent || '#00ff88' }} />
                      
                      <div>
@@ -3039,7 +3066,7 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
                      </div>
                      
                      <div style={{ display: 'flex', gap: '12px', marginTop: '10px' }}>
-                        <button onClick={() => window.location.href = `/?tenant=${network.id}`} style={{ flex: 1, padding: '12px', background: '#fff', color: '#000', border: 'none', borderRadius: '12px', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
+                        <button style={{ flex: 1, padding: '12px', background: '#fff', color: '#000', border: 'none', borderRadius: '12px', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
                            <ArrowUpRight size={16} /> Open Network
                         </button>
                      </div>
