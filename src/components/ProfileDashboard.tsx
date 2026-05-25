@@ -84,6 +84,7 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
   const [virtualCallType, setVirtualCallType] = useState('video');
   const [availableSlots, setAvailableSlots] = useState<Record<number, string[]>>({});
   const [newTimeInput, setNewTimeInput] = useState('');
+  const [refundPolicy, setRefundPolicy] = useState('');
   
   // Live Stream State
   const [isPlayingLive, setIsPlayingLive] = useState(false);
@@ -502,6 +503,7 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
         setAvatarUrl(data.avatar_url || '');
         setHomepageImageUrl(data.homepage_image_url || '');
         setFlipbookImages(data.flipbook_images || '');
+        setRefundPolicy(data.refund_policy || 'All sales are final. No refunds are provided for digital downloads or virtual bookings. For physical merchandise, please contact the creator directly.');
         if (data.genre) setSelectedGenre(data.genre);
 
 
@@ -716,6 +718,7 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
       avatar_url: avatarUrl,
       homepage_image_url: homepageImageUrl,
       flipbook_images: flipbookImages,
+      refund_policy: refundPolicy,
     }).eq('id', user.id);
     setSaving(false);
     toast.success('Profile successfully saved to network database!');
@@ -1515,6 +1518,28 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
                   </button>
                 </div>
               </form>
+            </motion.div>
+          )}
+
+          {isOwnProfile && viewMode === 'edit' && (
+            <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} style={{ background: 'rgba(255,255,255,0.03)', padding: '24px', borderRadius: '24px', border: '1px solid rgba(255,255,255,0.05)', display: 'flex', flexDirection: 'column', gap: '16px' }}>
+              <h3 style={{ margin: 0, fontSize: '18px', display: 'flex', alignItems: 'center', gap: '8px' }}>Store Settings & Refund Policy</h3>
+              <p style={{ margin: 0, fontSize: '14px', color: 'var(--text-muted)', lineHeight: '1.5' }}>
+                Set your custom refund policy displayed to all buyers. Leaving it empty will display the default policy.
+              </p>
+              <textarea 
+                placeholder="e.g. All digital download sales are final. For apparel refunds, returns are accepted within 14 days of delivery in unused condition."
+                value={refundPolicy}
+                onChange={e => setRefundPolicy(e.target.value)}
+                style={{ width: '100%', minHeight: '80px', background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px', padding: '12px', color: 'var(--text-primary)', outline: 'none', fontSize: '14px', resize: 'vertical' }}
+              />
+              <button 
+                onClick={saveProfile} 
+                disabled={saving} 
+                style={{ alignSelf: 'flex-end', padding: '10px 24px', background: '#fff', color: '#000', borderRadius: '8px', border: 'none', fontWeight: 'bold', cursor: 'pointer', opacity: saving ? 0.7 : 1, fontSize: '14px' }}
+              >
+                {saving ? 'Saving...' : 'Save Store Policy'}
+              </button>
             </motion.div>
           )}
 

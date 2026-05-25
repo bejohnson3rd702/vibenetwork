@@ -29,7 +29,7 @@ const ProductPage: React.FC = () => {
       setLoading(true);
       const { data, error } = await supabase
         .from('products')
-        .select('*, creator:profiles!inner(id, username, avatar_url)')
+        .select('*, creator:profiles!inner(id, username, avatar_url, refund_policy)')
         .eq('id', productId)
         .single();
         
@@ -267,12 +267,19 @@ const ProductPage: React.FC = () => {
                </button>
              </div>
 
-             <div style={{ color: 'var(--text-muted)', fontSize: '15px', lineHeight: 1.6 }}>
-               <h3 style={{ color: 'var(--text-primary)', fontSize: '20px', marginBottom: '12px' }}>Description</h3>
-               <p>
-                 Purchase this premium {product.type?.toLowerCase()} securely. Upon successful payment, you will receive full access or tracking information directly to your registered email address. 
-               </p>
-             </div>
+              <div style={{ color: 'var(--text-muted)', fontSize: '15px', lineHeight: 1.6 }}>
+                <h3 style={{ color: 'var(--text-primary)', fontSize: '20px', marginBottom: '12px' }}>Description</h3>
+                <p>
+                  Purchase this premium {product.type?.toLowerCase()} securely. Upon successful payment, you will receive full access or tracking information directly to your registered email address. 
+                </p>
+              </div>
+
+              <div style={{ color: 'var(--text-muted)', fontSize: '14px', lineHeight: 1.6, marginTop: '24px', padding: '16px', background: 'rgba(255,255,255,0.02)', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.05)' }}>
+                <h4 style={{ color: 'var(--text-primary)', fontSize: '16px', margin: '0 0 8px 0', display: 'flex', alignItems: 'center', gap: '6px' }}>🛡️ Store Refund Policy</h4>
+                <p style={{ margin: 0, fontStyle: 'italic' }}>
+                  {product.creator?.refund_policy || 'All sales are final. No refunds are provided for digital downloads or virtual bookings. For physical merchandise, please contact the creator directly.'}
+                </p>
+              </div>
 
           </motion.div>
         </div>
