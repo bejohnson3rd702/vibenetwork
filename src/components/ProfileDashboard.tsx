@@ -82,11 +82,7 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
   const [bookingDuration, setBookingDuration] = useState(1);
   const [bookingType, setBookingType] = useState('virtual');
   const [virtualCallType, setVirtualCallType] = useState('video');
-  const [availableSlots, setAvailableSlots] = useState<Record<number, string[]>>({
-    16: ['10:00 AM', '1:30 PM', '4:00 PM'],
-    18: ['6:30 PM', '8:00 PM'],
-    22: ['10:00 AM', '2:00 PM', '4:30 PM']
-  });
+  const [availableSlots, setAvailableSlots] = useState<Record<number, string[]>>({});
   const [newTimeInput, setNewTimeInput] = useState('');
   
   // Live Stream State
@@ -557,6 +553,7 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
 
           const seriesPromise = supabase!.from('series').select('*, episodes(*)').eq('creator_id', targetProfileId);
           const coursesPromise = supabase!.from('courses').select('*').eq('creator_id', targetProfileId);
+          const slotsPromise = supabase!.from('available_slots').select('*').eq('creator_id', targetProfileId).eq('is_booked', false);
 
           const pBookingsPromise = user ? supabase!.from('bookings').select('*, creator:profiles!creator_id(username, full_name, avatar_url)').eq('buyer_id', user.id) : Promise.resolve({ data: null });
           const networksPromise = user ? supabase!.from('whitelabel_configs').select('*').eq('owner_id', user.id) : Promise.resolve({ data: null });
@@ -568,19 +565,37 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
             { data: coursesData },
             { data: pBookings },
             { data: networks },
-            { data: rBookings }
+            { data: rBookings },
+            { data: slotsData }
           ] = await Promise.all([
             productsPromise,
             seriesPromise,
             coursesPromise,
             pBookingsPromise,
             networksPromise,
-            rBookingsPromise
+            rBookingsPromise,
+            slotsPromise
           ]);
 
           setProducts(prodData || []);
           setSeriesList(seriesData || []);
           setCourses(coursesData || []);
+
+          const formattedSlots: Record<number, string[]> = {};
+          if (slotsData) {
+            slotsData.forEach((row: any) => {
+              const d = row.date;
+              if (!formattedSlots[d]) {
+                formattedSlots[d] = [];
+              }
+              formattedSlots[d].push(row.time);
+            });
+            // Sort times for each date to maintain a neat visual structure
+            Object.keys(formattedSlots).forEach((k: any) => {
+              formattedSlots[k].sort();
+            });
+          }
+          setAvailableSlots(formattedSlots);
 
           if (user) {
              setPurchasedBookings(pBookings || []);
@@ -1629,7 +1644,7 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
                       <div style={{ display: 'flex', gap: '8px' }}>
                         <input type="time" value={newTimeInput} onChange={e => setNewTimeInput(e.target.value)} style={{ flex: 1, background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.1)', padding: '10px', borderRadius: '8px', color: 'var(--text-primary)', outline: 'none' }} />
                         <button 
-                          onClick={() => {
+                          onClick={async () => {
                             if (!newTimeInput) return;
                             // Convert 24h to 12h AM/PM
                             const [h, m] = newTimeInput.split(':');
@@ -1638,11 +1653,31 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
                             hour = hour % 12 || 12;
                             const timeString = `${hour}:${m} ${ampm}`;
                             
-                            setAvailableSlots(prev => {
-                              const current = prev[selectedDate] || [];
-                              if (!current.includes(timeString)) return { ...prev, [selectedDate]: [...current, timeString].sort() };
-                              return prev;
-                            });
+                            try {
+                              const { error } = await supabase!.from('available_slots').insert({
+                                creator_id: targetProfileId,
+                                date: selectedDate,
+                                time: timeString
+                              });
+                              
+                              if (error) {
+                                if (error.code === '23505') {
+                                  toast.error('This timeslot is already added.');
+                                } else {
+                                  toast.error(`Error adding timeslot: ${error.message}`);
+                                }
+                                return;
+                              }
+                              
+                              setAvailableSlots(prev => {
+                                const current = prev[selectedDate] || [];
+                                if (!current.includes(timeString)) return { ...prev, [selectedDate]: [...current, timeString].sort() };
+                                return prev;
+                              });
+                              toast.success('Timeslot added successfully!');
+                            } catch (err: any) {
+                              toast.error(err.message || 'Failed to add timeslot');
+                            }
                             setNewTimeInput('');
                           }}
                           style={{ padding: '10px 20px', background: 'rgba(255,255,255,0.1)', color: 'var(--text-primary)', border: 'none', borderRadius: '8px', fontWeight: 'bold', cursor: 'pointer' }}
@@ -1665,12 +1700,31 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
                           </button>
                           {isOwnProfile && viewMode === 'edit' && (
                             <button 
-                              onClick={() => {
-                                setAvailableSlots(prev => ({
-                                  ...prev,
-                                  [selectedDate]: prev[selectedDate].filter(t => t !== time)
-                                }));
-                                if (selectedTime === time) setSelectedTime(null);
+                              onClick={async () => {
+                                try {
+                                  const { error } = await supabase!
+                                    .from('available_slots')
+                                    .delete()
+                                    .match({
+                                      creator_id: targetProfileId,
+                                      date: selectedDate,
+                                      time: time
+                                    });
+
+                                  if (error) {
+                                    toast.error(`Error removing timeslot: ${error.message}`);
+                                    return;
+                                  }
+
+                                  setAvailableSlots(prev => ({
+                                    ...prev,
+                                    [selectedDate!]: prev[selectedDate!].filter(t => t !== time)
+                                  }));
+                                  if (selectedTime === time) setSelectedTime(null);
+                                  toast.success('Timeslot removed successfully!');
+                                } catch (err: any) {
+                                  toast.error(err.message || 'Failed to remove timeslot');
+                                }
                               }}
                               style={{ background: 'rgba(255,0,0,0.1)', color: '#ff4d4d', border: '1px solid rgba(255,0,0,0.2)', borderRadius: '12px', padding: '0 12px', cursor: 'pointer' }}
                             >
@@ -1723,9 +1777,36 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
                       </div>
                       <input type="text" placeholder="Your Name" style={{ width: '100%', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', padding: '14px', borderRadius: '8px', color: 'var(--text-primary)', marginBottom: '12px', outline: 'none' }} />
                       <input type="text" placeholder="Purpose of Meeting (e.g. Mixing Advice)" style={{ width: '100%', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', padding: '14px', borderRadius: '8px', color: 'var(--text-primary)', marginBottom: '20px', outline: 'none' }} />
-                      <button onClick={() => { 
+                      <button onClick={async () => { 
                         const monthName = new Date().toLocaleString('default', { month: 'long' });
-                        handleStripeCheckout(`${bookingType === 'virtual' ? `1-on-1 Virtual Call (${virtualCallType === 'video' ? 'Video' : 'Audio'})` : 'Physical Meeting'} (${monthName} ${selectedDate} at ${selectedTime}) - ${bookingDuration} Hour(s)`, Number(bookingPrice) * bookingDuration, { is_booking: true, date: `${monthName} ${selectedDate}`, time: selectedTime, duration: bookingDuration, meeting_type: bookingType === 'virtual' ? `virtual_${virtualCallType}` : 'physical' }); 
+                        const slotDate = selectedDate;
+                        const slotTime = selectedTime;
+                        if (!slotDate || !slotTime) return;
+
+                        try {
+                          const { error } = await supabase!
+                            .from('available_slots')
+                            .update({ is_booked: true })
+                            .match({
+                              creator_id: targetProfileId,
+                              date: slotDate,
+                              time: slotTime
+                            });
+
+                          if (error) {
+                            console.error("Error setting slot is_booked:", error);
+                          } else {
+                            // Update local state to remove the booked slot
+                            setAvailableSlots(prev => ({
+                              ...prev,
+                              [slotDate]: (prev[slotDate] || []).filter(t => t !== slotTime)
+                            }));
+                          }
+                        } catch (err) {
+                          console.error("Booking db error:", err);
+                        }
+
+                        handleStripeCheckout(`${bookingType === 'virtual' ? `1-on-1 Virtual Call (${virtualCallType === 'video' ? 'Video' : 'Audio'})` : 'Physical Meeting'} (${monthName} ${slotDate} at ${slotTime}) - ${bookingDuration} Hour(s)`, Number(bookingPrice) * bookingDuration, { is_booking: true, date: `${monthName} ${slotDate}`, time: slotTime, duration: bookingDuration, meeting_type: bookingType === 'virtual' ? `virtual_${virtualCallType}` : 'physical' }); 
                         setSelectedTime(null); 
                         setSelectedDate(null); 
                       }} style={{ width: '100%', padding: '16px', background: 'linear-gradient(135deg, #ff4d85, #8A2BE2)', color: 'var(--text-primary)', border: 'none', borderRadius: '12px', fontWeight: 'bold', fontSize: '16px', cursor: 'pointer', boxShadow: '0 10px 20px rgba(138,43,226,0.3)', transition: 'transform 0.2s' }} onMouseOver={e=>e.currentTarget.style.transform='scale(1.02)'} onMouseOut={e=>e.currentTarget.style.transform='scale(1)'}>
