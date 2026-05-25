@@ -38,6 +38,7 @@ function MasterAdminDashboard() {
   const [loading, setLoading] = useState(false);
   const [broadcastSource, setBroadcastSource] = useState<'youtube' | 'upload'>('youtube');
   const [broadcastFileUrl, setBroadcastFileUrl] = useState('');
+  const [isDraggingBroadcast, setIsDraggingBroadcast] = useState(false);
   const [currentUser, setCurrentUser] = useState<any>(null);
   const [globalSettings, setGlobalSettings] = useState<any>({ id: '', global_vibe_fee: 15, global_whitelabel_fee: 15, global_vibe_fee_whitelabel: 15 });
   const [systemLogs, setSystemLogs] = useState<any[]>([]);
@@ -388,15 +389,44 @@ function MasterAdminDashboard() {
                     {broadcastSource === 'youtube' ? (
                        <input type="text" placeholder="YouTube Video URL (e.g. https://youtube.com/watch...)" style={{ background: 'var(--bg-color)', border: '1px solid var(--bg-surface-hover)', padding: '16px', borderRadius: '8px', color: 'var(--text-primary)', fontSize: '15px' }} id="yt-url" />
                     ) : (
-                       <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
-                         <input type="file" id="broadcastVideoUpload" accept="video/*" style={{ display: 'none' }} onChange={(e) => {
-                             if (e.target.files && e.target.files[0]) {
-                               setBroadcastFileUrl(URL.createObjectURL(e.target.files[0]));
-                             }
-                         }} />
-                         <button onClick={() => document.getElementById('broadcastVideoUpload')?.click()} style={{ padding: '16px', background: 'rgba(255,255,255,0.1)', color: 'var(--text-primary)', border: '1px solid rgba(255,255,255,0.2)', borderRadius: '8px', fontWeight: 'bold', fontSize: '15px', cursor: 'pointer', flex: 1 }}>
-                            {broadcastFileUrl ? 'Change Video' : 'Select Video File'}
-                         </button>
+                       <div style={{ display: 'flex', gap: '12px', alignItems: 'center', width: '100%' }}>
+                          <input type="file" id="broadcastVideoUpload" accept="video/*" style={{ display: 'none' }} onChange={(e) => {
+                              if (e.target.files && e.target.files[0]) {
+                                setBroadcastFileUrl(URL.createObjectURL(e.target.files[0]));
+                              }
+                          }} />
+                          <label 
+                             onDragOver={(e) => { e.preventDefault(); setIsDraggingBroadcast(true); }}
+                             onDragLeave={() => setIsDraggingBroadcast(false)}
+                             onDrop={(e) => {
+                                e.preventDefault();
+                                setIsDraggingBroadcast(false);
+                                if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+                                   setBroadcastFileUrl(URL.createObjectURL(e.dataTransfer.files[0]));
+                                }
+                             }}
+                             onClick={() => document.getElementById('broadcastVideoUpload')?.click()}
+                             style={{ 
+                                padding: '24px 16px', 
+                                background: isDraggingBroadcast ? 'rgba(0, 255, 136, 0.05)' : 'rgba(255,255,255,0.1)', 
+                                color: isDraggingBroadcast ? '#00ff88' : 'var(--text-primary)', 
+                                border: isDraggingBroadcast ? '2px dashed #00ff88' : '1px solid rgba(255,255,255,0.2)', 
+                                borderRadius: '8px', 
+                                fontWeight: 'bold', 
+                                fontSize: '15px', 
+                                cursor: 'pointer', 
+                                flex: 1,
+                                textAlign: 'center',
+                                display: 'flex',
+                                flexDirection: 'column',
+                                alignItems: 'center',
+                                gap: '6px',
+                                transition: 'all 0.2s ease'
+                             }}
+                          >
+                             <span>{broadcastFileUrl ? 'Video Loaded (Click to Change)' : isDraggingBroadcast ? 'Drop video here!' : 'Select Video File (Drag & Drop)'}</span>
+                             <span style={{ fontSize: '12px', color: 'var(--text-muted)', fontWeight: 'normal' }}>Drag & Drop your video file or click to browse</span>
+                          </label>
                        </div>
                     )}
                     <input type="text" placeholder="Broadcast Title" style={{ background: 'var(--bg-color)', border: '1px solid var(--bg-surface-hover)', padding: '16px', borderRadius: '8px', color: 'var(--text-primary)', fontSize: '15px' }} id="yt-title" />

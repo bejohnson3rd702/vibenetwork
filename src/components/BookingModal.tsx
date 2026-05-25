@@ -9,6 +9,7 @@ export default function BookingModal({ onClose, profile }: { onClose: () => void
   const [hours, setHours] = useState(1);
   const [image, setImage] = useState<File | null>(null);
   const [submitted, setSubmitted] = useState(false);
+  const [isDragging, setIsDragging] = useState(false);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -99,20 +100,42 @@ export default function BookingModal({ onClose, profile }: { onClose: () => void
 
               <div style={{ marginTop: '10px' }}>
                  <label style={{ display: 'block', marginBottom: '8px', fontWeight: 'bold', fontSize: '14px', color: '#ccc' }}>Would you like to add an image for your booking reference?</label>
-                 <label style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '30px', border: '2px dashed rgba(255,255,255,0.15)', borderRadius: '16px', background: 'rgba(255,255,255,0.02)', cursor: 'pointer', transition: 'all 0.2s' }}>
-                    {image ? (
-                       <div style={{ display: 'flex', alignItems: 'center', gap: '12px', color: '#fff' }}>
-                          <ImageIcon color={wlConfig?.accent || '#00ff88'} />
-                          <span style={{ fontWeight: 'bold' }}>{image.name}</span>
-                       </div>
-                    ) : (
-                       <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '10px', color: 'var(--text-muted)' }}>
-                          <Upload size={28} />
-                          <span>Click to upload an optional image</span>
-                       </div>
-                    )}
-                    <input type="file" accept="image/*" onChange={(e) => { if(e.target.files && e.target.files[0]) setImage(e.target.files[0]); }} style={{ display: 'none' }} />
-                 </label>
+                  <label 
+                     onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
+                     onDragLeave={() => setIsDragging(false)}
+                     onDrop={(e) => {
+                        e.preventDefault();
+                        setIsDragging(false);
+                        if(e.dataTransfer.files && e.dataTransfer.files[0]) {
+                           setImage(e.dataTransfer.files[0]);
+                        }
+                     }}
+                     style={{ 
+                        display: 'flex', 
+                        flexDirection: 'column', 
+                        alignItems: 'center', 
+                        justifyContent: 'center', 
+                        padding: '30px', 
+                        border: isDragging ? `2px dashed ${wlConfig?.accent || '#00ff88'}` : '2px dashed rgba(255,255,255,0.15)', 
+                        borderRadius: '16px', 
+                        background: isDragging ? 'rgba(0, 255, 136, 0.05)' : 'rgba(255,255,255,0.02)', 
+                        cursor: 'pointer', 
+                        transition: 'all 0.2s ease' 
+                     }}
+                  >
+                     {image ? (
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', color: '#fff' }}>
+                           <ImageIcon color={wlConfig?.accent || '#00ff88'} />
+                           <span style={{ fontWeight: 'bold' }}>{image.name}</span>
+                        </div>
+                     ) : (
+                        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '10px', color: isDragging ? (wlConfig?.accent || '#00ff88') : 'var(--text-muted)' }}>
+                           <Upload size={28} />
+                           <span>{isDragging ? 'Drop your image here!' : 'Click or Drag & Drop to upload an optional image'}</span>
+                        </div>
+                     )}
+                     <input type="file" accept="image/*" onChange={(e) => { if(e.target.files && e.target.files[0]) setImage(e.target.files[0]); }} style={{ display: 'none' }} />
+                  </label>
               </div>
 
               <button type="submit" style={{ marginTop: '10px', padding: '18px', background: wlConfig?.accent || '#0055ff', color: '#fff', fontSize: '16px', fontWeight: 'bold', borderRadius: '12px', border: 'none', cursor: 'pointer', boxShadow: `0 8px 25px ${wlConfig?.accent || '#0055ff'}44` }}>

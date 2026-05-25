@@ -480,6 +480,13 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
   const [showImageModal, setShowImageModal] = useState(false);
   const [imageTarget, setImageTarget] = useState<'avatar' | 'homepage'>('avatar');
   
+  // Drag and Drop States
+  const [isDraggingPostMedia, setIsDraggingPostMedia] = useState(false);
+  const [isDraggingProductImg, setIsDraggingProductImg] = useState(false);
+  const [isDraggingAvatar, setIsDraggingAvatar] = useState(false);
+  const [isDraggingDirectAvatar, setIsDraggingDirectAvatar] = useState(false);
+  const [isDraggingPostForm, setIsDraggingPostForm] = useState(false);
+  
   // New Post States
   const [postTitle, setPostTitle] = useState('');
   const [isLocked, setIsLocked] = useState(true);
@@ -711,11 +718,16 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
     setShowImageModal(true);
   };
 
-  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileUpload = async (eventOrFile: React.ChangeEvent<HTMLInputElement> | File) => {
     try {
-      if (!event.target.files || event.target.files.length === 0) return;
+      let file: File | undefined;
+      if (eventOrFile instanceof File) {
+        file = eventOrFile;
+      } else if (eventOrFile.target?.files && eventOrFile.target.files.length > 0) {
+        file = eventOrFile.target.files[0];
+      }
+      if (!file) return;
       setSaving(true);
-      const file = event.target.files[0];
       const fileExt = file.name.split('.').pop();
       const fileName = `${Math.random()}.${fileExt}`;
       const filePath = `${user?.id}/${fileName}`;
@@ -760,7 +772,6 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
     await supabase!.from('profiles').update({
       bio,
       genre: selectedGenre,
-
       avatar_url: avatarUrl,
       homepage_image_url: homepageImageUrl,
       flipbook_images: flipbookImages,
@@ -770,11 +781,16 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
     toast.success('Profile successfully saved to network database!');
   };
 
-  const handleProductImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleProductImageUpload = async (eventOrFile: React.ChangeEvent<HTMLInputElement> | File) => {
     try {
-      if (!event.target.files || event.target.files.length === 0) return;
+      let file: File | undefined;
+      if (eventOrFile instanceof File) {
+        file = eventOrFile;
+      } else if (eventOrFile.target?.files && eventOrFile.target.files.length > 0) {
+        file = eventOrFile.target.files[0];
+      }
+      if (!file) return;
       setUploadingProductImg(true);
-      const file = event.target.files[0];
       const filePath = `${user?.id}/prod_${Math.random()}.${file.name.split('.').pop()}`;
       await supabase!.storage.from('images').upload(filePath, file);
       const { data } = supabase!.storage.from('images').getPublicUrl(filePath);
@@ -1054,11 +1070,16 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
     setSaving(false);
   };
 
-  const handlePostMediaUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handlePostMediaUpload = async (eventOrFile: React.ChangeEvent<HTMLInputElement> | File) => {
     try {
-      if (!event.target.files || event.target.files.length === 0) return;
+      let file: File | undefined;
+      if (eventOrFile instanceof File) {
+        file = eventOrFile;
+      } else if (eventOrFile.target?.files && eventOrFile.target.files.length > 0) {
+        file = eventOrFile.target.files[0];
+      }
+      if (!file) return;
       setUploadingPostMedia(true);
-      const file = event.target.files[0];
       const filePath = `${user?.id}/post_${Math.random()}.${file.name.split('.').pop()}`;
       await supabase!.storage.from('images').upload(filePath, file);
       const { data } = supabase!.storage.from('images').getPublicUrl(filePath);
@@ -1325,15 +1346,43 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
             <div style={{ display: 'flex', gap: '40px', alignItems: 'flex-start', flexWrap: 'wrap' }}>
               
               {/* Profile Picture with Glow */}
-              <div className="group" style={{ position: 'relative', cursor: isOwnProfile && viewMode === 'edit' ? 'pointer' : 'default' }} onClick={() => { if (isOwnProfile && viewMode === 'edit') handleImageClick(); }}>
-                <div style={{ position: 'absolute', inset: '-10px', background: 'radial-gradient(circle at 50% 50%, rgba(255, 77, 133, 0.5), transparent 70%)', borderRadius: '50%', zIndex: 0, filter: 'blur(10px)' }} />
+              <div 
+                className="group" 
+                onDragOver={(e) => {
+                  if (isOwnProfile && viewMode === 'edit') {
+                    e.preventDefault();
+                    setIsDraggingDirectAvatar(true);
+                  }
+                }}
+                onDragLeave={() => setIsDraggingDirectAvatar(false)}
+                onDrop={(e) => {
+                  if (isOwnProfile && viewMode === 'edit') {
+                    e.preventDefault();
+                    setIsDraggingDirectAvatar(false);
+                    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+                      setImageTarget('avatar');
+                      handleFileUpload(e.dataTransfer.files[0]);
+                    }
+                  }
+                }}
+                onClick={() => { if (isOwnProfile && viewMode === 'edit') handleImageClick(); }}
+                style={{ 
+                  position: 'relative', 
+                  cursor: isOwnProfile && viewMode === 'edit' ? 'pointer' : 'default',
+                  transition: 'all 0.3s ease'
+                }} 
+              >
+                <div style={{ position: 'absolute', inset: '-10px', background: isDraggingDirectAvatar ? 'radial-gradient(circle at 50% 50%, rgba(0, 255, 136, 0.6), transparent 70%)' : 'radial-gradient(circle at 50% 50%, rgba(255, 77, 133, 0.5), transparent 70%)', borderRadius: '50%', zIndex: 0, filter: 'blur(10px)', transition: 'all 0.3s ease' }} />
                 <div style={{ 
                   position: 'relative', zIndex: 1,
                   width: '140px', height: '140px', borderRadius: '50%', 
                   backgroundImage: avatarUrl ? `url(${avatarUrl})` : 'linear-gradient(135deg, #FF0055, #8A2BE2)',
                   backgroundSize: 'cover', backgroundPosition: 'center',
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  fontSize: '56px', fontWeight: 'bold', border: '4px solid rgba(255,255,255,0.2)', boxShadow: '0 10px 30px rgba(0,0,0,0.5)'
+                  fontSize: '56px', fontWeight: 'bold', 
+                  border: isDraggingDirectAvatar ? '4px dashed #00ff88' : '4px solid rgba(255,255,255,0.2)', 
+                  boxShadow: isDraggingDirectAvatar ? '0 0 35px rgba(0,255,136,0.6)' : '0 10px 30px rgba(0,0,0,0.5)',
+                  transition: 'all 0.3s ease'
                 }}>
                   {!avatarUrl && (profile?.username ? profile.username[0].toUpperCase() : (user?.email ? user.email[0].toUpperCase() : 'V'))}
                 </div>
@@ -1341,9 +1390,13 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
                 {viewMode === 'edit' && (
                   <div className="camera-overlay" style={{
                     position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.6)', borderRadius: '50%',
-                    display: 'flex', alignItems: 'center', justifyContent: 'center', opacity: 0, transition: '0.2s', zIndex: 2
+                    display: 'flex', alignItems: 'center', justifyContent: 'center', opacity: isDraggingDirectAvatar ? 1 : 0, transition: '0.2s', zIndex: 2
                   }}>
-                    <Camera size={34} color="#fff" />
+                    {isDraggingDirectAvatar ? (
+                      <span style={{ color: '#00ff88', fontWeight: 'black', fontSize: '14px', letterSpacing: '1px', textTransform: 'uppercase' }}>Drop Pic!</span>
+                    ) : (
+                      <Camera size={34} color="#fff" />
+                    )}
                   </div>
                 )}
                 <input type="file" ref={fileInputRef} style={{ display: 'none' }} accept="image/*" />
@@ -1479,7 +1532,26 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
           <>
             {/* Content Creation Widget -> ONLY IF EDITING */}
             {isOwnProfile && isInfluencer && viewMode === 'edit' && (
-          <form onSubmit={handlePostSubmit} style={{ background: 'rgba(255,255,255,0.03)', padding: '24px', borderRadius: '24px', border: '1px solid rgba(255,255,255,0.05)' }}>
+          <form 
+            onSubmit={handlePostSubmit} 
+            onDragOver={(e) => { e.preventDefault(); setIsDraggingPostForm(true); }}
+            onDragLeave={() => setIsDraggingPostForm(false)}
+            onDrop={(e) => {
+              e.preventDefault();
+              setIsDraggingPostForm(false);
+              if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+                handlePostMediaUpload(e.dataTransfer.files[0]);
+              }
+            }}
+            style={{ 
+              background: isDraggingPostForm ? 'rgba(0, 255, 136, 0.04)' : 'rgba(255,255,255,0.03)', 
+              padding: '24px', 
+              borderRadius: '24px', 
+              border: isDraggingPostForm ? '1px dashed #00ff88' : '1px solid rgba(255,255,255,0.05)',
+              boxShadow: isDraggingPostForm ? '0 0 25px rgba(0,255,136,0.15)' : 'none',
+              transition: 'all 0.3s ease'
+            }}
+          >
             <div style={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
               <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: '#fff', flexShrink: 0 }} />
               <div style={{ position: 'relative', width: '100%' }}>
@@ -1501,9 +1573,31 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
             
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '20px', paddingTop: '20px', borderTop: '1px solid rgba(255,255,255,0.05)' }}>
               <div style={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
-                <label style={{ display: 'flex', alignItems: 'center', gap: '8px', background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer' }}>
+                <label 
+                  onDragOver={(e) => { e.preventDefault(); setIsDraggingPostMedia(true); }}
+                  onDragLeave={() => setIsDraggingPostMedia(false)}
+                  onDrop={(e) => {
+                    e.preventDefault();
+                    setIsDraggingPostMedia(false);
+                    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+                      handlePostMediaUpload(e.dataTransfer.files[0]);
+                    }
+                  }}
+                  style={{ 
+                    display: 'flex', 
+                    alignItems: 'center', 
+                    gap: '8px', 
+                    background: isDraggingPostMedia ? 'rgba(0, 255, 136, 0.1)' : 'rgba(255,255,255,0.03)', 
+                    border: isDraggingPostMedia ? '1px dashed #00ff88' : '1px solid rgba(255,255,255,0.1)', 
+                    padding: '8px 16px',
+                    borderRadius: '12px',
+                    color: isDraggingPostMedia ? '#00ff88' : 'var(--text-muted)', 
+                    cursor: 'pointer',
+                    transition: 'all 0.2s ease'
+                  }}
+                >
                   <input type="file" accept="image/*" onChange={handlePostMediaUpload} style={{ display: 'none' }} disabled={uploadingPostMedia} />
-                  <ImageIcon size={18} /> {uploadingPostMedia ? 'Uploading...' : 'Media'}
+                  <ImageIcon size={18} /> {uploadingPostMedia ? 'Uploading...' : isDraggingPostMedia ? 'Drop here!' : 'Media (Drag & Drop)'}
                 </label>
                 
                 {postMediaUrl && (
@@ -1767,9 +1861,35 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
                   {newProduct.image_url ? (
                     <div style={{ width: '80px', height: '80px', borderRadius: '8px', backgroundImage: `url("${newProduct.image_url}")`, backgroundSize: 'cover', backgroundPosition: 'center', border: '1px solid rgba(255,255,255,0.1)' }} />
                   ) : null}
-                  <label style={{ flex: 1, background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', padding: '14px', borderRadius: '12px', color: '#ccc', textAlign: 'center', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', transition: '0.2s', fontWeight: 'bold' }}>
+                  <label 
+                    onDragOver={(e) => { e.preventDefault(); setIsDraggingProductImg(true); }}
+                    onDragLeave={() => setIsDraggingProductImg(false)}
+                    onDrop={(e) => {
+                      e.preventDefault();
+                      setIsDraggingProductImg(false);
+                      if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+                        handleProductImageUpload(e.dataTransfer.files[0]);
+                      }
+                    }}
+                    style={{ 
+                      flex: 1, 
+                      background: isDraggingProductImg ? 'rgba(0, 255, 136, 0.05)' : 'rgba(255,255,255,0.05)', 
+                      border: isDraggingProductImg ? '2px dashed #00ff88' : '1px solid rgba(255,255,255,0.1)', 
+                      padding: '14px', 
+                      borderRadius: '12px', 
+                      color: isDraggingProductImg ? '#00ff88' : '#ccc', 
+                      textAlign: 'center', 
+                      cursor: 'pointer', 
+                      display: 'flex', 
+                      alignItems: 'center', 
+                      justifyContent: 'center', 
+                      gap: '8px', 
+                      transition: 'all 0.2s ease', 
+                      fontWeight: 'bold' 
+                    }}
+                  >
                     <ImageIcon size={16} /> 
-                    {uploadingProductImg ? 'Uploading...' : 'Upload Prod Image'}
+                    {uploadingProductImg ? 'Uploading...' : isDraggingProductImg ? 'Drop here!' : 'Upload Prod Image (Drag & Drop)'}
                     <input type="file" accept="image/*" onChange={handleProductImageUpload} style={{ display: 'none' }} disabled={uploadingProductImg} />
                   </label>
                   <button type="submit" disabled={saving || !newProduct.title} style={{ padding: '0 30px', background: 'linear-gradient(135deg, #FFD700, #FFA500)', color: '#000', border: 'none', borderRadius: '12px', fontWeight: 'bold', cursor: 'pointer', opacity: (!newProduct.title || saving) ? 0.5 : 1 }}>
@@ -2884,8 +3004,35 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
               <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                 <label style={{ color: '#ccc', fontSize: '14px', fontWeight: 'bold' }}>Upload Direct File via Network</label>
                 <div style={{ display: 'flex', gap: '10px' }}>
-                  <label style={{ flex: 1, padding: '14px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: 'var(--text-primary)', textAlign: 'center', borderRadius: '12px', cursor: 'pointer', fontWeight: 'bold', transition: 'background 0.2s' }}>
-                    {saving ? 'Uploading to Supabase...' : 'Choose Image File off Computer...'}
+                  <label 
+                    onDragOver={(e) => { e.preventDefault(); setIsDraggingAvatar(true); }}
+                    onDragLeave={() => setIsDraggingAvatar(false)}
+                    onDrop={(e) => {
+                      e.preventDefault();
+                      setIsDraggingAvatar(false);
+                      if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+                        handleFileUpload(e.dataTransfer.files[0]);
+                      }
+                    }}
+                    style={{ 
+                      flex: 1, 
+                      padding: '24px 14px', 
+                      background: isDraggingAvatar ? 'rgba(0, 255, 136, 0.05)' : 'rgba(255,255,255,0.05)', 
+                      border: isDraggingAvatar ? '2px dashed #00ff88' : '1px solid rgba(255,255,255,0.1)', 
+                      color: isDraggingAvatar ? '#00ff88' : 'var(--text-primary)', 
+                      textAlign: 'center', 
+                      borderRadius: '12px', 
+                      cursor: 'pointer', 
+                      fontWeight: 'bold', 
+                      transition: 'all 0.2s ease',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      alignItems: 'center',
+                      gap: '6px'
+                    }}
+                  >
+                    <span>{saving ? 'Uploading to Supabase...' : isDraggingAvatar ? 'Drop file here!' : 'Choose Image File off Computer...'}</span>
+                    <span style={{ fontSize: '12px', color: 'var(--text-muted)', fontWeight: 'normal' }}>Drag & Drop or click to browse</span>
                     <input type="file" accept="image/*" onChange={handleFileUpload} style={{ display: 'none' }} disabled={saving} />
                   </label>
                 </div>

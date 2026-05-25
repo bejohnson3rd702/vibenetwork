@@ -16,12 +16,20 @@ export const HeroEditorTab = ({ wlConfig }: { wlConfig: any }) => {
   const [uploadingHeroImage, setUploadingHeroImage] = useState(false);
   const [uploadStatus, setUploadStatus] = useState<string | null>(null);
 
+  // Drag and drop states
+  const [dragActiveHeroImage, setDragActiveHeroImage] = useState(false);
+  const [dragActiveHeroVideo, setDragActiveHeroVideo] = useState(false);
 
-  const handleHeroVideoUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleHeroVideoUpload = async (eventOrFile: React.ChangeEvent<HTMLInputElement> | File) => {
     try {
-      if (!event.target.files || event.target.files.length === 0) return;
+      let file: File | undefined;
+      if (eventOrFile instanceof File) {
+        file = eventOrFile;
+      } else if (eventOrFile.target?.files && eventOrFile.target.files.length > 0) {
+        file = eventOrFile.target.files[0];
+      }
+      if (!file) return;
       setUploadingHeroVideo(true);
-      const file = event.target.files[0];
       const fileExt = file.name.split('.').pop();
       const fileName = `${Date.now()}_${Math.random()}.${fileExt}`;
       const filePath = `hero/${fileName}`;
@@ -41,11 +49,16 @@ export const HeroEditorTab = ({ wlConfig }: { wlConfig: any }) => {
     }
   };
 
-  const handleHeroImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleHeroImageUpload = async (eventOrFile: React.ChangeEvent<HTMLInputElement> | File) => {
     try {
-      if (!event.target.files || event.target.files.length === 0) return;
+      let file: File | undefined;
+      if (eventOrFile instanceof File) {
+        file = eventOrFile;
+      } else if (eventOrFile.target?.files && eventOrFile.target.files.length > 0) {
+        file = eventOrFile.target.files[0];
+      }
+      if (!file) return;
       setUploadingHeroImage(true);
-      const file = event.target.files[0];
       const fileExt = file.name.split('.').pop();
       const fileName = `${Date.now()}_${Math.random()}.${fileExt}`;
       const filePath = `hero/${fileName}`;
@@ -134,12 +147,35 @@ export const HeroEditorTab = ({ wlConfig }: { wlConfig: any }) => {
          
          {heroImage && <img src={heroImage} style={{ width: '100%', maxHeight: '200px', objectFit: 'cover', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.1)' }} alt="Hero Preview" />}
          
-
-
          <div style={{ display: 'flex', gap: '12px' }}>
             <input type="text" value={heroImage} onChange={(e) => setHeroImage(e.target.value)} placeholder="e.g. https://images.unsplash.com/..." style={{ flex: 1, padding: '14px', background: 'rgba(0,0,0,0.5)', color: 'var(--text-primary)', border: '1px solid rgba(255,255,255,0.2)', borderRadius: '12px', fontSize: '16px', outline: 'none' }} />
-            <label style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '0 24px', background: 'var(--bg-surface)', border: '1px solid rgba(255,255,255,0.2)', borderRadius: '12px', cursor: uploadingHeroImage ? 'not-allowed' : 'pointer', fontWeight: 'bold' }}>
-               {uploadingHeroImage ? 'Uploading...' : 'Upload Image'}
+            <label 
+               onDragOver={(e) => { e.preventDefault(); setDragActiveHeroImage(true); }}
+               onDragLeave={() => setDragActiveHeroImage(false)}
+               onDrop={(e) => {
+                  e.preventDefault();
+                  setDragActiveHeroImage(false);
+                  if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+                     handleHeroImageUpload(e.dataTransfer.files[0]);
+                  }
+               }}
+               style={{ 
+                  display: 'flex', 
+                  flexDirection: 'column',
+                  alignItems: 'center', 
+                  justifyContent: 'center', 
+                  padding: '12px 24px', 
+                  background: dragActiveHeroImage ? 'rgba(0, 255, 136, 0.05)' : 'var(--bg-surface)', 
+                  border: dragActiveHeroImage ? '2px dashed #00ff88' : '1px solid rgba(255,255,255,0.2)', 
+                  borderRadius: '12px', 
+                  cursor: uploadingHeroImage ? 'not-allowed' : 'pointer', 
+                  fontWeight: 'bold',
+                  transition: 'all 0.2s ease',
+                  minWidth: '180px',
+                  textAlign: 'center'
+               }}
+            >
+               <span>{uploadingHeroImage ? 'Uploading...' : dragActiveHeroImage ? 'Drop it here!' : 'Upload Image (Drag & Drop)'}</span>
                <input type="file" accept="image/*" onChange={handleHeroImageUpload} style={{ display: 'none' }} disabled={uploadingHeroImage} />
             </label>
          </div>
@@ -152,8 +188,33 @@ export const HeroEditorTab = ({ wlConfig }: { wlConfig: any }) => {
            
            <div style={{ display: 'flex', gap: '12px' }}>
               <input type="text" value={heroVideoUrl} onChange={(e) => setHeroVideoUrl(e.target.value)} placeholder="e.g. https://youtube.com/watch?v=..." style={{ flex: 1, padding: '14px', background: 'rgba(0,0,0,0.5)', color: 'var(--text-primary)', border: '1px solid rgba(255,255,255,0.2)', borderRadius: '12px', fontSize: '16px', outline: 'none' }} />
-              <label style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '0 24px', background: 'var(--bg-surface)', border: '1px solid rgba(255,255,255,0.2)', borderRadius: '12px', cursor: uploadingHeroVideo ? 'not-allowed' : 'pointer', fontWeight: 'bold' }}>
-                 {uploadingHeroVideo ? 'Uploading...' : 'Upload Video File'}
+              <label 
+                 onDragOver={(e) => { e.preventDefault(); setDragActiveHeroVideo(true); }}
+                 onDragLeave={() => setDragActiveHeroVideo(false)}
+                 onDrop={(e) => {
+                    e.preventDefault();
+                    setDragActiveHeroVideo(false);
+                    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+                       handleHeroVideoUpload(e.dataTransfer.files[0]);
+                    }
+                 }}
+                 style={{ 
+                    display: 'flex', 
+                    flexDirection: 'column',
+                    alignItems: 'center', 
+                    justifyContent: 'center', 
+                    padding: '12px 24px', 
+                    background: dragActiveHeroVideo ? 'rgba(0, 255, 136, 0.05)' : 'var(--bg-surface)', 
+                    border: dragActiveHeroVideo ? '2px dashed #00ff88' : '1px solid rgba(255,255,255,0.2)', 
+                    borderRadius: '12px', 
+                    cursor: uploadingHeroVideo ? 'not-allowed' : 'pointer', 
+                    fontWeight: 'bold',
+                    transition: 'all 0.2s ease',
+                    minWidth: '220px',
+                    textAlign: 'center'
+                 }}
+              >
+                 <span>{uploadingHeroVideo ? 'Uploading...' : dragActiveHeroVideo ? 'Drop Video here!' : 'Upload Video File (Drag & Drop)'}</span>
                  <input type="file" accept="video/*" onChange={handleHeroVideoUpload} style={{ display: 'none' }} disabled={uploadingHeroVideo} />
               </label>
            </div>

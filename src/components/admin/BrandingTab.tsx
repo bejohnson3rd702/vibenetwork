@@ -10,12 +10,22 @@ export const BrandingTab = ({ wlConfig }: { wlConfig: any }) => {
   const [uploadingLogo, setUploadingLogo] = useState(false);
   const [uploadingFavicon, setUploadingFavicon] = useState(false);
   const [uploadStatus, setUploadStatus] = useState<string | null>(null);
+  
+  // Drag and drop states
+  const [dragActiveLogo, setDragActiveLogo] = useState(false);
+  const [dragActiveFavicon, setDragActiveFavicon] = useState(false);
 
-  const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>, setUrl: (url: string) => void, setUploading: (u: boolean) => void) => {
+  const handleImageUpload = async (eventOrFile: React.ChangeEvent<HTMLInputElement> | File, setUrl: (url: string) => void, setUploading: (u: boolean) => void) => {
     try {
-      if (!event.target.files || event.target.files.length === 0) return;
+      let file: File | undefined;
+      if (eventOrFile instanceof File) {
+        file = eventOrFile;
+      } else if (eventOrFile.target?.files && eventOrFile.target.files.length > 0) {
+        file = eventOrFile.target.files[0];
+      }
+      if (!file) return;
+      
       setUploading(true);
-      const file = event.target.files[0];
       const fileExt = file.name.split('.').pop();
       const fileName = `${Date.now()}_${Math.random()}.${fileExt}`;
       const filePath = `brand/${fileName}`;
@@ -106,8 +116,34 @@ export const BrandingTab = ({ wlConfig }: { wlConfig: any }) => {
          <h3 style={{ margin: 0, fontSize: '20px' }}>Primary Logo</h3>
          <p style={{ margin: 0, color: 'var(--text-muted)', fontSize: '15px' }}>This is the main logo shown in the navigation bar.</p>
          {logoImage && <img src={logoImage} style={{ height: '60px', objectFit: 'contain', background: 'rgba(0,0,0,0.5)', padding: '10px', borderRadius: '8px' }} alt="Logo Preview" />}
-         <label style={{ alignSelf: 'flex-start', padding: '12px 24px', background: 'var(--bg-surface)', border: '1px solid rgba(255,255,255,0.2)', borderRadius: '12px', cursor: uploadingLogo ? 'not-allowed' : 'pointer', fontWeight: 'bold' }}>
-            {uploadingLogo ? 'Uploading...' : 'Upload Logo'}
+         <label 
+            onDragOver={(e) => { e.preventDefault(); setDragActiveLogo(true); }}
+            onDragLeave={() => setDragActiveLogo(false)}
+            onDrop={(e) => {
+               e.preventDefault();
+               setDragActiveLogo(false);
+               if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+                  handleImageUpload(e.dataTransfer.files[0], setLogoImage, setUploadingLogo);
+               }
+            }}
+            style={{ 
+               alignSelf: 'flex-start', 
+               padding: '24px 32px', 
+               background: dragActiveLogo ? 'rgba(0, 255, 136, 0.05)' : 'var(--bg-surface)', 
+               border: dragActiveLogo ? '2px dashed #00ff88' : '1px solid rgba(255,255,255,0.2)', 
+               borderRadius: '12px', 
+               cursor: uploadingLogo ? 'not-allowed' : 'pointer', 
+               fontWeight: 'bold',
+               transition: 'all 0.2s ease',
+               textAlign: 'center',
+               display: 'flex',
+               flexDirection: 'column',
+               alignItems: 'center',
+               gap: '8px'
+            }}
+         >
+            <span>{uploadingLogo ? 'Uploading...' : dragActiveLogo ? 'Drop Logo here!' : 'Upload Logo (Drag & Drop)'}</span>
+            <span style={{ fontSize: '12px', color: 'var(--text-muted)', fontWeight: 'normal' }}>Drag & Drop or click to browse</span>
             <input type="file" accept="image/*" onChange={(e) => handleImageUpload(e, setLogoImage, setUploadingLogo)} style={{ display: 'none' }} disabled={uploadingLogo} />
          </label>
       </div>
@@ -116,8 +152,34 @@ export const BrandingTab = ({ wlConfig }: { wlConfig: any }) => {
          <h3 style={{ margin: 0, fontSize: '20px' }}>Browser Favicon</h3>
          <p style={{ margin: 0, color: 'var(--text-muted)', fontSize: '15px' }}>This small square icon appears in the browser tab. If empty, the primary logo is used.</p>
          {faviconImage && <img src={faviconImage} style={{ width: '48px', height: '48px', objectFit: 'contain', background: 'rgba(0,0,0,0.5)', padding: '4px', borderRadius: '8px' }} alt="Favicon Preview" />}
-         <label style={{ alignSelf: 'flex-start', padding: '12px 24px', background: 'var(--bg-surface)', border: '1px solid rgba(255,255,255,0.2)', borderRadius: '12px', cursor: uploadingFavicon ? 'not-allowed' : 'pointer', fontWeight: 'bold' }}>
-            {uploadingFavicon ? 'Uploading...' : 'Upload Favicon'}
+         <label 
+            onDragOver={(e) => { e.preventDefault(); setDragActiveFavicon(true); }}
+            onDragLeave={() => setDragActiveFavicon(false)}
+            onDrop={(e) => {
+               e.preventDefault();
+               setDragActiveFavicon(false);
+               if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+                  handleImageUpload(e.dataTransfer.files[0], setFaviconImage, setUploadingFavicon);
+               }
+            }}
+            style={{ 
+               alignSelf: 'flex-start', 
+               padding: '24px 32px', 
+               background: dragActiveFavicon ? 'rgba(0, 255, 136, 0.05)' : 'var(--bg-surface)', 
+               border: dragActiveFavicon ? '2px dashed #00ff88' : '1px solid rgba(255,255,255,0.2)', 
+               borderRadius: '12px', 
+               cursor: uploadingFavicon ? 'not-allowed' : 'pointer', 
+               fontWeight: 'bold',
+               transition: 'all 0.2s ease',
+               textAlign: 'center',
+               display: 'flex',
+               flexDirection: 'column',
+               alignItems: 'center',
+               gap: '8px'
+            }}
+         >
+            <span>{uploadingFavicon ? 'Uploading...' : dragActiveFavicon ? 'Drop Favicon here!' : 'Upload Favicon (Drag & Drop)'}</span>
+            <span style={{ fontSize: '12px', color: 'var(--text-muted)', fontWeight: 'normal' }}>Drag & Drop or click to browse</span>
             <input type="file" accept="image/*" onChange={(e) => handleImageUpload(e, setFaviconImage, setUploadingFavicon)} style={{ display: 'none' }} disabled={uploadingFavicon} />
          </label>
       </div>
