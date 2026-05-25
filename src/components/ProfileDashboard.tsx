@@ -76,7 +76,42 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
   const [products, setProducts] = useState<any[]>([]);
   const [selectedDate, setSelectedDate] = useState<number | null>(null);
   const [selectedTime, setSelectedTime] = useState<string | null>(null);
-  
+
+  // Upgrade 1: Masterclasses / Courses Progress
+  const [courseProgressMap, setCourseProgressMap] = useState<Record<string, number[]>>({});
+  const [activeCoursePlayer, setActiveCoursePlayer] = useState<any | null>(null);
+  const [purchasedCourseIds, setPurchasedCourseIds] = useState<string[]>(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('vibe_purchased_courses');
+      return saved ? JSON.parse(saved) : [];
+    }
+    return [];
+  });
+  const [expandedModules, setExpandedModules] = useState<Record<number, boolean>>({});
+
+  // Upgrade 2: Store / Product Editing
+  const [editingProduct, setEditingProduct] = useState<any | null>(null);
+  const [showEditModal, setShowEditModal] = useState(false);
+
+  // Upgrade 3: TV Series Cinema Theater
+  const [activeCinemaSeries, setActiveCinemaSeries] = useState<any | null>(null);
+  const [activeCinemaEpisode, setActiveCinemaEpisode] = useState<any | null>(null);
+  const [showCinemaModal, setShowCinemaModal] = useState(false);
+  const [purchasedSeasons, setPurchasedSeasons] = useState<string[]>(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('vibe_purchased_seasons');
+      return saved ? JSON.parse(saved) : [];
+    }
+    return [];
+  });
+  const [purchasedEpisodes, setPurchasedEpisodes] = useState<string[]>(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('vibe_purchased_episodes');
+      return saved ? JSON.parse(saved) : [];
+    }
+    return [];
+  });
+
   // Real Booking State
   const [bookingPrice, setBookingPrice] = useState('49.00');
   const [bookingDuration, setBookingDuration] = useState(1);
@@ -560,6 +595,7 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
           const pBookingsPromise = user ? supabase!.from('bookings').select('*, creator:profiles!creator_id(username, full_name, avatar_url)').eq('buyer_id', user.id) : Promise.resolve({ data: null });
           const networksPromise = user ? supabase!.from('whitelabel_configs').select('*').eq('owner_id', user.id) : Promise.resolve({ data: null });
           const rBookingsPromise = (isOwnProfile && user) ? supabase!.from('bookings').select('*, buyer:profiles!buyer_id(username, full_name, avatar_url)').eq('creator_id', user.id) : Promise.resolve({ data: null });
+          const progressPromise = user ? supabase!.from('user_course_progress').select('*').eq('user_id', user.id) : Promise.resolve({ data: null });
 
           const [
             { data: prodData },
@@ -568,7 +604,8 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
             { data: pBookings },
             { data: networks },
             { data: rBookings },
-            { data: slotsData }
+            { data: slotsData },
+            { data: progressData }
           ] = await Promise.all([
             productsPromise,
             seriesPromise,
@@ -576,12 +613,21 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
             pBookingsPromise,
             networksPromise,
             rBookingsPromise,
-            slotsPromise
+            slotsPromise,
+            progressPromise
           ]);
 
           setProducts(prodData || []);
           setSeriesList(seriesData || []);
           setCourses(coursesData || []);
+
+          if (progressData) {
+            const map: Record<string, number[]> = {};
+            progressData.forEach((row: any) => {
+              map[row.course_id] = row.completed_modules || [];
+            });
+            setCourseProgressMap(map);
+          }
 
           const formattedSlots: Record<number, string[]> = {};
           if (slotsData) {
@@ -821,6 +867,156 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
       setCourses(prev => [...prev, { ...insertData, id: 'c_' + Date.now(), progress: 0 }]);
     }
     setNewCourse({ title: '', price: '', modules: '', hours: '', img: '' });
+    setSaving(false);
+  };
+
+  // Upgrades Helper Handlers
+  const handleEnrollSimulation = (course: any) => {
+    const updatedPurchases = [...purchasedCourseIds, course.id];
+    setPurchasedCourseIds(updatedPurchases);
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('vibe_purchased_courses', JSON.stringify(updatedPurchases));
+    }
+    toast.success(`Successfully enrolled in ${course.title}!`);
+    setActiveCoursePlayer(course);
+  };
+
+  const handleToggleModuleProgress = async (courseId: string, moduleIndex: number) => {
+    if (!user) {
+      toast.error('You must be logged in to save progress.');
+      return;
+    }
+    const currentCompleted = courseProgressMap[courseId] || [];
+    let updatedCompleted: number[];
+
+    if (currentCompleted.includes(moduleIndex)) {
+      updatedCompleted = currentCompleted.filter(m => m !== moduleIndex);
+    } else {
+      updatedCompleted = [...currentCompleted, moduleIndex];
+    }
+
+    setCourseProgressMap(prev => ({
+      ...prev,
+      [courseId]: updatedCompleted
+    }));
+
+    try {
+      const { error } = await supabase!
+        .from('user_course_progress')
+        .upsert({
+          user_id: user.id,
+          course_id: courseId,
+          completed_modules: updatedCompleted,
+          updated_at: new Date().toISOString()
+        }, { onConflict: 'user_id,course_id' });
+
+      if (error) {
+        console.error('Progress upsert error:', error);
+        toast.error('Stored progress locally.');
+      } else {
+        toast.success(updatedCompleted.includes(moduleIndex) ? `Module ${moduleIndex} completed! 🎉` : `Module ${moduleIndex} unchecked.`);
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const handleBuySeasonSimulation = (series: any) => {
+    const updated = [...purchasedSeasons, series.id];
+    setPurchasedSeasons(updated);
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('vibe_purchased_seasons', JSON.stringify(updated));
+    }
+    toast.success(`Purchased season pass for ${series.title}!`);
+    setActiveCinemaSeries(series);
+    setActiveCinemaEpisode(series.episodes?.[0] || null);
+    setShowCinemaModal(true);
+  };
+
+  const handleBuyEpisodeSimulation = (episode: any, series: any) => {
+    const updated = [...purchasedEpisodes, episode.id];
+    setPurchasedEpisodes(updated);
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('vibe_purchased_episodes', JSON.stringify(updated));
+    }
+    toast.success(`Purchased episode: ${episode.title}!`);
+    setActiveCinemaSeries(series);
+    setActiveCinemaEpisode(episode);
+    setShowCinemaModal(true);
+  };
+
+  const handleUpdateProduct = async (updatedProduct: any) => {
+    setSaving(true);
+    try {
+      const colorsArr = typeof updatedProduct.colors === 'string'
+        ? updatedProduct.colors.split(',').map((c: string) => c.trim()).filter(Boolean)
+        : updatedProduct.colors;
+      const sizesArr = typeof updatedProduct.sizes === 'string'
+        ? updatedProduct.sizes.split(',').map((s: string) => s.trim()).filter(Boolean)
+        : updatedProduct.sizes;
+
+      const { error } = await supabase!
+        .from('products')
+        .update({
+          title: updatedProduct.title,
+          price: parseFloat(updatedProduct.price),
+          image_url: updatedProduct.image_url,
+          type: updatedProduct.type,
+          variants: {
+            is_clothing: updatedProduct.is_clothing,
+            colors: colorsArr,
+            sizes: sizesArr
+          }
+        })
+        .eq('id', updatedProduct.id);
+
+      if (error) {
+        toast.error('Error updating product: ' + error.message);
+      } else {
+        toast.success('Product updated successfully!');
+        setProducts(prev => prev.map(p => p.id === updatedProduct.id ? {
+          ...p,
+          title: updatedProduct.title,
+          price: parseFloat(updatedProduct.price),
+          image_url: updatedProduct.image_url,
+          type: updatedProduct.type,
+          variants: {
+            is_clothing: updatedProduct.is_clothing,
+            colors: colorsArr,
+            sizes: sizesArr
+          }
+        } : p));
+        setShowEditModal(false);
+        setEditingProduct(null);
+      }
+    } catch (err: any) {
+      toast.error('Failed to update product: ' + err.message);
+    }
+    setSaving(false);
+  };
+
+  const handleDeleteProduct = async (productId: string) => {
+    if (!window.confirm('Are you sure you want to delete this product? This action cannot be undone.')) {
+      return;
+    }
+    setSaving(true);
+    try {
+      const { error } = await supabase!
+        .from('products')
+        .delete()
+        .eq('id', productId);
+
+      if (error) {
+        toast.error('Error deleting product: ' + error.message);
+      } else {
+        toast.success('Product deleted successfully!');
+        setProducts(prev => prev.filter(p => p.id !== productId));
+        setShowEditModal(false);
+        setEditingProduct(null);
+      }
+    } catch (err: any) {
+      toast.error('Failed to delete product: ' + err.message);
+    }
     setSaving(false);
   };
 
@@ -1601,7 +1797,16 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                         <span style={{ fontSize: '18px', fontWeight: 'bold', color: 'var(--text-primary)' }}>${parseFloat(product.price).toFixed(2)}</span>
                         {viewMode === 'edit' ? (
-                          <button style={{ padding: '6px 12px', background: 'rgba(255,255,255,0.1)', border: 'none', borderRadius: '8px', color: 'var(--text-primary)', fontSize: '12px', fontWeight: 'bold', cursor: 'pointer' }}>Edit</button>
+                          <button 
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setEditingProduct(product);
+                              setShowEditModal(true);
+                            }} 
+                            style={{ padding: '6px 12px', background: 'rgba(255,255,255,0.1)', border: 'none', borderRadius: '8px', color: 'var(--text-primary)', fontSize: '12px', fontWeight: 'bold', cursor: 'pointer' }}
+                          >
+                            Edit
+                          </button>
                         ) : (
                           <button style={{ padding: '8px 16px', background: '#fff', border: 'none', borderRadius: '20px', color: '#000', fontSize: '13px', fontWeight: 'bold', cursor: 'pointer' }}>Buy Now</button>
                         )}
@@ -1938,9 +2143,19 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
                       <div style={{ background: 'rgba(255,77,133,0.2)', color: '#ff4d85', padding: '4px 12px', borderRadius: '8px', fontSize: '12px', fontWeight: 'bold', display: 'inline-block', marginBottom: '12px', border: '1px solid #ff4d85' }}>ORIGINAL SERIES</div>
                       <h2 style={{ fontSize: '36px', margin: '0 0 10px 0', textShadow: '0 2px 10px rgba(0,0,0,0.5)' }}>{series.title}</h2>
                       <p style={{ color: '#ccc', margin: '0 0 20px 0', lineHeight: 1.5 }}>{series.description}</p>
-                      <button onClick={() => handleStripeCheckout(`Full Season Pass: ${series.title}`, Number(series.price))} style={{ padding: '14px 28px', background: '#fff', color: '#000', border: 'none', borderRadius: '12px', fontWeight: 'bold', fontSize: '16px', cursor: 'pointer', transition: 'all 0.2s', boxShadow: '0 10px 20px rgba(255,255,255,0.2)' }} onMouseOver={e=>e.currentTarget.style.transform='scale(1.05)'} onMouseOut={e=>e.currentTarget.style.transform='scale(1)'}>
-                        Buy Full Season (${series.price})
-                      </button>
+                      {isOwnProfile || purchasedSeasons.includes(series.id) ? (
+                        <button onClick={() => {
+                          setActiveCinemaSeries(series);
+                          setActiveCinemaEpisode(series.episodes?.[0] || null);
+                          setShowCinemaModal(true);
+                        }} style={{ padding: '14px 28px', background: 'linear-gradient(135deg, #ff4d85, #8A2BE2)', color: '#fff', border: 'none', borderRadius: '12px', fontWeight: 'bold', fontSize: '16px', cursor: 'pointer', transition: 'all 0.2s', boxShadow: '0 10px 20px rgba(138,43,226,0.3)' }}>
+                          Stream Season 🍿
+                        </button>
+                      ) : (
+                        <button onClick={() => handleBuySeasonSimulation(series)} style={{ padding: '14px 28px', background: '#fff', color: '#000', border: 'none', borderRadius: '12px', fontWeight: 'bold', fontSize: '16px', cursor: 'pointer', transition: 'all 0.2s', boxShadow: '0 10px 20px rgba(255,255,255,0.2)' }} onMouseOver={e=>e.currentTarget.style.transform='scale(1.05)'} onMouseOut={e=>e.currentTarget.style.transform='scale(1)'}>
+                          Buy Full Season (${series.price})
+                        </button>
+                      )}
                     </div>
                   </div>
 
@@ -1988,9 +2203,19 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
                               <h4 style={{ margin: '0 0 8px 0', fontSize: '18px' }}>{episode.title}</h4>
                               <p style={{ margin: 0, color: 'var(--text-secondary)', fontSize: '14px', lineHeight: 1.4 }}>{episode.description}</p>
                             </div>
-                            <button onClick={()=>handleStripeCheckout(`Episode: ${episode.title}`, Number(episode.price || 0))} style={{ padding: '10px 20px', background: 'rgba(255,255,255,0.1)', border: 'none', color: 'var(--text-primary)', borderRadius: '20px', fontWeight: 'bold', cursor: 'pointer', transition: 'background 0.2s' }} onMouseOver={e=>e.currentTarget.style.background='rgba(255,255,255,0.2)'} onMouseOut={e=>e.currentTarget.style.background='rgba(255,255,255,0.1)'}>
-                              Buy (${episode.price || '0.00'})
-                            </button>
+                            {isOwnProfile || purchasedSeasons.includes(series.id) || purchasedEpisodes.includes(episode.id) ? (
+                              <button onClick={() => {
+                                setActiveCinemaSeries(series);
+                                setActiveCinemaEpisode(episode);
+                                setShowCinemaModal(true);
+                              }} style={{ padding: '10px 20px', background: 'linear-gradient(135deg, #00ff88, #00bbff)', border: 'none', color: '#000', borderRadius: '20px', fontWeight: 'bold', cursor: 'pointer' }}>
+                                Play Episode ▶️
+                              </button>
+                            ) : (
+                              <button onClick={()=>handleBuyEpisodeSimulation(episode, series)} style={{ padding: '10px 20px', background: 'rgba(255,255,255,0.1)', border: 'none', color: 'var(--text-primary)', borderRadius: '20px', fontWeight: 'bold', cursor: 'pointer', transition: 'background 0.2s' }} onMouseOver={e=>e.currentTarget.style.background='rgba(255,255,255,0.2)'} onMouseOut={e=>e.currentTarget.style.background='rgba(255,255,255,0.1)'}>
+                                Buy (${episode.price || '0.00'})
+                              </button>
+                            )}
                           </div>
                         ))
                       )}
@@ -2049,37 +2274,47 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
               </div>
             ) : (
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '24px' }}>
-                {courses.map((course) => (
-                  <motion.div key={course.id} initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} style={{ background: 'rgba(255,255,255,0.02)', borderRadius: '20px', overflow: 'hidden', border: '1px solid rgba(255,255,255,0.05)', display: 'flex', flexDirection: 'column' }}>
-                    <div style={{ height: '180px', background: `url(${course.img}) center/cover`, position: 'relative' }}>
-                      <div style={{ position: 'absolute', top: 12, right: 12, background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(4px)', padding: '6px 10px', borderRadius: '8px', fontSize: '12px', fontWeight: 'bold' }}>
-                        {course.modules} Modules • {course.hours}h
+                {courses.map((course) => {
+                  const completed = courseProgressMap[course.id] || [];
+                  const progressPercent = course.modules ? Math.round((completed.length / course.modules) * 100) : 0;
+                  const isPurchased = isOwnProfile || purchasedCourseIds.includes(course.id) || Number(course.price) === 0;
+
+                  return (
+                    <motion.div key={course.id} initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} style={{ background: 'rgba(255,255,255,0.02)', borderRadius: '20px', overflow: 'hidden', border: '1px solid rgba(255,255,255,0.05)', display: 'flex', flexDirection: 'column' }}>
+                      <div style={{ height: '180px', background: `url(${course.img || 'https://picsum.photos/seed/course' + course.id.slice(0,4) + '/600/300'}) center/cover`, position: 'relative' }}>
+                        <div style={{ position: 'absolute', top: 12, right: 12, background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(4px)', padding: '6px 10px', borderRadius: '8px', fontSize: '12px', fontWeight: 'bold' }}>
+                          {course.modules} Modules • {course.hours}h
+                        </div>
                       </div>
-                    </div>
-                    <div style={{ padding: '24px', display: 'flex', flexDirection: 'column', flex: 1 }}>
-                      <h3 style={{ margin: '0 0 16px 0', fontSize: '20px', lineHeight: 1.4, flex: 1 }}>{course.title}</h3>
-                      
-                      {/* Progress Bar Mock */}
-                      <div style={{ width: '100%', height: '6px', background: 'rgba(255,255,255,0.1)', borderRadius: '3px', marginBottom: '8px', overflow: 'hidden' }}>
-                        <div style={{ width: `${course.progress}%`, height: '100%', background: '#8A2BE2' }} />
+                      <div style={{ padding: '24px', display: 'flex', flexDirection: 'column', flex: 1 }}>
+                        <h3 style={{ margin: '0 0 16px 0', fontSize: '20px', lineHeight: 1.4, flex: 1 }}>{course.title}</h3>
+                        
+                        {/* Dynamic Progress Bar */}
+                        <div style={{ width: '100%', height: '6px', background: 'rgba(255,255,255,0.1)', borderRadius: '3px', marginBottom: '8px', overflow: 'hidden' }}>
+                          <div style={{ width: `${progressPercent}%`, height: '100%', background: '#8A2BE2', transition: 'width 0.5s cubic-bezier(0.4, 0, 0.2, 1)' }} />
+                        </div>
+                        <div style={{ fontSize: '12px', color: 'var(--text-muted)', marginBottom: '20px', fontWeight: 'bold' }}>{progressPercent}% Completed</div>
+                        
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                          <span style={{ fontSize: '24px', fontWeight: 'bold' }}>${course.price}</span>
+                          {viewMode === 'edit' ? (
+                            <button onClick={() => { setActiveCoursePlayer(course); }} style={{ padding: '8px 16px', background: 'rgba(255,255,255,0.1)', color: 'var(--text-primary)', border: 'none', borderRadius: '8px', fontWeight: 'bold', cursor: 'pointer' }}>
+                              Preview Player
+                            </button>
+                          ) : isPurchased ? (
+                            <button onClick={() => { setActiveCoursePlayer(course); }} style={{ padding: '12px 24px', background: 'linear-gradient(135deg, #8A2BE2, #ff4d85)', color: 'var(--text-primary)', border: 'none', borderRadius: '12px', fontWeight: 'bold', cursor: 'pointer', transition: 'transform 0.2s' }} onMouseOver={e=>e.currentTarget.style.transform='scale(1.05)'} onMouseOut={e=>e.currentTarget.style.transform='scale(1)'}>
+                              Resume Lesson 🚀
+                            </button>
+                          ) : (
+                            <button onClick={() => handleEnrollSimulation(course)} style={{ padding: '12px 24px', background: 'linear-gradient(135deg, #00ff88, #00d2ff)', color: '#000', border: 'none', borderRadius: '12px', fontWeight: 'bold', cursor: 'pointer', transition: 'transform 0.2s' }} onMouseOver={e=>e.currentTarget.style.transform='scale(1.05)'} onMouseOut={e=>e.currentTarget.style.transform='scale(1)'}>
+                              Enroll Now
+                            </button>
+                          )}
+                        </div>
                       </div>
-                      <div style={{ fontSize: '12px', color: 'var(--text-muted)', marginBottom: '20px', fontWeight: 'bold' }}>{course.progress}% Completed</div>
-                      
-                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                        <span style={{ fontSize: '24px', fontWeight: 'bold' }}>${course.price}</span>
-                        {viewMode === 'edit' ? (
-                          <button style={{ padding: '8px 16px', background: 'rgba(255,255,255,0.1)', color: 'var(--text-primary)', border: 'none', borderRadius: '8px', fontWeight: 'bold', cursor: 'pointer' }}>
-                            Edit
-                          </button>
-                        ) : (
-                          <button onClick={() => handleStripeCheckout(`Course: ${course.title}`, course.price)} style={{ padding: '12px 24px', background: 'linear-gradient(135deg, #8A2BE2, #ff4d85)', color: 'var(--text-primary)', border: 'none', borderRadius: '12px', fontWeight: 'bold', cursor: 'pointer', transition: 'transform 0.2s' }} onMouseOver={e=>e.currentTarget.style.transform='scale(1.05)'} onMouseOut={e=>e.currentTarget.style.transform='scale(1)'}>
-                            Enroll Now
-                          </button>
-                        )}
-                      </div>
-                    </div>
-                  </motion.div>
-                ))}
+                    </motion.div>
+                  );
+                })}
               </div>
             )}
 
@@ -2763,6 +2998,393 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
             </motion.div>
           </div>
         )}
+      </AnimatePresence>
+
+      {/* MASTERCLASS COURSE PLAYER MODAL */}
+      <AnimatePresence>
+        {activeCoursePlayer && (() => {
+          const completed = courseProgressMap[activeCoursePlayer.id] || [];
+          const progressPercent = activeCoursePlayer.modules ? Math.round((completed.length / activeCoursePlayer.modules) * 100) : 0;
+          const modulesArray = Array.from({ length: activeCoursePlayer.modules || 10 }, (_, i) => i + 1);
+
+          return (
+            <div style={{ position: 'fixed', inset: 0, zIndex: 99999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }}>
+              <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} style={{ position: 'absolute', inset: 0, background: 'rgba(5, 5, 8, 0.95)', backdropFilter: 'blur(30px)' }} onClick={() => setActiveCoursePlayer(null)} />
+              
+              <motion.div initial={{ scale: 0.95, opacity: 0, y: 30 }} animate={{ scale: 1, opacity: 1, y: 0 }} exit={{ scale: 0.95, opacity: 0, y: 30 }} style={{ position: 'relative', background: 'rgba(15, 15, 20, 0.9)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '32px', width: '95vw', height: '90vh', display: 'flex', flexDirection: 'column', overflow: 'hidden', boxShadow: '0 25px 80px rgba(138,43,226,0.3)', backdropFilter: 'blur(40px)' }}>
+                
+                {/* Modal Header */}
+                <div style={{ padding: '24px 32px', borderBottom: '1px solid rgba(255,255,255,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0 }}>
+                  <div>
+                    <span style={{ background: 'rgba(138,43,226,0.2)', color: '#a855f7', border: '1px solid rgba(138,43,226,0.4)', padding: '4px 12px', borderRadius: '30px', fontSize: '12px', fontWeight: 'bold', display: 'inline-block', marginBottom: '6px' }}>MASTERCLASS ACADEMY</span>
+                    <h2 style={{ margin: 0, fontSize: '24px', fontWeight: 900 }}>{activeCoursePlayer.title}</h2>
+                  </div>
+                  <button onClick={() => setActiveCoursePlayer(null)} style={{ background: 'rgba(255,255,255,0.05)', border: 'none', borderRadius: '50%', width: 44, height: 44, color: '#fff', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '20px', transition: '0.2s' }} onMouseOver={e=>e.currentTarget.style.background='rgba(255,0,0,0.2)'} onMouseOut={e=>e.currentTarget.style.background='rgba(255,255,255,0.05)'}>&times;</button>
+                </div>
+
+                {/* Progress Strip */}
+                <div style={{ padding: '12px 32px', background: 'rgba(138,43,226,0.05)', borderBottom: '1px solid rgba(138,43,226,0.15)', display: 'flex', alignItems: 'center', gap: '20px', flexShrink: 0 }}>
+                  <div style={{ flex: 1, height: '8px', background: 'rgba(255,255,255,0.1)', borderRadius: '4px', overflow: 'hidden' }}>
+                    <div style={{ width: `${progressPercent}%`, height: '100%', background: 'linear-gradient(90deg, #8A2BE2, #ff4d85)', transition: 'width 0.6s cubic-bezier(0.4, 0, 0.2, 1)' }} />
+                  </div>
+                  <span style={{ fontWeight: 'bold', color: '#ff4d85', fontSize: '14px', whiteSpace: 'nowrap' }}>{progressPercent}% COMPLETE ({completed.length}/{activeCoursePlayer.modules} MODULES)</span>
+                </div>
+
+                {/* Modal Main Content (Split View) */}
+                <div style={{ display: 'flex', flex: 1, overflow: 'hidden' }}>
+                  
+                  {/* Left Side: Mock Video Player */}
+                  <div style={{ flex: 1, display: 'flex', flexDirection: 'column', background: '#050508', position: 'relative', overflowY: 'auto' }}>
+                    <div style={{ width: '100%', aspectRatio: '16/9', background: 'radial-gradient(circle, #1e0b36 0%, #030107 100%)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', position: 'relative', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+                      
+                      {/* Interactive visual equalizer / waves representation */}
+                      <div style={{ display: 'flex', gap: '4px', alignItems: 'flex-end', height: '40px', marginBottom: '24px' }}>
+                        {Array.from({ length: 12 }).map((_, i) => (
+                          <motion.div 
+                            key={i} 
+                            animate={{ height: [8, Math.random() * 35 + 8, 8] }} 
+                            transition={{ repeat: Infinity, duration: 1 + Math.random(), ease: 'easeInOut' }} 
+                            style={{ width: '4px', background: '#8A2BE2', borderRadius: '2px' }} 
+                          />
+                        ))}
+                      </div>
+
+                      <h3 style={{ margin: '0 0 8px 0', fontSize: '20px', color: '#fff', textAlign: 'center', letterSpacing: '1px' }}>LESSON MEDIA STREAM ACTIVE</h3>
+                      <p style={{ margin: 0, color: 'var(--text-muted)', fontSize: '13px' }}>Currently streaming Module {completed[0] || 1} core concepts.</p>
+                      
+                      {/* Premium Player Overlay UI Mock */}
+                      <div style={{ position: 'absolute', bottom: 20, left: 20, right: 20, display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'rgba(0,0,0,0.6)', padding: '12px 20px', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.1)', backdropFilter: 'blur(10px)' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+                          <button style={{ background: 'none', border: 'none', color: '#fff', cursor: 'pointer', fontSize: '18px' }}>▶</button>
+                          <div style={{ fontSize: '12px', color: '#fff' }}>04:12 / 18:45</div>
+                        </div>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                          <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>1080p HD</span>
+                          <button style={{ background: 'none', border: 'none', color: '#fff', cursor: 'pointer', fontSize: '14px' }}>🔊</button>
+                          <button style={{ background: 'none', border: 'none', color: '#fff', cursor: 'pointer', fontSize: '14px' }}>⛶</button>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Lesson Description Details */}
+                    <div style={{ padding: '32px' }}>
+                      <h4 style={{ margin: '0 0 12px 0', fontSize: '18px', color: '#fff' }}>Module Overview & Reference Materials</h4>
+                      <p style={{ margin: '0 0 20px 0', color: 'var(--text-secondary)', lineHeight: 1.6, fontSize: '15px' }}>
+                        This masterclass provides step-by-step practical guides. Check off each module checklist item on the right sidebar as you progress through lessons to update your permanent learning scores. Download worksheets, code templates, and high-fidelity beat samples from your host account.
+                      </p>
+                      <div style={{ display: 'flex', gap: '16px' }}>
+                        <a href="#" onClick={(e) => { e.preventDefault(); toast.success('Downloaded course resource package!'); }} style={{ padding: '12px 24px', background: 'rgba(255,255,255,0.05)', color: '#fff', borderRadius: '12px', textDecoration: 'none', fontWeight: 'bold', border: '1px solid rgba(255,255,255,0.1)', fontSize: '14px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                          📁 Reference Samples (.ZIP)
+                        </a>
+                        <a href="#" onClick={(e) => { e.preventDefault(); toast.success('Downloaded course guidebook PDF!'); }} style={{ padding: '12px 24px', background: 'rgba(255,255,255,0.05)', color: '#fff', borderRadius: '12px', textDecoration: 'none', fontWeight: 'bold', border: '1px solid rgba(255,255,255,0.1)', fontSize: '14px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                          📄 Study Syllabus (.PDF)
+                        </a>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Right Side: Modules Playlist Checklist */}
+                  <div style={{ width: '380px', borderLeft: '1px solid rgba(255,255,255,0.08)', background: '#0a0a0f', display: 'flex', flexDirection: 'column', flexShrink: 0 }}>
+                    <div style={{ padding: '20px 24px', borderBottom: '1px solid rgba(255,255,255,0.08)', flexShrink: 0 }}>
+                      <h4 style={{ margin: 0, fontSize: '15px', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '1px' }}>MODULE PROGRESS PLAN</h4>
+                    </div>
+                    <div style={{ flex: 1, overflowY: 'auto', padding: '24px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                      {modulesArray.map((idx) => {
+                        const isDone = completed.includes(idx);
+                        return (
+                          <div 
+                            key={idx} 
+                            onClick={() => handleToggleModuleProgress(activeCoursePlayer.id, idx)}
+                            style={{ 
+                              padding: '16px 20px', 
+                              borderRadius: '16px', 
+                              background: isDone ? 'rgba(138,43,226,0.1)' : 'rgba(255,255,255,0.02)', 
+                              border: `1px solid ${isDone ? 'rgba(138,43,226,0.3)' : 'rgba(255,255,255,0.05)'}`, 
+                              cursor: 'pointer',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'space-between',
+                              transition: 'all 0.2s ease'
+                            }}
+                          >
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+                              <div style={{ 
+                                width: '24px', height: '24px', borderRadius: '6px', 
+                                border: '2px solid', borderColor: isDone ? '#8A2BE2' : 'rgba(255,255,255,0.2)', 
+                                display: 'flex', alignItems: 'center', justifyContent: 'center', 
+                                background: isDone ? '#8A2BE2' : 'transparent',
+                                color: '#000', fontSize: '14px', fontWeight: 'bold'
+                              }}>
+                                {isDone ? '✓' : ''}
+                              </div>
+                              <div style={{ display: 'flex', flexDirection: 'column' }}>
+                                <span style={{ fontWeight: 'bold', color: isDone ? '#fff' : '#ccc', fontSize: '14px' }}>Module {idx} Checkpoint</span>
+                                <span style={{ fontSize: '11px', color: 'var(--text-muted)', marginTop: '2px' }}>Interactive Lesson Video</span>
+                              </div>
+                            </div>
+                            <span style={{ fontSize: '12px', color: isDone ? '#ff4d85' : 'var(--text-muted)', fontWeight: 'bold' }}>
+                              {isDone ? 'COMPLETE' : 'INCOMPLETE'}
+                            </span>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                </div>
+
+              </motion.div>
+            </div>
+          );
+        })()}
+      </AnimatePresence>
+
+      {/* EDIT PRODUCT INVENTORY MODAL */}
+      <AnimatePresence>
+        {showEditModal && editingProduct && (() => {
+          return (
+            <div style={{ position: 'fixed', inset: 0, zIndex: 99999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }}>
+              <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(15px)' }} onClick={() => { setShowEditModal(false); setEditingProduct(null); }} />
+              
+              <motion.div initial={{ scale: 0.9, opacity: 0, y: 20 }} animate={{ scale: 1, opacity: 1, y: 0 }} exit={{ scale: 0.9, opacity: 0, y: 20 }} style={{ position: 'relative', background: 'rgba(15, 15, 20, 0.95)', border: `1px solid rgba(255,255,255,0.1)`, padding: '32px', borderRadius: '28px', width: '100%', maxWidth: '520px', display: 'flex', flexDirection: 'column', gap: '20px', boxShadow: '0 20px 60px rgba(0,0,0,0.5)', backdropFilter: 'blur(20px)' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid rgba(255,255,255,0.08)', paddingBottom: '16px' }}>
+                  <h3 style={{ margin: 0, fontSize: '20px', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '8px' }}>⚙️ Edit Store Product</h3>
+                  <button onClick={() => { setShowEditModal(false); setEditingProduct(null); }} style={{ background: 'none', border: 'none', color: '#888', cursor: 'pointer', fontSize: '22px' }}>&times;</button>
+                </div>
+
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                  <div>
+                    <label style={{ display: 'block', marginBottom: '6px', fontSize: '13px', color: 'var(--text-muted)' }}>Product Title</label>
+                    <input type="text" value={editingProduct.title} onChange={e => setEditingProduct({ ...editingProduct, title: e.target.value })} style={{ width: '100%', background: 'rgba(0,0,0,0.4)', border: '1px solid rgba(255,255,255,0.1)', padding: '12px', borderRadius: '10px', color: 'var(--text-primary)', outline: 'none' }} />
+                  </div>
+
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+                    <div>
+                      <label style={{ display: 'block', marginBottom: '6px', fontSize: '13px', color: 'var(--text-muted)' }}>Price ($)</label>
+                      <input type="number" step="0.01" value={editingProduct.price} onChange={e => setEditingProduct({ ...editingProduct, price: e.target.value })} style={{ width: '100%', background: 'rgba(0,0,0,0.4)', border: '1px solid rgba(255,255,255,0.1)', padding: '12px', borderRadius: '10px', color: 'var(--text-primary)', outline: 'none' }} />
+                    </div>
+                    <div>
+                      <label style={{ display: 'block', marginBottom: '6px', fontSize: '13px', color: 'var(--text-muted)' }}>Product Type</label>
+                      <select value={editingProduct.type} onChange={e => setEditingProduct({ ...editingProduct, type: e.target.value })} style={{ width: '100%', background: 'rgba(0,0,0,0.4)', border: '1px solid rgba(255,255,255,0.1)', padding: '12px', borderRadius: '10px', color: 'var(--text-primary)', outline: 'none', cursor: 'pointer' }}>
+                        <option value="digital">Digital Release</option>
+                        <option value="physical">Physical Merch</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  <div>
+                    <label style={{ display: 'block', marginBottom: '6px', fontSize: '13px', color: 'var(--text-muted)' }}>Product Image URL</label>
+                    <input type="text" value={editingProduct.image_url || ''} onChange={e => setEditingProduct({ ...editingProduct, image_url: e.target.value })} style={{ width: '100%', background: 'rgba(0,0,0,0.4)', border: '1px solid rgba(255,255,255,0.1)', padding: '12px', borderRadius: '10px', color: 'var(--text-primary)', outline: 'none' }} />
+                  </div>
+
+                  {editingProduct.type === 'physical' && (() => {
+                    const variantsObj = editingProduct.variants || {};
+                    const isClothing = variantsObj.is_clothing || false;
+                    const colorStr = Array.isArray(variantsObj.colors) ? variantsObj.colors.join(', ') : (variantsObj.colors || '');
+                    const sizeStr = Array.isArray(variantsObj.sizes) ? variantsObj.sizes.join(', ') : (variantsObj.sizes || '');
+
+                    return (
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', background: 'rgba(255,255,255,0.02)', padding: '16px', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.05)' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                          <input 
+                            type="checkbox" 
+                            id="editIsClothing"
+                            checked={isClothing}
+                            onChange={e => setEditingProduct({
+                              ...editingProduct,
+                              is_clothing: e.target.checked,
+                              variants: { ...variantsObj, is_clothing: e.target.checked, sizes: e.target.checked ? variantsObj.sizes : [] }
+                            })}
+                            style={{ width: '18px', height: '18px', cursor: 'pointer', accentColor: '#ff4d85' }} 
+                          />
+                          <label htmlFor="editIsClothing" style={{ color: '#fff', fontSize: '13px', fontWeight: 'bold', cursor: 'pointer' }}>👕 This is a clothing product (enable sizes)</label>
+                        </div>
+
+                        {isClothing && (
+                          <div>
+                            <label style={{ display: 'block', marginBottom: '6px', fontSize: '12px', color: 'var(--text-muted)' }}>Available Sizes (comma separated)</label>
+                            <input 
+                              type="text" 
+                              placeholder="e.g. S, M, L, XL" 
+                              value={sizeStr} 
+                              onChange={e => setEditingProduct({
+                                ...editingProduct,
+                                sizes: e.target.value,
+                                variants: { ...variantsObj, sizes: e.target.value }
+                              })} 
+                              style={{ width: '100%', background: 'rgba(0,0,0,0.4)', border: '1px solid rgba(255,255,255,0.1)', padding: '10px', borderRadius: '8px', color: 'var(--text-primary)', outline: 'none', fontSize: '13px' }} 
+                            />
+                          </div>
+                        )}
+
+                        <div>
+                          <label style={{ display: 'block', marginBottom: '6px', fontSize: '12px', color: 'var(--text-muted)' }}>Available Colors (comma separated)</label>
+                          <input 
+                            type="text" 
+                            placeholder="e.g. Black, White, Red" 
+                            value={colorStr} 
+                            onChange={e => setEditingProduct({
+                              ...editingProduct,
+                              colors: e.target.value,
+                              variants: { ...variantsObj, colors: e.target.value }
+                            })} 
+                            style={{ width: '100%', background: 'rgba(0,0,0,0.4)', border: '1px solid rgba(255,255,255,0.1)', padding: '10px', borderRadius: '8px', color: 'var(--text-primary)', outline: 'none', fontSize: '13px' }} 
+                          />
+                        </div>
+                      </div>
+                    );
+                  })()}
+                </div>
+
+                <div style={{ display: 'flex', gap: '12px', marginTop: '16px', borderTop: '1px solid rgba(255,255,255,0.08)', paddingTop: '20px' }}>
+                  <button 
+                    onClick={() => handleDeleteProduct(editingProduct.id)}
+                    style={{ padding: '12px 20px', background: 'rgba(255,0,0,0.15)', border: '1px solid rgba(255,0,0,0.4)', color: '#ff4444', borderRadius: '12px', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px' }}
+                  >
+                    🗑️ Delete Product
+                  </button>
+                  <div style={{ flex: 1 }} />
+                  <button 
+                    onClick={() => { setShowEditModal(false); setEditingProduct(null); }}
+                    style={{ padding: '12px 20px', background: 'rgba(255,255,255,0.05)', color: '#fff', border: 'none', borderRadius: '12px', fontWeight: 'bold', cursor: 'pointer' }}
+                  >
+                    Cancel
+                  </button>
+                  <button 
+                    onClick={() => handleUpdateProduct(editingProduct)}
+                    style={{ padding: '12px 28px', background: 'linear-gradient(135deg, #FFD700, #FFA500)', color: '#000', border: 'none', borderRadius: '12px', fontWeight: 'bold', cursor: 'pointer' }}
+                  >
+                    Save Changes
+                  </button>
+                </div>
+              </motion.div>
+            </div>
+          );
+        })()}
+      </AnimatePresence>
+
+      {/* TV SERIES CINEMA THEATER OVERLAY */}
+      <AnimatePresence>
+        {showCinemaModal && activeCinemaSeries && activeCinemaEpisode && (() => {
+          return (
+            <div style={{ position: 'fixed', inset: 0, zIndex: 99999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }}>
+              <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} style={{ position: 'absolute', inset: 0, background: 'rgba(5, 5, 7, 0.97)', backdropFilter: 'blur(30px)' }} onClick={() => { setShowCinemaModal(false); setActiveCinemaSeries(null); }} />
+              
+              <motion.div initial={{ scale: 0.95, opacity: 0, y: 30 }} animate={{ scale: 1, opacity: 1, y: 0 }} exit={{ scale: 0.95, opacity: 0, y: 30 }} style={{ position: 'relative', background: 'rgba(10, 10, 14, 0.9)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '32px', width: '95vw', height: '90vh', display: 'flex', flexDirection: 'column', overflow: 'hidden', boxShadow: '0 25px 80px rgba(255,77,133,0.3)', backdropFilter: 'blur(40px)' }}>
+                
+                {/* Cinema Header */}
+                <div style={{ padding: '20px 32px', borderBottom: '1px solid rgba(255,255,255,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0 }}>
+                  <div>
+                    <span style={{ background: 'rgba(255,77,133,0.2)', color: '#ff4d85', border: '1px solid rgba(255,77,133,0.4)', padding: '4px 12px', borderRadius: '30px', fontSize: '11px', fontWeight: 'bold', display: 'inline-block', marginBottom: '6px' }}>CINEMA MULTIPLEX ORIGINAL</span>
+                    <h2 style={{ margin: 0, fontSize: '22px', fontWeight: 900 }}>{activeCinemaSeries.title}</h2>
+                  </div>
+                  <button onClick={() => { setShowCinemaModal(false); setActiveCinemaSeries(null); }} style={{ background: 'rgba(255,255,255,0.05)', border: 'none', borderRadius: '50%', width: 44, height: 44, color: '#fff', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '20px' }}>&times;</button>
+                </div>
+
+                {/* Cinema Main Workspace */}
+                <div style={{ display: 'flex', flex: 1, overflow: 'hidden' }}>
+                  
+                  {/* Streaming Theater (Left Side) */}
+                  <div style={{ flex: 1, display: 'flex', flexDirection: 'column', background: '#020204', position: 'relative', overflowY: 'auto' }}>
+                    
+                    {/* Simulated High-Fidelity Video Screen */}
+                    <div style={{ width: '100%', aspectRatio: '16/9', background: 'radial-gradient(circle, #250917 0%, #030103 100%)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', position: 'relative', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+                      
+                      {/* Interactive sound visualizer or waves representation */}
+                      <div style={{ display: 'flex', gap: '6px', alignItems: 'center', height: '60px', marginBottom: '20px' }}>
+                        {Array.from({ length: 18 }).map((_, i) => (
+                          <motion.div 
+                            key={i} 
+                            animate={{ scaleY: [0.2, Math.random() * 1.5 + 0.2, 0.2] }} 
+                            transition={{ repeat: Infinity, duration: 0.8 + Math.random(), ease: 'easeInOut' }} 
+                            style={{ width: '3px', height: '40px', background: '#ff4d85', borderRadius: '2px', transformOrigin: 'center' }} 
+                          />
+                        ))}
+                      </div>
+
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', background: 'rgba(255,77,133,0.1)', color: '#ff4d85', padding: '6px 16px', borderRadius: '20px', border: '1px solid rgba(255,77,133,0.3)', fontSize: '13px', fontWeight: 'bold', marginBottom: '10px' }}>
+                        <span style={{ width: 8, height: 8, borderRadius: '50%', background: '#ff4d85', display: 'inline-block', animation: 'pulse 1s infinite' }} />
+                        CINEMA THEATER STREAMING ACTIVE
+                      </div>
+                      <span style={{ color: '#fff', fontSize: '16px', fontWeight: 'bold' }}>Playing: {activeCinemaEpisode.title}</span>
+                      
+                      {/* Player controls overlay */}
+                      <div style={{ position: 'absolute', bottom: 20, left: 20, right: 20, display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'rgba(0,0,0,0.7)', padding: '12px 20px', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.1)', backdropFilter: 'blur(10px)' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+                          <button style={{ background: 'none', border: 'none', color: '#ff4d85', cursor: 'pointer', fontSize: '20px' }}>▶</button>
+                          <div style={{ fontSize: '12px', color: '#fff' }}>08:45 / {activeCinemaEpisode.length || '45 min'}</div>
+                        </div>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+                          <span style={{ fontSize: '12px', color: 'rgba(255,77,133,0.8)', fontWeight: 'bold', letterSpacing: '1px' }}>PREVIEW ACTIVE</span>
+                          <button style={{ background: 'none', border: 'none', color: '#fff', cursor: 'pointer', fontSize: '14px' }}>🔊</button>
+                          <button style={{ background: 'none', border: 'none', color: '#fff', cursor: 'pointer', fontSize: '14px' }}>⛶</button>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Synopsis & Synopsis metadata */}
+                    <div style={{ padding: '32px' }}>
+                      <span style={{ color: 'var(--text-muted)', fontSize: '12px', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '1px', display: 'block', marginBottom: '6px' }}>EPISODE PLAYING</span>
+                      <h3 style={{ margin: '0 0 12px 0', fontSize: '24px', fontWeight: '900', color: '#fff' }}>{activeCinemaEpisode.title}</h3>
+                      <p style={{ margin: 0, color: 'var(--text-secondary)', lineHeight: 1.6, fontSize: '15px' }}>
+                        {activeCinemaEpisode.description || 'Welcome to this premium cinema segment. Watch exclusive multi-angle episodes produced explicitly for White-Label networks.'}
+                      </p>
+                    </div>
+
+                  </div>
+
+                  {/* Episodes Sidebar Playlist Checklist (Right Side) */}
+                  <div style={{ width: '360px', borderLeft: '1px solid rgba(255,255,255,0.08)', background: '#0a0a0d', display: 'flex', flexDirection: 'column', flexShrink: 0 }}>
+                    <div style={{ padding: '20px 24px', borderBottom: '1px solid rgba(255,255,255,0.08)', flexShrink: 0 }}>
+                      <h4 style={{ margin: 0, fontSize: '13px', color: 'var(--text-muted)', letterSpacing: '1px', textTransform: 'uppercase' }}>EPISODE SELECTION</h4>
+                    </div>
+                    <div style={{ flex: 1, overflowY: 'auto', padding: '20px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                      {(activeCinemaSeries.episodes || []).map((ep: any, idx: number) => {
+                        const isActive = activeCinemaEpisode.id === ep.id;
+                        const isUnlocked = isOwnProfile || purchasedSeasons.includes(activeCinemaSeries.id) || purchasedEpisodes.includes(ep.id);
+                        
+                        return (
+                          <div 
+                            key={ep.id} 
+                            onClick={() => {
+                              if (isUnlocked) {
+                                setActiveCinemaEpisode(ep);
+                              } else {
+                                handleBuyEpisodeSimulation(ep, activeCinemaSeries);
+                              }
+                            }}
+                            style={{ 
+                              padding: '16px', 
+                              borderRadius: '16px', 
+                              background: isActive ? 'rgba(255,77,133,0.1)' : 'rgba(255,255,255,0.02)', 
+                              border: `1px solid ${isActive ? 'rgba(255,77,133,0.3)' : 'rgba(255,255,255,0.05)'}`, 
+                              cursor: 'pointer',
+                              display: 'flex',
+                              flexDirection: 'column',
+                              gap: '8px',
+                              transition: 'all 0.2s'
+                            }}
+                          >
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                              <span style={{ fontSize: '11px', color: isActive ? '#ff4d85' : 'var(--text-muted)', fontWeight: 'bold' }}>EPISODE {idx + 1}</span>
+                              <span style={{ fontSize: '11px', background: isUnlocked ? 'rgba(0,255,136,0.1)' : 'rgba(255,255,255,0.05)', color: isUnlocked ? '#00ff88' : '#888', padding: '2px 8px', borderRadius: '20px', fontWeight: 'bold' }}>
+                                {isUnlocked ? 'UNLOCKED' : `$${ep.price || '0.00'}`}
+                              </span>
+                            </div>
+                            <h4 style={{ margin: 0, fontSize: '15px', color: isActive ? '#fff' : '#ccc' }}>{ep.title}</h4>
+                            <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>⏱️ Length: {ep.length || 'TBD'}</span>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                </div>
+
+              </motion.div>
+            </div>
+          );
+        })()}
       </AnimatePresence>
 
       </div>
