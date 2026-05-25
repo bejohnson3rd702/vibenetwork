@@ -984,8 +984,8 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
     }
   };
 
-  const enhanceText = async (field: 'bio' | 'post') => {
-    const originalText = field === 'bio' ? bio : postTitle;
+  const enhanceText = async (field: 'bio' | 'post' | 'refund_policy') => {
+    const originalText = field === 'bio' ? bio : (field === 'post' ? postTitle : refundPolicy);
     if (!originalText || originalText.length < 5) {
       toast.info("Please type a few words first so the AI has something to work with!");
       return;
@@ -1000,13 +1000,21 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
       if (field === 'bio') {
         const hooks = ["Welcome to the ultimate vibe.", "Dropping exclusive content weekly.", "Join the movement.", "Your VIP access to my world."];
         finalEnhanced = `${hooks[Math.floor(Math.random() * hooks.length)]} ${originalText} 🔥 Subscribe to unlock my premium network tier!`;
-      } else {
+      } else if (field === 'post') {
         const titles = ["🚨 LIVE NOW:", "✨ EXCLUSIVE:", "🔥 MUST WATCH:"];
         finalEnhanced = `${titles[Math.floor(Math.random() * titles.length)]} ${originalText.toUpperCase()} 💥`;
+      } else if (field === 'refund_policy') {
+        const templates = [
+          `All sales are final. Since our store delivers instant digital downloads, live-stream access, and custom bookings, refunds are not offered. For physical items, please contact support within 14 days for damaged goods or size exchanges: ${originalText}`,
+          `Shop with confidence! Physical product returns or size exchanges are accepted within 30 days of purchase in original packaging. Please note that digital files, live courses, and booking sessions are strictly non-refundable: ${originalText}`,
+          `Store Policy: We strive for 100% satisfaction. While virtual bookings and downloads are non-refundable once accessed, we process refunds/exchanges for physical apparel within 14 days if unused. Note: ${originalText}`
+        ];
+        finalEnhanced = templates[Math.floor(Math.random() * templates.length)];
       }
       
       if (field === 'bio') setBio(finalEnhanced);
       if (field === 'post') setPostTitle(finalEnhanced);
+      if (field === 'refund_policy') setRefundPolicy(finalEnhanced);
     } catch (e) {
       console.error(e);
       toast.error("AI Enhancer simulation failed.");
@@ -1527,12 +1535,22 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
               <p style={{ margin: 0, fontSize: '14px', color: 'var(--text-muted)', lineHeight: '1.5' }}>
                 Set your custom refund policy displayed to all buyers. Leaving it empty will display the default policy.
               </p>
-              <textarea 
-                placeholder="e.g. All digital download sales are final. For apparel refunds, returns are accepted within 14 days of delivery in unused condition."
-                value={refundPolicy}
-                onChange={e => setRefundPolicy(e.target.value)}
-                style={{ width: '100%', minHeight: '80px', background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px', padding: '12px', color: 'var(--text-primary)', outline: 'none', fontSize: '14px', resize: 'vertical' }}
-              />
+              <div style={{ position: 'relative' }}>
+                <textarea 
+                  placeholder="e.g. All digital download sales are final. For apparel refunds, returns are accepted within 14 days of delivery in unused condition."
+                  value={refundPolicy}
+                  onChange={e => setRefundPolicy(e.target.value)}
+                  style={{ width: '100%', minHeight: '120px', background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '16px', padding: '16px', color: 'var(--text-primary)', outline: 'none', fontSize: '15px', resize: 'vertical', paddingRight: '120px', backdropFilter: 'blur(10px)' }}
+                />
+                <button 
+                  type="button" 
+                  onClick={() => enhanceText('refund_policy')} 
+                  disabled={saving} 
+                  style={{ position: 'absolute', right: '16px', bottom: '20px', background: 'linear-gradient(135deg, #8A2BE2, #ff4d85)', color: 'var(--text-primary)', border: 'none', borderRadius: '12px', padding: '8px 16px', fontSize: '13px', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px', boxShadow: '0 4px 15px rgba(255,77,133,0.4)' }}
+                >
+                  <Wand size={14} /> AI Boost
+                </button>
+              </div>
               <button 
                 onClick={saveProfile} 
                 disabled={saving} 
