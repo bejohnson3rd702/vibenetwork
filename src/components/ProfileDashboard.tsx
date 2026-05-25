@@ -1133,7 +1133,11 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
 
   const handlePostSubmit = async (e: React.FormEvent, isLockedVal?: boolean) => {
     if (e && e.preventDefault) e.preventDefault();
-    if (!postTitle.trim() && !postMediaUrl) return;
+    
+    if (!postTitle.trim()) {
+      toast.error('Please enter a description for your post!');
+      return;
+    }
     
     const lockedStatus = isLockedVal !== undefined ? isLockedVal : isLocked;
     
@@ -1608,69 +1612,81 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
                 )}
               </div>
               
-              <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+              <div style={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
+                {/* Post Privacy/Type Selector Toggle */}
+                <div style={{ display: 'flex', background: 'rgba(0,0,0,0.3)', borderRadius: '24px', padding: '4px', border: '1px solid rgba(255,255,255,0.05)' }}>
+                  <button 
+                    type="button"
+                    onClick={() => setIsLocked(false)}
+                    style={{ 
+                      display: 'flex', 
+                      alignItems: 'center', 
+                      gap: '6px', 
+                      padding: '8px 16px', 
+                      background: !isLocked ? 'rgba(76, 175, 80, 0.15)' : 'transparent', 
+                      color: !isLocked ? '#4CAF50' : '#888', 
+                      border: !isLocked ? '1px solid rgba(76, 175, 80, 0.3)' : '1px solid transparent', 
+                      borderRadius: '20px', 
+                      fontWeight: 'bold', 
+                      cursor: 'pointer',
+                      fontSize: '13px',
+                      transition: 'all 0.2s ease'
+                    }}
+                  >
+                    <Unlock size={14} /> Free
+                  </button>
+                  <button 
+                    type="button"
+                    onClick={() => setIsLocked(true)}
+                    style={{ 
+                      display: 'flex', 
+                      alignItems: 'center', 
+                      gap: '6px', 
+                      padding: '8px 16px', 
+                      background: isLocked ? 'linear-gradient(135deg, #FFD700, #FFA500)' : 'transparent', 
+                      color: isLocked ? '#000' : '#888', 
+                      border: 'none', 
+                      borderRadius: '20px', 
+                      fontWeight: 'bold', 
+                      cursor: 'pointer',
+                      fontSize: '13px',
+                      transition: 'all 0.2s ease'
+                    }}
+                  >
+                    <Lock size={14} /> Sub. Only
+                  </button>
+                </div>
+
+                {/* Single prominent submit button */}
                 <button 
-                  type="button"
-                  disabled={(!postTitle.trim() && !postMediaUrl) || uploadingPostMedia} 
-                  onClick={(e) => handlePostSubmit(e, false)}
+                  type="submit"
+                  disabled={uploadingPostMedia} 
                   style={{ 
                     display: 'flex', 
                     alignItems: 'center', 
                     gap: '8px', 
-                    padding: '10px 20px', 
-                    background: (postTitle.trim() || postMediaUrl) ? 'rgba(76, 175, 80, 0.15)' : 'rgba(255,255,255,0.03)', 
-                    color: (postTitle.trim() || postMediaUrl) ? '#4CAF50' : '#666', 
-                    border: (postTitle.trim() || postMediaUrl) ? '1px solid rgba(76, 175, 80, 0.3)' : '1px solid rgba(255,255,255,0.05)', 
-                    borderRadius: '20px', 
-                    fontWeight: 'bold', 
-                    cursor: (postTitle.trim() || postMediaUrl) ? 'pointer' : 'not-allowed',
-                    transition: 'all 0.2s ease',
-                    opacity: (postTitle.trim() || postMediaUrl) ? 1 : 0.5
-                  }}
-                  onMouseOver={e => {
-                    if (postTitle.trim() || postMediaUrl) {
-                      e.currentTarget.style.background = 'rgba(76, 175, 80, 0.25)';
-                    }
-                  }}
-                  onMouseOut={e => {
-                    if (postTitle.trim() || postMediaUrl) {
-                      e.currentTarget.style.background = 'rgba(76, 175, 80, 0.15)';
-                    }
-                  }}
-                >
-                  <Unlock size={16} /> Free Post
-                </button>
-                
-                <button 
-                  type="button"
-                  disabled={(!postTitle.trim() && !postMediaUrl) || uploadingPostMedia} 
-                  onClick={(e) => handlePostSubmit(e, true)}
-                  style={{ 
-                    display: 'flex', 
-                    alignItems: 'center', 
-                    gap: '8px', 
-                    padding: '10px 20px', 
-                    background: (postTitle.trim() || postMediaUrl) ? 'linear-gradient(135deg, #FFD700, #FFA500)' : 'rgba(255,255,255,0.03)', 
-                    color: (postTitle.trim() || postMediaUrl) ? '#000' : '#666', 
+                    padding: '10px 24px', 
+                    background: '#fff', 
+                    color: '#000', 
                     border: 'none', 
                     borderRadius: '20px', 
                     fontWeight: 'bold', 
-                    cursor: (postTitle.trim() || postMediaUrl) ? 'pointer' : 'not-allowed',
+                    cursor: uploadingPostMedia ? 'not-allowed' : 'pointer',
                     transition: 'all 0.2s ease',
-                    opacity: (postTitle.trim() || postMediaUrl) ? 1 : 0.5
+                    opacity: uploadingPostMedia ? 0.5 : 1
                   }}
                   onMouseOver={e => {
-                    if (postTitle.trim() || postMediaUrl) {
-                      e.currentTarget.style.filter = 'brightness(1.1)';
+                    if (!uploadingPostMedia) {
+                      e.currentTarget.style.background = 'rgba(255,255,255,0.9)';
                     }
                   }}
                   onMouseOut={e => {
-                    if (postTitle.trim() || postMediaUrl) {
-                      e.currentTarget.style.filter = 'brightness(1)';
+                    if (!uploadingPostMedia) {
+                      e.currentTarget.style.background = '#fff';
                     }
                   }}
                 >
-                  <Lock size={16} /> Sub. Only Post
+                  Upload Post
                 </button>
               </div>
             </div>
