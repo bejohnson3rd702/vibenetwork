@@ -31,6 +31,7 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
 
   const [profile, setProfile] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [feed, setFeed] = useState<any[]>([]);
   
   // View Modes (public vs edit)
   const [viewMode, setViewMode] = useState<'public' | 'edit'>(isOwnProfile ? 'edit' : 'public');
@@ -563,8 +564,7 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
   const [uploadingProductImg, setUploadingProductImg] = useState(false);
   const [myNetworks, setMyNetworks] = useState<any[]>([]);
 
-  // Real Feed Data
-  const [feed, setFeed] = useState<any[]>([]);
+
 
   // Series Data
   const [seriesList, setSeriesList] = useState<any[]>([]);
