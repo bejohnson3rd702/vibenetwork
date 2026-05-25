@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { supabase } from '../supabaseClient';
 import { motion, AnimatePresence } from 'framer-motion';
-import { LogOut, Camera, Lock, Unlock, Image as ImageIcon, Star, ShieldCheck, Eye, Edit2, Trash2, Wand, Calendar, Edit3, Clock, CheckCircle, Heart, MessageCircle, Wallet, ArrowUpRight, ArrowDownLeft, Activity, Monitor, Settings, Video, DollarSign } from 'lucide-react';
+import { LogOut, Camera, Lock, Unlock, Image as ImageIcon, Star, ShieldCheck, Eye, Edit2, Trash2, Wand, Calendar, Edit3, Clock, CheckCircle, Heart, MessageCircle, Wallet, ArrowUpRight, ArrowDownLeft, Activity, Monitor, Settings, Video, DollarSign, Share2 } from 'lucide-react';
 import { DictationButton } from './DictationButton';
 import { EmojiPickerButton } from './EmojiPickerButton';
 import EndUserAuthModal from './EndUserAuthModal';
@@ -486,6 +486,32 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
   const [isDraggingAvatar, setIsDraggingAvatar] = useState(false);
   const [isDraggingDirectAvatar, setIsDraggingDirectAvatar] = useState(false);
   const [isDraggingPostForm, setIsDraggingPostForm] = useState(false);
+
+  // Scroll to shared post on mount/load
+  useEffect(() => {
+    if (!loading && feed.length > 0) {
+      const params = new URLSearchParams(window.location.search);
+      const targetPostId = params.get('post');
+      if (targetPostId) {
+        setTimeout(() => {
+          const element = document.getElementById(`post-${targetPostId}`);
+          if (element) {
+            element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            
+            // Premium neon green dashed highlight animation!
+            element.style.outline = '2px dashed #00ff88';
+            element.style.boxShadow = '0 0 35px rgba(0, 255, 136, 0.4)';
+            element.style.transition = 'all 0.3s ease';
+            
+            setTimeout(() => {
+              element.style.outline = 'none';
+              element.style.boxShadow = 'none';
+            }, 3000);
+          }
+        }, 800);
+      }
+    }
+  }, [loading, feed]);
   
   // New Post States
   const [postTitle, setPostTitle] = useState('');
@@ -1169,6 +1195,15 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
     toast.success('Content Published Successfully!');
   };
 
+  const handleSharePost = (post: any) => {
+    const shareUrl = `${window.location.origin}${window.location.pathname}?post=${post.id}${window.location.search ? '&' + window.location.search.replace('?', '') : ''}`;
+    navigator.clipboard.writeText(shareUrl).then(() => {
+      toast.success('Share link copied to clipboard! Shared directly to this post.');
+    }).catch(() => {
+      toast.error('Failed to copy link.');
+    });
+  };
+
   const handleLike = async (postId: string) => {
     if (!user) { toast.info('Please log in to interact.'); return; }
     
@@ -1285,15 +1320,31 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
     }
   };
 
+  // Dynamic SEO sharing overrides
+  const sharedPostId = new URLSearchParams(location.search).get('post');
+  const sharedPost = sharedPostId ? feed.find(p => String(p.id) === String(sharedPostId)) : null;
+
+  const helmetTitle = sharedPost 
+    ? `${sharedPost.title?.substring(0, 50) || 'Post'} | ${profile?.username || profile?.full_name || 'Creator'} on ${wlConfig?.name || 'Vibe Network'}`
+    : `${profile?.full_name || profile?.username || 'Creator Profile'} - ${wlConfig?.name || 'Vibe Network'}`;
+
+  const helmetDesc = sharedPost
+    ? (sharedPost.title || 'Check out this exclusive post!')
+    : (profile?.bio || `Check out ${profile?.username || 'this creator'}'s profile on ${wlConfig?.name || 'Vibe Network'}`);
+
+  const helmetImage = sharedPost
+    ? (sharedPost.img || profile?.avatar_url || wlConfig?.logoImage || 'https://vibenetwork.tv/og-image.jpg')
+    : (profile?.avatar_url || wlConfig?.logoImage || 'https://vibenetwork.tv/og-image.jpg');
+
   return (
     <div style={{ minHeight: '100vh', background: isNetworkLevel ? 'transparent' : 'var(--content-bg)', color: 'var(--text-primary)', position: 'relative' }}>
       {profile && (
         <Helmet>
-          <title>{profile.full_name || profile.username || 'Creator Profile'} - {wlConfig?.name || 'Vibe Network'}</title>
-          <meta name="description" content={profile.bio || `Check out ${profile.username}'s profile on ${wlConfig?.name || 'Vibe Network'}`} />
-          <meta property="og:title" content={`${profile.full_name || profile.username} on ${wlConfig?.name || 'Vibe Network'}`} />
-          <meta property="og:description" content={profile.bio || `Check out ${profile.username}'s exclusive content!`} />
-          <meta property="og:image" content={profile.avatar_url || wlConfig?.logoImage || 'https://vibenetwork.tv/og-image.jpg'} />
+          <title>{helmetTitle}</title>
+          <meta name="description" content={helmetDesc} />
+          <meta property="og:title" content={helmetTitle} />
+          <meta property="og:description" content={helmetDesc} />
+          <meta property="og:image" content={helmetImage} />
         </Helmet>
       )}
       
@@ -1699,7 +1750,7 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
           <h2 style={{ fontSize: '20px', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '16px', marginTop: '10px' }}>Content Feed</h2>
           
           {feed.map((post) => (
-            <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} key={post.id} style={{ background: 'rgba(15,15,15,0.8)', borderRadius: '20px', border: '1px solid rgba(255,255,255,0.05)', overflow: 'hidden' }}>
+            <motion.div id={`post-${post.id}`} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} key={post.id} style={{ background: 'rgba(15,15,15,0.8)', borderRadius: '20px', border: '1px solid rgba(255,255,255,0.05)', overflow: 'hidden' }}>
               
               {/* Post Header */}
               <div style={{ padding: '20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -1762,6 +1813,15 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
                       style={{ background: 'none', border: 'none', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontWeight: 'bold' }}
                     >
                       <MessageCircle size={20} /> {post.comments?.length || 0}
+                    </button>
+                    <button 
+                      onClick={() => handleSharePost(post)}
+                      style={{ background: 'none', border: 'none', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontWeight: 'bold', transition: 'color 0.2s' }}
+                      onMouseOver={e => e.currentTarget.style.color = '#fff'}
+                      onMouseOut={e => e.currentTarget.style.color = 'var(--text-muted)'}
+                      title="Share Post"
+                    >
+                      <Share2 size={20} /> Share
                     </button>
                   </div>
 
