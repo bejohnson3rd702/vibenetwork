@@ -1342,7 +1342,10 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
   };
 
   const handleOpenNetwork = (network: any) => {
-    if (network.domain && !network.domain.includes('localhost') && !network.domain.includes('127.0.0.1')) {
+    const hostname = window.location.hostname;
+    const isLocalOrPreview = hostname === 'localhost' || hostname === '127.0.0.1' || hostname.includes('vercel.app') || hostname.includes('.local');
+    
+    if (network.domain && !isLocalOrPreview) {
       const protocol = window.location.protocol;
       window.location.href = `${protocol}//${network.domain}`;
     } else {
