@@ -171,6 +171,27 @@ export const ProfileLive: React.FC<ProfileLiveProps> = ({
                             />
                           )
                         )}
+                        {streamSource === 'obs' && !isPreviewExpired && (
+                          profile?.mux_playback_id ? (
+                            <iframe 
+                              src={`https://stream.mux.com/${profile.mux_playback_id}/embed?autoplay=true&muted=false`} 
+                              title="Live Stream Broadcast"
+                              frameBorder="0" 
+                              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
+                              allowFullScreen
+                              style={{ width: '100%', height: '100%', position: 'absolute', inset: 0, border: 'none', zIndex: 5 }}
+                            />
+                          ) : (
+                            <video
+                              src="https://assets.mixkit.co/videos/preview/mixkit-concert-stage-with-neon-lights-and-smoke-41710-large.mp4"
+                              autoPlay
+                              loop
+                              muted
+                              playsInline
+                              style={{ width: '100%', height: '100%', objectFit: 'cover', position: 'absolute', inset: 0, zIndex: 5 }}
+                            />
+                          )
+                        )}
                        {!isOwnProfile && isPlayingLive && !isSubscribed && !hasPaidForLive ? (
                          isPreviewExpired ? (
                            <div style={{ position: 'absolute', inset: 0, zIndex: 30, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: 'var(--bg-surface)', padding: '40px', textAlign: 'center' }}>
@@ -352,9 +373,10 @@ export const ProfileLive: React.FC<ProfileLiveProps> = ({
                       </div>
                       
                       <label style={{ display: 'block', marginBottom: '12px', color: '#ff4d85', fontWeight: 'bold', fontSize: '15px' }}>Configure Live Stream Origin</label>
-                      <div style={{ display: 'flex', gap: '12px', marginBottom: '16px' }}>
-                         <button onClick={() => { setStreamSource('url'); setIsPlayingLive(false); }} style={{ padding: '10px 20px', background: streamSource === 'url' ? '#0055ff' : 'rgba(255,255,255,0.05)', color: streamSource === 'url' ? '#fff' : '#888', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold' }}>External URL / RTMP</button>
+                      <div style={{ display: 'flex', gap: '12px', marginBottom: '16px', flexWrap: 'wrap' }}>
                          <button onClick={() => { setStreamSource('camera'); setIsPlayingLive(false); }} style={{ padding: '10px 20px', background: streamSource === 'camera' ? '#0055ff' : 'rgba(255,255,255,0.05)', color: streamSource === 'camera' ? '#fff' : '#888', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '8px' }}><Camera size={16}/> Direct Webcam</button>
+                         <button onClick={() => { setStreamSource('obs'); setIsPlayingLive(false); }} style={{ padding: '10px 20px', background: streamSource === 'obs' ? '#0055ff' : 'rgba(255,255,255,0.05)', color: streamSource === 'obs' ? '#fff' : '#888', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold' }}>🎙️ OBS / Streamlabs</button>
+                         <button onClick={() => { setStreamSource('url'); setIsPlayingLive(false); }} style={{ padding: '10px 20px', background: streamSource === 'url' ? '#0055ff' : 'rgba(255,255,255,0.05)', color: streamSource === 'url' ? '#fff' : '#888', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold' }}>External URL / RTMP</button>
                       </div>
                       
                       <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
@@ -366,6 +388,27 @@ export const ProfileLive: React.FC<ProfileLiveProps> = ({
                             ) : (
                               <button onClick={startLiveStream} style={{ padding: '14px 24px', background: '#e50914', color: 'var(--text-primary)', border: 'none', borderRadius: '10px', fontWeight: 'bold', fontSize: '15px', cursor: 'pointer', transition: '0.2s', display: 'flex', alignItems: 'center', gap: '8px' }}><Camera size={18}/> Start Streaming</button>
                             )}
+                          </div>
+                        )}
+                        {streamSource === 'obs' && (
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', background: 'rgba(0,0,0,0.3)', padding: '20px', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.05)' }}>
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                              <label style={{ fontSize: '11px', color: 'var(--text-secondary)', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '1px' }}>RTMP Server Ingest URL</label>
+                              <div style={{ display: 'flex', gap: '12px' }}>
+                                <input type="text" readOnly value="rtmps://global-live.mux.com:443/app" style={{ flex: 1, padding: '12px', borderRadius: '8px', background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.1)', color: 'var(--text-primary)', fontSize: '14px', outline: 'none' }}/>
+                                <button type="button" onClick={() => { navigator.clipboard.writeText("rtmps://global-live.mux.com:443/app"); toast.success("RTMP Server URL copied!"); }} style={{ padding: '12px 20px', background: '#0055ff', color: '#fff', border: 'none', borderRadius: '8px', fontWeight: 'bold', cursor: 'pointer', fontSize: '13px' }}>Copy</button>
+                              </div>
+                            </div>
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                              <label style={{ fontSize: '11px', color: 'var(--text-secondary)', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '1px' }}>Secret Stream Key</label>
+                              <div style={{ display: 'flex', gap: '12px' }}>
+                                <input type="password" readOnly value={profile?.mux_stream_key || "vibe_stream_key_placeholder"} style={{ flex: 1, padding: '12px', borderRadius: '8px', background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.1)', color: 'var(--text-primary)', fontSize: '14px', outline: 'none' }}/>
+                                <button type="button" onClick={() => { navigator.clipboard.writeText(profile?.mux_stream_key || "vibe_stream_key_placeholder"); toast.success("Stream key copied!"); }} style={{ padding: '12px 20px', background: '#0055ff', color: '#fff', border: 'none', borderRadius: '8px', fontWeight: 'bold', cursor: 'pointer', fontSize: '13px' }}>Copy Key</button>
+                              </div>
+                            </div>
+                            <p style={{ margin: '8px 0 0 0', color: 'var(--text-muted)', fontSize: '12px', lineHeight: 1.5 }}>
+                              💡 <strong>Broadcasting Instructions:</strong> Open your encoding software (e.g. OBS Studio, Streamlabs). Navigate to Settings → Stream, select <strong>Custom Service</strong>, paste the Server Ingest URL and Secret Stream Key above, and hit <strong>"Start Streaming"</strong>!
+                            </p>
                           </div>
                         )}
                         
