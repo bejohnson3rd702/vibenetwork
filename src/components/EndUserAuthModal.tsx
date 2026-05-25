@@ -49,7 +49,16 @@ export default function EndUserAuthModal({ onClose }: EndUserAuthModalProps) {
         if (error) throw error;
         
         // Strict Login DB Isolation Check
-        if (data.user?.user_metadata?.whitelabel_id !== wlConfig?.id && data.user?.id !== wlConfig?.owner_id && data.user?.user_metadata?.role !== 'admin') {
+        const isMaster = !wlConfig?.id || wlConfig?.id === 'master' || wlConfig?.domain === 'vibenetwork.tv' || wlConfig?.domain === 'vibenetwork.vercel.app';
+        const userWlId = data.user?.user_metadata?.whitelabel_id;
+        
+        let allowed = false;
+        if (data.user?.user_metadata?.role === 'admin') allowed = true;
+        else if (data.user?.id === wlConfig?.owner_id) allowed = true;
+        else if (isMaster && !userWlId) allowed = true;
+        else if (!isMaster && userWlId === wlConfig?.id) allowed = true;
+
+        if (!allowed) {
            await supabase!.auth.signOut();
            throw new Error("Invalid credentials for this network.");
         }

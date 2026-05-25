@@ -79,7 +79,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ onClose, onSuccess, defaultIsLogi
       } else if (data.user) {
          // Strict Tenancy Isolation Check
          const { data: profile } = await supabase!.from('profiles').select('whitelabel_id, is_admin').eq('id', data.user.id).single();
-         const isMaster = activeTenantConfig?.domain === 'vibenetwork.tv';
+         const isMaster = !activeTenantConfig?.id || activeTenantConfig?.id === 'master' || activeTenantConfig?.domain === 'vibenetwork.tv' || activeTenantConfig?.domain === 'vibenetwork.vercel.app';
          
          let allowed = false;
          
@@ -89,7 +89,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ onClose, onSuccess, defaultIsLogi
             allowed = true; // Global Admins can log in anywhere.
          } else {
              // 1. Are they the explicit owner of this Tenant?
-             if (activeTenantConfig?.id) {
+             if (activeTenantConfig?.id && activeTenantConfig?.id !== 'master') {
                  const { data: tenantConfig } = await supabase!.from('whitelabel_configs').select('owner_id').eq('id', activeTenantConfig.id).single();
                  if (tenantConfig && tenantConfig.owner_id === data.user.id) {
                      allowed = true;
