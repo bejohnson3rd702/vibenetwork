@@ -2,6 +2,7 @@ import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Lock, Settings, Camera, Video } from 'lucide-react';
 import { useToast } from '../context/ToastContext';
+import Peer from 'peerjs';
 
 // We import LiveChat dynamically
 const LiveChat = React.lazy(() => import('./LiveChat').catch(() => ({ default: () => <div/> })));
@@ -62,6 +63,56 @@ export const ProfileLive: React.FC<ProfileLiveProps> = ({
   startLiveStream, setShowTipModal
 }) => {
   const toast = useToast();
+  const viewerVideoRef = React.useRef<HTMLVideoElement>(null);
+
+  React.useEffect(() => {
+    if (isOwnProfile || !isPlayingLive || streamSource !== 'camera') return;
+
+    let peer: Peer | null = null;
+    let call: any = null;
+    let retryTimeout: NodeJS.Timeout;
+
+    const connectToHost = () => {
+      try {
+        peer = new Peer();
+        peer.on('open', () => {
+          const hostId = `vibe-host-${creatorId || profile?.id}`;
+          console.log("WebRTC: Connecting to host live stream:", hostId);
+          
+          // Connect to the host using a dummy stream
+          call = peer!.call(hostId, new MediaStream());
+          
+          call.on('stream', (remoteStream: MediaStream) => {
+            console.log("WebRTC: Received live camera feed from host!");
+            if (viewerVideoRef.current) {
+              viewerVideoRef.current.srcObject = remoteStream;
+              viewerVideoRef.current.play().catch(e => console.warn("Video play error:", e));
+            }
+          });
+
+          call.on('error', (err: any) => {
+            console.error("WebRTC call error, retrying...", err);
+            retryTimeout = setTimeout(connectToHost, 5000);
+          });
+        });
+
+        peer.on('error', (err: any) => {
+          console.warn("Peer connection error, retrying...", err);
+          retryTimeout = setTimeout(connectToHost, 5000);
+        });
+      } catch (e) {
+        console.error("PeerJS initialization failed:", e);
+      }
+    };
+
+    connectToHost();
+
+    return () => {
+      if (retryTimeout) clearTimeout(retryTimeout);
+      if (call) call.close();
+      if (peer) peer.destroy();
+    };
+  }, [isOwnProfile, isPlayingLive, streamSource, creatorId, profile?.id]);
 
   return (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '30px' }}>
@@ -174,14 +225,23 @@ export const ProfileLive: React.FC<ProfileLiveProps> = ({
 
 
                                 {!isOwnProfile ? (
-                                  <video
-                                    src="https://assets.mixkit.co/videos/preview/mixkit-concert-stage-with-neon-lights-and-smoke-41710-large.mp4"
-                                    autoPlay
-                                    loop
-                                    muted
-                                    playsInline
-                                    style={{ width: '100%', height: '100%', objectFit: 'cover', border: 'none' }}
-                                  />
+                                  streamSource === 'camera' ? (
+                                    <video
+                                      ref={viewerVideoRef}
+                                      autoPlay
+                                      playsInline
+                                      style={{ width: '100%', height: '100%', objectFit: 'cover', border: 'none' }}
+                                    />
+                                  ) : (
+                                    <video
+                                      src="https://assets.mixkit.co/videos/preview/mixkit-concert-stage-with-neon-lights-and-smoke-41710-large.mp4"
+                                      autoPlay
+                                      loop
+                                      muted
+                                      playsInline
+                                      style={{ width: '100%', height: '100%', objectFit: 'cover', border: 'none' }}
+                                    />
+                                  )
                                 ) : (
                                   <video 
                                     ref={videoRef} 
