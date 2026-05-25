@@ -29,7 +29,7 @@ const ProductPage: React.FC = () => {
       setLoading(true);
       const { data, error } = await supabase
         .from('products')
-        .select('*, creator:profiles!inner(id, username, avatar_url, refund_policy)')
+        .select('*, creator:profiles!inner(id, username, avatar_url)')
         .eq('id', productId)
         .single();
         
