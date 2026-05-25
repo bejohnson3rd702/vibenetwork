@@ -94,16 +94,27 @@ export const ProfileLive: React.FC<ProfileLiveProps> = ({
                   {isPlayingLive ? (
                      <>
                        {streamSource === 'url' && !isPreviewExpired && (
-                         <iframe 
-                           src={liveEmbedUrl || 'https://www.youtube.com/embed/jfKfPfyJRdk?autoplay=1&mute=1'} 
-                           title="Live Stream Broadcast"
-                           frameBorder="0" 
-                           allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
-                           referrerPolicy="strict-origin-when-cross-origin" 
-                           allowFullScreen
-                           style={{ width: '100%', height: '100%', position: 'absolute', inset: 0, zIndex: 5 }}
-                         />
-                       )}
+                          liveEmbedUrl ? (
+                            <iframe 
+                              src={liveEmbedUrl} 
+                              title="Live Stream Broadcast"
+                              frameBorder="0" 
+                              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
+                              referrerPolicy="strict-origin-when-cross-origin" 
+                              allowFullScreen
+                              style={{ width: '100%', height: '100%', position: 'absolute', inset: 0, zIndex: 5 }}
+                            />
+                          ) : (
+                            <video
+                              src="https://assets.mixkit.co/videos/preview/mixkit-concert-stage-with-neon-lights-and-smoke-41710-large.mp4"
+                              autoPlay
+                              loop
+                              muted
+                              playsInline
+                              style={{ width: '100%', height: '100%', objectFit: 'cover', position: 'absolute', inset: 0, zIndex: 5 }}
+                            />
+                          )
+                        )}
                        {!isOwnProfile && isPlayingLive && !isSubscribed && !hasPaidForLive ? (
                          isPreviewExpired ? (
                            <div style={{ position: 'absolute', inset: 0, zIndex: 30, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: 'var(--bg-surface)', padding: '40px', textAlign: 'center' }}>
@@ -163,12 +174,13 @@ export const ProfileLive: React.FC<ProfileLiveProps> = ({
 
 
                                 {!isOwnProfile ? (
-                                  <iframe
-                                    src="https://www.youtube.com/embed/jfKfPfyJRdk?autoplay=1&mute=1&controls=0&loop=1&playlist=jfKfPfyJRdk"
-                                    title="Simulated Creator Feed"
-                                    frameBorder="0"
-                                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                                    style={{ width: '100%', height: '100%', objectFit: 'cover', pointerEvents: 'none', border: 'none' }}
+                                  <video
+                                    src="https://assets.mixkit.co/videos/preview/mixkit-concert-stage-with-neon-lights-and-smoke-41710-large.mp4"
+                                    autoPlay
+                                    loop
+                                    muted
+                                    playsInline
+                                    style={{ width: '100%', height: '100%', objectFit: 'cover', border: 'none' }}
                                   />
                                 ) : (
                                   <video 
