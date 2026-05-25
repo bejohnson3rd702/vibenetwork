@@ -1612,6 +1612,16 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
               </div>
             );
           })()}
+
+          {/* Public Store Refund Policy Banner */}
+          {(!isOwnProfile || viewMode === 'public') && (
+            <div style={{ marginTop: '40px', padding: '20px', background: 'rgba(255,255,255,0.02)', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.05)', textAlign: 'center' }}>
+              <h4 style={{ color: 'var(--text-primary)', fontSize: '15px', margin: '0 0 8px 0', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}>🛡️ Store Refund Policy</h4>
+              <p style={{ margin: 0, fontSize: '13px', color: 'var(--text-muted)', fontStyle: 'italic', maxWidth: '600px', marginLeft: 'auto', marginRight: 'auto' }}>
+                {refundPolicy || 'All sales are final. No refunds are provided for digital downloads or virtual bookings. For physical merchandise, please contact the creator directly.'}
+              </p>
+            </div>
+          )}
         </div>
         )}
 
@@ -1873,6 +1883,13 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
                       }} style={{ width: '100%', padding: '16px', background: 'linear-gradient(135deg, #ff4d85, #8A2BE2)', color: 'var(--text-primary)', border: 'none', borderRadius: '12px', fontWeight: 'bold', fontSize: '16px', cursor: 'pointer', boxShadow: '0 10px 20px rgba(138,43,226,0.3)', transition: 'transform 0.2s' }} onMouseOver={e=>e.currentTarget.style.transform='scale(1.02)'} onMouseOut={e=>e.currentTarget.style.transform='scale(1)'}>
                         Book Now (${(Number(bookingPrice) * bookingDuration).toFixed(2)})
                       </button>
+                      
+                      {/* Booking Refund Policy Disclaimer */}
+                      <div style={{ marginTop: '20px', padding: '12px', background: 'rgba(255,255,255,0.02)', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.05)' }}>
+                        <p style={{ margin: 0, fontSize: '12px', color: 'var(--text-muted)', fontStyle: 'italic', textAlign: 'center' }}>
+                          🛡️ Refund Policy: {refundPolicy || 'All bookings are final. Rescheduling must be requested at least 24 hours in advance.'}
+                        </p>
+                      </div>
                     </motion.div>
                   )}
                 </div>
@@ -1982,6 +1999,16 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
                 </motion.div>
               ))
             )}
+
+            {/* Series Refund Policy Disclaimer */}
+            {(!isOwnProfile || viewMode === 'public') && (
+              <div style={{ marginTop: '20px', padding: '20px', background: 'rgba(255,255,255,0.02)', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.05)', textAlign: 'center' }}>
+                <h4 style={{ color: 'var(--text-primary)', fontSize: '15px', margin: '0 0 8px 0', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}>🛡️ Store Refund Policy</h4>
+                <p style={{ margin: 0, fontSize: '13px', color: 'var(--text-muted)', fontStyle: 'italic', maxWidth: '600px', marginLeft: 'auto', marginRight: 'auto' }}>
+                  {refundPolicy || 'All season passes and single episode sales are final. No refunds are provided once streaming has commenced.'}
+                </p>
+              </div>
+            )}
           </div>
         )}
 
@@ -2053,6 +2080,16 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
                     </div>
                   </motion.div>
                 ))}
+              </div>
+            )}
+
+            {/* Courses Refund Policy Disclaimer */}
+            {(!isOwnProfile || viewMode === 'public') && (
+              <div style={{ marginTop: '40px', padding: '20px', background: 'rgba(255,255,255,0.02)', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.05)', textAlign: 'center' }}>
+                <h4 style={{ color: 'var(--text-primary)', fontSize: '15px', margin: '0 0 8px 0', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}>🛡️ Store Refund Policy</h4>
+                <p style={{ margin: 0, fontSize: '13px', color: 'var(--text-muted)', fontStyle: 'italic', maxWidth: '600px', marginLeft: 'auto', marginRight: 'auto' }}>
+                  {refundPolicy || 'All masterclass and course sales are final. No refunds are provided once video content has been accessed.'}
+                </p>
               </div>
             )}
           </div>
