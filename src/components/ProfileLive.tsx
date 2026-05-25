@@ -95,7 +95,7 @@ export const ProfileLive: React.FC<ProfileLiveProps> = ({
                      <>
                        {streamSource === 'url' && !isPreviewExpired && (
                          <iframe 
-                           src={liveEmbedUrl} 
+                           src={liveEmbedUrl || 'https://www.youtube.com/embed/jfKfPfyJRdk?autoplay=1&mute=1'} 
                            title="Live Stream Broadcast"
                            frameBorder="0" 
                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
@@ -162,13 +162,23 @@ export const ProfileLive: React.FC<ProfileLiveProps> = ({
                                )}
 
 
-                               <video 
-                                 ref={videoRef} 
-                                 autoPlay 
-                                 playsInline 
-                                 muted 
-                                 style={{ width: '100%', height: '100%', objectFit: 'cover', opacity: cameraStatus === 'active' ? 1 : 0, transition: 'opacity 0.3s' }} 
-                               />
+                                {!isOwnProfile ? (
+                                  <iframe
+                                    src="https://www.youtube.com/embed/jfKfPfyJRdk?autoplay=1&mute=1&controls=0&loop=1&playlist=jfKfPfyJRdk"
+                                    title="Simulated Creator Feed"
+                                    frameBorder="0"
+                                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                    style={{ width: '100%', height: '100%', objectFit: 'cover', pointerEvents: 'none', border: 'none' }}
+                                  />
+                                ) : (
+                                  <video 
+                                    ref={videoRef} 
+                                    autoPlay 
+                                    playsInline 
+                                    muted 
+                                    style={{ width: '100%', height: '100%', objectFit: 'cover', opacity: cameraStatus === 'active' ? 1 : 0, transition: 'opacity 0.3s' }} 
+                                  />
+                                )}
                                <div style={{ position: 'absolute', bottom: streamSource==='url'?4:10, right: streamSource==='url'?4:10, background: 'rgba(0,0,0,0.7)', padding: streamSource==='url'?'4px 8px':'6px 12px', borderRadius: '8px', textAlign: 'right', border: '1px solid rgba(255,255,255,0.1)', backdropFilter: 'blur(10px)' }}>
                                  <div style={{ fontWeight: 'bold', fontSize: streamSource==='url'?'11px':'14px', color: 'var(--text-primary)' }}>{localGuestData ? localGuestData.name : profile?.username || 'Host'}</div>
                                  <div style={{ fontSize: streamSource==='url'?'9px':'11px', color: '#00ff88', textTransform: 'uppercase', letterSpacing: '1px', marginTop: '2px' }}>{localGuestData ? localGuestData.title : (profile?.industry || 'Live Streamer')}</div>

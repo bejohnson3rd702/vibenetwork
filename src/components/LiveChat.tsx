@@ -8,7 +8,22 @@ export default function LiveChat({ streamId }: { streamId: string }) {
   const [messages, setMessages] = useState<{id: string, user: string, text: string, time: string, isSuperTip?: boolean, amount?: number}[]>([]);
   const [viewersCount, setViewersCount] = useState(1);
   const [input, setInput] = useState("");
+  const [currentUser, setCurrentUser] = useState<any>(null);
   const autoScrollRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    supabase?.auth.getSession().then(({ data: { session } }) => {
+      if (session?.user) {
+        supabase.from('profiles').select('username').eq('id', session.user.id).single().then(({ data }) => {
+          if (data) {
+            setCurrentUser(data);
+          } else {
+            setCurrentUser({ username: session.user.email?.split('@')[0] || 'User' });
+          }
+        });
+      }
+    });
+  }, []);
   
   // Super-Tip States
   const [showSuperTipPanel, setShowSuperTipPanel] = useState(false);
@@ -119,7 +134,7 @@ export default function LiveChat({ streamId }: { streamId: string }) {
     
     const myMessage = {
       id: Math.random().toString(),
-      user: "You",
+      user: currentUser?.username || 'Guest',
       text: input.trim(),
       time: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})
     };
@@ -146,7 +161,7 @@ export default function LiveChat({ streamId }: { streamId: string }) {
 
     const myMessage = {
       id: Math.random().toString(),
-      user: "You",
+      user: currentUser?.username || 'Guest',
       text: tipMessage.trim() || "Supported the stream! 🚀✨",
       time: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}),
       amount: tipAmount,
@@ -251,9 +266,9 @@ export default function LiveChat({ streamId }: { streamId: string }) {
               <div style={{ width: '28px', height: '28px', borderRadius: '50%', background: 'rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                 <User size={14} color="#888" />
               </div>
-              <div style={{ display: 'flex', flexDirection: 'column' }}>
+                <div style={{ display: 'flex', flexDirection: 'column' }}>
                 <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px' }}>
-                  <span style={{ fontWeight: 'bold', fontSize: '13px', color: msg.user === 'You' ? '#00ff88' : '#fff' }}>{msg.user}</span>
+                  <span style={{ fontWeight: 'bold', fontSize: '13px', color: (currentUser && msg.user === currentUser.username) ? '#00ff88' : '#fff' }}>{msg.user}</span>
                   <span style={{ fontSize: '10px', color: '#555' }}>{msg.time}</span>
                 </div>
                 <span style={{ fontSize: '14px', lineHeight: 1.4, wordBreak: 'break-word', marginTop: '2px' }}>{msg.text}</span>
