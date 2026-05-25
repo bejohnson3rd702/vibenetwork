@@ -1270,13 +1270,17 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
   };
 
   const handleSharePost = async (post: any) => {
-    const shareUrl = `${window.location.origin}${window.location.pathname}?post=${post.id}${window.location.search ? '&' + window.location.search.replace('?', '') : ''}`;
+    const cleanParams = new URLSearchParams(window.location.search);
+    cleanParams.delete('post');
+    cleanParams.delete('tab');
+    const paramString = cleanParams.toString();
+    const shareUrl = `${window.location.origin}${window.location.pathname}?post=${post.id}${paramString ? '&' + paramString : ''}`;
     
     if (navigator.share) {
       try {
         await navigator.share({
           title: `Post by ${profile?.username || 'Creator'} on ${wlConfig?.name || 'Vibe Network'}`,
-          text: post.title || 'Check out this post!',
+          text: `${post.title || 'Check out this post!'}\n\n${shareUrl}`,
           url: shareUrl
         });
         return;
@@ -1301,13 +1305,17 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
   };
 
   const handleShareStore = async () => {
-    const shareUrl = `${window.location.origin}${window.location.pathname}?tab=store${window.location.search ? '&' + window.location.search.replace('?', '') : ''}`;
+    const cleanParams = new URLSearchParams(window.location.search);
+    cleanParams.delete('post');
+    cleanParams.delete('tab');
+    const paramString = cleanParams.toString();
+    const shareUrl = `${window.location.origin}${window.location.pathname}?tab=store${paramString ? '&' + paramString : ''}`;
     
     if (navigator.share) {
       try {
         await navigator.share({
           title: `${profile?.username || 'Creator'}'s Storefront | ${wlConfig?.name || 'Vibe Network'}`,
-          text: `Explore physical merchandise and digital downloads for sale by ${profile?.username || 'Creator'}!`,
+          text: `Explore physical merchandise and digital downloads for sale by ${profile?.username || 'Creator'}!\n\n${shareUrl}`,
           url: shareUrl
         });
         return;
