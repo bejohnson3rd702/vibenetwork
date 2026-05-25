@@ -152,7 +152,12 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
   useEffect(() => {
     const params = new URLSearchParams(location.search);
     const tabParam = params.get('tab');
-    if (tabParam === 'wallet') setActiveTab('wallet');
+    if (tabParam) {
+      const validTabs = ['feed', 'store', 'live', 'booking', 'series', 'courses', 'wallet', 'flipbook', 'appearance', 'my_bookings', 'networks', 'members', 'community', 'security'];
+      if (validTabs.includes(tabParam)) {
+        setActiveTab(tabParam as any);
+      }
+    }
     
     // Auto-mount as guest from invite links
     if (params.get('guest_invite') === 'true') {
@@ -512,6 +517,32 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
       }
     }
   }, [loading, feed]);
+
+  // Scroll and highlight storefront when shared
+  useEffect(() => {
+    if (!loading) {
+      const params = new URLSearchParams(window.location.search);
+      const isStoreTab = params.get('tab') === 'store';
+      if (isStoreTab && activeTab === 'store') {
+        setTimeout(() => {
+          const element = document.getElementById('profile-storefront');
+          if (element) {
+            element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            
+            // Premium neon gold highlight animation for storefront!
+            element.style.outline = '2px dashed #FFD700';
+            element.style.boxShadow = '0 0 35px rgba(255, 215, 0, 0.4)';
+            element.style.transition = 'all 0.3s ease';
+            
+            setTimeout(() => {
+              element.style.outline = 'none';
+              element.style.boxShadow = 'none';
+            }, 3000);
+          }
+        }, 800);
+      }
+    }
+  }, [loading, activeTab]);
   
   // New Post States
   const [postTitle, setPostTitle] = useState('');
@@ -1204,6 +1235,15 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
     });
   };
 
+  const handleShareStore = () => {
+    const shareUrl = `${window.location.origin}${window.location.pathname}?tab=store${window.location.search ? '&' + window.location.search.replace('?', '') : ''}`;
+    navigator.clipboard.writeText(shareUrl).then(() => {
+      toast.success('Storefront link copied to clipboard! Shared directly to the store.');
+    }).catch(() => {
+      toast.error('Failed to copy storefront link.');
+    });
+  };
+
   const handleLike = async (postId: string) => {
     if (!user) { toast.info('Please log in to interact.'); return; }
     
@@ -1321,20 +1361,25 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
   };
 
   // Dynamic SEO sharing overrides
-  const sharedPostId = new URLSearchParams(location.search).get('post');
+  const searchParams = new URLSearchParams(location.search);
+  const sharedPostId = searchParams.get('post');
   const sharedPost = sharedPostId ? feed.find(p => String(p.id) === String(sharedPostId)) : null;
+  const isStoreTabShared = searchParams.get('tab') === 'store';
 
-  const helmetTitle = sharedPost 
-    ? `${sharedPost.title?.substring(0, 50) || 'Post'} | ${profile?.username || profile?.full_name || 'Creator'} on ${wlConfig?.name || 'Vibe Network'}`
-    : `${profile?.full_name || profile?.username || 'Creator Profile'} - ${wlConfig?.name || 'Vibe Network'}`;
+  let helmetTitle = `${profile?.full_name || profile?.username || 'Creator Profile'} - ${wlConfig?.name || 'Vibe Network'}`;
+  let helmetDesc = profile?.bio || `Check out ${profile?.username || 'this creator'}'s profile on ${wlConfig?.name || 'Vibe Network'}`;
+  let helmetImage = profile?.avatar_url || wlConfig?.logoImage || 'https://vibenetwork.tv/og-image.jpg';
 
-  const helmetDesc = sharedPost
-    ? (sharedPost.title || 'Check out this exclusive post!')
-    : (profile?.bio || `Check out ${profile?.username || 'this creator'}'s profile on ${wlConfig?.name || 'Vibe Network'}`);
-
-  const helmetImage = sharedPost
-    ? (sharedPost.img || profile?.avatar_url || wlConfig?.logoImage || 'https://vibenetwork.tv/og-image.jpg')
-    : (profile?.avatar_url || wlConfig?.logoImage || 'https://vibenetwork.tv/og-image.jpg');
+  if (sharedPost) {
+    helmetTitle = `${sharedPost.title?.substring(0, 50) || 'Post'} | ${profile?.username || profile?.full_name || 'Creator'} on ${wlConfig?.name || 'Vibe Network'}`;
+    helmetDesc = sharedPost.title || 'Check out this exclusive post!';
+    helmetImage = sharedPost.img || profile?.avatar_url || wlConfig?.logoImage || 'https://vibenetwork.tv/og-image.jpg';
+  } else if (isStoreTabShared) {
+    helmetTitle = `Shop ${profile?.username || profile?.full_name || 'Creator'}'s Storefront | ${wlConfig?.name || 'Vibe Network'}`;
+    helmetDesc = `Explore physical merchandise, digital downloads, and exclusive products for sale by ${profile?.username || profile?.full_name || 'Creator'}!`;
+    const firstProductImg = products.find(p => !p.hidden_from_network)?.image_url;
+    helmetImage = firstProductImg || profile?.avatar_url || wlConfig?.logoImage || 'https://vibenetwork.tv/og-image.jpg';
+  }
 
   return (
     <div style={{ minHeight: '100vh', background: isNetworkLevel ? 'transparent' : 'var(--content-bg)', color: 'var(--text-primary)', position: 'relative' }}>
@@ -1886,7 +1931,46 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
 
         {activeTab === 'store' && (
         /* ----------- STORE TAB ----------- */
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '30px' }}>
+        <div id="profile-storefront" style={{ display: 'flex', flexDirection: 'column', gap: '30px' }}>
+          {/* Storefront Header */}
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '16px', marginBottom: '10px' }}>
+            <div>
+              <h2 style={{ fontSize: '24px', margin: 0, fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '10px' }}>
+                🛍️ Storefront
+              </h2>
+              <p style={{ margin: '4px 0 0 0', fontSize: '14px', color: 'var(--text-muted)' }}>
+                Browse physical merchandise and exclusive digital releases for sale
+              </p>
+            </div>
+            <button
+              onClick={handleShareStore}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                padding: '10px 20px',
+                background: 'linear-gradient(135deg, rgba(255,255,255,0.08), rgba(255,255,255,0.03))',
+                border: '1px solid rgba(255,255,255,0.1)',
+                borderRadius: '12px',
+                color: '#fff',
+                fontWeight: 'bold',
+                cursor: 'pointer',
+                transition: 'all 0.2s',
+                backdropFilter: 'blur(10px)',
+              }}
+              onMouseOver={e => {
+                e.currentTarget.style.background = 'rgba(255,255,255,0.15)';
+                e.currentTarget.style.borderColor = 'rgba(255,255,255,0.2)';
+              }}
+              onMouseOut={e => {
+                e.currentTarget.style.background = 'linear-gradient(135deg, rgba(255,255,255,0.08), rgba(255,255,255,0.03))';
+                e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)';
+              }}
+              title="Share Storefront"
+            >
+              <Share2 size={16} /> Share Storefront
+            </button>
+          </div>
           {/* Add Product Form (Edit Mode Only) */}
           {isOwnProfile && viewMode === 'edit' && (
             <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} style={{ background: 'rgba(255,255,255,0.03)', padding: '24px', borderRadius: '24px', border: '1px dashed rgba(255,255,255,0.15)' }}>
