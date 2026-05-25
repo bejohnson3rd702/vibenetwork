@@ -1226,19 +1226,88 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
     toast.success('Content Published Successfully!');
   };
 
-  const handleSharePost = (post: any) => {
+  const copyToClipboardFallback = (text: string): Promise<void> => {
+    return new Promise((resolve, reject) => {
+      try {
+        const textArea = document.createElement('textarea');
+        textArea.value = text;
+        textArea.style.top = '0';
+        textArea.style.left = '0';
+        textArea.style.position = 'fixed';
+        textArea.style.opacity = '0';
+        document.body.appendChild(textArea);
+        textArea.focus();
+        textArea.select();
+        const successful = document.execCommand('copy');
+        document.body.removeChild(textArea);
+        if (successful) {
+          resolve();
+        } else {
+          reject(new Error('copy command failed'));
+        }
+      } catch (err) {
+        reject(err);
+      }
+    });
+  };
+
+  const handleSharePost = async (post: any) => {
     const shareUrl = `${window.location.origin}${window.location.pathname}?post=${post.id}${window.location.search ? '&' + window.location.search.replace('?', '') : ''}`;
-    navigator.clipboard.writeText(shareUrl).then(() => {
-      toast.success('Share link copied to clipboard! Shared directly to this post.');
+    
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: `Post by ${profile?.username || 'Creator'} on ${wlConfig?.name || 'Vibe Network'}`,
+          text: post.title || 'Check out this post!',
+          url: shareUrl
+        });
+        return;
+      } catch (err) {
+        if ((err as Error).name !== 'AbortError') {
+          console.warn('Native share failed, falling back to clipboard copy:', err);
+        } else {
+          return; // User cancelled
+        }
+      }
+    }
+
+    const copyPromise = navigator.clipboard && navigator.clipboard.writeText 
+      ? navigator.clipboard.writeText(shareUrl) 
+      : copyToClipboardFallback(shareUrl);
+
+    copyPromise.then(() => {
+      toast.success('Share link copied to clipboard!');
     }).catch(() => {
       toast.error('Failed to copy link.');
     });
   };
 
-  const handleShareStore = () => {
+  const handleShareStore = async () => {
     const shareUrl = `${window.location.origin}${window.location.pathname}?tab=store${window.location.search ? '&' + window.location.search.replace('?', '') : ''}`;
-    navigator.clipboard.writeText(shareUrl).then(() => {
-      toast.success('Storefront link copied to clipboard! Shared directly to the store.');
+    
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: `${profile?.username || 'Creator'}'s Storefront | ${wlConfig?.name || 'Vibe Network'}`,
+          text: `Explore physical merchandise and digital downloads for sale by ${profile?.username || 'Creator'}!`,
+          url: shareUrl
+        });
+        return;
+      } catch (err) {
+        if ((err as Error).name !== 'AbortError') {
+          console.warn('Native share failed, falling back to clipboard copy:', err);
+        } else {
+          return; // User cancelled
+        }
+      }
+    }
+
+    const copyPromise = navigator.clipboard && navigator.clipboard.writeText 
+      ? navigator.clipboard.writeText(shareUrl) 
+      : copyToClipboardFallback(shareUrl);
+
+    copyPromise.then(() => {
+      toast.success('Storefront link copied to clipboard!');
     }).catch(() => {
       toast.error('Failed to copy storefront link.');
     });
