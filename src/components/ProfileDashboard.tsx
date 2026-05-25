@@ -452,7 +452,9 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
        setIsSubscribed(true);
        return;
      }
-     handleStripeCheckout('Monthly Subscription', amount);
+     // handleStripeCheckout('Monthly Subscription', amount);
+     setIsSubscribed(true);
+     toast.success('Subscription activated (Demo Mode - Stripe bypassed)');
    };
   
   // Scheduler State & DnD Handlers
