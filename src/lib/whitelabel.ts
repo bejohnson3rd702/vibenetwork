@@ -49,7 +49,7 @@ export function normalizeWlConfig(
     contactAddress: theme.contactAddress || raw?.contactAddress,
     owner_id: raw?.owner_id || '',
     enableWatchLive: theme.enableWatchLive !== undefined ? theme.enableWatchLive : (raw?.enableWatchLive !== undefined ? raw.enableWatchLive : true),
-    enableBooking: theme.enableBooking !== undefined ? theme.enableBooking : (raw?.enableBooking !== undefined ? raw.enableBooking : false),
+    enableBooking: theme.enableBooking !== undefined ? theme.enableBooking : (raw?.enableBooking !== undefined ? raw.enableBooking : true),
     heroLayoutMode: theme.heroLayoutMode || raw?.heroLayoutMode || 'verbiage',
     heroVideoUrl: theme.heroVideoUrl || raw?.heroVideoUrl || '',
     heroVideoTitle: theme.heroVideoTitle || raw?.heroVideoTitle || '',
