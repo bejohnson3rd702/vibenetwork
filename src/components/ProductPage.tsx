@@ -35,17 +35,16 @@ const ProductPage: React.FC = () => {
         
       if (data && !error) {
         setProduct(data);
-        const isClothingProduct = data.type?.toLowerCase() === 'physical' && (
+        const shouldShowSizesProduct = data.type?.toLowerCase() === 'physical' && (
           data.variants?.is_clothing === true || 
+          data.variants?.sizes?.length > 0 ||
           (data.variants?.is_clothing !== false && 
-            (data.variants?.sizes?.length > 0 || 
-              /shirt|tee|hoodie|hoody|sweatshirt|sweater|jacket|pants|shorts|socks|apparel|clothing/i.test(data.title || '')
-            )
+            /shirt|tee|hoodie|hoody|sweatshirt|sweater|jacket|pants|shorts|socks|apparel|clothing/i.test(data.title || '')
           )
         );
         const initialSizes = data.variants?.sizes?.length ? data.variants.sizes : defaultSizes;
         const initialColors = data.variants?.colors?.length ? data.variants.colors : defaultColors;
-        setSelectedSize(isClothingProduct ? (initialSizes[0] || '') : '');
+        setSelectedSize(shouldShowSizesProduct ? (initialSizes[0] || '') : '');
         setSelectedColor(initialColors[0] || '');
       } else {
         setError('Product not found or unavailable.');
@@ -56,12 +55,11 @@ const ProductPage: React.FC = () => {
     if (productId) fetchProduct();
   }, [productId]);
 
-  const isClothing = product?.type?.toLowerCase() === 'physical' && (
+  const shouldShowSizes = product?.type?.toLowerCase() === 'physical' && (
     product.variants?.is_clothing === true || 
+    product.variants?.sizes?.length > 0 ||
     (product.variants?.is_clothing !== false && 
-      (product.variants?.sizes?.length > 0 || 
-        /shirt|tee|hoodie|hoody|sweatshirt|sweater|jacket|pants|shorts|socks|apparel|clothing/i.test(product.title || '')
-      )
+      /shirt|tee|hoodie|hoody|sweatshirt|sweater|jacket|pants|shorts|socks|apparel|clothing/i.test(product.title || '')
     )
   );
 
@@ -89,7 +87,7 @@ const ProductPage: React.FC = () => {
             product_id: product.id,
             product_type: product.type,
             ...(product.type?.toLowerCase() === 'physical' ? {
-              ...(isClothing ? { size: selectedSize } : {}),
+              ...(shouldShowSizes ? { size: selectedSize } : {}),
               color: selectedColor
             } : {})
           }
@@ -198,7 +196,7 @@ const ProductPage: React.FC = () => {
                    </div>
 
                    {/* Size Selection */}
-                    {isClothing && (
+                    {shouldShowSizes && (
                       <div>
                         <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '12px' }}>
                           <span style={{ fontWeight: 'bold', fontSize: '15px' }}>Size</span>
