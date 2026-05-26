@@ -2,27 +2,11 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import Peer from 'peerjs';
 import { getSafeUserMedia } from '../lib/mediaUtils';
 
-// Free TURN server for NAT traversal reliability (Phase 4)
+// STUN-only ICE config (TURN requires paid credentials — add yours here when ready)
 const ICE_SERVERS: RTCIceServer[] = [
   { urls: 'stun:stun.l.google.com:19302' },
   { urls: 'stun:stun1.l.google.com:19302' },
   { urls: 'stun:stun2.l.google.com:19302' },
-  // Free TURN relay from Open Relay Project — handles symmetric NAT/firewalls
-  {
-    urls: 'turn:openrelay.metered.ca:80',
-    username: 'openrelayproject',
-    credential: 'openrelayproject',
-  },
-  {
-    urls: 'turn:openrelay.metered.ca:443',
-    username: 'openrelayproject',
-    credential: 'openrelayproject',
-  },
-  {
-    urls: 'turn:openrelay.metered.ca:443?transport=tcp',
-    username: 'openrelayproject',
-    credential: 'openrelayproject',
-  },
 ];
 
 const PEERJS_DEBUG_LEVEL = (typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('debug') === 'true') ? 3 : 0;
@@ -133,12 +117,24 @@ export function useStreaming({ profileId, isOwnProfile, user, supabase, channelR
     }
   }, [isOwnProfile, isPlayingLive, hasPaidForLive, previewTimeLeft]);
 
-  // ── Camera Acquisition Effect (DECOUPLED from PeerJS) ──
+  // ══════════════════════════════════════════════════════════════
+  // COMBINED Camera + PeerJS Effect
+  // Keeping these together prevents the race condition where:
+  //   1. Camera cleanup sets localStream=null
+  //   2. PeerJS effect tears down (destroying the peer ID on PeerJS cloud)
+  //   3. Camera re-acquires, sets localStream=newStream
+  //   4. PeerJS effect tries to re-register same ID → "unavailable-id"
+  // By keeping them in one effect, the peer is only created once with
+  // the stream available, and destroyed only when the camera truly stops.
+  // ══════════════════════════════════════════════════════════════
   useEffect(() => {
     let aborted = false;
     let acquiredStream: MediaStream | null = null;
+    let hostPeer: Peer | null = null;
 
-    if (isOwnProfile && isCameraActive && (streamSource === 'camera' || presenterMode || guests.length > 0)) {
+    const shouldActivateCamera = isOwnProfile && isCameraActive && (streamSource === 'camera' || presenterMode || guests.length > 0);
+
+    if (shouldActivateCamera) {
       if (streamSource === 'camera') {
         setCameraStatus('loading');
         setCameraDebugData('Awaiting OS permission...');
@@ -153,11 +149,11 @@ export function useStreaming({ profileId, isOwnProfile, user, supabase, channelR
       getSafeUserMedia(true, true)
         .then(stream => {
           if (aborted) {
-            // Effect was cleaned up while we were waiting for permissions
             stream.getTracks().forEach(t => t.stop());
             return;
           }
           acquiredStream = stream;
+          localStreamRef.current = stream;
           setCameraStatus('active');
           setLocalStream(stream);
 
@@ -174,6 +170,71 @@ export function useStreaming({ profileId, isOwnProfile, user, supabase, channelR
             videoRef.current.play().catch(e => {
               setCameraDebugData(prev => prev + ` | PlayErr: ${e.message}`);
             });
+          }
+
+          // ── Create PeerJS Host (same effect, after stream is ready) ──
+          if (profileId && typeof window !== 'undefined') {
+            const peerId = `vibe-host-${profileId}`;
+            let retryCount = 0;
+            const MAX_RETRIES = 3;
+
+            const createPeer = (id: string) => {
+              if (aborted) return;
+              hostPeer = new Peer(id, {
+                debug: PEERJS_DEBUG_LEVEL,
+                secure: true,
+                config: { iceServers: ICE_SERVERS },
+              });
+
+              hostPeer.on('open', () => {
+                retryCount = 0;
+                console.log(`[PeerJS Host] Registered as: ${id}`);
+                if (channelRef.current) {
+                  channelRef.current.send({
+                    type: 'broadcast',
+                    event: 'webrtc_host_ready',
+                    payload: { streamId: profileId },
+                  });
+                }
+              });
+
+              hostPeer.on('call', (call) => {
+                const meta = call.metadata || {};
+                const currentGuests = guestsRef.current;
+                const isGuest = currentGuests.some((g) => g.id === meta.viewerId);
+                const isSubscriber = meta.authType === 'subscription' || meta.authType === 'ppv';
+                const isSelf = meta.viewerId === user?.id;
+
+                if (isSubscriber || isGuest || isSelf) {
+                  console.log(`[WebRTC] Authorized: ${meta.viewerName || 'Viewer'} (${meta.authType})`);
+                  // Always use the ref — it's always the freshest stream
+                  const currentStream = localStreamRef.current;
+                  if (currentStream) {
+                    call.answer(currentStream);
+                  } else {
+                    console.warn('[WebRTC] No local stream to answer with');
+                    call.close();
+                  }
+                } else {
+                  console.warn(`[WebRTC] Blocked: ${meta.viewerName || 'Unknown'} (${meta.authType || 'none'})`);
+                  call.close();
+                }
+              });
+
+              hostPeer.on('error', (err: any) => {
+                console.error('[PeerJS Host Error]', err.type, err.message);
+                if (err.type === 'unavailable-id' && retryCount < MAX_RETRIES) {
+                  retryCount++;
+                  const suffixedId = `${peerId}-${Date.now()}`;
+                  console.log(`[PeerJS] ID collision, retrying with: ${suffixedId}`);
+                  hostPeer?.destroy();
+                  createPeer(suffixedId);
+                }
+              });
+            };
+
+            createPeer(peerId);
+            peerRef.current = hostPeer;
           }
         })
         .catch(err => {
@@ -192,85 +253,15 @@ export function useStreaming({ profileId, isOwnProfile, user, supabase, channelR
         acquiredStream.getTracks().forEach(t => t.stop());
       }
       setLocalStream(null);
-    };
-  }, [isCameraActive, streamSource, presenterMode, isOwnProfile]);
-  // NOTE: `guests.length` is intentionally REMOVED from deps — guest changes
-  // should NOT tear down the camera. PeerJS handles guests separately.
-
-  // ── PeerJS Host Effect (DECOUPLED from camera — depends on localStream) ──
-  useEffect(() => {
-    if (!isOwnProfile || !localStream || !profileId) return;
-    if (streamSource !== 'camera' && !presenterMode && guests.length === 0) return;
-
-    const peerId = `vibe-host-${profileId}`;
-    let peer: Peer | null = null;
-    let retryCount = 0;
-    const MAX_RETRIES = 3;
-
-    const createPeer = (id: string) => {
-      peer = new Peer(id, {
-        debug: PEERJS_DEBUG_LEVEL,
-        secure: true,
-        config: { iceServers: ICE_SERVERS },
-      });
-
-      peer.on('open', () => {
-        retryCount = 0;
-        if (channelRef.current) {
-          channelRef.current.send({
-            type: 'broadcast',
-            event: 'webrtc_host_ready',
-            payload: { streamId: profileId },
-          });
-        }
-      });
-
-      peer.on('call', (call) => {
-        const meta = call.metadata || {};
-        const currentGuests = guestsRef.current; // Read from ref, never stale
-        const isGuest = currentGuests.some((g) => g.id === meta.viewerId);
-        const isSubscriber = meta.authType === 'subscription' || meta.authType === 'ppv';
-        const isSelf = meta.viewerId === user?.id;
-
-        if (isSubscriber || isGuest || isSelf) {
-          console.log(`[WebRTC] Authorized: ${meta.viewerName || 'Viewer'} (${meta.authType})`);
-          const currentStream = localStreamRef.current;
-          if (currentStream) {
-            call.answer(currentStream);
-          } else {
-            console.warn('[WebRTC] No local stream to answer with');
-            call.close();
-          }
-        } else {
-          console.warn(`[WebRTC] Blocked: ${meta.viewerName || 'Unknown'} (${meta.authType || 'none'})`);
-          call.close();
-        }
-      });
-
-      peer.on('error', (err: any) => {
-        console.error('[PeerJS Host Error]', err.type, err.message);
-
-        if (err.type === 'unavailable-id' && retryCount < MAX_RETRIES) {
-          retryCount++;
-          const suffixedId = `${peerId}-${Date.now()}`;
-          console.log(`[PeerJS] ID collision, retrying with: ${suffixedId}`);
-          peer?.destroy();
-          createPeer(suffixedId);
-        }
-      });
-    };
-
-    createPeer(peerId);
-    peerRef.current = peer;
-
-    return () => {
-      if (peer) {
-        peer.destroy();
+      localStreamRef.current = null;
+      if (hostPeer) {
+        hostPeer.destroy();
       }
       peerRef.current = null;
     };
-  }, [isOwnProfile, localStream, profileId, streamSource, presenterMode, user?.id]);
-  // NOTE: `guests` is intentionally excluded — guestsRef handles it without re-creating the peer
+  }, [isCameraActive, streamSource, presenterMode, isOwnProfile, profileId, user?.id]);
+  // NOTE: `guests.length` is intentionally REMOVED from deps — guest changes
+  // should NOT tear down the camera or PeerJS host. guestsRef handles auth.
 
   // ── Supabase Channel: Stream Status Sync ──
   useEffect(() => {
