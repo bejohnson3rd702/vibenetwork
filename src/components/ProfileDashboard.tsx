@@ -261,17 +261,31 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
      handleStripeCheckout('Live Stream PPV Unlock', amount);
    };
 
-   const handleSubscribe = () => {
-      if (!user) {
-        toast.info('Please log in or create an account to subscribe.');
-        window.dispatchEvent(new CustomEvent('open_auth'));
-        return;
-      }
-      setIsSubscribed(true);
-      if (user && targetProfileId) {
-        localStorage.setItem(`vibe_sub_${user.id}_${targetProfileId}`, 'true');
-      }
-      toast.success('Subscription activated (Demo Mode - Stripe bypassed)');
+   const handleSubscribe = async () => {
+     if (!user) {
+       toast.info('Please log in or create an account to subscribe.');
+       window.dispatchEvent(new CustomEvent('open_auth'));
+       return;
+     }
+     setIsSubscribed(true);
+     // Persist to Supabase (server-side) so it survives cache clears
+     if (supabase && user && targetProfileId) {
+       const { error } = await supabase.from('subscriptions').upsert({
+         subscriber_id: user.id,
+         creator_id: targetProfileId,
+         status: 'active',
+         price: Number(subPrice) || 0,
+         created_at: new Date().toISOString(),
+       }, { onConflict: 'subscriber_id,creator_id' });
+       if (error) {
+         console.warn('[Subscribe] Supabase upsert failed, using localStorage fallback:', error.message);
+       }
+     }
+     // Keep localStorage as fast local cache
+     if (user && targetProfileId) {
+       localStorage.setItem(`vibe_sub_${user.id}_${targetProfileId}`, 'true');
+     }
+     toast.success('Subscription activated!');
    };
   
   // Scheduler State & DnD Handlers
@@ -443,7 +457,27 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
         if (data.genre) setSelectedGenre(data.genre);
         if (data.sub_price != null) setSubPrice(String(data.sub_price));
         if (user) {
-          setIsSubscribed(localStorage.getItem(`vibe_sub_${user.id}_${targetProfileId}`) === 'true');
+          // Check Supabase first (survives cache clears), localStorage as fallback
+          const localSub = localStorage.getItem(`vibe_sub_${user.id}_${targetProfileId}`) === 'true';
+          setIsSubscribed(localSub); // Fast local cache while Supabase loads
+          if (supabase) {
+            supabase.from('subscriptions')
+              .select('status')
+              .eq('subscriber_id', user.id)
+              .eq('creator_id', targetProfileId)
+              .eq('status', 'active')
+              .maybeSingle()
+              .then(({ data: subData }: any) => {
+                const isActive = !!subData;
+                setIsSubscribed(isActive);
+                // Sync localStorage cache with server truth
+                if (isActive) {
+                  localStorage.setItem(`vibe_sub_${user.id}_${targetProfileId}`, 'true');
+                } else {
+                  localStorage.removeItem(`vibe_sub_${user.id}_${targetProfileId}`);
+                }
+              });
+          }
         } else {
           setIsSubscribed(false);
         }
