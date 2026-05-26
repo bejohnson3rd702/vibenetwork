@@ -154,7 +154,15 @@ export const ProfileLive: React.FC<ProfileLiveProps> = ({
             setConnectionStatus('connected');
             if (viewerVideoRef.current) {
               viewerVideoRef.current.srcObject = remoteStream;
-              viewerVideoRef.current.play().catch(e => console.warn("Video play error:", e));
+              viewerVideoRef.current.muted = false; // Enable audio — user already interacted
+              viewerVideoRef.current.play().catch(e => {
+                // If unmuted autoplay fails, try muted then let user unmute via controls
+                console.warn('[WebRTC Viewer] Unmuted play failed, trying muted:', e.message);
+                if (viewerVideoRef.current) {
+                  viewerVideoRef.current.muted = true;
+                  viewerVideoRef.current.play().catch(() => {});
+                }
+              });
             }
           });
 
@@ -407,7 +415,6 @@ export const ProfileLive: React.FC<ProfileLiveProps> = ({
                                         ref={viewerVideoRef}
                                         autoPlay
                                         playsInline
-                                        muted
                                         controls
                                         style={{ width: '100%', height: '100%', objectFit: 'cover', border: 'none', display: isRemoteConnected ? 'block' : 'none' }}
                                       />
