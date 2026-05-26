@@ -99,7 +99,7 @@ export const ProfileLive: React.FC<ProfileLiveProps> = ({
           }
         });
         peer.on('open', () => {
-          const hostId = `vibe-host-${creatorId || profile?.id}`;
+          const hostId = `vibe-host-${profile?.id}`;
           console.log("WebRTC: Connecting to host live stream:", hostId);
           
           // Connect to the host with authorization handshake metadata

@@ -352,9 +352,6 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
            setLiveCountdown(null);
            setIsPlayingLive(true);
            setIsPubliclyLive(true); // Directly go live publicly!
-           if (streamSource === 'camera') {
-              setCameraStatus('loading');
-           }
         } else {
            setLiveCountdown(ticker);
         }
@@ -396,7 +393,7 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
                        });
                     }
                     
-                    const streamId = targetProfileId || profile?.username || profile?.id;
+                    const streamId = profile?.id;
                     if (streamId && typeof window !== 'undefined') {
                        const peerId = `vibe-host-${streamId}`;
                        const peer = new Peer(peerId, {
