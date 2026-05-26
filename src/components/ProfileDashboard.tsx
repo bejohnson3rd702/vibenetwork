@@ -411,7 +411,20 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
                              ]
                           }
                        });
-                       peer.on('call', (call) => { call.answer(stream); });
+                       peer.on('call', (call) => {
+                          const meta = call.metadata || {};
+                          const isGuest = guests && guests.some((g: any) => g.id === meta.viewerId);
+                          const isSubscriber = meta.authType === 'subscription' || meta.authType === 'ppv';
+                          const isSelf = meta.viewerId === user?.id;
+
+                          if (isSubscriber || isGuest || isSelf) {
+                             console.log(`[WebRTC Secure Ingest] Authorized stream connection accepted: ${meta.viewerName || 'Subscriber'} (${meta.authType})`);
+                             call.answer(stream);
+                          } else {
+                             console.warn(`[WebRTC Secure Ingest] Blocked unauthorized stream access attempt: ${meta.viewerName || 'Unknown'} (${meta.authType || 'none'})`);
+                             call.close();
+                          }
+                       });
                        peer.on('open', () => {
                           if (channelRef.current) {
                              channelRef.current.send({ type: 'broadcast', event: 'webrtc_host_ready', payload: { streamId } });

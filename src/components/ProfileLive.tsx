@@ -68,6 +68,8 @@ export const ProfileLive: React.FC<ProfileLiveProps> = ({
 
   React.useEffect(() => {
     if (isOwnProfile || !isPlayingLive || streamSource !== 'camera') return;
+    // Strictly block connection requests if the user is unauthorized
+    if (!isSubscribed && !hasPaidForLive && !localGuestData) return;
 
     let peer: Peer | null = null;
     let call: any = null;
@@ -88,8 +90,14 @@ export const ProfileLive: React.FC<ProfileLiveProps> = ({
           const hostId = `vibe-host-${creatorId || profile?.id}`;
           console.log("WebRTC: Connecting to host live stream:", hostId);
           
-          // Connect to the host using a dummy stream
-          call = peer!.call(hostId, new MediaStream());
+          // Connect to the host with authorization handshake metadata
+          call = peer!.call(hostId, new MediaStream(), {
+            metadata: {
+              viewerId: user?.id || localGuestData?.id || 'guest',
+              viewerName: user?.email || user?.username || localGuestData?.name || 'Anonymous Viewer',
+              authType: localGuestData ? 'guest' : hasPaidForLive ? 'ppv' : isSubscribed ? 'subscription' : 'none'
+            }
+          });
           
           call.on('stream', (remoteStream: MediaStream) => {
             console.log("WebRTC: Received live camera feed from host!");
@@ -125,7 +133,7 @@ export const ProfileLive: React.FC<ProfileLiveProps> = ({
       if (call) call.close();
       if (peer) peer.destroy();
     };
-  }, [isOwnProfile, isPlayingLive, streamSource, creatorId, profile?.id]);
+  }, [isOwnProfile, isPlayingLive, streamSource, creatorId, profile?.id, isSubscribed, hasPaidForLive, localGuestData, user?.id]);
 
   return (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '30px' }}>
