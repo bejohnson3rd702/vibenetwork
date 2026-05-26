@@ -346,6 +346,8 @@ export const ProfileLive: React.FC<ProfileLiveProps> = ({
                                         ref={viewerVideoRef}
                                         autoPlay
                                         playsInline
+                                        muted
+                                        controls
                                         style={{ width: '100%', height: '100%', objectFit: 'cover', border: 'none', display: isRemoteConnected ? 'block' : 'none' }}
                                       />
                                       {/* Direct Fallback Loop while connecting/blocked */}
