@@ -148,10 +148,45 @@ export const ProfileLive: React.FC<ProfileLiveProps> = ({
 
   return (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '30px' }}>
+            <style>{`
+              .live-stream-container {
+                display: flex;
+                flex-direction: row;
+                width: 100%;
+                background: var(--bg-color);
+                position: relative;
+              }
+              .live-video-slot {
+                flex: 1;
+                position: relative;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                aspect-ratio: 16/9;
+              }
+              .live-chat-slot {
+                width: 380px;
+                flex-shrink: 0;
+                border-left: 1px solid rgba(255,255,255,0.05);
+                display: flex;
+                flex-direction: column;
+              }
+              @media (max-width: 1024px) {
+                .live-stream-container {
+                  flex-direction: column;
+                }
+                .live-chat-slot {
+                  width: 100%;
+                  border-left: none;
+                  border-top: 1px solid rgba(255,255,255,0.05);
+                  height: 450px;
+                }
+              }
+            `}</style>
             {isSubscribed || isOwnProfile || localGuestData !== null ? (
               <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} style={{ background: 'var(--bg-surface)', borderRadius: '24px', overflow: 'hidden', border: '1px solid rgba(255,255,255,0.05)' }}>
-                <div style={{ display: 'flex', width: '100%', background: 'var(--bg-color)', position: 'relative' }}>
-                   <div style={{ flex: 1, position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center', aspectRatio: '16/9' }}>
+                <div className="live-stream-container">
+                   <div className="live-video-slot">
                   {liveCountdown !== null && liveCountdown !== undefined && (
                      <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(12px)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', zIndex: 40 }}>
                         <motion.div 
@@ -379,7 +414,7 @@ export const ProfileLive: React.FC<ProfileLiveProps> = ({
                     </>
                   )}
                 </div>
-                 <div style={{ flexShrink: 0 }}>
+                 <div className="live-chat-slot">
                     <React.Suspense fallback={<div style={{ padding: '20px', color: 'var(--text-secondary)' }}>Loading chat...</div>}>
                       <LiveChat streamId={profile?.username || 'profile'} />
                     </React.Suspense>
