@@ -118,8 +118,23 @@ export const ProfileLive: React.FC<ProfileLiveProps> = ({
           const authType = localGuestData ? 'guest' : hasPaidForLive ? 'ppv' : isSubscribed ? 'subscription' : 'none';
           console.log(`[WebRTC Viewer] My peer ID: ${myId} | Calling host: ${hostId} | Auth: ${authType}`);
           
+          // Create a dummy video track so the SDP offer includes m=video line.
+          // Without this, the offer has no media descriptions and the host's
+          // camera stream can't be negotiated into the answer.
+          let viewerStream: MediaStream;
+          try {
+            const canvas = document.createElement('canvas');
+            canvas.width = 2;
+            canvas.height = 2;
+            const ctx2d = canvas.getContext('2d');
+            if (ctx2d) ctx2d.fillRect(0, 0, 2, 2);
+            viewerStream = canvas.captureStream(0); // 0 fps = single frame, minimal overhead
+          } catch (_) {
+            viewerStream = new MediaStream(); // fallback
+          }
+
           // Connect to the host with authorization handshake metadata
-          call = peer!.call(hostId, new MediaStream(), {
+          call = peer!.call(hostId, viewerStream, {
             metadata: {
               viewerId: user?.id || localGuestData?.id || 'guest',
               viewerName: user?.email || user?.username || localGuestData?.name || 'Anonymous Viewer',

@@ -9,7 +9,7 @@ const ICE_SERVERS: RTCIceServer[] = [
   { urls: 'stun:stun2.l.google.com:19302' },
 ];
 
-const PEERJS_DEBUG_LEVEL = (typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('debug') === 'true') ? 3 : 0;
+const PEERJS_DEBUG_LEVEL = 2; // Show warnings + errors for diagnostics
 
 export type StreamSource = 'url' | 'camera' | 'obs';
 export type CameraStatus = 'idle' | 'loading' | 'active' | 'error';
@@ -210,6 +210,9 @@ export function useStreaming({ profileId, isOwnProfile, user, supabase, channelR
                   // Always use the ref — it's always the freshest stream
                   const currentStream = localStreamRef.current;
                   if (currentStream) {
+                    const vTracks = currentStream.getVideoTracks();
+                    const aTracks = currentStream.getAudioTracks();
+                    console.log(`[WebRTC] Answering with stream: video=${vTracks.length} (${vTracks[0]?.readyState || 'none'}) audio=${aTracks.length} (${aTracks[0]?.readyState || 'none'})`);
                     call.answer(currentStream);
                   } else {
                     console.warn('[WebRTC] No local stream to answer with');
