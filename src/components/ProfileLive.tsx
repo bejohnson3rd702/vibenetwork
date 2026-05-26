@@ -50,6 +50,7 @@ export interface ProfileLiveProps {
   startLiveStream: () => void;
   setShowTipModal: (b: boolean) => void;
   localStream?: MediaStream | null;
+  liveCountdown?: number | null;
 }
 
 export const ProfileLive: React.FC<ProfileLiveProps> = ({
@@ -61,7 +62,7 @@ export const ProfileLive: React.FC<ProfileLiveProps> = ({
   user, guests, subPrice, setLivePrice, setStreamSource, setLiveEmbedUrl,
   setIsPlayingLive, setIsPubliclyLive, setPresenterMode, setGuests,
   setLocalGuestData, handleStripeCheckout, handleUnlockLive, handleSubscribe,
-  startLiveStream, setShowTipModal, localStream
+  startLiveStream, setShowTipModal, localStream, liveCountdown
 }) => {
   const toast = useToast();
   const viewerVideoRef = React.useRef<HTMLVideoElement>(null);
