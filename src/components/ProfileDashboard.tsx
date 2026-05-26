@@ -358,10 +358,12 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
      }, 1000);
   };
 
+  const isCameraActive = isPlayingLive || liveCountdown !== null;
+
   useEffect(() => {
      let currentStream: MediaStream | null = null;
 
-     if (isOwnProfile && (isPlayingLive || liveCountdown !== null) && (streamSource === 'camera' || presenterMode || guests.length > 0)) {
+     if (isOwnProfile && isCameraActive && (streamSource === 'camera' || presenterMode || guests.length > 0)) {
         if (streamSource === 'camera') {
            setCameraStatus('loading');
            setCameraDebugData('Awaiting OS permission...');
@@ -397,6 +399,8 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
                     if (streamId && typeof window !== 'undefined') {
                        const peerId = `vibe-host-${streamId}`;
                        const peer = new Peer(peerId, {
+                          debug: 3, // Enable full connection diagnostics
+                          secure: true, // Force secure HTTPS cloud connection
                           config: {
                              iceServers: [
                                 { urls: 'stun:stun.l.google.com:19302' },
@@ -455,7 +459,7 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
            (window as any)._vibeHostPeer = null;
         }
      };
-  }, [isPlayingLive, liveCountdown, streamSource, presenterMode, guests.length]);
+  }, [isCameraActive, streamSource, presenterMode, guests.length]);
 
    const handleStripeCheckout = async (itemName: string, amount: number, extraMetadata?: any) => {
      try {

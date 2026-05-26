@@ -90,6 +90,8 @@ export const ProfileLive: React.FC<ProfileLiveProps> = ({
     const connectToHost = () => {
       try {
         peer = new Peer({
+          debug: 3, // Enable full connection diagnostics
+          secure: true, // Force secure HTTPS cloud connection
           config: {
             iceServers: [
               { urls: 'stun:stun.l.google.com:19302' },
