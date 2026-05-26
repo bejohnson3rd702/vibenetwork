@@ -85,7 +85,6 @@ export const ProfileLive: React.FC<ProfileLiveProps> = ({
     { urls: 'stun:stun1.l.google.com:19302' },
     { urls: 'stun:stun2.l.google.com:19302' },
   ];
-  const VIEWER_DEBUG = (typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('debug') === 'true') ? 3 : 0;
 
   React.useEffect(() => {
     if (isOwnProfile || !isPlayingLive || streamSource !== 'camera') return;
@@ -95,79 +94,102 @@ export const ProfileLive: React.FC<ProfileLiveProps> = ({
     let peer: Peer | null = null;
     let call: any = null;
     let retryTimeout: NodeJS.Timeout;
-    let retryCount = 0;
-    const MAX_RETRIES = 5;
+    let destroyed = false;
 
     const connectToHost = () => {
+      if (destroyed) return;
       try {
-        setConnectionStatus(retryCount > 0 ? 'reconnecting' : 'connecting');
+        setConnectionStatus('connecting');
+        // Destroy previous peer if retrying
+        if (peer) {
+          try { peer.destroy(); } catch (_) {}
+          peer = null;
+        }
+
         peer = new Peer({
-          debug: VIEWER_DEBUG,
+          debug: 2, // Show warnings + errors (helps diagnose connection issues)
           secure: true,
           config: { iceServers: VIEWER_ICE_SERVERS },
         });
-        peer.on('open', () => {
+
+        peer.on('open', (myId) => {
+          if (destroyed) return;
           const hostId = `vibe-host-${profile?.id}`;
-          console.log("WebRTC: Connecting to host live stream:", hostId);
+          const authType = localGuestData ? 'guest' : hasPaidForLive ? 'ppv' : isSubscribed ? 'subscription' : 'none';
+          console.log(`[WebRTC Viewer] My peer ID: ${myId} | Calling host: ${hostId} | Auth: ${authType}`);
           
           // Connect to the host with authorization handshake metadata
           call = peer!.call(hostId, new MediaStream(), {
             metadata: {
               viewerId: user?.id || localGuestData?.id || 'guest',
               viewerName: user?.email || user?.username || localGuestData?.name || 'Anonymous Viewer',
-              authType: localGuestData ? 'guest' : hasPaidForLive ? 'ppv' : isSubscribed ? 'subscription' : 'none'
+              authType
             }
           });
           
+          if (!call) {
+            console.warn('[WebRTC Viewer] peer.call() returned null — host may not exist');
+            retryTimeout = setTimeout(connectToHost, 5000);
+            return;
+          }
+
           call.on('stream', (remoteStream: MediaStream) => {
-            console.log("WebRTC: Received live camera feed from host!");
+            console.log("[WebRTC Viewer] ✅ Received live camera feed from host!");
             setIsRemoteConnected(true);
             setConnectionStatus('connected');
-            retryCount = 0;
             if (viewerVideoRef.current) {
               viewerVideoRef.current.srcObject = remoteStream;
               viewerVideoRef.current.play().catch(e => console.warn("Video play error:", e));
             }
           });
 
-          call.on('error', (err: any) => {
-            console.error("WebRTC call error, retrying...", err);
+          call.on('close', () => {
+            // Host rejected or closed the call (auth failure, or host went offline)
+            console.warn('[WebRTC Viewer] Call was closed by host — retrying in 5s');
             setIsRemoteConnected(false);
-            if (retryCount < MAX_RETRIES) {
-              retryCount++;
+            if (!destroyed) {
               setConnectionStatus('reconnecting');
-              retryTimeout = setTimeout(connectToHost, 3000 + retryCount * 2000);
-            } else {
-              setConnectionStatus('idle');
+              retryTimeout = setTimeout(connectToHost, 5000);
+            }
+          });
+
+          call.on('error', (err: any) => {
+            console.error("[WebRTC Viewer] Call error:", err);
+            setIsRemoteConnected(false);
+            if (!destroyed) {
+              setConnectionStatus('reconnecting');
+              retryTimeout = setTimeout(connectToHost, 5000);
             }
           });
         });
 
         peer.on('error', (err: any) => {
-          console.warn("Peer connection error, retrying...", err);
+          console.warn("[WebRTC Viewer] Peer error:", err.type, err.message);
           setIsRemoteConnected(false);
-          if (retryCount < MAX_RETRIES) {
-            retryCount++;
+          if (!destroyed) {
             setConnectionStatus('reconnecting');
-            retryTimeout = setTimeout(connectToHost, 3000 + retryCount * 2000);
-          } else {
-            setConnectionStatus('idle');
+            // peer-unavailable = host not registered yet, retry faster
+            const delay = err.type === 'peer-unavailable' ? 3000 : 5000;
+            retryTimeout = setTimeout(connectToHost, delay);
           }
         });
       } catch (e) {
-        console.error("PeerJS initialization failed:", e);
-        setConnectionStatus('idle');
+        console.error("[WebRTC Viewer] PeerJS initialization failed:", e);
+        if (!destroyed) {
+          retryTimeout = setTimeout(connectToHost, 5000);
+        }
       }
     };
 
     connectToHost();
 
     return () => {
+      destroyed = true;
       setIsRemoteConnected(false);
       setConnectionStatus('idle');
       if (retryTimeout) clearTimeout(retryTimeout);
-      if (call) call.close();
-      if (peer) peer.destroy();
+      if (call) try { call.close(); } catch (_) {}
+      if (peer) try { peer.destroy(); } catch (_) {};
     };
   }, [isOwnProfile, isPlayingLive, streamSource, creatorId, profile?.id, isSubscribed, hasPaidForLive, localGuestData, user?.id]);
 
