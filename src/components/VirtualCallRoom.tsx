@@ -4,6 +4,7 @@ import Peer from 'peerjs';
 import { Mic, MicOff, Video, VideoOff, PhoneOff } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useToast } from '../context/ToastContext';
+import { getSafeUserMedia } from '../lib/mediaUtils';
 
 const VirtualCallRoom: React.FC = () => {
   const { callId } = useParams();
@@ -29,61 +30,8 @@ const VirtualCallRoom: React.FC = () => {
       setPeerId(id);
     });
 
-    const getSafeUserMedia = async (): Promise<MediaStream> => {
-      const constraints: MediaStreamConstraints = {
-         video: { facingMode: "user" },
-         audio: { echoCancellation: true, noiseSuppression: true }
-      };
-      try {
-         if (navigator.mediaDevices && navigator.mediaDevices.enumerateDevices) {
-            const devices = await navigator.mediaDevices.enumerateDevices();
-            const hasLabels = devices.some(d => d.label);
-            if (hasLabels) {
-               const audioDevices = devices.filter(d => d.kind === 'audioinput');
-               const physicalAudio = audioDevices.find(d => {
-                  const label = d.label.toLowerCase();
-                  return label && 
-                         !label.includes('zoom') && 
-                         !label.includes('virtual') && 
-                         !label.includes('obs') &&
-                         !label.includes('blackhole') &&
-                         !label.includes('soundflower') &&
-                         !label.includes('loopback');
-               });
-               if (physicalAudio && physicalAudio.deviceId) {
-                  constraints.audio = {
-                     deviceId: { exact: physicalAudio.deviceId },
-                     echoCancellation: true,
-                     noiseSuppression: true
-                  };
-               }
-               
-               const videoDevices = devices.filter(d => d.kind === 'videoinput');
-               const physicalVideo = videoDevices.find(d => {
-                  const label = d.label.toLowerCase();
-                  return label && 
-                         !label.includes('zoom') && 
-                         !label.includes('virtual') && 
-                         !label.includes('obs') &&
-                         !label.includes('epoccam') &&
-                         !label.includes('camo');
-               });
-               if (physicalVideo && physicalVideo.deviceId) {
-                  constraints.video = {
-                     deviceId: { exact: physicalVideo.deviceId },
-                     facingMode: "user"
-                  };
-               }
-            }
-         }
-      } catch (e) {
-         console.warn("Failed to filter out virtual media devices in room:", e);
-      }
-      return navigator.mediaDevices.getUserMedia(constraints);
-    };
-
     // Request camera/mic permissions securely without triggering virtual drivers
-    getSafeUserMedia()
+    getSafeUserMedia(true, true)
       .then((stream) => {
         myStream.current = stream;
         if (myVideoRef.current) {

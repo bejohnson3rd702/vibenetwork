@@ -9,7 +9,7 @@ import { ProfileLive } from './ProfileLive';
 const LiveChat = React.lazy(() => import('./LiveChat'));
 import Community from '../pages/Community';
 import { useNavigate, useParams, useLocation } from 'react-router-dom';
-import Peer from 'peerjs';
+import { useStreaming } from '../hooks/useStreaming';
 import { loadStripe } from '@stripe/stripe-js';
 import { useWhiteLabel } from '../context/WhiteLabelContext';
 import { Helmet } from 'react-helmet-async';
@@ -122,34 +122,42 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
   const [newTimeInput, setNewTimeInput] = useState('');
   const [refundPolicy, setRefundPolicy] = useState('');
   
-  // Live Stream State
-  const [isPlayingLive, setIsPlayingLive] = useState(false);
-  const [isPubliclyLive, setIsPubliclyLive] = useState(false);
-  const [livePrice, setLivePrice] = useState('5.00');
-  const [hasPaidForLive, setHasPaidForLive] = useState(false);
-  const [previewTimeLeft, setPreviewTimeLeft] = useState(90);
-  const [directorLayout, setDirectorLayout] = useState('grid');
-  const [isSubscribed, setIsSubscribed] = useState(false);
-  const [subPrice, setSubPrice] = useState('9.99');
   const [deletePostId, setDeletePostId] = useState<string | number | null>(null);
   const [editPostData, setEditPostData] = useState<{ id: string | number, content: string } | null>(null);
-  const [cameraStatus, setCameraStatus] = useState<'idle'|'loading'|'active'|'error'>('idle');
-  const [cameraDebugData, setCameraDebugData] = useState<string>('');
-  const [liveCountdown, setLiveCountdown] = useState<number | null>(null);
-  const [liveEmbedUrl, setLiveEmbedUrl] = useState('');
-  const [streamSource, setStreamSource] = useState<'url' | 'camera'>('url');
-  const [guests, setGuests] = useState<{id: string, name: string, title: string, isLive: boolean}[]>([]);
-  const [guestSetup, setGuestSetup] = useState<{show: boolean, name: string, title: string}>({show: false, name: '', title: ''});
-  const [localGuestData, setLocalGuestData] = useState<{id: string, name: string, title: string, isLive: boolean} | null>(null);
-  const [showTipModal, setShowTipModal] = useState(false);
-  const [tipAmount, setTipAmount] = useState<number | ''>('');
-  const [presenterMode, setPresenterMode] = useState(false);
-  const [showExitScreen, setShowExitScreen] = useState(false);
-  const [localStream, setLocalStream] = useState<MediaStream | null>(null);
 
-  const videoRef = useRef<HTMLVideoElement>(null);
-  
   const channelRef = useRef<any>(null);
+
+  // ── Live Streaming (extracted to hook) ──
+  const streaming = useStreaming({
+    profileId: targetProfileId,
+    isOwnProfile: !!isOwnProfile,
+    user,
+    supabase,
+    channelRef,
+  });
+  const {
+    isPlayingLive, setIsPlayingLive,
+    isPubliclyLive, setIsPubliclyLive,
+    liveCountdown,
+    streamSource, setStreamSource,
+    liveEmbedUrl, setLiveEmbedUrl,
+    cameraStatus, cameraDebugData, localStream, videoRef,
+    guests, setGuests,
+    localGuestData, setLocalGuestData,
+    guestSetup, setGuestSetup,
+    presenterMode, setPresenterMode,
+    directorLayout,
+    livePrice, setLivePrice,
+    hasPaidForLive, setHasPaidForLive,
+    previewTimeLeft,
+    isSubscribed, setIsSubscribed,
+    subPrice, setSubPrice,
+    showTipModal, setShowTipModal,
+    tipAmount, setTipAmount,
+    showExitScreen, setShowExitScreen,
+    isPreviewExpired,
+    startLiveStream,
+  } = streaming;
 
   useEffect(() => {
     const params = new URLSearchParams(location.search);
@@ -208,311 +216,8 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
     return () => clearInterval(int);
   }, [homepageImageUrl]);
 
-  useEffect(() => {
-    let timer: NodeJS.Timeout;
-    if (!isOwnProfile && isPlayingLive && !hasPaidForLive && previewTimeLeft > 0) {
-      timer = setInterval(() => {
-        setPreviewTimeLeft(prev => Math.max(0, prev - 1));
-      }, 1000);
-    }
-    return () => clearInterval(timer);
-  }, [isOwnProfile, isPlayingLive, hasPaidForLive, previewTimeLeft]);
-
-  const isPreviewExpired = !isOwnProfile && isPlayingLive && !hasPaidForLive && previewTimeLeft === 0;
-
-  useEffect(() => {
-    if (!supabase || !targetProfileId) return;
-    
-    const channel = supabase.channel(`stream-room-${targetProfileId}`);
-    channelRef.current = channel;
-
-    // Listen for live stream status announcements
-    channel.on('broadcast', { event: 'stream_status' }, (payload) => {
-        const { isPlayingLive: hostIsPlaying, isPubliclyLive: hostIsPublic, streamSource: hostSource, liveEmbedUrl: hostUrl } = payload.payload;
-        setIsPlayingLive(hostIsPlaying);
-        setIsPubliclyLive(hostIsPublic);
-        if (hostSource) setStreamSource(hostSource);
-        if (hostUrl !== undefined) setLiveEmbedUrl(hostUrl);
-    });
-
-    // Listen for master host sync
-    channel.on('broadcast', { event: 'host_sync_guests' }, (payload) => {
-        const guestList = payload.payload;
-        setGuests(guestList);
-        
-        // Always bounce to local cache for reliability fallback
-        if (typeof window !== 'undefined') {
-            localStorage.setItem('vibe_host_guests_session', JSON.stringify(guestList));
-        }
-
-        // Auto-update Guest UI if they were added to Live Stream by Host
-        setLocalGuestData(currentLocalGuest => {
-           if (currentLocalGuest) {
-               const myState = guestList.find((g: any) => g.id === currentLocalGuest.id);
-               if (myState && myState.isLive !== currentLocalGuest.isLive) {
-                   return { ...currentLocalGuest, isLive: myState.isLive };
-               }
-           }
-           return currentLocalGuest;
-        });
-    });
-
-
-
-    // Listen for guests requesting to join
-    channel.on('broadcast', { event: 'guest_interaction' }, (payload) => {
-        const { action, guestParam } = payload.payload;
-        const isHost = user?.id === targetProfileId;
-        if (isHost && typeof window !== 'undefined') {
-            const current = JSON.parse(localStorage.getItem('vibe_host_guests_session') || '[]');
-            let updated = [...current];
-            if (action === 'joined') {
-               if (!updated.find((g: any) => g.id === guestParam.id)) {
-                   updated.push(guestParam);
-               }
-            } else if (action === 'left') {
-               updated = updated.filter((g: any) => g.id !== guestParam.id);
-            }
-            localStorage.setItem('vibe_host_guests_session', JSON.stringify(updated));
-            window.dispatchEvent(new Event('vibe_guests_updated'));
-        }
-    });
-
-    channel.subscribe((status) => {
-       if (status === 'SUBSCRIBED') {
-           // Host announces initial cache
-           if (user?.id === targetProfileId && typeof window !== 'undefined') {
-               const current = JSON.parse(localStorage.getItem('vibe_host_guests_session') || '[]');
-               if (current.length > 0) {
-                   channel.send({ type: 'broadcast', event: 'host_sync_guests', payload: current });
-               }
-           }
-       }
-    });
-
-    const handleGuestSync = () => {
-      if (typeof window !== 'undefined') {
-         try {
-           const gInfo = JSON.parse(localStorage.getItem('vibe_host_guests_session') || '[]');
-           setGuests(gInfo);
-           // Host syncs globally
-           if (user?.id === targetProfileId) {
-               channel.send({ type: 'broadcast', event: 'host_sync_guests', payload: gInfo });
-           }
-         } catch (e) {}
-      }
-    };
-    handleGuestSync();
-    
-    window.addEventListener('storage', handleGuestSync);
-    window.addEventListener('vibe_guests_updated', handleGuestSync);
-
-    return () => {
-      window.removeEventListener('storage', handleGuestSync);
-      window.removeEventListener('vibe_guests_updated', handleGuestSync);
-      supabase.removeChannel(channel);
-    };
-  }, [targetProfileId, user, location.search]);
-
-  // Real-time Live Stream Synchronization Heartbeat
-  useEffect(() => {
-    if (!isOwnProfile || !isPlayingLive) {
-      if (isOwnProfile && !isPlayingLive && channelRef.current) {
-        channelRef.current.send({
-          type: 'broadcast',
-          event: 'stream_status',
-          payload: { isPlayingLive: false, isPubliclyLive: false }
-        });
-      }
-      return;
-    }
-    
-    const broadcastStatus = () => {
-      if (channelRef.current) {
-        channelRef.current.send({
-          type: 'broadcast',
-          event: 'stream_status',
-          payload: { isPlayingLive, isPubliclyLive, streamSource, liveEmbedUrl }
-        });
-      }
-    };
-    broadcastStatus();
-
-    const interval = setInterval(broadcastStatus, 3000);
-    return () => clearInterval(interval);
-  }, [isOwnProfile, isPlayingLive, isPubliclyLive, streamSource, liveEmbedUrl]);
-
-  const startLiveStream = () => {
-     setLiveCountdown(3);
-     let ticker = 3;
-     const interval = setInterval(() => {
-        ticker -= 1;
-        if (ticker <= 0) {
-           clearInterval(interval);
-           setLiveCountdown(null);
-           setIsPlayingLive(true);
-           setIsPubliclyLive(true); // Directly go live publicly!
-        } else {
-           setLiveCountdown(ticker);
-        }
-     }, 1000);
-  };
-
-  const isCameraActive = isPlayingLive || liveCountdown !== null;
-
-  useEffect(() => {
-     let currentStream: MediaStream | null = null;
-
-     const getSafeUserMedia = async (): Promise<MediaStream> => {
-         const constraints: MediaStreamConstraints = {
-            video: { facingMode: "user" },
-            audio: { echoCancellation: true, noiseSuppression: true }
-         };
-         try {
-            if (navigator.mediaDevices && navigator.mediaDevices.enumerateDevices) {
-               const devices = await navigator.mediaDevices.enumerateDevices();
-               const hasLabels = devices.some(d => d.label);
-               if (hasLabels) {
-                  const audioDevices = devices.filter(d => d.kind === 'audioinput');
-                  const physicalAudio = audioDevices.find(d => {
-                     const label = d.label.toLowerCase();
-                     return label && 
-                            !label.includes('zoom') && 
-                            !label.includes('virtual') && 
-                            !label.includes('obs') &&
-                            !label.includes('blackhole') &&
-                            !label.includes('soundflower') &&
-                            !label.includes('loopback');
-                  });
-                  if (physicalAudio && physicalAudio.deviceId) {
-                     constraints.audio = {
-                        deviceId: { exact: physicalAudio.deviceId },
-                        echoCancellation: true,
-                        noiseSuppression: true
-                     };
-                  }
-                  
-                  const videoDevices = devices.filter(d => d.kind === 'videoinput');
-                  const physicalVideo = videoDevices.find(d => {
-                     const label = d.label.toLowerCase();
-                     return label && 
-                            !label.includes('zoom') && 
-                            !label.includes('virtual') && 
-                            !label.includes('obs') &&
-                            !label.includes('epoccam') &&
-                            !label.includes('camo');
-                  });
-                  if (physicalVideo && physicalVideo.deviceId) {
-                     constraints.video = {
-                        deviceId: { exact: physicalVideo.deviceId },
-                        facingMode: "user"
-                     };
-                  }
-               }
-            }
-         } catch (e) {
-            console.warn("Failed to filter out virtual media devices:", e);
-         }
-         return navigator.mediaDevices.getUserMedia(constraints);
-      };
-
-      if (isOwnProfile && isCameraActive && (streamSource === 'camera' || presenterMode || guests.length > 0)) {
-        if (streamSource === 'camera') {
-           setCameraStatus('loading');
-           setCameraDebugData('Awaiting OS permission...');
-        }
-        
-        try {
-           if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-               throw new Error("navigator.mediaDevices.getUserMedia is utterly undefined! Browser locked it out (HTTP or permission block).");
-           }
-           
-           getSafeUserMedia()
-              .then(stream => {
-                 try {
-                    setCameraStatus('active');
-                    currentStream = stream;
-                    setLocalStream(stream);
-                    const videoTrack = stream.getVideoTracks()[0];
-                    const dimensions = videoTrack && videoTrack.getSettings ? `${videoTrack.getSettings().width}x${videoTrack.getSettings().height}` : 'No Track/Settings';
-                    setCameraDebugData(`Stream Mounted: ${dimensions} | Au: ${stream.getAudioTracks().length}`);
-                    
-                    if (videoRef.current) {
-                       videoRef.current.srcObject = stream;
-                       videoRef.current.defaultMuted = true;
-                       videoRef.current.muted = true;
-                       videoRef.current.play().then(() => {
-                          setCameraDebugData(prev => prev + ' | Play:OK');
-                       }).catch(e => {
-                          setCameraDebugData(prev => prev + ` | PlayErr: ${e.message}`);
-                       });
-                    }
-                    
-                    const streamId = profile?.id;
-                    if (streamId && typeof window !== 'undefined') {
-                       const peerId = `vibe-host-${streamId}`;
-                       const peer = new Peer(peerId, {
-                          debug: 3, // Enable full connection diagnostics
-                          secure: true, // Force secure HTTPS cloud connection
-                          config: {
-                             iceServers: [
-                                { urls: 'stun:stun.l.google.com:19302' },
-                                { urls: 'stun:stun1.l.google.com:19302' },
-                                { urls: 'stun:stun2.l.google.com:19302' }
-                             ]
-                          }
-                       });
-                       peer.on('call', (call) => {
-                          const meta = call.metadata || {};
-                          const isGuest = guests && guests.some((g: any) => g.id === meta.viewerId);
-                          const isSubscriber = meta.authType === 'subscription' || meta.authType === 'ppv';
-                          const isSelf = meta.viewerId === user?.id;
-
-                          if (isSubscriber || isGuest || isSelf) {
-                             console.log(`[WebRTC Secure Ingest] Authorized stream connection accepted: ${meta.viewerName || 'Subscriber'} (${meta.authType})`);
-                             call.answer(stream);
-                          } else {
-                             console.warn(`[WebRTC Secure Ingest] Blocked unauthorized stream access attempt: ${meta.viewerName || 'Unknown'} (${meta.authType || 'none'})`);
-                             call.close();
-                          }
-                       });
-                       peer.on('open', () => {
-                          if (channelRef.current) {
-                             channelRef.current.send({ type: 'broadcast', event: 'webrtc_host_ready', payload: { streamId } });
-                          }
-                       });
-                       (window as any)._vibeHostPeer = peer;
-                    }
-                 } catch (innerErr: any) {
-                    setCameraStatus('error');
-                    setCameraDebugData(`Inner Crash: ${innerErr.message}`);
-                 }
-              })
-              .catch(err => {
-                 setCameraStatus('error');
-                 setCameraDebugData(`GUM Error: ${err.name} - ${err.message}`);
-              });
-        } catch (outerErr: any) {
-             setCameraStatus('error');
-             setCameraDebugData(`Outer Crash: ${outerErr.message}`);
-        }
-     } else {
-        setCameraStatus('idle');
-        setCameraDebugData('Idle State');
-     }
-     
-     // Cleanup function to strictly stop hardware tracks
-     return () => {
-        if (currentStream) {
-           currentStream.getTracks().forEach(track => track.stop());
-        }
-        setLocalStream(null);
-        if (typeof window !== 'undefined' && (window as any)._vibeHostPeer) {
-           (window as any)._vibeHostPeer.destroy();
-           (window as any)._vibeHostPeer = null;
-        }
-     };
-  }, [isCameraActive, streamSource, presenterMode, guests.length]);
+  // NOTE: Preview countdown, Supabase channel, heartbeat, camera init, PeerJS host,
+  // and startLiveStream are all managed by the useStreaming hook above.
 
    const handleStripeCheckout = async (itemName: string, amount: number, extraMetadata?: any) => {
      try {

@@ -97,6 +97,8 @@ export default function LiveChat({ streamId }: { streamId: string }) {
         })
         .on('broadcast', { event: 'new-message' }, (payload) => {
           const msg = payload.payload.message;
+          // Skip messages sent by the current user (they were already added optimistically)
+          if (currentUser && msg.user === currentUser.username && !msg.isSuperTip) return;
           if (msg.isSuperTip) {
             setPinnedSuperTip(msg);
           }

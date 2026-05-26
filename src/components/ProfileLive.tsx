@@ -78,6 +78,18 @@ export const ProfileLive: React.FC<ProfileLiveProps> = ({
     }
   }, [isOwnProfile, localStream, videoRef, cameraStatus, isPlayingLive]);
 
+  const [connectionStatus, setConnectionStatus] = React.useState<'idle' | 'connecting' | 'connected' | 'reconnecting'>('idle');
+
+  const VIEWER_ICE_SERVERS: RTCIceServer[] = [
+    { urls: 'stun:stun.l.google.com:19302' },
+    { urls: 'stun:stun1.l.google.com:19302' },
+    { urls: 'stun:stun2.l.google.com:19302' },
+    { urls: 'turn:openrelay.metered.ca:80', username: 'openrelayproject', credential: 'openrelayproject' },
+    { urls: 'turn:openrelay.metered.ca:443', username: 'openrelayproject', credential: 'openrelayproject' },
+    { urls: 'turn:openrelay.metered.ca:443?transport=tcp', username: 'openrelayproject', credential: 'openrelayproject' },
+  ];
+  const VIEWER_DEBUG = (typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('debug') === 'true') ? 3 : 0;
+
   React.useEffect(() => {
     if (isOwnProfile || !isPlayingLive || streamSource !== 'camera') return;
     // Strictly block connection requests if the user is unauthorized
@@ -86,19 +98,16 @@ export const ProfileLive: React.FC<ProfileLiveProps> = ({
     let peer: Peer | null = null;
     let call: any = null;
     let retryTimeout: NodeJS.Timeout;
+    let retryCount = 0;
+    const MAX_RETRIES = 5;
 
     const connectToHost = () => {
       try {
+        setConnectionStatus(retryCount > 0 ? 'reconnecting' : 'connecting');
         peer = new Peer({
-          debug: 3, // Enable full connection diagnostics
-          secure: true, // Force secure HTTPS cloud connection
-          config: {
-            iceServers: [
-              { urls: 'stun:stun.l.google.com:19302' },
-              { urls: 'stun:stun1.l.google.com:19302' },
-              { urls: 'stun:stun2.l.google.com:19302' }
-            ]
-          }
+          debug: VIEWER_DEBUG,
+          secure: true,
+          config: { iceServers: VIEWER_ICE_SERVERS },
         });
         peer.on('open', () => {
           const hostId = `vibe-host-${profile?.id}`;
@@ -116,6 +125,8 @@ export const ProfileLive: React.FC<ProfileLiveProps> = ({
           call.on('stream', (remoteStream: MediaStream) => {
             console.log("WebRTC: Received live camera feed from host!");
             setIsRemoteConnected(true);
+            setConnectionStatus('connected');
+            retryCount = 0;
             if (viewerVideoRef.current) {
               viewerVideoRef.current.srcObject = remoteStream;
               viewerVideoRef.current.play().catch(e => console.warn("Video play error:", e));
@@ -125,17 +136,30 @@ export const ProfileLive: React.FC<ProfileLiveProps> = ({
           call.on('error', (err: any) => {
             console.error("WebRTC call error, retrying...", err);
             setIsRemoteConnected(false);
-            retryTimeout = setTimeout(connectToHost, 5000);
+            if (retryCount < MAX_RETRIES) {
+              retryCount++;
+              setConnectionStatus('reconnecting');
+              retryTimeout = setTimeout(connectToHost, 3000 + retryCount * 2000);
+            } else {
+              setConnectionStatus('idle');
+            }
           });
         });
 
         peer.on('error', (err: any) => {
           console.warn("Peer connection error, retrying...", err);
           setIsRemoteConnected(false);
-          retryTimeout = setTimeout(connectToHost, 5000);
+          if (retryCount < MAX_RETRIES) {
+            retryCount++;
+            setConnectionStatus('reconnecting');
+            retryTimeout = setTimeout(connectToHost, 3000 + retryCount * 2000);
+          } else {
+            setConnectionStatus('idle');
+          }
         });
       } catch (e) {
         console.error("PeerJS initialization failed:", e);
+        setConnectionStatus('idle');
       }
     };
 
@@ -143,6 +167,7 @@ export const ProfileLive: React.FC<ProfileLiveProps> = ({
 
     return () => {
       setIsRemoteConnected(false);
+      setConnectionStatus('idle');
       if (retryTimeout) clearTimeout(retryTimeout);
       if (call) call.close();
       if (peer) peer.destroy();
@@ -352,6 +377,15 @@ export const ProfileLive: React.FC<ProfileLiveProps> = ({
                                         controls
                                         style={{ width: '100%', height: '100%', objectFit: 'cover', border: 'none', display: isRemoteConnected ? 'block' : 'none' }}
                                       />
+                                      {/* Connection Status Overlay */}
+                                      {!isRemoteConnected && (connectionStatus === 'connecting' || connectionStatus === 'reconnecting') && (
+                                        <div style={{ position: 'absolute', top: 12, left: 12, display: 'flex', alignItems: 'center', gap: '8px', background: 'rgba(0,0,0,0.7)', padding: '6px 14px', borderRadius: '20px', backdropFilter: 'blur(10px)', zIndex: 10, border: '1px solid rgba(255,255,255,0.1)' }}>
+                                          <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: connectionStatus === 'reconnecting' ? '#ff9900' : '#00ff88', animation: 'pulse 1.5s ease-in-out infinite' }} />
+                                          <span style={{ fontSize: '11px', color: '#fff', fontWeight: 600, letterSpacing: '0.5px', textTransform: 'uppercase' }}>
+                                            {connectionStatus === 'reconnecting' ? 'Reconnecting...' : 'Connecting...'}
+                                          </span>
+                                        </div>
+                                      )}
                                       {/* Direct Fallback Loop while connecting/blocked */}
                                       {!isRemoteConnected && (
                                         <video
