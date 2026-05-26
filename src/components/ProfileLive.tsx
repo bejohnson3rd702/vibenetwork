@@ -252,7 +252,7 @@ export const ProfileLive: React.FC<ProfileLiveProps> = ({
                             />
                           ) : (
                             <video
-                              src="https://assets.mixkit.co/videos/preview/mixkit-concert-stage-with-neon-lights-and-smoke-41710-large.mp4"
+                              src="/videos/tiesto.mp4"
                               autoPlay
                               loop
                               muted
@@ -273,7 +273,7 @@ export const ProfileLive: React.FC<ProfileLiveProps> = ({
                             />
                           ) : (
                             <video
-                              src="https://assets.mixkit.co/videos/preview/mixkit-concert-stage-with-neon-lights-and-smoke-41710-large.mp4"
+                              src="/videos/tiesto.mp4"
                               autoPlay
                               loop
                               muted
@@ -355,7 +355,7 @@ export const ProfileLive: React.FC<ProfileLiveProps> = ({
                                       {/* Direct Fallback Loop while connecting/blocked */}
                                       {!isRemoteConnected && (
                                         <video
-                                          src="https://assets.mixkit.co/videos/preview/mixkit-concert-stage-with-neon-lights-and-smoke-41710-large.mp4"
+                                          src="/videos/tiesto.mp4"
                                           autoPlay
                                           loop
                                           muted
@@ -366,7 +366,7 @@ export const ProfileLive: React.FC<ProfileLiveProps> = ({
                                     </div>
                                   ) : (
                                     <video
-                                      src="https://assets.mixkit.co/videos/preview/mixkit-concert-stage-with-neon-lights-and-smoke-41710-large.mp4"
+                                      src="/videos/tiesto.mp4"
                                       autoPlay
                                       loop
                                       muted

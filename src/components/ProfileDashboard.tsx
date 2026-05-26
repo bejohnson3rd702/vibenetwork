@@ -363,7 +363,60 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
   useEffect(() => {
      let currentStream: MediaStream | null = null;
 
-     if (isOwnProfile && isCameraActive && (streamSource === 'camera' || presenterMode || guests.length > 0)) {
+     const getSafeUserMedia = async (): Promise<MediaStream> => {
+         const constraints: MediaStreamConstraints = {
+            video: { facingMode: "user" },
+            audio: { echoCancellation: true, noiseSuppression: true }
+         };
+         try {
+            if (navigator.mediaDevices && navigator.mediaDevices.enumerateDevices) {
+               const devices = await navigator.mediaDevices.enumerateDevices();
+               const hasLabels = devices.some(d => d.label);
+               if (hasLabels) {
+                  const audioDevices = devices.filter(d => d.kind === 'audioinput');
+                  const physicalAudio = audioDevices.find(d => {
+                     const label = d.label.toLowerCase();
+                     return label && 
+                            !label.includes('zoom') && 
+                            !label.includes('virtual') && 
+                            !label.includes('obs') &&
+                            !label.includes('blackhole') &&
+                            !label.includes('soundflower') &&
+                            !label.includes('loopback');
+                  });
+                  if (physicalAudio && physicalAudio.deviceId) {
+                     constraints.audio = {
+                        deviceId: { exact: physicalAudio.deviceId },
+                        echoCancellation: true,
+                        noiseSuppression: true
+                     };
+                  }
+                  
+                  const videoDevices = devices.filter(d => d.kind === 'videoinput');
+                  const physicalVideo = videoDevices.find(d => {
+                     const label = d.label.toLowerCase();
+                     return label && 
+                            !label.includes('zoom') && 
+                            !label.includes('virtual') && 
+                            !label.includes('obs') &&
+                            !label.includes('epoccam') &&
+                            !label.includes('camo');
+                  });
+                  if (physicalVideo && physicalVideo.deviceId) {
+                     constraints.video = {
+                        deviceId: { exact: physicalVideo.deviceId },
+                        facingMode: "user"
+                     };
+                  }
+               }
+            }
+         } catch (e) {
+            console.warn("Failed to filter out virtual media devices:", e);
+         }
+         return navigator.mediaDevices.getUserMedia(constraints);
+      };
+
+      if (isOwnProfile && isCameraActive && (streamSource === 'camera' || presenterMode || guests.length > 0)) {
         if (streamSource === 'camera') {
            setCameraStatus('loading');
            setCameraDebugData('Awaiting OS permission...');
@@ -374,7 +427,7 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
                throw new Error("navigator.mediaDevices.getUserMedia is utterly undefined! Browser locked it out (HTTP or permission block).");
            }
            
-           navigator.mediaDevices.getUserMedia({ video: true, audio: true })
+           getSafeUserMedia()
               .then(stream => {
                  try {
                     setCameraStatus('active');
