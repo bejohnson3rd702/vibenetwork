@@ -49,6 +49,7 @@ export interface ProfileLiveProps {
   handleSubscribe: () => void;
   startLiveStream: () => void;
   setShowTipModal: (b: boolean) => void;
+  localStream?: MediaStream | null;
 }
 
 export const ProfileLive: React.FC<ProfileLiveProps> = ({
@@ -60,11 +61,21 @@ export const ProfileLive: React.FC<ProfileLiveProps> = ({
   user, guests, subPrice, setLivePrice, setStreamSource, setLiveEmbedUrl,
   setIsPlayingLive, setIsPubliclyLive, setPresenterMode, setGuests,
   setLocalGuestData, handleStripeCheckout, handleUnlockLive, handleSubscribe,
-  startLiveStream, setShowTipModal
+  startLiveStream, setShowTipModal, localStream
 }) => {
   const toast = useToast();
   const viewerVideoRef = React.useRef<HTMLVideoElement>(null);
   const [isRemoteConnected, setIsRemoteConnected] = React.useState(false);
+
+  React.useEffect(() => {
+    if (isOwnProfile && localStream && videoRef.current) {
+      console.log("WebRTC: Attaching localStream to host video element.");
+      videoRef.current.srcObject = localStream;
+      videoRef.current.defaultMuted = true;
+      videoRef.current.muted = true;
+      videoRef.current.play().catch(e => console.warn("Local video play warning:", e));
+    }
+  }, [isOwnProfile, localStream, videoRef, cameraStatus, isPlayingLive]);
 
   React.useEffect(() => {
     if (isOwnProfile || !isPlayingLive || streamSource !== 'camera') return;

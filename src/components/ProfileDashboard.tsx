@@ -145,6 +145,7 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
   const [tipAmount, setTipAmount] = useState<number | ''>('');
   const [presenterMode, setPresenterMode] = useState(false);
   const [showExitScreen, setShowExitScreen] = useState(false);
+  const [localStream, setLocalStream] = useState<MediaStream | null>(null);
 
   const videoRef = useRef<HTMLVideoElement>(null);
   
@@ -384,6 +385,7 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
                  try {
                     setCameraStatus('active');
                     currentStream = stream;
+                    setLocalStream(stream);
                     const videoTrack = stream.getVideoTracks()[0];
                     const dimensions = videoTrack && videoTrack.getSettings ? `${videoTrack.getSettings().width}x${videoTrack.getSettings().height}` : 'No Track/Settings';
                     setCameraDebugData(`Stream Mounted: ${dimensions} | Au: ${stream.getAudioTracks().length}`);
@@ -455,6 +457,7 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
         if (currentStream) {
            currentStream.getTracks().forEach(track => track.stop());
         }
+        setLocalStream(null);
         if (typeof window !== 'undefined' && (window as any)._vibeHostPeer) {
            (window as any)._vibeHostPeer.destroy();
            (window as any)._vibeHostPeer = null;
@@ -2412,6 +2415,7 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
             setPresenterMode={setPresenterMode} setGuests={setGuests} setLocalGuestData={setLocalGuestData}
             handleStripeCheckout={handleStripeCheckout} handleUnlockLive={handleUnlockLive}
             handleSubscribe={handleSubscribe} startLiveStream={startLiveStream} setShowTipModal={setShowTipModal}
+            localStream={localStream}
           />
         )}
 
