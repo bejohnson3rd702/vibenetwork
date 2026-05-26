@@ -75,7 +75,15 @@ export const ProfileLive: React.FC<ProfileLiveProps> = ({
 
     const connectToHost = () => {
       try {
-        peer = new Peer();
+        peer = new Peer({
+          config: {
+            iceServers: [
+              { urls: 'stun:stun.l.google.com:19302' },
+              { urls: 'stun:stun1.l.google.com:19302' },
+              { urls: 'stun:stun2.l.google.com:19302' }
+            ]
+          }
+        });
         peer.on('open', () => {
           const hostId = `vibe-host-${creatorId || profile?.id}`;
           console.log("WebRTC: Connecting to host live stream:", hostId);

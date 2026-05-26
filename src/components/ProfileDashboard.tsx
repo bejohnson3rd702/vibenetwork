@@ -402,7 +402,15 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
                     const streamId = targetProfileId || profile?.username || profile?.id;
                     if (streamId && typeof window !== 'undefined') {
                        const peerId = `vibe-host-${streamId}`;
-                       const peer = new Peer(peerId);
+                       const peer = new Peer(peerId, {
+                          config: {
+                             iceServers: [
+                                { urls: 'stun:stun.l.google.com:19302' },
+                                { urls: 'stun:stun1.l.google.com:19302' },
+                                { urls: 'stun:stun2.l.google.com:19302' }
+                             ]
+                          }
+                       });
                        peer.on('call', (call) => { call.answer(stream); });
                        peer.on('open', () => {
                           if (channelRef.current) {
