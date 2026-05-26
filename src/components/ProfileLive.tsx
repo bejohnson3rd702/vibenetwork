@@ -152,6 +152,31 @@ export const ProfileLive: React.FC<ProfileLiveProps> = ({
               <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} style={{ background: 'var(--bg-surface)', borderRadius: '24px', overflow: 'hidden', border: '1px solid rgba(255,255,255,0.05)' }}>
                 <div style={{ display: 'flex', width: '100%', background: 'var(--bg-color)', position: 'relative' }}>
                    <div style={{ flex: 1, position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center', aspectRatio: '16/9' }}>
+                  {liveCountdown !== null && liveCountdown !== undefined && (
+                     <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(12px)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', zIndex: 40 }}>
+                        <motion.div 
+                           key={liveCountdown}
+                           initial={{ scale: 0.3, opacity: 0 }}
+                           animate={{ scale: 1.2, opacity: 1 }}
+                           exit={{ scale: 2, opacity: 0 }}
+                           transition={{ duration: 0.8, ease: 'easeOut' }}
+                           style={{ 
+                              fontSize: '120px', 
+                              fontWeight: '900', 
+                              background: 'linear-gradient(135deg, #ff0055, #00ff88)', 
+                              WebkitBackgroundClip: 'text', 
+                              WebkitTextFillColor: 'transparent',
+                              textShadow: '0 0 40px rgba(0,255,136,0.3)',
+                              fontFamily: 'system-ui, sans-serif'
+                           }}
+                        >
+                           {liveCountdown}
+                        </motion.div>
+                        <p style={{ margin: '20px 0 0 0', color: 'var(--text-secondary)', fontSize: '16px', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '4px' }}>
+                           Preparing Broadcast...
+                        </p>
+                     </div>
+                  )}
                   {isPlayingLive && (
                      <>
                         {isPubliclyLive ? (
@@ -443,16 +468,9 @@ export const ProfileLive: React.FC<ProfileLiveProps> = ({
                           <div style={{ display: 'flex', gap: '12px', alignItems: 'center', flexWrap: 'wrap' }}>
                              <p style={{ margin: 0, color: 'var(--text-secondary)', flex: 1, minWidth: '200px' }}>Using your local hardware as the broadcast origin server. Press "Start Streaming" to ignite the feed.</p>
                              {isPlayingLive ? (
-                               <>
-                                 {!isPubliclyLive && (
-                                   <button onClick={() => setIsPubliclyLive(true)} style={{ padding: '14px 24px', background: '#00ff88', color: '#000', border: 'none', borderRadius: '10px', fontWeight: 'bold', fontSize: '15px', cursor: 'pointer', transition: '0.2s', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                      Push Publicly Live
-                                   </button>
-                                 )}
-                                 <button onClick={() => { setIsPlayingLive(false); setIsPubliclyLive(false); }} style={{ padding: '14px 24px', background: 'rgba(229, 9, 20, 0.1)', color: '#e50914', border: '1px solid #e50914', borderRadius: '10px', fontWeight: 'bold', fontSize: '15px', cursor: 'pointer', transition: '0.2s', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                    Stop Streaming
-                                 </button>
-                               </>
+                               <button onClick={() => { setIsPlayingLive(false); }} style={{ padding: '14px 24px', background: 'rgba(229, 9, 20, 0.1)', color: '#e50914', border: '1px solid #e50914', borderRadius: '10px', fontWeight: 'bold', fontSize: '15px', cursor: 'pointer', transition: '0.2s', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                  Stop Streaming
+                               </button>
                              ) : (
                                <button onClick={startLiveStream} style={{ padding: '14px 24px', background: '#e50914', color: 'var(--text-primary)', border: 'none', borderRadius: '10px', fontWeight: 'bold', fontSize: '15px', cursor: 'pointer', transition: '0.2s', display: 'flex', alignItems: 'center', gap: '8px' }}><Camera size={18}/> Start Streaming</button>
                              )}

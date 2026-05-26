@@ -351,14 +351,9 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
            clearInterval(interval);
            setLiveCountdown(null);
            setIsPlayingLive(true);
+           setIsPubliclyLive(true); // Directly go live publicly!
            if (streamSource === 'camera') {
               setCameraStatus('loading');
-           }
-           // If using external URL, bypass studio mode and go straight to live
-           if (streamSource === 'url') {
-              setIsPubliclyLive(true);
-           } else {
-              setIsPubliclyLive(false);
            }
         } else {
            setLiveCountdown(ticker);
@@ -369,7 +364,7 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
   useEffect(() => {
      let currentStream: MediaStream | null = null;
 
-     if (isOwnProfile && isPlayingLive && (streamSource === 'camera' || presenterMode || guests.length > 0)) {
+     if (isOwnProfile && (isPlayingLive || liveCountdown !== null) && (streamSource === 'camera' || presenterMode || guests.length > 0)) {
         if (streamSource === 'camera') {
            setCameraStatus('loading');
            setCameraDebugData('Awaiting OS permission...');
@@ -463,7 +458,7 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
            (window as any)._vibeHostPeer = null;
         }
      };
-  }, [isPlayingLive, streamSource, presenterMode, guests.length]);
+  }, [isPlayingLive, liveCountdown, streamSource, presenterMode, guests.length]);
 
    const handleStripeCheckout = async (itemName: string, amount: number, extraMetadata?: any) => {
      try {
@@ -2416,6 +2411,7 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
             handleStripeCheckout={handleStripeCheckout} handleUnlockLive={handleUnlockLive}
             handleSubscribe={handleSubscribe} startLiveStream={startLiveStream} setShowTipModal={setShowTipModal}
             localStream={localStream}
+            liveCountdown={liveCountdown}
           />
         )}
 
