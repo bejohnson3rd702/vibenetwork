@@ -118,17 +118,28 @@ export const ProfileLive: React.FC<ProfileLiveProps> = ({
           const authType = localGuestData ? 'guest' : hasPaidForLive ? 'ppv' : isSubscribed ? 'subscription' : 'none';
           console.log(`[WebRTC Viewer] My peer ID: ${myId} | Calling host: ${hostId} | Auth: ${authType}`);
           
-          // Create a dummy video track so the SDP offer includes m=video line.
-          // Without this, the offer has no media descriptions and the host's
-          // camera stream can't be negotiated into the answer.
+          // Create dummy video + audio tracks so the SDP offer includes both
+          // m=video and m=audio lines. Without m=audio, the host's microphone
+          // stream can't be negotiated into the answer.
           let viewerStream: MediaStream;
           try {
+            // Dummy video: 2x2 black canvas, 0 fps
             const canvas = document.createElement('canvas');
             canvas.width = 2;
             canvas.height = 2;
             const ctx2d = canvas.getContext('2d');
             if (ctx2d) ctx2d.fillRect(0, 0, 2, 2);
-            viewerStream = canvas.captureStream(0); // 0 fps = single frame, minimal overhead
+            const canvasStream = canvas.captureStream(0);
+
+            // Dummy audio: silent AudioContext destination
+            const audioCtx = new AudioContext();
+            const dest = audioCtx.createMediaStreamDestination();
+
+            // Combine video + audio into one stream
+            viewerStream = new MediaStream([
+              ...canvasStream.getVideoTracks(),
+              ...dest.stream.getAudioTracks(),
+            ]);
           } catch (_) {
             viewerStream = new MediaStream(); // fallback
           }
