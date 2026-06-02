@@ -10,6 +10,7 @@ const CollegeTicker = lazy(() => import('../components/CollegeTicker'));
 const CollegeNewsFeed = lazy(() => import('../components/CollegeNewsFeed'));
 const WatchLive = lazy(() => import('../components/WatchLive'));
 const ChildNetworkFeeds = lazy(() => import('../components/ChildNetworkFeeds'));
+const TopAmbassadors = lazy(() => import('../components/TopAmbassadors'));
 
 interface N2NHomeProps {
   wlConfig: any;
@@ -320,6 +321,11 @@ export default function N2NHome({ wlConfig, categories, activeVideo, setActiveVi
             />
           </div>
         )}
+
+        {/* ── Top Ambassadors Spotlight ────────────────────────── */}
+        <Suspense fallback={null}>
+          <TopAmbassadors parentId={config.id} accent={config.accent} />
+        </Suspense>
 
         {/* ── Child Network Feed Spotlight ─────────────────────── */}
         <Suspense fallback={null}>
