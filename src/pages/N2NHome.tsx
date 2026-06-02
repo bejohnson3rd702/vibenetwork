@@ -220,7 +220,7 @@ export default function N2NHome({ wlConfig, categories, activeVideo, setActiveVi
         {childItems.length > 0 && (
           <div id="child-networks-slider">
             <SliderSection
-              title="Our Networks"
+              title="AVO NETWORKS"
               items={childItems}
               delay={0}
               aspectRatio="16/9"
