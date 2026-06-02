@@ -400,7 +400,7 @@ export default function N2NHome({ wlConfig, categories, activeVideo, setActiveVi
                   style={{
                     display: 'inline-block', padding: '14px 44px', fontSize: '11px', fontWeight: 800,
                     textTransform: 'uppercase', letterSpacing: '2.5px',
-                    background: accent, color: '#000',
+                    background: accent, color: '#fff',
                     border: 'none', textDecoration: 'none',
                     transition: 'all 0.25s',
                     cursor: 'pointer'
@@ -477,7 +477,7 @@ export default function N2NHome({ wlConfig, categories, activeVideo, setActiveVi
                   style={{
                     display: 'inline-block', padding: '14px 44px', fontSize: '11px', fontWeight: 800,
                     textTransform: 'uppercase', letterSpacing: '2.5px',
-                    background: accent, color: '#000',
+                    background: accent, color: '#fff',
                     border: 'none', transition: 'all 0.25s',
                     cursor: 'pointer'
                   }}
