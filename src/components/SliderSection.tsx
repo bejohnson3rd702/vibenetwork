@@ -9,6 +9,7 @@ interface Item {
   tags: string[];
   videoUrl?: string;
   linkUrl?: string;
+  accent?: string;
 }
 
 interface SliderSectionProps {
@@ -40,10 +41,10 @@ const SlideItem: React.FC<{ item: Item, aspectRatio: string, onClick?: () => voi
         referrerPolicy="no-referrer"
         style={{
           position: 'absolute',
-          top: isNetwork ? '15%' : 0,
-          left: isNetwork ? '15%' : 0,
-          width: isNetwork ? '70%' : '100%',
-          height: isNetwork ? '70%' : '100%',
+          top: isNetwork ? '8%' : 0,
+          left: isNetwork ? '8%' : 0,
+          width: isNetwork ? '84%' : '100%',
+          height: isNetwork ? '84%' : '100%',
           objectFit: isNetwork ? 'contain' : 'cover',
           zIndex: 0,
         }}
@@ -173,7 +174,9 @@ const SlideItem: React.FC<{ item: Item, aspectRatio: string, onClick?: () => voi
         boxShadow: isHovered ? '0 20px 40px rgba(0,0,0,0.8)' : '0 10px 30px rgba(0,0,0,0.5)',
         transition: 'all 0.4s ease',
         borderRadius: '24px',
-        background: isNetwork ? '#0a0a0a' : 'var(--bg-color)'
+        background: isNetwork 
+          ? `radial-gradient(circle at center, ${item.accent || '#D35400'}${isHovered ? '44' : '2a'} 0%, #000000 100%)` 
+          : 'var(--bg-color)'
       }}
     >
       {innerContent}

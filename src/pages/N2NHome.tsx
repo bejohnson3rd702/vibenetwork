@@ -46,6 +46,7 @@ export default function N2NHome({ wlConfig, categories, activeVideo, setActiveVi
           tags: ['Network'],
           videoUrl: '',
           linkUrl: '/?tenant=' + child.id,
+          accent: child.accent,
         }))
       );
 
