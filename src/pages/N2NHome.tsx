@@ -11,6 +11,7 @@ const CollegeNewsFeed = lazy(() => import('../components/CollegeNewsFeed'));
 const WatchLive = lazy(() => import('../components/WatchLive'));
 const ChildNetworkFeeds = lazy(() => import('../components/ChildNetworkFeeds'));
 const TopAmbassadors = lazy(() => import('../components/TopAmbassadors'));
+const AmbassadorModal = lazy(() => import('../components/AmbassadorModal'));
 
 interface N2NHomeProps {
   wlConfig: any;
@@ -29,6 +30,7 @@ export default function N2NHome({ wlConfig, categories, activeVideo, setActiveVi
   // ─── Child Networks ──────────────────────────────────────────────
   const [childItems, setChildItems] = useState<any[]>([]);
   const [childCategories, setChildCategories] = useState<any[]>([]);
+  const [isAmbassadorOpen, setIsAmbassadorOpen] = useState(false);
 
   useEffect(() => {
     if (!config?.id) return;
@@ -466,22 +468,21 @@ export default function N2NHome({ wlConfig, categories, activeVideo, setActiveVi
                   Join the AVO Ambassador Program and bring premium college apparel to your school. Earn exclusive perks, early access to drops, and commissions on every sale.
                 </p>
               </div>
-              <a
-                href="https://shopavo.la/pages/ambassadors"
-                target="_blank"
-                rel="noopener noreferrer"
+              <button
+                onClick={() => setIsAmbassadorOpen(true)}
                 style={{
                   display: 'inline-block', padding: '15px 48px', fontSize: '11px', fontWeight: 800,
                   textTransform: 'uppercase', letterSpacing: '2.5px',
                   background: 'transparent', color: '#fff',
                   border: '1.5px solid #fff', textDecoration: 'none',
                   transition: 'all 0.25s', flexShrink: 0,
+                  cursor: 'pointer'
                 }}
                 onMouseOver={e => { e.currentTarget.style.background = '#fff'; e.currentTarget.style.color = '#000'; }}
                 onMouseOut={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = '#fff'; }}
               >
                 More Info
-              </a>
+              </button>
             </div>
           </div>
         </section>
@@ -621,6 +622,15 @@ export default function N2NHome({ wlConfig, categories, activeVideo, setActiveVi
           <p style={{ color: 'var(--text-muted)', fontSize: '12px', marginTop: '40px' }}>&copy; {new Date().getFullYear()} {config?.name || 'Vibe Media Networks LLC'}. All rights reserved.</p>
         </div>
       </footer>
+
+      {/* ── Ambassador Application Modal ─────────────────────── */}
+      <Suspense fallback={null}>
+        <AmbassadorModal 
+          isOpen={isAmbassadorOpen} 
+          onClose={() => setIsAmbassadorOpen(false)} 
+          accent={accent} 
+        />
+      </Suspense>
     </>
   );
 }
