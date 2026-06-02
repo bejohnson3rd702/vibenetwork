@@ -28,7 +28,16 @@ const SlideItem: React.FC<{ item: Item, aspectRatio: string, onClick?: () => voi
 
   const innerContent = (
     <motion.div 
-      style={{ position: 'relative', width: '100%', height: '100%', borderRadius: '24px', overflow: 'hidden' }}
+      style={{ 
+        position: 'relative', 
+        width: '100%', 
+        height: '100%', 
+        borderRadius: '24px', 
+        overflow: 'hidden',
+        background: isNetwork 
+          ? `radial-gradient(circle at center, ${item.accent || '#D35400'}${isHovered ? 'aa' : '77'} 0%, #000000 100%)` 
+          : 'transparent'
+      }}
       whileHover={{ y: -8 }}
       transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
     >
@@ -174,9 +183,7 @@ const SlideItem: React.FC<{ item: Item, aspectRatio: string, onClick?: () => voi
         boxShadow: isHovered ? '0 20px 40px rgba(0,0,0,0.8)' : '0 10px 30px rgba(0,0,0,0.5)',
         transition: 'all 0.4s ease',
         borderRadius: '24px',
-        background: isNetwork 
-          ? `radial-gradient(circle at center, ${item.accent || '#D35400'}${isHovered ? '44' : '2a'} 0%, #000000 100%)` 
-          : 'var(--bg-color)'
+        background: isNetwork ? '#000000' : 'var(--bg-color)'
       }}
     >
       {innerContent}
