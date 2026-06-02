@@ -1,0 +1,338 @@
+import { useState, useEffect } from 'react';
+import { Palette, Save, Eye, Type, Image, Link, ChevronDown } from 'lucide-react';
+import { useToast } from '../../context/ToastContext';
+import { getChildNetworks, updateChildBranding } from '../../lib/n2n';
+
+export const N2NBrandingTab = ({ wlConfig }: { wlConfig: any }) => {
+  const toast = useToast();
+  const accent = wlConfig?.accent || '#D35400';
+
+  const [children, setChildren] = useState<any[]>([]);
+  const [selectedId, setSelectedId] = useState<string>('');
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+
+  // Editable fields
+  const [name, setName] = useState('');
+  const [childAccent, setChildAccent] = useState('#D35400');
+  const [heroCopy, setHeroCopy] = useState('');
+  const [logoUrl, setLogoUrl] = useState('');
+  const [heroImageUrl, setHeroImageUrl] = useState('');
+
+  useEffect(() => {
+    if (!wlConfig?.id) return;
+    const load = async () => {
+      setLoading(true);
+      const nets = await getChildNetworks(wlConfig.id);
+      setChildren(nets);
+      if (nets.length > 0) {
+        setSelectedId(nets[0].id);
+        applyChild(nets[0]);
+      }
+      setLoading(false);
+    };
+    load();
+  }, [wlConfig?.id]);
+
+  const applyChild = (child: any) => {
+    setName(child.name || '');
+    setChildAccent(child.theme?.accent || child.accent || '#D35400');
+    setHeroCopy(child.theme?.heroCopy || '');
+    setLogoUrl(child.logo || '');
+    setHeroImageUrl(child.theme?.heroImage || '');
+  };
+
+  const handleSelectChild = (id: string) => {
+    setSelectedId(id);
+    const child = children.find(c => c.id === id);
+    if (child) applyChild(child);
+  };
+
+  const handleSave = async () => {
+    if (!selectedId) return;
+    setSaving(true);
+    const ok = await updateChildBranding(selectedId, {
+      name,
+      accent: childAccent,
+      heroCopy,
+      logo: logoUrl,
+      heroImage: heroImageUrl,
+    });
+    setSaving(false);
+    if (ok) {
+      setChildren(prev => prev.map(c => c.id === selectedId ? {
+        ...c,
+        name,
+        logo: logoUrl,
+        theme: { ...c.theme, accent: childAccent, heroCopy, heroImage: heroImageUrl },
+      } : c));
+      toast.success('Branding saved successfully!');
+    } else {
+      toast.error('Failed to save branding');
+    }
+  };
+
+  const cardStyle: React.CSSProperties = {
+    background: 'rgba(255,255,255,0.02)',
+    border: '1px solid rgba(255,255,255,0.05)',
+    borderRadius: '20px',
+    padding: '30px',
+  };
+
+  const labelStyle: React.CSSProperties = {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '8px',
+  };
+
+  const labelTextStyle: React.CSSProperties = {
+    fontSize: '14px',
+    fontWeight: '600',
+    color: 'var(--text-secondary)',
+    display: 'flex',
+    alignItems: 'center',
+    gap: '8px',
+  };
+
+  const inputStyle: React.CSSProperties = {
+    padding: '12px 16px',
+    background: 'rgba(0,0,0,0.4)',
+    border: '1px solid rgba(255,255,255,0.1)',
+    borderRadius: '12px',
+    color: 'var(--text-primary)',
+    fontSize: '15px',
+    outline: 'none',
+    width: '100%',
+    boxSizing: 'border-box',
+    transition: 'border-color 0.2s',
+  };
+
+  const selectedChild = children.find(c => c.id === selectedId);
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+      <div>
+        <h1 style={{ fontSize: '36px', marginBottom: '12px', fontWeight: '900', letterSpacing: '-1px' }}>
+          Child Branding Editor
+        </h1>
+        <p style={{ color: 'var(--text-muted)', fontSize: '18px', lineHeight: 1.5 }}>
+          Customize the look and feel of each child network.
+        </p>
+      </div>
+
+      {/* Network Selector */}
+      <div style={cardStyle}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px' }}>
+          <ChevronDown size={18} color={accent} />
+          <span style={{ fontSize: '16px', fontWeight: '700', color: 'var(--text-primary)' }}>Select Child Network</span>
+        </div>
+        {loading ? (
+          <div style={{ color: 'var(--text-muted)', padding: '12px' }}>Loading networks...</div>
+        ) : children.length === 0 ? (
+          <div style={{ color: 'var(--text-muted)', padding: '12px' }}>No child networks found.</div>
+        ) : (
+          <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+            {children.map(child => (
+              <button
+                key={child.id}
+                onClick={() => handleSelectChild(child.id)}
+                style={{
+                  padding: '10px 20px',
+                  borderRadius: '12px',
+                  border: selectedId === child.id ? `2px solid ${child.theme?.accent || accent}` : '1px solid rgba(255,255,255,0.08)',
+                  background: selectedId === child.id ? `${child.theme?.accent || accent}18` : 'rgba(0,0,0,0.3)',
+                  color: selectedId === child.id ? (child.theme?.accent || accent) : 'var(--text-secondary)',
+                  fontWeight: selectedId === child.id ? '700' : '500',
+                  fontSize: '14px',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                }}
+              >
+                <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: child.theme?.accent || child.accent || accent }} />
+                {child.name}
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {selectedChild && (
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px' }}>
+          {/* Editor Panel */}
+          <div style={{ ...cardStyle, display: 'flex', flexDirection: 'column', gap: '24px' }}>
+            <h3 style={{ margin: 0, fontSize: '20px', display: 'flex', alignItems: 'center', gap: '10px' }}>
+              <Palette size={20} color={childAccent} />
+              Branding Fields
+            </h3>
+
+            <div style={labelStyle}>
+              <span style={labelTextStyle}><Type size={14} /> Network Name</span>
+              <input
+                type="text"
+                value={name}
+                onChange={e => setName(e.target.value)}
+                style={inputStyle}
+                placeholder="Enter network name..."
+              />
+            </div>
+
+            <div style={labelStyle}>
+              <span style={labelTextStyle}><Palette size={14} /> Accent Color</span>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+                <input
+                  type="color"
+                  value={childAccent}
+                  onChange={e => setChildAccent(e.target.value)}
+                  style={{ width: '56px', height: '56px', padding: 0, border: 'none', borderRadius: '12px', cursor: 'pointer', background: 'transparent' }}
+                />
+                <span style={{ fontFamily: 'monospace', fontSize: '16px', background: 'rgba(255,255,255,0.05)', padding: '8px 16px', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.1)', color: 'var(--text-primary)' }}>
+                  {childAccent.toUpperCase()}
+                </span>
+              </div>
+            </div>
+
+            <div style={labelStyle}>
+              <span style={labelTextStyle}><Type size={14} /> Hero Copy</span>
+              <textarea
+                value={heroCopy}
+                onChange={e => setHeroCopy(e.target.value)}
+                rows={4}
+                style={{ ...inputStyle, resize: 'vertical', fontFamily: 'inherit', lineHeight: 1.6 }}
+                placeholder="Welcome headline or hero text..."
+              />
+            </div>
+
+            <div style={labelStyle}>
+              <span style={labelTextStyle}><Link size={14} /> Logo URL</span>
+              <input
+                type="text"
+                value={logoUrl}
+                onChange={e => setLogoUrl(e.target.value)}
+                style={inputStyle}
+                placeholder="https://..."
+              />
+            </div>
+
+            <div style={labelStyle}>
+              <span style={labelTextStyle}><Image size={14} /> Hero Image URL</span>
+              <input
+                type="text"
+                value={heroImageUrl}
+                onChange={e => setHeroImageUrl(e.target.value)}
+                style={inputStyle}
+                placeholder="https://..."
+              />
+            </div>
+
+            <div style={{ height: '1px', background: 'rgba(255,255,255,0.05)' }} />
+
+            <button
+              onClick={handleSave}
+              disabled={saving}
+              style={{
+                padding: '16px 32px',
+                background: childAccent,
+                color: '#fff',
+                fontWeight: 'bold',
+                border: 'none',
+                borderRadius: '12px',
+                fontSize: '16px',
+                cursor: saving ? 'not-allowed' : 'pointer',
+                boxShadow: `0 8px 30px ${childAccent}44`,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '10px',
+                opacity: saving ? 0.7 : 1,
+                transition: 'all 0.2s',
+                alignSelf: 'flex-start',
+              }}
+            >
+              <Save size={18} />
+              {saving ? 'Saving...' : 'Save Branding'}
+            </button>
+          </div>
+
+          {/* Live Preview Panel */}
+          <div style={{ ...cardStyle, display: 'flex', flexDirection: 'column', gap: '20px' }}>
+            <h3 style={{ margin: 0, fontSize: '20px', display: 'flex', alignItems: 'center', gap: '10px' }}>
+              <Eye size={20} color={childAccent} />
+              Live Preview
+            </h3>
+
+            {/* Mini preview card */}
+            <div style={{
+              borderRadius: '16px',
+              overflow: 'hidden',
+              border: `1px solid ${childAccent}33`,
+              background: 'rgba(0,0,0,0.5)',
+            }}>
+              {/* Hero area */}
+              <div style={{
+                height: '180px',
+                background: heroImageUrl
+                  ? `linear-gradient(to bottom, transparent, rgba(0,0,0,0.8)), url(${heroImageUrl}) center/cover no-repeat`
+                  : `linear-gradient(135deg, ${childAccent}33, rgba(0,0,0,0.6))`,
+                display: 'flex',
+                alignItems: 'flex-end',
+                padding: '24px',
+              }}>
+                <div>
+                  {logoUrl && (
+                    <img
+                      src={logoUrl}
+                      alt="Logo"
+                      style={{ height: '32px', objectFit: 'contain', marginBottom: '12px', display: 'block' }}
+                      onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+                    />
+                  )}
+                  <div style={{ fontSize: '22px', fontWeight: '900', color: '#fff', lineHeight: 1.3 }}>
+                    {heroCopy || name || 'Hero Copy Preview'}
+                  </div>
+                </div>
+              </div>
+
+              {/* Bottom info bar */}
+              <div style={{ padding: '16px 24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <div>
+                  <div style={{ fontSize: '15px', fontWeight: '700', color: 'var(--text-primary)' }}>{name || 'Network Name'}</div>
+                  <div style={{ fontSize: '12px', color: 'var(--text-muted)', marginTop: '4px' }}>Child Network</div>
+                </div>
+                <div style={{
+                  padding: '8px 16px',
+                  borderRadius: '8px',
+                  background: childAccent,
+                  color: '#fff',
+                  fontSize: '13px',
+                  fontWeight: '700',
+                }}>
+                  Explore
+                </div>
+              </div>
+            </div>
+
+            {/* Color Swatch */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '16px', padding: '16px', borderRadius: '12px', background: 'rgba(0,0,0,0.3)' }}>
+              <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: childAccent, flexShrink: 0, boxShadow: `0 4px 20px ${childAccent}44` }} />
+              <div>
+                <div style={{ fontSize: '14px', fontWeight: '600', color: 'var(--text-primary)' }}>Accent Color</div>
+                <div style={{ fontSize: '13px', color: 'var(--text-muted)', fontFamily: 'monospace', marginTop: '4px' }}>{childAccent.toUpperCase()}</div>
+              </div>
+            </div>
+
+            {/* Typography Preview */}
+            <div style={{ padding: '16px', borderRadius: '12px', background: 'rgba(0,0,0,0.3)', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              <div style={{ fontSize: '13px', fontWeight: '600', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '1px' }}>Typography Preview</div>
+              <div style={{ fontSize: '24px', fontWeight: '900', color: 'var(--text-primary)', letterSpacing: '-0.5px' }}>{name || 'Heading'}</div>
+              <div style={{ fontSize: '14px', color: 'var(--text-secondary)', lineHeight: 1.6 }}>{heroCopy || 'Body text will appear here with the applied styling.'}</div>
+              <span style={{ color: childAccent, fontWeight: '700', fontSize: '14px', cursor: 'pointer' }}>Accent Link →</span>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};

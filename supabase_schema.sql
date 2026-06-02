@@ -14,6 +14,9 @@ CREATE TABLE IF NOT EXISTS public.whitelabel_configs (
 
 -- Ensure new columns are added if the table already exists
 ALTER TABLE public.whitelabel_configs ADD COLUMN IF NOT EXISTS owner_id UUID REFERENCES auth.users(id);
+ALTER TABLE public.whitelabel_configs ADD COLUMN IF NOT EXISTS n2n_enabled BOOLEAN DEFAULT false;
+ALTER TABLE public.whitelabel_configs ADD COLUMN IF NOT EXISTS parent_network_id UUID REFERENCES public.whitelabel_configs(id);
+CREATE INDEX IF NOT EXISTS idx_whitelabel_parent ON public.whitelabel_configs(parent_network_id);
 
 -- 2. Profiles
 CREATE TABLE IF NOT EXISTS public.profiles (

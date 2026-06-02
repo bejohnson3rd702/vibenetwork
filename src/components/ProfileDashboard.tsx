@@ -7,6 +7,7 @@ import { EmojiPickerButton } from './EmojiPickerButton';
 import EndUserAuthModal from './EndUserAuthModal';
 import { ProfileLive } from './ProfileLive';
 const LiveChat = React.lazy(() => import('./LiveChat'));
+const ShopifyStore = React.lazy(() => import('./ShopifyStore'));
 import Community from '../pages/Community';
 import { useNavigate, useParams, useLocation } from 'react-router-dom';
 import { useStreaming } from '../hooks/useStreaming';
@@ -424,7 +425,7 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
   const [activeSeriesIdForEp, setActiveSeriesIdForEp] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!targetProfileId) {
+    if (!targetProfileId && !isNetworkLevel) {
       navigate({ pathname: '/', search: location.search });
       return;
     }
@@ -435,7 +436,12 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
 
     async function loadProfile() {
       // Phase 1: Core Identity (Blocks UI)
-      const profilePromise = supabase!.from('profiles').select('*').eq('id', targetProfileId).single();
+      // For network-level views without an owner_id, find the first profile by whitelabel_id
+      const profilePromise = (targetProfileId)
+        ? supabase!.from('profiles').select('*').eq('id', targetProfileId).single()
+        : (isNetworkLevel && wlConfig?.id)
+          ? supabase!.from('profiles').select('*').eq('whitelabel_id', wlConfig.id).limit(1).single()
+          : supabase!.from('profiles').select('*').eq('id', 'none').single();
 
       let postsQuery = supabase!.from('posts').select('*, creator:profiles!inner(username, avatar_url, whitelabel_id), post_likes(user_id), post_comments(*, user:profiles(username, avatar_url))');
       if (isNetworkLevel && wlConfig?.id) postsQuery = postsQuery.eq('creator.whitelabel_id', wlConfig.id).eq('is_locked', false);
@@ -637,7 +643,7 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
 
   if (loading) return <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-primary)' }}>Loading Profile...</div>;
   const isGuestInvite = new URLSearchParams(location.search).get('guest_invite') === 'true';
-  if (!profile && !isGuestInvite) return (
+  if (!profile && !isGuestInvite && !isNetworkLevel) return (
     <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', color: 'var(--text-primary)', background: 'var(--bg-color)' }}>
       <h2 style={{ fontSize: '32px', marginBottom: '10px' }}>Profile Not Found</h2>
       <p style={{ color: 'var(--text-muted)', marginBottom: '30px' }}>This channel doesn't exist, or the user hasn't set up their profile yet.</p>
@@ -1955,6 +1961,12 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
         {activeTab === 'store' && (
         /* ----------- STORE TAB ----------- */
         <div id="profile-storefront" style={{ display: 'flex', flexDirection: 'column', gap: '30px' }}>
+          {/* Shopify Products (fetched from child network's Shopify store) */}
+          {wlConfig?.theme?.shopifyUrl && (
+            <React.Suspense fallback={<div style={{ textAlign: 'center', padding: '40px', color: 'var(--text-muted)' }}>Loading store...</div>}>
+              <ShopifyStore />
+            </React.Suspense>
+          )}
           {/* Storefront Header */}
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '16px', marginBottom: '10px' }}>
             <div>

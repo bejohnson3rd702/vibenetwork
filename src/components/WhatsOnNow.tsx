@@ -1,54 +1,8 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Play } from 'lucide-react';
+import { Play, Tv, X, ChevronLeft, ChevronRight, Clock } from 'lucide-react';
 
 import { getLiveSchedule } from '../api';
-
-const ScheduleRow: React.FC<{ item: any, isActive: boolean, onClick: () => void }> = ({ item, isActive, onClick }) => {
-  return (
-    <div 
-      onClick={onClick}
-      style={{ 
-        display: 'flex',
-        alignItems: 'center',
-        padding: '16px 20px',
-        gap: '16px',
-        cursor: 'pointer',
-        background: isActive ? 'var(--bg-surface-hover)' : 'transparent',
-        borderLeft: isActive ? '3px solid var(--accent-primary)' : '3px solid transparent',
-        transition: 'all 0.2s ease',
-        borderBottom: '1px solid rgba(255,255,255,0.02)'
-      }}
-      onMouseOver={(e) => {
-        if (!isActive) e.currentTarget.style.background = 'var(--bg-surface-hover)';
-      }}
-      onMouseOut={(e) => {
-        if (!isActive) e.currentTarget.style.background = 'transparent';
-      }}
-    >
-      <div style={{ width: '60px', height: '60px', borderRadius: '8px', overflow: 'hidden', flexShrink: 0, position: 'relative' }}>
-        <img src={item.image} alt={item.title} loading="lazy" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-        {isActive && (
-          <div style={{ position: 'absolute', inset: 0, background: 'rgba(211,84,0,0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <Play fill="white" size={20} />
-          </div>
-        )}
-      </div>
-      
-      <div style={{ flex: 1, minWidth: 0 }}>
-        <div style={{ color: isActive ? 'var(--accent-primary)' : 'var(--text-secondary)', fontSize: '12px', fontWeight: 700, marginBottom: '4px', textTransform: 'uppercase', letterSpacing: '1px' }}>
-          {isActive ? 'Live Now' : item.time}
-        </div>
-        <h4 style={{ fontSize: '15px', margin: 0, color: isActive ? 'var(--text-primary)' : 'var(--text-secondary)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-          {item.title}
-        </h4>
-        <div style={{ fontSize: '12px', color: 'var(--text-muted)', marginTop: '4px' }}>
-          {item.tags[0]} • {item.tags[1] || 'Music'}
-        </div>
-      </div>
-    </div>
-  );
-};
 
 const FALLBACK_10_YOUTUBE = [
   { id: 'fb1', title: 'Fred again.. - Boiler Room London', time: 'LIVE', image: 'https://images.unsplash.com/photo-1598387181032-a3103a2db5b3?auto=format&fit=crop&w=800&q=80', video_url: 'https://www.youtube.com/watch?v=c0-hvjV2A5Y', tags: ['House', 'Live'] },
@@ -65,9 +19,9 @@ const FALLBACK_10_YOUTUBE = [
 
 const WhatsOnNow: React.FC = () => {
   const [activeIndex, setActiveIndex] = useState(0);
-  const [userManuallySelected, setUserManuallySelected] = useState(false);
   const [scheduleItems, setScheduleItems] = useState<any[]>([]);
-  const [isPrerollPlaying, setIsPrerollPlaying] = useState(true);
+  const [activeVideo, setActiveVideo] = useState<any>(null);
+  const scrollRef = React.useRef<HTMLDivElement>(null);
 
   React.useEffect(() => {
     async function loadSchedule() {
@@ -75,12 +29,11 @@ const WhatsOnNow: React.FC = () => {
       try {
         const data = await getLiveSchedule();
         if (data && data.length > 0) {
-          const genuineInjections = data.filter((v: any) => 
-            v.video_url && 
-            !v.video_url.includes('bbb.mp4') && 
+          const genuineInjections = data.filter((v: any) =>
+            v.video_url &&
+            !v.video_url.includes('bbb.mp4') &&
             !v.video_url.includes('w3schools')
           );
-          
           if (genuineInjections.length > 0) {
             finalItems = genuineInjections;
           }
@@ -88,16 +41,14 @@ const WhatsOnNow: React.FC = () => {
       } catch (e) {
         console.error("Failed to load live schedule", e);
       }
-      
+
       const now = new Date();
       const currentStartTime = new Date(now);
-      // Start the schedule from the current hour or half-hour slot
       currentStartTime.setMinutes(now.getMinutes() >= 30 ? 30 : 0, 0, 0);
 
       const dynamicSchedule = finalItems.map((item: any, index: number) => {
         const startTime = new Date(currentStartTime.getTime() + index * 30 * 60 * 1000);
         const endTime = new Date(startTime.getTime() + 30 * 60 * 1000);
-        
         return {
           ...item,
           startTime,
@@ -107,213 +58,221 @@ const WhatsOnNow: React.FC = () => {
       });
 
       setScheduleItems(dynamicSchedule);
-      
-      const initialIndex = dynamicSchedule.findIndex((item: any) => now >= item.startTime && now < item.endTime);
-      if (initialIndex !== -1) {
-        setActiveIndex(initialIndex);
-      }
     }
     loadSchedule();
   }, []);
 
   React.useEffect(() => {
-    if (scheduleItems.length === 0 || !scheduleItems[0].startTime) return;
+    if (activeVideo) document.body.style.overflow = 'hidden';
+    else document.body.style.overflow = '';
+    return () => { document.body.style.overflow = ''; };
+  }, [activeVideo]);
 
-    const interval = setInterval(() => {
-      if (userManuallySelected) return;
-      const now = new Date();
-      const currentIndex = scheduleItems.findIndex(item => now >= item.startTime && now < item.endTime);
-      
-      if (currentIndex !== -1 && currentIndex !== activeIndex) {
-        setActiveIndex(currentIndex);
-      }
-    }, 10000);
+  const scroll = (dir: 'left' | 'right') => {
+    scrollRef.current?.scrollBy({ left: dir === 'left' ? -360 : 360, behavior: 'smooth' });
+  };
 
-    return () => clearInterval(interval);
-  }, [scheduleItems, userManuallySelected, activeIndex]);
+  const getYoutubeId = (url: string) => {
+    const match = url.match(/^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/);
+    return (match && match[2].length === 11) ? match[2] : null;
+  };
 
   if (scheduleItems.length === 0) return null;
 
+  const featured = scheduleItems[0];
+  const rest = scheduleItems.slice(1);
+  const accent = 'var(--accent-primary)';
+
   return (
-    <section id="whats-on-now" className="px-mobile-sm py-mobile-sm" style={{ maxWidth: '1400px', margin: '80px auto 40px', padding: '0 40px' }}>
-      
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '30px' }}>
-        <h2 style={{ 
-          fontSize: '24px', 
-          display: 'flex',
-          alignItems: 'center',
-          gap: '12px',
-          margin: 0
-        }}>
-          <span style={{ 
-            width: '12px', 
-            height: '12px', 
-            background: 'var(--accent-primary)', 
-            borderRadius: '50%',
-            boxShadow: '0 0 15px var(--accent-primary)',
-            animation: 'pulse 2s infinite'
-          }} />
-          <span style={{ color: 'var(--text-primary)', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '2px' }}>LIVE NOW</span>
-        </h2>
-      </div>
-
-      <motion.div 
-        initial={{ opacity: 0, y: 30 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true }}
-        transition={{ duration: 0.8 }}
-        className="tv-dashboard-mobile"
-        style={{ 
-          display: 'flex', 
-          width: '100%', 
-          height: '650px', 
-          background: 'var(--bg-color)',
-          borderRadius: '24px', 
-          overflow: 'hidden',
-          border: '1px solid var(--bg-surface-hover)',
-          boxShadow: '0 40px 100px rgba(0,0,0,0.2)'
-        }}
-      >
-        <div className="tv-video-mobile" style={{ flex: '1 1 auto', position: 'relative', background: 'var(--bg-color)', pointerEvents: 'auto' }}>
-          {(() => {
-             if (isPrerollPlaying) {
-               return (
-                 <video 
-                   src="/videos/preroll.mp4"
-                   autoPlay
-                   muted
-                   playsInline
-                   controls={false}
-                   onEnded={() => setIsPrerollPlaying(false)}
-                   style={{ width: '100%', height: '100%', objectFit: 'cover', position: 'absolute', top: 0, left: 0, zIndex: 10, background: '#000' }}
-                 />
-               );
-             }
-
-             const activeItem = scheduleItems[activeIndex];
-             const activeUrl = activeItem?.video_url || 'https://www.youtube.com/watch?v=c0-hvjV2A5Y';
-             const youtubeMatch = activeUrl.match(/^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/);
-             const youtubeId = (youtubeMatch && youtubeMatch[2].length === 11) ? youtubeMatch[2] : null;
-
-             if (youtubeId) {
-                return (
-                   <iframe 
-                     key={youtubeId}
-                     width="100%" 
-                     height="100%" 
-                     src={`https://www.youtube.com/embed/${youtubeId}?autoplay=1&mute=1&playsinline=1&loop=1&playlist=${youtubeId}&controls=1`} 
-                     title={`${activeItem?.title || 'YouTube Player'}`} 
-                     frameBorder="0" 
-                     allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
-                     allowFullScreen
-                     style={{ border: 'none', background: 'var(--bg-color)', position: 'absolute', top: 0, left: 0, width: '100%', height: '100%' }}
-                   />
-                );
-             }
-
-             return (
-               <video 
-                 key={activeUrl}
-                 src={activeUrl.replace('http://', 'https://')}
-                 poster={activeItem?.image}
-                 muted 
-                 controls
-                 autoPlay
-                 loop 
-                 playsInline
-                 style={{ width: '100%', height: '100%', objectFit: 'cover', position: 'absolute', top: 0, left: 0 }} 
-               />
-             );
-          })()}
-          
-          {/* ON AIR overlay removed 
-           <div style={{ 
-              position: 'absolute', 
-              top: '30px', 
-              left: '30px', 
-              background: 'rgba(0,0,0,0.6)',
-              backdropFilter: 'blur(10px)',
-              padding: '8px 16px', 
-              borderRadius: '8px', 
-              fontSize: '13px', 
-              fontWeight: 800,
-              letterSpacing: '2px',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '8px',
-              border: '1px solid rgba(255,255,255,0.1)',
-              zIndex: 20
-          }}>
-            <span style={{ width: '8px', height: '8px', background: 'var(--accent-primary)', borderRadius: '50%' }}></span>
-            ON AIR
+    <>
+      <section id="whats-on-now" style={{ padding: '40px 40px', maxWidth: '1400px', margin: '0 auto' }}>
+        {/* Header — AVO style */}
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '28px', flexWrap: 'wrap', gap: '16px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <div style={{
+              width: '40px', height: '40px', borderRadius: '12px',
+              background: 'linear-gradient(135deg, var(--accent-primary), #ff0050)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+            }}>
+              <Tv size={20} color="#fff" />
+            </div>
+            <div>
+              <h2 style={{ margin: 0, fontSize: '28px', fontWeight: 900, letterSpacing: '-1px' }}>Watch</h2>
+              <p style={{ margin: 0, fontSize: '12px', color: 'var(--text-secondary)' }}>Live sets, DJ mixes & performances</p>
+            </div>
           </div>
-          */}
+          {/* Live indicator */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <span style={{
+              width: '8px', height: '8px', borderRadius: '50%',
+              background: 'var(--accent-primary)',
+              boxShadow: '0 0 12px var(--accent-primary)',
+              animation: 'wonPulse 2s infinite',
+            }} />
+            <span style={{ fontSize: '11px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '2px', color: 'var(--accent-primary)' }}>Live Now</span>
+          </div>
         </div>
 
-        {/* <div className="tv-chat-mobile" style={{ flexShrink: 0, background: 'var(--bg-color)', display: 'flex', flexDirection: 'column' }}>
-          <LiveChat streamId={scheduleItems[activeIndex]?.id || 'main-stage'} />
-        </div> */}
-
-        <div className="tv-guide-mobile" style={{ 
-          width: '380px', 
-          flexShrink: 0, 
-          background: 'var(--bg-surface)', 
-          borderLeft: '1px solid var(--bg-surface-hover)',
-          display: 'flex',
-          flexDirection: 'column'
-        }}>
-          <div style={{ 
-            padding: '30px 24px', 
-            borderBottom: '1px solid var(--bg-surface-hover)',
-            background: 'var(--bg-surface-hover)'
-          }}>
-            <h3 style={{ fontSize: '18px', margin: 0, fontWeight: 700, letterSpacing: '1px' }}>Global Schedule</h3>
-            <p style={{ margin: '6px 0 0', fontSize: '13px', color: 'var(--text-secondary)' }}>Live Enterprise Broadcasts</p>
+        {/* Featured video — large hero card */}
+        {featured && (
+          <div
+            onClick={() => setActiveVideo(featured)}
+            style={{
+              position: 'relative', borderRadius: '20px', overflow: 'hidden',
+              marginBottom: '24px', cursor: 'pointer', transition: 'transform 0.3s',
+            }}
+            onMouseOver={e => { e.currentTarget.style.transform = 'scale(1.003)'; }}
+            onMouseOut={e => { e.currentTarget.style.transform = 'scale(1)'; }}
+          >
+            <div style={{ position: 'relative', width: '100%', aspectRatio: '21/9', overflow: 'hidden' }}>
+              <img src={featured.image} alt={featured.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+              <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(0,0,0,0.95) 0%, rgba(0,0,0,0.3) 50%, transparent 70%)' }} />
+              {/* Play button */}
+              <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <div style={{
+                  width: '72px', height: '72px', borderRadius: '50%',
+                  background: 'var(--accent-primary)', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  boxShadow: '0 8px 30px rgba(211,84,0,0.4)', transition: 'transform 0.2s',
+                }}>
+                  <Play size={28} color="#fff" fill="#fff" style={{ marginLeft: '3px' }} />
+                </div>
+              </div>
+              <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, padding: '40px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '10px' }}>
+                  <span style={{ padding: '4px 10px', borderRadius: '6px', background: 'var(--accent-primary)', color: '#000', fontSize: '10px', fontWeight: 900, textTransform: 'uppercase', letterSpacing: '1px' }}>
+                    {featured.tags?.[0] || 'Live'}
+                  </span>
+                  <span style={{ fontSize: '11px', color: '#888', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                    <Clock size={11} /> {featured.time}
+                  </span>
+                </div>
+                <h3 style={{ margin: '0 0 6px 0', fontSize: '26px', fontWeight: 900, lineHeight: 1.2, maxWidth: '700px' }}>{featured.title}</h3>
+                <p style={{ margin: 0, fontSize: '13px', color: '#aaa', maxWidth: '600px', lineHeight: 1.5 }}>
+                  {featured.tags?.join(' · ')}
+                </p>
+              </div>
+            </div>
           </div>
-          
-          <div className="custom-schedule-scroll" style={{ 
-            flex: 1, 
-            overflowY: 'auto'
-          }}>
-            {scheduleItems.map((item: any, idx: number) => (
-              <ScheduleRow 
-                key={item.id} 
-                item={item} 
-                isActive={activeIndex === idx}
-                onClick={() => {
-                  if (activeIndex !== idx) {
-                    setActiveIndex(idx);
-                    setIsPrerollPlaying(true);
+        )}
+
+        {/* Scrollable clips — horizontal cards */}
+        {rest.length > 0 && (
+          <>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '14px' }}>
+              <h3 style={{ fontSize: '13px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '2px', color: '#666', margin: 0 }}>
+                Up Next
+              </h3>
+              <div style={{ display: 'flex', gap: '6px' }}>
+                <button onClick={() => scroll('left')} style={{ width: '32px', height: '32px', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.08)', background: 'rgba(255,255,255,0.03)', color: '#888', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><ChevronLeft size={16} /></button>
+                <button onClick={() => scroll('right')} style={{ width: '32px', height: '32px', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.08)', background: 'rgba(255,255,255,0.03)', color: '#888', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><ChevronRight size={16} /></button>
+              </div>
+            </div>
+            <div ref={scrollRef} style={{ display: 'flex', gap: '16px', overflowX: 'auto', scrollBehavior: 'smooth', paddingBottom: '8px', scrollbarWidth: 'none' }}>
+              {rest.map(item => (
+                <div
+                  key={item.id}
+                  onClick={() => setActiveVideo(item)}
+                  style={{
+                    flexShrink: 0, width: '320px', borderRadius: '14px', overflow: 'hidden', cursor: 'pointer',
+                    background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)', transition: 'all 0.3s',
+                  }}
+                  onMouseOver={e => { e.currentTarget.style.borderColor = 'rgba(var(--accent-primary-rgb),0.3)'; e.currentTarget.style.transform = 'translateY(-3px)'; }}
+                  onMouseOut={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.05)'; e.currentTarget.style.transform = 'translateY(0)'; }}
+                >
+                  <div style={{ position: 'relative', aspectRatio: '16/9' }}>
+                    <img src={item.image} alt={item.title} loading="lazy" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                    <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(0,0,0,0.25)' }}>
+                      <div style={{ width: '44px', height: '44px', borderRadius: '50%', background: 'rgba(var(--accent-primary-rgb),0.75)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                        <Play size={18} color="#fff" fill="#fff" style={{ marginLeft: '2px' }} />
+                      </div>
+                    </div>
+                    <span style={{ position: 'absolute', bottom: '8px', right: '8px', padding: '2px 8px', borderRadius: '4px', background: 'rgba(0,0,0,0.8)', fontSize: '10px', fontWeight: 700, color: '#ddd' }}>
+                      {item.time}
+                    </span>
+                  </div>
+                  <div style={{ padding: '12px 14px' }}>
+                    <div style={{ fontSize: '9px', fontWeight: 700, color: 'var(--accent-primary)', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '4px' }}>
+                      {item.tags?.[0] || 'Music'} · {item.tags?.[1] || 'Live'}
+                    </div>
+                    <div style={{ fontSize: '13px', fontWeight: 600, lineHeight: 1.4, color: '#ccc', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+                      {item.title}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </>
+        )}
+      </section>
+
+      {/* ═══ Video Player Overlay ═══ */}
+      <AnimatePresence>
+        {activeVideo && (
+          <motion.div
+            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+            onClick={() => setActiveVideo(null)}
+            style={{
+              position: 'fixed', inset: 0, zIndex: 99999,
+              background: 'rgba(0,0,0,0.92)', backdropFilter: 'blur(20px)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              flexDirection: 'column', padding: '60px 40px',
+            }}
+          >
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.95, opacity: 0 }}
+              onClick={e => e.stopPropagation()}
+              style={{ width: '100%', maxWidth: '960px', position: 'relative' }}
+            >
+              <button onClick={() => setActiveVideo(null)}
+                style={{
+                  position: 'absolute', top: '-48px', right: '0', zIndex: 10,
+                  width: '36px', height: '36px', borderRadius: '50%',
+                  background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.15)',
+                  color: '#fff', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                }}>
+                <X size={16} />
+              </button>
+              <div style={{ borderRadius: '16px', overflow: 'hidden', background: '#000', aspectRatio: '16/9' }}>
+                {(() => {
+                  const ytId = getYoutubeId(activeVideo.video_url || '');
+                  if (ytId) {
+                    return (
+                      <iframe
+                        src={`https://www.youtube.com/embed/${ytId}?autoplay=1`}
+                        title={activeVideo.title}
+                        style={{ width: '100%', height: '100%', border: 'none' }}
+                        allow="autoplay; encrypted-media; fullscreen"
+                        allowFullScreen
+                      />
+                    );
                   }
-                  setUserManuallySelected(true);
-                }}
-              />
-            ))}
-          </div>
-        </div>
-      </motion.div>
-      
+                  return (
+                    <video
+                      src={activeVideo.video_url}
+                      controls autoPlay
+                      style={{ width: '100%', height: '100%', objectFit: 'contain' }}
+                      poster={activeVideo.image}
+                    />
+                  );
+                })()}
+              </div>
+              <div style={{ marginTop: '16px' }}>
+                <h3 style={{ margin: '0 0 6px 0', fontSize: '18px', fontWeight: 800, color: '#fff' }}>{activeVideo.title}</h3>
+                <p style={{ margin: 0, fontSize: '13px', color: '#888', lineHeight: 1.5 }}>{activeVideo.tags?.join(' · ')}</p>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       <style>{`
-        @keyframes pulse {
+        @keyframes wonPulse {
           0% { opacity: 1; transform: scale(1); }
-          50% { opacity: 0.4; transform: scale(1.1); }
+          50% { opacity: 0.4; transform: scale(1.2); }
           100% { opacity: 1; transform: scale(1); }
         }
-        .custom-schedule-scroll::-webkit-scrollbar {
-          width: 6px;
-        }
-        .custom-schedule-scroll::-webkit-scrollbar-track {
-          background: transparent;
-        }
-        .custom-schedule-scroll::-webkit-scrollbar-thumb {
-          background: rgba(255, 255, 255, 0.1);
-          border-radius: 10px;
-        }
-        .custom-schedule-scroll::-webkit-scrollbar-thumb:hover {
-          background: rgba(255, 255, 255, 0.2);
-        }
       `}</style>
-    </section>
+    </>
   );
 };
 

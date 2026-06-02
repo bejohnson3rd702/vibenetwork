@@ -8,6 +8,7 @@ import { ASSETS } from '../data';
 import type { WhiteLabelConfig, Category, VideoItem, User } from '../types';
 
 const ProfileDashboard = lazy(() => import('../components/ProfileDashboard'));
+const ShopifyStore = lazy(() => import('../components/ShopifyStore'));
 
 interface WhiteLabelHomeProps {
   wlConfig: WhiteLabelConfig;
@@ -39,17 +40,13 @@ export default function WhiteLabelHome({ wlConfig, categories, user, activeVideo
            style={{ width: '100%', height: '100%', objectFit: 'cover', filter: 'brightness(0.3) contrast(1.2) saturate(1.3)' }} 
          />
          {/* Soft fade into network profile background */}
-         <div style={{ position: 'absolute', bottom: 0, left: 0, width: '100%', height: '300px', background: `linear-gradient(to bottom, transparent 0%, ${wlConfig.bg || 'var(--bg-color)'} 100%)`, pointerEvents: 'none' }} />
+         <div style={{ position: 'absolute', bottom: 0, left: 0, width: '100%', height: '500px', background: 'linear-gradient(to bottom, transparent 0%, rgba(0,0,0,0.6) 40%, #000 100%)', pointerEvents: 'none' }} />
        </div>
        {/* Darkening filter applied directly to image for sharp readability without soft overlays */}
 
        {/* Hero Text Section (Min Height to clear viewport and center properly) */}
        <div className="px-mobile-sm py-mobile-sm px-tablet-md py-tablet-md" style={{ position: 'relative', zIndex: 2, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '85vh', width: '100%', paddingTop: '120px', gap: '32px' }}>
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '20px' }}>
-            <motion.div whileHover={{ scale: 1.05 }} style={{ padding: '10px 20px', background: 'rgba(10,10,10,0.5)', backdropFilter: 'blur(16px)', border: `1px solid ${wlConfig.accent || 'var(--accent-primary)'}66`, borderRadius: '30px', display: 'inline-flex', alignItems: 'center', gap: '10px', boxShadow: `0 0 20px ${wlConfig.accent || 'var(--accent-primary)'}33` }}>
-              <Sparkles size={16} color={wlConfig.accent || 'var(--accent-primary)'} style={{ filter: `drop-shadow(0 0 8px ${wlConfig.accent || 'var(--accent-primary)'})` }} />
-              <span style={{ fontSize: '13px', fontWeight: 700, letterSpacing: '2px', textTransform: 'uppercase', color: '#fff' }}>Live Network Initialized</span>
-            </motion.div>
             <h1 className="hero-title-mobile hero-title-tablet" style={{ fontSize: '70px', fontWeight: '900', margin: 0, letterSpacing: '-4px', lineHeight: 1.1, textAlign: 'center', color: wlConfig.accent || '#ffffff', textShadow: '0 4px 20px rgba(0,0,0,0.8)' }}>
               {wlConfig.theme?.heroTitle || wlConfig.name}
             </h1>

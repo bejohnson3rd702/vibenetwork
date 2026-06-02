@@ -1,6 +1,22 @@
 {
   "rewrites": [
     {
+      "source": "/api/espn/:path*",
+      "destination": "https://site.api.espn.com/apis/site/v2/sports/:path*"
+    },
+    {
+      "source": "/api/story/:path*",
+      "destination": "https://now.core.api.espn.com/v1/sports/news/:path*"
+    },
+    {
+      "source": "/api/ncaa/:path*",
+      "destination": "https://ncaa-api.henrygd.me/:path*"
+    },
+    {
+      "source": "/api/shop/:path*",
+      "destination": "https://shopavo.la/:path*"
+    },
+    {
       "source": "/(.*)",
       "destination": "/index.html"
     }

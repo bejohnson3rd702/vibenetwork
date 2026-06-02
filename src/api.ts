@@ -18,12 +18,12 @@ export async function getCategoriesWithVideos(tenantId?: string) {
     { data: profiles },
     { data: videos }
   ] = await Promise.all([
-    supabase.from('whitelabel_configs').select('id, name, domain, logo, theme').order('created_at', { ascending: false }).limit(20),
+    supabase.from('whitelabel_configs').select('id, name, domain, logo, theme, parent_network_id').order('created_at', { ascending: false }).limit(20),
     profilesQuery,
     supabase.from('videos').select('id, title, image_url, tags, video_url').order('created_at', { ascending: false }).limit(20)
   ]);
 
-  const mappedNetworks = (whitelabels || []).filter((wl: any) => wl.domain !== 'vibenetwork.tv' && wl.domain !== 'vibenetwork.com').map((wl: any) => ({
+  const mappedNetworks = (whitelabels || []).filter((wl: any) => wl.domain !== 'vibenetwork.tv' && wl.domain !== 'vibenetwork.com' && !wl.parent_network_id && !wl.theme?.parent_network_id).map((wl: any) => ({
     id: 'wl_' + wl.id,
     title: wl.name || wl.domain || 'Tenant Platform',
     image: wl.theme?.heroImage || wl.logo || `https://ui-avatars.com/api/?name=${encodeURIComponent(wl.name || 'W')}&background=0D8ABC&color=fff`,
@@ -111,6 +111,68 @@ export async function getCategoriesWithVideos(tenantId?: string) {
   }
 
   return categoriesToReturn;
+}
+
+/** Fetch categories scoped to all child networks of an N2N parent */
+export async function getN2NCategories(parentId: string, childNetworkIds: string[]) {
+  if (!supabase || childNetworkIds.length === 0) return [];
+
+  // Fetch profiles from all child networks
+  const { data: profiles } = await supabase
+    .from('profiles')
+    .select('*')
+    .in('whitelabel_id', childNetworkIds)
+    .order('created_at', { ascending: false })
+    .limit(20);
+
+  const mappedProfiles = (profiles || []).map((p: any) => ({
+    id: p.id,
+    title: p.username || 'Creator Profile',
+    image: p.avatar_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(p.username || 'U')}`,
+    tags: [p.role === 'influencer' ? 'Creator' : 'Member'],
+    linkUrl: `/profile/${p.id}`
+  }));
+
+  // Fetch videos from creators across child networks
+  const creatorIds = (profiles || []).map((p: any) => p.id);
+  let mappedContent: any[] = [];
+
+  if (creatorIds.length > 0) {
+    const { data: videos } = await supabase
+      .from('videos')
+      .select('id, title, image_url, tags, video_url')
+      .in('creator_id', creatorIds)
+      .order('created_at', { ascending: false })
+      .limit(20);
+
+    mappedContent = (videos || []).map((vid: any) => ({
+      id: vid.id,
+      title: vid.title,
+      image: vid.image_url,
+      tags: vid.tags || [],
+      videoUrl: vid.video_url
+    }));
+  }
+
+  const categories = [];
+
+  if (mappedProfiles.length > 0) {
+    categories.push({
+      title: 'Network Creators',
+      aspectRatio: '1/1',
+      items: mappedProfiles
+    });
+  }
+
+  if (mappedContent.length > 0) {
+    categories.push({
+      title: 'New Content',
+      aspectRatio: '16/9',
+      items: mappedContent
+    });
+  }
+
+  return categories;
 }
 
 export async function getLiveSchedule() {

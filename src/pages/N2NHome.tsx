@@ -1,0 +1,429 @@
+import { useState, useEffect, lazy, Suspense } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Play, X, Network } from 'lucide-react';
+import SliderSection from '../components/SliderSection';
+import { useWhiteLabel } from '../context/WhiteLabelContext';
+import { getChildNetworks } from '../lib/n2n';
+import { getN2NCategories } from '../api';
+import type { Category, VideoItem, User } from '../types';
+const CollegeTicker = lazy(() => import('../components/CollegeTicker'));
+const CollegeNewsFeed = lazy(() => import('../components/CollegeNewsFeed'));
+const WatchLive = lazy(() => import('../components/WatchLive'));
+
+interface N2NHomeProps {
+  wlConfig: any;
+  categories: Category[];
+  user: User | null;
+  activeVideo: VideoItem | null;
+  setActiveVideo: (video: VideoItem | null) => void;
+}
+
+export default function N2NHome({ wlConfig, categories, activeVideo, setActiveVideo }: N2NHomeProps) {
+  const { wlConfig: ctxConfig } = useWhiteLabel();
+  const config = wlConfig || ctxConfig;
+  const accent = config?.accent || 'var(--accent-primary)';
+
+  // ─── Child Networks ──────────────────────────────────────────────
+  const [childItems, setChildItems] = useState<any[]>([]);
+  const [childCategories, setChildCategories] = useState<any[]>([]);
+
+  useEffect(() => {
+    if (!config?.id) return;
+    let cancelled = false;
+    (async () => {
+      const children = await getChildNetworks(config.id);
+      if (cancelled) return;
+
+      const childIds = children.map((c: any) => c.id);
+
+      setChildItems(
+        children.map((child: any) => ({
+          id: child.id,
+          title: child.name,
+          image: child.heroImage || child.logoImage || `https://ui-avatars.com/api/?name=${encodeURIComponent(child.name)}&background=111&color=fff&size=400`,
+          tags: ['Network'],
+          videoUrl: '',
+          linkUrl: '/?tenant=' + child.id,
+        }))
+      );
+
+      // Fetch content from child networks only
+      if (childIds.length > 0) {
+        const cats = await getN2NCategories(config.id, childIds);
+        if (!cancelled) setChildCategories(cats);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [config?.id]);
+
+  // ─── AVO Hero Slides — real shopavo.la CDN images ───────────────
+  const HERO_SLIDES = [
+    { school: 'Baylor', short: 'Baylor', subtitle: 'New Collection', copy: 'Represent the Bears with our newest campus essentials.', image: 'https://shopavo.la/cdn/shop/files/msu-hp-hero_1500x.jpg?v=1775144388', link: 'https://shopavo.la/collections/baylor' },
+    { school: 'Mississippi State', short: 'Miss. State', subtitle: 'Hail State', copy: 'Maroon and white — gear up for every tailgate and beyond.', image: 'https://shopavo.la/cdn/shop/files/MSU_Homepage_Desktop_1500x.jpg?v=1776105569', link: 'https://shopavo.la/collections/mississippi-state' },
+    { school: 'Vanderbilt', short: 'Vanderbilt', subtitle: 'Anchor Down', copy: 'Premium campus wear for the Commodores faithful.', image: 'https://shopavo.la/cdn/shop/files/Homepage_Vanderbilt_Desktop_1500x.jpg?v=1776284269', link: 'https://shopavo.la/collections/vanderbilt' },
+    { school: 'Penn State', short: 'Penn State', subtitle: 'We Are', copy: 'Nittany Lions gear crafted for the Happy Valley lifestyle.', image: 'https://shopavo.la/cdn/shop/files/PSU_Homepage_Banner_Desktop2_1500x.jpg?v=1776375978', link: 'https://shopavo.la/collections/penn-state' },
+    { school: 'Alabama', short: 'Alabama', subtitle: 'Roll Tide', copy: 'Crimson and cream essentials for the Crimson Tide.', image: 'https://shopavo.la/cdn/shop/files/bama-desk-hp-1_1500x.jpg?v=1774210820', link: 'https://shopavo.la/collections/alabama' },
+    { school: 'Ole Miss', short: 'Ole Miss', subtitle: 'Hotty Toddy', copy: 'Oxford-inspired style meets college spirit.', image: 'https://shopavo.la/cdn/shop/files/desk-ole-miss-hp_1500x.jpg?v=1774210006', link: 'https://shopavo.la/collections/ole-miss' },
+    { school: 'Colorado', short: 'Colorado', subtitle: 'Sko Buffs', copy: 'Boulder vibes and mountain-ready campus apparel.', image: 'https://shopavo.la/cdn/shop/files/co-desktop2_4230eb90-9553-4d72-b205-30e62658bcce_1500x.jpg?v=1776445128', link: 'https://shopavo.la/collections/colorado' },
+    { school: 'Georgia', short: 'Georgia', subtitle: 'Go Dawgs', copy: 'Red and black essentials for the Bulldog nation.', image: 'https://shopavo.la/cdn/shop/files/UGA_Collections_Desktop_1500x.jpg?v=1776210559', link: 'https://shopavo.la/collections/georgia' },
+  ];
+
+  const [heroSlide, setHeroSlide] = useState(0);
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setHeroSlide(prev => (prev + 1) % HERO_SLIDES.length);
+    }, 5000);
+    return () => clearInterval(timer);
+  }, []);
+
+  return (
+    <>
+      {/* ═══ shopavo.la Hero — Identical Recreation ═══ */}
+      <div style={{ position: 'relative', width: '100%', height: '100vh', backgroundColor: '#000', overflow: 'hidden' }}>
+        
+        {/* Full-bleed hero slideshow — uses actual AVO Shopify CDN images */}
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={heroSlide}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.8, ease: 'easeInOut' }}
+            style={{ position: 'absolute', inset: 0, zIndex: 0 }}
+          >
+            <img
+              src={HERO_SLIDES[heroSlide % HERO_SLIDES.length]?.image}
+              alt={HERO_SLIDES[heroSlide % HERO_SLIDES.length]?.school}
+              style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center top' }}
+            />
+          </motion.div>
+        </AnimatePresence>
+
+        {/* Bottom gradient — matches AVO's clean fade */}
+        <div style={{ position: 'absolute', inset: 0, zIndex: 1, background: 'linear-gradient(to bottom, transparent 50%, rgba(0,0,0,0.75) 85%, #000 100%)' }} />
+
+        {/* Hero text overlay — bottom-left, matches AVO's exact positioning */}
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={heroSlide}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            transition={{ duration: 0.6 }}
+            style={{ position: 'absolute', bottom: '180px', left: '0', zIndex: 2, padding: '0 60px', maxWidth: '700px' }}
+          >
+            <p style={{ fontSize: '13px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '3px', color: 'rgba(255,255,255,0.6)', marginBottom: '8px' }}>
+              {HERO_SLIDES[heroSlide % HERO_SLIDES.length]?.subtitle}
+            </p>
+            <h1 style={{ fontSize: '52px', fontWeight: 900, lineHeight: 1.05, letterSpacing: '-1px', color: '#fff', margin: '0 0 16px 0', textTransform: 'uppercase', fontFamily: "'RNS Miles', sans-serif" }}>
+              {HERO_SLIDES[heroSlide % HERO_SLIDES.length]?.school}
+            </h1>
+            <p style={{ fontSize: '15px', color: 'rgba(255,255,255,0.65)', margin: '0 0 24px 0', lineHeight: 1.6 }}>
+              {HERO_SLIDES[heroSlide % HERO_SLIDES.length]?.copy}
+            </p>
+            <button
+              onClick={() => window.location.href = '/shop' + window.location.search}
+              style={{
+                display: 'inline-block', padding: '13px 40px', fontSize: '11px', fontWeight: 800,
+                textTransform: 'uppercase', letterSpacing: '2.5px',
+                background: 'transparent', color: '#fff',
+                border: '1.5px solid #fff', cursor: 'pointer',
+                transition: 'all 0.25s',
+              }}
+              onMouseOver={e => { e.currentTarget.style.background = '#fff'; e.currentTarget.style.color = '#000'; }}
+              onMouseOut={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = '#fff'; }}
+            >
+              Shop Now
+            </button>
+
+            {/* Fundraising stat */}
+            <div style={{
+              marginTop: '32px', padding: '16px 24px',
+              borderLeft: `3px solid ${accent}`,
+              background: 'rgba(255,255,255,0.05)', backdropFilter: 'blur(10px)',
+            }}>
+              <p style={{ margin: 0, fontSize: '32px', fontWeight: 900, color: '#fff', letterSpacing: '-1px', lineHeight: 1.2 }}>
+                $17,480,130<span style={{ color: accent }}>+</span>
+              </p>
+              <p style={{ margin: '4px 0 0', fontSize: '13px', fontWeight: 600, color: 'rgba(255,255,255,0.6)', textTransform: 'uppercase', letterSpacing: '2px' }}>
+                Raised to empower student‑athletes nationwide
+              </p>
+            </div>
+          </motion.div>
+        </AnimatePresence>
+
+        {/* Slide dots — right side, vertical, matches AVO */}
+        <div style={{ position: 'absolute', right: '30px', top: '50%', transform: 'translateY(-50%)', zIndex: 3, display: 'flex', flexDirection: 'column', gap: '10px' }}>
+          {HERO_SLIDES.map((_, i) => (
+            <button
+              key={i}
+              onClick={() => setHeroSlide(i)}
+              style={{
+                width: '10px', height: heroSlide === i ? '28px' : '10px',
+                borderRadius: '5px', border: 'none', cursor: 'pointer',
+                background: heroSlide === i ? '#fff' : 'rgba(255,255,255,0.3)',
+                transition: 'all 0.3s', padding: 0,
+              }}
+            />
+          ))}
+        </div>
+
+        {/* Bottom collection bar — school thumbnails */}
+        <div style={{
+          position: 'absolute', bottom: 0, left: 0, right: 0, zIndex: 2,
+          background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(10px)',
+          padding: '0', display: 'flex', borderTop: '1px solid rgba(255,255,255,0.06)',
+        }}>
+          {HERO_SLIDES.map((slide, i) => (
+            <button
+              key={i}
+              onClick={() => setHeroSlide(i)}
+              style={{
+                flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center',
+                padding: '14px 8px', gap: '0', border: 'none',
+                background: heroSlide === i ? 'rgba(255,255,255,0.08)' : 'transparent',
+                borderBottom: heroSlide === i ? '2px solid #fff' : '2px solid transparent',
+                cursor: 'pointer', transition: 'all 0.25s',
+                flexDirection: 'column',
+              }}
+              onMouseOver={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.05)'; }}
+              onMouseOut={e => { e.currentTarget.style.background = heroSlide === i ? 'rgba(255,255,255,0.08)' : 'transparent'; }}
+            >
+              <span style={{
+                fontSize: '10px', fontWeight: 800, color: heroSlide === i ? '#fff' : 'rgba(255,255,255,0.4)',
+                textTransform: 'uppercase', letterSpacing: '1.5px',
+                transition: 'color 0.25s', whiteSpace: 'nowrap',
+              }}>
+                {slide.short}
+              </span>
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* NCAA College Ticker — bottom of hero */}
+      <div style={{ position: 'relative', zIndex: 10 }}>
+        <Suspense fallback={null}>
+          <CollegeTicker accent={config.accent} />
+        </Suspense>
+      </div>
+
+      <main style={{ background: 'var(--bg-color)', paddingBottom: '100px', zIndex: 10, position: 'relative', width: '100%' }}>
+
+        {/* ── Watch Live ──────────────────────────────────────── */}
+        <Suspense fallback={null}>
+          <WatchLive accent={config.accent} />
+        </Suspense>
+
+        {/* ── Child Networks Slider ────────────────────────────── */}
+        {childItems.length > 0 && (
+          <div id="child-networks-slider">
+            <SliderSection
+              title="Our Networks"
+              items={childItems}
+              delay={0}
+              aspectRatio="16/9"
+              onItemClick={(item) => {
+                if (item.linkUrl) {
+                  window.location.href = item.linkUrl + (window.location.search ? '&' : '');
+                }
+              }}
+            />
+          </div>
+        )}
+
+        {/* ── College Sports News Feed ──────────────────────── */}
+        <Suspense fallback={null}>
+          <CollegeNewsFeed accent={config.accent} />
+        </Suspense>
+
+
+
+        {/* ── Ambassador CTA ──────────────────────────────────── */}
+        <section style={{ maxWidth: '1400px', margin: '60px auto 0', padding: '0 40px' }}>
+          <div style={{
+            position: 'relative', borderRadius: '0', overflow: 'hidden',
+            border: '1px solid rgba(255,255,255,0.06)',
+            background: '#000',
+          }}>
+            {/* Background image */}
+            <div style={{
+              position: 'absolute', inset: 0,
+              backgroundImage: 'url(https://shopavo.la/cdn/shop/files/Homepage_Vanderbilt_Desktop2_c7f572ef-cd7e-4de4-bb9c-160b99884e08_1500x.jpg?v=1776284877)',
+              backgroundSize: 'cover', backgroundPosition: 'center',
+              filter: 'brightness(0.3)',
+            }} />
+            <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to right, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.5) 60%, transparent 100%)' }} />
+
+            <div style={{ position: 'relative', zIndex: 2, padding: '80px 60px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '40px' }}>
+              <div style={{ maxWidth: '550px' }}>
+                <p style={{
+                  fontSize: '11px', fontWeight: 800, textTransform: 'uppercase',
+                  letterSpacing: '3px', color: accent, marginBottom: '12px',
+                }}>
+                  Campus Ambassadors
+                </p>
+                <h2 style={{
+                  fontSize: '36px', fontWeight: 900, color: '#fff', margin: '0 0 16px 0',
+                  lineHeight: 1.15, letterSpacing: '-1px', textTransform: 'uppercase',
+                }}>
+                  Represent AVO<br />On Your Campus
+                </h2>
+                <p style={{
+                  fontSize: '15px', color: 'rgba(255,255,255,0.55)', lineHeight: 1.7, margin: 0,
+                }}>
+                  Join the AVO Ambassador Program and bring premium college apparel to your school. Earn exclusive perks, early access to drops, and commissions on every sale.
+                </p>
+              </div>
+              <a
+                href="https://shopavo.la/pages/ambassadors"
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{
+                  display: 'inline-block', padding: '15px 48px', fontSize: '11px', fontWeight: 800,
+                  textTransform: 'uppercase', letterSpacing: '2.5px',
+                  background: 'transparent', color: '#fff',
+                  border: '1.5px solid #fff', textDecoration: 'none',
+                  transition: 'all 0.25s', flexShrink: 0,
+                }}
+                onMouseOver={e => { e.currentTarget.style.background = '#fff'; e.currentTarget.style.color = '#000'; }}
+                onMouseOut={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = '#fff'; }}
+              >
+                More Info
+              </a>
+            </div>
+          </div>
+        </section>
+
+      </main>
+
+      {/* ── Video Player Overlay ──────────────────────────────── */}
+      <AnimatePresence>
+        {activeVideo && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            style={{
+              position: 'fixed',
+              inset: 0,
+              zIndex: 99999,
+              background: 'rgba(5, 5, 5, 0.95)',
+              backdropFilter: 'blur(20px)',
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              justifyContent: 'center'
+            }}
+          >
+            <button
+              onClick={() => setActiveVideo(null)}
+              style={{
+                position: 'absolute',
+                top: '40px',
+                right: '40px',
+                background: 'var(--bg-surface-hover)',
+                border: 'none',
+                color: 'white',
+                width: '50px',
+                height: '50px',
+                borderRadius: '50%',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                cursor: 'pointer',
+                zIndex: 10
+              }}
+            >
+              <X size={28} />
+            </button>
+
+            <motion.div
+              initial={{ scale: 0.9, y: 20 }}
+              animate={{ scale: 1, y: 0 }}
+              exit={{ scale: 0.9, y: 20 }}
+              style={{ width: '90%', maxWidth: '1400px', height: '70vh', position: 'relative', borderRadius: '16px', overflow: 'hidden', boxShadow: '0 20px 50px rgba(0,0,0,0.5)', display: 'flex' }}
+            >
+              <div style={{ flex: 1, height: '100%', position: 'relative', overflow: 'hidden', borderRadius: '16px' }}>
+                {(() => {
+                  const match = activeVideo.videoUrl.match(/^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/);
+                  const ytId = (match && match[2].length === 11) ? match[2] : null;
+                  if (ytId) {
+                    return (
+                      <iframe
+                        src={`https://www.youtube.com/embed/${ytId}?autoplay=1`}
+                        title={activeVideo.title}
+                        style={{ width: '100%', height: '100%', border: 'none' }}
+                        allow="autoplay; encrypted-media; fullscreen"
+                        allowFullScreen
+                        loading="lazy"
+                      />
+                    );
+                  }
+                  return (
+                    <video
+                      src={activeVideo.videoUrl}
+                      autoPlay
+                      controls
+                      style={{ width: '100%', height: '100%', objectFit: 'contain', background: 'black' }}
+                    />
+                  );
+                })()}
+              </div>
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              style={{ marginTop: '24px', textAlign: 'center' }}
+            >
+              <h2 style={{ fontSize: '32px', marginBottom: '8px' }}>{activeVideo.title}</h2>
+              <div style={{ display: 'flex', gap: '8px', justifyContent: 'center' }}>
+                {activeVideo.tags.map((tag: string) => (
+                  <span key={tag} style={{ color: accent, fontSize: '14px', textTransform: 'uppercase', letterSpacing: '1px' }}>
+                    {tag}
+                  </span>
+                ))}
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* ── Decorative Blur Orbs ──────────────────────────────── */}
+      <div style={{
+        position: 'fixed', top: '20%', right: '10%', width: '300px', height: '300px',
+        background: 'rgba(255,255,255,0.03)', filter: 'blur(150px)', borderRadius: '50%', zIndex: -1, pointerEvents: 'none'
+      }} />
+      <div style={{
+        position: 'fixed', bottom: '10%', left: '25%', width: '400px', height: '400px',
+        background: accent, filter: 'blur(250px)', opacity: 0.05, borderRadius: '50%', zIndex: -1, pointerEvents: 'none'
+      }} />
+
+      {/* ── Branded Footer ────────────────────────────────────── */}
+      <footer style={{ background: 'var(--bg-color)', borderTop: '1px solid rgba(255,255,255,0.05)', padding: '80px 40px', position: 'relative', overflow: 'hidden' }}>
+        <div style={{ position: 'absolute', top: 0, left: '50%', transform: 'translateX(-50%)', width: '100%', height: '1px', background: `linear-gradient(90deg, transparent, ${accent}, transparent)`, opacity: 0.3 }} />
+        <div style={{ maxWidth: '1400px', margin: '0 auto', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '32px' }}>
+          <h2 style={{ margin: 0, fontSize: '24px', fontWeight: 900, letterSpacing: '4px', display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <span style={{ fontSize: '32px', color: accent }}>
+              {config?.logoImage ? (
+                <img src={config.logoImage} alt="" style={{ height: '32px', objectFit: 'contain' }} />
+              ) : (
+                config?.name?.charAt(0) || 'V'
+              )}
+            </span>
+            {(config?.name || 'VIBE NETWORK').toUpperCase()}
+          </h2>
+          <div style={{ display: 'flex', gap: '40px', fontSize: '14px', fontWeight: 600, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '2px' }}>
+            <span style={{ cursor: 'pointer', transition: 'color 0.2s' }} onMouseOver={e => e.currentTarget.style.color = 'var(--text-primary)'} onMouseOut={e => e.currentTarget.style.color = 'var(--text-secondary)'}>Networks</span>
+            <span style={{ cursor: 'pointer', transition: 'color 0.2s' }} onMouseOver={e => e.currentTarget.style.color = 'var(--text-primary)'} onMouseOut={e => e.currentTarget.style.color = 'var(--text-secondary)'}>Creators</span>
+            <span style={{ cursor: 'pointer', transition: 'color 0.2s' }} onMouseOver={e => e.currentTarget.style.color = 'var(--text-primary)'} onMouseOut={e => e.currentTarget.style.color = 'var(--text-secondary)'}>Support</span>
+            <span style={{ cursor: 'pointer', transition: 'color 0.2s' }} onMouseOver={e => e.currentTarget.style.color = 'var(--text-primary)'} onMouseOut={e => e.currentTarget.style.color = 'var(--text-secondary)'}>Documentation</span>
+          </div>
+          <p style={{ color: 'var(--text-muted)', fontSize: '12px', marginTop: '40px' }}>&copy; {new Date().getFullYear()} {config?.name || 'Vibe Media Networks LLC'}. All rights reserved.</p>
+        </div>
+      </footer>
+    </>
+  );
+}

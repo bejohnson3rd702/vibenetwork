@@ -2,6 +2,7 @@ import { useEffect, useState, lazy, Suspense } from 'react';
 import { ASSETS } from './data';
 import { getCategoriesWithVideos } from './api';
 import Navbar from './components/Navbar';
+const CollegeTicker = lazy(() => import('./components/CollegeTicker'));
 
 import AuthModal from './components/AuthModal';
 const ProfileDashboard = lazy(() => import('./components/ProfileDashboard'));
@@ -30,6 +31,8 @@ import { MASTER_DOMAIN, DEFAULT_PLATFORM_NAME } from './constants';
 import Home from './pages/Home';
 import { normalizeWlConfig } from './lib/whitelabel';
 import WhiteLabelHome from './pages/WhiteLabelHome';
+const N2NHome = lazy(() => import('./pages/N2NHome'));
+const AvoMarketplace = lazy(() => import('./components/AvoMarketplace'));
 import { motion, AnimatePresence } from 'framer-motion';
 import { X } from 'lucide-react';
 
@@ -360,9 +363,16 @@ function App() {
           <Suspense fallback={<div style={{ height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-secondary)' }}>Loading interface...</div>}>
             <Routes>
               <Route path="/" element={
-                 <WhiteLabelHome wlConfig={wlConfig} categories={categories} user={user} activeVideo={activeVideo} setActiveVideo={setActiveVideo} />
+                 wlConfig?.n2n_enabled
+                   ? <N2NHome wlConfig={wlConfig} categories={categories} user={user} activeVideo={activeVideo} setActiveVideo={setActiveVideo} />
+                   : <WhiteLabelHome wlConfig={wlConfig} categories={categories} user={user} activeVideo={activeVideo} setActiveVideo={setActiveVideo} />
               } />
               <Route path="/marketplace" element={<Marketplace />} />
+              <Route path="/shop" element={
+                <div style={{ paddingTop: '80px', minHeight: '100vh', background: 'var(--bg-color)' }}>
+                  <AvoMarketplace accent={wlConfig?.accent || '#D35400'} />
+                </div>
+              } />
               <Route path="/contact" element={<Contact />} />
               <Route path="/about" element={<MoreInfo />} />
               <Route path="/more-info" element={<MoreInfo />} />

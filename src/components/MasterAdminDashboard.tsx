@@ -10,6 +10,51 @@ import { supabase } from '../supabaseClient';
 import { ErrorBoundary } from './ErrorBoundary';
 import { BrandingTab } from './admin/BrandingTab';
 import { AnalyticsTab } from './admin/AnalyticsTab';
+import { getChildNetworks, deleteChildNetwork } from '../lib/n2n';
+
+/** Inline component to list child networks in the Master Admin N2N panel */
+function N2NChildrenList({ parentId, parentAccent, showToast }: { parentId: string; parentAccent?: string; showToast: (msg: string, type: 'success' | 'error') => void }) {
+  const [children, setChildren] = React.useState<any[]>([]);
+  const [loading, setLoading] = React.useState(true);
+
+  const load = async () => {
+    setLoading(true);
+    const nets = await getChildNetworks(parentId);
+    setChildren(nets);
+    setLoading(false);
+  };
+
+  React.useEffect(() => { load(); }, [parentId]);
+
+  if (loading) return <div style={{ color: 'var(--text-muted)', padding: '16px 0', fontSize: '14px' }}>Loading child networks...</div>;
+  if (children.length === 0) return <div style={{ color: 'var(--text-muted)', padding: '16px 0', fontSize: '14px', fontStyle: 'italic' }}>No child networks yet. Click "+ Add Child Network" to create one.</div>;
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+      {children.map((child, idx) => (
+        <div key={child.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 16px', background: idx % 2 === 0 ? 'rgba(0,0,0,0.15)' : 'rgba(0,0,0,0.08)', borderRadius: '10px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <div style={{ width: '10px', height: '10px', borderRadius: '50%', background: child.accent || parentAccent || '#ff4d85', flexShrink: 0 }} />
+            <span style={{ fontWeight: '700', fontSize: '14px', color: 'var(--text-primary)' }}>{child.name}</span>
+            <span style={{ fontSize: '12px', color: 'var(--text-muted)', fontFamily: 'monospace' }}>{child.domain || '—'}</span>
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <span style={{ fontSize: '12px', color: '#ff4d85', fontWeight: '600' }}>{child.platform_fee_percentage ?? 30}% fee</span>
+            <button onClick={async () => {
+              if (!confirm(`Delete ${child.name}?`)) return;
+              const ok = await deleteChildNetwork(child.id);
+              if (ok) { setChildren(prev => prev.filter(c => c.id !== child.id)); showToast(`${child.name} deleted`, 'success'); }
+              else showToast('Failed to delete', 'error');
+            }} style={{ padding: '4px 10px', background: 'rgba(255,59,48,0.1)', color: '#FF3B30', border: '1px solid rgba(255,59,48,0.2)', borderRadius: '6px', cursor: 'pointer', fontWeight: '700', fontSize: '11px' }}>
+              Delete
+            </button>
+          </div>
+        </div>
+      ))}
+      <button data-refresh onClick={() => load()} style={{ display: 'none' }} />
+    </div>
+  );
+}
 
 function MasterAdminDashboard() {
   const navigate = useNavigate();
@@ -256,83 +301,205 @@ function MasterAdminDashboard() {
                </div>
 
                <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                 {whitelabelsList.filter(wl => wl.domain !== 'vibenetwork.tv' && wl.domain !== 'vibenetwork.com').length === 0 ? (
+                 {whitelabelsList.filter(wl => wl.domain !== 'vibenetwork.tv' && wl.domain !== 'vibenetwork.com' && !wl.parent_network_id && !wl.theme?.parent_network_id).length === 0 ? (
                     <div style={{ background: 'var(--bg-surface)', padding: '40px', borderRadius: '16px', border: '1px dashed rgba(255,255,255,0.1)', textAlign: 'center', color: 'var(--text-muted)' }}>
                        No active tenants detected in the database. 
                        <br/>Did you run the <b>create_whitelabels_table.sql</b> script?
                     </div>
-                 ) : whitelabelsList.filter(wl => wl.domain !== 'vibenetwork.tv' && wl.domain !== 'vibenetwork.com').map((brandConfig, i) => (
-                   <div key={brandConfig.id || i} style={{ background: 'var(--bg-surface)', padding: '24px', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
-                         <div style={{ width: '60px', height: '60px', background: brandConfig.accent || `linear-gradient(135deg, hsl(${(i * 50) % 360}, 100%, 50%), hsl(${((i * 50) + 60) % 360}, 100%, 50%))`, borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-primary)', fontWeight: 'bold' }}>
-                            {brandConfig.name?.substring(0,2).toUpperCase() || 'WL'}
-                         </div>
-                         <div>
-                           <h4 style={{ margin: '0 0 8px 0', fontSize: '18px' }}>{brandConfig.name}</h4>
-                           <span style={{ color: brandConfig.accent || '#0055ff', fontSize: '13px', background: brandConfig.accent ? `${brandConfig.accent}11` : 'rgba(0,85,255,0.1)', padding: '4px 10px', borderRadius: '12px', fontWeight: 'bold' }}>{brandConfig.domain}</span>
-                         </div>
-                      </div>
-                      <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
-                         <div style={{ display: 'flex', alignItems: 'center', gap: '4px', background: 'rgba(0,0,0,0.4)', padding: '6px 12px', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.1)' }}>
-                            <span style={{ color: 'var(--text-muted)', fontSize: '12px', fontWeight: 'bold' }}>Fee:</span>
-                            <input 
-                              id={`fee-input-wl-${brandConfig.id}`}
-                              type="number" 
-                              defaultValue={brandConfig.platform_fee_percentage ?? globalSettings.global_whitelabel_fee} 
-                              onBlur={async (e) => {
-                                 const val = parseFloat(e.target.value);
+                 ) : whitelabelsList.filter(wl => wl.domain !== 'vibenetwork.tv' && wl.domain !== 'vibenetwork.com' && !wl.parent_network_id && !wl.theme?.parent_network_id).map((brandConfig, i) => {
+                    const isN2N = brandConfig.n2n_enabled || brandConfig.theme?.n2n_enabled;
+                    return (
+                    <div key={brandConfig.id || i} style={{ background: 'var(--bg-surface)', borderRadius: '16px', border: `1px solid ${isN2N ? 'rgba(255,77,133,0.15)' : 'rgba(255,255,255,0.05)'}`, overflow: 'hidden' }}>
+                       {/* Main Card Row */}
+                       <div style={{ padding: '24px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                       <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
+                          <div style={{ width: '60px', height: '60px', background: brandConfig.accent || `linear-gradient(135deg, hsl(${(i * 50) % 360}, 100%, 50%), hsl(${((i * 50) + 60) % 360}, 100%, 50%))`, borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-primary)', fontWeight: 'bold' }}>
+                             {brandConfig.name?.substring(0,2).toUpperCase() || 'WL'}
+                          </div>
+                          <div>
+                            <h4 style={{ margin: '0 0 8px 0', fontSize: '18px' }}>{brandConfig.name}</h4>
+                            <span style={{ color: brandConfig.accent || '#0055ff', fontSize: '13px', background: brandConfig.accent ? `${brandConfig.accent}11` : 'rgba(0,85,255,0.1)', padding: '4px 10px', borderRadius: '12px', fontWeight: 'bold' }}>{brandConfig.domain}</span>
+                          </div>
+                       </div>
+                       <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '4px', background: 'rgba(0,0,0,0.4)', padding: '6px 12px', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.1)' }}>
+                             <span style={{ color: 'var(--text-muted)', fontSize: '12px', fontWeight: 'bold' }}>Fee:</span>
+                             <input 
+                               id={`fee-input-wl-${brandConfig.id}`}
+                               type="number" 
+                               defaultValue={brandConfig.platform_fee_percentage ?? globalSettings.global_whitelabel_fee} 
+                               onBlur={async (e) => {
+                                  const val = parseFloat(e.target.value);
+                                  if (isNaN(val)) return;
+                                  const btn = e.target.nextElementSibling?.nextElementSibling as HTMLButtonElement;
+                                  if (btn) btn.innerText = '...';
+                                  const { data, error } = await supabase!.from('whitelabel_configs').update({ platform_fee_percentage: val }).eq('id', brandConfig.id).select();
+                                  if (error || !data || data.length === 0) {
+                                     showToast('Failed to save (Permission Denied): ' + (error?.message || 'Row Level Security blocked the update.'), 'error');
+                                     if (btn) btn.innerText = 'Save';
+                                     return;
+                                  }
+                                  setWhitelabelsList(prev => prev.map(wl => wl.id === brandConfig.id ? { ...wl, platform_fee_percentage: val } : wl));
+                                  if (btn) {
+                                     btn.innerText = 'Saved';
+                                     btn.style.color = '#00ff88';
+                                     setTimeout(() => { btn.innerText = 'Save'; btn.style.color = '#0055ff'; }, 2000);
+                                  }
+                               }}
+                               style={{ width: '50px', background: 'transparent', color: '#0055ff', border: 'none', fontWeight: 'bold', outline: 'none', textAlign: 'right' }}
+                             />
+                             <span style={{ color: '#0055ff', fontSize: '12px', fontWeight: 'bold' }}>%</span>
+                             <button onClick={async (e) => {
+                                 const btn = e.currentTarget;
+                                 const input = document.getElementById(`fee-input-wl-${brandConfig.id}`) as HTMLInputElement;
+                                 const val = parseFloat(input.value);
                                  if (isNaN(val)) return;
-                                 const btn = e.target.nextElementSibling?.nextElementSibling as HTMLButtonElement;
-                                 if (btn) btn.innerText = '...';
+                                 
+                                 const originalText = btn.innerText;
+                                 btn.innerText = '...';
                                  const { data, error } = await supabase!.from('whitelabel_configs').update({ platform_fee_percentage: val }).eq('id', brandConfig.id).select();
                                  if (error || !data || data.length === 0) {
                                     showToast('Failed to save (Permission Denied): ' + (error?.message || 'Row Level Security blocked the update.'), 'error');
-                                    if (btn) btn.innerText = 'Save';
+                                    btn.innerText = 'Save';
                                     return;
                                  }
+                                 
                                  setWhitelabelsList(prev => prev.map(wl => wl.id === brandConfig.id ? { ...wl, platform_fee_percentage: val } : wl));
-                                 if (btn) {
-                                    btn.innerText = 'Saved';
-                                    btn.style.color = '#00ff88';
-                                    setTimeout(() => { btn.innerText = 'Save'; btn.style.color = '#0055ff'; }, 2000);
-                                 }
-                              }}
-                              style={{ width: '50px', background: 'transparent', color: '#0055ff', border: 'none', fontWeight: 'bold', outline: 'none', textAlign: 'right' }}
-                            />
-                            <span style={{ color: '#0055ff', fontSize: '12px', fontWeight: 'bold' }}>%</span>
-                            <button onClick={async (e) => {
-                                const btn = e.currentTarget;
-                                const input = document.getElementById(`fee-input-wl-${brandConfig.id}`) as HTMLInputElement;
-                                const val = parseFloat(input.value);
-                                if (isNaN(val)) return;
-                                
-                                const originalText = btn.innerText;
-                                btn.innerText = '...';
-                                const { data, error } = await supabase!.from('whitelabel_configs').update({ platform_fee_percentage: val }).eq('id', brandConfig.id).select();
-                                if (error || !data || data.length === 0) {
-                                   showToast('Failed to save (Permission Denied): ' + (error?.message || 'Row Level Security blocked the update.'), 'error');
-                                   btn.innerText = 'Save';
-                                   return;
-                                }
-                                
-                                setWhitelabelsList(prev => prev.map(wl => wl.id === brandConfig.id ? { ...wl, platform_fee_percentage: val } : wl));
-                                btn.innerText = 'Saved';
-                                btn.style.color = '#00ff88';
-                                setTimeout(() => { btn.innerText = 'Save'; btn.style.color = '#0055ff'; }, 2000);
-                             }} style={{ padding: '4px 8px', background: 'rgba(0, 85, 255, 0.1)', color: '#0055ff', border: '1px solid rgba(0, 85, 255, 0.2)', borderRadius: '6px', cursor: 'pointer', fontWeight: 'bold', fontSize: '11px', marginLeft: '4px', transition: '0.2s' }}>
-                               Save
+                                 btn.innerText = 'Saved';
+                                 btn.style.color = '#00ff88';
+                                 setTimeout(() => { btn.innerText = 'Save'; btn.style.color = '#0055ff'; }, 2000);
+                              }} style={{ padding: '4px 8px', background: 'rgba(0, 85, 255, 0.1)', color: '#0055ff', border: '1px solid rgba(0, 85, 255, 0.2)', borderRadius: '6px', cursor: 'pointer', fontWeight: 'bold', fontSize: '11px', marginLeft: '4px', transition: '0.2s' }}>
+                                Save
+                              </button>
+                          </div>
+                          <button onClick={() => {
+                              if(brandConfig.domain) window.open(`http://${brandConfig.domain}`, '_blank');
+                              else showToast('No domain configured for this tenant', 'error');
+                           }} style={{ padding: '10px 20px', background: 'rgba(0,85,255,0.1)', color: '#0055ff', border: '1px solid rgba(0,85,255,0.2)', borderRadius: '8px', fontWeight: 'bold', cursor: 'pointer', transition: '0.2s' }}>
+                              Visit Tenant Portal
+                           </button>
+                           <button onClick={async () => {
+                              const newVal = !brandConfig.n2n_enabled;
+                              const { error } = await supabase!.from('whitelabel_configs').update({ n2n_enabled: newVal }).eq('id', brandConfig.id);
+                              if (error) {
+                                // Fallback: store in theme JSONB
+                                const currentTheme = brandConfig.theme || {};
+                                const { error: err2 } = await supabase!.from('whitelabel_configs').update({ theme: { ...currentTheme, n2n_enabled: newVal } }).eq('id', brandConfig.id);
+                                if (err2) { showToast('N2N toggle failed: ' + err2.message, 'error'); return; }
+                              }
+                              setWhitelabelsList(prev => prev.map(wl => wl.id === brandConfig.id ? { ...wl, n2n_enabled: newVal, theme: { ...wl.theme, n2n_enabled: newVal } } : wl));
+                              logSystemEvent('ALERT', `N2N ${newVal ? 'ENABLED' : 'DISABLED'} for ${brandConfig.name}`, { tenant_id: brandConfig.id });
+                              showToast(`N2N ${newVal ? 'Activated' : 'Deactivated'} for ${brandConfig.name}`, 'success');
+                           }} style={{ padding: '10px 20px', background: isN2N ? 'rgba(255,77,133,0.15)' : 'rgba(255,255,255,0.05)', color: isN2N ? '#ff4d85' : '#888', border: `1px solid ${isN2N ? 'rgba(255,77,133,0.3)' : 'rgba(255,255,255,0.1)'}`, borderRadius: '8px', fontWeight: 'bold', cursor: 'pointer', transition: '0.2s', fontSize: '12px', textTransform: 'uppercase', letterSpacing: '1px' }}>
+                              {isN2N ? '⚡ N2N Active' : 'Enable N2N'}
+                           </button>
+                           {isN2N && (
+                             <button onClick={() => {
+                               const el = document.getElementById(`n2n-panel-${brandConfig.id}`);
+                               if (el) el.style.display = el.style.display === 'none' ? 'block' : 'none';
+                             }} style={{ padding: '10px 20px', background: 'rgba(255,77,133,0.08)', color: '#ff4d85', border: '1px solid rgba(255,77,133,0.2)', borderRadius: '8px', fontWeight: 'bold', cursor: 'pointer', transition: '0.2s', fontSize: '12px', textTransform: 'uppercase', letterSpacing: '1px' }}>
+                               Manage Children
                              </button>
+                           )}
+                           <span style={{ padding: '10px 20px', background: 'rgba(0,255,136,0.1)', color: '#00ff88', borderRadius: '8px', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '6px', fontSize: '13px' }}><Play size={16}/> LIVE</span>
+                       </div>
+                       </div>
+
+                       {/* N2N Children Panel (toggled by Manage Children button) */}
+                       {isN2N && (
+                         <div id={`n2n-panel-${brandConfig.id}`} style={{ display: 'none', borderTop: '1px solid rgba(255,77,133,0.12)', background: 'rgba(255,77,133,0.02)' }}>
+                           <div style={{ padding: '24px' }}>
+                             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px' }}>
+                               <h4 style={{ margin: 0, fontSize: '16px', color: '#ff4d85', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                 <Network size={18}/> Child Networks under {brandConfig.name}
+                               </h4>
+                               <button 
+                                 onClick={() => {
+                                   const form = document.getElementById(`n2n-create-${brandConfig.id}`);
+                                   if (form) form.style.display = form.style.display === 'none' ? 'flex' : 'none';
+                                 }}
+                                 style={{ padding: '8px 16px', background: 'linear-gradient(135deg, #ff4d85, #ff6b9d)', color: '#fff', border: 'none', borderRadius: '10px', fontWeight: '700', cursor: 'pointer', fontSize: '13px', letterSpacing: '0.5px' }}
+                               >
+                                 + Add Child Network
+                               </button>
+                             </div>
+
+                             {/* Create Child Form (hidden by default) */}
+                             <div id={`n2n-create-${brandConfig.id}`} style={{ display: 'none', flexDirection: 'column', gap: '12px', background: 'rgba(0,0,0,0.3)', borderRadius: '16px', padding: '24px', marginBottom: '20px', border: '1px solid rgba(255,77,133,0.15)' }}>
+                               <h5 style={{ margin: '0 0 4px 0', fontSize: '14px', color: '#ff4d85', textTransform: 'uppercase', letterSpacing: '1px' }}>Create New Child Network</h5>
+                               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                                 <input id={`n2n-child-name-${brandConfig.id}`} placeholder="Network Name (e.g. Baylor University)" style={{ padding: '12px 16px', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '10px', color: '#fff', fontSize: '14px', outline: 'none' }} />
+                                 <input id={`n2n-child-domain-${brandConfig.id}`} placeholder="Domain (e.g. baylor.avoclothing.com)" style={{ padding: '12px 16px', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '10px', color: '#fff', fontSize: '14px', outline: 'none' }} />
+                                 <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                                   <label style={{ color: 'var(--text-muted)', fontSize: '13px', fontWeight: '600', whiteSpace: 'nowrap' }}>Accent:</label>
+                                   <input id={`n2n-child-accent-${brandConfig.id}`} type="color" defaultValue={brandConfig.accent || '#D35400'} style={{ width: '40px', height: '36px', border: 'none', borderRadius: '8px', cursor: 'pointer', background: 'transparent' }} />
+                                 </div>
+                                 <input id={`n2n-child-hero-${brandConfig.id}`} placeholder="Hero Copy (e.g. Sic 'Em Bears)" style={{ padding: '12px 16px', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '10px', color: '#fff', fontSize: '14px', outline: 'none' }} />
+                               </div>
+                               <div style={{ display: 'flex', gap: '10px', marginTop: '8px' }}>
+                                 <button onClick={async () => {
+                                   const nameEl = document.getElementById(`n2n-child-name-${brandConfig.id}`) as HTMLInputElement;
+                                   const domainEl = document.getElementById(`n2n-child-domain-${brandConfig.id}`) as HTMLInputElement;
+                                   const accentEl = document.getElementById(`n2n-child-accent-${brandConfig.id}`) as HTMLInputElement;
+                                   const heroEl = document.getElementById(`n2n-child-hero-${brandConfig.id}`) as HTMLInputElement;
+                                   const name = nameEl?.value?.trim();
+                                   const domain = domainEl?.value?.trim();
+                                   if (!name) { showToast('Network name is required', 'error'); return; }
+
+                                   const childPayload: any = {
+                                     name,
+                                     domain: domain || '',
+                                     parent_network_id: brandConfig.id,
+                                     n2n_enabled: false,
+                                     platform_fee_percentage: 30,
+                                     theme: {
+                                       accent: accentEl?.value || brandConfig.accent || '#D35400',
+                                       heroCopy: heroEl?.value || `Welcome to ${name}`,
+                                       enableWatchLive: true,
+                                       enableBooking: false,
+                                       heroLayoutMode: 'verbiage',
+                                       sliderCount: 4,
+                                       parent_network_id: brandConfig.id,
+                                     },
+                                   };
+
+                                   const { data, error } = await supabase!.from('whitelabel_configs').insert(childPayload).select().single();
+                                   if (error) {
+                                     // If parent_network_id column doesn't exist, store in theme only
+                                     delete childPayload.parent_network_id;
+                                     delete childPayload.n2n_enabled;
+                                     const { data: d2, error: e2 } = await supabase!.from('whitelabel_configs').insert(childPayload).select().single();
+                                     if (e2) { showToast('Failed to create: ' + e2.message, 'error'); return; }
+                                     setWhitelabelsList(prev => [...prev, d2]);
+                                     showToast(`${name} created as child of ${brandConfig.name}`, 'success');
+                                   } else {
+                                     setWhitelabelsList(prev => [...prev, data]);
+                                     showToast(`${name} created as child of ${brandConfig.name}`, 'success');
+                                   }
+                                   logSystemEvent('ALERT', `N2N child "${name}" created under ${brandConfig.name}`, { parent_id: brandConfig.id });
+                                   if (nameEl) nameEl.value = '';
+                                   if (domainEl) domainEl.value = '';
+                                   if (heroEl) heroEl.value = '';
+                                   document.getElementById(`n2n-create-${brandConfig.id}`)!.style.display = 'none';
+                                   // Refresh the panel
+                                   document.getElementById(`n2n-panel-${brandConfig.id}`)?.querySelector('[data-refresh]')?.dispatchEvent(new Event('click'));
+                                 }} style={{ padding: '10px 24px', background: 'linear-gradient(135deg, #ff4d85, #ff6b9d)', color: '#fff', border: 'none', borderRadius: '10px', fontWeight: '700', cursor: 'pointer', fontSize: '13px' }}>
+                                   Create Child
+                                 </button>
+                                 <button onClick={() => { document.getElementById(`n2n-create-${brandConfig.id}`)!.style.display = 'none'; }} style={{ padding: '10px 24px', background: 'rgba(255,255,255,0.05)', color: 'var(--text-muted)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '10px', fontWeight: '600', cursor: 'pointer', fontSize: '13px' }}>
+                                   Cancel
+                                 </button>
+                               </div>
+                             </div>
+
+                             {/* Existing Children List */}
+                             <N2NChildrenList parentId={brandConfig.id} parentAccent={brandConfig.accent} showToast={showToast} />
+                           </div>
                          </div>
-                         <button onClick={() => {
-                            if(brandConfig.domain) window.open(`http://${brandConfig.domain}`, '_blank');
-                            else showToast('No domain configured for this tenant', 'error');
-                         }} style={{ padding: '10px 20px', background: 'rgba(0,85,255,0.1)', color: '#0055ff', border: '1px solid rgba(0,85,255,0.2)', borderRadius: '8px', fontWeight: 'bold', cursor: 'pointer', transition: '0.2s' }}>
-                            Visit Tenant Portal
-                         </button>
-                         <span style={{ padding: '10px 20px', background: 'rgba(0,255,136,0.1)', color: '#00ff88', borderRadius: '8px', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '6px', fontSize: '13px' }}><Play size={16}/> LIVE</span>
-                      </div>
-                   </div>
-                 ))}
+                       )}
+                    </div>
+                    );
+                  })}
                </div>
              </motion.div>
           )}

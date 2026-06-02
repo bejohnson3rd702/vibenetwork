@@ -24,7 +24,25 @@ export default function Home({ categories, activeVideo, setActiveVideo, user }: 
     <>
       <Hero />
       <main style={{ background: 'var(--bg-color)', paddingBottom: '100px', zIndex: 10, position: 'relative', width: '100%' }}>
-        
+        {/* ── Networks slider (above Watch) ── */}
+        {categories.filter((c: any) => c.title.toLowerCase().includes('network')).map((category: any, index: number) => (
+          <SliderSection
+            key={category.title}
+            title={category.title}
+            items={category.items}
+            delay={index * 0.2}
+            aspectRatio="16/9"
+            sizeMultiplier={1}
+            onItemClick={(item) => {
+              if (item.linkUrl) {
+                window.location.href = item.linkUrl + window.location.search;
+              } else {
+                setActiveVideo(item);
+              }
+            }}
+          />
+        ))}
+
         {wlConfig?.enableWatchLive !== false && (
           <div id="whats-on-now">
             <WhatsOnNow />
@@ -32,7 +50,7 @@ export default function Home({ categories, activeVideo, setActiveVideo, user }: 
         )}
 
         <div id="slider-section-container">
-          {categories.map((category: any, index: number) => {
+          {categories.filter((c: any) => !c.title.toLowerCase().includes('network')).map((category: any, index: number) => {
             const isArtist = category.aspectRatio === '3/4' || category.title.includes('Artist');
           const ratio = isArtist ? '3/4' : '16/9';
           const multiplier = 1; 
@@ -48,8 +66,6 @@ export default function Home({ categories, activeVideo, setActiveVideo, user }: 
                 if (item.linkUrl) {
                   window.location.href = item.linkUrl + window.location.search;
                 } else if (item.tags && item.tags.includes('Influencer Channel')) {
-                  // Force a hard redirect specifically for Influencer profiles from the Swiper slider
-                  // This entirely bypasses any nested DOM event swallowing bugs from swiper/react wrapper
                   window.location.href = `/profile/${item.id}${window.location.search}`;
                 } else {
                   setActiveVideo(item);

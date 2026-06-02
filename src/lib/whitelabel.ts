@@ -25,6 +25,8 @@ export interface WlConfig {
   theme: any;
   faviconImage?: string;
   logo?: string;
+  n2n_enabled: boolean;
+  parent_network_id: string | null;
 }
 
 export function normalizeWlConfig(
@@ -55,6 +57,8 @@ export function normalizeWlConfig(
     heroVideoTitle: theme.heroVideoTitle || raw?.heroVideoTitle || '',
     platform_fee_percentage: raw?.platform_fee_percentage || 0,
     theme: theme,
+    n2n_enabled: raw?.n2n_enabled ?? theme.n2n_enabled ?? false,
+    parent_network_id: raw?.parent_network_id ?? theme.parent_network_id ?? null,
     ...overrides,
   };
 }

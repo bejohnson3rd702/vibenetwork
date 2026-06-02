@@ -10,6 +10,11 @@ import { InboxTab } from './admin/InboxTab';
 import { WalletTab } from './admin/WalletTab';
 import { AnalyticsTab } from './admin/AnalyticsTab';
 import { BarChart3 } from 'lucide-react';
+import { N2NFleetTab } from './admin/N2NFleetTab';
+import { N2NUsersTab } from './admin/N2NUsersTab';
+import { N2NLedgerTab } from './admin/N2NLedgerTab';
+import { N2NBrandingTab } from './admin/N2NBrandingTab';
+import { Network, BookUser, Receipt, Palette } from 'lucide-react';
 
 export default function BusinessAdminDashboard({ onClose }: { onClose: () => void }) {
   const { wlConfig } = useWhiteLabel();
@@ -63,9 +68,32 @@ export default function BusinessAdminDashboard({ onClose }: { onClose: () => voi
 
              <div style={{ height: '1px', background: 'rgba(255,255,255,0.05)', margin: '10px 0' }} />
 
-             <button onClick={() => setActiveTab('wallet')} style={{ padding: '16px 20px', background: activeTab === 'wallet' ? wlConfig.accent : 'transparent', color: activeTab === 'wallet' ? '#fff' : '#888', border: 'none', borderRadius: '12px', display: 'flex', alignItems: 'center', gap: '16px', cursor: 'pointer', textAlign: 'left', fontWeight: 'bold', fontSize: '15px', transition: '0.2s' }}>
-                <Users size={22} /> Monetization CRM
-             </button>
+              <button onClick={() => setActiveTab('wallet')} style={{ padding: '16px 20px', background: activeTab === 'wallet' ? wlConfig.accent : 'transparent', color: activeTab === 'wallet' ? '#fff' : '#888', border: 'none', borderRadius: '12px', display: 'flex', alignItems: 'center', gap: '16px', cursor: 'pointer', textAlign: 'left', fontWeight: 'bold', fontSize: '15px', transition: '0.2s' }}>
+                 <Users size={22} /> Monetization CRM
+              </button>
+
+              {wlConfig.n2n_enabled && (
+                <>
+                  <div style={{ height: '1px', background: 'rgba(255,255,255,0.05)', margin: '10px 0' }} />
+                  <div style={{ padding: '8px 20px', fontSize: '11px', fontWeight: 900, textTransform: 'uppercase', letterSpacing: '2px', color: wlConfig.accent, opacity: 0.8 }}>N2N Command Center</div>
+                  
+                  <button onClick={() => setActiveTab('n2n-fleet')} style={{ padding: '16px 20px', background: activeTab === 'n2n-fleet' ? wlConfig.accent : 'transparent', color: activeTab === 'n2n-fleet' ? '#fff' : '#888', border: 'none', borderRadius: '12px', display: 'flex', alignItems: 'center', gap: '16px', cursor: 'pointer', textAlign: 'left', fontWeight: 'bold', fontSize: '15px', transition: '0.2s' }}>
+                     <Network size={22} /> Child Network Fleet
+                  </button>
+
+                  <button onClick={() => setActiveTab('n2n-users')} style={{ padding: '16px 20px', background: activeTab === 'n2n-users' ? wlConfig.accent : 'transparent', color: activeTab === 'n2n-users' ? '#fff' : '#888', border: 'none', borderRadius: '12px', display: 'flex', alignItems: 'center', gap: '16px', cursor: 'pointer', textAlign: 'left', fontWeight: 'bold', fontSize: '15px', transition: '0.2s' }}>
+                     <BookUser size={22} /> Network Users
+                  </button>
+
+                  <button onClick={() => setActiveTab('n2n-ledger')} style={{ padding: '16px 20px', background: activeTab === 'n2n-ledger' ? wlConfig.accent : 'transparent', color: activeTab === 'n2n-ledger' ? '#fff' : '#888', border: 'none', borderRadius: '12px', display: 'flex', alignItems: 'center', gap: '16px', cursor: 'pointer', textAlign: 'left', fontWeight: 'bold', fontSize: '15px', transition: '0.2s' }}>
+                     <Receipt size={22} /> Network Ledger
+                  </button>
+
+                  <button onClick={() => setActiveTab('n2n-branding')} style={{ padding: '16px 20px', background: activeTab === 'n2n-branding' ? wlConfig.accent : 'transparent', color: activeTab === 'n2n-branding' ? '#fff' : '#888', border: 'none', borderRadius: '12px', display: 'flex', alignItems: 'center', gap: '16px', cursor: 'pointer', textAlign: 'left', fontWeight: 'bold', fontSize: '15px', transition: '0.2s' }}>
+                     <Palette size={22} /> Child Branding Editor
+                  </button>
+                </>
+              )}
           </div>
           
           {/* Main Workspace */}
@@ -77,6 +105,10 @@ export default function BusinessAdminDashboard({ onClose }: { onClose: () => voi
             {activeTab === 'pages' && <PagesTab wlConfig={wlConfig} />}
             {activeTab === 'inbox' && <InboxTab wlConfig={wlConfig} />}
             {activeTab === 'wallet' && <WalletTab wlConfig={wlConfig} />}
+            {activeTab === 'n2n-fleet' && <N2NFleetTab wlConfig={wlConfig} />}
+            {activeTab === 'n2n-users' && <N2NUsersTab wlConfig={wlConfig} />}
+            {activeTab === 'n2n-ledger' && <N2NLedgerTab wlConfig={wlConfig} />}
+            {activeTab === 'n2n-branding' && <N2NBrandingTab wlConfig={wlConfig} />}
           </div>
        </div>
        <style>{`@keyframes spin { 100% { transform: rotate(360deg); } }`}</style>
