@@ -42,7 +42,7 @@ export default function N2NHome({ wlConfig, categories, activeVideo, setActiveVi
         children.map((child: any) => ({
           id: child.id,
           title: child.name,
-          image: child.heroImage || child.logoImage || `https://ui-avatars.com/api/?name=${encodeURIComponent(child.name)}&background=111&color=fff&size=400`,
+          image: child.logoImage || child.heroImage || `https://ui-avatars.com/api/?name=${encodeURIComponent(child.name)}&background=111&color=fff&size=400`,
           tags: ['Network'],
           videoUrl: '',
           linkUrl: '/?tenant=' + child.id,
