@@ -24,13 +24,11 @@ const Navbar: React.FC<NavbarProps> = ({ user, onLoginClick, onAdminClick }) => 
   const appLogo = wlConfig?.logoImage || '';
 
   const getParentNetworkUrl = () => {
-    const params = new URLSearchParams(window.location.search);
-    if (params.has('tenant')) {
-      params.delete('tenant');
-      const search = params.toString();
-      return '/' + (search ? `?${search}` : '');
+    const hostname = window.location.hostname;
+    if (hostname === 'localhost' || hostname === '127.0.0.1') {
+      return '/?tenant=3915f1e5-4c79-4b2a-ad41-7029ce8052d7';
     } else {
-      return 'https://shopavo.la';
+      return 'https://vibenetwork.vercel.app/?tenant=3915f1e5-4c79-4b2a-ad41-7029ce8052d7';
     }
   };
 
