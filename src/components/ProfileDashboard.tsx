@@ -1604,7 +1604,7 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
                 { id: 'live', label: 'Live Stream' },
                 ...(wlConfig?.enableBooking !== false ? [{ id: 'booking', label: 'Booking' }] : []),
                 { id: 'series', label: 'Episodes' },
-                { id: 'courses', label: 'Masterclasses' },
+                { id: 'courses', label: 'Sessions' },
                 { id: 'flipbook', label: 'Flip Book' }
               ].concat(isNetworkLevel ? [{ id: 'members', label: 'Network Profiles' }, { id: 'community', label: 'Community' }] : []).concat((user && viewMode === 'edit') ? [{ id: 'my_bookings', label: 'My Bookings' }] : []).concat((myNetworks.length > 0 && !isNetworkLevel) ? [{ id: 'networks', label: 'My Networks' }] : []).map(tab => (
                 <button 
@@ -2614,10 +2614,10 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
           <div style={{ display: 'flex', flexDirection: 'column', gap: '30px' }}>
             {isOwnProfile && viewMode === 'edit' && (
               <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} style={{ background: 'rgba(255,255,255,0.03)', padding: '24px', borderRadius: '24px', border: '1px dashed rgba(255,255,255,0.15)' }}>
-                <h3 style={{ margin: '0 0 16px 0', fontSize: '18px', display: 'flex', alignItems: 'center', gap: '8px' }}>Create New Masterclass</h3>
+                <h3 style={{ margin: '0 0 16px 0', fontSize: '18px', display: 'flex', alignItems: 'center', gap: '8px' }}>Create New Session</h3>
                 <form onSubmit={handleAddCourse} style={{ display: 'grid', gap: '16px', gridTemplateColumns: '1fr 1fr' }}>
                   <div style={{ gridColumn: '1 / -1' }}>
-                    <input type="text" placeholder="Masterclass Title (e.g. Advanced Beatmaking)" value={newCourse.title} onChange={e => setNewCourse({...newCourse, title: e.target.value})} style={{ width: '100%', background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.1)', padding: '14px', borderRadius: '12px', color: 'var(--text-primary)', outline: 'none', fontSize: '15px' }} />
+                    <input type="text" placeholder="Session Title (e.g. Advanced Beatmaking)" value={newCourse.title} onChange={e => setNewCourse({...newCourse, title: e.target.value})} style={{ width: '100%', background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.1)', padding: '14px', borderRadius: '12px', color: 'var(--text-primary)', outline: 'none', fontSize: '15px' }} />
                   </div>
                   
                   <div style={{ display: 'flex', background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px', overflow: 'hidden' }}>
@@ -2632,7 +2632,7 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
 
                   <div style={{ display: 'flex', gap: '12px', gridColumn: '1 / -1', justifyContent: 'flex-end' }}>
                     <button type="submit" disabled={saving || !newCourse.title} style={{ padding: '14px 30px', background: 'linear-gradient(135deg, #8A2BE2, #ff4d85)', color: 'var(--text-primary)', border: 'none', borderRadius: '12px', fontWeight: 'bold', cursor: 'pointer', opacity: (!newCourse.title || saving) ? 0.5 : 1 }}>
-                      {saving ? 'Publishing...' : 'Publish Masterclass'}
+                      {saving ? 'Publishing...' : 'Publish Session'}
                     </button>
                   </div>
                 </form>
@@ -2641,7 +2641,7 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
 
             {courses.length === 0 ? (
               <div style={{ textAlign: 'center', padding: '60px 20px', background: 'rgba(0,0,0,0.2)', borderRadius: '24px', border: '1px solid rgba(255,255,255,0.05)' }}>
-                <h3 style={{ fontSize: '20px', marginTop: 0, color: 'var(--text-muted)' }}>No Masterclasses</h3>
+                <h3 style={{ fontSize: '20px', marginTop: 0, color: 'var(--text-muted)' }}>No Sessions</h3>
                 <p style={{ color: '#555', marginBottom: 0 }}>This creator hasn't published any courses yet.</p>
               </div>
             ) : (
