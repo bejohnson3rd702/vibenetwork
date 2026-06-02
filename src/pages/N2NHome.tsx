@@ -309,6 +309,97 @@ export default function N2NHome({ wlConfig, categories, activeVideo, setActiveVi
           </div>
         )}
 
+        {/* ── Hoodie Competition Banner ───────────────────────── */}
+        <section style={{ maxWidth: '1400px', margin: '40px auto', padding: '0 40px' }}>
+          <div style={{
+            position: 'relative', overflow: 'hidden',
+            border: '1px solid rgba(255,255,255,0.08)',
+            background: '#000',
+          }}>
+            {/* Background image — full bleed */}
+            <div style={{
+              position: 'absolute', inset: 0,
+              backgroundImage: 'url(/n2n/hoodie-competition.png)',
+              backgroundSize: 'cover', backgroundPosition: 'center',
+              filter: 'brightness(0.35)',
+            }} />
+            {/* Gradient overlay */}
+            <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(135deg, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.4) 50%, rgba(0,0,0,0.7) 100%)' }} />
+
+            <div style={{
+              position: 'relative', zIndex: 2,
+              padding: '64px 60px', display: 'flex', alignItems: 'center',
+              justifyContent: 'space-between', flexWrap: 'wrap', gap: '40px',
+            }}>
+              {/* Left — Content */}
+              <div style={{ maxWidth: '520px' }}>
+                <div style={{
+                  display: 'inline-flex', alignItems: 'center', gap: '8px',
+                  padding: '6px 14px', background: accent, color: '#000',
+                  fontSize: '10px', fontWeight: 900, letterSpacing: '2px', textTransform: 'uppercase',
+                  marginBottom: '20px',
+                }}>
+                  🏆 Competition
+                </div>
+                <h2 style={{
+                  fontSize: '38px', fontWeight: 900, color: '#fff', margin: '0 0 14px 0',
+                  lineHeight: 1.1, letterSpacing: '-1px', textTransform: 'uppercase',
+                }}>
+                  Best College<br />Hoodie Design
+                </h2>
+                <p style={{
+                  fontSize: '15px', color: 'rgba(255,255,255,0.5)', lineHeight: 1.7,
+                  margin: '0 0 24px 0',
+                }}>
+                  All 8 AVO schools go head-to-head. Which campus created the best branded hoodie? Browse the entries, rep your school, and cast your vote.
+                </p>
+
+                {/* School pills */}
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginBottom: '28px' }}>
+                  {['Baylor', 'Colorado', 'Georgia', 'Miss. State', 'Alabama', 'Ole Miss', 'Vanderbilt', 'Penn State'].map(school => (
+                    <span key={school} style={{
+                      padding: '5px 12px', fontSize: '10px', fontWeight: 800,
+                      letterSpacing: '1px', textTransform: 'uppercase',
+                      border: '1px solid rgba(255,255,255,0.15)', color: 'rgba(255,255,255,0.6)',
+                      background: 'rgba(255,255,255,0.04)',
+                    }}>
+                      {school}
+                    </span>
+                  ))}
+                </div>
+
+                <a
+                  href={'/shop' + (typeof window !== 'undefined' ? window.location.search : '')}
+                  style={{
+                    display: 'inline-block', padding: '14px 44px', fontSize: '11px', fontWeight: 800,
+                    textTransform: 'uppercase', letterSpacing: '2.5px',
+                    background: accent, color: '#000',
+                    border: 'none', textDecoration: 'none',
+                    transition: 'all 0.25s',
+                  }}
+                  onMouseOver={e => { e.currentTarget.style.opacity = '0.85'; }}
+                  onMouseOut={e => { e.currentTarget.style.opacity = '1'; }}
+                >
+                  Vote Now
+                </a>
+              </div>
+
+              {/* Right — Hoodie image */}
+              <div style={{ flexShrink: 0, width: '320px', position: 'relative' }}>
+                <img
+                  src="/n2n/hoodie-competition.png"
+                  alt="College Hoodie Competition"
+                  style={{
+                    width: '100%', borderRadius: '4px',
+                    border: '1px solid rgba(255,255,255,0.08)',
+                    boxShadow: '0 20px 60px rgba(0,0,0,0.5)',
+                  }}
+                />
+              </div>
+            </div>
+          </div>
+        </section>
+
         {/* ── College Sports News Feed ──────────────────────── */}
         <Suspense fallback={null}>
           <CollegeNewsFeed accent={config.accent} />
