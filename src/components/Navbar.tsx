@@ -30,7 +30,7 @@ const Navbar: React.FC<NavbarProps> = ({ user, onLoginClick, onAdminClick }) => 
       const search = params.toString();
       return '/' + (search ? `?${search}` : '');
     } else {
-      return 'https://vibenetwork.vercel.app';
+      return 'https://shopavo.la';
     }
   };
 
