@@ -9,6 +9,7 @@ import type { Category, VideoItem, User } from '../types';
 const CollegeTicker = lazy(() => import('../components/CollegeTicker'));
 const CollegeNewsFeed = lazy(() => import('../components/CollegeNewsFeed'));
 const WatchLive = lazy(() => import('../components/WatchLive'));
+const ChildNetworkFeeds = lazy(() => import('../components/ChildNetworkFeeds'));
 
 interface N2NHomeProps {
   wlConfig: any;
@@ -318,6 +319,11 @@ export default function N2NHome({ wlConfig, categories, activeVideo, setActiveVi
             />
           </div>
         )}
+
+        {/* ── Child Network Feed Spotlight ─────────────────────── */}
+        <Suspense fallback={null}>
+          <ChildNetworkFeeds parentId={config.id} accent={config.accent} />
+        </Suspense>
 
         {/* ── Hoodie Competition Banner ───────────────────────── */}
         <section style={{ maxWidth: '1400px', margin: '40px auto', padding: '0 40px' }}>
