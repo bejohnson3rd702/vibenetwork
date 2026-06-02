@@ -12,6 +12,7 @@ const WatchLive = lazy(() => import('../components/WatchLive'));
 const ChildNetworkFeeds = lazy(() => import('../components/ChildNetworkFeeds'));
 const TopAmbassadors = lazy(() => import('../components/TopAmbassadors'));
 const AmbassadorModal = lazy(() => import('../components/AmbassadorModal'));
+const HoodieVoteModal = lazy(() => import('../components/HoodieVoteModal'));
 
 interface N2NHomeProps {
   wlConfig: any;
@@ -31,6 +32,7 @@ export default function N2NHome({ wlConfig, categories, activeVideo, setActiveVi
   const [childItems, setChildItems] = useState<any[]>([]);
   const [childCategories, setChildCategories] = useState<any[]>([]);
   const [isAmbassadorOpen, setIsAmbassadorOpen] = useState(false);
+  const [isHoodieVoteOpen, setIsHoodieVoteOpen] = useState(false);
 
   useEffect(() => {
     if (!config?.id) return;
@@ -393,20 +395,21 @@ export default function N2NHome({ wlConfig, categories, activeVideo, setActiveVi
                   ))}
                 </div>
 
-                <a
-                  href={'/shop' + (typeof window !== 'undefined' ? window.location.search : '')}
+                <button
+                  onClick={() => setIsHoodieVoteOpen(true)}
                   style={{
                     display: 'inline-block', padding: '14px 44px', fontSize: '11px', fontWeight: 800,
                     textTransform: 'uppercase', letterSpacing: '2.5px',
                     background: accent, color: '#000',
                     border: 'none', textDecoration: 'none',
                     transition: 'all 0.25s',
+                    cursor: 'pointer'
                   }}
                   onMouseOver={e => { e.currentTarget.style.opacity = '0.85'; }}
                   onMouseOut={e => { e.currentTarget.style.opacity = '1'; }}
                 >
                   Vote Now
-                </a>
+                </button>
               </div>
 
               {/* Right — Hoodie image */}
@@ -628,6 +631,15 @@ export default function N2NHome({ wlConfig, categories, activeVideo, setActiveVi
         <AmbassadorModal 
           isOpen={isAmbassadorOpen} 
           onClose={() => setIsAmbassadorOpen(false)} 
+          accent={accent} 
+        />
+      </Suspense>
+
+      {/* ── Hoodie Vote Modal ───────────────────────────────── */}
+      <Suspense fallback={null}>
+        <HoodieVoteModal 
+          isOpen={isHoodieVoteOpen} 
+          onClose={() => setIsHoodieVoteOpen(false)} 
           accent={accent} 
         />
       </Suspense>
