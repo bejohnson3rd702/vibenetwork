@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { supabase } from '../supabaseClient';
 import { motion, AnimatePresence } from 'framer-motion';
-import { LogOut, Camera, Lock, Unlock, Image as ImageIcon, Star, ShieldCheck, Eye, Edit2, Trash2, Wand, Calendar, Edit3, Clock, CheckCircle, Heart, MessageCircle, Wallet, ArrowUpRight, ArrowDownLeft, Activity, Monitor, Settings, Video, DollarSign, Share2 } from 'lucide-react';
+import { LogOut, Camera, Lock, Unlock, Image as ImageIcon, Star, ShieldCheck, Eye, Edit2, Trash2, Wand, Calendar, Edit3, Clock, CheckCircle, Heart, MessageCircle, Wallet, ArrowUpRight, ArrowDownLeft, Activity, Monitor, Settings, Video, DollarSign, Share2, Pin } from 'lucide-react';
 import { DictationButton } from './DictationButton';
 import { EmojiPickerButton } from './EmojiPickerButton';
 import EndUserAuthModal from './EndUserAuthModal';
@@ -446,7 +446,9 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
       let postsQuery = supabase!.from('posts').select('*, creator:profiles!inner(username, avatar_url, whitelabel_id), post_likes(user_id), post_comments(*, user:profiles(username, avatar_url))');
       if (isNetworkLevel && wlConfig?.id) postsQuery = postsQuery.eq('creator.whitelabel_id', wlConfig.id).eq('is_locked', false);
       else postsQuery = postsQuery.eq('creator_id', targetProfileId);
-      const postsPromise = postsQuery.order('created_at', { ascending: false });
+      const postsPromise = postsQuery
+        .order('is_pinned', { ascending: false })
+        .order('created_at', { ascending: false });
 
       const [{ data, error }, { data: postsDataRaw, error: postsError }] = await Promise.all([
         profilePromise,
@@ -495,7 +497,9 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
              if (isNetworkLevel && wlConfig?.id) fallbackQuery = fallbackQuery.eq('creator.whitelabel_id', wlConfig.id).eq('is_locked', false);
              else fallbackQuery = fallbackQuery.eq('creator_id', targetProfileId);
              
-             const fallback = await fallbackQuery.order('created_at', { ascending: false });
+             const fallback = await fallbackQuery
+               .order('is_pinned', { ascending: false })
+               .order('created_at', { ascending: false });
              postsData = fallback.data;
         }
 
@@ -516,7 +520,8 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
               img: p.image_url || null,
               creator_id: p.creator_id,
               creator_username: creatorObj?.username,
-              creator_avatar: creatorObj?.avatar_url
+              creator_avatar: creatorObj?.avatar_url,
+              is_pinned: p.is_pinned || false
             };
           }));
         } else {
@@ -1071,6 +1076,51 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
     }
   };
 
+  const handleTogglePin = async (postId: string | number, currentPinned: boolean) => {
+    const targetState = !currentPinned;
+    const creatorId = targetProfileId || user?.id;
+    if (!creatorId) return;
+
+    // Optimistically update local state
+    setFeed(prev => {
+      const updated = prev.map(p => {
+        if (targetState) {
+          // If pinning this post, unpin all other posts for this creator
+          return {
+            ...p,
+            is_pinned: p.id === postId
+          };
+        } else {
+          // If unpinning, only unpin this one
+          return p.id === postId ? { ...p, is_pinned: false } : p;
+        }
+      });
+
+      // Re-sort feed: pinned posts first, then the rest
+      const pinned = updated.filter(p => p.is_pinned);
+      const unpinned = updated.filter(p => !p.is_pinned);
+      return [...pinned, ...unpinned];
+    });
+
+    try {
+      if (targetState) {
+        // Enforce single-pinned post behavior by unpinning all other posts for this creator in DB
+        await supabase!.from('posts').update({ is_pinned: false }).eq('creator_id', creatorId);
+      }
+      
+      const { error } = await supabase!
+        .from('posts')
+        .update({ is_pinned: targetState })
+        .eq('id', postId);
+      
+      if (error) throw error;
+      toast.success(targetState ? 'Post pinned to top!' : 'Post unpinned');
+    } catch (e: any) {
+      console.error('Error toggling pin:', e);
+      toast.error('Failed to update pin: ' + e.message);
+    }
+  };
+
   const handlePostSubmit = async (e: React.FormEvent, isLockedVal?: boolean) => {
     if (e && e.preventDefault) e.preventDefault();
     
@@ -1092,18 +1142,20 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
     // Add to supabase
     const { data } = await supabase!.from('posts').insert([newPost]).select();
     
-    if (data && data[0]) {
-      setFeed([{ 
-        id: data[0].id, title: data[0].content || postTitle, locked: data[0].is_locked || lockedStatus, likes: 0, date: 'Just now', 
-        img: data[0].image_url || newPost.image_url
-      }, ...feed]);
-    } else {
-      // Fallback local state if table doesn't exist yet
-      setFeed([{ 
-        id: Date.now(), title: postTitle, locked: lockedStatus, likes: 0, date: 'Just now', 
-        img: newPost.image_url
-      }, ...feed]);
-    }
+     if (data && data[0]) {
+       setFeed([{ 
+         id: data[0].id, title: data[0].content || postTitle, locked: data[0].is_locked || lockedStatus, likes: 0, date: 'Just now', 
+         img: data[0].image_url || newPost.image_url,
+         is_pinned: false
+       }, ...feed]);
+     } else {
+       // Fallback local state if table doesn't exist yet
+       setFeed([{ 
+         id: Date.now(), title: postTitle, locked: lockedStatus, likes: 0, date: 'Just now', 
+         img: newPost.image_url,
+         is_pinned: false
+       }, ...feed]);
+     }
     setPostTitle('');
     setPostMediaUrl('');
     toast.success('Content Published Successfully!');
@@ -1825,6 +1877,22 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
 
           {feed.map((post) => (
             <motion.div id={`post-${post.id}`} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} key={post.id} style={{ background: 'rgba(15,15,15,0.8)', borderRadius: '20px', border: '1px solid rgba(255,255,255,0.05)', overflow: 'hidden' }}>
+              {post.is_pinned && (
+                <div style={{
+                  background: 'rgba(255, 215, 0, 0.1)',
+                  borderBottom: '1px solid rgba(255, 215, 0, 0.2)',
+                  padding: '8px 20px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  fontSize: '12px',
+                  fontWeight: 'bold',
+                  color: '#ffd700'
+                }}>
+                  <Pin size={12} fill="#ffd700" />
+                  <span>Pinned Post</span>
+                </div>
+              )}
               
               {/* Post Header */}
               <div style={{ padding: '20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -1846,6 +1914,9 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
 
                 {((post.creator_id === user?.id) || (isOwnProfile && !isNetworkLevel) || (isNetworkLevel && targetProfileId === user?.id)) && viewMode === 'edit' && (
                   <div style={{ display: 'flex', gap: '8px' }}>
+                    <button onClick={() => handleTogglePin(post.id, post.is_pinned)} style={{ background: post.is_pinned ? 'rgba(255, 215, 0, 0.15)' : 'rgba(255,255,255,0.05)', border: 'none', color: post.is_pinned ? '#ffd700' : 'var(--text-primary)', cursor: 'pointer', padding: '8px', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: '0.2s' }} onMouseOver={e=>e.currentTarget.style.background=post.is_pinned ? 'rgba(255, 215, 0, 0.25)' : 'rgba(255,255,255,0.1)'} onMouseOut={e=>e.currentTarget.style.background=post.is_pinned ? 'rgba(255, 215, 0, 0.15)' : 'rgba(255,255,255,0.05)'} title={post.is_pinned ? "Unpin Post" : "Pin Post"}>
+                      <Pin size={16} fill={post.is_pinned ? "#ffd700" : "none"} />
+                    </button>
                     <button onClick={() => handleEditPost(post.id, post.title)} style={{ background: 'rgba(255,255,255,0.05)', border: 'none', color: 'var(--text-primary)', cursor: 'pointer', padding: '8px', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: '0.2s' }} onMouseOver={e=>e.currentTarget.style.background='rgba(255,255,255,0.1)'} onMouseOut={e=>e.currentTarget.style.background='rgba(255,255,255,0.05)'} title="Edit Post">
                       <Edit2 size={16} />
                     </button>
