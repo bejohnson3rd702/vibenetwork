@@ -191,7 +191,9 @@ export default function TopAmbassadors({ parentId, accent = 'var(--accent-primar
           const childAccent = creator.whitelabel?.theme?.accent || accent;
           const schoolName = creator.whitelabel?.name || 'AVO Network';
           const shortSchool = schoolName.replace('University of ', '').replace(' University', '');
-          const cleanLink = `/?tenant=${creator.whitelabel_id}${window.location.search ? window.location.search.replace('?', '&') : ''}`;
+          const params = new URLSearchParams(window.location.search);
+          params.set('tenant', creator.whitelabel_id);
+          const cleanLink = `/profile/${creator.id}?${params.toString()}`;
 
           return (
             <motion.div
