@@ -23,6 +23,17 @@ const Navbar: React.FC<NavbarProps> = ({ user, onLoginClick, onAdminClick }) => 
   const appAccent = wlConfig?.accent || '';
   const appLogo = wlConfig?.logoImage || '';
 
+  const getParentNetworkUrl = () => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.has('tenant')) {
+      params.delete('tenant');
+      const search = params.toString();
+      return '/' + (search ? `?${search}` : '');
+    } else {
+      return 'https://vibenetwork.vercel.app';
+    }
+  };
+
   const toggleTheme = () => {
     const newTheme = theme === 'dark' ? 'light' : 'dark';
     setTheme(newTheme);
@@ -82,6 +93,7 @@ const Navbar: React.FC<NavbarProps> = ({ user, onLoginClick, onAdminClick }) => 
         }}>
           {[
             { label: 'Home', path: '/' },
+            ...(wlConfig?.parent_network_id ? [{ label: 'AVO Network', path: 'parent' }] : []),
             { label: 'Marketplace', path: '/marketplace', hidden: Boolean(wlConfig?.domain && wlConfig.domain !== 'vibenetwork.tv') },
             { label: 'About Us', path: '/about' },
             { label: 'Watch Live', path: '/#whats-on-now', hidden: wlConfig?.enableWatchLive === false },
@@ -95,7 +107,9 @@ const Navbar: React.FC<NavbarProps> = ({ user, onLoginClick, onAdminClick }) => 
             onMouseOver={(e) => e.currentTarget.style.color = 'white'}
             onMouseOut={(e) => e.currentTarget.style.color = i === 0 ? 'white' : 'rgba(255,255,255,0.6)'}
             onClick={() => {
-               if (item.path.startsWith('/#')) {
+               if (item.path === 'parent') {
+                   window.location.href = getParentNetworkUrl();
+               } else if (item.path.startsWith('/#')) {
                    navigate(`/${window.location.search}`);
                    setTimeout(() => {
                        document.getElementById(item.path.substring(2))?.scrollIntoView({ behavior: 'smooth' });
@@ -160,6 +174,14 @@ const Navbar: React.FC<NavbarProps> = ({ user, onLoginClick, onAdminClick }) => 
           
           {isMenuOpen && (
             <div style={{ position: 'absolute', top: '100%', right: 0, marginTop: '24px', background: 'var(--bg-surface)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px', padding: '8px', minWidth: '220px', display: 'flex', flexDirection: 'column', gap: '4px', zIndex: 1000, boxShadow: '0 20px 40px rgba(0,0,0,0.5)' }}>
+              {wlConfig?.parent_network_id && (
+                <>
+                  <div onClick={() => { setIsMenuOpen(false); window.location.href = getParentNetworkUrl(); }} style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '12px 16px', color: 'var(--text-primary)', textDecoration: 'none', fontSize: '14px', borderRadius: '8px', cursor: 'pointer', transition: 'background 0.2s', fontWeight: 'bold' }} onMouseOver={e => e.currentTarget.style.background='rgba(255,255,255,0.1)'} onMouseOut={e => e.currentTarget.style.background='transparent'}>
+                    🌐 Go to AVO Network
+                  </div>
+                  <div style={{ height: '1px', background: 'rgba(255,255,255,0.1)', margin: '4px 0' }} />
+                </>
+              )}
               {user ? (
                 <>
                   <div style={{ padding: '8px 16px', color: 'var(--text-muted)', fontSize: '13px', fontWeight: 'bold', textTransform: 'uppercase' }}>

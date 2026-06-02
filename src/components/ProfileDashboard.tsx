@@ -1460,8 +1460,44 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
           
           {!isGuestMode && !isNetworkLevel && (
             <>
-          {/* Glassmorphic Creator Header */}
-          <div style={{ background: isNetworkLevel ? 'transparent' : 'rgba(15, 15, 15, 0.4)', backdropFilter: isNetworkLevel ? 'none' : 'blur(24px)', padding: isNetworkLevel ? '0 40px 40px' : '40px', borderRadius: '32px', border: isNetworkLevel ? 'none' : '1px solid rgba(255,255,255,0.08)', position: 'relative', boxShadow: isNetworkLevel ? 'none' : '0 20px 40px rgba(0,0,0,0.4)' }}>
+              {wlConfig?.parent_network_id && (
+                <button
+                  onClick={() => navigate({ pathname: '/', search: location.search })}
+                  style={{
+                    alignSelf: 'flex-start',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                    background: 'rgba(255,255,255,0.05)',
+                    border: '1px solid rgba(255,255,255,0.1)',
+                    borderRadius: '20px',
+                    padding: '8px 20px',
+                    color: 'var(--text-primary)',
+                    fontFamily: 'var(--font-heading)',
+                    fontWeight: 800,
+                    fontSize: '12px',
+                    textTransform: 'uppercase',
+                    letterSpacing: '1px',
+                    cursor: 'pointer',
+                    transition: 'all 0.2s',
+                    marginBottom: '-10px',
+                    zIndex: 10
+                  }}
+                  onMouseOver={e => {
+                    e.currentTarget.style.background = 'rgba(255,255,255,0.1)';
+                    e.currentTarget.style.borderColor = wlConfig?.accent || 'var(--accent-primary)';
+                  }}
+                  onMouseOut={e => {
+                    e.currentTarget.style.background = 'rgba(255,255,255,0.05)';
+                    e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)';
+                  }}
+                >
+                  <span>← Back to {wlConfig.name}</span>
+                </button>
+              )}
+
+              {/* Glassmorphic Creator Header */}
+              <div style={{ background: isNetworkLevel ? 'transparent' : 'rgba(15, 15, 15, 0.4)', backdropFilter: isNetworkLevel ? 'none' : 'blur(24px)', padding: isNetworkLevel ? '0 40px 40px' : '40px', borderRadius: '32px', border: isNetworkLevel ? 'none' : '1px solid rgba(255,255,255,0.08)', position: 'relative', boxShadow: isNetworkLevel ? 'none' : '0 20px 40px rgba(0,0,0,0.4)' }}>
             
             {!isOwnProfile && (
               <button
