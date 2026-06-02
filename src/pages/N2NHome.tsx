@@ -678,29 +678,7 @@ export default function N2NHome({ wlConfig, categories, activeVideo, setActiveVi
         background: accent, filter: 'blur(250px)', opacity: 0.05, borderRadius: '50%', zIndex: -1, pointerEvents: 'none'
       }} />
 
-      {/* ── Branded Footer ────────────────────────────────────── */}
-      <footer style={{ background: 'var(--bg-color)', borderTop: '1px solid rgba(255,255,255,0.05)', padding: '80px 40px', position: 'relative', overflow: 'hidden' }}>
-        <div style={{ position: 'absolute', top: 0, left: '50%', transform: 'translateX(-50%)', width: '100%', height: '1px', background: `linear-gradient(90deg, transparent, ${accent}, transparent)`, opacity: 0.3 }} />
-        <div style={{ maxWidth: '1400px', margin: '0 auto', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '32px' }}>
-          <h2 style={{ margin: 0, fontSize: '24px', fontWeight: 900, letterSpacing: '4px', display: 'flex', alignItems: 'center', gap: '12px' }}>
-            <span style={{ fontSize: '32px', color: accent }}>
-              {config?.logoImage ? (
-                <img src={config.logoImage} alt="" style={{ height: '32px', objectFit: 'contain' }} />
-              ) : (
-                config?.name?.charAt(0) || 'V'
-              )}
-            </span>
-            {(config?.name || 'VIBE NETWORK').toUpperCase()}
-          </h2>
-          <div style={{ display: 'flex', gap: '40px', fontSize: '14px', fontWeight: 600, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '2px' }}>
-            <span style={{ cursor: 'pointer', transition: 'color 0.2s' }} onMouseOver={e => e.currentTarget.style.color = 'var(--text-primary)'} onMouseOut={e => e.currentTarget.style.color = 'var(--text-secondary)'}>Networks</span>
-            <span style={{ cursor: 'pointer', transition: 'color 0.2s' }} onMouseOver={e => e.currentTarget.style.color = 'var(--text-primary)'} onMouseOut={e => e.currentTarget.style.color = 'var(--text-secondary)'}>Creators</span>
-            <span style={{ cursor: 'pointer', transition: 'color 0.2s' }} onMouseOver={e => e.currentTarget.style.color = 'var(--text-primary)'} onMouseOut={e => e.currentTarget.style.color = 'var(--text-secondary)'}>Support</span>
-            <span style={{ cursor: 'pointer', transition: 'color 0.2s' }} onMouseOver={e => e.currentTarget.style.color = 'var(--text-primary)'} onMouseOut={e => e.currentTarget.style.color = 'var(--text-secondary)'}>Documentation</span>
-          </div>
-          <p style={{ color: 'var(--text-muted)', fontSize: '12px', marginTop: '40px' }}>&copy; {new Date().getFullYear()} {config?.name || 'Vibe Media Networks LLC'}. All rights reserved.</p>
-        </div>
-      </footer>
+
 
       {/* ── Ambassador Application Modal ─────────────────────── */}
       <Suspense fallback={null}>
