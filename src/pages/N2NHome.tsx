@@ -428,6 +428,67 @@ export default function N2NHome({ wlConfig, categories, activeVideo, setActiveVi
           </div>
         </section>
 
+        {/* ── AVO Summer Concert Tour Banner ─────────────────── */}
+        <section style={{ maxWidth: '1400px', margin: '40px auto', padding: '0 40px' }}>
+          <div style={{
+            position: 'relative', overflow: 'hidden',
+            border: '1px solid rgba(255,255,255,0.06)',
+            background: '#000',
+            minHeight: '380px',
+            display: 'flex',
+            alignItems: 'center'
+          }}>
+            {/* Background Image */}
+            <div style={{
+              position: 'absolute', inset: 0,
+              backgroundImage: 'url(/n2n/concert_in_the_park.png)',
+              backgroundSize: 'cover', backgroundPosition: 'center 35%',
+              filter: 'brightness(0.32)'
+            }} />
+            {/* Gradient Overlay */}
+            <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to right, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.4) 60%, transparent 100%)' }} />
+
+            <div style={{
+              position: 'relative', zIndex: 2,
+              padding: '64px 60px', maxWidth: '640px',
+            }}>
+              <div style={{
+                display: 'inline-flex', alignItems: 'center', gap: '8px',
+                padding: '6px 14px', background: 'linear-gradient(90deg, #FF512F, #DD2476)', color: '#fff',
+                fontSize: '10px', fontWeight: 900, letterSpacing: '2px', textTransform: 'uppercase',
+                marginBottom: '20px',
+              }}>
+                🎸 Summer 2026 Tour
+              </div>
+              <h2 style={{
+                fontSize: '38px', fontWeight: 900, color: '#fff', margin: '0 0 16px 0',
+                lineHeight: 1.1, letterSpacing: '-1px', textTransform: 'uppercase',
+              }}>
+                AVO Summer<br />Concert Tour
+              </h2>
+              <p style={{
+                fontSize: '15px', color: 'rgba(255,255,255,0.6)', lineHeight: 1.7,
+                margin: '0 0 28px 0',
+              }}>
+                Catch the vibes live! AVO is hitting the road this summer, bringing your favorite bands and artists to collegiate campus parks nationwide. Grab your crew, rep your school colors, and experience the ultimate summer soundtrack.
+              </p>
+              <button
+                style={{
+                  display: 'inline-block', padding: '14px 44px', fontSize: '11px', fontWeight: 800,
+                  textTransform: 'uppercase', letterSpacing: '2.5px',
+                  background: accent, color: '#000',
+                  border: 'none', transition: 'all 0.25s',
+                  cursor: 'pointer'
+                }}
+                onMouseOver={e => { e.currentTarget.style.opacity = '0.85'; }}
+                onMouseOut={e => { e.currentTarget.style.opacity = '1'; }}
+              >
+                Buy Now
+              </button>
+            </div>
+          </div>
+        </section>
+
         {/* ── College Sports News Feed ──────────────────────── */}
         <Suspense fallback={null}>
           <CollegeNewsFeed accent={config.accent} />
