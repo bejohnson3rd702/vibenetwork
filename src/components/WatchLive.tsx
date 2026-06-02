@@ -286,12 +286,27 @@ export default function WatchLive({ accent = '#D35400' }: { accent?: string }) {
             >
               <button onClick={() => setActiveVideo(null)}
                 style={{
-                  position: 'absolute', top: '-48px', right: '0', zIndex: 10,
-                  width: '36px', height: '36px', borderRadius: '50%',
-                  background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.15)',
-                  color: '#fff', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
-                }}>
-                <X size={16} />
+                  position: 'absolute', 
+                  top: '16px', 
+                  right: '16px', 
+                  zIndex: 10,
+                  width: '40px', 
+                  height: '40px', 
+                  borderRadius: '50%',
+                  background: 'rgba(0,0,0,0.5)', 
+                  border: '1px solid rgba(255,255,255,0.2)',
+                  color: '#fff', 
+                  cursor: 'pointer', 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  justifyContent: 'center',
+                  backdropFilter: 'blur(10px)',
+                  transition: 'all 0.2s ease',
+                }}
+                onMouseOver={e => { e.currentTarget.style.background = 'rgba(0,0,0,0.8)'; e.currentTarget.style.transform = 'scale(1.05)'; }}
+                onMouseOut={e => { e.currentTarget.style.background = 'rgba(0,0,0,0.5)'; e.currentTarget.style.transform = 'scale(1)'; }}
+              >
+                <X size={20} />
               </button>
               <div style={{ borderRadius: '16px', overflow: 'hidden', background: '#000' }}>
                 <video
