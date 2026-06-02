@@ -19,6 +19,14 @@ export const N2NBrandingTab = ({ wlConfig }: { wlConfig: any }) => {
   const [logoUrl, setLogoUrl] = useState('');
   const [heroImageUrl, setHeroImageUrl] = useState('');
 
+  const applyChild = (child: any) => {
+    setName(child.name || '');
+    setChildAccent(child.theme?.accent || child.accent || '#D35400');
+    setHeroCopy(child.theme?.heroCopy || '');
+    setLogoUrl(child.logo || '');
+    setHeroImageUrl(child.theme?.heroImage || '');
+  };
+
   useEffect(() => {
     if (!wlConfig?.id) return;
     const load = async () => {
@@ -33,14 +41,6 @@ export const N2NBrandingTab = ({ wlConfig }: { wlConfig: any }) => {
     };
     load();
   }, [wlConfig?.id]);
-
-  const applyChild = (child: any) => {
-    setName(child.name || '');
-    setChildAccent(child.theme?.accent || child.accent || '#D35400');
-    setHeroCopy(child.theme?.heroCopy || '');
-    setLogoUrl(child.logo || '');
-    setHeroImageUrl(child.theme?.heroImage || '');
-  };
 
   const handleSelectChild = (id: string) => {
     setSelectedId(id);

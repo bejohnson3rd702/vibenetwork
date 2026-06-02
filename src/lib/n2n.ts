@@ -14,12 +14,13 @@ import { normalizeWlConfig } from './whitelabel';
 
 /** Fetch all child networks under a parent */
 export async function getChildNetworks(parentId: string): Promise<WlConfig[]> {
-  // Try dedicated column first
-  let { data, error } = await supabase
+  let data;
+  const { data: initialData, error } = await supabase
     .from('whitelabel_configs')
     .select('*')
     .eq('parent_network_id', parentId)
     .order('created_at', { ascending: true });
+  data = initialData;
 
   // If the column doesn't exist or no results, fallback to theme JSONB
   if ((error || !data || data.length === 0)) {

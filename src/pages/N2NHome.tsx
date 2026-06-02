@@ -1,4 +1,4 @@
-import { useState, useEffect, lazy, Suspense } from 'react';
+import { useState, useEffect, useRef, lazy, Suspense } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Play, X, Network } from 'lucide-react';
 import SliderSection from '../components/SliderSection';
@@ -22,6 +22,7 @@ export default function N2NHome({ wlConfig, categories, activeVideo, setActiveVi
   const { wlConfig: ctxConfig } = useWhiteLabel();
   const config = wlConfig || ctxConfig;
   const accent = config?.accent || 'var(--accent-primary)';
+  const videoRef = useRef<HTMLVideoElement>(null);
 
   // ─── Child Networks ──────────────────────────────────────────────
   const [childItems, setChildItems] = useState<any[]>([]);
@@ -55,6 +56,15 @@ export default function N2NHome({ wlConfig, categories, activeVideo, setActiveVi
     })();
     return () => { cancelled = true; };
   }, [config?.id]);
+
+  useEffect(() => {
+    if (activeVideo && videoRef.current) {
+      videoRef.current.load();
+      videoRef.current.play().catch(err => {
+        console.warn("N2NHome: Playback was prevented or failed:", err);
+      });
+    }
+  }, [activeVideo]);
 
   // ─── AVO Hero Slides — real shopavo.la CDN images ───────────────
   const HERO_SLIDES = [
@@ -530,11 +540,18 @@ export default function N2NHome({ wlConfig, categories, activeVideo, setActiveVi
                   }
                   return (
                     <video
+                      key={activeVideo.videoUrl}
+                      ref={videoRef}
                       src={activeVideo.videoUrl}
                       autoPlay
                       controls
+                      playsInline
+                      preload="auto"
                       style={{ width: '100%', height: '100%', objectFit: 'contain', background: 'black' }}
-                    />
+                    >
+                      <source src={activeVideo.videoUrl} type="video/mp4" />
+                      Your browser does not support the video tag.
+                    </video>
                   );
                 })()}
               </div>

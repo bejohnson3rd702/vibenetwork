@@ -1,9 +1,4 @@
-import { createClient } from '@supabase/supabase-js';
-
-const supabase = createClient(
-  'https://fimzetmvrmbmdggvqzpr.supabase.co',
-  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZpbXpldG12cm1ibWRnZ3ZxenByIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUwMTQ2MjcsImV4cCI6MjA5MDU5MDYyN30.1spJ19jp6RZzpMVSHZRNLjaS-bd2RoztlIYMxmKQQQg'
-);
+import { supabase } from './supabaseClientLoader.ts';
 
 async function seedFitCheckPosts() {
   // 1. Get all child networks under AVO
@@ -42,7 +37,7 @@ async function seedFitCheckPosts() {
       .eq('whitelabel_id', child.id)
       .limit(1);
 
-    let creatorId = profiles?.[0]?.id || child.owner_id;
+    const creatorId = profiles?.[0]?.id || child.owner_id;
     
     if (!creatorId) {
       console.log(`  Skipping ${schoolName} - no profile/owner found`);

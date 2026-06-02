@@ -1874,8 +1874,7 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
               </div>
 
               {/* Engagement Section (Likes & Comments) */}
-              {true && (
-                <div style={{ padding: '16px 20px', borderTop: '1px solid rgba(255,255,255,0.05)', background: 'rgba(0,0,0,0.2)' }}>
+              <div style={{ padding: '16px 20px', borderTop: '1px solid rgba(255,255,255,0.05)', background: 'rgba(0,0,0,0.2)' }}>
                   <div style={{ display: 'flex', gap: '24px', marginBottom: '16px' }}>
                     <button 
                       onClick={() => handleLike(post.id)}
@@ -1950,7 +1949,6 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
                     </button>
                   </div>
                 </div>
-              )}
 
             </motion.div>
           ))}

@@ -22,6 +22,7 @@ const WhatsOnNow: React.FC = () => {
   const [scheduleItems, setScheduleItems] = useState<any[]>([]);
   const [activeVideo, setActiveVideo] = useState<any>(null);
   const scrollRef = React.useRef<HTMLDivElement>(null);
+  const videoRef = React.useRef<HTMLVideoElement>(null);
 
   React.useEffect(() => {
     async function loadSchedule() {
@@ -66,6 +67,15 @@ const WhatsOnNow: React.FC = () => {
     if (activeVideo) document.body.style.overflow = 'hidden';
     else document.body.style.overflow = '';
     return () => { document.body.style.overflow = ''; };
+  }, [activeVideo]);
+
+  React.useEffect(() => {
+    if (activeVideo && videoRef.current) {
+      videoRef.current.load();
+      videoRef.current.play().catch(err => {
+        console.warn("WhatsOnNow: Playback was prevented or failed:", err);
+      });
+    }
   }, [activeVideo]);
 
   const scroll = (dir: 'left' | 'right') => {
@@ -248,11 +258,19 @@ const WhatsOnNow: React.FC = () => {
                   }
                   return (
                     <video
+                      key={activeVideo.video_url}
+                      ref={videoRef}
                       src={activeVideo.video_url}
-                      controls autoPlay
+                      controls
+                      autoPlay
+                      playsInline
+                      preload="auto"
                       style={{ width: '100%', height: '100%', objectFit: 'contain' }}
                       poster={activeVideo.image}
-                    />
+                    >
+                      <source src={activeVideo.video_url} type="video/mp4" />
+                      Your browser does not support the video tag.
+                    </video>
                   );
                 })()}
               </div>

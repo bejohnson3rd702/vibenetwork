@@ -1,6 +1,6 @@
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Play, ChevronRight, Sparkles } from 'lucide-react';
-import { lazy, Suspense, useState, useEffect } from 'react';
+import { lazy, Suspense, useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import SliderSection from '../components/SliderSection';
 import { supabase } from '../supabaseClient';
@@ -21,11 +21,21 @@ interface WhiteLabelHomeProps {
 export default function WhiteLabelHome({ wlConfig, categories, user, activeVideo, setActiveVideo }: WhiteLabelHomeProps) {
   const navigate = useNavigate();
   const [showVideoTitle, setShowVideoTitle] = useState(true);
+  const videoRef = useRef<HTMLVideoElement>(null);
 
   useEffect(() => {
     // Keep the video title overlay visible permanently
     setShowVideoTitle(true);
   }, [wlConfig.heroLayoutMode, wlConfig.heroVideoTitle]);
+
+  useEffect(() => {
+    if (activeVideo && videoRef.current) {
+      videoRef.current.load();
+      videoRef.current.play().catch(err => {
+        console.warn("WhiteLabelHome: Playback was prevented or failed:", err);
+      });
+    }
+  }, [activeVideo]);
 
   return (
     <div style={{ background: wlConfig.bg || 'var(--bg-color)', minHeight: '100vh', width: '100%', overflowX: 'hidden', position: 'relative' }}>
@@ -186,9 +196,22 @@ export default function WhiteLabelHome({ wlConfig, categories, user, activeVideo
                        />
                      );
                    }
-                   return (
-                     <video src={activeVideo.videoUrl} poster={activeVideo.image} autoPlay controls style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
-                   );
+                    return (
+                      <video
+                        key={activeVideo.videoUrl}
+                        ref={videoRef}
+                        src={activeVideo.videoUrl}
+                        poster={activeVideo.image}
+                        autoPlay
+                        controls
+                        playsInline
+                        preload="auto"
+                        style={{ width: '100%', height: '100%', objectFit: 'contain' }}
+                      >
+                        <source src={activeVideo.videoUrl} type="video/mp4" />
+                        Your browser does not support the video tag.
+                      </video>
+                    );
                  })()}
                </div>
              </div>

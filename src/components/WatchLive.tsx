@@ -2,6 +2,8 @@ import { useState, useEffect, useRef } from 'react';
 import { Play, Tv, X, ChevronLeft, ChevronRight, Clock } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
+
+
 interface VideoClip {
   id: string;
   headline: string;
@@ -25,6 +27,7 @@ export default function WatchLive({ accent = '#D35400' }: { accent?: string }) {
   const [activeVideo, setActiveVideo] = useState<VideoClip | null>(null);
   const [filter, setFilter] = useState('all');
   const scrollRef = useRef<HTMLDivElement>(null);
+  const videoRef = useRef<HTMLVideoElement>(null);
 
   useEffect(() => {
     const fetchClips = async () => {
@@ -51,7 +54,8 @@ export default function WatchLive({ accent = '#D35400' }: { accent?: string }) {
             const vids = h.video || [];
             if (vids.length > 0) {
               const v = vids[0];
-              const mp4 = v.links?.source?.HD?.href
+              const mp4 = v.links?.source?.mezzanine?.href
+                || v.links?.source?.HD?.href
                 || v.links?.source?.full?.href
                 || v.links?.source?.href
                 || '';
@@ -86,6 +90,15 @@ export default function WatchLive({ accent = '#D35400' }: { accent?: string }) {
     if (activeVideo) document.body.style.overflow = 'hidden';
     else document.body.style.overflow = '';
     return () => { document.body.style.overflow = ''; };
+  }, [activeVideo]);
+
+  useEffect(() => {
+    if (activeVideo && videoRef.current) {
+      videoRef.current.load();
+      videoRef.current.play().catch(err => {
+        console.warn("WatchLive: Playback was prevented or failed:", err);
+      });
+    }
   }, [activeVideo]);
 
   const scroll = (dir: 'left' | 'right') => {
@@ -276,12 +289,19 @@ export default function WatchLive({ accent = '#D35400' }: { accent?: string }) {
               </button>
               <div style={{ borderRadius: '16px', overflow: 'hidden', background: '#000' }}>
                 <video
+                  key={activeVideo.videoUrl}
+                  ref={videoRef}
                   src={activeVideo.videoUrl}
                   controls
                   autoPlay
+                  playsInline
+                  preload="auto"
                   style={{ width: '100%', display: 'block' }}
                   poster={activeVideo.thumbnail}
-                />
+                >
+                  <source src={activeVideo.videoUrl} type="video/mp4" />
+                  Your browser does not support the video tag.
+                </video>
               </div>
               <div style={{ marginTop: '16px' }}>
                 <h3 style={{ margin: '0 0 6px 0', fontSize: '18px', fontWeight: 800, color: '#fff' }}>{activeVideo.headline}</h3>

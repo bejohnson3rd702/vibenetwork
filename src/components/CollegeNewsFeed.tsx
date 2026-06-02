@@ -11,7 +11,18 @@ interface Article {
   published: string;
   byline?: string;
   sport: string;
+  timeAgoText: string;
 }
+
+const calculateTimeAgo = (dateStr: string) => {
+  const diff = Date.now() - new Date(dateStr).getTime();
+  const mins = Math.floor(diff / 60000);
+  if (mins < 60) return `${mins}m ago`;
+  const hours = Math.floor(mins / 60);
+  if (hours < 24) return `${hours}h ago`;
+  const days = Math.floor(hours / 24);
+  return `${days}d ago`;
+};
 
 const FEEDS = [
   { key: 'cfb', label: 'Football', url: '/api/espn/football/college-football/news?limit=8' },
@@ -70,6 +81,7 @@ export default function CollegeNewsFeed({ accent = '#D35400' }: { accent?: strin
               published: a.published || '',
               byline: a.byline || '',
               sport: feed.key,
+              timeAgoText: calculateTimeAgo(a.published || ''),
             });
           });
         } catch (err) {
@@ -98,16 +110,6 @@ export default function CollegeNewsFeed({ accent = '#D35400' }: { accent?: strin
   }, [selectedArticle]);
 
   const filtered = activeFilter === 'all' ? articles : articles.filter(a => a.sport === activeFilter);
-
-  const timeAgo = (dateStr: string) => {
-    const diff = Date.now() - new Date(dateStr).getTime();
-    const mins = Math.floor(diff / 60000);
-    if (mins < 60) return `${mins}m ago`;
-    const hours = Math.floor(mins / 60);
-    if (hours < 24) return `${hours}h ago`;
-    const days = Math.floor(hours / 24);
-    return `${days}d ago`;
-  };
 
   const formatDate = (dateStr: string) => {
     return new Date(dateStr).toLocaleDateString('en-US', {
@@ -195,7 +197,7 @@ export default function CollegeNewsFeed({ accent = '#D35400' }: { accent?: strin
                 </p>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginTop: '12px', fontSize: '11px', color: '#666' }}>
                   <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                    <Clock size={12} /> {timeAgo(featured.published)}
+                    <Clock size={12} /> {featured.timeAgoText}
                   </span>
                   {featured.byline && <span>· {featured.byline}</span>}
                   <span style={{ display: 'flex', alignItems: 'center', gap: '4px', color: accent }}>
@@ -247,7 +249,7 @@ export default function CollegeNewsFeed({ accent = '#D35400' }: { accent?: strin
                     {article.sport === 'cfb' ? 'Football' : article.sport === 'cbb' ? 'Basketball' : 'Baseball'}
                   </span>
                   <span style={{ fontSize: '10px', color: '#555', display: 'flex', alignItems: 'center', gap: '3px' }}>
-                    <Clock size={10} /> {timeAgo(article.published)}
+                    <Clock size={10} /> {article.timeAgoText}
                   </span>
                 </div>
                 <h4 style={{

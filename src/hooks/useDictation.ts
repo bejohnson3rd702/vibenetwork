@@ -50,7 +50,7 @@ export function useDictation(onResult: (text: string) => void) {
     };
 
     recognition.start();
-  }, [isListening, supported, onResult]);
+  }, [isListening, supported, onResult, toast]);
 
   return { isListening, toggleListening, supported };
 }
