@@ -255,6 +255,7 @@ export default function ChildNetworkFeeds({ parentId, accent = 'var(--accent-pri
                   <img
                     src={post.creator?.avatar_url || `https://ui-avatars.com/api/?name=${post.creator?.username || 'Creator'}&background=random`}
                     alt={post.creator?.username}
+                    referrerPolicy="no-referrer"
                     style={{
                       width: '32px',
                       height: '32px',
@@ -287,6 +288,7 @@ export default function ChildNetworkFeeds({ parentId, accent = 'var(--accent-pri
                       src={post.image_url}
                       alt="Trending moment"
                       loading="lazy"
+                      referrerPolicy="no-referrer"
                       style={{
                         width: '100%',
                         height: '100%',

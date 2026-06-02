@@ -23,6 +23,7 @@ interface SliderSectionProps {
 const SlideItem: React.FC<{ item: Item, aspectRatio: string, onClick?: () => void }> = ({ item, aspectRatio }) => {
   const [isHovered, setIsHovered] = useState(false);
   const isInfluencer = !item.videoUrl || (item.tags && item.tags.includes('Influencer Channel'));
+  const isNetwork = item.tags && item.tags.includes('Network');
 
   const innerContent = (
     <motion.div 
@@ -34,14 +35,16 @@ const SlideItem: React.FC<{ item: Item, aspectRatio: string, onClick?: () => voi
         src={item.image}
         loading="lazy"
         alt={item.title}
-        animate={{ scale: isHovered ? 1.05 : 1 }}
+        animate={{ scale: isHovered ? (isNetwork ? 1.1 : 1.05) : 1 }}
         transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+        referrerPolicy="no-referrer"
         style={{
           position: 'absolute',
-          inset: 0,
-          width: '100%',
-          height: '100%',
-          objectFit: 'cover',
+          top: isNetwork ? '15%' : 0,
+          left: isNetwork ? '15%' : 0,
+          width: isNetwork ? '70%' : '100%',
+          height: isNetwork ? '70%' : '100%',
+          objectFit: isNetwork ? 'contain' : 'cover',
           zIndex: 0,
         }}
       />
@@ -170,7 +173,7 @@ const SlideItem: React.FC<{ item: Item, aspectRatio: string, onClick?: () => voi
         boxShadow: isHovered ? '0 20px 40px rgba(0,0,0,0.8)' : '0 10px 30px rgba(0,0,0,0.5)',
         transition: 'all 0.4s ease',
         borderRadius: '24px',
-        background: 'var(--bg-color)'
+        background: isNetwork ? '#0a0a0a' : 'var(--bg-color)'
       }}
     >
       {innerContent}
