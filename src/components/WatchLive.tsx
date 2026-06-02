@@ -32,6 +32,7 @@ export default function WatchLive({ accent = '#D35400' }: { accent?: string }) {
   useEffect(() => {
     const fetchClips = async () => {
       const allClips: VideoClip[] = [];
+      const seen = new Set<string>();
 
       // Allowlist: only keep content tagged with these NCAA league names
       const NCAA_KEYWORDS = ['college', 'ncaa'];
@@ -54,14 +55,19 @@ export default function WatchLive({ accent = '#D35400' }: { accent?: string }) {
             const vids = h.video || [];
             if (vids.length > 0) {
               const v = vids[0];
+              const clipId = String(v.id || h.id || Math.random());
               const mp4 = v.links?.source?.mezzanine?.href
                 || v.links?.source?.HD?.href
                 || v.links?.source?.full?.href
                 || v.links?.source?.href
                 || '';
               if (!mp4) continue;
+              if (seen.has(clipId) || seen.has(mp4)) continue;
+              seen.add(clipId);
+              seen.add(mp4);
+
               allClips.push({
-                id: String(v.id || h.id || Math.random()),
+                id: clipId,
                 headline: v.headline || h.headline || '',
                 description: v.description || h.description || '',
                 thumbnail: v.thumbnail || '',
