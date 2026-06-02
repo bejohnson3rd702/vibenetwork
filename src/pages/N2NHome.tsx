@@ -472,19 +472,34 @@ export default function N2NHome({ wlConfig, categories, activeVideo, setActiveVi
               }}>
                 Catch the vibes live! AVO is hitting the road this summer, bringing your favorite bands and artists to collegiate campus parks nationwide. Grab your crew, rep your school colors, and experience the ultimate summer soundtrack.
               </p>
-              <button
-                style={{
-                  display: 'inline-block', padding: '14px 44px', fontSize: '11px', fontWeight: 800,
-                  textTransform: 'uppercase', letterSpacing: '2.5px',
-                  background: accent, color: '#000',
-                  border: 'none', transition: 'all 0.25s',
-                  cursor: 'pointer'
-                }}
-                onMouseOver={e => { e.currentTarget.style.opacity = '0.85'; }}
-                onMouseOut={e => { e.currentTarget.style.opacity = '1'; }}
-              >
-                Buy Now
-              </button>
+              <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap' }}>
+                <button
+                  style={{
+                    display: 'inline-block', padding: '14px 44px', fontSize: '11px', fontWeight: 800,
+                    textTransform: 'uppercase', letterSpacing: '2.5px',
+                    background: accent, color: '#000',
+                    border: 'none', transition: 'all 0.25s',
+                    cursor: 'pointer'
+                  }}
+                  onMouseOver={e => { e.currentTarget.style.opacity = '0.85'; }}
+                  onMouseOut={e => { e.currentTarget.style.opacity = '1'; }}
+                >
+                  Buy Now
+                </button>
+                <button
+                  style={{
+                    display: 'inline-block', padding: '14px 44px', fontSize: '11px', fontWeight: 800,
+                    textTransform: 'uppercase', letterSpacing: '2.5px',
+                    background: 'rgba(255, 255, 255, 0.08)', color: '#fff',
+                    border: '1px solid rgba(255, 255, 255, 0.2)', transition: 'all 0.25s',
+                    cursor: 'pointer'
+                  }}
+                  onMouseOver={e => { e.currentTarget.style.background = 'rgba(255, 255, 255, 0.15)'; }}
+                  onMouseOut={e => { e.currentTarget.style.background = 'rgba(255, 255, 255, 0.08)'; }}
+                >
+                  Join The Live Stream
+                </button>
+              </div>
             </div>
           </div>
         </section>
