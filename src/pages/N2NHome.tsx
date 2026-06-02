@@ -216,6 +216,82 @@ export default function N2NHome({ wlConfig, categories, activeVideo, setActiveVi
           <WatchLive accent={config.accent} />
         </Suspense>
 
+        {/* ── New Drop CTA Banner ─────────────────────────────── */}
+        <section style={{ maxWidth: '1400px', margin: '20px auto 40px', padding: '0 40px' }}>
+          <div style={{
+            position: 'relative', overflow: 'hidden',
+            display: 'flex', minHeight: '340px',
+            border: '1px solid rgba(255,255,255,0.06)',
+            background: '#000',
+          }}>
+            {/* Left — Image */}
+            <div style={{
+              flex: '0 0 45%', position: 'relative', overflow: 'hidden',
+            }}>
+              <img
+                src="https://shopavo.la/cdn/shop/files/bama-desk-hp-1_1500x.jpg?v=1774210820"
+                alt="New Drop"
+                style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+              />
+              <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to right, transparent 60%, #000 100%)' }} />
+              {/* NEW DROP pill */}
+              <div style={{
+                position: 'absolute', top: '24px', left: '24px',
+                padding: '6px 14px', background: accent, color: '#000',
+                fontSize: '10px', fontWeight: 900, letterSpacing: '2px', textTransform: 'uppercase',
+              }}>
+                New Drop
+              </div>
+            </div>
+
+            {/* Right — Content */}
+            <div style={{
+              flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center',
+              padding: '48px 48px 48px 32px', position: 'relative',
+            }}>
+              {/* Subtle accent glow */}
+              <div style={{
+                position: 'absolute', right: '-80px', top: '-40px',
+                width: '300px', height: '300px', borderRadius: '50%',
+                background: accent, filter: 'blur(120px)', opacity: 0.12,
+              }} />
+
+              <p style={{
+                fontSize: '11px', fontWeight: 800, textTransform: 'uppercase',
+                letterSpacing: '3px', color: accent, margin: '0 0 12px 0',
+              }}>
+                Summer 2026 Collection
+              </p>
+              <h2 style={{
+                fontSize: '34px', fontWeight: 900, color: '#fff', margin: '0 0 14px 0',
+                lineHeight: 1.15, letterSpacing: '-1px', textTransform: 'uppercase',
+              }}>
+                Game Day<br />Essentials
+              </h2>
+              <p style={{
+                fontSize: '14px', color: 'rgba(255,255,255,0.5)', lineHeight: 1.7,
+                margin: '0 0 28px 0', maxWidth: '380px',
+              }}>
+                Premium collegiate apparel for every school in the AVO family. Rep your team with style — new colorways and exclusive designs just dropped.
+              </p>
+              <a
+                href={'/shop' + (typeof window !== 'undefined' ? window.location.search : '')}
+                style={{
+                  display: 'inline-block', padding: '13px 40px', fontSize: '11px', fontWeight: 800,
+                  textTransform: 'uppercase', letterSpacing: '2.5px', width: 'fit-content',
+                  background: 'transparent', color: '#fff',
+                  border: '1.5px solid #fff', textDecoration: 'none',
+                  transition: 'all 0.25s',
+                }}
+                onMouseOver={e => { e.currentTarget.style.background = '#fff'; e.currentTarget.style.color = '#000'; }}
+                onMouseOut={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = '#fff'; }}
+              >
+                Shop The Drop
+              </a>
+            </div>
+          </div>
+        </section>
+
         {/* ── Child Networks Slider ────────────────────────────── */}
         {childItems.length > 0 && (
           <div id="child-networks-slider">
