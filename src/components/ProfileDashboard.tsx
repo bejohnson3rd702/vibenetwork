@@ -11,12 +11,19 @@ const ShopifyStore = React.lazy(() => import('./ShopifyStore'));
 import Community from '../pages/Community';
 import { useNavigate, useParams, useLocation } from 'react-router-dom';
 import { useStreaming } from '../hooks/useStreaming';
-import { loadStripe } from '@stripe/stripe-js';
 import { useWhiteLabel } from '../context/WhiteLabelContext';
 import { Helmet } from 'react-helmet-async';
 import { useToast } from '../context/ToastContext';
 
-const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLIC_KEY || 'pk_test_placeholder');
+let stripePromise: Promise<any> | null = null;
+const getStripe = () => {
+  if (!stripePromise) {
+    stripePromise = import('@stripe/stripe-js').then(({ loadStripe }) =>
+      loadStripe(import.meta.env.VITE_STRIPE_PUBLIC_KEY || 'pk_test_placeholder')
+    );
+  }
+  return stripePromise;
+};
 
 const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetworkLevel?: boolean }> = ({ user, creatorIdOverride, isNetworkLevel }) => {
   const navigate = useNavigate();
@@ -222,6 +229,9 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
 
    const handleStripeCheckout = async (itemName: string, amount: number, extraMetadata?: any) => {
      try {
+       // Pre-warm / load Stripe SDK lazily on checkout
+       await getStripe();
+
        // In a production app, this endpoint would be your Supabase Edge Function
        // that creates the Stripe Checkout Session securely using the Stripe Secret Key.
        const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/stripe-checkout`, {

@@ -1,7 +1,8 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, lazy, Suspense } from 'react';
 import { Smile } from 'lucide-react';
-import EmojiPicker, { Theme } from 'emoji-picker-react';
 import { motion, AnimatePresence } from 'framer-motion';
+
+const EmojiPicker = lazy(() => import('emoji-picker-react'));
 
 interface EmojiPickerButtonProps {
   onSelect: (emoji: string) => void;
@@ -67,14 +68,16 @@ export function EmojiPickerButton({ onSelect, color = '#fff', style }: EmojiPick
               marginBottom: '10px'
             }}
           >
-            <EmojiPicker 
-              theme={Theme.DARK}
-              onEmojiClick={(emojiData: any) => {
-                onSelect(emojiData.emoji);
-                setShowPicker(false);
-              }}
-              lazyLoadEmojis={true}
-            />
+            <Suspense fallback={<div style={{ padding: '16px', background: '#0f0f0f', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.06)', color: 'var(--text-muted)', fontSize: '12px' }}>Loading...</div>}>
+              <EmojiPicker 
+                theme={'dark' as any}
+                onEmojiClick={(emojiData: any) => {
+                  onSelect(emojiData.emoji);
+                  setShowPicker(false);
+                }}
+                lazyLoadEmojis={true}
+              />
+            </Suspense>
           </motion.div>
         )}
       </AnimatePresence>

@@ -117,15 +117,26 @@ export async function getCategoriesWithVideos(tenantId?: string) {
 export async function getN2NCategories(parentId: string, childNetworkIds: string[]) {
   if (!supabase || childNetworkIds.length === 0) return [];
 
-  // Fetch profiles from all child networks
-  const { data: profiles } = await supabase
-    .from('profiles')
-    .select('*')
-    .in('whitelabel_id', childNetworkIds)
-    .order('created_at', { ascending: false })
-    .limit(20);
+  // Fetch profiles and videos concurrently
+  const [profilesResult, videosResult] = await Promise.all([
+    supabase
+      .from('profiles')
+      .select('*')
+      .in('whitelabel_id', childNetworkIds)
+      .order('created_at', { ascending: false })
+      .limit(20),
+    supabase
+      .from('videos')
+      .select('id, title, image_url, tags, video_url, creator:profiles!inner(whitelabel_id)')
+      .in('creator.whitelabel_id', childNetworkIds)
+      .order('created_at', { ascending: false })
+      .limit(20)
+  ]);
 
-  const mappedProfiles = (profiles || []).map((p: any) => ({
+  const profiles = profilesResult.data || [];
+  const videos = videosResult.data || [];
+
+  const mappedProfiles = profiles.map((p: any) => ({
     id: p.id,
     title: p.username || 'Creator Profile',
     image: p.avatar_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(p.username || 'U')}`,
@@ -133,26 +144,13 @@ export async function getN2NCategories(parentId: string, childNetworkIds: string
     linkUrl: `/profile/${p.id}`
   }));
 
-  // Fetch videos from creators across child networks
-  const creatorIds = (profiles || []).map((p: any) => p.id);
-  let mappedContent: any[] = [];
-
-  if (creatorIds.length > 0) {
-    const { data: videos } = await supabase
-      .from('videos')
-      .select('id, title, image_url, tags, video_url')
-      .in('creator_id', creatorIds)
-      .order('created_at', { ascending: false })
-      .limit(20);
-
-    mappedContent = (videos || []).map((vid: any) => ({
-      id: vid.id,
-      title: vid.title,
-      image: vid.image_url,
-      tags: vid.tags || [],
-      videoUrl: vid.video_url
-    }));
-  }
+  const mappedContent = videos.map((vid: any) => ({
+    id: vid.id,
+    title: vid.title,
+    image: vid.image_url,
+    tags: vid.tags || [],
+    videoUrl: vid.video_url
+  }));
 
   const categories = [];
 

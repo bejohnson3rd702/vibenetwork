@@ -2,7 +2,6 @@ import { useState, useEffect, useRef } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { supabase } from '../supabaseClient';
-import { getChildNetworks } from '../lib/n2n';
 
 interface WhitelabelTheme {
   accent?: string;
@@ -39,21 +38,10 @@ export default function TopAmbassadors({ parentId, accent = 'var(--accent-primar
 
     async function fetchAmbassadors() {
       try {
-        // 1. Fetch child networks
-        const children = await getChildNetworks(parentId);
-        if (cancelled) return;
-
-        const childIds = children?.map(c => c.id) || [];
-        if (childIds.length === 0) {
-          setLoading(false);
-          return;
-        }
-
-        // 2. Fetch all influencer posts from those child networks ordered by likes desc
         const { data: postsData, error: postsErr } = await supabase
           .from('posts')
-          .select('id, likes, creator:profiles!inner(id, username, avatar_url, whitelabel_id, whitelabel:whitelabel_configs(name, theme))')
-          .in('creator.whitelabel_id', childIds)
+          .select('id, likes, creator:profiles!inner(id, username, avatar_url, whitelabel_id, whitelabel:whitelabel_configs!inner(name, theme, parent_network_id))')
+          .eq('creator.whitelabel.parent_network_id', parentId)
           .order('likes', { ascending: false });
 
         if (postsErr) {

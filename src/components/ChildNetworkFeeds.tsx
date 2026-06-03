@@ -2,7 +2,6 @@ import { useState, useEffect, useRef } from 'react';
 import { Heart, MessageCircle, ArrowRight, ChevronLeft, ChevronRight } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { supabase } from '../supabaseClient';
-import { getChildNetworks } from '../lib/n2n';
 
 interface WhitelabelTheme {
   accent?: string;
@@ -44,23 +43,10 @@ export default function ChildNetworkFeeds({ parentId, accent = 'var(--accent-pri
 
     async function fetchTopPosts() {
       try {
-        // 1. Fetch child networks using centralized helper
-        const children = await getChildNetworks(parentId);
-        
-        if (cancelled) return;
-
-        const childIds = children?.map(c => c.id) || [];
-        if (childIds.length === 0) {
-          setLoading(false);
-          return;
-        }
-
-        // 2. Fetch posts belonging to those child networks
-        // Ordered by likes DESC so that when we filter, the first post we encounter for each child is the top post.
         const { data: postsData, error: postsErr } = await supabase
           .from('posts')
-          .select('*, creator:profiles!inner(username, avatar_url, whitelabel_id, whitelabel:whitelabel_configs(name, theme))')
-          .in('creator.whitelabel_id', childIds)
+          .select('*, creator:profiles!inner(username, avatar_url, whitelabel_id, whitelabel:whitelabel_configs!inner(name, theme, parent_network_id))')
+          .eq('creator.whitelabel.parent_network_id', parentId)
           .order('likes', { ascending: false });
 
         if (postsErr) {

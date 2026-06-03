@@ -4,10 +4,10 @@ import { getCategoriesWithVideos } from './api';
 import Navbar from './components/Navbar';
 const CollegeTicker = lazy(() => import('./components/CollegeTicker'));
 
-import AuthModal from './components/AuthModal';
+const AuthModal = lazy(() => import('./components/AuthModal'));
 const ProfileDashboard = lazy(() => import('./components/ProfileDashboard'));
 const BusinessAdminDashboard = lazy(() => import('./components/BusinessAdminDashboard'));
-import EndUserAuthModal from './components/EndUserAuthModal';
+const EndUserAuthModal = lazy(() => import('./components/EndUserAuthModal'));
 const MasterAdminDashboard = lazy(() => import('./components/MasterAdminDashboard'));
 const LiveChat = lazy(() => import('./components/LiveChat'));
 const BookingModal = lazy(() => import('./components/BookingModal'));
@@ -395,10 +395,14 @@ function App() {
 
           <AnimatePresence>
              {showEndUserAuthModal && (
-               <EndUserAuthModal onClose={() => setShowEndUserAuthModal(false)} />
+               <Suspense fallback={null}>
+                 <EndUserAuthModal onClose={() => setShowEndUserAuthModal(false)} />
+               </Suspense>
              )}
              {showBookingModal && (
-               <BookingModal onClose={() => setShowBookingModal(false)} profile={bookingProfile} />
+               <Suspense fallback={null}>
+                 <BookingModal onClose={() => setShowBookingModal(false)} profile={bookingProfile} />
+               </Suspense>
              )}
           </AnimatePresence>
           
@@ -424,17 +428,21 @@ function App() {
           </Helmet>
           <AnimatePresence>
             {showAuthModal && (
-              <AuthModal 
-                onClose={() => setShowAuthModal(false)} 
-                onSuccess={(u) => setUser(u)} 
-                defaultIsLogin={authDefaults.isLogin}
-                defaultRole={authDefaults.role}
-                defaultShowWizard={authDefaults.showWizard}
-                referredBy={authDefaults.referredBy}
-              />
+              <Suspense fallback={null}>
+                <AuthModal 
+                  onClose={() => setShowAuthModal(false)} 
+                  onSuccess={(u) => setUser(u)} 
+                  defaultIsLogin={authDefaults.isLogin}
+                  defaultRole={authDefaults.role}
+                  defaultShowWizard={authDefaults.showWizard}
+                  referredBy={authDefaults.referredBy}
+                />
+              </Suspense>
             )}
             {showBookingModal && (
-               <BookingModal onClose={() => setShowBookingModal(false)} profile={bookingProfile} />
+               <Suspense fallback={null}>
+                 <BookingModal onClose={() => setShowBookingModal(false)} profile={bookingProfile} />
+               </Suspense>
             )}
           </AnimatePresence>
 
