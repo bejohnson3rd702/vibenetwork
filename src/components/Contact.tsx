@@ -4,6 +4,7 @@ import { DictationButton } from './DictationButton';
 import { Send, Mail, MapPin, Phone } from 'lucide-react';
 import { useWhiteLabel } from '../context/WhiteLabelContext';
 import { useToast } from '../context/ToastContext';
+import { supabase } from '../supabaseClient';
 
 const Contact: React.FC = () => {
   const { wlConfig } = useWhiteLabel();
@@ -12,6 +13,8 @@ const Contact: React.FC = () => {
   const [formData, setFormData] = useState({ name: '', email: '', subject: '', message: '' });
   const [isSent, setIsSent] = useState(false);
   const [isSending, setIsSending] = useState(false);
+
+  const isAvo = wlConfig?.id === '3915f1e5-4c79-4b2a-ad41-7029ce8052d7' || wlConfig?.parent_network_id === '3915f1e5-4c79-4b2a-ad41-7029ce8052d7';
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -37,6 +40,61 @@ const Contact: React.FC = () => {
        setFormData({ name: '', email: '', subject: '', message: '' });
     }
   };
+
+  const formContent = isSent ? (
+    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', textAlign: 'center', padding: '40px 0' }}>
+      <div style={{ width: '64px', height: '64px', borderRadius: '50%', background: accentColor, display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '24px', boxShadow: `0 10px 30px ${accentColor}66` }}>
+        <Send fill="white" size={24} />
+      </div>
+      <h3 style={{ fontSize: '28px', fontWeight: 800, marginBottom: '12px' }}>Message Sent!</h3>
+      <p style={{ color: 'var(--text-secondary)', lineHeight: 1.6 }}>Thank you for reaching out to Vibe Network. Our enterprise team will get back to you within 24 hours.</p>
+      <button 
+        onClick={() => setIsSent(false)}
+        style={{ marginTop: '30px', background: 'transparent', border: '1px solid rgba(255,255,255,0.2)', padding: '12px 24px', borderRadius: '12px', color: 'var(--text-primary)', cursor: 'pointer', fontWeight: 600 }}
+      >
+        Send Another Message
+      </button>
+    </div>
+  ) : (
+    <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+      <div style={{ display: 'flex', gap: '20px' }}>
+        <div style={{ flex: 1 }}>
+          <label style={{ display: 'block', fontSize: '13px', fontWeight: 600, color: 'var(--text-muted)', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '1px' }}>Full Name</label>
+          <input required type="text" value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} style={{ width: '100%', padding: '16px', background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px', color: 'var(--text-primary)', fontSize: '16px', outline: 'none', transition: 'border 0.2s' }} onFocus={e => e.target.style.borderColor = accentColor} onBlur={e => e.target.style.borderColor = 'rgba(255,255,255,0.1)'} placeholder="John Doe" />
+        </div>
+        <div style={{ flex: 1 }}>
+          <label style={{ display: 'block', fontSize: '13px', fontWeight: 600, color: 'var(--text-muted)', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '1px' }}>Email Address</label>
+          <input required type="email" value={formData.email} onChange={e => setFormData({...formData, email: e.target.value})} style={{ width: '100%', padding: '16px', background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px', color: 'var(--text-primary)', fontSize: '16px', outline: 'none', transition: 'border 0.2s' }} onFocus={e => e.target.style.borderColor = accentColor} onBlur={e => e.target.style.borderColor = 'rgba(255,255,255,0.1)'} placeholder="john@company.com" />
+        </div>
+      </div>
+      
+      <div>
+        <label style={{ display: 'block', fontSize: '13px', fontWeight: 600, color: 'var(--text-muted)', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '1px' }}>Subject</label>
+        <input required type="text" value={formData.subject} onChange={e => setFormData({...formData, subject: e.target.value})} style={{ width: '100%', padding: '16px', background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px', color: 'var(--text-primary)', fontSize: '16px', outline: 'none', transition: 'border 0.2s' }} onFocus={e => e.target.style.borderColor = accentColor} onBlur={e => e.target.style.borderColor = 'rgba(255,255,255,0.1)'} placeholder="Enterprise Architecture Inquiry" />
+      </div>
+
+      <div>
+        <label style={{ display: 'block', fontSize: '13px', fontWeight: 600, color: 'var(--text-muted)', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '1px' }}>Message</label>
+        <div style={{ position: 'relative' }}>
+          <textarea required value={formData.message} onChange={e => setFormData({...formData, message: e.target.value})} style={{ width: '100%', padding: '16px', paddingRight: '50px', background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px', color: 'var(--text-primary)', fontSize: '16px', outline: 'none', minHeight: '150px', resize: 'vertical', transition: 'border 0.2s' }} onFocus={e => e.target.style.borderColor = accentColor} onBlur={e => e.target.style.borderColor = 'rgba(255,255,255,0.1)'} placeholder="Tell us about your streaming needs..." />
+          <div style={{ position: 'absolute', right: '10px', bottom: '15px' }}>
+            <DictationButton onResult={(text) => setFormData(prev => ({ ...prev, message: prev.message ? `${prev.message} ${text}` : text }))} />
+          </div>
+        </div>
+      </div>
+
+      <motion.button 
+        whileHover={{ scale: 1.02 }}
+        whileTap={{ scale: 0.98 }}
+        type="submit"
+        disabled={isSending}
+        style={{ width: '100%', padding: '18px', background: accentColor, color: 'var(--text-primary)', border: 'none', borderRadius: '12px', fontSize: '16px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '2px', cursor: isSending ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px', marginTop: '10px', boxShadow: `0 10px 30px ${accentColor}66`, opacity: isSending ? 0.7 : 1 }}
+      >
+        <Send size={18} />
+        {isSending ? 'Sending...' : 'Send Message'}
+      </motion.button>
+    </form>
+  );
 
   return (
     <div style={{ 
@@ -85,114 +143,73 @@ const Contact: React.FC = () => {
           </motion.p>
         </div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '40px' }}>
-          
-          {/* Contact Info Sidebar */}
-          <motion.div 
-            initial={{ opacity: 0, x: -40 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: 0.2 }}
-            style={{ display: 'flex', flexDirection: 'column', gap: '30px' }}
-          >
-            <div style={{ background: 'var(--bg-surface)', padding: '40px', borderRadius: '24px', border: '1px solid var(--bg-surface-hover)', flex: 1 }}>
-              <h3 style={{ fontSize: '24px', fontWeight: 800, marginBottom: '30px' }}>Contact Information</h3>
-              
-              <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '24px' }}>
-                <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: `${accentColor}22`, display: 'flex', alignItems: 'center', justifyContent: 'center', color: accentColor }}>
-                  <Mail size={20} />
-                </div>
-                <div>
-                  <div style={{ fontSize: '12px', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '4px' }}>Email Us</div>
-                  <div style={{ fontSize: '16px', fontWeight: 600 }}>{wlConfig?.contactEmail || 'enterprise@vibenetwork.tv'}</div>
-                </div>
-              </div>
-              
-              <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '24px' }}>
-                <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: `${accentColor}22`, display: 'flex', alignItems: 'center', justifyContent: 'center', color: accentColor }}>
-                  <Phone size={20} />
-                </div>
-                <div>
-                  <div style={{ fontSize: '12px', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '4px' }}>Call Us</div>
-                  <div style={{ fontSize: '16px', fontWeight: 600 }}>{wlConfig?.contactPhone || '+1 (800) 555-VIBE'}</div>
-                </div>
-              </div>
-              
-              <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-                <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: `${accentColor}22`, display: 'flex', alignItems: 'center', justifyContent: 'center', color: accentColor }}>
-                  <MapPin size={20} />
-                </div>
-                <div>
-                  <div style={{ fontSize: '12px', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '4px' }}>Headquarters</div>
-                  <div style={{ fontSize: '16px', fontWeight: 600 }}>{wlConfig?.contactAddress ? wlConfig.contactAddress.split('\n').map((line: string, i: number) => <React.Fragment key={i}>{line}<br/></React.Fragment>) : <React.Fragment>1200 Tech Ave, Suite 400<br/>San Francisco, CA 94107</React.Fragment>}</div>
-                </div>
-              </div>
-            </div>
-          </motion.div>
-
-          {/* Contact Form */}
-          <motion.div 
-            initial={{ opacity: 0, x: 40 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: 0.3 }}
-            style={{ background: 'var(--bg-surface)', padding: '40px', borderRadius: '24px', border: '1px solid var(--bg-surface-hover)' }}
-          >
-            {isSent ? (
-              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', textAlign: 'center', padding: '40px 0' }}>
-                <div style={{ width: '64px', height: '64px', borderRadius: '50%', background: accentColor, display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '24px', boxShadow: `0 10px 30px ${accentColor}66` }}>
-                  <Send fill="white" size={24} />
-                </div>
-                <h3 style={{ fontSize: '28px', fontWeight: 800, marginBottom: '12px' }}>Message Sent!</h3>
-                <p style={{ color: 'var(--text-secondary)', lineHeight: 1.6 }}>Thank you for reaching out to Vibe Network. Our enterprise team will get back to you within 24 hours.</p>
-                <button 
-                  onClick={() => setIsSent(false)}
-                  style={{ marginTop: '30px', background: 'transparent', border: '1px solid rgba(255,255,255,0.2)', padding: '12px 24px', borderRadius: '12px', color: 'var(--text-primary)', cursor: 'pointer', fontWeight: 600 }}
-                >
-                  Send Another Message
-                </button>
-              </div>
-            ) : (
-              <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-                <div style={{ display: 'flex', gap: '20px' }}>
-                  <div style={{ flex: 1 }}>
-                    <label style={{ display: 'block', fontSize: '13px', fontWeight: 600, color: 'var(--text-muted)', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '1px' }}>Full Name</label>
-                    <input required type="text" value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} style={{ width: '100%', padding: '16px', background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px', color: 'var(--text-primary)', fontSize: '16px', outline: 'none', transition: 'border 0.2s' }} onFocus={e => e.target.style.borderColor = accentColor} onBlur={e => e.target.style.borderColor = 'rgba(255,255,255,0.1)'} placeholder="John Doe" />
+        {isAvo ? (
+          <div style={{ display: 'flex', justifyContent: 'center' }}>
+            {/* Contact Form Centered */}
+            <motion.div 
+              initial={{ opacity: 0, y: 40 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.3 }}
+              style={{ background: 'var(--bg-surface)', padding: '40px', borderRadius: '24px', border: '1px solid var(--bg-surface-hover)', maxWidth: '650px', width: '100%' }}
+            >
+              {formContent}
+            </motion.div>
+          </div>
+        ) : (
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '40px' }}>
+            {/* Contact Info Sidebar */}
+            <motion.div 
+              initial={{ opacity: 0, x: -40 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.2 }}
+              style={{ display: 'flex', flexDirection: 'column', gap: '30px' }}
+            >
+              <div style={{ background: 'var(--bg-surface)', padding: '40px', borderRadius: '24px', border: '1px solid var(--bg-surface-hover)', flex: 1 }}>
+                <h3 style={{ fontSize: '24px', fontWeight: 800, marginBottom: '30px' }}>Contact Information</h3>
+                
+                <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '24px' }}>
+                  <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: `${accentColor}22`, display: 'flex', alignItems: 'center', justifyContent: 'center', color: accentColor }}>
+                    <Mail size={20} />
                   </div>
-                  <div style={{ flex: 1 }}>
-                    <label style={{ display: 'block', fontSize: '13px', fontWeight: 600, color: 'var(--text-muted)', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '1px' }}>Email Address</label>
-                    <input required type="email" value={formData.email} onChange={e => setFormData({...formData, email: e.target.value})} style={{ width: '100%', padding: '16px', background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px', color: 'var(--text-primary)', fontSize: '16px', outline: 'none', transition: 'border 0.2s' }} onFocus={e => e.target.style.borderColor = accentColor} onBlur={e => e.target.style.borderColor = 'rgba(255,255,255,0.1)'} placeholder="john@company.com" />
+                  <div>
+                    <div style={{ fontSize: '12px', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '4px' }}>Email Us</div>
+                    <div style={{ fontSize: '16px', fontWeight: 600 }}>{wlConfig?.contactEmail || 'enterprise@vibenetwork.tv'}</div>
                   </div>
                 </div>
                 
-                <div>
-                  <label style={{ display: 'block', fontSize: '13px', fontWeight: 600, color: 'var(--text-muted)', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '1px' }}>Subject</label>
-                  <input required type="text" value={formData.subject} onChange={e => setFormData({...formData, subject: e.target.value})} style={{ width: '100%', padding: '16px', background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px', color: 'var(--text-primary)', fontSize: '16px', outline: 'none', transition: 'border 0.2s' }} onFocus={e => e.target.style.borderColor = accentColor} onBlur={e => e.target.style.borderColor = 'rgba(255,255,255,0.1)'} placeholder="Enterprise Architecture Inquiry" />
-                </div>
-
-                <div>
-                  <label style={{ display: 'block', fontSize: '13px', fontWeight: 600, color: 'var(--text-muted)', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '1px' }}>Message</label>
-                  <div style={{ position: 'relative' }}>
-                    <textarea required value={formData.message} onChange={e => setFormData({...formData, message: e.target.value})} style={{ width: '100%', padding: '16px', paddingRight: '50px', background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px', color: 'var(--text-primary)', fontSize: '16px', outline: 'none', minHeight: '150px', resize: 'vertical', transition: 'border 0.2s' }} onFocus={e => e.target.style.borderColor = accentColor} onBlur={e => e.target.style.borderColor = 'rgba(255,255,255,0.1)'} placeholder="Tell us about your streaming needs..." />
-                    <div style={{ position: 'absolute', right: '10px', bottom: '15px' }}>
-                      <DictationButton onResult={(text) => setFormData(prev => ({ ...prev, message: prev.message ? `${prev.message} ${text}` : text }))} />
-                    </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '24px' }}>
+                  <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: `${accentColor}22`, display: 'flex', alignItems: 'center', justifyContent: 'center', color: accentColor }}>
+                    <Phone size={20} />
+                  </div>
+                  <div>
+                    <div style={{ fontSize: '12px', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '4px' }}>Call Us</div>
+                    <div style={{ fontSize: '16px', fontWeight: 600 }}>{wlConfig?.contactPhone || '+1 (800) 555-VIBE'}</div>
                   </div>
                 </div>
+                
+                <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+                  <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: `${accentColor}22`, display: 'flex', alignItems: 'center', justifyContent: 'center', color: accentColor }}>
+                    <MapPin size={20} />
+                  </div>
+                  <div>
+                    <div style={{ fontSize: '12px', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '4px' }}>Headquarters</div>
+                    <div style={{ fontSize: '16px', fontWeight: 600 }}>{wlConfig?.contactAddress ? wlConfig.contactAddress.split('\n').map((line: string, i: number) => <React.Fragment key={i}>{line}<br/></React.Fragment>) : <React.Fragment>1200 Tech Ave, Suite 400<br/>San Francisco, CA 94107</React.Fragment>}</div>
+                  </div>
+                </div>
+              </div>
+            </motion.div>
 
-                <motion.button 
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                  type="submit"
-                  disabled={isSending}
-                  style={{ width: '100%', padding: '18px', background: accentColor, color: 'var(--text-primary)', border: 'none', borderRadius: '12px', fontSize: '16px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '2px', cursor: isSending ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px', marginTop: '10px', boxShadow: `0 10px 30px ${accentColor}66`, opacity: isSending ? 0.7 : 1 }}
-                >
-                  <Send size={18} />
-                  {isSending ? 'Sending...' : 'Send Message'}
-                </motion.button>
-              </form>
-            )}
-          </motion.div>
-
-        </div>
+            {/* Contact Form */}
+            <motion.div 
+              initial={{ opacity: 0, x: 40 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.3 }}
+              style={{ background: 'var(--bg-surface)', padding: '40px', borderRadius: '24px', border: '1px solid var(--bg-surface-hover)', flex: 1.5 }}
+            >
+              {formContent}
+            </motion.div>
+          </div>
+        )}
       </div>
     </div>
   );
