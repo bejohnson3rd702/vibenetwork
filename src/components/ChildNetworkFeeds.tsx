@@ -202,7 +202,11 @@ export default function ChildNetworkFeeds({ parentId, accent = 'var(--accent-pri
           const childAccent = post.creator?.whitelabel?.theme?.accent || accent;
           const schoolName = post.creator?.whitelabel?.name || 'College Network';
           const shortSchool = schoolName.replace('University of ', '').replace(' University', '');
-          const cleanLink = `/?tenant=${post.creator?.whitelabel_id}${window.location.search ? window.location.search.replace('?', '&') : ''}`;
+          const params = new URLSearchParams(window.location.search);
+          if (post.creator?.whitelabel_id) {
+            params.set('tenant', post.creator.whitelabel_id);
+          }
+          const cleanLink = `/profile/${post.creator_id}?${params.toString()}`;
 
           return (
             <motion.div
@@ -221,7 +225,11 @@ export default function ChildNetworkFeeds({ parentId, accent = 'var(--accent-pri
                 boxShadow: '0 10px 30px rgba(0,0,0,0.5)',
                 position: 'relative',
                 flexShrink: 0,
-                width: cardWidthDesktop
+                width: cardWidthDesktop,
+                cursor: 'pointer'
+              }}
+              onClick={() => {
+                window.location.href = cleanLink;
               }}
               className="child-feed-card"
             >
