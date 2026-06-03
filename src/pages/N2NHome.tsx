@@ -229,9 +229,11 @@ export default function N2NHome({ wlConfig, categories, activeVideo, setActiveVi
       <main style={{ background: 'var(--bg-color)', paddingBottom: '100px', zIndex: 10, position: 'relative', width: '100%' }}>
 
         {/* ── Watch Live ──────────────────────────────────────── */}
-        <Suspense fallback={null}>
-          <WatchLive accent={config.accent} />
-        </Suspense>
+        <div id="whats-on-now">
+          <Suspense fallback={null}>
+            <WatchLive accent={config.accent} />
+          </Suspense>
+        </div>
 
         {/* ── New Drop CTA Banner ─────────────────────────────── */}
         <section style={{ maxWidth: '1400px', margin: '20px auto 40px', padding: '0 40px' }}>
