@@ -74,6 +74,14 @@ export default function ChildNetworkFeeds({ parentId, accent = 'var(--accent-pri
         const topPostsMap = new Map<string, PostItem>();
         for (const post of (postsData || []) as PostItem[]) {
           const wlId = post.creator?.whitelabel_id;
+          const wlName = post.creator?.whitelabel?.name;
+          const username = post.creator?.username;
+
+          // Exclude official network profiles (where username matches school/whitelabel name)
+          if (wlName && username && username.toLowerCase() === wlName.toLowerCase()) {
+            continue;
+          }
+
           if (wlId && !topPostsMap.has(wlId)) {
             topPostsMap.set(wlId, post);
           }

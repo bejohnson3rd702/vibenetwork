@@ -67,6 +67,14 @@ export default function TopAmbassadors({ parentId, accent = 'var(--accent-primar
         const topAmbassadorMap = new Map<string, PostItem>();
         for (const post of (postsData || []) as PostItem[]) {
           const wlId = post.creator?.whitelabel_id;
+          const wlName = post.creator?.whitelabel?.name;
+          const username = post.creator?.username;
+
+          // Exclude official network profiles (where username matches school/whitelabel name)
+          if (wlName && username && username.toLowerCase() === wlName.toLowerCase()) {
+            continue;
+          }
+
           if (wlId && !topAmbassadorMap.has(wlId)) {
             topAmbassadorMap.set(wlId, post);
           }
