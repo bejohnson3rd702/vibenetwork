@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Play, X, Network } from 'lucide-react';
 import SliderSection from '../components/SliderSection';
 import { useWhiteLabel } from '../context/WhiteLabelContext';
-import { getChildNetworks } from '../lib/n2n';
+import { getChildNetworks, mergeQueryParams } from '../lib/n2n';
 import { getN2NCategories } from '../api';
 import type { Category, VideoItem, User } from '../types';
 const CollegeTicker = lazy(() => import('../components/CollegeTicker'));
@@ -321,7 +321,7 @@ export default function N2NHome({ wlConfig, categories, activeVideo, setActiveVi
               aspectRatio="16/9"
               onItemClick={(item) => {
                 if (item.linkUrl) {
-                  window.location.href = item.linkUrl + (window.location.search ? '&' : '');
+                  window.location.href = mergeQueryParams(item.linkUrl, window.location.search);
                 }
               }}
             />

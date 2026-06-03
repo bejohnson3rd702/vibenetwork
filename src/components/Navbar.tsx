@@ -5,6 +5,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useWhiteLabel } from '../context/WhiteLabelContext';
 import { useToast } from '../context/ToastContext';
 import { supabase } from '../supabaseClient';
+import { mergeQueryParams } from '../lib/n2n';
 
 interface NavbarProps {
   user: any;
@@ -22,13 +23,31 @@ const Navbar: React.FC<NavbarProps> = ({ user, onLoginClick, onAdminClick }) => 
   const appName = wlConfig?.name || '';
   const appAccent = wlConfig?.accent || '';
   const appLogo = wlConfig?.logoImage || '';
+  const [parentName, setParentName] = useState<string>('AVO Network');
+
+  useEffect(() => {
+    if (wlConfig?.parent_network_id) {
+      supabase
+        .from('whitelabel_configs')
+        .select('name')
+        .eq('id', wlConfig.parent_network_id)
+        .single()
+        .then(({ data }) => {
+          if (data?.name) {
+            setParentName(data.name);
+          }
+        });
+    }
+  }, [wlConfig?.parent_network_id]);
 
   const getParentNetworkUrl = () => {
     const hostname = window.location.hostname;
+    const parentId = wlConfig?.parent_network_id || '3915f1e5-4c79-4b2a-ad41-7029ce8052d7';
+    const targetUrl = `/?tenant=${parentId}`;
     if (hostname === 'localhost' || hostname === '127.0.0.1') {
-      return '/?tenant=3915f1e5-4c79-4b2a-ad41-7029ce8052d7';
+      return mergeQueryParams(targetUrl, window.location.search);
     } else {
-      return 'https://vibenetwork.vercel.app/?tenant=3915f1e5-4c79-4b2a-ad41-7029ce8052d7';
+      return mergeQueryParams(`https://vibenetwork.vercel.app${targetUrl}`, window.location.search);
     }
   };
 
@@ -91,7 +110,7 @@ const Navbar: React.FC<NavbarProps> = ({ user, onLoginClick, onAdminClick }) => 
         }}>
           {[
             { label: 'Home', path: '/' },
-            ...(wlConfig?.parent_network_id ? [{ label: 'AVO Network', path: 'parent' }] : []),
+            ...(wlConfig?.parent_network_id ? [{ label: parentName, path: 'parent' }] : []),
             { label: 'Marketplace', path: '/marketplace', hidden: Boolean(wlConfig?.domain && wlConfig.domain !== 'vibenetwork.tv') },
             { label: 'About Us', path: '/about' },
             { label: 'Watch Live', path: '/#whats-on-now', hidden: wlConfig?.enableWatchLive === false },
@@ -175,7 +194,7 @@ const Navbar: React.FC<NavbarProps> = ({ user, onLoginClick, onAdminClick }) => 
               {wlConfig?.parent_network_id && (
                 <>
                   <div onClick={() => { setIsMenuOpen(false); window.location.href = getParentNetworkUrl(); }} style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '12px 16px', color: 'var(--text-primary)', textDecoration: 'none', fontSize: '14px', borderRadius: '8px', cursor: 'pointer', transition: 'background 0.2s', fontWeight: 'bold' }} onMouseOver={e => e.currentTarget.style.background='rgba(255,255,255,0.1)'} onMouseOut={e => e.currentTarget.style.background='transparent'}>
-                    🌐 Go to AVO Network
+                    🌐 Go to {parentName}
                   </div>
                   <div style={{ height: '1px', background: 'rgba(255,255,255,0.1)', margin: '4px 0' }} />
                 </>

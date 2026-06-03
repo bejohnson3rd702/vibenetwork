@@ -16,6 +16,7 @@ interface HomeProps {
 }
 
 import { useWhiteLabel } from '../context/WhiteLabelContext';
+import { mergeQueryParams } from '../lib/n2n';
 
 export default function Home({ categories, activeVideo, setActiveVideo, user }: HomeProps) {
   const { wlConfig } = useWhiteLabel();
@@ -35,7 +36,7 @@ export default function Home({ categories, activeVideo, setActiveVideo, user }: 
             sizeMultiplier={1}
             onItemClick={(item) => {
               if (item.linkUrl) {
-                window.location.href = item.linkUrl + window.location.search;
+                window.location.href = mergeQueryParams(item.linkUrl, window.location.search);
               } else {
                 setActiveVideo(item);
               }
@@ -64,9 +65,9 @@ export default function Home({ categories, activeVideo, setActiveVideo, user }: 
               sizeMultiplier={multiplier}
               onItemClick={(item) => {
                 if (item.linkUrl) {
-                  window.location.href = item.linkUrl + window.location.search;
+                  window.location.href = mergeQueryParams(item.linkUrl, window.location.search);
                 } else if (item.tags && item.tags.includes('Influencer Channel')) {
-                  window.location.href = `/profile/${item.id}${window.location.search}`;
+                  window.location.href = mergeQueryParams(`/profile/${item.id}`, window.location.search);
                 } else {
                   setActiveVideo(item);
                 }

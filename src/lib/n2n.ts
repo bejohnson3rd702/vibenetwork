@@ -263,4 +263,21 @@ export async function logN2NAction(
   });
 }
 
+/** Merge current query parameters into a target URL, preserving target parameters on conflict */
+export function mergeQueryParams(targetUrl: string, currentSearch: string): string {
+  const [path, targetSearch] = targetUrl.split('?');
+  const targetParams = new URLSearchParams(targetSearch || '');
+  const currentParams = new URLSearchParams(currentSearch || '');
+  
+  currentParams.forEach((value, key) => {
+    if (!targetParams.has(key)) {
+      targetParams.set(key, value);
+    }
+  });
+  
+  const mergedSearch = targetParams.toString();
+  return mergedSearch ? `${path}?${mergedSearch}` : path;
+}
+
+
 
