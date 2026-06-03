@@ -1504,7 +1504,7 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
                 onClick={handleSubscribe}
                 style={{
                   position: 'absolute',
-                  bottom: '30px',
+                  top: '30px',
                   right: '30px',
                   padding: '12px 28px',
                   background: isSubscribed
