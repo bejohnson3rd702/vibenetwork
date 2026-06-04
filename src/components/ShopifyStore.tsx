@@ -28,23 +28,48 @@ export default function ShopifyStore() {
       setLoading(true);
       setError('');
       try {
-        // Shopify public JSON API: /collections/{handle}/products.json
-        // For /pages/ URLs, we try /products.json with tag filter
+        const isBama = shopifyUrl.includes('avo-x-bama');
+        
         let jsonUrl = '';
-        if (shopifyUrl.includes('/collections/')) {
+        const headers: Record<string, string> = {};
+        if (isBama) {
+          jsonUrl = '/api/bama/api/v1/shopify/products?status=active&limit=50&vendor=AVO';
+          headers['x-tenant-subdomain'] = 'alabama';
+        } else if (shopifyUrl.includes('/collections/')) {
           jsonUrl = shopifyUrl.replace(/\/$/, '') + '/products.json';
         } else if (shopifyUrl.includes('/pages/')) {
-          // For pages like avo-x-bama, try the main products endpoint with tag
           const slug = shopifyUrl.split('/pages/')[1]?.replace(/\/$/, '');
           jsonUrl = `https://shopavo.la/products.json?tag=${slug}`;
         }
 
         if (!jsonUrl) { setLoading(false); return; }
 
-        const res = await fetch(jsonUrl);
+        const res = await fetch(jsonUrl, { headers });
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const data = await res.json();
-        setProducts(data.products || []);
+
+        if (isBama) {
+          const mapped: ShopifyProduct[] = (data.data || []).map((p: any) => {
+            const numericId = parseInt(p.id?.split('/').pop() || '0') || Math.floor(Math.random() * 1000000);
+            return {
+              id: numericId,
+              title: p.title,
+              handle: p.handle,
+              images: p.images || [],
+              variants: [
+                {
+                  price: p.priceRangeV2?.minVariantPrice?.amount || '0',
+                  available: (p.totalQuantity || 0) > 0
+                }
+              ],
+              product_type: p.productType || '',
+              tags: p.tags || []
+            };
+          });
+          setProducts(mapped);
+        } else {
+          setProducts(data.products || []);
+        }
       } catch (err: any) {
         console.error('Shopify fetch error:', err);
         setError('Could not load products');
@@ -57,6 +82,9 @@ export default function ShopifyStore() {
 
   // Build the product link back to Shopify
   const getProductUrl = (product: ShopifyProduct) => {
+    if (shopifyUrl.includes('avo-x-bama')) {
+      return `https://store.yea-alabama.com/products/${product.handle}`;
+    }
     const storeDomain = shopifyUrl.split('/collections/')[0] || shopifyUrl.split('/pages/')[0] || 'https://shopavo.la';
     return `${storeDomain}/products/${product.handle}`;
   };
@@ -87,7 +115,7 @@ export default function ShopifyStore() {
           </h2>
         </div>
         <a
-          href={shopifyUrl}
+          href={shopifyUrl.includes('avo-x-bama') ? 'https://store.yea-alabama.com' : shopifyUrl}
           target="_blank"
           rel="noopener noreferrer"
           style={{
