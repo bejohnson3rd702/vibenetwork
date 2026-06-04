@@ -23,6 +23,7 @@ const COLLECTIONS = [
   { handle: 'ole-miss', label: 'Ole Miss', color: '#CE1126' },
   { handle: 'vanderbilt', label: 'Vanderbilt', color: '#866D4B' },
   { handle: 'penn-state', label: 'Penn State', color: '#041E42' },
+  { handle: 'avo-x-bama', label: 'Alabama', color: '#9E1B32', isPage: true }
 ];
 
 export default function AvoMarketplace({ accent = '#D35400' }: { accent?: string }) {
@@ -39,7 +40,10 @@ export default function AvoMarketplace({ accent = '#D35400' }: { accent?: string
       await Promise.all(
         COLLECTIONS.map(async (col) => {
           try {
-            const res = await fetch(`/api/shop/collections/${col.handle}/products.json?limit=10`);
+            const url = col.isPage
+              ? `/api/shop/products.json?tag=${col.handle}`
+              : `/api/shop/collections/${col.handle}/products.json?limit=10`;
+            const res = await fetch(url);
             if (!res.ok) return;
             const data = await res.json();
             for (const p of (data.products || [])) {
