@@ -34,6 +34,11 @@ export default defineConfig({
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/api\/shop/, ''),
       },
+      '/api/bama': {
+        target: 'https://api.nil-prod.rallyhub.net',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/api\/bama/, ''),
+      },
     },
   },
   build: {

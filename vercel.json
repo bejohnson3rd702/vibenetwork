@@ -17,6 +17,10 @@
       "destination": "https://shopavo.la/:path*"
     },
     {
+      "source": "/api/bama/:path*",
+      "destination": "https://api.nil-prod.rallyhub.net/:path*"
+    },
+    {
       "source": "/(.*)",
       "destination": "/index.html"
     }

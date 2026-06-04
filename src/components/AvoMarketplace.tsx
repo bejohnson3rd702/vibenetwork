@@ -23,7 +23,7 @@ const COLLECTIONS = [
   { handle: 'ole-miss', label: 'Ole Miss', color: '#CE1126' },
   { handle: 'vanderbilt', label: 'Vanderbilt', color: '#866D4B' },
   { handle: 'penn-state', label: 'Penn State', color: '#041E42' },
-  { handle: 'avo-x-bama', label: 'Alabama', color: '#9E1B32', isPage: true }
+  { handle: 'avo-x-bama', label: 'Alabama', color: '#9E1B32' }
 ];
 
 export default function AvoMarketplace({ accent = '#D35400' }: { accent?: string }) {
@@ -40,25 +40,51 @@ export default function AvoMarketplace({ accent = '#D35400' }: { accent?: string
       await Promise.all(
         COLLECTIONS.map(async (col) => {
           try {
-            const url = col.isPage
-              ? `/api/shop/products.json?tag=${col.handle}`
+            const isBama = col.handle === 'avo-x-bama';
+            const url = isBama
+              ? `/api/bama/api/v1/shopify/products?status=active&limit=10&vendor=AVO`
               : `/api/shop/collections/${col.handle}/products.json?limit=10`;
-            const res = await fetch(url);
+            
+            const headers: Record<string, string> = {};
+            if (isBama) {
+              headers['x-tenant-subdomain'] = 'alabama';
+            }
+
+            const res = await fetch(url, { headers });
             if (!res.ok) return;
             const data = await res.json();
-            for (const p of (data.products || [])) {
-              all.push({
-                id: p.id,
-                title: p.title,
-                handle: p.handle,
-                price: p.variants?.[0]?.price || '0',
-                comparePrice: p.variants?.[0]?.compare_at_price || '',
-                image: p.images?.[0]?.src || '',
-                images: (p.images || []).map((img: any) => img.src),
-                school: col.label,
-                collection: col.handle,
-                vendor: p.vendor || 'AVO',
-              });
+            
+            if (isBama) {
+              for (const p of (data.data || [])) {
+                const numericId = parseInt(p.id?.split('/').pop() || '0') || Math.floor(Math.random() * 1000000);
+                all.push({
+                  id: numericId,
+                  title: p.title,
+                  handle: p.handle,
+                  price: p.priceRangeV2?.minVariantPrice?.amount || '0',
+                  comparePrice: p.compareAtPriceRange?.minVariantPrice?.amount || '',
+                  image: p.images?.[0]?.src || '',
+                  images: (p.images || []).map((img: any) => img.src),
+                  school: col.label,
+                  collection: col.handle,
+                  vendor: p.vendor || 'AVO',
+                });
+              }
+            } else {
+              for (const p of (data.products || [])) {
+                all.push({
+                  id: p.id,
+                  title: p.title,
+                  handle: p.handle,
+                  price: p.variants?.[0]?.price || '0',
+                  comparePrice: p.variants?.[0]?.compare_at_price || '',
+                  image: p.images?.[0]?.src || '',
+                  images: (p.images || []).map((img: any) => img.src),
+                  school: col.label,
+                  collection: col.handle,
+                  vendor: p.vendor || 'AVO',
+                });
+              }
             }
           } catch { /* skip failed collection */ }
         })
@@ -324,7 +350,9 @@ export default function AvoMarketplace({ accent = '#D35400' }: { accent?: string
 
                 <div style={{ marginTop: 'auto', display: 'flex', flexDirection: 'column', gap: '10px' }}>
                   <a
-                    href={`https://shopavo.la/products/${selectedProduct.handle}`}
+                    href={selectedProduct.collection === 'avo-x-bama'
+                      ? `https://store.yea-alabama.com/products/${selectedProduct.handle}`
+                      : `https://shopavo.la/products/${selectedProduct.handle}`}
                     target="_blank"
                     rel="noopener noreferrer"
                     style={{
@@ -337,7 +365,7 @@ export default function AvoMarketplace({ accent = '#D35400' }: { accent?: string
                     onMouseOver={e => { e.currentTarget.style.background = accent; e.currentTarget.style.color = '#fff'; }}
                     onMouseOut={e => { e.currentTarget.style.background = '#fff'; e.currentTarget.style.color = '#000'; }}
                   >
-                    <ShoppingBag size={14} /> Buy on shopavo.la
+                    <ShoppingBag size={14} /> Buy on {selectedProduct.collection === 'avo-x-bama' ? 'yea-alabama.com' : 'shopavo.la'}
                   </a>
                 </div>
               </div>
