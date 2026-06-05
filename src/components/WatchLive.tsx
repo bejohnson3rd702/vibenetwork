@@ -25,6 +25,39 @@ const OLYMPIAN_FEEDS = [
   { key: 'jaycutler', label: '👑 Jay Cutler', channelId: 'UCwL4MvJ38g_N9G3C75t2b_w' },
 ];
 
+const STATIC_OLYMPIAN_CLIPS: VideoClip[] = [
+  {
+    id: 'sL14tB4zLMs',
+    headline: 'Official Mr. Olympia Press Conference Face-Offs',
+    description: 'The world\'s best bodybuilding athletes meet on stage for heated verbal exchanges and predictions ahead of the finals.',
+    thumbnail: 'https://images.unsplash.com/photo-1517838277536-f5f99be501cd?auto=format&fit=crop&q=80&w=600',
+    videoUrl: 'https://www.youtube.com/watch?v=sL14tB4zLMs',
+    duration: 1845,
+    source: 'YouTube',
+    sport: 'olympiatv'
+  },
+  {
+    id: 'q_S_G2eK_bQ',
+    headline: 'Mr. Olympia Pre-Judging & Physique Analysis',
+    description: 'Nick\'s Strength and Power breaks down the prejudging comparisons and predicts who will take home the Sandow Trophy.',
+    thumbnail: 'https://images.unsplash.com/photo-1578762560072-05e710ba1d1b?auto=format&fit=crop&q=80&w=600',
+    videoUrl: 'https://www.youtube.com/watch?v=q_S_G2eK_bQ',
+    duration: 812,
+    source: 'YouTube',
+    sport: 'nicksnp'
+  },
+  {
+    id: 'D8T2g0E0mYI',
+    headline: 'Jay Cutler\'s Full Off-Season Chest Routine',
+    description: '4x Mr. Olympia Jay Cutler takes us through his intense off-season chest workout, explaining his set/rep selection and training volume.',
+    thumbnail: 'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?auto=format&fit=crop&q=80&w=600',
+    videoUrl: 'https://www.youtube.com/watch?v=D8T2g0E0mYI',
+    duration: 645,
+    source: 'YouTube',
+    sport: 'jaycutler'
+  }
+];
+
 export default function WatchLive({ accent = '#D35400', isOlympian = false }: { accent?: string; isOlympian?: boolean }) {
   const [clips, setClips] = useState<VideoClip[]>([]);
   const [loading, setLoading] = useState(true);
@@ -42,6 +75,11 @@ export default function WatchLive({ accent = '#D35400', isOlympian = false }: { 
       const seen = new Set<string>();
 
       if (isOlympian) {
+        // Pre-populate with high quality static videos to guarantee content
+        allClips.push(...STATIC_OLYMPIAN_CLIPS);
+        for (const item of STATIC_OLYMPIAN_CLIPS) {
+          seen.add(item.id);
+        }
         for (const feed of OLYMPIAN_FEEDS) {
           try {
             const res = await fetch(`/api/yt-rss/${feed.channelId}`);
