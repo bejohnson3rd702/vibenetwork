@@ -20,38 +20,38 @@ const FEEDS = [
 ];
 
 const OLYMPIAN_FEEDS = [
-  { key: 'olympiatv', label: '🏆 OlympiaTV', channelId: 'UCu9T27m4Q117P5L5xZ2y60w' },
+  { key: 'olympiatv', label: '🏆 OlympiaTV', channelId: 'UCYukge4AuskD8xPjfrSoiBg' },
   { key: 'nicksnp', label: '💪 Nick\'s Strength & Power', channelId: 'UClfyDMfX-RhmExpVm-nCl4Q' },
-  { key: 'jaycutler', label: '👑 Jay Cutler', channelId: 'UCwL4MvJ38g_N9G3C75t2b_w' },
+  { key: 'jaycutler', label: '👑 Jay Cutler', channelId: 'UCiq2MIlqqeOcEvj9cP9f1bA' },
 ];
 
 const STATIC_OLYMPIAN_CLIPS: VideoClip[] = [
   {
-    id: 'sL14tB4zLMs',
-    headline: 'Official Mr. Olympia Press Conference Face-Offs',
-    description: 'The world\'s best bodybuilding athletes meet on stage for heated verbal exchanges and predictions ahead of the finals.',
+    id: 'SV7JP7y80UM',
+    headline: 'Official OlympiaTV - The 212 Debate',
+    description: 'Watch the official debate and analysis of the 212 division ahead of the Mr. Olympia contest.',
     thumbnail: 'https://images.unsplash.com/photo-1517838277536-f5f99be501cd?auto=format&fit=crop&q=80&w=600',
-    videoUrl: 'https://www.youtube.com/watch?v=sL14tB4zLMs',
+    videoUrl: 'https://www.youtube.com/watch?v=SV7JP7y80UM',
     duration: 1845,
     source: 'YouTube',
     sport: 'olympiatv'
   },
   {
-    id: 'q_S_G2eK_bQ',
-    headline: 'Mr. Olympia Pre-Judging & Physique Analysis',
+    id: 'P0Ivio8Onew',
+    headline: 'Was Hassan Robbed At The Toronto Pro?',
     description: 'Nick\'s Strength and Power breaks down the prejudging comparisons and predicts who will take home the Sandow Trophy.',
     thumbnail: 'https://images.unsplash.com/photo-1578762560072-05e710ba1d1b?auto=format&fit=crop&q=80&w=600',
-    videoUrl: 'https://www.youtube.com/watch?v=q_S_G2eK_bQ',
+    videoUrl: 'https://www.youtube.com/watch?v=P0Ivio8Onew',
     duration: 812,
     source: 'YouTube',
     sport: 'nicksnp'
   },
   {
-    id: 'D8T2g0E0mYI',
-    headline: 'Jay Cutler\'s Full Off-Season Chest Routine',
+    id: 'dTqpdNacxYM',
+    headline: 'New Cutler Nutrition Q&A with DT Roth!',
     description: '4x Mr. Olympia Jay Cutler takes us through his intense off-season chest workout, explaining his set/rep selection and training volume.',
     thumbnail: 'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?auto=format&fit=crop&q=80&w=600',
-    videoUrl: 'https://www.youtube.com/watch?v=D8T2g0E0mYI',
+    videoUrl: 'https://www.youtube.com/watch?v=dTqpdNacxYM',
     duration: 645,
     source: 'YouTube',
     sport: 'jaycutler'
