@@ -111,7 +111,7 @@ const MoreInfo: React.FC = () => {
               
               {isOlympian ? (
                 <p style={{ color: 'var(--text-secondary)', fontSize: '18px', lineHeight: 1.8, margin: 0 }}>
-                  The official Mr. Olympian Network-to-Network (N2N) platform connects bodybuilding enthusiasts globally with exclusive media clips, event schedules, and official gear from legendary partner brands: Gold's Gym, Gaspari Nutrition, Rogue Fitness, and Redcon1. Together, we celebrate the passion and dedication that defines the fitness lifestyle.
+                  The official Mr. Olympian Network-to-Network (N2N) platform connects bodybuilding enthusiasts globally with exclusive media clips, event schedules, and official gear from legendary partner brands: Gold's Gym, Gaspari Nutrition, Rogue Fitness, Redcon1, and Gymshark. Together, we celebrate the passion and dedication that defines the fitness lifestyle.
                 </p>
               ) : isTenant ? (
                 <p style={{ color: 'var(--text-secondary)', fontSize: '18px', lineHeight: 1.6 }}>
