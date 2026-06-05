@@ -109,12 +109,12 @@ const MoreInfo: React.FC = () => {
               style={{ background: 'var(--bg-surface)', padding: '40px', borderRadius: '24px', border: '1px solid var(--bg-surface-hover)' }}
             >
               <h2 style={{ fontSize: '24px', fontWeight: 700, marginBottom: '16px' }}>
-                {isOlympian ? 'About Mr. Olympian' : (isTenant ? 'Our Platform' : 'Key Features')}
+                {isOlympian ? 'About Mr. Olympia' : (isTenant ? 'Our Platform' : 'Key Features')}
               </h2>
               
               {isOlympian ? (
                 <p style={{ color: 'var(--text-secondary)', fontSize: '18px', lineHeight: 1.8, margin: 0 }}>
-                  The official Mr. Olympian Network-to-Network (N2N) platform connects bodybuilding enthusiasts globally with exclusive media clips, event schedules, and official gear from legendary partner brands: Gold's Gym, Gaspari Nutrition, Rogue Fitness, Redcon1, and Gymshark. Together, we celebrate the passion and dedication that defines the fitness lifestyle.
+                  The official Mr. Olympia Network-to-Network (N2N) platform connects bodybuilding enthusiasts globally with exclusive media clips, event schedules, and official gear from legendary partner brands: Gold's Gym, Gaspari Nutrition, Rogue Fitness, Redcon1, and Gymshark. Together, we celebrate the passion and dedication that defines the fitness lifestyle.
                 </p>
               ) : isTenant ? (
                 <p style={{ color: 'var(--text-secondary)', fontSize: '18px', lineHeight: 1.6 }}>

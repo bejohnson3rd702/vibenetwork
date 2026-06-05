@@ -54,7 +54,7 @@ const Contact: React.FC = () => {
       <h3 style={{ fontSize: '28px', fontWeight: 800, marginBottom: '12px' }}>Message Sent!</h3>
       <p style={{ color: 'var(--text-secondary)', lineHeight: 1.6 }}>
         {isOlympian 
-          ? "Thank you for reaching out to Mr. Olympian support. We will get back to you within 24 hours."
+          ? "Thank you for reaching out to Mr. Olympia support. We will get back to you within 24 hours."
           : `Thank you for reaching out to ${wlConfig?.name || 'Vibe Network'}. Our team will get back to you within 24 hours.`
         }
       </p>

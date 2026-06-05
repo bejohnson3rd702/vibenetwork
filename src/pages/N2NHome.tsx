@@ -332,7 +332,7 @@ export default function N2NHome({ wlConfig, categories, activeVideo, setActiveVi
         {childItems.length > 0 && (
           <div id="child-networks-slider">
             <SliderSection
-              title={isOlympian ? "OLYMPIAN PARTNERS" : "AVO NETWORKS"}
+              title={isOlympian ? "OLYMPIA PARTNERS" : "AVO NETWORKS"}
               items={childItems}
               delay={0}
               aspectRatio="16/9"
@@ -677,7 +677,7 @@ export default function N2NHome({ wlConfig, categories, activeVideo, setActiveVi
                   lineHeight: 1.15, letterSpacing: '-1px', textTransform: 'uppercase',
                 }}>
                   {isOlympian ? (
-                    <>Represent Mr. Olympian<br />In Your Community</>
+                    <>Represent Mr. Olympia<br />In Your Community</>
                   ) : (
                     <>Represent AVO<br />On Your Campus</>
                   )}
@@ -686,7 +686,7 @@ export default function N2NHome({ wlConfig, categories, activeVideo, setActiveVi
                   fontSize: '15px', color: 'rgba(255,255,255,0.55)', lineHeight: 1.7, margin: 0,
                 }}>
                   {isOlympian 
-                    ? "Join the official Mr. Olympian Ambassador Program. Share fitness tips, review premium workout apparel, and earn exclusive event credentials, early access, and commissions."
+                    ? "Join the official Mr. Olympia Ambassador Program. Share fitness tips, review premium workout apparel, and earn exclusive event credentials, early access, and commissions."
                     : "Join the AVO Ambassador Program and bring premium college apparel to your school. Earn exclusive perks, early access to drops, and commissions on every sale."}
                 </p>
               </div>

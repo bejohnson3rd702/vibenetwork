@@ -148,7 +148,7 @@ export default function AmbassadorModal({ isOpen, onClose, accent = 'var(--accen
                 </h3>
                 <p style={{ margin: '0 0 28px 0', fontSize: '13px', color: 'var(--text-secondary)', lineHeight: 1.5 }}>
                   {isOlympian 
-                    ? "Rep the Mr. Olympian brand, share your fitness journey, and earn exclusive perks. Tell us about yourself to get started."
+                    ? "Rep the Mr. Olympia brand, share your fitness journey, and earn exclusive perks. Tell us about yourself to get started."
                     : wlConfig?.name 
                       ? `Rep ${wlConfig.name}, share exclusive drops, and earn perks. Tell us a bit about yourself to get started.`
                       : "Rep your school, share exclusive drops, and earn perks. Tell us a bit about yourself to get started."
@@ -280,7 +280,7 @@ export default function AmbassadorModal({ isOpen, onClose, accent = 'var(--accen
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
                     <label style={{ fontSize: '10px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '1px', color: 'var(--text-secondary)' }}>
                       {isOlympian 
-                        ? "Why do you want to represent Mr. Olympian?" 
+                        ? "Why do you want to represent Mr. Olympia?" 
                         : `Why do you want to represent ${appName}?`
                       }
                     </label>

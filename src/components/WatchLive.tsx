@@ -30,9 +30,29 @@ const STATIC_OLYMPIAN_CLIPS: VideoClip[] = [
     id: 'SV7JP7y80UM',
     headline: 'Official OlympiaTV - The 212 Debate',
     description: 'Watch the official debate and analysis of the 212 division ahead of the Mr. Olympia contest.',
-    thumbnail: 'https://images.unsplash.com/photo-1517838277536-f5f99be501cd?auto=format&fit=crop&q=80&w=600',
+    thumbnail: 'https://i.ytimg.com/vi/SV7JP7y80UM/hqdefault.jpg',
     videoUrl: 'https://www.youtube.com/watch?v=SV7JP7y80UM',
     duration: 1845,
+    source: 'YouTube',
+    sport: 'olympiatv'
+  },
+  {
+    id: 'MzWgJtFIxg8',
+    headline: 'The Athletes that Changed the Game',
+    description: 'Arnold made bodybuilding popular and Dorian brought the mass monster era. The experts discuss the iconic transitions.',
+    thumbnail: 'https://i.ytimg.com/vi/MzWgJtFIxg8/hqdefault.jpg',
+    videoUrl: 'https://www.youtube.com/watch?v=MzWgJtFIxg8',
+    duration: 780,
+    source: 'YouTube',
+    sport: 'olympiatv'
+  },
+  {
+    id: 'NMjCB0Y2rh4',
+    headline: 'The Victor Martinez Moment!',
+    description: 'The 2007 Mr. Olympia has been considered one of the most controversial moments in bodybuilding history.',
+    thumbnail: 'https://i.ytimg.com/vi/NMjCB0Y2rh4/hqdefault.jpg',
+    videoUrl: 'https://www.youtube.com/watch?v=NMjCB0Y2rh4',
+    duration: 915,
     source: 'YouTube',
     sport: 'olympiatv'
   },
@@ -40,9 +60,19 @@ const STATIC_OLYMPIAN_CLIPS: VideoClip[] = [
     id: 'P0Ivio8Onew',
     headline: 'Was Hassan Robbed At The Toronto Pro?',
     description: 'Nick\'s Strength and Power breaks down the prejudging comparisons and predicts who will take home the Sandow Trophy.',
-    thumbnail: 'https://images.unsplash.com/photo-1578762560072-05e710ba1d1b?auto=format&fit=crop&q=80&w=600',
+    thumbnail: 'https://i.ytimg.com/vi/P0Ivio8Onew/hqdefault.jpg',
     videoUrl: 'https://www.youtube.com/watch?v=P0Ivio8Onew',
     duration: 812,
+    source: 'YouTube',
+    sport: 'nicksnp'
+  },
+  {
+    id: 'GJkBAbzrhkQ',
+    headline: 'Hassan Mostafa’s Side Chest is INSANE!!!',
+    description: 'Nick\'s Strength and Power breaks down Hassan Mostafa\'s mind-blowing side chest pose and his performance in recent contests.',
+    thumbnail: 'https://i.ytimg.com/vi/GJkBAbzrhkQ/hqdefault.jpg',
+    videoUrl: 'https://www.youtube.com/watch?v=GJkBAbzrhkQ',
+    duration: 345,
     source: 'YouTube',
     sport: 'nicksnp'
   },
@@ -50,9 +80,19 @@ const STATIC_OLYMPIAN_CLIPS: VideoClip[] = [
     id: 'dTqpdNacxYM',
     headline: 'New Cutler Nutrition Q&A with DT Roth!',
     description: '4x Mr. Olympia Jay Cutler takes us through his intense off-season chest workout, explaining his set/rep selection and training volume.',
-    thumbnail: 'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?auto=format&fit=crop&q=80&w=600',
+    thumbnail: 'https://i.ytimg.com/vi/dTqpdNacxYM/hqdefault.jpg',
     videoUrl: 'https://www.youtube.com/watch?v=dTqpdNacxYM',
     duration: 645,
+    source: 'YouTube',
+    sport: 'jaycutler'
+  },
+  {
+    id: 'fxl8zZId73g',
+    headline: 'Prevail Focus: Cutler Nutrition Performance',
+    description: 'DT Roth breaks down what separates Prevail Focus pre-workout from the competition and how it can help your performance.',
+    thumbnail: 'https://i.ytimg.com/vi/fxl8zZId73g/hqdefault.jpg',
+    videoUrl: 'https://www.youtube.com/watch?v=fxl8zZId73g',
+    duration: 490,
     source: 'YouTube',
     sport: 'jaycutler'
   }
