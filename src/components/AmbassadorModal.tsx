@@ -11,7 +11,10 @@ interface AmbassadorModalProps {
 
 export default function AmbassadorModal({ isOpen, onClose, accent = 'var(--accent-primary)' }: AmbassadorModalProps) {
   const { wlConfig } = useWhiteLabel();
-  const isOlympian = wlConfig?.name?.toLowerCase().includes('olympia') || wlConfig?.domain?.includes('mrolympia.com');
+  const isOlympian = wlConfig?.name?.toLowerCase().includes('olympia') || 
+                     wlConfig?.domain?.includes('mrolympia.com') ||
+                     wlConfig?.name?.toLowerCase().includes('muscle') ||
+                     wlConfig?.name?.toLowerCase().includes('fitness');
   const appName = wlConfig?.name || 'AVO';
 
   const [formData, setFormData] = useState({

@@ -28,17 +28,17 @@ async function run() {
 
   const OLYMPIAN_CONFIG = {
     owner_id: userId,
-    name: 'Mr. Olympian',
+    name: 'Muscle & Fitness | Mr. Olympian',
     domain: 'mrolympia.com',
-    logo: 'https://mrolympia.com/sites/mrolympia.com/files/logo-2026.png',
+    logo: '/n2n/muscle_fitness_logo.svg',
     platform_fee_percentage: 30,
     parent_network_id: null,
     n2n_enabled: true,
     theme: {
-      accent: '#C5A059',
-      heroCopy: 'Mr. Olympian — Official Weekend Schedule & Gear',
+      accent: '#E31B23',
+      heroCopy: 'Muscle & Fitness — Mr. Olympian Edition',
       heroImage: 'https://images.unsplash.com/photo-1517838277536-f5f99be501cd?auto=format&fit=crop&q=80&w=1200',
-      logoImage: 'https://mrolympia.com/sites/mrolympia.com/files/logo-2026.png',
+      logoImage: '/n2n/muscle_fitness_logo.svg',
       shopifyUrl: 'https://mrolympia.com/weekend-schedule',
       sliderCount: 4,
       enableBooking: false,

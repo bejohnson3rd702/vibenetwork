@@ -73,7 +73,10 @@ export default function N2NHome({ wlConfig, categories, activeVideo, setActiveVi
     }
   }, [activeVideo]);
 
-  const isOlympian = config?.name?.toLowerCase().includes('olympia') || config?.domain?.includes('mrolympia.com');
+  const isOlympian = config?.name?.toLowerCase().includes('olympia') || 
+                     config?.domain?.includes('mrolympia.com') ||
+                     config?.name?.toLowerCase().includes('muscle') ||
+                     config?.name?.toLowerCase().includes('fitness');
 
   // ─── AVO Hero Slides — real shopavo.la CDN images ───────────────
   const AVO_HERO_SLIDES = [

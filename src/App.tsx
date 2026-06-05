@@ -308,6 +308,17 @@ function App() {
          document.documentElement.style.setProperty('--accent-primary', wlConfig.accent);
       }
       
+      // Dynamic High-Impact Typography for Muscle & Fitness / Mr. Olympian
+      const isOlympian = wlConfig.name?.toLowerCase().includes('olympia') || 
+                         wlConfig.domain?.includes('mrolympia.com') ||
+                         wlConfig.name?.toLowerCase().includes('muscle') ||
+                         wlConfig.name?.toLowerCase().includes('fitness');
+      if (isOlympian) {
+        document.documentElement.style.setProperty('--font-heading', "'Barlow Condensed', 'Outfit', sans-serif");
+      } else {
+        document.documentElement.style.setProperty('--font-heading', "'Outfit', sans-serif");
+      }
+      
       if (wlConfig.bg) {
         document.documentElement.style.setProperty('--bg-color', wlConfig.bg);
         

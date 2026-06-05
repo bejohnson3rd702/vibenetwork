@@ -6,7 +6,10 @@ const MoreInfo: React.FC = () => {
   const { wlConfig } = useWhiteLabel();
   const isTenant = wlConfig && wlConfig.domain !== 'vibenetwork.tv';
   const isAvo = wlConfig?.id === '3915f1e5-4c79-4b2a-ad41-7029ce8052d7' || wlConfig?.parent_network_id === '3915f1e5-4c79-4b2a-ad41-7029ce8052d7';
-  const isOlympian = wlConfig?.name?.toLowerCase().includes('olympia') || wlConfig?.domain?.includes('mrolympia.com');
+  const isOlympian = wlConfig?.name?.toLowerCase().includes('olympia') || 
+                     wlConfig?.domain?.includes('mrolympia.com') ||
+                     wlConfig?.name?.toLowerCase().includes('muscle') ||
+                     wlConfig?.name?.toLowerCase().includes('fitness');
   const accentColor = wlConfig?.accent || 'var(--accent-primary)';
 
   return (
