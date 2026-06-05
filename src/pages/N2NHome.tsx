@@ -531,6 +531,123 @@ export default function N2NHome({ wlConfig, categories, activeVideo, setActiveVi
           </Suspense>
         )}
 
+        {/* ── M&F Sister Publications Banners ────────────────── */}
+        {isOlympian && (
+          <section style={{ maxWidth: '1400px', margin: '40px auto 20px', padding: '0 40px' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '32px' }}>
+              
+              {/* Muscle & Fitness Hers Card */}
+              <div style={{
+                position: 'relative', overflow: 'hidden', minHeight: '340px',
+                border: '1px solid rgba(255,255,255,0.06)', background: '#000',
+                display: 'flex', flexDirection: 'column', justifyContent: 'flex-end',
+                padding: '40px'
+              }}>
+                <div style={{
+                  position: 'absolute', inset: 0,
+                  backgroundImage: 'url("https://images.unsplash.com/photo-1548690312-e3b507d8c110?auto=format&fit=crop&q=80&w=800")',
+                  backgroundSize: 'cover', backgroundPosition: 'center',
+                  filter: 'brightness(0.35)'
+                }} />
+                <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.3) 60%, transparent 100%)' }} />
+                
+                <div style={{ position: 'relative', zIndex: 2 }}>
+                  <div style={{
+                    display: 'inline-flex', padding: '5px 12px', background: '#E31B23', color: '#fff',
+                    fontSize: '9px', fontWeight: 900, letterSpacing: '2px', textTransform: 'uppercase',
+                    marginBottom: '16px'
+                  }}>
+                    Featured Publication
+                  </div>
+                  <h3 style={{
+                    fontSize: '28px', fontWeight: 900, color: '#fff', margin: '0 0 10px 0',
+                    lineHeight: 1.1, textTransform: 'uppercase', letterSpacing: '-0.5px'
+                  }}>
+                    M&amp;F Hers
+                  </h3>
+                  <p style={{
+                    fontSize: '14px', color: 'rgba(255,255,255,0.55)', lineHeight: 1.6,
+                    margin: '0 0 24px 0', maxWidth: '420px'
+                  }}>
+                    Workouts, nutrition advice, and lifestyle tips tailored specifically for active women. Empower your fitness journey today.
+                  </p>
+                  <a
+                    href="https://www.muscleandfitness.com/category/muscle-fitness-hers/"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style={{
+                      display: 'inline-block', padding: '12px 36px', fontSize: '10px', fontWeight: 800,
+                      textTransform: 'uppercase', letterSpacing: '2px',
+                      background: 'transparent', color: '#fff',
+                      border: '1.5px solid #fff', textDecoration: 'none',
+                      transition: 'all 0.25s'
+                    }}
+                    onMouseOver={e => { e.currentTarget.style.background = '#fff'; e.currentTarget.style.color = '#000'; }}
+                    onMouseOut={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = '#fff'; }}
+                  >
+                    Explore Hers
+                  </a>
+                </div>
+              </div>
+
+              {/* FLEX Online Card */}
+              <div style={{
+                position: 'relative', overflow: 'hidden', minHeight: '340px',
+                border: '1px solid rgba(255,255,255,0.06)', background: '#000',
+                display: 'flex', flexDirection: 'column', justifyContent: 'flex-end',
+                padding: '40px'
+              }}>
+                <div style={{
+                  position: 'absolute', inset: 0,
+                  backgroundImage: 'url("https://images.unsplash.com/photo-1581009146145-b5ef050c2e1e?auto=format&fit=crop&q=80&w=800")',
+                  backgroundSize: 'cover', backgroundPosition: 'center',
+                  filter: 'brightness(0.35)'
+                }} />
+                <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.3) 60%, transparent 100%)' }} />
+                
+                <div style={{ position: 'relative', zIndex: 2 }}>
+                  <div style={{
+                    display: 'inline-flex', padding: '5px 12px', background: '#E31B23', color: '#fff',
+                    fontSize: '9px', fontWeight: 900, letterSpacing: '2px', textTransform: 'uppercase',
+                    marginBottom: '16px'
+                  }}>
+                    Bodybuilding Authority
+                  </div>
+                  <h3 style={{
+                    fontSize: '28px', fontWeight: 900, color: '#fff', margin: '0 0 10px 0',
+                    lineHeight: 1.1, textTransform: 'uppercase', letterSpacing: '-0.5px'
+                  }}>
+                    FLEX Online
+                  </h3>
+                  <p style={{
+                    fontSize: '14px', color: 'rgba(255,255,255,0.55)', lineHeight: 1.6,
+                    margin: '0 0 24px 0', maxWidth: '420px'
+                  }}>
+                    The definitive resource for hardcore bodybuilding. Mass programs, champion contest prep, and legendary coverage.
+                  </p>
+                  <a
+                    href="https://www.muscleandfitness.com/category/flexonline/"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style={{
+                      display: 'inline-block', padding: '12px 36px', fontSize: '10px', fontWeight: 800,
+                      textTransform: 'uppercase', letterSpacing: '2px',
+                      background: 'transparent', color: '#fff',
+                      border: '1.5px solid #fff', textDecoration: 'none',
+                      transition: 'all 0.25s'
+                    }}
+                    onMouseOver={e => { e.currentTarget.style.background = '#fff'; e.currentTarget.style.color = '#000'; }}
+                    onMouseOut={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = '#fff'; }}
+                  >
+                    Explore FLEX
+                  </a>
+                </div>
+              </div>
+
+            </div>
+          </section>
+        )}
+
         {/* ── Ambassador CTA ──────────────────────────────────── */}
         <section style={{ maxWidth: '1400px', margin: '60px auto 0', padding: '0 40px' }}>
           <div style={{
