@@ -15,6 +15,8 @@ const Contact: React.FC = () => {
   const [isSending, setIsSending] = useState(false);
 
   const isAvo = wlConfig?.id === '3915f1e5-4c79-4b2a-ad41-7029ce8052d7' || wlConfig?.parent_network_id === '3915f1e5-4c79-4b2a-ad41-7029ce8052d7';
+  const isOlympian = wlConfig?.name?.toLowerCase().includes('olympia') || wlConfig?.domain?.includes('mrolympia.com');
+  const isTenant = wlConfig && wlConfig.domain !== 'vibenetwork.tv';
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -47,7 +49,12 @@ const Contact: React.FC = () => {
         <Send fill="white" size={24} />
       </div>
       <h3 style={{ fontSize: '28px', fontWeight: 800, marginBottom: '12px' }}>Message Sent!</h3>
-      <p style={{ color: 'var(--text-secondary)', lineHeight: 1.6 }}>Thank you for reaching out to Vibe Network. Our enterprise team will get back to you within 24 hours.</p>
+      <p style={{ color: 'var(--text-secondary)', lineHeight: 1.6 }}>
+        {isOlympian 
+          ? "Thank you for reaching out to Mr. Olympian support. We will get back to you within 24 hours."
+          : `Thank you for reaching out to ${wlConfig?.name || 'Vibe Network'}. Our team will get back to you within 24 hours.`
+        }
+      </p>
       <button 
         onClick={() => setIsSent(false)}
         style={{ marginTop: '30px', background: 'transparent', border: '1px solid rgba(255,255,255,0.2)', padding: '12px 24px', borderRadius: '12px', color: 'var(--text-primary)', cursor: 'pointer', fontWeight: 600 }}
@@ -123,7 +130,7 @@ const Contact: React.FC = () => {
           >
             <span style={{ width: 6, height: 6, borderRadius: '50%', background: accentColor, boxShadow: `0 0 10px ${accentColor}` }} />
             <span style={{ fontSize: '12px', fontWeight: 700, letterSpacing: '3px', textTransform: 'uppercase', color: 'rgba(255,255,255,0.8)' }}>
-              Enterprise Support
+              {isOlympian ? "Contact Support" : "Enterprise Support"}
             </span>
           </motion.div>
           <motion.h1 
@@ -139,7 +146,12 @@ const Contact: React.FC = () => {
             transition={{ delay: 0.1 }}
             style={{ fontSize: '18px', color: 'var(--text-secondary)', maxWidth: '600px', margin: '0 auto', lineHeight: 1.6 }}
           >
-            Ready to scale your architecture? Reach out to our enterprise specialists to discuss custom deployments, pricing, and infrastructure.
+            {isOlympian 
+              ? "Have questions about the Mr. Olympia weekend, partner opportunities, or official gear? Contact us and we will get back to you shortly."
+              : isTenant 
+                ? `Have questions about ${wlConfig?.name || 'our platform'}? Contact us and we will get back to you shortly.`
+                : "Ready to scale your architecture? Reach out to our enterprise specialists to discuss custom deployments, pricing, and infrastructure."
+            }
           </motion.p>
         </div>
 

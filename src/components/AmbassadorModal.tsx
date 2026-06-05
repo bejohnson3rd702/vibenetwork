@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { X, Check } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useWhiteLabel } from '../context/WhiteLabelContext';
 
 interface AmbassadorModalProps {
   isOpen: boolean;
@@ -9,6 +10,10 @@ interface AmbassadorModalProps {
 }
 
 export default function AmbassadorModal({ isOpen, onClose, accent = 'var(--accent-primary)' }: AmbassadorModalProps) {
+  const { wlConfig } = useWhiteLabel();
+  const isOlympian = wlConfig?.name?.toLowerCase().includes('olympia') || wlConfig?.domain?.includes('mrolympia.com');
+  const appName = wlConfig?.name || 'AVO';
+
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
@@ -139,7 +144,12 @@ export default function AmbassadorModal({ isOpen, onClose, accent = 'var(--accen
                   Become an Ambassador
                 </h3>
                 <p style={{ margin: '0 0 28px 0', fontSize: '13px', color: 'var(--text-secondary)', lineHeight: 1.5 }}>
-                  Rep your school, share exclusive drops, and earn perks. Tell us a bit about yourself to get started.
+                  {isOlympian 
+                    ? "Rep the Mr. Olympian brand, share your fitness journey, and earn exclusive perks. Tell us about yourself to get started."
+                    : wlConfig?.name 
+                      ? `Rep ${wlConfig.name}, share exclusive drops, and earn perks. Tell us a bit about yourself to get started.`
+                      : "Rep your school, share exclusive drops, and earn perks. Tell us a bit about yourself to get started."
+                  }
                 </p>
 
                 <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
@@ -211,7 +221,7 @@ export default function AmbassadorModal({ isOpen, onClose, accent = 'var(--accen
                       required
                       value={formData.email}
                       onChange={e => setFormData(prev => ({ ...prev, email: e.target.value }))}
-                      placeholder="alex.smith@university.edu"
+                      placeholder={isOlympian ? "alex.smith@fitness.com" : "alex.smith@university.edu"}
                       style={{
                         padding: '12px 16px',
                         background: 'rgba(255,255,255,0.03)',
@@ -265,11 +275,19 @@ export default function AmbassadorModal({ isOpen, onClose, accent = 'var(--accen
 
                   {/* Comments Box */}
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                    <label style={{ fontSize: '10px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '1px', color: 'var(--text-secondary)' }}>Why do you want to represent AVO?</label>
+                    <label style={{ fontSize: '10px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '1px', color: 'var(--text-secondary)' }}>
+                      {isOlympian 
+                        ? "Why do you want to represent Mr. Olympian?" 
+                        : `Why do you want to represent ${appName}?`
+                      }
+                    </label>
                     <textarea
                       value={formData.comments}
                       onChange={e => setFormData(prev => ({ ...prev, comments: e.target.value }))}
-                      placeholder="Tell us a bit about your campus activities, student organizations, or why you love college apparel..."
+                      placeholder={isOlympian 
+                        ? "Tell us about your fitness journey, training style, social presence, or why you love bodybuilding and Mr. Olympia..." 
+                        : "Tell us a bit about your campus activities, student organizations, or why you love college apparel..."
+                      }
                       rows={4}
                       style={{
                         padding: '12px 16px',
@@ -362,7 +380,7 @@ export default function AmbassadorModal({ isOpen, onClose, accent = 'var(--accen
                   Application Received!
                 </h3>
                 <p style={{ margin: '0 0 32px 0', fontSize: '14px', color: 'var(--text-secondary)', lineHeight: 1.6, maxWidth: '320px' }}>
-                  Thank you, <strong>{formData.firstName}</strong>. We've received your ambassador application and our campus team will reach out to you shortly.
+                  Thank you, <strong>{formData.firstName}</strong>. We've received your ambassador application and our {isOlympian ? "athlete coordination" : "campus"} team will reach out to you shortly.
                 </p>
                 <button
                   onClick={handleClose}

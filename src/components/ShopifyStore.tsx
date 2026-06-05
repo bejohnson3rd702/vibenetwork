@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { ShoppingBag, ExternalLink, Tag } from 'lucide-react';
 import { useWhiteLabel } from '../context/WhiteLabelContext';
+import { supabase } from '../supabaseClient';
 
 interface ShopifyProduct {
   id: number;
@@ -17,28 +18,51 @@ export default function ShopifyStore() {
   const [products, setProducts] = useState<ShopifyProduct[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [resolvedShopifyUrl, setResolvedShopifyUrl] = useState<string>('');
 
-  const shopifyUrl = wlConfig?.theme?.shopifyUrl || wlConfig?.shopifyUrl || '';
   const accent = wlConfig?.accent || '#D35400';
 
   useEffect(() => {
-    if (!shopifyUrl) { setLoading(false); return; }
+    const url = wlConfig?.theme?.shopifyUrl || wlConfig?.shopifyUrl || '';
+    if (url) {
+      setResolvedShopifyUrl(url);
+    } else if (wlConfig?.parent_network_id) {
+      supabase
+        .from('whitelabel_configs')
+        .select('theme, shopifyUrl')
+        .eq('id', wlConfig.parent_network_id)
+        .single()
+        .then(({ data }) => {
+          const parentUrl = data?.theme?.shopifyUrl || data?.shopifyUrl || '';
+          setResolvedShopifyUrl(parentUrl);
+        })
+        .catch(err => {
+          console.error("Failed to fetch parent shopify URL:", err);
+          setResolvedShopifyUrl('');
+        });
+    } else {
+      setResolvedShopifyUrl('');
+    }
+  }, [wlConfig]);
+
+  useEffect(() => {
+    if (!resolvedShopifyUrl) { setLoading(false); return; }
 
     const fetchProducts = async () => {
       setLoading(true);
       setError('');
       try {
-        const isBama = shopifyUrl.includes('avo-x-bama');
+        const isBama = resolvedShopifyUrl.includes('avo-x-bama');
         
         let jsonUrl = '';
         const headers: Record<string, string> = {};
         if (isBama) {
           jsonUrl = '/api/bama/api/v1/shopify/products?status=active&limit=50&vendor=AVO';
           headers['x-tenant-subdomain'] = 'alabama';
-        } else if (shopifyUrl.includes('/collections/')) {
-          jsonUrl = shopifyUrl.replace(/\/$/, '') + '/products.json';
-        } else if (shopifyUrl.includes('/pages/')) {
-          const slug = shopifyUrl.split('/pages/')[1]?.replace(/\/$/, '');
+        } else if (resolvedShopifyUrl.includes('/collections/')) {
+          jsonUrl = resolvedShopifyUrl.replace(/\/$/, '') + '/products.json';
+        } else if (resolvedShopifyUrl.includes('/pages/')) {
+          const slug = resolvedShopifyUrl.split('/pages/')[1]?.replace(/\/$/, '');
           jsonUrl = `https://shopavo.la/products.json?tag=${slug}`;
         }
 
@@ -78,14 +102,14 @@ export default function ShopifyStore() {
     };
 
     fetchProducts();
-  }, [shopifyUrl]);
+  }, [resolvedShopifyUrl]);
 
   // Build the product link back to Shopify
   const getProductUrl = (product: ShopifyProduct) => {
-    if (shopifyUrl.includes('avo-x-bama')) {
+    if (resolvedShopifyUrl.includes('avo-x-bama')) {
       return `https://store.yea-alabama.com/products/${product.handle}`;
     }
-    const storeDomain = shopifyUrl.split('/collections/')[0] || shopifyUrl.split('/pages/')[0] || 'https://shopavo.la';
+    const storeDomain = resolvedShopifyUrl.split('/collections/')[0] || resolvedShopifyUrl.split('/pages/')[0] || 'https://shopavo.la';
     return `${storeDomain}/products/${product.handle}`;
   };
 
@@ -102,7 +126,7 @@ export default function ShopifyStore() {
     return product.variants?.some(v => v.available);
   };
 
-  if (!shopifyUrl) return null;
+  if (!resolvedShopifyUrl) return null;
 
   return (
     <div style={{ width: '100%', maxWidth: '1400px', margin: '0 auto', padding: '60px 40px' }}>
@@ -115,7 +139,7 @@ export default function ShopifyStore() {
           </h2>
         </div>
         <a
-          href={shopifyUrl.includes('avo-x-bama') ? 'https://store.yea-alabama.com' : shopifyUrl}
+          href={resolvedShopifyUrl.includes('avo-x-bama') ? 'https://store.yea-alabama.com' : resolvedShopifyUrl}
           target="_blank"
           rel="noopener noreferrer"
           style={{

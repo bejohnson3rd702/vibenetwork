@@ -14,22 +14,37 @@ const SPORTS = [
   { key: 'baseball', label: '⚾ BASE', endpoint: 'baseball/d1' },
 ];
 
+const OLYMPIA_EVENTS = [
+  { sport: '🎙️ PRESS CONF', away: { name: 'Press Conference' }, home: { name: 'Orleans Arena' }, status: 'THUR OCT 8 · 12:00 PM' },
+  { sport: '🤝 FAN MEET', away: { name: 'Meet the Olympians' }, home: { name: 'VIP Fan Experience' }, status: 'THUR OCT 8 · 7:00 PM' },
+  { sport: '💪 EXPO', away: { name: 'World Fitness Expo' }, home: { name: 'Convention Center' }, status: 'FRI & SAT · 9:00 AM' },
+  { sport: '🏆 FRIDAY FINALS', away: { name: 'Friday Finals' }, home: { name: 'Fitness, Figure, Classic' }, status: 'FRI OCT 9 · 6:00 PM' },
+  { sport: '🔥 PRE-JUDGING', away: { name: 'Saturday Pre-Judging' }, home: { name: 'Mr. Olympia, Bikini' }, status: 'SAT OCT 10 · 9:30 AM' },
+  { sport: '👑 SATURDAY FINALS', away: { name: 'Saturday Finals' }, home: { name: 'Mr. Olympia Finals' }, status: 'SAT OCT 10 · 6:00 PM' },
+];
+
 const API_BASE = '/api/ncaa';
 
-// Team colors for AVO schools
-const SCHOOL_COLORS: Record<string, string> = {
-  'alabama': '#9E1B32', 'ole-miss': '#CE1126', 'colorado': '#CFB87C',
-  'vanderbilt': '#866D4B', 'georgia': '#BA0C2F', 'mississippi-st': '#660000',
-  'baylor': '#154734', 'penn-st': '#041E42',
-};
-
-export default function CollegeTicker({ accent = '#D35400' }: { accent?: string }) {
+export default function CollegeTicker({ accent = '#D35400', isOlympian = false }: { accent?: string; isOlympian?: boolean }) {
   const [games, setGames] = useState<GameScore[]>([]);
   const [loading, setLoading] = useState(true);
   const scrollRef = useRef<HTMLDivElement>(null);
   const [paused, setPaused] = useState(false);
 
   useEffect(() => {
+    if (isOlympian) {
+      const allGames: GameScore[] = OLYMPIA_EVENTS.map((e, idx) => ({
+        id: `olympia-${idx}`,
+        away: { name: e.away.name, score: '' },
+        home: { name: e.home.name, score: '' },
+        status: e.status,
+        sport: e.sport,
+      }));
+      setGames(allGames);
+      setLoading(false);
+      return;
+    }
+
     const fetchScores = async () => {
       const allGames: GameScore[] = [];
 
@@ -39,7 +54,6 @@ export default function CollegeTicker({ accent = '#D35400' }: { accent?: string 
           if (!res.ok) continue;
           const data = await res.json();
           const rawGames = data?.games || [];
-          // Take up to 8 games per sport
           rawGames.slice(0, 8).forEach((g: any) => {
             const game = g.game || g;
             allGames.push({
@@ -78,9 +92,8 @@ export default function CollegeTicker({ accent = '#D35400' }: { accent?: string 
     fetchScores();
     const interval = setInterval(fetchScores, 90000);
     return () => clearInterval(interval);
-  }, []);
+  }, [isOlympian]);
 
-  // Marquee animation
   useEffect(() => {
     if (!scrollRef.current || paused || games.length === 0) return;
 
@@ -90,7 +103,6 @@ export default function CollegeTicker({ accent = '#D35400' }: { accent?: string 
 
     const step = () => {
       pos += 0.6;
-      // Reset when we've scrolled through the first set
       if (pos >= el.scrollWidth / 2) pos = 0;
       el.scrollLeft = pos;
       animId = requestAnimationFrame(step);
@@ -100,7 +112,6 @@ export default function CollegeTicker({ accent = '#D35400' }: { accent?: string 
     return () => cancelAnimationFrame(animId);
   }, [paused, games]);
 
-  // Don't render anything while loading
   if (loading) {
     return (
       <div style={{
@@ -110,14 +121,13 @@ export default function CollegeTicker({ accent = '#D35400' }: { accent?: string 
         fontSize: '13px', color: '#444', letterSpacing: '2px', textTransform: 'uppercase',
         fontFamily: "'Inter', system-ui, sans-serif",
       }}>
-        ● NCAA SCOREBOARD LOADING
+        ● {isOlympian ? 'OLYMPIA SCHEDULE LOADING' : 'NCAA SCOREBOARD LOADING'}
       </div>
     );
   }
 
   if (games.length === 0) return null;
 
-  // Duplicate for seamless loop
   const tickerGames = [...games, ...games];
 
   return (
@@ -135,13 +145,11 @@ export default function CollegeTicker({ accent = '#D35400' }: { accent?: string 
       onMouseEnter={() => setPaused(true)}
       onMouseLeave={() => setPaused(false)}
     >
-      {/* Edge fades */}
       <div style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: '80px',
         background: 'linear-gradient(to right, #050505, transparent)', zIndex: 2, pointerEvents: 'none' }} />
       <div style={{ position: 'absolute', right: 0, top: 0, bottom: 0, width: '80px',
         background: 'linear-gradient(to left, #050505, transparent)', zIndex: 2, pointerEvents: 'none' }} />
 
-      {/* NCAA label */}
       <div style={{
         position: 'absolute', left: 0, top: 0, bottom: 0, zIndex: 3,
         display: 'flex', alignItems: 'center', paddingLeft: '12px', paddingRight: '16px',
@@ -149,7 +157,7 @@ export default function CollegeTicker({ accent = '#D35400' }: { accent?: string 
         fontSize: '13px', fontWeight: 900, letterSpacing: '2px', color: accent,
         textTransform: 'uppercase',
       }}>
-        NCAA
+        {isOlympian ? 'OLYMPIA' : 'NCAA'}
       </div>
 
       <div
@@ -167,6 +175,7 @@ export default function CollegeTicker({ accent = '#D35400' }: { accent?: string 
           const isLive = game.status.includes('LIVE') || game.status.includes('Half')
             || game.status.includes('Quarter') || game.status.includes('Period');
           const isFinal = game.status === 'FINAL';
+          const hasScore = game.away.score !== '';
 
           return (
             <div
@@ -181,36 +190,40 @@ export default function CollegeTicker({ accent = '#D35400' }: { accent?: string 
                 height: '100%',
               }}
             >
-              {/* Sport icon */}
               <span style={{ fontSize: '14px' }}>{game.sport.split(' ')[0]}</span>
 
-              {/* Away */}
               <span style={{ fontSize: '15px', fontWeight: 600, color: '#999' }}>
                 {game.away.name}
               </span>
-              <span style={{
-                fontSize: '17px', fontWeight: 900,
-                color: isFinal && parseInt(game.away.score) > parseInt(game.home.score) ? '#fff' : '#666',
-                minWidth: '16px', textAlign: 'right',
-              }}>
-                {game.away.score || '-'}
-              </span>
+              
+              {hasScore && (
+                <>
+                  <span style={{
+                    fontSize: '17px', fontWeight: 900,
+                    color: isFinal && parseInt(game.away.score) > parseInt(game.home.score) ? '#fff' : '#666',
+                    minWidth: '16px', textAlign: 'right',
+                  }}>
+                    {game.away.score}
+                  </span>
+                  <span style={{ fontSize: '13px', color: '#333', fontWeight: 700 }}>vs</span>
+                  <span style={{
+                    fontSize: '17px', fontWeight: 900,
+                    color: isFinal && parseInt(game.home.score) > parseInt(game.away.score) ? '#fff' : '#666',
+                    minWidth: '16px',
+                  }}>
+                    {game.home.score}
+                  </span>
+                </>
+              )}
+              
+              {!hasScore && (
+                <span style={{ fontSize: '13px', color: '#333', fontWeight: 900 }}>👉</span>
+              )}
 
-              <span style={{ fontSize: '13px', color: '#333', fontWeight: 700 }}>vs</span>
-
-              {/* Home */}
-              <span style={{
-                fontSize: '17px', fontWeight: 900,
-                color: isFinal && parseInt(game.home.score) > parseInt(game.away.score) ? '#fff' : '#666',
-                minWidth: '16px',
-              }}>
-                {game.home.score || '-'}
-              </span>
               <span style={{ fontSize: '15px', fontWeight: 600, color: '#999' }}>
                 {game.home.name}
               </span>
 
-              {/* Status */}
               <span style={{
                 fontSize: '12px', fontWeight: 800, letterSpacing: '0.5px', textTransform: 'uppercase',
                 color: isLive ? '#FF3B30' : isFinal ? '#555' : accent,

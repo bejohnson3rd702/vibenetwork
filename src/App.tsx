@@ -33,6 +33,7 @@ import { normalizeWlConfig } from './lib/whitelabel';
 import WhiteLabelHome from './pages/WhiteLabelHome';
 const N2NHome = lazy(() => import('./pages/N2NHome'));
 const AvoMarketplace = lazy(() => import('./components/AvoMarketplace'));
+const ShopifyStore = lazy(() => import('./components/ShopifyStore'));
 import { motion, AnimatePresence } from 'framer-motion';
 import { X } from 'lucide-react';
 
@@ -370,7 +371,14 @@ function App() {
               <Route path="/marketplace" element={<Marketplace />} />
               <Route path="/shop" element={
                 <div style={{ paddingTop: '80px', minHeight: '100vh', background: 'var(--bg-color)' }}>
-                  <AvoMarketplace accent={wlConfig?.accent || '#D35400'} />
+                  {(() => {
+                    const isAvo = wlConfig?.id === '3915f1e5-4c79-4b2a-ad41-7029ce8052d7' || wlConfig?.parent_network_id === '3915f1e5-4c79-4b2a-ad41-7029ce8052d7';
+                    return isAvo ? (
+                      <AvoMarketplace accent={wlConfig?.accent || '#D35400'} />
+                    ) : (
+                      <ShopifyStore />
+                    );
+                  })()}
                 </div>
               } />
               <Route path="/contact" element={<Contact />} />

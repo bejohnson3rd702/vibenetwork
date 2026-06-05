@@ -73,17 +73,27 @@ export default function N2NHome({ wlConfig, categories, activeVideo, setActiveVi
     }
   }, [activeVideo]);
 
+  const isOlympian = config?.name?.toLowerCase().includes('olympia') || config?.domain?.includes('mrolympia.com');
+
   // ─── AVO Hero Slides — real shopavo.la CDN images ───────────────
-  const HERO_SLIDES = [
+  const AVO_HERO_SLIDES = [
     { school: 'Baylor', short: 'Baylor', subtitle: 'New Collection', copy: 'Represent the Bears with our newest campus essentials.', image: 'https://shopavo.la/cdn/shop/files/msu-hp-hero_1500x.jpg?v=1775144388', link: 'https://shopavo.la/collections/baylor' },
     { school: 'Mississippi State', short: 'Miss. State', subtitle: 'Hail State', copy: 'Maroon and white — gear up for every tailgate and beyond.', image: 'https://shopavo.la/cdn/shop/files/MSU_Homepage_Desktop_1500x.jpg?v=1776105569', link: 'https://shopavo.la/collections/mississippi-state' },
     { school: 'Vanderbilt', short: 'Vanderbilt', subtitle: 'Anchor Down', copy: 'Premium campus wear for the Commodores faithful.', image: 'https://shopavo.la/cdn/shop/files/Homepage_Vanderbilt_Desktop_1500x.jpg?v=1776284269', link: 'https://shopavo.la/collections/vanderbilt' },
     { school: 'Penn State', short: 'Penn State', subtitle: 'We Are', copy: 'Nittany Lions gear crafted for the Happy Valley lifestyle.', image: 'https://shopavo.la/cdn/shop/files/PSU_Homepage_Banner_Desktop2_1500x.jpg?v=1776375978', link: 'https://shopavo.la/collections/penn-state' },
-    { school: 'Alabama', short: 'Alabama', subtitle: 'Roll Tide', copy: 'Crimson and cream essentials for the Crimson Tide.', image: 'https://shopavo.la/cdn/shop/files/bama-desk-hp-1_1500x.jpg?v=1774210820', link: 'https://shopavo.la/pages/avo-x-bama' },
+    { school: 'Alabama', schoolSlug: 'avo-x-bama', short: 'Alabama', subtitle: 'Roll Tide', copy: 'Crimson and cream essentials for the Crimson Tide.', image: 'https://shopavo.la/cdn/shop/files/bama-desk-hp-1_1500x.jpg?v=1774210820', link: 'https://shopavo.la/pages/avo-x-bama' },
     { school: 'Ole Miss', short: 'Ole Miss', subtitle: 'Hotty Toddy', copy: 'Oxford-inspired style meets college spirit.', image: 'https://shopavo.la/cdn/shop/files/desk-ole-miss-hp_1500x.jpg?v=1774210006', link: 'https://shopavo.la/collections/ole-miss' },
     { school: 'Colorado', short: 'Colorado', subtitle: 'Sko Buffs', copy: 'Boulder vibes and mountain-ready campus apparel.', image: 'https://shopavo.la/cdn/shop/files/co-desktop2_4230eb90-9553-4d72-b205-30e62658bcce_1500x.jpg?v=1776445128', link: 'https://shopavo.la/collections/colorado' },
     { school: 'Georgia', short: 'Georgia', subtitle: 'Go Dawgs', copy: 'Red and black essentials for the Bulldog nation.', image: 'https://shopavo.la/cdn/shop/files/UGA_Collections_Desktop_1500x.jpg?v=1776210559', link: 'https://shopavo.la/collections/georgia' },
   ];
+
+  const OLYMPIAN_HERO_SLIDES = [
+    { school: 'Olympia Finals', short: 'Finals', subtitle: 'The Sandow Trophy', copy: 'Watch the historic battle of the titans live from Las Vegas. Witness bodybuilding history.', image: '/n2n/mr_olympia_hero.png', link: 'https://mrolympia.com/weekend-schedule' },
+    { school: 'Meet the Olympians', short: 'Expo & Fan Experience', subtitle: 'Expo Weekend', copy: 'Connect with legendary fitness icons, explore world-class brands, and discover new supplements.', image: 'https://images.unsplash.com/photo-1517838277536-f5f99be501cd?auto=format&fit=crop&q=80&w=1500', link: 'https://mrolympia.com/weekend-schedule' },
+    { school: 'Press Conference', short: 'Press Conf.', subtitle: 'Face‑offs & Predictions', copy: 'Hear from the world\'s best athletes as they face off before taking the stage.', image: 'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?auto=format&fit=crop&q=80&w=1500', link: 'https://mrolympia.com/weekend-schedule' }
+  ];
+
+  const HERO_SLIDES = isOlympian ? OLYMPIAN_HERO_SLIDES : AVO_HERO_SLIDES;
 
   const [heroSlide, setHeroSlide] = useState(0);
 
@@ -92,7 +102,7 @@ export default function N2NHome({ wlConfig, categories, activeVideo, setActiveVi
       setHeroSlide(prev => (prev + 1) % HERO_SLIDES.length);
     }, 5000);
     return () => clearInterval(timer);
-  }, []);
+  }, [HERO_SLIDES.length]);
 
   return (
     <>
@@ -154,17 +164,17 @@ export default function N2NHome({ wlConfig, categories, activeVideo, setActiveVi
               Shop Now
             </button>
 
-            {/* Fundraising stat */}
+            {/* Fundraising / Legacy stat */}
             <div style={{
               marginTop: '32px', padding: '16px 24px',
               borderLeft: `3px solid ${accent}`,
               background: 'rgba(255,255,255,0.05)', backdropFilter: 'blur(10px)',
             }}>
               <p style={{ margin: 0, fontSize: '32px', fontWeight: 900, color: '#fff', letterSpacing: '-1px', lineHeight: 1.2 }}>
-                $17,480,130<span style={{ color: accent }}>+</span>
+                {isOlympian ? '50+ Years' : '$17,480,130'}<span style={{ color: accent }}>+</span>
               </p>
               <p style={{ margin: '4px 0 0', fontSize: '13px', fontWeight: 600, color: 'rgba(255,255,255,0.6)', textTransform: 'uppercase', letterSpacing: '2px' }}>
-                Raised to empower student‑athletes nationwide
+                {isOlympian ? 'Of Championing Legendary Athletes & Fitness Excellence' : 'Raised to empower student‑athletes nationwide'}
               </p>
             </div>
           </motion.div>
@@ -222,7 +232,7 @@ export default function N2NHome({ wlConfig, categories, activeVideo, setActiveVi
       {/* NCAA College Ticker — bottom of hero */}
       <div style={{ position: 'relative', zIndex: 10 }}>
         <Suspense fallback={null}>
-          <CollegeTicker accent={config.accent} />
+          <CollegeTicker accent={config.accent} isOlympian={isOlympian} />
         </Suspense>
       </div>
 
@@ -231,7 +241,7 @@ export default function N2NHome({ wlConfig, categories, activeVideo, setActiveVi
         {/* ── Watch Live ──────────────────────────────────────── */}
         <div id="whats-on-now">
           <Suspense fallback={null}>
-            <WatchLive accent={config.accent} />
+            <WatchLive accent={config.accent} isOlympian={isOlympian} />
           </Suspense>
         </div>
 
@@ -248,18 +258,18 @@ export default function N2NHome({ wlConfig, categories, activeVideo, setActiveVi
               flex: '0 0 45%', position: 'relative', overflow: 'hidden',
             }}>
               <img
-                src="https://shopavo.la/cdn/shop/files/bama-desk-hp-1_1500x.jpg?v=1774210820"
-                alt="New Drop"
+                src={isOlympian ? "https://images.unsplash.com/photo-1583454110551-21f2fa2afe61?auto=format&fit=crop&q=80&w=800" : "https://shopavo.la/cdn/shop/files/bama-desk-hp-1_1500x.jpg?v=1774210820"}
+                alt={isOlympian ? "Official Gear" : "New Drop"}
                 style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
               />
               <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to right, transparent 60%, #000 100%)' }} />
-              {/* NEW DROP pill */}
+              {/* NEW DROP / OFFICIAL GEAR pill */}
               <div style={{
                 position: 'absolute', top: '24px', left: '24px',
                 padding: '6px 14px', background: accent, color: '#000',
                 fontSize: '10px', fontWeight: 900, letterSpacing: '2px', textTransform: 'uppercase',
               }}>
-                New Drop
+                {isOlympian ? "Official Gear" : "New Drop"}
               </div>
             </div>
 
@@ -279,19 +289,23 @@ export default function N2NHome({ wlConfig, categories, activeVideo, setActiveVi
                 fontSize: '11px', fontWeight: 800, textTransform: 'uppercase',
                 letterSpacing: '3px', color: accent, margin: '0 0 12px 0',
               }}>
-                Summer 2026 Collection
+                {isOlympian ? "Olympia Collection" : "Summer 2026 Collection"}
               </p>
               <h2 style={{
                 fontSize: '34px', fontWeight: 900, color: '#fff', margin: '0 0 14px 0',
                 lineHeight: 1.15, letterSpacing: '-1px', textTransform: 'uppercase',
               }}>
-                Game Day<br />Essentials
+                {isOlympian ? (
+                  <>Official Weekend<br />Gear & Wear</>
+                ) : (
+                  <>Game Day<br />Essentials</>
+                )}
               </h2>
               <p style={{
                 fontSize: '14px', color: 'rgba(255,255,255,0.5)', lineHeight: 1.7,
                 margin: '0 0 28px 0', maxWidth: '380px',
               }}>
-                Premium collegiate apparel for every school in the AVO family. Rep your team with style — new colorways and exclusive designs just dropped.
+                {isOlympian ? "Premium bodybuilding and lifestyle apparel engineered for champions. Rep the legacy with official Mr. Olympia hoodies, workout shirts, and accessories." : "Premium collegiate apparel for every school in the AVO family. Rep your team with style — new colorways and exclusive designs just dropped."}
               </p>
               <a
                 href={'/shop' + (typeof window !== 'undefined' ? window.location.search : '')}
@@ -305,7 +319,7 @@ export default function N2NHome({ wlConfig, categories, activeVideo, setActiveVi
                 onMouseOver={e => { e.currentTarget.style.background = '#fff'; e.currentTarget.style.color = '#000'; }}
                 onMouseOut={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = '#fff'; }}
               >
-                Shop The Drop
+                {isOlympian ? "Shop The Collection" : "Shop The Drop"}
               </a>
             </div>
           </div>
@@ -315,7 +329,7 @@ export default function N2NHome({ wlConfig, categories, activeVideo, setActiveVi
         {childItems.length > 0 && (
           <div id="child-networks-slider">
             <SliderSection
-              title="AVO NETWORKS"
+              title={isOlympian ? "OLYMPIAN PARTNERS" : "AVO NETWORKS"}
               items={childItems}
               delay={0}
               aspectRatio="16/9"
@@ -328,190 +342,184 @@ export default function N2NHome({ wlConfig, categories, activeVideo, setActiveVi
           </div>
         )}
 
-        {/* ── Top Ambassadors Spotlight ────────────────────────── */}
-        <Suspense fallback={null}>
-          <TopAmbassadors parentId={config.id} accent={config.accent} />
-        </Suspense>
-
-        {/* ── Child Network Feed Spotlight ─────────────────────── */}
-        <Suspense fallback={null}>
-          <ChildNetworkFeeds parentId={config.id} accent={config.accent} />
-        </Suspense>
-
         {/* ── Hoodie Competition Banner ───────────────────────── */}
-        <section style={{ maxWidth: '1400px', margin: '40px auto', padding: '0 40px' }}>
-          <div style={{
-            position: 'relative', overflow: 'hidden',
-            border: '1px solid rgba(255,255,255,0.08)',
-            background: '#000',
-          }}>
-            {/* Background image — full bleed */}
+        {!isOlympian && (
+          <section style={{ maxWidth: '1400px', margin: '40px auto', padding: '0 40px' }}>
             <div style={{
-              position: 'absolute', inset: 0,
-              backgroundImage: 'url(/n2n/hoodie-competition.png)',
-              backgroundSize: 'cover', backgroundPosition: 'center',
-              filter: 'brightness(0.35)',
-            }} />
-            {/* Gradient overlay */}
-            <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(135deg, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.4) 50%, rgba(0,0,0,0.7) 100%)' }} />
-
-            <div style={{
-              position: 'relative', zIndex: 2,
-              padding: '64px 60px', display: 'flex', alignItems: 'center',
-              justifyContent: 'space-between', flexWrap: 'wrap', gap: '40px',
+              position: 'relative', overflow: 'hidden',
+              border: '1px solid rgba(255,255,255,0.08)',
+              background: '#000',
             }}>
-              {/* Left — Content */}
-              <div style={{ maxWidth: '520px' }}>
+              {/* Background image — full bleed */}
+              <div style={{
+                position: 'absolute', inset: 0,
+                backgroundImage: 'url(/n2n/hoodie-competition.png)',
+                backgroundSize: 'cover', backgroundPosition: 'center',
+                filter: 'brightness(0.35)',
+              }} />
+              {/* Gradient overlay */}
+              <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(135deg, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.4) 50%, rgba(0,0,0,0.7) 100%)' }} />
+
+              <div style={{
+                position: 'relative', zIndex: 2,
+                padding: '64px 60px', display: 'flex', alignItems: 'center',
+                justifyContent: 'space-between', flexWrap: 'wrap', gap: '40px',
+              }}>
+                {/* Left — Content */}
+                <div style={{ maxWidth: '520px' }}>
+                  <div style={{
+                    display: 'inline-flex', alignItems: 'center', gap: '8px',
+                    padding: '6px 14px', background: accent, color: '#000',
+                    fontSize: '10px', fontWeight: 900, letterSpacing: '2px', textTransform: 'uppercase',
+                    marginBottom: '20px',
+                  }}>
+                    🏆 Competition
+                  </div>
+                  <h2 style={{
+                    fontSize: '38px', fontWeight: 900, color: '#fff', margin: '0 0 14px 0',
+                    lineHeight: 1.1, letterSpacing: '-1px', textTransform: 'uppercase',
+                  }}>
+                    Best College<br />Hoodie Design
+                  </h2>
+                  <p style={{
+                    fontSize: '15px', color: 'rgba(255,255,255,0.5)', lineHeight: 1.7,
+                    margin: '0 0 24px 0',
+                  }}>
+                    All 8 AVO schools go head-to-head. Which campus created the best branded hoodie? Browse the entries, rep your school, and cast your vote.
+                  </p>
+
+                  {/* School pills */}
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginBottom: '28px' }}>
+                    {['Baylor', 'Colorado', 'Georgia', 'Miss. State', 'Alabama', 'Ole Miss', 'Vanderbilt', 'Penn State'].map(school => (
+                      <span key={school} style={{
+                        padding: '5px 12px', fontSize: '10px', fontWeight: 800,
+                        letterSpacing: '1px', textTransform: 'uppercase',
+                        border: '1px solid rgba(255,255,255,0.15)', color: 'rgba(255,255,255,0.6)',
+                        background: 'rgba(255,255,255,0.04)',
+                      }}>
+                        {school}
+                      </span>
+                    ))}
+                  </div>
+
+                  <button
+                    onClick={() => setIsHoodieVoteOpen(true)}
+                    style={{
+                      display: 'inline-block', padding: '14px 44px', fontSize: '11px', fontWeight: 800,
+                      textTransform: 'uppercase', letterSpacing: '2.5px',
+                      background: accent, color: '#fff',
+                      border: 'none', textDecoration: 'none',
+                      transition: 'all 0.25s',
+                      cursor: 'pointer'
+                    }}
+                    onMouseOver={e => { e.currentTarget.style.opacity = '0.85'; }}
+                    onMouseOut={e => { e.currentTarget.style.opacity = '1'; }}
+                  >
+                    Vote Now
+                  </button>
+                </div>
+
+                {/* Right — Hoodie image */}
+                <div style={{ flexShrink: 0, width: '320px', position: 'relative' }}>
+                  <img
+                    src="/n2n/hoodie-competition.png"
+                    alt="College Hoodie Competition"
+                    style={{
+                      width: '100%', borderRadius: '4px',
+                      border: '1px solid rgba(255,255,255,0.08)',
+                      boxShadow: '0 20px 60px rgba(0,0,0,0.5)',
+                    }}
+                  />
+                </div>
+              </div>
+            </div>
+          </section>
+        )}
+
+        {/* ── AVO Summer Concert Tour Banner ─────────────────── */}
+        {!isOlympian && (
+          <section style={{ maxWidth: '1400px', margin: '40px auto', padding: '0 40px' }}>
+            <div style={{
+              position: 'relative', overflow: 'hidden',
+              border: '1px solid rgba(255,255,255,0.06)',
+              background: '#000',
+              minHeight: '380px',
+              display: 'flex',
+              alignItems: 'center'
+            }}>
+              {/* Background Image */}
+              <div style={{
+                position: 'absolute', inset: 0,
+                backgroundImage: 'url(/n2n/concert_in_the_park.png)',
+                backgroundSize: 'cover', backgroundPosition: 'center 35%',
+                filter: 'brightness(0.32)'
+              }} />
+              {/* Gradient Overlay */}
+              <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to right, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.4) 60%, transparent 100%)' }} />
+
+              <div style={{
+                position: 'relative', zIndex: 2,
+                padding: '64px 60px', maxWidth: '640px',
+              }}>
                 <div style={{
                   display: 'inline-flex', alignItems: 'center', gap: '8px',
-                  padding: '6px 14px', background: accent, color: '#000',
+                  padding: '6px 14px', background: 'linear-gradient(90deg, #FF512F, #DD2476)', color: '#fff',
                   fontSize: '10px', fontWeight: 900, letterSpacing: '2px', textTransform: 'uppercase',
                   marginBottom: '20px',
                 }}>
-                  🏆 Competition
+                  🎸 Summer 2026 Tour
                 </div>
                 <h2 style={{
-                  fontSize: '38px', fontWeight: 900, color: '#fff', margin: '0 0 14px 0',
+                  fontSize: '38px', fontWeight: 900, color: '#fff', margin: '0 0 16px 0',
                   lineHeight: 1.1, letterSpacing: '-1px', textTransform: 'uppercase',
                 }}>
-                  Best College<br />Hoodie Design
+                  AVO Summer<br />Concert Tour
                 </h2>
                 <p style={{
-                  fontSize: '15px', color: 'rgba(255,255,255,0.5)', lineHeight: 1.7,
-                  margin: '0 0 24px 0',
+                  fontSize: '15px', color: 'rgba(255,255,255,0.6)', lineHeight: 1.7,
+                  margin: '0 0 28px 0',
                 }}>
-                  All 8 AVO schools go head-to-head. Which campus created the best branded hoodie? Browse the entries, rep your school, and cast your vote.
+                  Catch the vibes live! AVO is hitting the road this summer, bringing your favorite bands and artists to collegiate campus parks nationwide. Grab your crew, rep your school colors, and experience the ultimate summer soundtrack.
                 </p>
-
-                {/* School pills */}
-                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginBottom: '28px' }}>
-                  {['Baylor', 'Colorado', 'Georgia', 'Miss. State', 'Alabama', 'Ole Miss', 'Vanderbilt', 'Penn State'].map(school => (
-                    <span key={school} style={{
-                      padding: '5px 12px', fontSize: '10px', fontWeight: 800,
-                      letterSpacing: '1px', textTransform: 'uppercase',
-                      border: '1px solid rgba(255,255,255,0.15)', color: 'rgba(255,255,255,0.6)',
-                      background: 'rgba(255,255,255,0.04)',
-                    }}>
-                      {school}
-                    </span>
-                  ))}
+                <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap' }}>
+                  <button
+                    style={{
+                      display: 'inline-block', padding: '14px 44px', fontSize: '11px', fontWeight: 800,
+                      textTransform: 'uppercase', letterSpacing: '2.5px',
+                      background: accent, color: '#fff',
+                      border: 'none', transition: 'all 0.25s',
+                      cursor: 'pointer'
+                    }}
+                    onMouseOver={e => { e.currentTarget.style.opacity = '0.85'; }}
+                    onMouseOut={e => { e.currentTarget.style.opacity = '1'; }}
+                  >
+                    Buy Now
+                  </button>
+                  <button
+                    style={{
+                      display: 'inline-block', padding: '14px 44px', fontSize: '11px', fontWeight: 800,
+                      textTransform: 'uppercase', letterSpacing: '2.5px',
+                      background: 'rgba(255, 255, 255, 0.08)', color: '#fff',
+                      border: '1px solid rgba(255, 255, 255, 0.2)', transition: 'all 0.25s',
+                      cursor: 'pointer'
+                    }}
+                    onMouseOver={e => { e.currentTarget.style.background = 'rgba(255, 255, 255, 0.15)'; }}
+                    onMouseOut={e => { e.currentTarget.style.background = 'rgba(255, 255, 255, 0.08)'; }}
+                  >
+                    Join The Live Stream
+                  </button>
                 </div>
-
-                <button
-                  onClick={() => setIsHoodieVoteOpen(true)}
-                  style={{
-                    display: 'inline-block', padding: '14px 44px', fontSize: '11px', fontWeight: 800,
-                    textTransform: 'uppercase', letterSpacing: '2.5px',
-                    background: accent, color: '#fff',
-                    border: 'none', textDecoration: 'none',
-                    transition: 'all 0.25s',
-                    cursor: 'pointer'
-                  }}
-                  onMouseOver={e => { e.currentTarget.style.opacity = '0.85'; }}
-                  onMouseOut={e => { e.currentTarget.style.opacity = '1'; }}
-                >
-                  Vote Now
-                </button>
-              </div>
-
-              {/* Right — Hoodie image */}
-              <div style={{ flexShrink: 0, width: '320px', position: 'relative' }}>
-                <img
-                  src="/n2n/hoodie-competition.png"
-                  alt="College Hoodie Competition"
-                  style={{
-                    width: '100%', borderRadius: '4px',
-                    border: '1px solid rgba(255,255,255,0.08)',
-                    boxShadow: '0 20px 60px rgba(0,0,0,0.5)',
-                  }}
-                />
               </div>
             </div>
-          </div>
-        </section>
-
-        {/* ── AVO Summer Concert Tour Banner ─────────────────── */}
-        <section style={{ maxWidth: '1400px', margin: '40px auto', padding: '0 40px' }}>
-          <div style={{
-            position: 'relative', overflow: 'hidden',
-            border: '1px solid rgba(255,255,255,0.06)',
-            background: '#000',
-            minHeight: '380px',
-            display: 'flex',
-            alignItems: 'center'
-          }}>
-            {/* Background Image */}
-            <div style={{
-              position: 'absolute', inset: 0,
-              backgroundImage: 'url(/n2n/concert_in_the_park.png)',
-              backgroundSize: 'cover', backgroundPosition: 'center 35%',
-              filter: 'brightness(0.32)'
-            }} />
-            {/* Gradient Overlay */}
-            <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to right, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.4) 60%, transparent 100%)' }} />
-
-            <div style={{
-              position: 'relative', zIndex: 2,
-              padding: '64px 60px', maxWidth: '640px',
-            }}>
-              <div style={{
-                display: 'inline-flex', alignItems: 'center', gap: '8px',
-                padding: '6px 14px', background: 'linear-gradient(90deg, #FF512F, #DD2476)', color: '#fff',
-                fontSize: '10px', fontWeight: 900, letterSpacing: '2px', textTransform: 'uppercase',
-                marginBottom: '20px',
-              }}>
-                🎸 Summer 2026 Tour
-              </div>
-              <h2 style={{
-                fontSize: '38px', fontWeight: 900, color: '#fff', margin: '0 0 16px 0',
-                lineHeight: 1.1, letterSpacing: '-1px', textTransform: 'uppercase',
-              }}>
-                AVO Summer<br />Concert Tour
-              </h2>
-              <p style={{
-                fontSize: '15px', color: 'rgba(255,255,255,0.6)', lineHeight: 1.7,
-                margin: '0 0 28px 0',
-              }}>
-                Catch the vibes live! AVO is hitting the road this summer, bringing your favorite bands and artists to collegiate campus parks nationwide. Grab your crew, rep your school colors, and experience the ultimate summer soundtrack.
-              </p>
-              <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap' }}>
-                <button
-                  style={{
-                    display: 'inline-block', padding: '14px 44px', fontSize: '11px', fontWeight: 800,
-                    textTransform: 'uppercase', letterSpacing: '2.5px',
-                    background: accent, color: '#fff',
-                    border: 'none', transition: 'all 0.25s',
-                    cursor: 'pointer'
-                  }}
-                  onMouseOver={e => { e.currentTarget.style.opacity = '0.85'; }}
-                  onMouseOut={e => { e.currentTarget.style.opacity = '1'; }}
-                >
-                  Buy Now
-                </button>
-                <button
-                  style={{
-                    display: 'inline-block', padding: '14px 44px', fontSize: '11px', fontWeight: 800,
-                    textTransform: 'uppercase', letterSpacing: '2.5px',
-                    background: 'rgba(255, 255, 255, 0.08)', color: '#fff',
-                    border: '1px solid rgba(255, 255, 255, 0.2)', transition: 'all 0.25s',
-                    cursor: 'pointer'
-                  }}
-                  onMouseOver={e => { e.currentTarget.style.background = 'rgba(255, 255, 255, 0.15)'; }}
-                  onMouseOut={e => { e.currentTarget.style.background = 'rgba(255, 255, 255, 0.08)'; }}
-                >
-                  Join The Live Stream
-                </button>
-              </div>
-            </div>
-          </div>
-        </section>
+          </section>
+        )}
 
         {/* ── College Sports News Feed ──────────────────────── */}
-        <Suspense fallback={null}>
-          <CollegeNewsFeed accent={config.accent} />
-        </Suspense>
-
-
+        {!isOlympian && (
+          <Suspense fallback={null}>
+            <CollegeNewsFeed accent={config.accent} />
+          </Suspense>
+        )}
 
         {/* ── Ambassador CTA ──────────────────────────────────── */}
         <section style={{ maxWidth: '1400px', margin: '60px auto 0', padding: '0 40px' }}>
@@ -523,7 +531,7 @@ export default function N2NHome({ wlConfig, categories, activeVideo, setActiveVi
             {/* Background image */}
             <div style={{
               position: 'absolute', inset: 0,
-              backgroundImage: 'url(https://shopavo.la/cdn/shop/files/Homepage_Vanderbilt_Desktop2_c7f572ef-cd7e-4de4-bb9c-160b99884e08_1500x.jpg?v=1776284877)',
+              backgroundImage: `url(${isOlympian ? "https://images.unsplash.com/photo-1517838277536-f5f99be501cd?auto=format&fit=crop&q=80&w=1200" : "https://shopavo.la/cdn/shop/files/Homepage_Vanderbilt_Desktop2_c7f572ef-cd7e-4de4-bb9c-160b99884e08_1500x.jpg?v=1776284877"})`,
               backgroundSize: 'cover', backgroundPosition: 'center',
               filter: 'brightness(0.3)',
             }} />
@@ -535,21 +543,27 @@ export default function N2NHome({ wlConfig, categories, activeVideo, setActiveVi
                   fontSize: '11px', fontWeight: 800, textTransform: 'uppercase',
                   letterSpacing: '3px', color: accent, marginBottom: '12px',
                 }}>
-                  Campus Ambassadors
+                  {isOlympian ? "Olympia Ambassadors" : "Campus Ambassadors"}
                 </p>
                 <h2 style={{
                   fontSize: '36px', fontWeight: 900, color: '#fff', margin: '0 0 16px 0',
                   lineHeight: 1.15, letterSpacing: '-1px', textTransform: 'uppercase',
                 }}>
-                  Represent AVO<br />On Your Campus
+                  {isOlympian ? (
+                    <>Represent Mr. Olympian<br />In Your Community</>
+                  ) : (
+                    <>Represent AVO<br />On Your Campus</>
+                  )}
                 </h2>
                 <p style={{
                   fontSize: '15px', color: 'rgba(255,255,255,0.55)', lineHeight: 1.7, margin: 0,
                 }}>
-                  Join the AVO Ambassador Program and bring premium college apparel to your school. Earn exclusive perks, early access to drops, and commissions on every sale.
+                  {isOlympian 
+                    ? "Join the official Mr. Olympian Ambassador Program. Share fitness tips, review premium workout apparel, and earn exclusive event credentials, early access, and commissions."
+                    : "Join the AVO Ambassador Program and bring premium college apparel to your school. Earn exclusive perks, early access to drops, and commissions on every sale."}
                 </p>
               </div>
-              <button
+                            <button
                 onClick={() => setIsAmbassadorOpen(true)}
                 style={{
                   display: 'inline-block', padding: '15px 48px', fontSize: '11px', fontWeight: 800,
