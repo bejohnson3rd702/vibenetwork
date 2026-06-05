@@ -81,66 +81,67 @@ const Navbar: React.FC<NavbarProps> = ({ user, onLoginClick, onAdminClick }) => 
       borderBottom: scrolled ? '1px solid rgba(255,255,255,0.05)' : '1px solid transparent',
       transition: 'all 0.4s ease'
     }}>
-      <div className="gap-mobile-sm" style={{ display: 'flex', alignItems: 'center', gap: '60px' }}>
-        <Link to={`/${window.location.search}`} style={{ textDecoration: 'none' }}>
-          {appLogo ? (
-            <img referrerPolicy="no-referrer" src={appLogo} alt={appName} onError={(e) => e.currentTarget.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(appName || 'Vibe')}&background=random`} style={{ height: '36px', objectFit: 'contain', cursor: 'pointer', borderRadius: '4px' }} />
-          ) : appName ? (
-            <h1 style={{ margin: 0, fontSize: '24px', color: '#fff', fontWeight: 900, textTransform: 'uppercase', letterSpacing: '2px', fontFamily: "'RNS Miles', sans-serif" }}>{appName}</h1>
-          ) : (
-            <img 
-              src={ASSETS.logo} 
-              alt="The Vibe Network" 
-              style={{ height: '36px', objectFit: 'contain', cursor: 'pointer' }} 
-            />
-          )}
-        </Link>
-        
-        <ul className="hide-on-mobile hide-on-tablet" style={{ 
-          display: 'flex', 
-          listStyle: 'none', 
-          gap: '32px',
-          margin: 0,
-          padding: 0,
-          fontFamily: 'var(--font-heading)',
-          fontWeight: 600,
-          fontSize: '13px',
-          textTransform: 'uppercase',
-          letterSpacing: '1px'
-        }}>
-          {[
-            { label: 'Home', path: '/' },
-            ...(wlConfig?.parent_network_id ? [{ label: parentName, path: 'parent' }] : []),
-            { label: 'Marketplace', path: '/marketplace', hidden: Boolean(wlConfig?.domain && wlConfig.domain !== 'vibenetwork.tv') },
-            { label: 'About Us', path: '/about' },
-            { label: 'Watch Live', path: '/#whats-on-now', hidden: wlConfig?.enableWatchLive === false },
-            { label: 'Contact', path: '/contact' }
-          ].filter(item => !item.hidden).map((item, i) => (
-            <li key={item.label} style={{ 
-              cursor: 'pointer',
-              color: i === 0 ? 'white' : 'rgba(255,255,255,0.6)',
-              transition: 'color 0.2s',
-            }}
-            onMouseOver={(e) => e.currentTarget.style.color = 'white'}
-            onMouseOut={(e) => e.currentTarget.style.color = i === 0 ? 'white' : 'rgba(255,255,255,0.6)'}
-            onClick={() => {
-               if (item.path === 'parent') {
-                   window.location.href = getParentNetworkUrl();
-               } else if (item.path.startsWith('/#')) {
-                   navigate(`/${window.location.search}`);
-                   setTimeout(() => {
-                       document.getElementById(item.path.substring(2))?.scrollIntoView({ behavior: 'smooth' });
-                   }, 100);
-               } else {
-                   navigate(`${item.path}${window.location.search}`);
-               }
-            }}
-            >
-              {item.label}
-            </li>
-          ))}
-        </ul>
-      </div>
+      <Link to={`/${window.location.search}`} style={{ textDecoration: 'none', display: 'flex', alignItems: 'center' }}>
+        {appLogo ? (
+          <img referrerPolicy="no-referrer" src={appLogo} alt={appName} onError={(e) => e.currentTarget.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(appName || 'Vibe')}&background=random`} style={{ height: '36px', objectFit: 'contain', cursor: 'pointer', borderRadius: '4px' }} />
+        ) : appName ? (
+          <h1 style={{ margin: 0, fontSize: '24px', color: '#fff', fontWeight: 900, textTransform: 'uppercase', letterSpacing: '2px', fontFamily: "'RNS Miles', sans-serif" }}>{appName}</h1>
+        ) : (
+          <img 
+            src={ASSETS.logo} 
+            alt="The Vibe Network" 
+            style={{ height: '36px', objectFit: 'contain', cursor: 'pointer' }} 
+          />
+        )}
+      </Link>
+      
+      <ul className="hide-on-mobile hide-on-tablet" style={{ 
+        display: 'flex', 
+        listStyle: 'none', 
+        gap: '32px',
+        margin: 0,
+        padding: 0,
+        fontFamily: 'var(--font-heading)',
+        fontWeight: 600,
+        fontSize: '13px',
+        textTransform: 'uppercase',
+        letterSpacing: '1px',
+        position: 'absolute',
+        left: '50%',
+        transform: 'translateX(-50%)'
+      }}>
+        {[
+          { label: 'Home', path: '/' },
+          ...(wlConfig?.parent_network_id ? [{ label: parentName, path: 'parent' }] : []),
+          { label: 'Marketplace', path: '/marketplace', hidden: Boolean(wlConfig?.domain && wlConfig.domain !== 'vibenetwork.tv') },
+          { label: 'About Us', path: '/about' },
+          { label: 'Watch Live', path: '/#whats-on-now', hidden: wlConfig?.enableWatchLive === false },
+          { label: 'Contact', path: '/contact' }
+        ].filter(item => !item.hidden).map((item, i) => (
+          <li key={item.label} style={{ 
+            cursor: 'pointer',
+            color: i === 0 ? 'white' : 'rgba(255,255,255,0.6)',
+            transition: 'color 0.2s',
+          }}
+          onMouseOver={(e) => e.currentTarget.style.color = 'white'}
+          onMouseOut={(e) => e.currentTarget.style.color = i === 0 ? 'white' : 'rgba(255,255,255,0.6)'}
+          onClick={() => {
+             if (item.path === 'parent') {
+                 window.location.href = getParentNetworkUrl();
+             } else if (item.path.startsWith('/#')) {
+                 navigate(`/${window.location.search}`);
+                 setTimeout(() => {
+                     document.getElementById(item.path.substring(2))?.scrollIntoView({ behavior: 'smooth' });
+                 }, 100);
+             } else {
+                 navigate(`${item.path}${window.location.search}`);
+             }
+          }}
+          >
+            {item.label}
+          </li>
+        ))}
+      </ul>
 
       <div style={{ display: 'flex', alignItems: 'center', gap: '24px' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
