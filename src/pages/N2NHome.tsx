@@ -342,6 +342,13 @@ export default function N2NHome({ wlConfig, categories, activeVideo, setActiveVi
           </div>
         )}
 
+        {/* ── Child Network Feeds (Trending Moments) ────────────── */}
+        {childItems.length > 0 && (
+          <Suspense fallback={null}>
+            <ChildNetworkFeeds parentId={config.id} accent={accent} isOlympian={isOlympian} />
+          </Suspense>
+        )}
+
         {/* ── Hoodie Competition Banner ───────────────────────── */}
         {!isOlympian && (
           <section style={{ maxWidth: '1400px', margin: '40px auto', padding: '0 40px' }}>

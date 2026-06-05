@@ -32,7 +32,7 @@ interface PostItem {
   creator?: Profile;
 }
 
-export default function ChildNetworkFeeds({ parentId, accent = 'var(--accent-primary)' }: { parentId: string, accent?: string }) {
+export default function ChildNetworkFeeds({ parentId, accent = 'var(--accent-primary)', isOlympian = false }: { parentId: string, accent?: string, isOlympian?: boolean }) {
   const [posts, setPosts] = useState<PostItem[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -108,7 +108,9 @@ export default function ChildNetworkFeeds({ parentId, accent = 'var(--accent-pri
   if (loading) {
     return (
       <div style={{ maxWidth: '1400px', margin: '40px auto', padding: '0 40px', textAlign: 'center', color: 'var(--text-muted)' }}>
-        <p style={{ fontSize: '14px', letterSpacing: '1px', textTransform: 'uppercase' }}>Loading Trending Campus Moments...</p>
+        <p style={{ fontSize: '14px', letterSpacing: '1px', textTransform: 'uppercase' }}>
+          {isOlympian ? "Loading Trending Partner Moments..." : "Loading Trending Campus Moments..."}
+        </p>
       </div>
     );
   }
@@ -127,7 +129,9 @@ export default function ChildNetworkFeeds({ parentId, accent = 'var(--accent-pri
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '30px' }}>
         <h2 style={{ fontSize: '28px', margin: 0, fontWeight: 900, display: 'flex', alignItems: 'center', gap: '16px', letterSpacing: '-0.5px' }}>
           <span style={{ width: '4px', height: '24px', borderRadius: '4px', background: accent, boxShadow: `0 0 10px ${accent}` }} />
-          <span style={{ color: 'var(--text-primary)', textTransform: 'uppercase' }}>Trending On Campus</span>
+          <span style={{ color: 'var(--text-primary)', textTransform: 'uppercase' }}>
+            {isOlympian ? "Trending Partner Moments" : "Trending On Campus"}
+          </span>
         </h2>
         
         {/* Navigation Buttons */}
