@@ -651,7 +651,7 @@ export default function AdminLogin() {
                 {deployedParentId && (
                   <button
                     onClick={() => {
-                      window.location.href = `/?tenant=${deployedParentId}&admin_panel=true`;
+                      window.location.href = `/?tenant=${deployedParentId}`;
                     }}
                     style={{
                       background: 'linear-gradient(135deg, #FF2A54, #d60e37)',
@@ -676,7 +676,7 @@ export default function AdminLogin() {
 
                 <button
                   onClick={() => {
-                    window.location.href = `/?tenant=${createdNetworkId}&admin_panel=true`;
+                    window.location.href = `/?tenant=${createdNetworkId}`;
                   }}
                   style={{
                     background: deployedParentId ? 'rgba(255,255,255,0.05)' : 'linear-gradient(135deg, #00ff88, #00b35f)',
