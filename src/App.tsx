@@ -48,7 +48,7 @@ function App() {
   const [isTenantMode, setIsTenantMode] = useState(() => {
     const hostname = window.location.hostname.replace(/^www\./, '');
     const params = new URLSearchParams(window.location.search);
-    const isMaster = hostname === 'localhost' || hostname === '127.0.0.1' || hostname === MASTER_DOMAIN || hostname === 'vibenetwork.com' || hostname.includes('vercel.app');
+    const isMaster = hostname === 'localhost' || hostname === '127.0.0.1' || hostname === MASTER_DOMAIN || hostname === 'vibenetwork.com' || hostname === 'vibenetwork.tv' || hostname.includes('vercel.app');
     return params.has('tenant') || !isMaster;
   });
   const [showAdminPanel, setShowAdminPanel] = useState(false);
@@ -257,7 +257,7 @@ function App() {
               setWlConfig(normalizeWlConfig(localTenant, { name: localTenant.name || 'Vibe B2B Enterprise' }));
            }
         }
-      } else if (!(hostname === 'localhost' || hostname === '127.0.0.1' || hostname === MASTER_DOMAIN || hostname === 'vibenetwork.com' || hostname.includes('vercel.app'))) {
+      } else if (!(hostname === 'localhost' || hostname === '127.0.0.1' || hostname === MASTER_DOMAIN || hostname === 'vibenetwork.com' || hostname === 'vibenetwork.tv' || hostname.includes('vercel.app'))) {
         query = query.eq('domain', hostname).limit(1);
         isTenant = true;
         setIsTenantMode(true);
