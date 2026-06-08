@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import { Network, Users, Globe, Trash2, ExternalLink, Shield, Activity } from 'lucide-react';
 import { useToast } from '../../context/ToastContext';
-import { getChildNetworks, getN2NProfiles, updateChildFee, deleteChildNetwork } from '../../lib/n2n';
+import { getChildNetworks, getN2NProfiles, updateChildFee, deleteChildNetwork, createChildNetwork } from '../../lib/n2n';
+import { supabase } from '../../supabaseClient';
 
 export const N2NFleetTab = ({ wlConfig }: { wlConfig: any }) => {
   const toast = useToast();
@@ -13,17 +14,28 @@ export const N2NFleetTab = ({ wlConfig }: { wlConfig: any }) => {
   const [editingFee, setEditingFee] = useState<string | null>(null);
   const [feeValue, setFeeValue] = useState<number>(0);
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
+  const [showCreateForm, setShowCreateForm] = useState(false);
+  const [whitelabelsList, setWhitelabelsList] = useState<any[]>([]);
+  const [usersList, setUsersList] = useState<any[]>([]);
 
   useEffect(() => {
     if (!wlConfig?.id) return;
     const load = async () => {
       setLoading(true);
-      const [nets, profiles] = await Promise.all([
-        getChildNetworks(wlConfig.id),
-        getN2NProfiles(wlConfig.id),
-      ]);
-      setChildren(nets);
-      setAllProfiles(profiles);
+      try {
+        const [nets, profiles, allConfigs, allProfiles] = await Promise.all([
+          getChildNetworks(wlConfig.id),
+          getN2NProfiles(wlConfig.id),
+          supabase.from('whitelabel_configs').select('*'),
+          supabase.from('profiles').select('*').limit(50)
+        ]);
+        setChildren(nets);
+        setAllProfiles(profiles);
+        if (allConfigs.data) setWhitelabelsList(allConfigs.data);
+        if (allProfiles.data) setUsersList(allProfiles.data);
+      } catch (err) {
+        console.error("N2NFleetTab: Error loading lists", err);
+      }
       setLoading(false);
     };
     load();
@@ -63,6 +75,18 @@ export const N2NFleetTab = ({ wlConfig }: { wlConfig: any }) => {
     border: '1px solid rgba(255,255,255,0.05)',
     borderRadius: '20px',
     padding: '30px',
+  };
+
+  const inputStyle: React.CSSProperties = {
+    padding: '12px 16px',
+    background: 'rgba(0,0,0,0.4)',
+    border: '1px solid rgba(255,255,255,0.1)',
+    borderRadius: '12px',
+    color: 'var(--text-primary)',
+    fontSize: '14px',
+    outline: 'none',
+    width: '100%',
+    boxSizing: 'border-box',
   };
 
   const statCardStyle = (gradient: string): React.CSSProperties => ({
@@ -119,10 +143,102 @@ export const N2NFleetTab = ({ wlConfig }: { wlConfig: any }) => {
 
       {/* Fleet Table */}
       <div style={cardStyle}>
-        <h3 style={{ margin: '0 0 24px 0', fontSize: '20px', display: 'flex', alignItems: 'center', gap: '10px' }}>
-          <Globe size={20} color={accent} />
-          Child Network Fleet
-        </h3>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '24px' }}>
+          <h3 style={{ margin: 0, fontSize: '20px', display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <Globe size={20} color={accent} />
+            Child Network Fleet
+          </h3>
+          <button 
+            onClick={() => setShowCreateForm(prev => !prev)}
+            style={{ padding: '8px 16px', background: `linear-gradient(135deg, ${accent}, ${accent}dd)`, color: '#fff', border: 'none', borderRadius: '10px', fontWeight: '700', cursor: 'pointer', fontSize: '13px', letterSpacing: '0.5px' }}
+          >
+            {showCreateForm ? 'Hide Form' : '+ Add Child Network'}
+          </button>
+        </div>
+
+        {showCreateForm && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', background: 'rgba(0,0,0,0.3)', borderRadius: '16px', padding: '24px', marginBottom: '24px', border: `1px solid ${accent}44` }}>
+            <h5 style={{ margin: '0 0 4px 0', fontSize: '14px', color: accent, textTransform: 'uppercase', letterSpacing: '1px' }}>Create New Child Network</h5>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+              <input id="n2n-child-name-fleet" placeholder="Network Name (e.g. Baylor University)" style={inputStyle} />
+              <input id="n2n-child-domain-fleet" placeholder="Domain (e.g. baylor.avoclothing.com)" style={inputStyle} />
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <label style={{ color: 'var(--text-muted)', fontSize: '13px', fontWeight: '600', whiteSpace: 'nowrap' }}>Accent:</label>
+                <input id="n2n-child-accent-fleet" type="color" defaultValue={accent} style={{ width: '40px', height: '36px', border: 'none', borderRadius: '8px', cursor: 'pointer', background: 'transparent' }} />
+              </div>
+              <input id="n2n-child-hero-fleet" placeholder="Hero Copy (e.g. Sic 'Em Bears)" style={inputStyle} />
+              
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', width: '100%' }}>
+                <label style={{ color: 'var(--text-muted)', fontSize: '13px', fontWeight: '600', whiteSpace: 'nowrap' }}>Template:</label>
+                <select id="n2n-child-template-fleet" style={{ ...inputStyle, cursor: 'pointer' }}>
+                  <option value="">None (Standard Default)</option>
+                  {whitelabelsList.filter(wl => !wl.parent_network_id && !wl.theme?.parent_network_id).map(wl => (
+                    <option key={wl.id} value={wl.id}>{wl.name}</option>
+                  ))}
+                </select>
+              </div>
+              
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', width: '100%' }}>
+                <label style={{ color: 'var(--text-muted)', fontSize: '13px', fontWeight: '600', whiteSpace: 'nowrap' }}>Owner:</label>
+                <select id="n2n-child-owner-fleet" style={{ ...inputStyle, cursor: 'pointer' }}>
+                  <option value="">No Owner (Unassigned)</option>
+                  {usersList.map(u => (
+                    <option key={u.id} value={u.id}>{u.full_name || u.username || u.id.slice(0, 8)}</option>
+                  ))}
+                </select>
+              </div>
+            </div>
+            
+            <div style={{ display: 'flex', gap: '10px', marginTop: '8px' }}>
+              <button 
+                onClick={async () => {
+                  const nameEl = document.getElementById('n2n-child-name-fleet') as HTMLInputElement;
+                  const domainEl = document.getElementById('n2n-child-domain-fleet') as HTMLInputElement;
+                  const accentEl = document.getElementById('n2n-child-accent-fleet') as HTMLInputElement;
+                  const heroEl = document.getElementById('n2n-child-hero-fleet') as HTMLInputElement;
+                  const templateEl = document.getElementById('n2n-child-template-fleet') as HTMLSelectElement;
+                  const ownerEl = document.getElementById('n2n-child-owner-fleet') as HTMLSelectElement;
+                  
+                  const name = nameEl?.value?.trim();
+                  if (!name) { toast.error('Network name is required'); return; }
+                  
+                  const spawned = await createChildNetwork(wlConfig.id, {
+                    name,
+                    domain: domainEl?.value?.trim() || '',
+                    accent: accentEl?.value,
+                    heroCopy: heroEl?.value,
+                    templateId: templateEl?.value || undefined
+                  }, ownerEl?.value || '');
+                  
+                  if (!spawned) {
+                    toast.error('Failed to create child network');
+                    return;
+                  }
+                  
+                  setChildren(prev => [...prev, spawned]);
+                  toast.success(`${name} created successfully!`);
+                  
+                  if (nameEl) nameEl.value = '';
+                  if (domainEl) domainEl.value = '';
+                  if (heroEl) heroEl.value = '';
+                  if (templateEl) templateEl.value = '';
+                  if (ownerEl) ownerEl.value = '';
+                  
+                  setShowCreateForm(false);
+                }}
+                style={{ padding: '10px 24px', background: accent, color: '#fff', border: 'none', borderRadius: '10px', fontWeight: '700', cursor: 'pointer', fontSize: '13px' }}
+              >
+                Create Child
+              </button>
+              <button 
+                onClick={() => setShowCreateForm(false)} 
+                style={{ padding: '10px 24px', background: 'rgba(255,255,255,0.05)', color: 'var(--text-muted)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '10px', fontWeight: '600', cursor: 'pointer', fontSize: '13px' }}
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        )}
 
         {loading ? (
           <div style={{ textAlign: 'center', padding: '40px', color: 'var(--text-muted)' }}>Loading fleet data...</div>

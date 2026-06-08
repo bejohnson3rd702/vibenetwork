@@ -9,6 +9,7 @@ import { PagesTab } from './admin/PagesTab';
 import { InboxTab } from './admin/InboxTab';
 import { WalletTab } from './admin/WalletTab';
 import { AnalyticsTab } from './admin/AnalyticsTab';
+import { VideosTab } from './admin/VideosTab';
 import { BarChart3 } from 'lucide-react';
 import { N2NFleetTab } from './admin/N2NFleetTab';
 import { N2NUsersTab } from './admin/N2NUsersTab';
@@ -50,6 +51,10 @@ export default function BusinessAdminDashboard({ onClose }: { onClose: () => voi
 
              <button onClick={() => setActiveTab('branding')} style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '16px 20px', background: activeTab === 'branding' ? wlConfig.accent : 'transparent', color: activeTab === 'branding' ? '#fff' : '#888', border: 'none', borderRadius: '12px', cursor: 'pointer', textAlign: 'left', fontWeight: 'bold', transition: '0.2s' }}>
                 <Sparkles size={22} /> Global Branding
+             </button>
+
+             <button onClick={() => setActiveTab('videos')} style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '16px 20px', background: activeTab === 'videos' ? wlConfig.accent : 'transparent', color: activeTab === 'videos' ? '#fff' : '#888', border: 'none', borderRadius: '12px', cursor: 'pointer', textAlign: 'left', fontWeight: 'bold', transition: '0.2s' }}>
+                <Film size={22} /> Videos & Playlists
              </button>
              
              {/* 
@@ -101,6 +106,7 @@ export default function BusinessAdminDashboard({ onClose }: { onClose: () => voi
             {activeTab === 'analytics' && <AnalyticsTab wlConfig={wlConfig} />}
             {activeTab === 'hero' && <HeroEditorTab wlConfig={wlConfig} />}
             {activeTab === 'branding' && <BrandingTab wlConfig={wlConfig} />}
+            {activeTab === 'videos' && <VideosTab wlConfig={wlConfig} />}
             {/* {activeTab === 'sliders' && <SlidersTab wlConfig={wlConfig} />} */}
             {activeTab === 'pages' && <PagesTab wlConfig={wlConfig} />}
             {activeTab === 'inbox' && <InboxTab wlConfig={wlConfig} />}

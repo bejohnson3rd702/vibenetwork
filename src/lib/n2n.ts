@@ -102,35 +102,79 @@ export async function createChildNetwork(
     accent?: string;
     heroCopy?: string;
     heroImage?: string;
+    templateId?: string;
   },
   ownerId: string
 ): Promise<WlConfig | null> {
+  let templateTheme = {};
+  let templateLogo = null;
+  let templateFee = 30;
+
+  if (config.templateId) {
+    try {
+      const { data: templateData } = await supabase
+        .from('whitelabel_configs')
+        .select('*')
+        .eq('id', config.templateId)
+        .limit(1)
+        .single();
+        
+      if (templateData) {
+        templateTheme = templateData.theme || {};
+        templateLogo = templateData.logo || null;
+        templateFee = templateData.platform_fee_percentage ?? 30;
+      }
+    } catch (e) {
+      console.warn("N2N: Failed to fetch template config, falling back to defaults", e);
+    }
+  }
+
+  const childPayload: any = {
+    owner_id: ownerId,
+    name: config.name,
+    domain: config.domain,
+    logo: config.logo || templateLogo || null,
+    parent_network_id: parentId,
+    n2n_enabled: false,
+    platform_fee_percentage: templateFee,
+    theme: {
+      accent: config.accent || '#D35400',
+      heroCopy: config.heroCopy || `Welcome to ${config.name}`,
+      heroImage: config.heroImage || null,
+      enableWatchLive: true,
+      enableBooking: false,
+      heroLayoutMode: 'verbiage',
+      sliderCount: 4,
+      ...templateTheme,
+      ...(config.accent && { accent: config.accent }),
+      ...(config.heroCopy && { heroCopy: config.heroCopy }),
+      ...(config.heroImage && { heroImage: config.heroImage }),
+      parent_network_id: parentId,
+    },
+  };
+
   const { data, error } = await supabase
     .from('whitelabel_configs')
-    .insert({
-      owner_id: ownerId,
-      name: config.name,
-      domain: config.domain,
-      logo: config.logo || null,
-      parent_network_id: parentId,
-      n2n_enabled: false,
-      platform_fee_percentage: 30,
-      theme: {
-        accent: config.accent || '#D35400',
-        heroCopy: config.heroCopy || `Welcome to ${config.name}`,
-        heroImage: config.heroImage || null,
-        enableWatchLive: true,
-        enableBooking: false,
-        heroLayoutMode: 'verbiage',
-        sliderCount: 4,
-      },
-    })
+    .insert(childPayload)
     .select()
     .single();
 
   if (error) {
-    console.error('N2N: Failed to create child network', error);
-    return null;
+    // Fallback: If parent_network_id column doesn't exist, store in theme only
+    console.warn('N2N: DB insert failed, trying fallback payload', error);
+    delete childPayload.parent_network_id;
+    delete childPayload.n2n_enabled;
+    const { data: fallbackData, error: fallbackError } = await supabase
+      .from('whitelabel_configs')
+      .insert(childPayload)
+      .select()
+      .single();
+
+    if (fallbackError) {
+      console.error('N2N: Fallback insert failed', fallbackError);
+      return null;
+    }
+    return normalizeWlConfig(fallbackData);
   }
   return normalizeWlConfig(data);
 }

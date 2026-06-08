@@ -10,7 +10,7 @@ import { supabase } from '../supabaseClient';
 import { ErrorBoundary } from './ErrorBoundary';
 import { BrandingTab } from './admin/BrandingTab';
 import { AnalyticsTab } from './admin/AnalyticsTab';
-import { getChildNetworks, deleteChildNetwork } from '../lib/n2n';
+import { getChildNetworks, deleteChildNetwork, createChildNetwork } from '../lib/n2n';
 
 /** Inline component to list child networks in the Master Admin N2N panel */
 function N2NChildrenList({ parentId, parentAccent, showToast }: { parentId: string; parentAccent?: string; showToast: (msg: string, type: 'success' | 'error') => void }) {
@@ -435,6 +435,26 @@ function MasterAdminDashboard() {
                                    <input id={`n2n-child-accent-${brandConfig.id}`} type="color" defaultValue={brandConfig.accent || '#D35400'} style={{ width: '40px', height: '36px', border: 'none', borderRadius: '8px', cursor: 'pointer', background: 'transparent' }} />
                                  </div>
                                  <input id={`n2n-child-hero-${brandConfig.id}`} placeholder="Hero Copy (e.g. Sic 'Em Bears)" style={{ padding: '12px 16px', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '10px', color: '#fff', fontSize: '14px', outline: 'none' }} />
+                                 
+                                 <div style={{ display: 'flex', alignItems: 'center', gap: '10px', width: '100%' }}>
+                                    <label style={{ color: 'var(--text-muted)', fontSize: '13px', fontWeight: '600', whiteSpace: 'nowrap' }}>Template:</label>
+                                    <select id={`n2n-child-template-${brandConfig.id}`} style={{ padding: '12px 16px', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '10px', color: '#fff', fontSize: '14px', outline: 'none', width: '100%', cursor: 'pointer' }}>
+                                      <option value="">None (Standard Default)</option>
+                                      {whitelabelsList.filter(wl => !wl.parent_network_id && !wl.theme?.parent_network_id).map(wl => (
+                                        <option key={wl.id} value={wl.id}>{wl.name}</option>
+                                      ))}
+                                    </select>
+                                  </div>
+                                  
+                                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px', width: '100%' }}>
+                                    <label style={{ color: 'var(--text-muted)', fontSize: '13px', fontWeight: '600', whiteSpace: 'nowrap' }}>Owner:</label>
+                                    <select id={`n2n-child-owner-${brandConfig.id}`} style={{ padding: '12px 16px', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '10px', color: '#fff', fontSize: '14px', outline: 'none', width: '100%', cursor: 'pointer' }}>
+                                      <option value="">No Owner (Unassigned)</option>
+                                      {usersList.map(u => (
+                                        <option key={u.id} value={u.id}>{u.full_name || u.username || u.id.slice(0, 8)}</option>
+                                      ))}
+                                    </select>
+                                  </div>
                                </div>
                                <div style={{ display: 'flex', gap: '10px', marginTop: '8px' }}>
                                  <button onClick={async () => {
@@ -442,44 +462,36 @@ function MasterAdminDashboard() {
                                    const domainEl = document.getElementById(`n2n-child-domain-${brandConfig.id}`) as HTMLInputElement;
                                    const accentEl = document.getElementById(`n2n-child-accent-${brandConfig.id}`) as HTMLInputElement;
                                    const heroEl = document.getElementById(`n2n-child-hero-${brandConfig.id}`) as HTMLInputElement;
+                                   const templateEl = document.getElementById(`n2n-child-template-${brandConfig.id}`) as HTMLSelectElement;
+                                   const ownerEl = document.getElementById(`n2n-child-owner-${brandConfig.id}`) as HTMLSelectElement;
+                                   
                                    const name = nameEl?.value?.trim();
-                                   const domain = domainEl?.value?.trim();
                                    if (!name) { showToast('Network name is required', 'error'); return; }
 
-                                   const childPayload: any = {
+                                   const spawned = await createChildNetwork(brandConfig.id, {
                                      name,
-                                     domain: domain || '',
-                                     parent_network_id: brandConfig.id,
-                                     n2n_enabled: false,
-                                     platform_fee_percentage: 30,
-                                     theme: {
-                                       accent: accentEl?.value || brandConfig.accent || '#D35400',
-                                       heroCopy: heroEl?.value || `Welcome to ${name}`,
-                                       enableWatchLive: true,
-                                       enableBooking: false,
-                                       heroLayoutMode: 'verbiage',
-                                       sliderCount: 4,
-                                       parent_network_id: brandConfig.id,
-                                     },
-                                   };
+                                     domain: domainEl?.value?.trim() || '',
+                                     accent: accentEl?.value,
+                                     heroCopy: heroEl?.value,
+                                     templateId: templateEl?.value || undefined
+                                   }, ownerEl?.value || '');
 
-                                   const { data, error } = await supabase!.from('whitelabel_configs').insert(childPayload).select().single();
-                                   if (error) {
-                                     // If parent_network_id column doesn't exist, store in theme only
-                                     delete childPayload.parent_network_id;
-                                     delete childPayload.n2n_enabled;
-                                     const { data: d2, error: e2 } = await supabase!.from('whitelabel_configs').insert(childPayload).select().single();
-                                     if (e2) { showToast('Failed to create: ' + e2.message, 'error'); return; }
-                                     setWhitelabelsList(prev => [...prev, d2]);
-                                     showToast(`${name} created as child of ${brandConfig.name}`, 'success');
-                                   } else {
-                                     setWhitelabelsList(prev => [...prev, data]);
-                                     showToast(`${name} created as child of ${brandConfig.name}`, 'success');
+                                   if (!spawned) {
+                                     showToast('Failed to create child network', 'error');
+                                     return;
                                    }
-                                   logSystemEvent('ALERT', `N2N child "${name}" created under ${brandConfig.name}`, { parent_id: brandConfig.id });
+
+                                   setWhitelabelsList(prev => [...prev, spawned]);
+                                   showToast(`${name} created successfully!`, 'success');
+                                   
+                                   logSystemEvent('ALERT', `N2N child "${name}" spawned under ${brandConfig.name}`, { parent_id: brandConfig.id, template_id: templateEl?.value, owner_id: ownerEl?.value });
+                                   
                                    if (nameEl) nameEl.value = '';
                                    if (domainEl) domainEl.value = '';
                                    if (heroEl) heroEl.value = '';
+                                   if (templateEl) templateEl.value = '';
+                                   if (ownerEl) ownerEl.value = '';
+                                   
                                    document.getElementById(`n2n-create-${brandConfig.id}`)!.style.display = 'none';
                                    // Refresh the panel
                                    document.getElementById(`n2n-panel-${brandConfig.id}`)?.querySelector('[data-refresh]')?.dispatchEvent(new Event('click'));
