@@ -223,6 +223,21 @@ export default function AdminLogin() {
         throw new Error('Deployment failed. Database constraints or permission error.');
       }
 
+      // Copy auth token to maintain logged-in state on the child network
+      let token = localStorage.getItem('sb-vibe-master-auth-token');
+      if (!token) {
+        for (let i = 0; i < localStorage.length; i++) {
+          const key = localStorage.key(i);
+          if (key && key.includes('auth-token')) {
+            token = localStorage.getItem(key);
+            break;
+          }
+        }
+      }
+      if (token) {
+        localStorage.setItem(`sb-${spawned.id}-auth-token`, token);
+      }
+
       setCreatedNetworkId(spawned.id);
       setStep('success');
       toast.success(`${config.name} deployed successfully!`);
@@ -627,7 +642,7 @@ export default function AdminLogin() {
 
               <button
                 onClick={() => {
-                  window.location.href = `/?tenant=${createdNetworkId}`;
+                  window.location.href = `/?tenant=${createdNetworkId}&admin_panel=true`;
                 }}
                 style={{
                   background: 'linear-gradient(135deg, #00ff88, #00b35f)',
