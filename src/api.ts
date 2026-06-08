@@ -18,12 +18,32 @@ export async function getCategoriesWithVideos(tenantId?: string) {
     { data: profiles },
     { data: videos }
   ] = await Promise.all([
-    supabase.from('whitelabel_configs').select('id, name, domain, logo, theme, parent_network_id').order('created_at', { ascending: false }).limit(20),
+    supabase.from('whitelabel_configs').select('id, name, domain, logo, theme, parent_network_id').order('created_at', { ascending: false }).limit(100),
     profilesQuery,
     supabase.from('videos').select('id, title, image_url, tags, video_url').order('created_at', { ascending: false }).limit(20)
   ]);
 
-  const mappedNetworks = (whitelabels || []).filter((wl: any) => wl.domain !== 'vibenetwork.tv' && wl.domain !== 'vibenetwork.com' && !wl.parent_network_id && !wl.theme?.parent_network_id).map((wl: any) => ({
+  const mappedNetworks = (whitelabels || []).filter((wl: any) => {
+    const domainLower = (wl.domain || '').toLowerCase();
+    const nameLower = (wl.name || '').toLowerCase();
+    
+    // Filter out main site domains
+    if (domainLower === 'vibenetwork.tv' || domainLower === 'vibenetwork.com') return false;
+    
+    // Filter out child networks
+    if (wl.parent_network_id || wl.theme?.parent_network_id) return false;
+    
+    // Filter out test networks (Noelani, Bennie, Leilani, Leiloe, etc.)
+    if (
+      nameLower.includes('bennie') || nameLower.includes('noelani') || 
+      nameLower.includes('leilani') || nameLower.includes('leiloe') ||
+      domainLower.includes('bennie') || domainLower.includes('noelani')
+    ) {
+      return false;
+    }
+    
+    return true;
+  }).map((wl: any) => ({
     id: 'wl_' + wl.id,
     title: wl.name || wl.domain || 'Tenant Platform',
     image: wl.theme?.heroImage || wl.logo || `https://ui-avatars.com/api/?name=${encodeURIComponent(wl.name || 'W')}&background=0D8ABC&color=fff`,
