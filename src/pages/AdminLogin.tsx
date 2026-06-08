@@ -30,41 +30,47 @@ export default function AdminLogin() {
       const user = data.user;
       if (!user) throw new Error('Failed to retrieve user session.');
 
-      // 2. Fetch user profile and verify admin/business roles
-      const { data: profile, error: profileError } = await supabase!
+      // 2. Fetch user profile and verify if they are a Master Admin or Parent Network Owner with N2N enabled
+      const { data: profile } = await supabase!
         .from('profiles')
         .select('*')
         .eq('id', user.id)
         .single();
 
-      if (profileError || !profile) {
-        // Fallback check: user metadata role
-        const metadataRole = user.user_metadata?.role;
-        const isMetaAdmin = metadataRole === 'admin' || metadataRole === 'business' || metadataRole === 'business_admin';
-        
-        if (!isMetaAdmin && user.id !== wlConfig?.owner_id) {
-          await supabase!.auth.signOut();
-          throw new Error('Access Denied: Administrator credentials required.');
-        }
-      } else {
-        // Verify against profile fields
-        const isAdmin = profile.is_admin === true || 
-                        profile.role === 'admin' || 
-                        profile.role === 'business_admin' || 
-                        profile.role === 'business' ||
-                        user.id === wlConfig?.owner_id;
+      const isMasterAdmin = profile?.is_admin === true || 
+                            profile?.role === 'admin' || 
+                            user.user_metadata?.role === 'admin';
 
-        if (!isAdmin) {
-          await supabase!.auth.signOut();
-          throw new Error('Access Denied: Administrator credentials required.');
-        }
+      let isParentN2NAdmin = false;
+      let targetTenantId = null;
+
+      // Query whitelabel configurations owned by this user
+      const { data: ownedConfigs } = await supabase!
+        .from('whitelabel_configs')
+        .select('*')
+        .eq('owner_id', user.id);
+
+      if (ownedConfigs && ownedConfigs.length > 0) {
+         // Find if any owned network has N2N enabled
+         const n2nParent = ownedConfigs.find(cfg => cfg.n2n_enabled === true || cfg.theme?.n2n_enabled === true);
+         if (n2nParent) {
+            isParentN2NAdmin = true;
+            targetTenantId = n2nParent.id;
+         }
+      }
+
+      const isAllowed = isMasterAdmin || isParentN2NAdmin;
+
+      if (!isAllowed) {
+        await supabase!.auth.signOut();
+        throw new Error('Access Denied: Restricted to administrators authorized to spawn N2N networks.');
       }
 
       toast.success('Admin authentication successful! Access granted.');
 
       // 3. Determine redirect destination based on current tenant context
       const urlParams = new URLSearchParams(window.location.search);
-      const tenantId = urlParams.get('tenant') || wlConfig?.id;
+      const tenantId = urlParams.get('tenant') || targetTenantId || wlConfig?.id;
 
       setTimeout(() => {
         if (tenantId && tenantId !== 'master') {
