@@ -6,6 +6,7 @@ import { useWhiteLabel } from '../context/WhiteLabelContext';
 import { getChildNetworks, mergeQueryParams } from '../lib/n2n';
 import { getN2NCategories } from '../api';
 import type { Category, VideoItem, User } from '../types';
+import { supabase } from '../supabaseClient';
 const CollegeTicker = lazy(() => import('../components/CollegeTicker'));
 const CollegeNewsFeed = lazy(() => import('../components/CollegeNewsFeed'));
 const WatchLive = lazy(() => import('../components/WatchLive'));
@@ -31,6 +32,7 @@ export default function N2NHome({ wlConfig, categories, activeVideo, setActiveVi
   // ─── Child Networks ──────────────────────────────────────────────
   const [childItems, setChildItems] = useState<any[]>([]);
   const [childCategories, setChildCategories] = useState<any[]>([]);
+  const [athleteItems, setAthleteItems] = useState<any[]>([]);
   const [isAmbassadorOpen, setIsAmbassadorOpen] = useState(false);
   const [isHoodieVoteOpen, setIsHoodieVoteOpen] = useState(false);
 
@@ -59,6 +61,35 @@ export default function N2NHome({ wlConfig, categories, activeVideo, setActiveVi
       if (childIds.length > 0) {
         const cats = await getN2NCategories(config.id, childIds);
         if (!cancelled) setChildCategories(cats);
+
+        // Fetch collegiate athletes
+        const { data: athletesData } = await supabase
+          .from('profiles')
+          .select('id, username, avatar_url, bio, whitelabel_id')
+          .in('whitelabel_id', childIds)
+          .eq('role', 'influencer');
+
+        if (!cancelled && athletesData) {
+          const getCollegeShortName = (wlId: string) => {
+            const child = children.find(c => c.id === wlId);
+            if (!child) return 'Athlete';
+            let name = child.name || '';
+            name = name.replace(/University of /gi, '');
+            name = name.replace(/ University/gi, '');
+            return name;
+          };
+
+          setAthleteItems(
+            athletesData.map((athlete: any) => ({
+              id: athlete.id,
+              title: athlete.username ? athlete.username.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase()) : 'Student Athlete',
+              image: athlete.avatar_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(athlete.username || 'A')}&background=111&color=fff&size=400`,
+              tags: [getCollegeShortName(athlete.whitelabel_id), 'Athlete'],
+              videoUrl: '',
+              linkUrl: `/profile/${athlete.id}`
+            }))
+          );
+        }
       }
     })();
     return () => { cancelled = true; };
@@ -80,6 +111,9 @@ export default function N2NHome({ wlConfig, categories, activeVideo, setActiveVi
 
   const isB2K = config?.name?.toLowerCase().includes('b2k') || 
                 config?.domain?.includes('b2k.vibenetwork.tv');
+
+  const isAvo = config?.id === '3915f1e5-4c79-4b2a-ad41-7029ce8052d7' ||
+                config?.name?.toLowerCase().includes('avo');
 
   // ─── AVO Hero Slides — real shopavo.la CDN images ───────────────
   const AVO_HERO_SLIDES = [
@@ -349,6 +383,23 @@ export default function N2NHome({ wlConfig, categories, activeVideo, setActiveVi
               items={childItems}
               delay={0}
               aspectRatio="16/9"
+              onItemClick={(item) => {
+                if (item.linkUrl) {
+                  window.location.href = mergeQueryParams(item.linkUrl, window.location.search);
+                }
+              }}
+            />
+          </div>
+        )}
+
+        {/* ── AVO Campus Athletes Slider ──────────────────────── */}
+        {isAvo && athleteItems.length > 0 && (
+          <div id="avo-athletes-slider">
+            <SliderSection
+              title="CAMPUS ATHLETES"
+              items={athleteItems}
+              delay={0.1}
+              aspectRatio="1/1"
               onItemClick={(item) => {
                 if (item.linkUrl) {
                   window.location.href = mergeQueryParams(item.linkUrl, window.location.search);
