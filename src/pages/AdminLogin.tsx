@@ -256,25 +256,22 @@ export default function AdminLogin() {
 
   const inputStyle: React.CSSProperties = {
     width: '100%',
-    background: 'rgba(0, 0, 0, 0.4)',
-    border: '1px solid rgba(255,255,255,0.08)',
+    background: '#252525',
+    border: '1px solid #444',
     color: '#fff',
-    padding: '14px 16px',
-    borderRadius: '12px',
-    fontSize: '15px',
+    padding: '10px 12px',
+    borderRadius: '6px',
+    fontSize: '14px',
     outline: 'none',
-    transition: 'all 0.2s',
     boxSizing: 'border-box'
   };
 
   const labelStyle: React.CSSProperties = {
     display: 'block',
-    color: 'rgba(255, 255, 255, 0.6)',
+    color: '#aaa',
     fontSize: '12px',
-    fontWeight: 700,
-    textTransform: 'uppercase',
-    marginBottom: '8px',
-    letterSpacing: '1px'
+    fontWeight: 'bold',
+    marginBottom: '6px'
   };
 
   return (
@@ -283,431 +280,360 @@ export default function AdminLogin() {
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'center',
-      background: 'radial-gradient(circle at center, #150508 0%, #050102 100%)',
+      background: '#121212',
       padding: '20px',
       color: '#fff',
-      fontFamily: "'Outfit', sans-serif"
+      fontFamily: 'sans-serif'
     }}>
-      <motion.div
-        layout
-        transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+      <div
         style={{
           width: '100%',
           maxWidth: step === 'spawn' ? '560px' : '440px',
-          background: 'rgba(10, 5, 6, 0.8)',
-          backdropFilter: 'blur(20px)',
-          borderRadius: '24px',
-          border: `1px solid ${accentColor}33`,
-          boxShadow: `0 30px 60px rgba(0, 0, 0, 0.8), 0 0 40px ${accentColor}11`,
-          overflow: 'hidden',
-          padding: '40px'
+          background: '#1e1e1e',
+          borderRadius: '8px',
+          border: '1px solid #333',
+          padding: '30px',
+          boxSizing: 'border-box'
         }}
       >
-        <AnimatePresence mode="wait">
-          {/* STEP 1: LOGIN */}
-          {step === 'login' && (
-            <motion.div
-              key="login"
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: 20 }}
-            >
-              {/* Warning Header */}
-              <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '24px' }}>
-                <div style={{
-                  background: `rgba(255, 42, 84, 0.08)`,
-                  border: `1px solid ${accentColor}88`,
-                  borderRadius: '50%',
-                  padding: '16px',
-                  boxShadow: `0 0 20px ${accentColor}22`
-                }}>
-                  <ShieldAlert size={40} color={accentColor} />
+        {/* STEP 1: LOGIN */}
+        {step === 'login' && (
+          <div>
+            <div style={{ textAlign: 'center', marginBottom: '24px' }}>
+              <h2 style={{ fontSize: '24px', fontWeight: 'bold', margin: '0 0 8px 0' }}>
+                Admin Portal
+              </h2>
+              <p style={{ color: '#aaa', fontSize: '14px', margin: 0 }}>
+                Please log in to configure, alter, and spawn N2N networks.
+              </p>
+            </div>
+
+            <form onSubmit={handleAdminLogin} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+              {errorMsg && (
+                <div style={{ background: '#3a1a1a', color: '#ff8888', padding: '12px', borderRadius: '6px', fontSize: '13px', border: '1px solid #552222', textAlign: 'center' }}>
+                  {errorMsg}
                 </div>
+              )}
+
+              <div>
+                <label style={labelStyle}>Email Address</label>
+                <input
+                  type="email"
+                  value={email}
+                  onChange={e => setEmail(e.target.value)}
+                  required
+                  placeholder="admin@vibenetwork.tv"
+                  style={inputStyle}
+                />
               </div>
 
-              <div style={{ textAlign: 'center', marginBottom: '32px' }}>
-                <div style={{
-                  display: 'inline-block',
-                  padding: '4px 12px',
-                  borderRadius: '20px',
-                  background: `rgba(255, 42, 84, 0.1)`,
-                  border: `1px solid ${accentColor}44`,
-                  fontSize: '11px',
-                  fontWeight: 800,
-                  color: accentColor,
-                  textTransform: 'uppercase',
-                  letterSpacing: '2px',
-                  marginBottom: '12px'
-                }}>
-                  Restricted Portal
-                </div>
-                <h2 style={{ fontSize: '32px', fontWeight: 900, letterSpacing: '-1px', margin: '0 0 8px 0', textTransform: 'uppercase' }}>
-                  4 Admins Only
-                </h2>
-                <p style={{ color: 'rgba(255, 255, 255, 0.5)', fontSize: '14px', lineHeight: 1.6, margin: 0 }}>
-                  Log in to configure, alter, and spawn N2N child networks using predefined brand templates.
-                </p>
+              <div>
+                <label style={labelStyle}>Password</label>
+                <input
+                  type="password"
+                  value={password}
+                  onChange={e => setPassword(e.target.value)}
+                  required
+                  placeholder="••••••••"
+                  style={inputStyle}
+                />
               </div>
 
-              <form onSubmit={handleAdminLogin} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-                {errorMsg && (
-                  <div style={{ background: 'rgba(255, 42, 84, 0.1)', color: '#FF2A54', padding: '12px 16px', borderRadius: '12px', fontSize: '13px', border: '1px solid rgba(255, 42, 84, 0.25)', fontWeight: 600, textAlign: 'center' }}>
-                    {errorMsg}
-                  </div>
-                )}
+              <button
+                type="submit"
+                disabled={loading}
+                style={{
+                  background: '#0055ff',
+                  color: '#fff',
+                  padding: '12px',
+                  border: 'none',
+                  borderRadius: '6px',
+                  fontSize: '15px',
+                  fontWeight: 'bold',
+                  cursor: loading ? 'not-allowed' : 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '10px',
+                  marginTop: '8px'
+                }}
+              >
+                {loading ? <Loader size={18} style={{ animation: 'spin 1s linear infinite' }} /> : 'Authenticate'}
+              </button>
+            </form>
+          </div>
+        )}
 
-                <div>
-                  <label style={labelStyle}>Admins Credentials</label>
-                  <div style={{ position: 'relative' }}>
-                    <Mail size={20} color="rgba(255, 255, 255, 0.3)" style={{ position: 'absolute', left: '16px', top: '50%', transform: 'translateY(-50%)' }} />
-                    <input
-                      type="email"
-                      value={email}
-                      onChange={e => setEmail(e.target.value)}
-                      required
-                      placeholder="admin@vibenetwork.tv"
-                      style={{ ...inputStyle, paddingLeft: '48px' }}
-                    />
-                  </div>
-                </div>
+        {/* STEP 2: SPAWN FROM TEMPLATE */}
+        {step === 'spawn' && (
+          <div>
+            <div style={{ textAlign: 'center', marginBottom: '24px' }}>
+              <h2 style={{ fontSize: '24px', fontWeight: 'bold', margin: '0 0 8px 0' }}>
+                Spawn Network
+              </h2>
+              <p style={{ color: '#aaa', fontSize: '14px', margin: 0 }}>
+                Configure and deploy a child network for {currentUserProfile?.full_name || currentUserProfile?.username || 'employee'}.
+              </p>
+            </div>
 
-                <div>
-                  <div style={{ position: 'relative' }}>
-                    <Lock size={20} color="rgba(255, 255, 255, 0.3)" style={{ position: 'absolute', left: '16px', top: '50%', transform: 'translateY(-50%)' }} />
-                    <input
-                      type="password"
-                      value={password}
-                      onChange={e => setPassword(e.target.value)}
-                      required
-                      placeholder="••••••••"
-                      style={{ ...inputStyle, paddingLeft: '48px' }}
-                    />
-                  </div>
-                </div>
-
-                <button
-                  type="submit"
-                  disabled={loading}
-                  style={{
-                    background: accentColor,
-                    color: '#fff',
-                    padding: '16px',
-                    border: 'none',
-                    borderRadius: '14px',
-                    fontSize: '16px',
-                    fontWeight: 800,
-                    cursor: loading ? 'not-allowed' : 'pointer',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    gap: '10px',
-                    boxShadow: `0 8px 25px ${accentColor}33`,
-                    marginTop: '12px'
-                  }}
-                >
-                  {loading ? <Loader size={20} style={{ animation: 'spin 1s linear infinite' }} /> : 'Authenticate'}
-                  {!loading && <ArrowRight size={18} />}
-                </button>
-              </form>
-            </motion.div>
-          )}
-
-          {/* STEP 2: SPAWN FROM TEMPLATE */}
-          {step === 'spawn' && (
-            <motion.div
-              key="spawn"
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: 20 }}
-            >
-              <div style={{ textAlign: 'center', marginBottom: '28px' }}>
-                <h2 style={{ fontSize: '28px', fontWeight: 900, letterSpacing: '-1px', margin: '0 0 6px 0', color: '#fff' }}>
-                  Deploy Network Spawner
-                </h2>
-                <p style={{ color: 'rgba(255, 255, 255, 0.5)', fontSize: '14px', margin: 0 }}>
-                  Altering template config to deploy a child network for {currentUserProfile?.full_name || currentUserProfile?.username || 'employee'}.
-                </p>
-              </div>
-
-              <form onSubmit={handleDeployNetwork} style={{ display: 'flex', flexDirection: 'column', gap: '18px' }}>
-                
-                {/* Parent Network Mapping */}
-                <div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-                    <label style={{ ...labelStyle, marginBottom: 0 }}>Parent N2N Network</label>
-                    <button
-                      type="button"
-                      onClick={() => setShowNewParentForm(prev => !prev)}
-                      style={{ background: 'none', border: 'none', color: accentColor, fontSize: '11px', fontWeight: 800, cursor: 'pointer', textTransform: 'uppercase', letterSpacing: '0.5px' }}
-                    >
-                      {showNewParentForm ? 'Hide Setup' : '+ Create New Parent'}
-                    </button>
-                  </div>
-
-                  {showNewParentForm ? (
-                    <div style={{
-                      background: 'rgba(255, 255, 255, 0.02)',
-                      border: '1px solid rgba(255, 255, 255, 0.05)',
-                      borderRadius: '16px',
-                      padding: '20px',
-                      display: 'flex',
-                      flexDirection: 'column',
-                      gap: '12px',
-                      marginBottom: '14px'
-                    }}>
-                      <div style={{ fontSize: '12px', fontWeight: 700, color: accentColor, textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-                        Create Parent Network on the Fly
-                      </div>
-                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
-                        <div>
-                          <label style={{ ...labelStyle, fontSize: '10px' }}>Parent Name</label>
-                          <input
-                            type="text"
-                            value={newParentName}
-                            onChange={e => {
-                              setNewParentName(e.target.value);
-                              setNewParentDomain(e.target.value.toLowerCase().replace(/[^a-z0-9]/g, '') + '.vibenetwork.tv');
-                            }}
-                            placeholder="e.g. AVO Network"
-                            style={inputStyle}
-                          />
-                        </div>
-                        <div>
-                          <label style={{ ...labelStyle, fontSize: '10px' }}>Domain Routing</label>
-                          <input
-                            type="text"
-                            value={newParentDomain}
-                            onChange={e => setNewParentDomain(e.target.value)}
-                            placeholder="e.g. avo.vibenetwork.tv"
-                            style={inputStyle}
-                          />
-                        </div>
-                      </div>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                        <label style={{ ...labelStyle, fontSize: '10px', marginBottom: 0 }}>Accent Color:</label>
-                        <input
-                          type="color"
-                          value={newParentAccent}
-                          onChange={e => setNewParentAccent(e.target.value)}
-                          style={{ width: '36px', height: '36px', border: 'none', borderRadius: '8px', cursor: 'pointer', background: 'transparent' }}
-                        />
-                        <button
-                          type="button"
-                          onClick={handleCreateParent}
-                          disabled={creatingParent}
-                          style={{
-                            marginLeft: 'auto',
-                            padding: '8px 16px',
-                            background: accentColor,
-                            color: '#fff',
-                            border: 'none',
-                            borderRadius: '10px',
-                            fontWeight: 'bold',
-                            fontSize: '12px',
-                            cursor: 'pointer'
-                          }}
-                        >
-                          {creatingParent ? 'Deploying...' : 'Deploy Parent'}
-                        </button>
-                      </div>
-                    </div>
-                  ) : (
-                    parentNetworks.length > 0 ? (
-                      <select
-                        value={selectedParentId}
-                        onChange={e => setSelectedParentId(e.target.value)}
-                        style={{ ...inputStyle, cursor: 'pointer' }}
-                      >
-                        {parentNetworks.map(p => (
-                          <option key={p.id} value={p.id}>{p.name}</option>
-                        ))}
-                      </select>
-                    ) : (
-                      <div style={{ ...inputStyle, background: 'rgba(255,255,255,0.03)', color: 'rgba(255,255,255,0.8)', fontWeight: 600 }}>
-                        {selectedParentName}
-                      </div>
-                    )
-                  )}
-                </div>
-
-                {/* Template Selection */}
-                <div>
-                  <label style={labelStyle}>Choose N2N Brand Template</label>
-                  <select
-                    value={selectedTemplateId}
-                    onChange={e => setSelectedTemplateId(e.target.value)}
-                    style={{ ...inputStyle, cursor: 'pointer' }}
+            <form onSubmit={handleDeployNetwork} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+              
+              {/* Parent Network Mapping */}
+              <div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
+                  <label style={labelStyle}>Parent N2N Network</label>
+                  <button
+                    type="button"
+                    onClick={() => setShowNewParentForm(prev => !prev)}
+                    style={{ background: 'none', border: 'none', color: '#0055ff', fontSize: '12px', cursor: 'pointer' }}
                   >
-                    {templates.map(t => (
-                      <option key={t.id} value={t.id}>{t.name}</option>
-                    ))}
-                  </select>
+                    {showNewParentForm ? 'Cancel' : '+ Create Parent'}
+                  </button>
                 </div>
 
-                {/* Subdomain / Routing */}
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
-                  <div>
-                    <label style={labelStyle}>Network Name</label>
-                    <input
-                      type="text"
-                      value={newNetworkName}
-                      onChange={e => {
-                        setNewNetworkName(e.target.value);
-                        setNewNetworkDomain(e.target.value.toLowerCase().replace(/[^a-z0-9]/g, '') + '.vibenetwork.tv');
-                      }}
-                      required
-                      placeholder="e.g. Marcus Vlogs"
-                      style={inputStyle}
-                    />
-                  </div>
-                  <div>
-                    <label style={labelStyle}>Subdomain Routing</label>
-                    <input
-                      type="text"
-                      value={newNetworkDomain}
-                      onChange={e => setNewNetworkDomain(e.target.value)}
-                      required
-                      placeholder="e.g. marcus.vibenetwork.tv"
-                      style={inputStyle}
-                    />
-                  </div>
-                </div>
-
-                {/* Accent and Hero Copy styling */}
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 3fr', gap: '12px', alignItems: 'center' }}>
-                  <div>
-                    <label style={labelStyle}>Accent Color</label>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                {showNewParentForm ? (
+                  <div style={{
+                    background: '#252525',
+                    border: '1px solid #333',
+                    borderRadius: '8px',
+                    padding: '16px',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: '12px',
+                    marginBottom: '10px'
+                  }}>
+                    <div>
+                      <label style={{ ...labelStyle, fontSize: '11px' }}>Parent Name</label>
+                      <input
+                        type="text"
+                        value={newParentName}
+                        onChange={e => {
+                          setNewParentName(e.target.value);
+                          setNewParentDomain(e.target.value.toLowerCase().replace(/[^a-z0-9]/g, '') + '.vibenetwork.tv');
+                        }}
+                        placeholder="AVO Network"
+                        style={inputStyle}
+                      />
+                    </div>
+                    <div>
+                      <label style={{ ...labelStyle, fontSize: '11px' }}>Domain Routing</label>
+                      <input
+                        type="text"
+                        value={newParentDomain}
+                        onChange={e => setNewParentDomain(e.target.value)}
+                        placeholder="avo.vibenetwork.tv"
+                        style={inputStyle}
+                      />
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                      <label style={{ ...labelStyle, fontSize: '11px', marginBottom: 0 }}>Accent Color:</label>
                       <input
                         type="color"
-                        value={newNetworkAccent}
-                        onChange={e => setNewNetworkAccent(e.target.value)}
-                        style={{ width: '42px', height: '42px', border: 'none', borderRadius: '10px', background: 'transparent', cursor: 'pointer' }}
+                        value={newParentAccent}
+                        onChange={e => setNewParentAccent(e.target.value)}
+                        style={{ width: '30px', height: '30px', border: 'none', borderRadius: '4px', cursor: 'pointer', background: 'transparent' }}
                       />
-                      <span style={{ fontSize: '12px', fontFamily: 'monospace' }}>{newNetworkAccent}</span>
+                      <button
+                        type="button"
+                        onClick={handleCreateParent}
+                        disabled={creatingParent}
+                        style={{
+                          marginLeft: 'auto',
+                          padding: '6px 12px',
+                          background: '#0055ff',
+                          color: '#fff',
+                          border: 'none',
+                          borderRadius: '4px',
+                          fontWeight: 'bold',
+                          fontSize: '12px',
+                          cursor: 'pointer'
+                        }}
+                      >
+                        {creatingParent ? 'Deploying...' : 'Deploy Parent'}
+                      </button>
                     </div>
                   </div>
-                  <div>
-                    <label style={labelStyle}>Homepage Billboard Header</label>
+                ) : (
+                  parentNetworks.length > 0 ? (
+                    <select
+                      value={selectedParentId}
+                      onChange={e => setSelectedParentId(e.target.value)}
+                      style={{ ...inputStyle, cursor: 'pointer' }}
+                    >
+                      {parentNetworks.map(p => (
+                        <option key={p.id} value={p.id}>{p.name}</option>
+                      ))}
+                    </select>
+                  ) : (
+                    <div style={{ ...inputStyle, background: '#252525', color: '#ccc' }}>
+                      {selectedParentName}
+                    </div>
+                  )
+                )}
+              </div>
+
+              {/* Template Selection */}
+              <div>
+                <label style={labelStyle}>Choose N2N Brand Template</label>
+                <select
+                  value={selectedTemplateId}
+                  onChange={e => setSelectedTemplateId(e.target.value)}
+                  style={{ ...inputStyle, cursor: 'pointer' }}
+                >
+                  {templates.map(t => (
+                    <option key={t.id} value={t.id}>{t.name}</option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Subdomain / Routing */}
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                <div>
+                  <label style={labelStyle}>Network Name</label>
+                  <input
+                    type="text"
+                    value={newNetworkName}
+                    onChange={e => {
+                      setNewNetworkName(e.target.value);
+                      setNewNetworkDomain(e.target.value.toLowerCase().replace(/[^a-z0-9]/g, '') + '.vibenetwork.tv');
+                    }}
+                    required
+                    placeholder="e.g. Marcus Vlogs"
+                    style={inputStyle}
+                  />
+                </div>
+                <div>
+                  <label style={labelStyle}>Subdomain Routing</label>
+                  <input
+                    type="text"
+                    value={newNetworkDomain}
+                    onChange={e => setNewNetworkDomain(e.target.value)}
+                    required
+                    placeholder="e.g. marcus.vibenetwork.tv"
+                    style={inputStyle}
+                  />
+                </div>
+              </div>
+
+              {/* Accent and Hero Copy styling */}
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 3fr', gap: '12px', alignItems: 'center' }}>
+                <div>
+                  <label style={labelStyle}>Accent Color</label>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                     <input
-                      type="text"
-                      value={newHeroCopy}
-                      onChange={e => setNewHeroCopy(e.target.value)}
-                      placeholder="e.g. Marcus Vlogs — Live Broadcasts"
-                      style={inputStyle}
+                      type="color"
+                      value={newNetworkAccent}
+                      onChange={e => setNewNetworkAccent(e.target.value)}
+                      style={{ width: '36px', height: '36px', border: 'none', borderRadius: '6px', background: 'transparent', cursor: 'pointer' }}
                     />
+                    <span style={{ fontSize: '12px', fontFamily: 'monospace' }}>{newNetworkAccent}</span>
                   </div>
                 </div>
-
-                {/* Deploy Button */}
-                <button
-                  type="submit"
-                  disabled={loading}
-                  style={{
-                    background: accentColor,
-                    color: '#fff',
-                    padding: '16px',
-                    border: 'none',
-                    borderRadius: '14px',
-                    fontSize: '16px',
-                    fontWeight: 800,
-                    cursor: loading ? 'not-allowed' : 'pointer',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    gap: '10px',
-                    boxShadow: `0 8px 25px ${accentColor}33`,
-                    marginTop: '10px'
-                  }}
-                >
-                  {loading ? <Loader size={20} style={{ animation: 'spin 1s linear infinite' }} /> : 'Deploy Child Network'}
-                  {!loading && <ArrowRight size={18} />}
-                </button>
-              </form>
-            </motion.div>
-          )}
-
-          {/* STEP 3: SUCCESS ANIMATION */}
-          {step === 'success' && (
-            <motion.div
-              key="success"
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              style={{ textAlign: 'center', padding: '10px 0' }}
-            >
-              <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '24px' }}>
-                <CheckCircle2 size={72} color="#00ff88" style={{ filter: 'drop-shadow(0 0 12px rgba(0,255,136,0.3))' }} />
+                <div>
+                  <label style={labelStyle}>Homepage Billboard Header</label>
+                  <input
+                    type="text"
+                    value={newHeroCopy}
+                    onChange={e => setNewHeroCopy(e.target.value)}
+                    placeholder="e.g. Marcus Vlogs — Live Broadcasts"
+                    style={inputStyle}
+                  />
+                </div>
               </div>
-              <h2 style={{ fontSize: '28px', fontWeight: 900, marginBottom: '10px', color: '#fff' }}>
-                Deployment Completed!
-              </h2>
-              <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: '15px', lineHeight: 1.6, marginBottom: '28px' }}>
-                {deployedParentId 
-                  ? 'Your new Parent N2N Network and child channel have been deployed successfully.' 
-                  : 'The child network template cloning has finished. Setting up routing, templates, and permissions...'}
-              </p>
 
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', alignItems: 'center', width: '100%' }}>
-                {deployedParentId && (
-                  <button
-                    onClick={() => {
-                      window.location.href = `/?tenant=${deployedParentId}`;
-                    }}
-                    style={{
-                      background: 'linear-gradient(135deg, #FF2A54, #d60e37)',
-                      color: '#fff',
-                      padding: '16px 32px',
-                      border: 'none',
-                      borderRadius: '14px',
-                      fontSize: '16px',
-                      fontWeight: 800,
-                      cursor: 'pointer',
-                      display: 'inline-flex',
-                      alignItems: 'center',
-                      gap: '8px',
-                      boxShadow: '0 8px 25px rgba(255,42,84,0.25)',
-                      width: '100%',
-                      justifyContent: 'center'
-                    }}
-                  >
-                    Go to Parent Network to Style it <ArrowRight size={18} />
-                  </button>
-                )}
+              {/* Deploy Button */}
+              <button
+                type="submit"
+                disabled={loading}
+                style={{
+                  background: '#0055ff',
+                  color: '#fff',
+                  padding: '14px',
+                  border: 'none',
+                  borderRadius: '8px',
+                  fontSize: '15px',
+                  fontWeight: 'bold',
+                  cursor: loading ? 'not-allowed' : 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '10px',
+                  marginTop: '8px'
+                }}
+              >
+                {loading ? <Loader size={18} style={{ animation: 'spin 1s linear infinite' }} /> : 'Deploy Child Network'}
+              </button>
+            </form>
+          </div>
+        )}
 
+        {/* STEP 3: SUCCESS */}
+        {step === 'success' && (
+          <div style={{ textAlign: 'center', padding: '10px 0' }}>
+            <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '16px' }}>
+              <CheckCircle2 size={48} color="#00ff88" />
+            </div>
+            <h2 style={{ fontSize: '24px', fontWeight: 'bold', marginBottom: '8px' }}>
+              Deployment Completed!
+            </h2>
+            <p style={{ color: '#ccc', fontSize: '14px', lineHeight: 1.6, marginBottom: '20px' }}>
+              {deployedParentId 
+                ? 'Your new Parent N2N Network and child channel have been deployed successfully.' 
+                : 'The child network template cloning has finished.'}
+            </p>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', width: '100%' }}>
+              {deployedParentId && (
                 <button
                   onClick={() => {
-                    window.location.href = `/?tenant=${createdNetworkId}`;
+                    window.location.href = `/?tenant=${deployedParentId}`;
                   }}
                   style={{
-                    background: deployedParentId ? 'rgba(255,255,255,0.05)' : 'linear-gradient(135deg, #00ff88, #00b35f)',
-                    color: deployedParentId ? '#fff' : '#000',
-                    border: deployedParentId ? '1px solid rgba(255,255,255,0.1)' : 'none',
-                    padding: '16px 32px',
-                    borderRadius: '14px',
-                    fontSize: '16px',
-                    fontWeight: 800,
+                    background: '#0055ff',
+                    color: '#fff',
+                    padding: '12px',
+                    border: 'none',
+                    borderRadius: '6px',
+                    fontSize: '15px',
+                    fontWeight: 'bold',
                     cursor: 'pointer',
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    gap: '8px',
-                    boxShadow: deployedParentId ? 'none' : '0 8px 25px rgba(0,255,136,0.2)',
                     width: '100%',
                     justifyContent: 'center'
                   }}
                 >
-                  {deployedParentId ? 'Go to Child Channel' : 'Go to Spawned Network'} <ArrowRight size={18} />
+                  Go to Parent Network to Style it
                 </button>
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
+              )}
+
+              <button
+                onClick={() => {
+                  window.location.href = `/?tenant=${createdNetworkId}`;
+                }}
+                style={{
+                  background: '#252525',
+                  color: '#fff',
+                  border: '1px solid #444',
+                  padding: '12px',
+                  borderRadius: '6px',
+                  fontSize: '15px',
+                  fontWeight: 'bold',
+                  cursor: 'pointer',
+                  width: '100%',
+                  justifyContent: 'center'
+                }}
+              >
+                Go to Child Channel
+              </button>
+            </div>
+          </div>
+        )}
 
         {/* Back to Home option */}
         {step !== 'success' && (
           <div style={{
-            marginTop: '32px',
-            borderTop: '1px solid rgba(255,255,255,0.06)',
-            paddingTop: '20px',
+            marginTop: '24px',
+            borderTop: '1px solid #333',
+            paddingTop: '16px',
             textAlign: 'center'
           }}>
             <button
@@ -717,7 +643,7 @@ export default function AdminLogin() {
               style={{
                 background: 'none',
                 border: 'none',
-                color: 'rgba(255, 255, 255, 0.4)',
+                color: '#888',
                 fontSize: '13px',
                 fontWeight: 600,
                 cursor: 'pointer',
@@ -727,13 +653,13 @@ export default function AdminLogin() {
                 transition: 'color 0.2s'
               }}
               onMouseOver={e => e.currentTarget.style.color = '#fff'}
-              onMouseOut={e => e.currentTarget.style.color = 'rgba(255,255,255,0.4)'}
+              onMouseOut={e => e.currentTarget.style.color = '#888'}
             >
               <Home size={14} /> Back to Homepage
             </button>
           </div>
         )}
-      </motion.div>
+      </div>
       <style>{`
         @keyframes spin { 100% { transform: rotate(360deg); } }
       `}</style>
