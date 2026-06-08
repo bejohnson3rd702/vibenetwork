@@ -36,6 +36,75 @@ export default function AdminLogin() {
   // Styling
   const accentColor = wlConfig?.accent || '#FF2A54';
 
+  // Parent Creation states
+  const [showNewParentForm, setShowNewParentForm] = useState(false);
+  const [newParentName, setNewParentName] = useState('');
+  const [newParentDomain, setNewParentDomain] = useState('');
+  const [newParentAccent, setNewParentAccent] = useState('#FF2A54');
+  const [creatingParent, setCreatingParent] = useState(false);
+
+  const handleCreateParent = async () => {
+    const parentNameTrimmed = newParentName.trim();
+    if (!parentNameTrimmed) {
+      toast.error('Parent name is required.');
+      return;
+    }
+    setCreatingParent(true);
+    try {
+      const payload = {
+        owner_id: currentUser.id,
+        name: parentNameTrimmed,
+        domain: newParentDomain.trim() || `${parentNameTrimmed.toLowerCase().replace(/[^a-z0-9]/g, '')}.vibenetwork.tv`,
+        n2n_enabled: true,
+        platform_fee_percentage: 15,
+        theme: {
+          accent: newParentAccent,
+          heroCopy: `Welcome to ${parentNameTrimmed}`,
+          n2n_enabled: true,
+          enableWatchLive: true,
+          enableBooking: false,
+          heroLayoutMode: 'verbiage',
+          sliderCount: 4
+        }
+      };
+
+      const { data, error } = await supabase!
+        .from('whitelabel_configs')
+        .insert(payload)
+        .select()
+        .single();
+
+      let finalData = data;
+      if (error) {
+        console.warn('Fallback insert parent network');
+        delete payload.n2n_enabled;
+        const { data: fallbackData, error: fallbackError } = await supabase!
+          .from('whitelabel_configs')
+          .insert(payload)
+          .select()
+          .single();
+        if (fallbackError) throw fallbackError;
+        finalData = fallbackData;
+      }
+
+      toast.success(`Parent Network "${parentNameTrimmed}" deployed!`);
+      
+      if (finalData) {
+        setParentNetworks(prev => [...prev, finalData]);
+        setSelectedParentId(finalData.id);
+      }
+      
+      setNewParentName('');
+      setNewParentDomain('');
+      setShowNewParentForm(false);
+
+    } catch (e: any) {
+      toast.error('Failed to create parent network: ' + e.message);
+    } finally {
+      setCreatingParent(false);
+    }
+  };
+
   // Fetch templates and parent networks for spawning
   const loadSpawnerData = async (userProfile: any) => {
     try {
@@ -344,21 +413,100 @@ export default function AdminLogin() {
                 
                 {/* Parent Network Mapping */}
                 <div>
-                  <label style={labelStyle}>Parent N2N Network</label>
-                  {parentNetworks.length > 0 ? (
-                    <select
-                      value={selectedParentId}
-                      onChange={e => setSelectedParentId(e.target.value)}
-                      style={{ ...inputStyle, cursor: 'pointer' }}
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                    <label style={{ ...labelStyle, marginBottom: 0 }}>Parent N2N Network</label>
+                    <button
+                      type="button"
+                      onClick={() => setShowNewParentForm(prev => !prev)}
+                      style={{ background: 'none', border: 'none', color: accentColor, fontSize: '11px', fontWeight: 800, cursor: 'pointer', textTransform: 'uppercase', letterSpacing: '0.5px' }}
                     >
-                      {parentNetworks.map(p => (
-                        <option key={p.id} value={p.id}>{p.name}</option>
-                      ))}
-                    </select>
-                  ) : (
-                    <div style={{ ...inputStyle, background: 'rgba(255,255,255,0.03)', color: 'rgba(255,255,255,0.8)', fontWeight: 600 }}>
-                      {selectedParentName}
+                      {showNewParentForm ? 'Hide Setup' : '+ Create New Parent'}
+                    </button>
+                  </div>
+
+                  {showNewParentForm ? (
+                    <div style={{
+                      background: 'rgba(255, 255, 255, 0.02)',
+                      border: '1px solid rgba(255, 255, 255, 0.05)',
+                      borderRadius: '16px',
+                      padding: '20px',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      gap: '12px',
+                      marginBottom: '14px'
+                    }}>
+                      <div style={{ fontSize: '12px', fontWeight: 700, color: accentColor, textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                        Create Parent Network on the Fly
+                      </div>
+                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+                        <div>
+                          <label style={{ ...labelStyle, fontSize: '10px' }}>Parent Name</label>
+                          <input
+                            type="text"
+                            value={newParentName}
+                            onChange={e => {
+                              setNewParentName(e.target.value);
+                              setNewParentDomain(e.target.value.toLowerCase().replace(/[^a-z0-9]/g, '') + '.vibenetwork.tv');
+                            }}
+                            placeholder="e.g. AVO Network"
+                            style={inputStyle}
+                          />
+                        </div>
+                        <div>
+                          <label style={{ ...labelStyle, fontSize: '10px' }}>Domain Routing</label>
+                          <input
+                            type="text"
+                            value={newParentDomain}
+                            onChange={e => setNewParentDomain(e.target.value)}
+                            placeholder="e.g. avo.vibenetwork.tv"
+                            style={inputStyle}
+                          />
+                        </div>
+                      </div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                        <label style={{ ...labelStyle, fontSize: '10px', marginBottom: 0 }}>Accent Color:</label>
+                        <input
+                          type="color"
+                          value={newParentAccent}
+                          onChange={e => setNewParentAccent(e.target.value)}
+                          style={{ width: '36px', height: '36px', border: 'none', borderRadius: '8px', cursor: 'pointer', background: 'transparent' }}
+                        />
+                        <button
+                          type="button"
+                          onClick={handleCreateParent}
+                          disabled={creatingParent}
+                          style={{
+                            marginLeft: 'auto',
+                            padding: '8px 16px',
+                            background: accentColor,
+                            color: '#fff',
+                            border: 'none',
+                            borderRadius: '10px',
+                            fontWeight: 'bold',
+                            fontSize: '12px',
+                            cursor: 'pointer'
+                          }}
+                        >
+                          {creatingParent ? 'Deploying...' : 'Deploy Parent'}
+                        </button>
+                      </div>
                     </div>
+                  ) : (
+                    parentNetworks.length > 0 ? (
+                      <select
+                        value={selectedParentId}
+                        onChange={e => setSelectedParentId(e.target.value)}
+                        style={{ ...inputStyle, cursor: 'pointer' }}
+                      >
+                        {parentNetworks.map(p => (
+                          <option key={p.id} value={p.id}>{p.name}</option>
+                        ))}
+                      </select>
+                    ) : (
+                      <div style={{ ...inputStyle, background: 'rgba(255,255,255,0.03)', color: 'rgba(255,255,255,0.8)', fontWeight: 600 }}>
+                        {selectedParentName}
+                      </div>
+                    )
                   )}
                 </div>
 
