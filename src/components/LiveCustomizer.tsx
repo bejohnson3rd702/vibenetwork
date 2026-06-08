@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { supabase } from '../supabaseClient';
 import { useWhiteLabel } from '../context/WhiteLabelContext';
 import { useToast } from '../context/ToastContext';
-import { Paintbrush, Save, X, Type, Video, Layout, Image, Palette, RotateCcw } from 'lucide-react';
+import { Paintbrush, Save, X, Type, Video, Layout, Image, Palette, RotateCcw, Loader } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 export default function LiveCustomizer() {
