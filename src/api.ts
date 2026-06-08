@@ -67,10 +67,17 @@ export async function getCategoriesWithVideos(tenantId?: string) {
   });
 
   // Dynamically load custom categories and their assigned videos using an optimized join
-  const { data: dbCategories } = await supabase
+  let categoriesQuery = supabase
     .from('categories')
-    .select('*, videos(id, title, image_url, tags, video_url)')
-    .limit(10); // Limit to top 10 custom categories to prevent massive payload sizes
+    .select('*, videos(id, title, image_url, tags, video_url, creator:profiles!inner(whitelabel_id))');
+
+  if (tenantId) {
+    categoriesQuery = categoriesQuery.eq('videos.creator.whitelabel_id', tenantId);
+  } else {
+    categoriesQuery = categoriesQuery.is('videos.creator.whitelabel_id', null);
+  }
+
+  const { data: dbCategories } = await categoriesQuery.limit(10); // Limit to top 10 custom categories to prevent massive payload sizes
 
   let addedCustom = false;
 
@@ -78,6 +85,7 @@ export async function getCategoriesWithVideos(tenantId?: string) {
     dbCategories.forEach(cat => {
       const title = cat.title?.trim().toLowerCase() || '';
       if (['live network schedule', 'featured dj sets', 'underground mixes'].includes(title)) return;
+      if (!tenantId && ['music videos', 'bts & interviews'].includes(title)) return;
       
       const catVideos = cat.videos || [];
       
