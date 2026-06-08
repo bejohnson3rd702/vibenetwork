@@ -34,15 +34,15 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
   const { wlConfig } = useWhiteLabel();
   const toast = useToast();
   
-  const targetProfileId = creatorId || user?.id; // Determine which profile to load
+  const [profile, setProfile] = useState<any>(null);
+  const targetProfileId = profile?.id || creatorId || user?.id; // Determine which profile to load
   const isOwnProfile = user && targetProfileId === user.id;
 
-  const [profile, setProfile] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [feed, setFeed] = useState<any[]>([]);
   
   // View Modes (public vs edit)
-  const [viewMode, setViewMode] = useState<'public' | 'edit'>(isOwnProfile ? 'edit' : 'public');
+  const [viewMode, setViewMode] = useState<'public' | 'edit'>('public');
 
   // Editor States
   const [bio, setBio] = useState('');
@@ -440,18 +440,25 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
       return;
     }
 
-    // Force public view if not own profile
-    if (!isOwnProfile) setViewMode('public');
-    else if (viewMode === 'public' && isOwnProfile) setViewMode('edit');
-
     async function loadProfile() {
       // Phase 1: Core Identity (Blocks UI)
-      // For network-level views without an owner_id, find the first profile by whitelabel_id
-      const profilePromise = (targetProfileId)
-        ? supabase!.from('profiles').select('*').eq('id', targetProfileId).single()
-        : (isNetworkLevel && wlConfig?.id)
-          ? supabase!.from('profiles').select('*').eq('whitelabel_id', wlConfig.id).limit(1).single()
-          : supabase!.from('profiles').select('*').eq('id', 'none').single();
+      // If isNetworkLevel is true and we have a wlConfig.id, load the profile associated with this whitelabel config
+      let profilePromise;
+      if (isNetworkLevel && wlConfig?.id) {
+        profilePromise = supabase!.from('profiles')
+          .select('*')
+          .eq('whitelabel_id', wlConfig.id)
+          .eq('role', 'influencer')
+          .maybeSingle()
+          .then(async ({ data: infData, error: infErr }) => {
+            if (!infErr && infData) return { data: infData, error: null };
+            return supabase!.from('profiles').select('*').eq('whitelabel_id', wlConfig.id).limit(1).single();
+          });
+      } else if (targetProfileId) {
+        profilePromise = supabase!.from('profiles').select('*').eq('id', targetProfileId).single();
+      } else {
+        profilePromise = supabase!.from('profiles').select('*').eq('id', 'none').single();
+      }
 
       let postsQuery = supabase!.from('posts').select('*, creator:profiles!inner(username, avatar_url, whitelabel_id), post_likes(user_id), post_comments(*, user:profiles(username, avatar_url))');
       if (isNetworkLevel && wlConfig?.id) postsQuery = postsQuery.eq('creator.whitelabel_id', wlConfig.id).eq('is_locked', false);
@@ -466,6 +473,10 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
       ]);
 
       if (!error && data) {
+        const loadedProfileId = data.id;
+        const isOwn = user && loadedProfileId === user.id;
+        setViewMode(isOwn ? 'edit' : 'public');
+
         setProfile(data);
         setBio(data.bio || 'Welcome to my official channel!');
         setAvatarUrl(data.avatar_url || '');
@@ -476,13 +487,13 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
         if (data.sub_price != null) setSubPrice(String(data.sub_price));
         if (user) {
           // Check Supabase first (survives cache clears), localStorage as fallback
-          const localSub = localStorage.getItem(`vibe_sub_${user.id}_${targetProfileId}`) === 'true';
+          const localSub = localStorage.getItem(`vibe_sub_${user.id}_${loadedProfileId}`) === 'true';
           setIsSubscribed(localSub); // Fast local cache while Supabase loads
           if (supabase) {
             supabase.from('subscriptions')
               .select('status')
               .eq('subscriber_id', user.id)
-              .eq('creator_id', targetProfileId)
+              .eq('creator_id', loadedProfileId)
               .eq('status', 'active')
               .maybeSingle()
               .then(({ data: subData }: any) => {
@@ -490,9 +501,9 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
                 setIsSubscribed(isActive);
                 // Sync localStorage cache with server truth
                 if (isActive) {
-                  localStorage.setItem(`vibe_sub_${user.id}_${targetProfileId}`, 'true');
+                  localStorage.setItem(`vibe_sub_${user.id}_${loadedProfileId}`, 'true');
                 } else {
-                  localStorage.removeItem(`vibe_sub_${user.id}_${targetProfileId}`);
+                  localStorage.removeItem(`vibe_sub_${user.id}_${loadedProfileId}`);
                 }
               });
           }
@@ -505,7 +516,7 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
         if (postsError) {
              let fallbackQuery = supabase!.from('posts').select('*, creator:profiles!inner(username, avatar_url, whitelabel_id)');
              if (isNetworkLevel && wlConfig?.id) fallbackQuery = fallbackQuery.eq('creator.whitelabel_id', wlConfig.id).eq('is_locked', false);
-             else fallbackQuery = fallbackQuery.eq('creator_id', targetProfileId);
+             else fallbackQuery = fallbackQuery.eq('creator_id', loadedProfileId);
              
              const fallback = await fallbackQuery
                .order('is_pinned', { ascending: false })
@@ -546,17 +557,17 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
           if (isNetworkLevel) {
             if (wlConfig?.domain && wlConfig.domain !== 'vibenetwork.tv') prodQuery = prodQuery.eq('creator.whitelabel_id', wlConfig.id);
           } else {
-            prodQuery = prodQuery.eq('creator_id', targetProfileId);
+            prodQuery = prodQuery.eq('creator_id', loadedProfileId);
           }
           const productsPromise = prodQuery.order('created_at', { ascending: false });
 
-          const seriesPromise = supabase!.from('series').select('*, episodes(*)').eq('creator_id', targetProfileId);
-          const coursesPromise = supabase!.from('courses').select('*').eq('creator_id', targetProfileId);
-          const slotsPromise = supabase!.from('available_slots').select('*').eq('creator_id', targetProfileId).eq('is_booked', false);
+          const seriesPromise = supabase!.from('series').select('*, episodes(*)').eq('creator_id', loadedProfileId);
+          const coursesPromise = supabase!.from('courses').select('*').eq('creator_id', loadedProfileId);
+          const slotsPromise = supabase!.from('available_slots').select('*').eq('creator_id', loadedProfileId).eq('is_booked', false);
 
           const pBookingsPromise = user ? supabase!.from('bookings').select('*, creator:profiles!creator_id(username, full_name, avatar_url)').eq('buyer_id', user.id) : Promise.resolve({ data: null });
           const networksPromise = user ? supabase!.from('whitelabel_configs').select('*').eq('owner_id', user.id) : Promise.resolve({ data: null });
-          const rBookingsPromise = (isOwnProfile && user) ? supabase!.from('bookings').select('*, buyer:profiles!buyer_id(username, full_name, avatar_url)').eq('creator_id', user.id) : Promise.resolve({ data: null });
+          const rBookingsPromise = (isOwn && user) ? supabase!.from('bookings').select('*, buyer:profiles!buyer_id(username, full_name, avatar_url)').eq('creator_id', user.id) : Promise.resolve({ data: null });
           const progressPromise = user ? supabase!.from('user_course_progress').select('*').eq('user_id', user.id) : Promise.resolve({ data: null });
 
           const [
@@ -618,14 +629,14 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
              setMyNetworks(combined);
           }
 
-          if (isOwnProfile && user) {
+          if (isOwn && user) {
              setReceivedBookings(rBookings || []);
           }
         };
 
         loadSecondaryData();
 
-      } else if (isOwnProfile) {
+      } else if (user && targetProfileId === user.id) {
         // Auto-create profile if missing!
         const { data: newProfile, error: insertError } = await supabase!.from('profiles').insert({
            id: targetProfileId,
@@ -654,7 +665,7 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
       }
     }
     loadProfile();
-  }, [user, creatorId, navigate, isOwnProfile]);
+  }, [user, creatorId, navigate]);
 
   if (loading) return <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-primary)' }}>Loading Profile...</div>;
   const isGuestInvite = new URLSearchParams(location.search).get('guest_invite') === 'true';

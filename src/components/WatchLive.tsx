@@ -25,6 +25,96 @@ const OLYMPIAN_FEEDS = [
   { key: 'jaycutler', label: '👑 Jay Cutler', channelId: 'UCiq2MIlqqeOcEvj9cP9f1bA' },
 ];
 
+const B2K_FEEDS = [
+  { key: 'b2k_group', label: '👥 B2K Group' },
+  { key: 'omarion', label: '🎤 Omarion' },
+  { key: 'fizz', label: "🎧 Lil' Fizz" },
+  { key: 'jboog', label: '🎸 J-Boog' },
+];
+
+const B2K_CLIPS: VideoClip[] = [
+  {
+    id: 'lgyEYMxzVpw',
+    headline: "B2K - Bump, Bump, Bump (Official Music Video) ft. P. Diddy",
+    description: "Watch the official music video for B2K's smash hit 'Bump, Bump, Bump' featuring P. Diddy.",
+    thumbnail: 'https://i.ytimg.com/vi/lgyEYMxzVpw/hqdefault.jpg',
+    videoUrl: 'https://www.youtube.com/watch?v=lgyEYMxzVpw',
+    duration: 238,
+    source: 'YouTube',
+    sport: 'b2k_group'
+  },
+  {
+    id: 'CgiX53hjAPc',
+    headline: "B2K - Uh Huh (Official Music Video)",
+    description: "Watch B2K's debut hit single 'Uh Huh' off their self-titled debut album.",
+    thumbnail: 'https://i.ytimg.com/vi/CgiX53hjAPc/hqdefault.jpg',
+    videoUrl: 'https://www.youtube.com/watch?v=CgiX53hjAPc',
+    duration: 253,
+    source: 'YouTube',
+    sport: 'b2k_group'
+  },
+  {
+    id: 'd8BFf32yDWQ',
+    headline: "B2K - Gots Ta Be (Official Music Video)",
+    description: "Experience the official music video for B2K's classic smooth R&B ballad 'Gots Ta Be'.",
+    thumbnail: 'https://i.ytimg.com/vi/d8BFf32yDWQ/hqdefault.jpg',
+    videoUrl: 'https://www.youtube.com/watch?v=d8BFf32yDWQ',
+    duration: 261,
+    source: 'YouTube',
+    sport: 'b2k_group'
+  },
+  {
+    id: '6OihwykYdBc',
+    headline: "B2K - Girlfriend (Official Music Video)",
+    description: "The official music video for B2K's hit single 'Girlfriend' off the album Pandemonium!.",
+    thumbnail: 'https://i.ytimg.com/vi/6OihwykYdBc/hqdefault.jpg',
+    videoUrl: 'https://www.youtube.com/watch?v=6OihwykYdBc',
+    duration: 204,
+    source: 'YouTube',
+    sport: 'b2k_group'
+  },
+  {
+    id: '_Z_5lpErdyM',
+    headline: "Omarion - 'Touch' (Official Music Video)",
+    description: "Watch the official music video for Omarion's smash solo hit 'Touch' off his debut album O.",
+    thumbnail: 'https://i.ytimg.com/vi/_Z_5lpErdyM/hqdefault.jpg',
+    videoUrl: 'https://www.youtube.com/watch?v=_Z_5lpErdyM',
+    duration: 254,
+    source: 'YouTube',
+    sport: 'omarion'
+  },
+  {
+    id: 'AdJEg47RTZ4',
+    headline: "Lil' Fizz - 'Fluid' (Official Music Video) ft. Missez",
+    description: "Watch the official music video for Lil' Fizz's solo single 'Fluid' featuring Missez.",
+    thumbnail: 'https://i.ytimg.com/vi/AdJEg47RTZ4/hqdefault.jpg',
+    videoUrl: 'https://www.youtube.com/watch?v=AdJEg47RTZ4',
+    duration: 210,
+    source: 'YouTube',
+    sport: 'fizz'
+  },
+  {
+    id: 'JwIHOk7b5sQ',
+    headline: "B2K - Big Boy TV Reunion Interview ft. J-Boog",
+    description: "J-Boog, Raz-B and the group sit down at Big Boy TV to talk about the Millennium reunion tour and history.",
+    thumbnail: 'https://i.ytimg.com/vi/JwIHOk7b5sQ/hqdefault.jpg',
+    videoUrl: 'https://www.youtube.com/watch?v=JwIHOk7b5sQ',
+    duration: 1845,
+    source: 'YouTube',
+    sport: 'jboog'
+  },
+  {
+    id: 'OJl-628FyIk',
+    headline: "Omarion - 'Ice Box' (Official Music Video)",
+    description: "Watch the official music video for Omarion's chart-topping platinum solo single 'Ice Box'.",
+    thumbnail: 'https://i.ytimg.com/vi/OJl-628FyIk/hqdefault.jpg',
+    videoUrl: 'https://www.youtube.com/watch?v=OJl-628FyIk',
+    duration: 260,
+    source: 'YouTube',
+    sport: 'omarion'
+  }
+];
+
 const STATIC_OLYMPIAN_CLIPS: VideoClip[] = [
   {
     id: 'SV7JP7y80UM',
@@ -98,7 +188,7 @@ const STATIC_OLYMPIAN_CLIPS: VideoClip[] = [
   }
 ];
 
-export default function WatchLive({ accent = '#D35400', isOlympian = false }: { accent?: string; isOlympian?: boolean }) {
+export default function WatchLive({ accent = '#D35400', isOlympian = false, isB2K = false }: { accent?: string; isOlympian?: boolean; isB2K?: boolean }) {
   const [clips, setClips] = useState<VideoClip[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeVideo, setActiveVideo] = useState<VideoClip | null>(null);
@@ -106,7 +196,7 @@ export default function WatchLive({ accent = '#D35400', isOlympian = false }: { 
   const scrollRef = useRef<HTMLDivElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
 
-  const feedsToUse = isOlympian ? OLYMPIAN_FEEDS : FEEDS;
+  const feedsToUse = isOlympian ? OLYMPIAN_FEEDS : (isB2K ? B2K_FEEDS : FEEDS);
 
   useEffect(() => {
     const fetchClips = async () => {
@@ -165,6 +255,8 @@ export default function WatchLive({ accent = '#D35400', isOlympian = false }: { 
             console.warn(`WatchLive: failed to fetch YouTube RSS for ${feed.label}`, err);
           }
         }
+      } else if (isB2K) {
+        allClips.push(...B2K_CLIPS);
       } else {
         const NCAA_KEYWORDS = ['college', 'ncaa'];
 
@@ -221,7 +313,7 @@ export default function WatchLive({ accent = '#D35400', isOlympian = false }: { 
     fetchClips();
     const interval = setInterval(fetchClips, 300000);
     return () => clearInterval(interval);
-  }, [isOlympian]);
+  }, [isOlympian, isB2K]);
 
   useEffect(() => {
     if (activeVideo) document.body.style.overflow = 'hidden';
@@ -331,7 +423,7 @@ export default function WatchLive({ accent = '#D35400', isOlympian = false }: { 
                   <span style={{ padding: '4px 10px', borderRadius: '6px', background: accent, color: '#000', fontSize: '10px', fontWeight: 900, textTransform: 'uppercase', letterSpacing: '1px' }}>
                     {isOlympian 
                       ? '💪 Fitness & Bodybuilding' 
-                      : (featured.sport === 'cfb' ? '🏈 Football' : featured.sport === 'cbb' ? '🏀 Basketball' : '⚾ Baseball')
+                      : (isB2K ? '🎤 R&B Music' : (featured.sport === 'cfb' ? '🏈 Football' : featured.sport === 'cbb' ? '🏀 Basketball' : '⚾ Baseball'))
                     }
                   </span>
                   {featured.duration > 0 && (
@@ -388,7 +480,7 @@ export default function WatchLive({ accent = '#D35400', isOlympian = false }: { 
                     <div style={{ fontSize: '9px', fontWeight: 700, color: accent, textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '4px' }}>
                       {isOlympian 
                         ? 'Bodybuilding' 
-                        : (clip.sport === 'cfb' ? 'Football' : clip.sport === 'cbb' ? 'Basketball' : 'Baseball')
+                        : (isB2K ? 'Music' : (clip.sport === 'cfb' ? 'Football' : clip.sport === 'cbb' ? 'Basketball' : 'Baseball'))
                       } · {clip.source}
                     </div>
                     <div style={{ fontSize: '13px', fontWeight: 600, lineHeight: 1.4, color: '#ccc', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>

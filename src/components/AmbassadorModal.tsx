@@ -15,6 +15,8 @@ export default function AmbassadorModal({ isOpen, onClose, accent = 'var(--accen
                      wlConfig?.domain?.includes('mrolympia.com') ||
                      wlConfig?.name?.toLowerCase().includes('muscle') ||
                      wlConfig?.name?.toLowerCase().includes('fitness');
+  const isB2K = wlConfig?.name?.toLowerCase().includes('b2k') || 
+                wlConfig?.domain?.includes('b2k.vibenetwork.tv');
   const appName = wlConfig?.name || 'AVO';
 
   const [formData, setFormData] = useState({
@@ -144,14 +146,18 @@ export default function AmbassadorModal({ isOpen, onClose, accent = 'var(--accen
             {!isSubmitted ? (
               <>
                 <h3 style={{ margin: '0 0 8px 0', fontSize: '24px', fontWeight: 900, color: '#fff', letterSpacing: '-0.5px', textTransform: 'uppercase' }}>
-                  Become an Ambassador
+                  {isB2K ? "Join B2K Street Team" : "Become an Ambassador"}
                 </h3>
                 <p style={{ margin: '0 0 28px 0', fontSize: '13px', color: 'var(--text-secondary)', lineHeight: 1.5 }}>
                   {isOlympian 
                     ? "Rep the Mr. Olympia brand, share your fitness journey, and earn exclusive perks. Tell us about yourself to get started."
-                    : wlConfig?.name 
-                      ? `Rep ${wlConfig.name}, share exclusive drops, and earn perks. Tell us a bit about yourself to get started.`
-                      : "Rep your school, share exclusive drops, and earn perks. Tell us a bit about yourself to get started."
+                    : (isB2K
+                      ? "Join the official B2K Millennium Street Team. Promote the reunion tour, share new updates, and earn exclusive backstage passes."
+                      : (wlConfig?.name 
+                        ? `Rep ${wlConfig.name}, share exclusive drops, and earn perks. Tell us a bit about yourself to get started.`
+                        : "Rep your school, share exclusive drops, and earn perks. Tell us a bit about yourself to get started."
+                      )
+                    )
                   }
                 </p>
 
@@ -224,7 +230,7 @@ export default function AmbassadorModal({ isOpen, onClose, accent = 'var(--accen
                       required
                       value={formData.email}
                       onChange={e => setFormData(prev => ({ ...prev, email: e.target.value }))}
-                      placeholder={isOlympian ? "alex.smith@fitness.com" : "alex.smith@university.edu"}
+                      placeholder={isOlympian ? "alex.smith@fitness.com" : (isB2K ? "alex.smith@music.com" : "alex.smith@university.edu")}
                       style={{
                         padding: '12px 16px',
                         background: 'rgba(255,255,255,0.03)',
@@ -281,7 +287,7 @@ export default function AmbassadorModal({ isOpen, onClose, accent = 'var(--accen
                     <label style={{ fontSize: '10px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '1px', color: 'var(--text-secondary)' }}>
                       {isOlympian 
                         ? "Why do you want to represent Mr. Olympia?" 
-                        : `Why do you want to represent ${appName}?`
+                        : (isB2K ? "Why do you want to join the B2K Street Team?" : `Why do you want to represent ${appName}?`)
                       }
                     </label>
                     <textarea
@@ -289,7 +295,10 @@ export default function AmbassadorModal({ isOpen, onClose, accent = 'var(--accen
                       onChange={e => setFormData(prev => ({ ...prev, comments: e.target.value }))}
                       placeholder={isOlympian 
                         ? "Tell us about your fitness journey, training style, social presence, or why you love bodybuilding and Mr. Olympia..." 
-                        : "Tell us a bit about your campus activities, student organizations, or why you love college apparel..."
+                        : (isB2K 
+                          ? "Tell us about your love for B2K, your social channels, your experience promoting street teams, or why you want to support the reunion tour..."
+                          : "Tell us a bit about your campus activities, student organizations, or why you love college apparel..."
+                        )
                       }
                       rows={4}
                       style={{
@@ -383,7 +392,7 @@ export default function AmbassadorModal({ isOpen, onClose, accent = 'var(--accen
                   Application Received!
                 </h3>
                 <p style={{ margin: '0 0 32px 0', fontSize: '14px', color: 'var(--text-secondary)', lineHeight: 1.6, maxWidth: '320px' }}>
-                  Thank you, <strong>{formData.firstName}</strong>. We've received your ambassador application and our {isOlympian ? "athlete coordination" : "campus"} team will reach out to you shortly.
+                  Thank you, <strong>{formData.firstName}</strong>. We've received your application and our {isOlympian ? "athlete coordination" : (isB2K ? "street team coordination" : "campus")} team will reach out to you shortly.
                 </p>
                 <button
                   onClick={handleClose}

@@ -78,6 +78,9 @@ export default function N2NHome({ wlConfig, categories, activeVideo, setActiveVi
                      config?.name?.toLowerCase().includes('muscle') ||
                      config?.name?.toLowerCase().includes('fitness');
 
+  const isB2K = config?.name?.toLowerCase().includes('b2k') || 
+                config?.domain?.includes('b2k.vibenetwork.tv');
+
   // ─── AVO Hero Slides — real shopavo.la CDN images ───────────────
   const AVO_HERO_SLIDES = [
     { school: 'Baylor', short: 'Baylor', subtitle: 'New Collection', copy: 'Represent the Bears with our newest campus essentials.', image: 'https://shopavo.la/cdn/shop/files/msu-hp-hero_1500x.jpg?v=1775144388', link: 'https://shopavo.la/collections/baylor' },
@@ -96,7 +99,13 @@ export default function N2NHome({ wlConfig, categories, activeVideo, setActiveVi
     { school: 'Press Conference', short: 'Press Conf.', subtitle: 'Face‑offs & Predictions', copy: 'Hear from the world\'s best athletes as they face off before taking the stage.', image: 'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?auto=format&fit=crop&q=80&w=1500', link: 'https://mrolympia.com/weekend-schedule' }
   ];
 
-  const HERO_SLIDES = isOlympian ? OLYMPIAN_HERO_SLIDES : AVO_HERO_SLIDES;
+  const B2K_HERO_SLIDES = [
+    { school: 'The Millennium Tour', short: 'Boys 4 Life Tour', subtitle: '25th Anniversary Reunion', copy: 'B2K and Bow Wow live, featuring Jeremih, Pretty Ricky, Amerie, and more. Celebrate 25 years of the boy band legacy.', image: 'https://www.vibe.com/wp-content/uploads/2019/05/VIBE-B2K-5-1557518926.jpg', link: 'https://b2kofficial.com/tour' },
+    { school: 'New Studio Album', short: 'New Album', subtitle: 'First Album in Over 20 Years', copy: 'Pre-order the new Boys 4 Life album, capturing the classic B2K R&B harmonies and modern beats.', image: 'https://www.vibe.com/wp-content/uploads/2019/05/VIBE-B2K-6-1557518986-e1660607966438.jpg', link: '/shop' },
+    { school: 'B2K Members', short: 'The Members', subtitle: 'Omarion, Lil Fizz, J-Boog & Raz-B', copy: 'Explore individual child networks to get exclusive updates, behind-the-scenes content, and solo releases from all four members.', image: 'https://www.vibe.com/wp-content/uploads/2019/05/B2K-vibe-magazine-digital-cover-1557942120.jpg', link: '#child-networks-slider' }
+  ];
+
+  const HERO_SLIDES = isOlympian ? OLYMPIAN_HERO_SLIDES : (isB2K ? B2K_HERO_SLIDES : AVO_HERO_SLIDES);
 
   const [heroSlide, setHeroSlide] = useState(0);
 
@@ -174,10 +183,10 @@ export default function N2NHome({ wlConfig, categories, activeVideo, setActiveVi
               background: 'rgba(255,255,255,0.05)', backdropFilter: 'blur(10px)',
             }}>
               <p style={{ margin: 0, fontSize: '32px', fontWeight: 900, color: '#fff', letterSpacing: '-1px', lineHeight: 1.2 }}>
-                {isOlympian ? '50+ Years' : '$17,480,130'}<span style={{ color: accent }}>+</span>
+                {isOlympian ? '50+ Years' : (isB2K ? '25 Years' : '$17,480,130')}<span style={{ color: accent }}>+</span>
               </p>
               <p style={{ margin: '4px 0 0', fontSize: '13px', fontWeight: 600, color: 'rgba(255,255,255,0.6)', textTransform: 'uppercase', letterSpacing: '2px' }}>
-                {isOlympian ? 'Of Championing Legendary Athletes & Fitness Excellence' : 'Raised to empower student‑athletes nationwide'}
+                {isOlympian ? 'Of Championing Legendary Athletes & Fitness Excellence' : (isB2K ? 'Of R&B Harmonies, Multi-Platinum Hits & Tour Legacies' : 'Raised to empower student‑athletes nationwide')}
               </p>
             </div>
           </motion.div>
@@ -235,7 +244,7 @@ export default function N2NHome({ wlConfig, categories, activeVideo, setActiveVi
       {/* NCAA College Ticker — bottom of hero */}
       <div style={{ position: 'relative', zIndex: 10 }}>
         <Suspense fallback={null}>
-          <CollegeTicker accent={config.accent} isOlympian={isOlympian} />
+          <CollegeTicker accent={config.accent} isOlympian={isOlympian} isB2K={isB2K} />
         </Suspense>
       </div>
 
@@ -244,7 +253,7 @@ export default function N2NHome({ wlConfig, categories, activeVideo, setActiveVi
         {/* ── Watch Live ──────────────────────────────────────── */}
         <div id="whats-on-now">
           <Suspense fallback={null}>
-            <WatchLive accent={config.accent} isOlympian={isOlympian} />
+            <WatchLive accent={config.accent} isOlympian={isOlympian} isB2K={isB2K} />
           </Suspense>
         </div>
 
@@ -261,8 +270,8 @@ export default function N2NHome({ wlConfig, categories, activeVideo, setActiveVi
               flex: '0 0 45%', position: 'relative', overflow: 'hidden',
             }}>
               <img
-                src={isOlympian ? "https://images.unsplash.com/photo-1583454110551-21f2fa2afe61?auto=format&fit=crop&q=80&w=800" : "https://shopavo.la/cdn/shop/files/bama-desk-hp-1_1500x.jpg?v=1774210820"}
-                alt={isOlympian ? "Official Gear" : "New Drop"}
+                src={isOlympian ? "https://images.unsplash.com/photo-1583454110551-21f2fa2afe61?auto=format&fit=crop&q=80&w=800" : (isB2K ? "https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?auto=format&fit=crop&q=80&w=800" : "https://shopavo.la/cdn/shop/files/bama-desk-hp-1_1500x.jpg?v=1774210820")}
+                alt={isOlympian ? "Official Gear" : (isB2K ? "Official Tour Merch" : "New Drop")}
                 style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
               />
               <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to right, transparent 60%, #000 100%)' }} />
@@ -272,7 +281,7 @@ export default function N2NHome({ wlConfig, categories, activeVideo, setActiveVi
                 padding: '6px 14px', background: accent, color: '#000',
                 fontSize: '10px', fontWeight: 900, letterSpacing: '2px', textTransform: 'uppercase',
               }}>
-                {isOlympian ? "Official Gear" : "New Drop"}
+                {isOlympian ? "Official Gear" : (isB2K ? "Official Merch" : "New Drop")}
               </div>
             </div>
 
@@ -292,7 +301,7 @@ export default function N2NHome({ wlConfig, categories, activeVideo, setActiveVi
                 fontSize: '11px', fontWeight: 800, textTransform: 'uppercase',
                 letterSpacing: '3px', color: accent, margin: '0 0 12px 0',
               }}>
-                {isOlympian ? "Olympia Collection" : "Summer 2026 Collection"}
+                {isOlympian ? "Olympia Collection" : (isB2K ? "Official Tour Merch" : "Summer 2026 Collection")}
               </p>
               <h2 style={{
                 fontSize: '34px', fontWeight: 900, color: '#fff', margin: '0 0 14px 0',
@@ -301,14 +310,18 @@ export default function N2NHome({ wlConfig, categories, activeVideo, setActiveVi
                 {isOlympian ? (
                   <>Official Weekend<br />Gear & Wear</>
                 ) : (
-                  <>Game Day<br />Essentials</>
+                  isB2K ? (
+                    <>Millennium Tour<br />Official Merch</>
+                  ) : (
+                    <>Game Day<br />Essentials</>
+                  )
                 )}
               </h2>
               <p style={{
                 fontSize: '14px', color: 'rgba(255,255,255,0.5)', lineHeight: 1.7,
                 margin: '0 0 28px 0', maxWidth: '380px',
               }}>
-                {isOlympian ? "Premium bodybuilding and lifestyle apparel engineered for champions. Rep the legacy with official Mr. Olympia hoodies, workout shirts, and accessories." : "Premium collegiate apparel for every school in the AVO family. Rep your team with style — new colorways and exclusive designs just dropped."}
+                {isOlympian ? "Premium bodybuilding and lifestyle apparel engineered for champions. Rep the legacy with official Mr. Olympia hoodies, workout shirts, and accessories." : (isB2K ? "Pre-order exclusive Boys 4 Life tour hoodies, vintage graphic tees, and autographed vinyl. Rep the legendary boy band reunion in style." : "Premium collegiate apparel for every school in the AVO family. Rep your team with style — new colorways and exclusive designs just dropped.")}
               </p>
               <a
                 href={'/shop' + (typeof window !== 'undefined' ? window.location.search : '')}
@@ -322,7 +335,7 @@ export default function N2NHome({ wlConfig, categories, activeVideo, setActiveVi
                 onMouseOver={e => { e.currentTarget.style.background = '#fff'; e.currentTarget.style.color = '#000'; }}
                 onMouseOut={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = '#fff'; }}
               >
-                {isOlympian ? "Shop The Collection" : "Shop The Drop"}
+                {isOlympian ? "Shop The Collection" : (isB2K ? "Shop The Merch" : "Shop The Drop")}
               </a>
             </div>
           </div>
@@ -332,7 +345,7 @@ export default function N2NHome({ wlConfig, categories, activeVideo, setActiveVi
         {childItems.length > 0 && (
           <div id="child-networks-slider">
             <SliderSection
-              title={isOlympian ? "OLYMPIA PARTNERS" : "AVO NETWORKS"}
+              title={isOlympian ? "OLYMPIA PARTNERS" : (isB2K ? "B2K MEMBERS" : "AVO NETWORKS")}
               items={childItems}
               delay={0}
               aspectRatio="16/9"
@@ -348,12 +361,12 @@ export default function N2NHome({ wlConfig, categories, activeVideo, setActiveVi
         {/* ── Child Network Feeds (Trending Moments) ────────────── */}
         {childItems.length > 0 && (
           <Suspense fallback={null}>
-            <ChildNetworkFeeds parentId={config.id} accent={accent} isOlympian={isOlympian} />
+            <ChildNetworkFeeds parentId={config.id} accent={accent} isOlympian={isOlympian} isB2K={isB2K} />
           </Suspense>
         )}
 
         {/* ── Hoodie Competition Banner ───────────────────────── */}
-        {!isOlympian && (
+        {!isOlympian && !isB2K && (
           <section style={{ maxWidth: '1400px', margin: '40px auto', padding: '0 40px' }}>
             <div style={{
               position: 'relative', overflow: 'hidden',
@@ -446,7 +459,7 @@ export default function N2NHome({ wlConfig, categories, activeVideo, setActiveVi
           </section>
         )}
 
-        {/* ── AVO Summer Concert Tour Banner ─────────────────── */}
+        {/* ── AVO Summer Concert Tour Banner / B2K Tour Banner ── */}
         {!isOlympian && (
           <section style={{ maxWidth: '1400px', margin: '40px auto', padding: '0 40px' }}>
             <div style={{
@@ -460,7 +473,7 @@ export default function N2NHome({ wlConfig, categories, activeVideo, setActiveVi
               {/* Background Image */}
               <div style={{
                 position: 'absolute', inset: 0,
-                backgroundImage: 'url(/n2n/concert_in_the_park.png)',
+                backgroundImage: `url(${isB2K ? "https://images.unsplash.com/photo-1470225620780-dba8ba36b745?auto=format&fit=crop&q=80&w=1200" : "/n2n/concert_in_the_park.png"})`,
                 backgroundSize: 'cover', backgroundPosition: 'center 35%',
                 filter: 'brightness(0.32)'
               }} />
@@ -473,30 +486,35 @@ export default function N2NHome({ wlConfig, categories, activeVideo, setActiveVi
               }}>
                 <div style={{
                   display: 'inline-flex', alignItems: 'center', gap: '8px',
-                  padding: '6px 14px', background: 'linear-gradient(90deg, #FF512F, #DD2476)', color: '#fff',
+                  padding: '6px 14px', background: isB2K ? accent : 'linear-gradient(90deg, #FF512F, #DD2476)', color: isB2K ? '#000' : '#fff',
                   fontSize: '10px', fontWeight: 900, letterSpacing: '2px', textTransform: 'uppercase',
                   marginBottom: '20px',
                 }}>
-                  🎸 Summer 2026 Tour
+                  {isB2K ? "🎤 The Millennium Tour" : "🎸 Summer 2026 Tour"}
                 </div>
                 <h2 style={{
                   fontSize: '38px', fontWeight: 900, color: '#fff', margin: '0 0 16px 0',
                   lineHeight: 1.1, letterSpacing: '-1px', textTransform: 'uppercase',
                 }}>
-                  AVO Summer<br />Concert Tour
+                  {isB2K ? <>The Boys 4 Life<br />Reunion Tour</> : <>AVO Summer<br />Concert Tour</>}
                 </h2>
                 <p style={{
                   fontSize: '15px', color: 'rgba(255,255,255,0.6)', lineHeight: 1.7,
                   margin: '0 0 28px 0',
                 }}>
-                  Catch the vibes live! AVO is hitting the road this summer, bringing your favorite bands and artists to collegiate campus parks nationwide. Grab your crew, rep your school colors, and experience the ultimate summer soundtrack.
+                  {isB2K ? "B2K is back on stage celebrating their 25th anniversary. The 28-city reunion tour features Bow Wow, Jeremih, Pretty Ricky, Amerie, and more, kicking off in Columbia, SC, and routing across the country. Don't miss this historic R&B reunion live!" : "Catch the vibes live! AVO is hitting the road this summer, bringing your favorite bands and artists to collegiate campus parks nationwide. Grab your crew, rep your school colors, and experience the ultimate summer soundtrack."}
                 </p>
                 <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap' }}>
                   <button
+                    onClick={() => {
+                      if (isB2K) {
+                        window.open("https://b2kofficial.com/tour", "_blank");
+                      }
+                    }}
                     style={{
                       display: 'inline-block', padding: '14px 44px', fontSize: '11px', fontWeight: 800,
                       textTransform: 'uppercase', letterSpacing: '2.5px',
-                      background: accent, color: '#fff',
+                      background: accent, color: '#000',
                       border: 'none', transition: 'all 0.25s',
                       cursor: 'pointer'
                     }}
@@ -506,6 +524,11 @@ export default function N2NHome({ wlConfig, categories, activeVideo, setActiveVi
                     Buy Now
                   </button>
                   <button
+                    onClick={() => {
+                      if (isB2K) {
+                        window.location.hash = "#whats-on-now";
+                      }
+                    }}
                     style={{
                       display: 'inline-block', padding: '14px 44px', fontSize: '11px', fontWeight: 800,
                       textTransform: 'uppercase', letterSpacing: '2.5px',
@@ -525,7 +548,7 @@ export default function N2NHome({ wlConfig, categories, activeVideo, setActiveVi
         )}
 
         {/* ── College Sports News Feed ──────────────────────── */}
-        {!isOlympian && (
+        {!isOlympian && !isB2K && (
           <Suspense fallback={null}>
             <CollegeNewsFeed accent={config.accent} />
           </Suspense>
@@ -658,7 +681,7 @@ export default function N2NHome({ wlConfig, categories, activeVideo, setActiveVi
             {/* Background image */}
             <div style={{
               position: 'absolute', inset: 0,
-              backgroundImage: `url(${isOlympian ? "https://images.unsplash.com/photo-1517838277536-f5f99be501cd?auto=format&fit=crop&q=80&w=1200" : "https://shopavo.la/cdn/shop/files/Homepage_Vanderbilt_Desktop2_c7f572ef-cd7e-4de4-bb9c-160b99884e08_1500x.jpg?v=1776284877"})`,
+              backgroundImage: `url(${isOlympian ? "https://images.unsplash.com/photo-1517838277536-f5f99be501cd?auto=format&fit=crop&q=80&w=1200" : (isB2K ? "https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?auto=format&fit=crop&q=80&w=1200" : "https://shopavo.la/cdn/shop/files/Homepage_Vanderbilt_Desktop2_c7f572ef-cd7e-4de4-bb9c-160b99884e08_1500x.jpg?v=1776284877")})`,
               backgroundSize: 'cover', backgroundPosition: 'center',
               filter: 'brightness(0.3)',
             }} />
@@ -670,7 +693,7 @@ export default function N2NHome({ wlConfig, categories, activeVideo, setActiveVi
                   fontSize: '11px', fontWeight: 800, textTransform: 'uppercase',
                   letterSpacing: '3px', color: accent, marginBottom: '12px',
                 }}>
-                  {isOlympian ? "Olympia Ambassadors" : "Campus Ambassadors"}
+                  {isOlympian ? "Olympia Ambassadors" : (isB2K ? "Street Team" : "Campus Ambassadors")}
                 </p>
                 <h2 style={{
                   fontSize: '36px', fontWeight: 900, color: '#fff', margin: '0 0 16px 0',
@@ -679,7 +702,11 @@ export default function N2NHome({ wlConfig, categories, activeVideo, setActiveVi
                   {isOlympian ? (
                     <>Represent Mr. Olympia<br />In Your Community</>
                   ) : (
-                    <>Represent AVO<br />On Your Campus</>
+                    isB2K ? (
+                      <>B2K Street Team &amp;<br />Millennium Ambassador</>
+                    ) : (
+                      <>Represent AVO<br />On Your Campus</>
+                    )
                   )}
                 </h2>
                 <p style={{
@@ -687,7 +714,10 @@ export default function N2NHome({ wlConfig, categories, activeVideo, setActiveVi
                 }}>
                   {isOlympian 
                     ? "Join the official Mr. Olympia Ambassador Program. Share fitness tips, review premium workout apparel, and earn exclusive event credentials, early access, and commissions."
-                    : "Join the AVO Ambassador Program and bring premium college apparel to your school. Earn exclusive perks, early access to drops, and commissions on every sale."}
+                    : (isB2K 
+                      ? "Join the official B2K Millennium Street Team. Promote the Boys 4 Life Tour, share new music updates, and earn exclusive backstage passes, VIP meet-and-greets, and limited edition merch."
+                      : "Join the AVO Ambassador Program and bring premium college apparel to your school. Earn exclusive perks, early access to drops, and commissions on every sale."
+                    )}
                 </p>
               </div>
                             <button

@@ -10,6 +10,8 @@ const MoreInfo: React.FC = () => {
                      wlConfig?.domain?.includes('mrolympia.com') ||
                      wlConfig?.name?.toLowerCase().includes('muscle') ||
                      wlConfig?.name?.toLowerCase().includes('fitness');
+  const isB2K = wlConfig?.name?.toLowerCase().includes('b2k') || 
+                wlConfig?.domain?.includes('b2k.vibenetwork.tv');
   const accentColor = wlConfig?.accent || 'var(--accent-primary)';
 
   return (
@@ -35,7 +37,7 @@ const MoreInfo: React.FC = () => {
         >
           {isAvo 
             ? (wlConfig?.parent_network_id ? `About AVO & ${wlConfig.name}` : 'About AVO Network')
-            : (isTenant ? `About ${wlConfig.name}` : 'About Vibe Network Architecture')}
+            : (isB2K ? 'About B2K Network' : (isTenant ? `About ${wlConfig.name}` : 'About Vibe Network Architecture'))}
         </motion.h1>
         
         {isAvo ? (
@@ -96,9 +98,13 @@ const MoreInfo: React.FC = () => {
             >
               {isOlympian 
                 ? "Mr. Olympia is the ultimate arena of professional bodybuilding. For more than half a century, the iconic competition has crowned the finest physiques on Earth, establishing a legacy of discipline, athletic brilliance, and physical perfection."
-                : isTenant 
-                  ? `${wlConfig.heroCopy || 'The premiere destination for high quality digital content.'} Powered by Vibe Network.`
-                  : "Vibe Network provides enterprise-grade, highly scalable white-label streaming architectures. Deploy high-fidelity, interactive broadcasting experiences tailored entirely to your brand's aesthetic."
+                : (isB2K 
+                  ? "B2K is one of the most successful boy bands of the 2000s. Formed in 1998, the R&B group consists of Omarion, Lil' Fizz, J-Boog, and Raz-B. Celebrating their 25th anniversary, the members have reunited for the Boys 4 Life Tour alongside solo ventures."
+                  : (isTenant 
+                    ? `${wlConfig.heroCopy || 'The premiere destination for high quality digital content.'} Powered by Vibe Network.`
+                    : "Vibe Network provides enterprise-grade, highly scalable white-label streaming architectures. Deploy high-fidelity, interactive broadcasting experiences tailored entirely to your brand's aesthetic."
+                  )
+                )
               }
             </motion.p>
             
@@ -109,12 +115,16 @@ const MoreInfo: React.FC = () => {
               style={{ background: 'var(--bg-surface)', padding: '40px', borderRadius: '24px', border: '1px solid var(--bg-surface-hover)' }}
             >
               <h2 style={{ fontSize: '24px', fontWeight: 700, marginBottom: '16px' }}>
-                {isOlympian ? 'About Mr. Olympia' : (isTenant ? 'Our Platform' : 'Key Features')}
+                {isOlympian ? 'About Mr. Olympia' : (isB2K ? 'About B2K' : (isTenant ? 'Our Platform' : 'Key Features'))}
               </h2>
               
               {isOlympian ? (
                 <p style={{ color: 'var(--text-secondary)', fontSize: '18px', lineHeight: 1.8, margin: 0 }}>
                   The official Mr. Olympia Network-to-Network (N2N) platform connects bodybuilding enthusiasts globally with exclusive media clips, event schedules, and official gear from legendary partner brands: Gold's Gym, Gaspari Nutrition, Rogue Fitness, Redcon1, and Gymshark. Together, we celebrate the passion and dedication that defines the fitness lifestyle.
+                </p>
+              ) : isB2K ? (
+                <p style={{ color: 'var(--text-secondary)', fontSize: '18px', lineHeight: 1.8, margin: 0 }}>
+                  The official B2K Network-to-Network (N2N) platform aggregates exclusive content, new music pre-orders, and merchandise from B2K and the individual networks of all four members: Omarion, Lil' Fizz, J-Boog, and Raz-B. Experience the group's legendary R&B harmonies and keep up with their solo endeavors all in one place.
                 </p>
               ) : isTenant ? (
                 <p style={{ color: 'var(--text-secondary)', fontSize: '18px', lineHeight: 1.6 }}>

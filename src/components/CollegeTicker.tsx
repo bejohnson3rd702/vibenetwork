@@ -23,9 +23,18 @@ const OLYMPIA_EVENTS = [
   { sport: '👑 SATURDAY FINALS', away: { name: 'Saturday Finals' }, home: { name: 'Mr. Olympia Finals' }, status: 'SAT OCT 10 · 6:00 PM' },
 ];
 
+const B2K_EVENTS = [
+  { sport: '🎤 TOUR STARTS', away: { name: 'Columbia, SC' }, home: { name: 'Colonial Life Arena' }, status: 'FEB 12 · 7:30 PM' },
+  { sport: '🔥 REUNION', away: { name: 'Atlanta, GA' }, home: { name: 'State Farm Arena' }, status: 'FEB 13 · 8:00 PM' },
+  { sport: '🎧 LIVE SHOW', away: { name: 'Chicago, IL' }, home: { name: 'United Center' }, status: 'FEB 22 · 8:00 PM' },
+  { sport: '👑 LEGENDS', away: { name: 'Brooklyn, NY' }, home: { name: 'Barclays Center' }, status: 'MAR 20 · 8:00 PM' },
+  { sport: '💫 TOUR LIVE', away: { name: 'Los Angeles, CA' }, home: { name: 'The Forum' }, status: 'MAR 15 · 7:30 PM' },
+  { sport: '✨ FINALE', away: { name: 'Hampton, VA' }, home: { name: 'Hampton Coliseum' }, status: 'APR 19 · 7:00 PM' },
+];
+
 const API_BASE = '/api/ncaa';
 
-export default function CollegeTicker({ accent = '#D35400', isOlympian = false }: { accent?: string; isOlympian?: boolean }) {
+export default function CollegeTicker({ accent = '#D35400', isOlympian = false, isB2K = false }: { accent?: string; isOlympian?: boolean; isB2K?: boolean }) {
   const [games, setGames] = useState<GameScore[]>([]);
   const [loading, setLoading] = useState(true);
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -35,6 +44,19 @@ export default function CollegeTicker({ accent = '#D35400', isOlympian = false }
     if (isOlympian) {
       const allGames: GameScore[] = OLYMPIA_EVENTS.map((e, idx) => ({
         id: `olympia-${idx}`,
+        away: { name: e.away.name, score: '' },
+        home: { name: e.home.name, score: '' },
+        status: e.status,
+        sport: e.sport,
+      }));
+      setGames(allGames);
+      setLoading(false);
+      return;
+    }
+
+    if (isB2K) {
+      const allGames: GameScore[] = B2K_EVENTS.map((e, idx) => ({
+        id: `b2k-${idx}`,
         away: { name: e.away.name, score: '' },
         home: { name: e.home.name, score: '' },
         status: e.status,
@@ -92,7 +114,7 @@ export default function CollegeTicker({ accent = '#D35400', isOlympian = false }
     fetchScores();
     const interval = setInterval(fetchScores, 90000);
     return () => clearInterval(interval);
-  }, [isOlympian]);
+  }, [isOlympian, isB2K]);
 
   useEffect(() => {
     if (!scrollRef.current || paused || games.length === 0) return;
@@ -121,7 +143,7 @@ export default function CollegeTicker({ accent = '#D35400', isOlympian = false }
         fontSize: '13px', color: '#444', letterSpacing: '2px', textTransform: 'uppercase',
         fontFamily: "'Inter', system-ui, sans-serif",
       }}>
-        ● {isOlympian ? 'OLYMPIA SCHEDULE LOADING' : 'NCAA SCOREBOARD LOADING'}
+        ● {isOlympian ? 'OLYMPIA SCHEDULE LOADING' : (isB2K ? 'B2K TOUR DATES LOADING' : 'NCAA SCOREBOARD LOADING')}
       </div>
     );
   }
@@ -157,7 +179,7 @@ export default function CollegeTicker({ accent = '#D35400', isOlympian = false }
         fontSize: '13px', fontWeight: 900, letterSpacing: '2px', color: accent,
         textTransform: 'uppercase',
       }}>
-        {isOlympian ? 'OLYMPIA' : 'NCAA'}
+        {isOlympian ? 'OLYMPIA' : (isB2K ? 'B2K TOUR' : 'NCAA')}
       </div>
 
       <div
