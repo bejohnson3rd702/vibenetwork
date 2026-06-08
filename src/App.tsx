@@ -10,6 +10,7 @@ const BusinessAdminDashboard = lazy(() => import('./components/BusinessAdminDash
 const EndUserAuthModal = lazy(() => import('./components/EndUserAuthModal'));
 const MasterAdminDashboard = lazy(() => import('./components/MasterAdminDashboard'));
 const AdminLogin = lazy(() => import('./pages/AdminLogin'));
+const LiveCustomizer = lazy(() => import('./components/LiveCustomizer'));
 const LiveChat = lazy(() => import('./components/LiveChat'));
 const BookingModal = lazy(() => import('./components/BookingModal'));
 const MoreInfo = lazy(() => import('./components/MoreInfo'));
@@ -434,6 +435,12 @@ function App() {
              <Footer />
              <CookieConsent />
           </Suspense>
+
+          {user && (user.id === wlConfig.owner_id || user.user_metadata?.role === 'admin' || user.user_metadata?.role === 'business' || user.user_metadata?.role === 'business_admin' || user.email?.includes('admin')) && (
+            <Suspense fallback={null}>
+              <LiveCustomizer />
+            </Suspense>
+          )}
         </div>
       </Router>
       </WhiteLabelContext.Provider>
