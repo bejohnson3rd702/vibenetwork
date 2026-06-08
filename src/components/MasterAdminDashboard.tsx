@@ -125,10 +125,18 @@ function MasterAdminDashboard() {
            setCurrentUser(authData.user);
            const { data: profileData } = await supabase!.from('profiles').select('is_admin').eq('id', authData.user.id).single();
            if (!profileData?.is_admin) {
-              showToast("WARNING: You are not an admin. Operations may fail due to Row Level Security.", 'error');
+              showToast("WARNING: You are not an admin. Redirecting to Admin Login...", 'error');
+              setTimeout(() => {
+                 window.location.href = `/admin-login${window.location.search}`;
+              }, 2000);
+              return;
            }
         } else {
-           showToast("You are not logged in! You must be logged in to access the Global Ledger.", 'error');
+           showToast("You are not logged in! Redirecting to Admin Login...", 'error');
+           setTimeout(() => {
+              window.location.href = `/admin-login${window.location.search}`;
+           }, 2000);
+           return;
         }
         
         try {

@@ -9,6 +9,7 @@ const ProfileDashboard = lazy(() => import('./components/ProfileDashboard'));
 const BusinessAdminDashboard = lazy(() => import('./components/BusinessAdminDashboard'));
 const EndUserAuthModal = lazy(() => import('./components/EndUserAuthModal'));
 const MasterAdminDashboard = lazy(() => import('./components/MasterAdminDashboard'));
+const AdminLogin = lazy(() => import('./pages/AdminLogin'));
 const LiveChat = lazy(() => import('./components/LiveChat'));
 const BookingModal = lazy(() => import('./components/BookingModal'));
 const MoreInfo = lazy(() => import('./components/MoreInfo'));
@@ -51,7 +52,10 @@ function App() {
     const isMaster = hostname === 'localhost' || hostname === '127.0.0.1' || hostname === MASTER_DOMAIN || hostname === 'vibenetwork.com' || hostname === 'vibenetwork.tv' || hostname.includes('vercel.app');
     return params.has('tenant') || !isMaster;
   });
-  const [showAdminPanel, setShowAdminPanel] = useState(false);
+  const [showAdminPanel, setShowAdminPanel] = useState(() => {
+    const params = new URLSearchParams(window.location.search);
+    return params.get('admin_panel') === 'true';
+  });
   const [showEndUserAuthModal, setShowEndUserAuthModal] = useState(false);
   const [showBookingModal, setShowBookingModal] = useState(false);
   const [bookingProfile, setBookingProfile] = useState<any>(null);
@@ -403,6 +407,7 @@ function App() {
               <Route path="/call/:callId" element={<VirtualCallRoom />} />
               <Route path="/food-truck" element={<FoodTruck />} />
               <Route path="/reset-password" element={<ResetPassword />} />
+              <Route path="/admin-login" element={<AdminLogin />} />
             </Routes>
           </Suspense>
           
@@ -468,6 +473,7 @@ function App() {
           <Suspense fallback={<div style={{ height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-secondary)' }}>Loading platform...</div>}>
             <Routes>
               <Route path="/master-admin" element={<MasterAdminDashboard />} />
+              <Route path="/admin-login" element={<AdminLogin />} />
               {/* <Route path="/director" element={<DirectorStudio />} /> */}
               <Route path="*" element={
                 <>
