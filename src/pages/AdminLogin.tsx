@@ -38,6 +38,7 @@ export default function AdminLogin() {
 
   // Parent Creation states
   const [showNewParentForm, setShowNewParentForm] = useState(false);
+  const [deployedParentId, setDeployedParentId] = useState('');
   const [newParentName, setNewParentName] = useState('');
   const [newParentDomain, setNewParentDomain] = useState('');
   const [newParentAccent, setNewParentAccent] = useState('#FF2A54');
@@ -92,6 +93,7 @@ export default function AdminLogin() {
       if (finalData) {
         setParentNetworks(prev => [...prev, finalData]);
         setSelectedParentId(finalData.id);
+        setDeployedParentId(finalData.id);
       }
       
       setNewParentName('');
@@ -236,6 +238,9 @@ export default function AdminLogin() {
       }
       if (token) {
         localStorage.setItem(`sb-${spawned.id}-auth-token`, token);
+        if (deployedParentId) {
+          localStorage.setItem(`sb-${deployedParentId}-auth-token`, token);
+        }
       }
 
       setCreatedNetworkId(spawned.id);
@@ -637,30 +642,62 @@ export default function AdminLogin() {
                 Deployment Completed!
               </h2>
               <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: '15px', lineHeight: 1.6, marginBottom: '28px' }}>
-                The child network template cloning has finished. Setting up routing, templates, and permissions...
+                {deployedParentId 
+                  ? 'Your new Parent N2N Network and child channel have been deployed successfully.' 
+                  : 'The child network template cloning has finished. Setting up routing, templates, and permissions...'}
               </p>
 
-              <button
-                onClick={() => {
-                  window.location.href = `/?tenant=${createdNetworkId}&admin_panel=true`;
-                }}
-                style={{
-                  background: 'linear-gradient(135deg, #00ff88, #00b35f)',
-                  color: '#000',
-                  padding: '16px 32px',
-                  border: 'none',
-                  borderRadius: '14px',
-                  fontSize: '16px',
-                  fontWeight: 800,
-                  cursor: 'pointer',
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: '8px',
-                  boxShadow: '0 8px 25px rgba(0,255,136,0.2)'
-                }}
-              >
-                Go to Spawned Network <ArrowRight size={18} />
-              </button>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', alignItems: 'center', width: '100%' }}>
+                {deployedParentId && (
+                  <button
+                    onClick={() => {
+                      window.location.href = `/?tenant=${deployedParentId}&admin_panel=true`;
+                    }}
+                    style={{
+                      background: 'linear-gradient(135deg, #FF2A54, #d60e37)',
+                      color: '#fff',
+                      padding: '16px 32px',
+                      border: 'none',
+                      borderRadius: '14px',
+                      fontSize: '16px',
+                      fontWeight: 800,
+                      cursor: 'pointer',
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '8px',
+                      boxShadow: '0 8px 25px rgba(255,42,84,0.25)',
+                      width: '100%',
+                      justifyContent: 'center'
+                    }}
+                  >
+                    Go to Parent Network to Style it <ArrowRight size={18} />
+                  </button>
+                )}
+
+                <button
+                  onClick={() => {
+                    window.location.href = `/?tenant=${createdNetworkId}&admin_panel=true`;
+                  }}
+                  style={{
+                    background: deployedParentId ? 'rgba(255,255,255,0.05)' : 'linear-gradient(135deg, #00ff88, #00b35f)',
+                    color: deployedParentId ? '#fff' : '#000',
+                    border: deployedParentId ? '1px solid rgba(255,255,255,0.1)' : 'none',
+                    padding: '16px 32px',
+                    borderRadius: '14px',
+                    fontSize: '16px',
+                    fontWeight: 800,
+                    cursor: 'pointer',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                    boxShadow: deployedParentId ? 'none' : '0 8px 25px rgba(0,255,136,0.2)',
+                    width: '100%',
+                    justifyContent: 'center'
+                  }}
+                >
+                  {deployedParentId ? 'Go to Child Channel' : 'Go to Spawned Network'} <ArrowRight size={18} />
+                </button>
+              </div>
             </motion.div>
           )}
         </AnimatePresence>
