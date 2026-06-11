@@ -28,7 +28,7 @@ const OLYMPIA_CHAMPIONS = [
   {
     id: '84071a35-5f73-4927-a0a7-828800245096',
     title: 'Samson Dauda',
-    image: 'https://images.unsplash.com/photo-1581009146145-b5ef050c2e1e?auto=format&fit=crop&q=80&w=600',
+    image: 'https://img.youtube.com/vi/Xh0Y9Z1JcE4/hqdefault.jpg',
     tags: ['2024 Champion', 'Mr. Olympia'],
   },
   {
