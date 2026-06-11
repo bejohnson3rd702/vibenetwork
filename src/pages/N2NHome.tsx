@@ -28,19 +28,19 @@ const OLYMPIA_CHAMPIONS = [
   {
     id: '84071a35-5f73-4927-a0a7-828800245096',
     title: 'Samson Dauda',
-    image: 'https://img.youtube.com/vi/Xh0Y9Z1JcE4/hqdefault.jpg',
+    image: '/n2n/samson.jpeg',
     tags: ['2024 Champion', 'Mr. Olympia'],
   },
   {
     id: 'c88adb24-5d9e-4886-9be0-e79f03f3d79e',
     title: 'Derek Lunsford',
-    image: 'https://upload.wikimedia.org/wikipedia/commons/0/03/Derek_Lunsford_Arnold_Classic.jpg',
+    image: '/n2n/derek.jpeg',
     tags: ['2023 Champion', 'Mr. Olympia'],
   },
   {
     id: 'b4537110-f393-4fde-9f94-6885391589d8',
     title: 'Hadi Choopan',
-    image: 'https://upload.wikimedia.org/wikipedia/commons/d/d5/%D9%87%D8%A7%D8%AF%DB%8C_%DA%86%D9%88%D9%BE%D8%A7%D9%86_2024.jpg',
+    image: '/n2n/hadi.jpg',
     tags: ['2022 Champion', 'Mr. Olympia'],
   },
   {
@@ -52,7 +52,7 @@ const OLYMPIA_CHAMPIONS = [
   {
     id: '6d0b723d-c5ba-4991-8a89-b1466ed3b3ef',
     title: 'Brandon Curry',
-    image: 'https://upload.wikimedia.org/wikipedia/commons/0/01/Brandon_curry_2.jpg',
+    image: '/n2n/brandon.jpeg',
     tags: ['2019 Champion', 'Mr. Olympia'],
   },
   {
