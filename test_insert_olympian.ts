@@ -39,7 +39,7 @@ async function run() {
       heroCopy: 'Muscle & Fitness — Mr. Olympian Edition',
       heroImage: 'https://images.unsplash.com/photo-1517838277536-f5f99be501cd?auto=format&fit=crop&q=80&w=1200',
       logoImage: '/n2n/muscle_fitness_logo.svg',
-      shopifyUrl: 'https://mrolympia.com/weekend-schedule',
+      shopifyUrl: 'https://www.gymreapers.com/collections/olympia-collection?utm_source=Website&utm_medium=Olympia&utm_campaign=Web+Banner&utm_id=Olympia&utm_term=limited+drop',
       sliderCount: 4,
       enableBooking: false,
       heroLayoutMode: 'verbiage',

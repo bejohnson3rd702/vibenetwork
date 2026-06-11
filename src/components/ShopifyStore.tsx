@@ -53,16 +53,17 @@ export default function ShopifyStore() {
       setError('');
       try {
         const isBama = resolvedShopifyUrl.includes('avo-x-bama');
+        const cleanUrl = resolvedShopifyUrl.split('?')[0].replace(/\/$/, '');
         
         let jsonUrl = '';
         const headers: Record<string, string> = {};
         if (isBama) {
           jsonUrl = '/api/bama/api/v1/shopify/products?status=active&limit=50&vendor=AVO';
           headers['x-tenant-subdomain'] = 'alabama';
-        } else if (resolvedShopifyUrl.includes('/collections/')) {
-          jsonUrl = resolvedShopifyUrl.replace(/\/$/, '') + '/products.json';
-        } else if (resolvedShopifyUrl.includes('/pages/')) {
-          const slug = resolvedShopifyUrl.split('/pages/')[1]?.replace(/\/$/, '');
+        } else if (cleanUrl.includes('/collections/')) {
+          jsonUrl = cleanUrl + '/products.json';
+        } else if (cleanUrl.includes('/pages/')) {
+          const slug = cleanUrl.split('/pages/')[1]?.replace(/\/$/, '');
           jsonUrl = `https://shopavo.la/products.json?tag=${slug}`;
         }
 
@@ -109,8 +110,10 @@ export default function ShopifyStore() {
     if (resolvedShopifyUrl.includes('avo-x-bama')) {
       return `https://store.yea-alabama.com/products/${product.handle}`;
     }
-    const storeDomain = resolvedShopifyUrl.split('/collections/')[0] || resolvedShopifyUrl.split('/pages/')[0] || 'https://shopavo.la';
-    return `${storeDomain}/products/${product.handle}`;
+    const parts = resolvedShopifyUrl.split('?');
+    const storeDomain = parts[0].split('/collections/')[0] || parts[0].split('/pages/')[0] || 'https://shopavo.la';
+    const query = parts[1] ? `?${parts[1]}` : '';
+    return `${storeDomain}/products/${product.handle}${query}`;
   };
 
   const getPrice = (product: ShopifyProduct) => {

@@ -23,6 +23,63 @@ interface N2NHomeProps {
   setActiveVideo: (video: VideoItem | null) => void;
 }
 
+const OLYMPIA_CHAMPIONS = [
+  {
+    id: 'mr-2024',
+    title: 'Samson Dauda',
+    image: 'https://images.unsplash.com/photo-1581009146145-b5ef050c2e1e?auto=format&fit=crop&q=80&w=600',
+    tags: ['2024 Champion', 'Mr. Olympia'],
+  },
+  {
+    id: 'mr-2023',
+    title: 'Derek Lunsford',
+    image: 'https://upload.wikimedia.org/wikipedia/commons/0/03/Derek_Lunsford_Arnold_Classic.jpg',
+    tags: ['2023 Champion', 'Mr. Olympia'],
+  },
+  {
+    id: 'mr-2022',
+    title: 'Hadi Choopan',
+    image: 'https://upload.wikimedia.org/wikipedia/commons/d/d5/%D9%87%D8%A7%D8%AF%DB%8C_%DA%86%D9%88%D9%BE%D8%A7%D9%86_2024.jpg',
+    tags: ['2022 Champion', 'Mr. Olympia'],
+  },
+  {
+    id: 'mr-ramy',
+    title: 'Big Ramy',
+    image: 'https://upload.wikimedia.org/wikipedia/commons/4/4f/Big_Ramy2.png',
+    tags: ['2x Champion', 'Mr. Olympia'],
+  },
+  {
+    id: 'mr-2019',
+    title: 'Brandon Curry',
+    image: 'https://upload.wikimedia.org/wikipedia/commons/0/01/Brandon_curry_2.jpg',
+    tags: ['2019 Champion', 'Mr. Olympia'],
+  },
+  {
+    id: 'mr-2018',
+    title: 'Shawn Rhoden',
+    image: 'https://upload.wikimedia.org/wikipedia/commons/3/30/Shawn_Rhoden.jpg',
+    tags: ['2018 Champion', 'Mr. Olympia'],
+  },
+  {
+    id: 'mr-2017',
+    title: 'Phil Heath',
+    image: 'https://upload.wikimedia.org/wikipedia/commons/9/91/Philheath.jpg',
+    tags: ['7x Champion', 'Mr. Olympia'],
+  },
+  {
+    id: 'mrs-andrea-shaw',
+    title: 'Andrea Shaw',
+    image: 'https://upload.wikimedia.org/wikipedia/commons/9/9f/Andrea_Shaw_at_the_2023_IFBB_Pro_League_New_York_Pro.png',
+    tags: ['6x Champion', 'Ms. Olympia'],
+  },
+  {
+    id: 'mrs-iris-kyle',
+    title: 'Iris Kyle',
+    image: 'https://upload.wikimedia.org/wikipedia/commons/7/78/Iris_Kyle_posing_at_2008_Ms._Olympia_%28cropped%29.jpg',
+    tags: ['10x Champion', 'Ms. Olympia'],
+  },
+];
+
 export default function N2NHome({ wlConfig, categories, activeVideo, setActiveVideo }: N2NHomeProps) {
   const { wlConfig: ctxConfig } = useWhiteLabel();
   const config = wlConfig || ctxConfig;
@@ -375,13 +432,25 @@ export default function N2NHome({ wlConfig, categories, activeVideo, setActiveVi
           </div>
         </section>
 
+        {/* ── Mr. & Mrs. Olympia Slider ──────────────────────── */}
+        {isOlympian && (
+          <div id="olympia-champions-slider">
+            <SliderSection
+              title="MR. & MRS. OLYMPIA"
+              items={OLYMPIA_CHAMPIONS}
+              delay={0}
+              aspectRatio="1/1"
+            />
+          </div>
+        )}
+
         {/* ── Child Networks Slider ────────────────────────────── */}
         {childItems.length > 0 && (
           <div id="child-networks-slider">
             <SliderSection
               title={isOlympian ? "OLYMPIA PARTNERS" : (isB2K ? "B2K MEMBERS" : "AVO NETWORKS")}
               items={childItems}
-              delay={0}
+              delay={isOlympian ? 0.1 : 0}
               aspectRatio="16/9"
               onItemClick={(item) => {
                 if (item.linkUrl) {
