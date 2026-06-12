@@ -375,7 +375,7 @@ export default function N2NHome({ wlConfig, categories, activeVideo, setActiveVi
         {/* ── Watch Live ──────────────────────────────────────── */}
         <div id="whats-on-now">
           <Suspense fallback={null}>
-            <WatchLive accent={config.accent} isOlympian={isOlympian} isB2K={isB2K} isVibe={isVibe} />
+            <WatchLive accent={config.accent} isOlympian={isOlympian} isB2K={isB2K} isVibe={isVibe} isKple={isKple} />
           </Suspense>
         </div>
 
