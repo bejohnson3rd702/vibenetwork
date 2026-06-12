@@ -314,7 +314,7 @@ function App() {
          document.documentElement.style.setProperty('--accent-primary', wlConfig.accent);
       }
       
-      // Dynamic High-Impact Typography for Muscle & Fitness / Mr. Olympian
+      // Dynamic High-Impact Typography for Mr. Olympia
       const isOlympian = wlConfig.name?.toLowerCase().includes('olympia') || 
                          wlConfig.domain?.includes('mrolympia.com') ||
                          wlConfig.name?.toLowerCase().includes('muscle') ||
