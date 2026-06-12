@@ -164,16 +164,12 @@ const Hero: React.FC = () => {
             className="flex-col-mobile flex-col-tablet gap-mobile-sm" 
             style={{ display: 'flex', gap: '20px', justifyContent: 'center' }}
           >
-            {/* Primary Sleek Button */}
             <motion.button 
-              onClick={() => document.getElementById('whats-on-now')?.scrollIntoView({ behavior: 'smooth' })}
-              whileHover={{ scale: 1.05, y: -2 }}
-              whileTap={{ scale: 0.95 }}
               style={{ 
                 display: 'flex', alignItems: 'center', gap: '12px', padding: '18px 40px', 
                 fontSize: '14px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '2px',
                 background: wlConfig?.accent || 'var(--accent-primary)', color: 'var(--text-primary)', border: 'none', borderRadius: '14px',
-                cursor: 'pointer', boxShadow: `0 10px 30px ${wlConfig?.accent ? wlConfig.accent + '66' : 'rgba(211, 84, 0, 0.4)'}`, transition: 'all 0.3s ease'
+                boxShadow: `0 10px 30px ${wlConfig?.accent ? wlConfig.accent + '66' : 'rgba(211, 84, 0, 0.4)'}`, transition: 'all 0.3s ease'
               }}
             >
               <Play fill="white" size={18} />
