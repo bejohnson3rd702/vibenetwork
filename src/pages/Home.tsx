@@ -2,7 +2,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { X } from 'lucide-react';
 import { lazy, Suspense } from 'react';
 import Hero from '../components/Hero';
-import WhatsOnNow from '../components/WhatsOnNow';
+const WatchLive = lazy(() => import('../components/WatchLive'));
 import SliderSection from '../components/SliderSection';
 import type { Category, VideoItem, User } from '../types';
 
@@ -46,7 +46,9 @@ export default function Home({ categories, activeVideo, setActiveVideo, user }: 
 
         {wlConfig?.enableWatchLive !== false && (
           <div id="whats-on-now">
-            <WhatsOnNow />
+            <Suspense fallback={null}>
+              <WatchLive accent={wlConfig?.accent} isVibe={true} />
+            </Suspense>
           </div>
         )}
 

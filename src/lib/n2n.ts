@@ -35,7 +35,23 @@ export async function getChildNetworks(parentId: string): Promise<WlConfig[]> {
   }
 
   if (!data) return [];
-  return data.map((row: any) => normalizeWlConfig(row));
+  
+  // Filter out test networks (Noelani, Bennie, Leilani, Leiloe, etc.)
+  const filtered = data.filter((row: any) => {
+    const domainLower = (row.domain || '').toLowerCase();
+    const nameLower = (row.name || '').toLowerCase();
+    if (
+      nameLower.includes('bennie') || nameLower.includes('noelani') || 
+      nameLower.includes('leilani') || nameLower.includes('leiloe') ||
+      domainLower.includes('bennie') || domainLower.includes('noelani') ||
+      domainLower.includes('leilani') || domainLower.includes('leiloe')
+    ) {
+      return false;
+    }
+    return true;
+  });
+
+  return filtered.map((row: any) => normalizeWlConfig(row));
 }
 
 /** Fetch all network IDs in the N2N tree (parent + children) */

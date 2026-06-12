@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { Play, Tv, X, ChevronLeft, ChevronRight, Clock } from 'lucide-react';
+import { Play, Tv, X, ChevronLeft, ChevronRight, Clock, ExternalLink } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 interface VideoClip {
@@ -11,6 +11,7 @@ interface VideoClip {
   duration: number;
   source: string;
   sport: string;
+  articleUrl?: string;
 }
 
 const FEEDS = [
@@ -30,6 +31,13 @@ const B2K_FEEDS = [
   { key: 'omarion', label: '🎤 Omarion' },
   { key: 'fizz', label: "🎧 Lil' Fizz" },
   { key: 'jboog', label: '🎸 J-Boog' },
+];
+
+const VIBE_FEEDS = [
+  { key: 'news', label: '📰 CNN News', url: '/api/rss/cnn/edition.rss' },
+  { key: 'politics', label: '⚖️ Fox Politics', url: '/api/rss/foxnews/politics.xml' },
+  { key: 'entertainment', label: '🎭 People Weekly', url: '/api/rss/people/feed' },
+  { key: 'money', label: '💵 CNBC Business', url: '/api/rss/cnbc/combinedcms/view.xml?partnerId=wrss01&id=10001147' },
 ];
 
 const B2K_CLIPS: VideoClip[] = [
@@ -188,7 +196,54 @@ const STATIC_OLYMPIAN_CLIPS: VideoClip[] = [
   }
 ];
 
-export default function WatchLive({ accent = '#D35400', isOlympian = false, isB2K = false }: { accent?: string; isOlympian?: boolean; isB2K?: boolean }) {
+const STATIC_VIBE_CLIPS: VideoClip[] = [
+  {
+    id: 'vibe-1',
+    headline: 'Politics: Sweeping Changes Proposed in New Federal Budget Plan',
+    description: 'The proposed federal budget introduces significant adjustments to tax codes, infrastructure funding, and environmental incentives.',
+    thumbnail: 'https://images.unsplash.com/photo-1541872703-74c5e44368f9?auto=format&fit=crop&q=80&w=600',
+    videoUrl: 'https://videos.pexels.com/video-files/3192023/3192023-hd_1920_1080_25fps.mp4',
+    articleUrl: 'https://www.foxnews.com/politics',
+    duration: 0,
+    source: 'Fox News',
+    sport: 'politics'
+  },
+  {
+    id: 'vibe-2',
+    headline: 'Entertainment: Hollywood Ready for the Biggest Red Carpet Event of the Season',
+    description: 'Stars begin arriving for the annual awards ceremony, with exclusive interviews, fashion recaps, and behind-the-scenes moments.',
+    thumbnail: 'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?auto=format&fit=crop&q=80&w=600',
+    videoUrl: 'https://videos.pexels.com/video-files/3125199/3125199-hd_1920_1080_25fps.mp4',
+    articleUrl: 'https://people.com/feed',
+    duration: 0,
+    source: 'People',
+    sport: 'entertainment'
+  },
+  {
+    id: 'vibe-3',
+    headline: 'Money: Global Markets Rally Amid Surprising Core Inflation Reports',
+    description: 'Wall Street reacts positively as inflation numbers dip slightly below forecasts, prompting talks of interest rate stabilization.',
+    thumbnail: 'https://images.unsplash.com/photo-1590283603385-17ffb3a7f29f?auto=format&fit=crop&q=80&w=600',
+    videoUrl: 'https://videos.pexels.com/video-files/3130284/3130284-hd_1920_1080_30fps.mp4',
+    articleUrl: 'https://www.cnbc.com',
+    duration: 0,
+    source: 'CNBC',
+    sport: 'money'
+  },
+  {
+    id: 'vibe-4',
+    headline: 'News: International Summit Focuses on Renewable Tech Initiatives',
+    description: 'World leaders and tech innovators gather to pledge billions in funding for next-generation clean energy projects.',
+    thumbnail: 'https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&q=80&w=600',
+    videoUrl: 'https://videos.pexels.com/video-files/3120157/3120157-hd_1920_1080_25fps.mp4',
+    articleUrl: 'https://rss.cnn.com',
+    duration: 0,
+    source: 'CNN',
+    sport: 'news'
+  }
+];
+
+export default function WatchLive({ accent = '#D35400', isOlympian = false, isB2K = false, isVibe = false }: { accent?: string; isOlympian?: boolean; isB2K?: boolean; isVibe?: boolean }) {
   const [clips, setClips] = useState<VideoClip[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeVideo, setActiveVideo] = useState<VideoClip | null>(null);
@@ -196,7 +251,17 @@ export default function WatchLive({ accent = '#D35400', isOlympian = false, isB2
   const scrollRef = useRef<HTMLDivElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
 
-  const feedsToUse = isOlympian ? OLYMPIAN_FEEDS : (isB2K ? B2K_FEEDS : FEEDS);
+  const feedsToUse = isOlympian ? OLYMPIAN_FEEDS : (isB2K ? B2K_FEEDS : (isVibe ? VIBE_FEEDS : FEEDS));
+
+  const handleClipClick = (clip: VideoClip) => {
+    const isYouTube = clip.videoUrl.includes('youtube.com') || clip.videoUrl.includes('youtu.be');
+    const isMp4 = clip.videoUrl.toLowerCase().endsWith('.mp4');
+    if (!isYouTube && !isMp4) {
+      window.open(clip.videoUrl, '_blank');
+    } else {
+      setActiveVideo(clip);
+    }
+  };
 
   useEffect(() => {
     const fetchClips = async () => {
@@ -257,6 +322,85 @@ export default function WatchLive({ accent = '#D35400', isOlympian = false, isB2
         }
       } else if (isB2K) {
         allClips.push(...B2K_CLIPS);
+      } else if (isVibe) {
+        // Pre-populate with static fallback clips
+        allClips.push(...STATIC_VIBE_CLIPS);
+        for (const item of STATIC_VIBE_CLIPS) {
+          seen.add(item.id);
+        }
+
+        // Fetch each RSS feed
+        for (const feed of VIBE_FEEDS) {
+          try {
+            const res = await fetch(feed.url);
+            if (!res.ok) continue;
+            const xmlText = await res.text();
+            
+            const parser = new DOMParser();
+            const xml = parser.parseFromString(xmlText, 'text/xml');
+            
+            const items = xml.getElementsByTagName('item');
+            if (items.length > 0) {
+              for (let i = 0; i < Math.min(items.length, 10); i++) {
+                const item = items[i];
+                const headline = item.getElementsByTagName('title')[0]?.textContent || '';
+                
+                // Strip HTML tags from description
+                let description = item.getElementsByTagName('description')[0]?.textContent || '';
+                description = description.replace(/<[^>]*>/g, '').trim();
+
+                const articleLink = item.getElementsByTagName('link')[0]?.textContent || '';
+                const id = articleLink || Math.random().toString();
+                
+                // Try to find image/thumbnail
+                let thumbnail = '';
+                const enclosure = item.getElementsByTagName('enclosure')[0];
+                if (enclosure && enclosure.getAttribute('type')?.startsWith('image/')) {
+                  thumbnail = enclosure.getAttribute('url') || '';
+                }
+                if (!thumbnail) {
+                  const mediaContent = item.getElementsByTagName('media:content')[0];
+                  thumbnail = mediaContent?.getAttribute('url') || '';
+                }
+                if (!thumbnail) {
+                  const mediaThumbnail = item.getElementsByTagName('media:thumbnail')[0];
+                  thumbnail = mediaThumbnail?.getAttribute('url') || '';
+                }
+                
+                // Fallback image based on feed type
+                if (!thumbnail) {
+                  if (feed.key === 'news') thumbnail = 'https://images.unsplash.com/photo-1504711434969-e33886168f5c?auto=format&fit=crop&q=80&w=600';
+                  else if (feed.key === 'politics') thumbnail = 'https://images.unsplash.com/photo-1541872703-74c5e44368f9?auto=format&fit=crop&q=80&w=600';
+                  else if (feed.key === 'entertainment') thumbnail = 'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?auto=format&fit=crop&q=80&w=600';
+                  else thumbnail = 'https://images.unsplash.com/photo-1590283603385-17ffb3a7f29f?auto=format&fit=crop&q=80&w=600';
+                }
+
+                if (headline && !seen.has(id)) {
+                  seen.add(id);
+                  let localVideoUrl = 'https://videos.pexels.com/video-files/3120157/3120157-hd_1920_1080_25fps.mp4';
+                  if (feed.key === 'news') localVideoUrl = 'https://videos.pexels.com/video-files/3120157/3120157-hd_1920_1080_25fps.mp4';
+                  else if (feed.key === 'politics') localVideoUrl = 'https://videos.pexels.com/video-files/3192023/3192023-hd_1920_1080_25fps.mp4';
+                  else if (feed.key === 'entertainment') localVideoUrl = 'https://videos.pexels.com/video-files/3125199/3125199-hd_1920_1080_25fps.mp4';
+                  else if (feed.key === 'money') localVideoUrl = 'https://videos.pexels.com/video-files/3130284/3130284-hd_1920_1080_30fps.mp4';
+
+                  allClips.push({
+                    id,
+                    headline,
+                    description,
+                    thumbnail,
+                    videoUrl: localVideoUrl,
+                    articleUrl: articleLink,
+                    duration: 0,
+                    source: feed.label.split(' ')[1] || 'News',
+                    sport: feed.key,
+                  });
+                }
+              }
+            }
+          } catch (err) {
+            console.warn(`WatchLive: failed to fetch RSS feed for ${feed.label}`, err);
+          }
+        }
       } else {
         const NCAA_KEYWORDS = ['college', 'ncaa'];
 
@@ -313,7 +457,7 @@ export default function WatchLive({ accent = '#D35400', isOlympian = false, isB2
     fetchClips();
     const interval = setInterval(fetchClips, 300000);
     return () => clearInterval(interval);
-  }, [isOlympian, isB2K]);
+  }, [isOlympian, isB2K, isVibe]);
 
   useEffect(() => {
     if (activeVideo) document.body.style.overflow = 'hidden';
@@ -397,7 +541,7 @@ export default function WatchLive({ accent = '#D35400', isOlympian = false, isB2
         {/* Featured video */}
         {featured && (
           <div
-            onClick={() => setActiveVideo(featured)}
+            onClick={() => handleClipClick(featured)}
             style={{
               position: 'relative', borderRadius: '20px', overflow: 'hidden',
               marginBottom: '24px', cursor: 'pointer', transition: 'transform 0.3s',
@@ -408,14 +552,18 @@ export default function WatchLive({ accent = '#D35400', isOlympian = false, isB2
             <div style={{ position: 'relative', width: '100%', aspectRatio: '21/9', overflow: 'hidden' }}>
               <img src={featured.thumbnail} alt={featured.headline} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
               <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(0,0,0,0.95) 0%, rgba(0,0,0,0.3) 50%, transparent 70%)' }} />
-              {/* Play button */}
+              {/* Play / Link button */}
               <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                 <div style={{
                   width: '72px', height: '72px', borderRadius: '50%',
                   background: `${accent}dd`, display: 'flex', alignItems: 'center', justifyContent: 'center',
                   boxShadow: `0 8px 30px ${accent}55`, transition: 'transform 0.2s',
                 }}>
-                  <Play size={28} color="#fff" fill="#fff" style={{ marginLeft: '3px' }} />
+                  {(!featured.videoUrl.includes('youtube.com') && !featured.videoUrl.includes('youtu.be') && !featured.videoUrl.toLowerCase().endsWith('.mp4')) ? (
+                    <ExternalLink size={28} color="#fff" />
+                  ) : (
+                    <Play size={28} color="#fff" fill="#fff" style={{ marginLeft: '3px' }} />
+                  )}
                 </div>
               </div>
               <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, padding: '40px' }}>
@@ -423,7 +571,7 @@ export default function WatchLive({ accent = '#D35400', isOlympian = false, isB2
                   <span style={{ padding: '4px 10px', borderRadius: '6px', background: accent, color: '#000', fontSize: '10px', fontWeight: 900, textTransform: 'uppercase', letterSpacing: '1px' }}>
                     {isOlympian 
                       ? '💪 Fitness & Bodybuilding' 
-                      : (isB2K ? '🎤 R&B Music' : (featured.sport === 'cfb' ? '🏈 Football' : featured.sport === 'cbb' ? '🏀 Basketball' : '⚾ Baseball'))
+                      : (isB2K ? '🎤 R&B Music' : (isVibe ? (featured.sport === 'news' ? '📰 News' : featured.sport === 'politics' ? '⚖️ Politics' : featured.sport === 'entertainment' ? '🎭 Entertainment' : '💵 Money') : (featured.sport === 'cfb' ? '🏈 Football' : featured.sport === 'cbb' ? '🏀 Basketball' : '⚾ Baseball')))
                     }
                   </span>
                   {featured.duration > 0 && (
@@ -455,7 +603,7 @@ export default function WatchLive({ accent = '#D35400', isOlympian = false, isB2
               {rest.map(clip => (
                 <div
                   key={clip.id}
-                  onClick={() => setActiveVideo(clip)}
+                  onClick={() => handleClipClick(clip)}
                   style={{
                     flexShrink: 0, width: '320px', borderRadius: '14px', overflow: 'hidden', cursor: 'pointer',
                     background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)', transition: 'all 0.3s',
@@ -467,7 +615,11 @@ export default function WatchLive({ accent = '#D35400', isOlympian = false, isB2
                     <img src={clip.thumbnail} alt={clip.headline} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                     <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(0,0,0,0.25)' }}>
                       <div style={{ width: '44px', height: '44px', borderRadius: '50%', background: `${accent}bb`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                        <Play size={18} color="#fff" fill="#fff" style={{ marginLeft: '2px' }} />
+                        {(!clip.videoUrl.includes('youtube.com') && !clip.videoUrl.includes('youtu.be') && !clip.videoUrl.toLowerCase().endsWith('.mp4')) ? (
+                          <ExternalLink size={18} color="#fff" />
+                        ) : (
+                          <Play size={18} color="#fff" fill="#fff" style={{ marginLeft: '2px' }} />
+                        )}
                       </div>
                     </div>
                     {clip.duration > 0 && (
@@ -480,7 +632,7 @@ export default function WatchLive({ accent = '#D35400', isOlympian = false, isB2
                     <div style={{ fontSize: '9px', fontWeight: 700, color: accent, textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '4px' }}>
                       {isOlympian 
                         ? 'Bodybuilding' 
-                        : (isB2K ? 'Music' : (clip.sport === 'cfb' ? 'Football' : clip.sport === 'cbb' ? 'Basketball' : 'Baseball'))
+                        : (isB2K ? 'Music' : (isVibe ? (clip.sport === 'news' ? 'News' : clip.sport === 'politics' ? 'Politics' : clip.sport === 'entertainment' ? 'Entertainment' : 'Money') : (clip.sport === 'cfb' ? 'Football' : clip.sport === 'cbb' ? 'Basketball' : 'Baseball')))
                       } · {clip.source}
                     </div>
                     <div style={{ fontSize: '13px', fontWeight: 600, lineHeight: 1.4, color: '#ccc', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
@@ -563,9 +715,38 @@ export default function WatchLive({ accent = '#D35400', isOlympian = false, isB2
                   </video>
                 )}
               </div>
-              <div style={{ marginTop: '16px' }}>
-                <h3 style={{ margin: '0 0 6px 0', fontSize: '18px', fontWeight: 800, color: '#fff' }}>{activeVideo.headline}</h3>
-                <p style={{ margin: 0, fontSize: '13px', color: '#888', lineHeight: 1.5 }}>{activeVideo.description}</p>
+              <div style={{ marginTop: '16px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '24px' }}>
+                <div style={{ flex: 1 }}>
+                  <h3 style={{ margin: '0 0 6px 0', fontSize: '18px', fontWeight: 800, color: '#fff' }}>{activeVideo.headline}</h3>
+                  <p style={{ margin: 0, fontSize: '13px', color: '#888', lineHeight: 1.5 }}>{activeVideo.description}</p>
+                </div>
+                {activeVideo.articleUrl && (
+                  <a
+                    href={activeVideo.articleUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style={{
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '8px',
+                      padding: '12px 24px',
+                      borderRadius: '8px',
+                      background: accent,
+                      color: '#000',
+                      fontSize: '12px',
+                      fontWeight: 800,
+                      textDecoration: 'none',
+                      textTransform: 'uppercase',
+                      letterSpacing: '1px',
+                      whiteSpace: 'nowrap',
+                      transition: 'opacity 0.2s',
+                    }}
+                    onMouseOver={e => e.currentTarget.style.opacity = '0.85'}
+                    onMouseOut={e => e.currentTarget.style.opacity = '1'}
+                  >
+                    Read Story <ExternalLink size={14} />
+                  </a>
+                )}
               </div>
             </motion.div>
           </motion.div>

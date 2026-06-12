@@ -174,6 +174,11 @@ export default function N2NHome({ wlConfig, categories, activeVideo, setActiveVi
   const isAvo = config?.id === '3915f1e5-4c79-4b2a-ad41-7029ce8052d7' ||
                 config?.name?.toLowerCase().includes('avo');
 
+  const isVibe = config?.name?.toLowerCase().includes('vibe') || 
+                 config?.domain?.includes('vibenetwork.tv') ||
+                 config?.id === 'adb92e36-5ebc-4dc3-ae96-429f3dc1bb30';
+
+
   // ─── AVO Hero Slides — real shopavo.la CDN images ───────────────
   const AVO_HERO_SLIDES = [
     { school: 'Baylor', short: 'Baylor', subtitle: 'New Collection', copy: 'Represent the Bears with our newest campus essentials.', image: 'https://shopavo.la/cdn/shop/files/msu-hp-hero_1500x.jpg?v=1775144388', link: 'https://shopavo.la/collections/baylor' },
@@ -346,7 +351,7 @@ export default function N2NHome({ wlConfig, categories, activeVideo, setActiveVi
         {/* ── Watch Live ──────────────────────────────────────── */}
         <div id="whats-on-now">
           <Suspense fallback={null}>
-            <WatchLive accent={config.accent} isOlympian={isOlympian} isB2K={isB2K} />
+            <WatchLive accent={config.accent} isOlympian={isOlympian} isB2K={isB2K} isVibe={isVibe} />
           </Suspense>
         </div>
 

@@ -39,6 +39,26 @@ export default defineConfig({
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/api\/bama/, ''),
       },
+      '/api/rss/cnn': {
+        target: 'http://rss.cnn.com',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/api\/rss\/cnn/, '/rss'),
+      },
+      '/api/rss/foxnews': {
+        target: 'https://moxie.foxnews.com',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/api\/rss\/foxnews/, '/google-publisher'),
+      },
+      '/api/rss/cnbc': {
+        target: 'https://search.cnbc.com',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/api\/rss\/cnbc/, '/rs/search'),
+      },
+      '/api/rss/people': {
+        target: 'https://people.com',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/api\/rss\/people/, ''),
+      },
     },
   },
   build: {
