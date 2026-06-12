@@ -36,6 +36,7 @@ import WhiteLabelHome from './pages/WhiteLabelHome';
 const N2NHome = lazy(() => import('./pages/N2NHome'));
 const AvoMarketplace = lazy(() => import('./components/AvoMarketplace'));
 const ShopifyStore = lazy(() => import('./components/ShopifyStore'));
+const BibleDrawer = lazy(() => import('./components/BibleDrawer'));
 import { motion, AnimatePresence } from 'framer-motion';
 import { X } from 'lucide-react';
 
@@ -439,6 +440,12 @@ function App() {
           {user && (user.id === wlConfig.owner_id || user.user_metadata?.role === 'admin' || user.user_metadata?.role === 'business' || user.user_metadata?.role === 'business_admin' || user.email?.includes('admin')) && (
             <Suspense fallback={null}>
               <LiveCustomizer />
+            </Suspense>
+          )}
+
+          {wlConfig && (wlConfig.id === '33742e2f-430b-4c2d-9cba-42507891ef02' || wlConfig.parent_network_id === '33742e2f-430b-4c2d-9cba-42507891ef02') && (
+            <Suspense fallback={null}>
+              <BibleDrawer accent={wlConfig.theme?.accent || wlConfig.accent || '#004e98'} />
             </Suspense>
           )}
         </div>
