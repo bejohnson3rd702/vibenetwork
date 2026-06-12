@@ -251,7 +251,7 @@ async function run() {
   console.log("Found Mr. Olympia Whitelabel ID:", parentId);
 
   // Check if a profile named "Gymreapers" already exists under this whitelabel
-  let { data: profileData } = await supabase
+  const { data: profileData } = await supabase
     .from('profiles')
     .select('id')
     .eq('username', 'Gymreapers')

@@ -34,10 +34,12 @@ const B2K_FEEDS = [
 ];
 
 const VIBE_FEEDS = [
-  { key: 'news', label: '📰 CNN News', source: 'YouTube', channelId: 'UCupvZG-5ko_eiXAupbDfxWw' },
-  { key: 'politics', label: '⚖️ MSNBC Politics', source: 'YouTube', channelId: 'UCaXkIU1QidjJi8sqUJyBHGg' },
-  { key: 'entertainment', label: '🎭 People Weekly', source: 'YouTube', channelId: 'UCZkUr5v7CgH0f2FpA3W40GQ' },
-  { key: 'money', label: '💵 CNBC Business', source: 'YouTube', channelId: 'UCEAZeUIe207jqqN1QghN0eA' },
+  { key: 'news', label: '📰 CNN News', source: 'Dailymotion', query: 'cnn news' },
+  { key: 'foxnews', label: '🦊 Fox News', source: 'Dailymotion', query: 'fox news breaking' },
+  { key: 'politics', label: '⚖️ MSNBC Politics', source: 'Dailymotion', query: 'msnbc politics' },
+  { key: 'entertainment', label: '🎭 People Weekly', source: 'Dailymotion', query: 'people magazine entertainment' },
+  { key: 'money', label: '💵 CNBC Business', source: 'Dailymotion', query: 'cnbc business finance' },
+  { key: 'sports', label: '🏈 ESPN Sports', source: 'Dailymotion', query: 'espn sports highlights' },
 ];
 
 const B2K_CLIPS: VideoClip[] = [
@@ -198,44 +200,64 @@ const STATIC_OLYMPIAN_CLIPS: VideoClip[] = [
 
 const STATIC_VIBE_CLIPS: VideoClip[] = [
   {
-    id: 'SV7JP7y80UM',
-    headline: 'News: Official CNN News Broadcast Debate',
-    description: 'Watch the official debate and analysis of global news and breaking media.',
-    thumbnail: 'https://i.ytimg.com/vi/SV7JP7y80UM/hqdefault.jpg',
-    videoUrl: 'https://www.youtube.com/watch?v=SV7JP7y80UM',
-    duration: 1845,
-    source: 'YouTube',
+    id: 'x8l0290',
+    headline: 'News: CNN global news coverage',
+    description: 'CNN news reports and world events analysis.',
+    thumbnail: 'https://s1.dmcdn.net/v/ZmZFo1fNHmnDR11EJ/x720',
+    videoUrl: 'https://www.dailymotion.com/video/x8l0290',
+    duration: 234,
+    source: 'Dailymotion',
     sport: 'news'
   },
   {
-    id: 'NMjCB0Y2rh4',
-    headline: 'Politics: MSNBC political analysis and interviews',
-    description: 'Political highlights, news discussions, and analysis of current government issues.',
-    thumbnail: 'https://i.ytimg.com/vi/NMjCB0Y2rh4/hqdefault.jpg',
-    videoUrl: 'https://www.youtube.com/watch?v=NMjCB0Y2rh4',
-    duration: 915,
-    source: 'YouTube',
+    id: 'x944ty4',
+    headline: 'Fox News: Daily breaking reports',
+    description: 'National reports, updates, and political broadcasts from the Fox News team.',
+    thumbnail: 'https://s2.dmcdn.net/v/WsRYS1ep2HKGwhJp2/x720',
+    videoUrl: 'https://www.dailymotion.com/video/x944ty4',
+    duration: 158,
+    source: 'Dailymotion',
+    sport: 'foxnews'
+  },
+  {
+    id: 'x7sg3mh',
+    headline: 'Politics: Talk Show Host Retires',
+    description: 'Political analysts discuss recent retirement announcements and transitions.',
+    thumbnail: 'https://s2.dmcdn.net/v/S4uvP1e9rTcnGGliZ/x720',
+    videoUrl: 'https://www.dailymotion.com/video/x7sg3mh',
+    duration: 33,
+    source: 'Dailymotion',
     sport: 'politics'
   },
   {
-    id: 'JwIHOk7b5sQ',
-    headline: 'Entertainment: Millenium Tour Reunion Special & Red Carpet',
-    description: 'A special look behind-the-scenes at reunion stories, music, and group interviews.',
-    thumbnail: 'https://i.ytimg.com/vi/JwIHOk7b5sQ/hqdefault.jpg',
-    videoUrl: 'https://www.youtube.com/watch?v=JwIHOk7b5sQ',
-    duration: 1845,
-    source: 'YouTube',
+    id: 'x7uoo9r',
+    headline: 'Entertainment: Ari Melber Host Breaks Down Rap Lyrics',
+    description: 'A special segment weaving entertainment culture into daily media discussions.',
+    thumbnail: 'https://s2.dmcdn.net/v/S4uvP1e9rTcnGGliZ/x720',
+    videoUrl: 'https://www.dailymotion.com/video/x7uoo9r',
+    duration: 158,
+    source: 'Dailymotion',
     sport: 'entertainment'
   },
   {
-    id: 'dTqpdNacxYM',
-    headline: 'Money: CNBC Business performance Q&A and metrics',
-    description: 'Financial insights, product selection, Q&A session on brand business metrics.',
-    thumbnail: 'https://i.ytimg.com/vi/dTqpdNacxYM/hqdefault.jpg',
-    videoUrl: 'https://www.youtube.com/watch?v=dTqpdNacxYM',
-    duration: 645,
-    source: 'YouTube',
+    id: 'x944ty4-money',
+    headline: 'Money: Financial transitions and media business decisions',
+    description: 'Analysts discuss the business rationale and market reactions to recent financial events.',
+    thumbnail: 'https://s2.dmcdn.net/v/WsRYS1ep2HKGwhJp2/x720',
+    videoUrl: 'https://www.dailymotion.com/video/x944ty4',
+    duration: 158,
+    source: 'Dailymotion',
     sport: 'money'
+  },
+  {
+    id: 'x944ty4-sports',
+    headline: 'Sports: ESPN sports business roster adjustments',
+    description: 'Broadcasters break down recent sports updates and game day roster movements.',
+    thumbnail: 'https://s2.dmcdn.net/v/WsRYS1ep2HKGwhJp2/x720',
+    videoUrl: 'https://www.dailymotion.com/video/x944ty4',
+    duration: 158,
+    source: 'Dailymotion',
+    sport: 'sports'
   }
 ];
 
@@ -330,7 +352,7 @@ export default function WatchLive({ accent = '#D35400', isOlympian = false, isB2
         for (const feed of VIBE_FEEDS) {
           try {
             if (feed.source === 'Dailymotion' && feed.query) {
-              const res = await fetch(`https://api.dailymotion.com/videos?search=${encodeURIComponent(feed.query)}&languages=en&limit=10&fields=id,title,description,thumbnail_720_url,duration,url`);
+              const res = await fetch(`https://api.dailymotion.com/videos?search=${encodeURIComponent(feed.query)}&languages=en&flags=verified&limit=10&fields=id,title,description,thumbnail_720_url,duration,url`);
               if (res.ok) {
                 const json = await res.json();
                 for (const item of (json.list || [])) {
@@ -559,8 +581,8 @@ export default function WatchLive({ accent = '#D35400', isOlympian = false, isB2
                 <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '10px' }}>
                   <span style={{ padding: '4px 10px', borderRadius: '6px', background: accent, color: '#000', fontSize: '10px', fontWeight: 900, textTransform: 'uppercase', letterSpacing: '1px' }}>
                     {isOlympian 
-                      ? '💪 Fitness & Bodybuilding' 
-                      : (isB2K ? '🎤 R&B Music' : (isVibe ? (featured.sport === 'news' ? '📰 News' : featured.sport === 'politics' ? '⚖️ Politics' : featured.sport === 'entertainment' ? '🎭 Entertainment' : '💵 Money') : (featured.sport === 'cfb' ? '🏈 Football' : featured.sport === 'cbb' ? '🏀 Basketball' : '⚾ Baseball')))
+                      ? '💪 Fitness' 
+                      : (isB2K ? '🎤 R&B Music' : (isVibe ? (featured.sport === 'news' ? '📰 News' : featured.sport === 'foxnews' ? '🦊 Fox News' : featured.sport === 'politics' ? '⚖️ Politics' : featured.sport === 'entertainment' ? '🎭 Entertainment' : featured.sport === 'money' ? '💵 Money' : '🏈 Sports') : (featured.sport === 'cfb' ? '🏈 Football' : featured.sport === 'cbb' ? '🏀 Basketball' : '⚾ Baseball')))
                     }
                   </span>
                   {featured.duration > 0 && (
@@ -621,7 +643,7 @@ export default function WatchLive({ accent = '#D35400', isOlympian = false, isB2
                     <div style={{ fontSize: '9px', fontWeight: 700, color: accent, textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '4px' }}>
                       {isOlympian 
                         ? 'Bodybuilding' 
-                        : (isB2K ? 'Music' : (isVibe ? (clip.sport === 'news' ? 'News' : clip.sport === 'politics' ? 'Politics' : clip.sport === 'entertainment' ? 'Entertainment' : 'Money') : (clip.sport === 'cfb' ? 'Football' : clip.sport === 'cbb' ? 'Basketball' : 'Baseball')))
+                        : (isB2K ? 'Music' : (isVibe ? (clip.sport === 'news' ? 'News' : clip.sport === 'foxnews' ? 'Fox News' : clip.sport === 'politics' ? 'Politics' : clip.sport === 'entertainment' ? 'Entertainment' : clip.sport === 'money' ? 'Money' : 'Sports') : (clip.sport === 'cfb' ? 'Football' : clip.sport === 'cbb' ? 'Basketball' : 'Baseball')))
                       } · {clip.source}
                     </div>
                     <div style={{ fontSize: '13px', fontWeight: 600, lineHeight: 1.4, color: '#ccc', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
@@ -689,7 +711,10 @@ export default function WatchLive({ accent = '#D35400', isOlympian = false, isB2
                   />
                 ) : activeVideo.source === 'Dailymotion' || activeVideo.videoUrl.includes('dailymotion.com') ? (
                   <iframe
-                    src={`https://www.dailymotion.com/embed/video/${activeVideo.id}?autoplay=1`}
+                    src={`https://www.dailymotion.com/embed/video/${(() => {
+                      const match = activeVideo.videoUrl.match(/\/video\/([a-zA-Z0-9]+)/);
+                      return match ? match[1] : activeVideo.id;
+                    })()}?autoplay=1`}
                     title={activeVideo.headline}
                     frameBorder="0"
                     allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"

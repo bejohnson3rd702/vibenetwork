@@ -311,7 +311,7 @@ async function run() {
     const email = `${member.name.toLowerCase().replace(/[^a-z0-9]/g, '')}_b2k@test.com`;
     const password = 'TestPassword123!';
 
-    let { data: extProfile } = await supabase
+    const { data: extProfile } = await supabase
       .from('profiles')
       .select('id')
       .eq('whitelabel_id', childId)
