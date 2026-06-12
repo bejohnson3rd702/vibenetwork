@@ -34,10 +34,10 @@ const B2K_FEEDS = [
 ];
 
 const VIBE_FEEDS = [
-  { key: 'news', label: '📰 CNN News', url: '/api/rss/cnn/edition.rss' },
-  { key: 'politics', label: '⚖️ Fox Politics', url: '/api/rss/foxnews/politics.xml' },
-  { key: 'entertainment', label: '🎭 People Weekly', url: '/api/rss/people/feed' },
-  { key: 'money', label: '💵 CNBC Business', url: '/api/rss/cnbc/combinedcms/view.xml?partnerId=wrss01&id=10001147' },
+  { key: 'news', label: '📰 CNN News', source: 'Dailymotion', query: 'cnn news' },
+  { key: 'politics', label: '⚖️ Fox Politics', source: 'Dailymotion', query: 'fox news politics' },
+  { key: 'entertainment', label: '🎭 People Weekly', source: 'YouTube', channelId: 'UCZkUr5v7CgH0f2FpA3W40GQ' },
+  { key: 'money', label: '💵 CNBC Business', source: 'YouTube', channelId: 'UCEAZeUIe207jqqN1QghN0eA' },
 ];
 
 const B2K_CLIPS: VideoClip[] = [
@@ -198,48 +198,44 @@ const STATIC_OLYMPIAN_CLIPS: VideoClip[] = [
 
 const STATIC_VIBE_CLIPS: VideoClip[] = [
   {
-    id: 'vibe-1',
-    headline: 'Politics: Sweeping Changes Proposed in New Federal Budget Plan',
-    description: 'The proposed federal budget introduces significant adjustments to tax codes, infrastructure funding, and environmental incentives.',
-    thumbnail: 'https://images.unsplash.com/photo-1541872703-74c5e44368f9?auto=format&fit=crop&q=80&w=600',
-    videoUrl: 'https://videos.pexels.com/video-files/3192023/3192023-hd_1920_1080_25fps.mp4',
-    articleUrl: 'https://www.foxnews.com/politics',
-    duration: 0,
-    source: 'Fox News',
+    id: 'x8l0290',
+    headline: 'News: CNN breaking global coverage',
+    description: 'Global breaking news reports and motivational stories from the CNN desk.',
+    thumbnail: 'https://s1.dmcdn.net/v/ZmZFo1fNHmnDR11EJ/x720',
+    videoUrl: 'https://www.dailymotion.com/video/x8l0290',
+    duration: 234,
+    source: 'Dailymotion',
+    sport: 'news'
+  },
+  {
+    id: 'xaezlle',
+    headline: 'Politics: Donald Trump announces agreement with Iran',
+    description: 'The US president promised a new offensive against Iran, then claimed an agreement is close.',
+    thumbnail: 'https://s1.dmcdn.net/v/bYeuI1gB3mRR3LLZu/x720',
+    videoUrl: 'https://www.dailymotion.com/video/xaezlle',
+    duration: 172,
+    source: 'Dailymotion',
     sport: 'politics'
   },
   {
-    id: 'vibe-2',
-    headline: 'Entertainment: Hollywood Ready for the Biggest Red Carpet Event of the Season',
-    description: 'Stars begin arriving for the annual awards ceremony, with exclusive interviews, fashion recaps, and behind-the-scenes moments.',
-    thumbnail: 'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?auto=format&fit=crop&q=80&w=600',
-    videoUrl: 'https://videos.pexels.com/video-files/3125199/3125199-hd_1920_1080_25fps.mp4',
-    articleUrl: 'https://people.com/feed',
-    duration: 0,
-    source: 'People',
+    id: 'JwIHOk7b5sQ',
+    headline: 'Entertainment: Millenium Tour Reunion Special & Red Carpet',
+    description: 'A special look behind-the-scenes at reunion stories, music, and group interviews.',
+    thumbnail: 'https://i.ytimg.com/vi/JwIHOk7b5sQ/hqdefault.jpg',
+    videoUrl: 'https://www.youtube.com/watch?v=JwIHOk7b5sQ',
+    duration: 1845,
+    source: 'YouTube',
     sport: 'entertainment'
   },
   {
-    id: 'vibe-3',
-    headline: 'Money: Global Markets Rally Amid Surprising Core Inflation Reports',
-    description: 'Wall Street reacts positively as inflation numbers dip slightly below forecasts, prompting talks of interest rate stabilization.',
-    thumbnail: 'https://images.unsplash.com/photo-1590283603385-17ffb3a7f29f?auto=format&fit=crop&q=80&w=600',
-    videoUrl: 'https://videos.pexels.com/video-files/3130284/3130284-hd_1920_1080_30fps.mp4',
-    articleUrl: 'https://www.cnbc.com',
-    duration: 0,
-    source: 'CNBC',
+    id: 'dTqpdNacxYM',
+    headline: 'Money: Business performance Q&A and Cutler performance',
+    description: 'Financial insights, product selection, Q&A session on brand business metrics.',
+    thumbnail: 'https://i.ytimg.com/vi/dTqpdNacxYM/hqdefault.jpg',
+    videoUrl: 'https://www.youtube.com/watch?v=dTqpdNacxYM',
+    duration: 645,
+    source: 'YouTube',
     sport: 'money'
-  },
-  {
-    id: 'vibe-4',
-    headline: 'News: International Summit Focuses on Renewable Tech Initiatives',
-    description: 'World leaders and tech innovators gather to pledge billions in funding for next-generation clean energy projects.',
-    thumbnail: 'https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&q=80&w=600',
-    videoUrl: 'https://videos.pexels.com/video-files/3120157/3120157-hd_1920_1080_25fps.mp4',
-    articleUrl: 'https://rss.cnn.com',
-    duration: 0,
-    source: 'CNN',
-    sport: 'news'
   }
 ];
 
@@ -255,8 +251,9 @@ export default function WatchLive({ accent = '#D35400', isOlympian = false, isB2
 
   const handleClipClick = (clip: VideoClip) => {
     const isYouTube = clip.videoUrl.includes('youtube.com') || clip.videoUrl.includes('youtu.be');
+    const isDailymotion = clip.videoUrl.includes('dailymotion.com') || clip.videoUrl.includes('dai.ly') || clip.source === 'Dailymotion';
     const isMp4 = clip.videoUrl.toLowerCase().endsWith('.mp4');
-    if (!isYouTube && !isMp4) {
+    if (!isYouTube && !isDailymotion && !isMp4) {
       window.open(clip.videoUrl, '_blank');
     } else {
       setActiveVideo(clip);
@@ -329,76 +326,68 @@ export default function WatchLive({ accent = '#D35400', isOlympian = false, isB2
           seen.add(item.id);
         }
 
-        // Fetch each RSS feed
+        // Fetch each video feed (DailyMotion search or YouTube RSS)
         for (const feed of VIBE_FEEDS) {
           try {
-            const res = await fetch(feed.url);
-            if (!res.ok) continue;
-            const xmlText = await res.text();
-            
-            const parser = new DOMParser();
-            const xml = parser.parseFromString(xmlText, 'text/xml');
-            
-            const items = xml.getElementsByTagName('item');
-            if (items.length > 0) {
-              for (let i = 0; i < Math.min(items.length, 10); i++) {
-                const item = items[i];
-                const headline = item.getElementsByTagName('title')[0]?.textContent || '';
-                
-                // Strip HTML tags from description
-                let description = item.getElementsByTagName('description')[0]?.textContent || '';
-                description = description.replace(/<[^>]*>/g, '').trim();
-
-                const articleLink = item.getElementsByTagName('link')[0]?.textContent || '';
-                const id = articleLink || Math.random().toString();
-                
-                // Try to find image/thumbnail
-                let thumbnail = '';
-                const enclosure = item.getElementsByTagName('enclosure')[0];
-                if (enclosure && enclosure.getAttribute('type')?.startsWith('image/')) {
-                  thumbnail = enclosure.getAttribute('url') || '';
+            if (feed.source === 'Dailymotion' && feed.query) {
+              const res = await fetch(`https://api.dailymotion.com/videos?search=${encodeURIComponent(feed.query)}&languages=en&limit=10&fields=id,title,description,thumbnail_720_url,duration,url`);
+              if (res.ok) {
+                const json = await res.json();
+                for (const item of (json.list || [])) {
+                  if (item.id && !seen.has(item.id)) {
+                    seen.add(item.id);
+                    allClips.push({
+                      id: item.id,
+                      headline: item.title || '',
+                      description: item.description || '',
+                      thumbnail: item.thumbnail_720_url || `https://s1.dmcdn.net/v/${item.id}/x720`,
+                      videoUrl: `https://www.dailymotion.com/video/${item.id}`,
+                      duration: item.duration || 0,
+                      source: 'Dailymotion',
+                      sport: feed.key,
+                    });
+                  }
                 }
-                if (!thumbnail) {
-                  const mediaContent = item.getElementsByTagName('media:content')[0];
-                  thumbnail = mediaContent?.getAttribute('url') || '';
-                }
-                if (!thumbnail) {
-                  const mediaThumbnail = item.getElementsByTagName('media:thumbnail')[0];
-                  thumbnail = mediaThumbnail?.getAttribute('url') || '';
-                }
-                
-                // Fallback image based on feed type
-                if (!thumbnail) {
-                  if (feed.key === 'news') thumbnail = 'https://images.unsplash.com/photo-1504711434969-e33886168f5c?auto=format&fit=crop&q=80&w=600';
-                  else if (feed.key === 'politics') thumbnail = 'https://images.unsplash.com/photo-1541872703-74c5e44368f9?auto=format&fit=crop&q=80&w=600';
-                  else if (feed.key === 'entertainment') thumbnail = 'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?auto=format&fit=crop&q=80&w=600';
-                  else thumbnail = 'https://images.unsplash.com/photo-1590283603385-17ffb3a7f29f?auto=format&fit=crop&q=80&w=600';
-                }
-
-                if (headline && !seen.has(id)) {
-                  seen.add(id);
-                  let localVideoUrl = 'https://videos.pexels.com/video-files/3120157/3120157-hd_1920_1080_25fps.mp4';
-                  if (feed.key === 'news') localVideoUrl = 'https://videos.pexels.com/video-files/3120157/3120157-hd_1920_1080_25fps.mp4';
-                  else if (feed.key === 'politics') localVideoUrl = 'https://videos.pexels.com/video-files/3192023/3192023-hd_1920_1080_25fps.mp4';
-                  else if (feed.key === 'entertainment') localVideoUrl = 'https://videos.pexels.com/video-files/3125199/3125199-hd_1920_1080_25fps.mp4';
-                  else if (feed.key === 'money') localVideoUrl = 'https://videos.pexels.com/video-files/3130284/3130284-hd_1920_1080_30fps.mp4';
-
-                  allClips.push({
-                    id,
-                    headline,
-                    description,
-                    thumbnail,
-                    videoUrl: localVideoUrl,
-                    articleUrl: articleLink,
-                    duration: 0,
-                    source: feed.label.split(' ')[1] || 'News',
-                    sport: feed.key,
-                  });
+              }
+            } else if (feed.source === 'YouTube' && feed.channelId) {
+              const res = await fetch(`/api/yt-rss/${feed.channelId}`);
+              if (res.ok) {
+                const xmlText = await res.text();
+                const parser = new DOMParser();
+                const xml = parser.parseFromString(xmlText, 'text/xml');
+                const entries = xml.getElementsByTagName('entry');
+                for (let i = 0; i < entries.length; i++) {
+                  const entry = entries[i];
+                  const id = entry.getElementsByTagName('yt:videoId')[0]?.textContent 
+                    || entry.getElementsByTagName('id')[0]?.textContent?.split(':').pop() 
+                    || '';
+                  const headline = entry.getElementsByTagName('title')[0]?.textContent || '';
+                  const mediaGroup = entry.getElementsByTagName('media:group')[0];
+                  const description = mediaGroup?.getElementsByTagName('media:description')[0]?.textContent 
+                    || entry.getElementsByTagName('summary')[0]?.textContent 
+                    || '';
+                  const thumbnail = mediaGroup?.getElementsByTagName('media:thumbnail')[0]?.getAttribute('url')
+                    || `https://i.ytimg.com/vi/${id}/hqdefault.jpg`;
+                  const videoUrl = `https://www.youtube.com/watch?v=${id}`;
+                  
+                  if (id && !seen.has(id)) {
+                    seen.add(id);
+                    allClips.push({
+                      id,
+                      headline,
+                      description,
+                      thumbnail,
+                      videoUrl,
+                      duration: 0,
+                      source: 'YouTube',
+                      sport: feed.key,
+                    });
+                  }
                 }
               }
             }
           } catch (err) {
-            console.warn(`WatchLive: failed to fetch RSS feed for ${feed.label}`, err);
+            console.warn(`WatchLive: failed to fetch video feed for ${feed.label}`, err);
           }
         }
       } else {
@@ -692,6 +681,15 @@ export default function WatchLive({ accent = '#D35400', isOlympian = false, isB2
                 {activeVideo.source === 'YouTube' ? (
                   <iframe
                     src={`https://www.youtube.com/embed/${activeVideo.id}?autoplay=1&controls=1&rel=0`}
+                    title={activeVideo.headline}
+                    frameBorder="0"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    allowFullScreen
+                    style={{ width: '100%', height: '100%', position: 'absolute', inset: 0, border: 'none' }}
+                  />
+                ) : activeVideo.source === 'Dailymotion' || activeVideo.videoUrl.includes('dailymotion.com') ? (
+                  <iframe
+                    src={`https://www.dailymotion.com/embed/video/${activeVideo.id}?autoplay=1`}
                     title={activeVideo.headline}
                     frameBorder="0"
                     allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
