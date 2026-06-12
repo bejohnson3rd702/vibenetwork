@@ -93,7 +93,7 @@ async function seed() {
     theme: {
       accent: '#004e98',
       heroCopy: 'KPLE TV — Come All Revival. Class A Christian Broadcasting in Killeen, Texas.',
-      heroImage: 'https://images.unsplash.com/photo-1523050854058-8df90110c476?auto=format&fit=crop&q=80&w=2000',
+      heroImage: '/kple_network_thumbnail.png',
       enableWatchLive: true,
       enableBooking: false,
       heroLayoutMode: 'verbiage',
