@@ -178,6 +178,10 @@ export default function N2NHome({ wlConfig, categories, activeVideo, setActiveVi
                  config?.domain?.includes('vibenetwork.tv') ||
                  config?.id === 'adb92e36-5ebc-4dc3-ae96-429f3dc1bb30';
 
+  const isKple = config?.id === '33742e2f-430b-4c2d-9cba-42507891ef02' ||
+                 config?.name?.toLowerCase().includes('kple') ||
+                 config?.domain?.includes('kpletv.org');
+
 
   // ─── AVO Hero Slides — real shopavo.la CDN images ───────────────
   const AVO_HERO_SLIDES = [
@@ -203,7 +207,16 @@ export default function N2NHome({ wlConfig, categories, activeVideo, setActiveVi
     { school: 'B2K Members', short: 'The Members', subtitle: 'Omarion, Lil Fizz, J-Boog & Raz-B', copy: 'Explore individual child networks to get exclusive updates, behind-the-scenes content, and solo releases from all four members.', image: 'https://www.vibe.com/wp-content/uploads/2019/05/B2K-vibe-magazine-digital-cover-1557942120.jpg', link: '#child-networks-slider' }
   ];
 
-  const HERO_SLIDES = isOlympian ? OLYMPIAN_HERO_SLIDES : (isB2K ? B2K_HERO_SLIDES : AVO_HERO_SLIDES);
+  const KPLE_HERO_SLIDES = [
+    { school: 'TCT Network', short: 'TCT', subtitle: 'Share the Word of God', copy: 'TCT Network provides quality Christian television programming 24 hours a day, featuring teaching, music, and ministries.', image: 'https://images.unsplash.com/photo-1507679799987-c73779587ccf?auto=format&fit=crop&q=80&w=1500', link: '/?tenant=05b1ac75-a8ed-42d2-a147-c139f389cc35' },
+    { school: 'Smile of a Child', short: 'Smile', subtitle: 'Faith-filled Children', copy: 'Inspiring children with faith-filled programs, cartoon series, Bible lessons, and positive, educational entertainment.', image: 'https://images.unsplash.com/photo-1488521787991-ed7bbaae773c?auto=format&fit=crop&q=80&w=1500', link: '/?tenant=ffa6fa1b-9597-4734-a086-32b113959c8a' },
+    { school: 'Positiv', short: 'Positiv', subtitle: 'Family Movies & Stories', copy: 'Good stories and positive family-friendly movies that inspire hope, encourage values, and bring families together.', image: 'https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?auto=format&fit=crop&q=80&w=1500', link: '/?tenant=3de7bfde-e4e4-4d80-88ca-9f4724bd0c85' },
+    { school: 'The Walk TV', short: 'The Walk', subtitle: 'Christian Lifestyle', copy: 'Walk in faith every day with practical Christian living programming, outdoor shows, talk programs, and ministry feeds.', image: 'https://images.unsplash.com/photo-1447752875215-b2761acb3c5d?auto=format&fit=crop&q=80&w=1500', link: '/?tenant=273a7d16-0533-4a98-92cb-62ad90f08ffa' },
+    { school: 'Enlace USA', short: 'Enlace', subtitle: 'Inspirando tu Vida', copy: 'Programación en español de alta calidad que transmite esperanza, fe y valores para la comunidad hispana en EE.UU.', image: 'https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?auto=format&fit=crop&q=80&w=1500', link: '/?tenant=5699e417-4b64-4a95-90e2-f813223fdd32' },
+    { school: 'Attention Central Texas', short: 'ACT', subtitle: 'Local Community News', copy: "KPLE's flagship local program featuring interviews from local churches, non-profit organizations, and community events.", image: 'https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&q=80&w=1500', link: '/?tenant=0421af68-56cb-4735-b7ee-f72454963bdd' },
+  ];
+
+  const HERO_SLIDES = isOlympian ? OLYMPIAN_HERO_SLIDES : (isB2K ? B2K_HERO_SLIDES : (isKple ? KPLE_HERO_SLIDES : AVO_HERO_SLIDES));
 
   const [heroSlide, setHeroSlide] = useState(0);
 
@@ -260,7 +273,18 @@ export default function N2NHome({ wlConfig, categories, activeVideo, setActiveVi
               {HERO_SLIDES[heroSlide % HERO_SLIDES.length]?.copy}
             </p>
             <button
-              onClick={() => window.location.href = '/shop' + window.location.search}
+              onClick={() => {
+                const targetLink = HERO_SLIDES[heroSlide % HERO_SLIDES.length]?.link;
+                if (targetLink) {
+                  if (targetLink.startsWith('http')) {
+                    window.open(targetLink, '_blank');
+                  } else {
+                    window.location.href = targetLink + window.location.search;
+                  }
+                } else {
+                  window.location.href = '/shop' + window.location.search;
+                }
+              }}
               style={{
                 display: 'inline-block', padding: '13px 40px', fontSize: '11px', fontWeight: 800,
                 textTransform: 'uppercase', letterSpacing: '2.5px',
@@ -271,7 +295,7 @@ export default function N2NHome({ wlConfig, categories, activeVideo, setActiveVi
               onMouseOver={e => { e.currentTarget.style.background = '#fff'; e.currentTarget.style.color = '#000'; }}
               onMouseOut={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = '#fff'; }}
             >
-              Shop Now
+              {isOlympian ? "View Schedule" : (isB2K ? "Learn More" : (isKple ? "Watch Network" : "Shop Now"))}
             </button>
 
             {/* Fundraising / Legacy stat */}
@@ -281,10 +305,10 @@ export default function N2NHome({ wlConfig, categories, activeVideo, setActiveVi
               background: 'rgba(255,255,255,0.05)', backdropFilter: 'blur(10px)',
             }}>
               <p style={{ margin: 0, fontSize: '32px', fontWeight: 900, color: '#fff', letterSpacing: '-1px', lineHeight: 1.2 }}>
-                {isOlympian ? '50+ Years' : (isB2K ? '25 Years' : '$17,480,130')}<span style={{ color: accent }}>+</span>
+                {isOlympian ? '50+ Years' : (isB2K ? '25 Years' : (isKple ? '30+ Years' : '$17,480,130'))}<span style={{ color: accent }}>+</span>
               </p>
               <p style={{ margin: '4px 0 0', fontSize: '13px', fontWeight: 600, color: 'rgba(255,255,255,0.6)', textTransform: 'uppercase', letterSpacing: '2px' }}>
-                {isOlympian ? 'Of Championing Legendary Athletes & Fitness Excellence' : (isB2K ? 'Of R&B Harmonies, Multi-Platinum Hits & Tour Legacies' : 'Raised to empower student‑athletes nationwide')}
+                {isOlympian ? 'Of Championing Legendary Athletes & Fitness Excellence' : (isB2K ? 'Of R&B Harmonies, Multi-Platinum Hits & Tour Legacies' : (isKple ? 'Serving Central Texas with Inspirational Programming' : 'Raised to empower student‑athletes nationwide'))}
               </p>
             </div>
           </motion.div>
@@ -368,8 +392,8 @@ export default function N2NHome({ wlConfig, categories, activeVideo, setActiveVi
               flex: '0 0 45%', position: 'relative', overflow: 'hidden',
             }}>
               <img
-                src={isOlympian ? "https://images.unsplash.com/photo-1583454110551-21f2fa2afe61?auto=format&fit=crop&q=80&w=800" : (isB2K ? "https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?auto=format&fit=crop&q=80&w=800" : "https://shopavo.la/cdn/shop/files/bama-desk-hp-1_1500x.jpg?v=1774210820")}
-                alt={isOlympian ? "Official Gear" : (isB2K ? "Official Tour Merch" : "New Drop")}
+                src={isOlympian ? "https://images.unsplash.com/photo-1583454110551-21f2fa2afe61?auto=format&fit=crop&q=80&w=800" : (isB2K ? "https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?auto=format&fit=crop&q=80&w=800" : (isKple ? "https://images.unsplash.com/photo-1532629345422-7515f3d16bb8?auto=format&fit=crop&q=80&w=800" : "https://shopavo.la/cdn/shop/files/bama-desk-hp-1_1500x.jpg?v=1774210820"))}
+                alt={isOlympian ? "Official Gear" : (isB2K ? "Official Tour Merch" : (isKple ? "Support KPLE TV" : "New Drop"))}
                 style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
               />
               <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to right, transparent 60%, #000 100%)' }} />
@@ -379,7 +403,7 @@ export default function N2NHome({ wlConfig, categories, activeVideo, setActiveVi
                 padding: '6px 14px', background: accent, color: '#000',
                 fontSize: '10px', fontWeight: 900, letterSpacing: '2px', textTransform: 'uppercase',
               }}>
-                {isOlympian ? "Official Gear" : (isB2K ? "Official Merch" : "New Drop")}
+                {isOlympian ? "Official Gear" : (isB2K ? "Official Merch" : (isKple ? "Media Mission" : "New Drop"))}
               </div>
             </div>
 
@@ -399,7 +423,7 @@ export default function N2NHome({ wlConfig, categories, activeVideo, setActiveVi
                 fontSize: '11px', fontWeight: 800, textTransform: 'uppercase',
                 letterSpacing: '3px', color: accent, margin: '0 0 12px 0',
               }}>
-                {isOlympian ? "Olympia Collection" : (isB2K ? "Official Tour Merch" : "Summer 2026 Collection")}
+                {isOlympian ? "Olympia Collection" : (isB2K ? "Official Tour Merch" : (isKple ? "Support Our Mission" : "Summer 2026 Collection"))}
               </p>
               <h2 style={{
                 fontSize: '34px', fontWeight: 900, color: '#fff', margin: '0 0 14px 0',
@@ -411,7 +435,11 @@ export default function N2NHome({ wlConfig, categories, activeVideo, setActiveVi
                   isB2K ? (
                     <>Millennium Tour<br />Official Merch</>
                   ) : (
-                    <>Game Day<br />Essentials</>
+                    isKple ? (
+                      <>Keep The Gospel<br />On The Air</>
+                    ) : (
+                      <>Game Day<br />Essentials</>
+                    )
                   )
                 )}
               </h2>
@@ -419,10 +447,11 @@ export default function N2NHome({ wlConfig, categories, activeVideo, setActiveVi
                 fontSize: '14px', color: 'rgba(255,255,255,0.5)', lineHeight: 1.7,
                 margin: '0 0 28px 0', maxWidth: '380px',
               }}>
-                {isOlympian ? "Premium bodybuilding and lifestyle apparel engineered for champions. Rep the legacy with official Mr. Olympia hoodies, workout shirts, and accessories." : (isB2K ? "Pre-order exclusive Boys 4 Life tour hoodies, vintage graphic tees, and autographed vinyl. Rep the legendary boy band reunion in style." : "Premium collegiate apparel for every school in the AVO family. Rep your team with style — new colorways and exclusive designs just dropped.")}
+                {isOlympian ? "Premium bodybuilding and lifestyle apparel engineered for champions. Rep the legacy with official Mr. Olympia hoodies, workout shirts, and accessories." : (isB2K ? "Pre-order exclusive Boys 4 Life tour hoodies, vintage graphic tees, and autographed vinyl. Rep the legendary boy band reunion in style." : (isKple ? "KPLE-TV is a 501(c)3 non-profit media mission. Your donations help us broadcast the Gospel 24/7 to Central Texas and the world. Support our ministry today." : "Premium collegiate apparel for every school in the AVO family. Rep your team with style — new colorways and exclusive designs just dropped."))}
               </p>
               <a
-                href={'/shop' + (typeof window !== 'undefined' ? window.location.search : '')}
+                href={isKple ? "https://www.paypal.com/donate/?hosted_button_id=A7WXAKZEAGBPA" : ('/shop' + (typeof window !== 'undefined' ? window.location.search : ''))}
+                target={isKple ? "_blank" : "_self"}
                 style={{
                   display: 'inline-block', padding: '13px 40px', fontSize: '11px', fontWeight: 800,
                   textTransform: 'uppercase', letterSpacing: '2.5px', width: 'fit-content',
@@ -433,7 +462,7 @@ export default function N2NHome({ wlConfig, categories, activeVideo, setActiveVi
                 onMouseOver={e => { e.currentTarget.style.background = '#fff'; e.currentTarget.style.color = '#000'; }}
                 onMouseOut={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = '#fff'; }}
               >
-                {isOlympian ? "Shop The Collection" : (isB2K ? "Shop The Merch" : "Shop The Drop")}
+                {isOlympian ? "Shop The Collection" : (isB2K ? "Shop The Merch" : (isKple ? "Support Our Station" : "Shop The Drop"))}
               </a>
             </div>
           </div>
@@ -456,7 +485,7 @@ export default function N2NHome({ wlConfig, categories, activeVideo, setActiveVi
         {childItems.length > 0 && (
           <div id="child-networks-slider">
             <SliderSection
-              title={isOlympian ? "OLYMPIA PARTNERS" : (isB2K ? "B2K MEMBERS" : "AVO NETWORKS")}
+              title={isOlympian ? "OLYMPIA PARTNERS" : (isB2K ? "B2K MEMBERS" : (isKple ? "KPLE NETWORKS" : "AVO NETWORKS"))}
               items={childItems}
               delay={isOlympian ? 0.1 : 0}
               aspectRatio="16/9"
@@ -493,7 +522,7 @@ export default function N2NHome({ wlConfig, categories, activeVideo, setActiveVi
           </Suspense>
         )}
 
-        {/* ── Hoodie Competition Banner ───────────────────────── */}
+        {/* ── Hoodie Competition Banner / Prayer Request Banner ── */}
         {!isOlympian && !isB2K && (
           <section style={{ maxWidth: '1400px', margin: '40px auto', padding: '0 40px' }}>
             <div style={{
@@ -504,7 +533,7 @@ export default function N2NHome({ wlConfig, categories, activeVideo, setActiveVi
               {/* Background image — full bleed */}
               <div style={{
                 position: 'absolute', inset: 0,
-                backgroundImage: 'url(/n2n/hoodie-competition.png)',
+                backgroundImage: `url(${isKple ? "https://images.unsplash.com/photo-1447752875215-b2761acb3c5d?auto=format&fit=crop&q=80&w=1200" : "/n2n/hoodie-competition.png"})`,
                 backgroundSize: 'cover', backgroundPosition: 'center',
                 filter: 'brightness(0.35)',
               }} />
@@ -524,41 +553,58 @@ export default function N2NHome({ wlConfig, categories, activeVideo, setActiveVi
                     fontSize: '10px', fontWeight: 900, letterSpacing: '2px', textTransform: 'uppercase',
                     marginBottom: '20px',
                   }}>
-                    🏆 Competition
+                    {isKple ? "🙏 Prayer Request" : "🏆 Competition"}
                   </div>
                   <h2 style={{
                     fontSize: '38px', fontWeight: 900, color: '#fff', margin: '0 0 14px 0',
                     lineHeight: 1.1, letterSpacing: '-1px', textTransform: 'uppercase',
                   }}>
-                    Best College<br />Hoodie Design
+                    {isKple ? <>Need Prayer?<br />We Are Here</> : <>Best College<br />Hoodie Design</>}
                   </h2>
                   <p style={{
                     fontSize: '15px', color: 'rgba(255,255,255,0.5)', lineHeight: 1.7,
                     margin: '0 0 24px 0',
                   }}>
-                    All 8 AVO schools go head-to-head. Which campus created the best branded hoodie? Browse the entries, rep your school, and cast your vote.
+                    {isKple 
+                      ? "Sometimes, all it takes is just one prayer to change everything. You are not alone, and our prayer warriors are here to stand with you. Call our prayer line or send a request."
+                      : "All 8 AVO schools go head-to-head. Which campus created the best branded hoodie? Browse the entries, rep your school, and cast your vote."
+                    }
                   </p>
 
-                  {/* School pills */}
-                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginBottom: '28px' }}>
-                    {['Baylor', 'Colorado', 'Georgia', 'Miss. State', 'Alabama', 'Ole Miss', 'Vanderbilt', 'Penn State'].map(school => (
-                      <span key={school} style={{
-                        padding: '5px 12px', fontSize: '10px', fontWeight: 800,
-                        letterSpacing: '1px', textTransform: 'uppercase',
-                        border: '1px solid rgba(255,255,255,0.15)', color: 'rgba(255,255,255,0.6)',
-                        background: 'rgba(255,255,255,0.04)',
-                      }}>
-                        {school}
+                  {/* School pills or prayer phone */}
+                  {!isKple ? (
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginBottom: '28px' }}>
+                      {['Baylor', 'Colorado', 'Georgia', 'Miss. State', 'Alabama', 'Ole Miss', 'Vanderbilt', 'Penn State'].map(school => (
+                        <span key={school} style={{
+                          padding: '5px 12px', fontSize: '10px', fontWeight: 800,
+                          letterSpacing: '1px', textTransform: 'uppercase',
+                          border: '1px solid rgba(255,255,255,0.15)', color: 'rgba(255,255,255,0.6)',
+                          background: 'rgba(255,255,255,0.04)',
+                        }}>
+                          {school}
+                        </span>
+                      ))}
+                    </div>
+                  ) : (
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '16px', marginBottom: '28px', alignItems: 'center' }}>
+                      <span style={{ fontSize: '16px', fontWeight: 800, color: '#fff', letterSpacing: '0.5px' }}>
+                        📞 Toll Free: <a href="tel:8776405673" style={{ color: accent, textDecoration: 'none' }}>(877) 640-5673</a>
                       </span>
-                    ))}
-                  </div>
+                    </div>
+                  )}
 
                   <button
-                    onClick={() => setIsHoodieVoteOpen(true)}
+                    onClick={() => {
+                      if (isKple) {
+                        window.location.href = 'mailto:prayer@kpletv.org?subject=Prayer Request';
+                      } else {
+                        setIsHoodieVoteOpen(true);
+                      }
+                    }}
                     style={{
                       display: 'inline-block', padding: '14px 44px', fontSize: '11px', fontWeight: 800,
                       textTransform: 'uppercase', letterSpacing: '2.5px',
-                      background: accent, color: '#fff',
+                      background: accent, color: '#000',
                       border: 'none', textDecoration: 'none',
                       transition: 'all 0.25s',
                       cursor: 'pointer'
@@ -566,15 +612,15 @@ export default function N2NHome({ wlConfig, categories, activeVideo, setActiveVi
                     onMouseOver={e => { e.currentTarget.style.opacity = '0.85'; }}
                     onMouseOut={e => { e.currentTarget.style.opacity = '1'; }}
                   >
-                    Vote Now
+                    {isKple ? "Send Prayer Request" : "Vote Now"}
                   </button>
                 </div>
 
-                {/* Right — Hoodie image */}
+                {/* Right — Image */}
                 <div style={{ flexShrink: 0, width: '320px', position: 'relative' }}>
                   <img
-                    src="/n2n/hoodie-competition.png"
-                    alt="College Hoodie Competition"
+                    src={isKple ? "https://images.unsplash.com/photo-1544717305-2782549b5136?auto=format&fit=crop&q=80&w=600" : "/n2n/hoodie-competition.png"}
+                    alt={isKple ? "Prayer Request" : "College Hoodie Competition"}
                     style={{
                       width: '100%', borderRadius: '4px',
                       border: '1px solid rgba(255,255,255,0.08)',
@@ -588,7 +634,7 @@ export default function N2NHome({ wlConfig, categories, activeVideo, setActiveVi
         )}
 
         {/* ── AVO Summer Concert Tour Banner / B2K Tour Banner ── */}
-        {!isOlympian && (
+        {!isOlympian && !isKple && (
           <section style={{ maxWidth: '1400px', margin: '40px auto', padding: '0 40px' }}>
             <div style={{
               position: 'relative', overflow: 'hidden',
@@ -809,7 +855,7 @@ export default function N2NHome({ wlConfig, categories, activeVideo, setActiveVi
             {/* Background image */}
             <div style={{
               position: 'absolute', inset: 0,
-              backgroundImage: `url(${isOlympian ? "https://images.unsplash.com/photo-1517838277536-f5f99be501cd?auto=format&fit=crop&q=80&w=1200" : (isB2K ? "https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?auto=format&fit=crop&q=80&w=1200" : "https://shopavo.la/cdn/shop/files/Homepage_Vanderbilt_Desktop2_c7f572ef-cd7e-4de4-bb9c-160b99884e08_1500x.jpg?v=1776284877")})`,
+              backgroundImage: `url(${isOlympian ? "https://images.unsplash.com/photo-1517838277536-f5f99be501cd?auto=format&fit=crop&q=80&w=1200" : (isB2K ? "https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?auto=format&fit=crop&q=80&w=1200" : (isKple ? "https://images.unsplash.com/photo-1510915228340-29c85a43dcfe?auto=format&fit=crop&q=80&w=1200" : "https://shopavo.la/cdn/shop/files/Homepage_Vanderbilt_Desktop2_c7f572ef-cd7e-4de4-bb9c-160b99884e08_1500x.jpg?v=1776284877"))})`,
               backgroundSize: 'cover', backgroundPosition: 'center',
               filter: 'brightness(0.3)',
             }} />
@@ -821,7 +867,7 @@ export default function N2NHome({ wlConfig, categories, activeVideo, setActiveVi
                   fontSize: '11px', fontWeight: 800, textTransform: 'uppercase',
                   letterSpacing: '3px', color: accent, marginBottom: '12px',
                 }}>
-                  {isOlympian ? "Olympia Ambassadors" : (isB2K ? "Street Team" : "Campus Ambassadors")}
+                  {isOlympian ? "Olympia Ambassadors" : (isB2K ? "Street Team" : (isKple ? "Media Partner" : "Campus Ambassadors"))}
                 </p>
                 <h2 style={{
                   fontSize: '36px', fontWeight: 900, color: '#fff', margin: '0 0 16px 0',
@@ -833,7 +879,11 @@ export default function N2NHome({ wlConfig, categories, activeVideo, setActiveVi
                     isB2K ? (
                       <>B2K Street Team &amp;<br />Millennium Ambassador</>
                     ) : (
-                      <>Represent AVO<br />On Your Campus</>
+                      isKple ? (
+                        <>Become A Partner &amp;<br />Support KPLE TV</>
+                      ) : (
+                        <>Represent AVO<br />On Your Campus</>
+                      )
                     )
                   )}
                 </h2>
@@ -844,12 +894,18 @@ export default function N2NHome({ wlConfig, categories, activeVideo, setActiveVi
                     ? "Join the official Mr. Olympia Ambassador Program. Share fitness tips, review premium workout apparel, and earn exclusive event credentials, early access, and commissions."
                     : (isB2K 
                       ? "Join the official B2K Millennium Street Team. Promote the Boys 4 Life Tour, share new music updates, and earn exclusive backstage passes, VIP meet-and-greets, and limited edition merch."
-                      : "Join the AVO Ambassador Program and bring premium college apparel to your school. Earn exclusive perks, early access to drops, and commissions on every sale."
+                      : (isKple ? "Become a supporting partner of KPLE TV. Join our media mission to keep the Gospel broadcasting 24/7. Your support enables us to continue revealing the love of Jesus Christ." : "Join the AVO Ambassador Program and bring premium college apparel to your school. Earn exclusive perks, early access to drops, and commissions on every sale.")
                     )}
                 </p>
               </div>
-                            <button
-                onClick={() => setIsAmbassadorOpen(true)}
+              <button
+                onClick={() => {
+                  if (isKple) {
+                    window.open("https://members.kple-tv.org/", "_blank");
+                  } else {
+                    setIsAmbassadorOpen(true);
+                  }
+                }}
                 style={{
                   display: 'inline-block', padding: '15px 48px', fontSize: '11px', fontWeight: 800,
                   textTransform: 'uppercase', letterSpacing: '2.5px',
@@ -861,7 +917,7 @@ export default function N2NHome({ wlConfig, categories, activeVideo, setActiveVi
                 onMouseOver={e => { e.currentTarget.style.background = '#fff'; e.currentTarget.style.color = '#000'; }}
                 onMouseOut={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = '#fff'; }}
               >
-                More Info
+                {isKple ? "Join Now" : "More Info"}
               </button>
             </div>
           </div>

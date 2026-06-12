@@ -37,7 +37,9 @@ export async function getCategoriesWithVideos(tenantId?: string) {
     if (
       nameLower.includes('bennie') || nameLower.includes('noelani') || 
       nameLower.includes('leilani') || nameLower.includes('leiloe') ||
-      domainLower.includes('bennie') || domainLower.includes('noelani')
+      nameLower.includes('kple') ||
+      domainLower.includes('bennie') || domainLower.includes('noelani') ||
+      domainLower.includes('kple')
     ) {
       return false;
     }
