@@ -23,6 +23,12 @@ export async function getCategoriesWithVideos(tenantId?: string) {
     supabase.from('videos').select('id, title, image_url, tags, video_url').order('created_at', { ascending: false }).limit(20)
   ]);
 
+  const APPROVED_N2N_PARENT_IDS = [
+    '3915f1e5-4c79-4b2a-ad41-7029ce8052d7', // AVO NETWORK
+    '4d16dae7-518d-440e-bb21-b6f3a7cfcd64', // B2K Network
+    '7a017c4d-c08f-4260-8540-a0cc8bed4e11', // Muscle & Fitness | Mr. Olympian
+  ];
+
   const mappedNetworks = (whitelabels || []).filter((wl: any) => {
     const domainLower = (wl.domain || '').toLowerCase();
     const nameLower = (wl.name || '').toLowerCase();
@@ -37,10 +43,15 @@ export async function getCategoriesWithVideos(tenantId?: string) {
     if (
       nameLower.includes('bennie') || nameLower.includes('noelani') || 
       nameLower.includes('leilani') || nameLower.includes('leiloe') ||
-      nameLower.includes('kple') ||
-      domainLower.includes('bennie') || domainLower.includes('noelani') ||
-      domainLower.includes('kple')
+      domainLower.includes('bennie') || domainLower.includes('noelani')
     ) {
+      return false;
+    }
+
+    // Filter out parent networks not yet approved for production (unless in local development mode)
+    const isApproved = APPROVED_N2N_PARENT_IDS.includes(wl.id);
+    const isDevMode = typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.DEV;
+    if (!isApproved && !isDevMode) {
       return false;
     }
     
