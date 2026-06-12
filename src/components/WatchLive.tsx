@@ -34,8 +34,8 @@ const B2K_FEEDS = [
 ];
 
 const VIBE_FEEDS = [
-  { key: 'news', label: '📰 CNN News', source: 'Dailymotion', query: 'cnn news' },
-  { key: 'politics', label: '⚖️ Fox Politics', source: 'Dailymotion', query: 'fox news politics' },
+  { key: 'news', label: '📰 CNN News', source: 'YouTube', channelId: 'UCupvZG-5ko_eiXAupbDfxWw' },
+  { key: 'politics', label: '⚖️ MSNBC Politics', source: 'YouTube', channelId: 'UCaXkIU1QidjJi8sqUJyBHGg' },
   { key: 'entertainment', label: '🎭 People Weekly', source: 'YouTube', channelId: 'UCZkUr5v7CgH0f2FpA3W40GQ' },
   { key: 'money', label: '💵 CNBC Business', source: 'YouTube', channelId: 'UCEAZeUIe207jqqN1QghN0eA' },
 ];
@@ -198,23 +198,23 @@ const STATIC_OLYMPIAN_CLIPS: VideoClip[] = [
 
 const STATIC_VIBE_CLIPS: VideoClip[] = [
   {
-    id: 'x8l0290',
-    headline: 'News: CNN breaking global coverage',
-    description: 'Global breaking news reports and motivational stories from the CNN desk.',
-    thumbnail: 'https://s1.dmcdn.net/v/ZmZFo1fNHmnDR11EJ/x720',
-    videoUrl: 'https://www.dailymotion.com/video/x8l0290',
-    duration: 234,
-    source: 'Dailymotion',
+    id: 'SV7JP7y80UM',
+    headline: 'News: Official CNN News Broadcast Debate',
+    description: 'Watch the official debate and analysis of global news and breaking media.',
+    thumbnail: 'https://i.ytimg.com/vi/SV7JP7y80UM/hqdefault.jpg',
+    videoUrl: 'https://www.youtube.com/watch?v=SV7JP7y80UM',
+    duration: 1845,
+    source: 'YouTube',
     sport: 'news'
   },
   {
-    id: 'xaezlle',
-    headline: 'Politics: Donald Trump announces agreement with Iran',
-    description: 'The US president promised a new offensive against Iran, then claimed an agreement is close.',
-    thumbnail: 'https://s1.dmcdn.net/v/bYeuI1gB3mRR3LLZu/x720',
-    videoUrl: 'https://www.dailymotion.com/video/xaezlle',
-    duration: 172,
-    source: 'Dailymotion',
+    id: 'NMjCB0Y2rh4',
+    headline: 'Politics: MSNBC political analysis and interviews',
+    description: 'Political highlights, news discussions, and analysis of current government issues.',
+    thumbnail: 'https://i.ytimg.com/vi/NMjCB0Y2rh4/hqdefault.jpg',
+    videoUrl: 'https://www.youtube.com/watch?v=NMjCB0Y2rh4',
+    duration: 915,
+    source: 'YouTube',
     sport: 'politics'
   },
   {
@@ -229,7 +229,7 @@ const STATIC_VIBE_CLIPS: VideoClip[] = [
   },
   {
     id: 'dTqpdNacxYM',
-    headline: 'Money: Business performance Q&A and Cutler performance',
+    headline: 'Money: CNBC Business performance Q&A and metrics',
     description: 'Financial insights, product selection, Q&A session on brand business metrics.',
     thumbnail: 'https://i.ytimg.com/vi/dTqpdNacxYM/hqdefault.jpg',
     videoUrl: 'https://www.youtube.com/watch?v=dTqpdNacxYM',
