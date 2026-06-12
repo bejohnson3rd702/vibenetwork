@@ -158,7 +158,21 @@ const MoreInfo: React.FC = () => {
                     position: 'relative'
                   }}
                 >
-                  <div style={{ fontSize: '36px', marginBottom: '16px' }}>✝️</div>
+                  <div style={{ 
+                    width: '96px', 
+                    height: '96px', 
+                    borderRadius: '50%', 
+                    overflow: 'hidden', 
+                    marginBottom: '24px', 
+                    border: `3px solid ${accentColor}44`,
+                    background: 'var(--bg-color)'
+                  }}>
+                    <img 
+                      src="https://images.leadconnectorhq.com/image/f_webp/q_80/r_1200/u_https://assets.cdn.filesafe.space/yXMb4ZqlijZh6tBlO4Ca/media/6483a3ad6b8bf4c60c263f38.jpeg" 
+                      alt="Jesus Christ" 
+                      style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
+                    />
+                  </div>
                   <h3 style={{ fontSize: '20px', fontWeight: 800, margin: '0 0 4px 0', color: 'var(--text-primary)' }}>
                     Jesus Christ
                   </h3>
@@ -182,7 +196,21 @@ const MoreInfo: React.FC = () => {
                     border: '1px solid var(--bg-surface-hover)'
                   }}
                 >
-                  <div style={{ fontSize: '36px', marginBottom: '16px' }}>👩‍🦳</div>
+                  <div style={{ 
+                    width: '96px', 
+                    height: '96px', 
+                    borderRadius: '50%', 
+                    overflow: 'hidden', 
+                    marginBottom: '24px', 
+                    border: '3px solid var(--bg-surface-hover)',
+                    background: 'var(--bg-color)'
+                  }}>
+                    <img 
+                      src="https://images.leadconnectorhq.com/image/f_webp/q_80/r_1200/u_https://assets.cdn.filesafe.space/yXMb4ZqlijZh6tBlO4Ca/media/6483a5359868003ab8979823.jpeg" 
+                      alt="Catherine Mason" 
+                      style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
+                    />
+                  </div>
                   <h3 style={{ fontSize: '20px', fontWeight: 800, margin: '0 0 4px 0', color: 'var(--text-primary)' }}>
                     Catherine Mason
                   </h3>
@@ -206,7 +234,21 @@ const MoreInfo: React.FC = () => {
                     border: '1px solid var(--bg-surface-hover)'
                   }}
                 >
-                  <div style={{ fontSize: '36px', marginBottom: '16px' }}>👨‍✈️</div>
+                  <div style={{ 
+                    width: '96px', 
+                    height: '96px', 
+                    borderRadius: '50%', 
+                    overflow: 'hidden', 
+                    marginBottom: '24px', 
+                    border: '3px solid var(--bg-surface-hover)',
+                    background: 'var(--bg-color)'
+                  }}>
+                    <img 
+                      src="https://images.leadconnectorhq.com/image/f_webp/q_80/r_1200/u_https://assets.cdn.filesafe.space/yXMb4ZqlijZh6tBlO4Ca/media/64ee3935ba2ab016887473a8.jpeg" 
+                      alt="Chaplain Ken Sorenson" 
+                      style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
+                    />
+                  </div>
                   <h3 style={{ fontSize: '20px', fontWeight: 800, margin: '0 0 4px 0', color: 'var(--text-primary)' }}>
                     Chaplain (COL) Ken Sorenson
                   </h3>
