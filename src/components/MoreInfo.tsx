@@ -12,6 +12,10 @@ const MoreInfo: React.FC = () => {
                      wlConfig?.name?.toLowerCase().includes('fitness');
   const isB2K = wlConfig?.name?.toLowerCase().includes('b2k') || 
                 wlConfig?.domain?.includes('b2k.vibenetwork.tv');
+  const isKple = wlConfig?.id === '33742e2f-430b-4c2d-9cba-42507891ef02' || 
+                 wlConfig?.parent_network_id === '33742e2f-430b-4c2d-9cba-42507891ef02' ||
+                 wlConfig?.name?.toLowerCase().includes('kple') ||
+                 wlConfig?.domain?.includes('kpletv.org');
   const accentColor = wlConfig?.accent || 'var(--accent-primary)';
 
   return (
@@ -37,7 +41,7 @@ const MoreInfo: React.FC = () => {
         >
           {isAvo 
             ? (wlConfig?.parent_network_id ? `About AVO & ${wlConfig.name}` : 'About AVO Network')
-            : (isB2K ? 'About B2K Network' : (isTenant ? `About ${wlConfig.name}` : 'About Vibe Network Architecture'))}
+            : (isB2K ? 'About B2K Network' : (isKple ? (wlConfig?.parent_network_id ? `About KPLE & ${wlConfig.name}` : 'About KPLE TV Network') : (isTenant ? `About ${wlConfig.name}` : 'About Vibe Network Architecture')))}
         </motion.h1>
         
         {isAvo ? (
@@ -86,6 +90,165 @@ const MoreInfo: React.FC = () => {
               <p style={{ margin: 0, fontSize: '18px', color: 'var(--text-primary)', lineHeight: 1.8 }}>
                 20% of every AVO order is donated to the university’s female student-athlete NIL fund. At AVO, we believe that American-made, high-quality clothing doesn't have to be expensive, and it should be easy to support all student athletes.
               </p>
+            </motion.div>
+          </div>
+        ) : isKple ? (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '32px', marginTop: '20px' }}>
+            <motion.p 
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.2 }}
+              style={{ fontSize: '20px', color: 'var(--text-secondary)', lineHeight: 1.8, marginBottom: '0px' }}
+            >
+              KPLE-TV is a broadcast facility located in Killeen/Ft Hood, Texas, broadcasting the Gospel since 1993. 
+              We offer 24/7/365 of inspirational programming that appeals to a wide variety of those seeking Christian programming. 
+              Understanding the diversity of the communities it serves, KPLE-TV offers programming in Spanish and English. 
+              We are available on Roku, iOS, Google Play Store, Fire TV, Apple TV, and online, continuing to drive Christian programming that prepares all nations for a global revival of our Lord Jesus Christ.
+            </motion.p>
+            
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '32px' }}>
+              <motion.div 
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.3 }}
+                style={{ background: 'var(--bg-surface)', padding: '40px', borderRadius: '24px', border: '1px solid var(--bg-surface-hover)' }}
+              >
+                <h2 style={{ fontSize: '24px', fontWeight: 800, marginBottom: '16px', color: 'var(--text-primary)' }}>
+                  Our Goal
+                </h2>
+                <p style={{ color: 'var(--text-secondary)', fontSize: '18px', lineHeight: 1.8, margin: 0 }}>
+                  We look to strengthen and expand our media technology platform to increase programming for viewers all over the world. 
+                  Most importantly, it is a timely opportunity to engage viewers about the non-profit organizations within Bell County, 
+                  educating them on how to network their services utilizing the station’s Local Events Calendar and broadcast announcement platform.
+                </p>
+              </motion.div>
+
+              <motion.div 
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.35 }}
+                style={{ background: 'var(--bg-surface)', padding: '40px', borderRadius: '24px', border: '1px solid var(--bg-surface-hover)' }}
+              >
+                <h2 style={{ fontSize: '24px', fontWeight: 800, marginBottom: '16px', color: 'var(--text-primary)' }}>
+                  Community Outreach
+                </h2>
+                <p style={{ color: 'var(--text-secondary)', fontSize: '18px', lineHeight: 1.8, margin: 0 }}>
+                  We believe in supporting Bell County's non-profit organizations that meet crucial community needs. 
+                  Our station acts as a networking hub, helping these organizations share their vital services utilizing 
+                  KPLE's Local Events Calendar, broadcast announcements, and public program interviews.
+                </p>
+              </motion.div>
+            </div>
+
+            <div style={{ marginTop: '20px' }}>
+              <h2 style={{ fontSize: '32px', fontWeight: 800, marginBottom: '24px', color: 'var(--text-primary)' }}>
+                Meet Our Team
+              </h2>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '24px' }}>
+                {/* Jesus Christ */}
+                <motion.div 
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.4 }}
+                  style={{ 
+                    background: 'var(--bg-surface)', 
+                    padding: '32px', 
+                    borderRadius: '24px', 
+                    border: `1px solid ${accentColor}44`,
+                    position: 'relative'
+                  }}
+                >
+                  <div style={{ fontSize: '36px', marginBottom: '16px' }}>✝️</div>
+                  <h3 style={{ fontSize: '20px', fontWeight: 800, margin: '0 0 4px 0', color: 'var(--text-primary)' }}>
+                    Jesus Christ
+                  </h3>
+                  <div style={{ fontSize: '14px', fontWeight: 600, color: accentColor, textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '16px' }}>
+                    Our Lord & Savior
+                  </div>
+                  <p style={{ color: 'var(--text-secondary)', fontSize: '15px', lineHeight: 1.6, margin: 0 }}>
+                    Serving as the head and ultimate leader of KPLE's mission, guiding the station in sharing the Gospel, spreading salvation, and preparing all nations for a global revival.
+                  </p>
+                </motion.div>
+
+                {/* Catherine Mason */}
+                <motion.div 
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.45 }}
+                  style={{ 
+                    background: 'var(--bg-surface)', 
+                    padding: '32px', 
+                    borderRadius: '24px', 
+                    border: '1px solid var(--bg-surface-hover)'
+                  }}
+                >
+                  <div style={{ fontSize: '36px', marginBottom: '16px' }}>👩‍🦳</div>
+                  <h3 style={{ fontSize: '20px', fontWeight: 800, margin: '0 0 4px 0', color: 'var(--text-primary)' }}>
+                    Catherine Mason
+                  </h3>
+                  <div style={{ fontSize: '14px', fontWeight: 600, color: accentColor, textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '16px' }}>
+                    Founder (1927–2022)
+                  </div>
+                  <p style={{ color: 'var(--text-secondary)', fontSize: '15px', lineHeight: 1.6, margin: 0 }}>
+                    Co-founded KPLE-TV alongside other faithful women after a calling to bring Christian television to Central Texas. With a Master's in early childhood education, she spent nearly 30 years leading the station, famously skydiving at age 81 to raise funds for digital equipment.
+                  </p>
+                </motion.div>
+
+                {/* Kenneth Sorenson */}
+                <motion.div 
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.5 }}
+                  style={{ 
+                    background: 'var(--bg-surface)', 
+                    padding: '32px', 
+                    borderRadius: '24px', 
+                    border: '1px solid var(--bg-surface-hover)'
+                  }}
+                >
+                  <div style={{ fontSize: '36px', marginBottom: '16px' }}>👨‍✈️</div>
+                  <h3 style={{ fontSize: '20px', fontWeight: 800, margin: '0 0 4px 0', color: 'var(--text-primary)' }}>
+                    Chaplain (COL) Ken Sorenson
+                  </h3>
+                  <div style={{ fontSize: '14px', fontWeight: 600, color: accentColor, textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '16px' }}>
+                    General Manager
+                  </div>
+                  <p style={{ color: 'var(--text-secondary)', fontSize: '15px', lineHeight: 1.6, margin: 0 }}>
+                    Retired U.S. Army Chaplain (Colonel) with 33 years of military service, including deployments to Iraq and Afghanistan. Ken leads community relations, station vision, and coordinates the "Christian Revival Network" to broadcast the Gospel in over 100 languages.
+                  </p>
+                </motion.div>
+              </div>
+            </div>
+
+            <motion.div 
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.55 }}
+              style={{ 
+                background: `linear-gradient(135deg, ${accentColor}15 0%, rgba(0,0,0,0) 100%)`, 
+                padding: '40px', 
+                borderRadius: '24px', 
+                border: `1px solid ${accentColor}33`,
+                boxShadow: `0 10px 30px ${accentColor}08`,
+                position: 'relative',
+                overflow: 'hidden'
+              }}
+            >
+              <div style={{
+                position: 'absolute', top: 0, left: 0, width: '4px', height: '100%',
+                background: accentColor, boxShadow: `0 0 12px ${accentColor}`
+              }} />
+              <h3 style={{ margin: '0 0 12px 0', fontSize: '22px', fontWeight: 800, color: accentColor, textTransform: 'uppercase', letterSpacing: '1px' }}>
+                Killeen Christian Broadcasting Corporation
+              </h3>
+              <p style={{ margin: '0 0 16px 0', fontSize: '18px', color: 'var(--text-primary)', lineHeight: 1.8 }}>
+                KPLE-TV is operated by the Killeen Christian Broadcasting Corporation, a 501(c)3 not-for-profit media mission. 
+                We are dedicated to broadcasting faith-based and family programming to communities across Central Texas and the world.
+              </p>
+              <div style={{ display: 'flex', gap: '8px', alignItems: 'center', fontSize: '18px', color: 'var(--text-secondary)' }}>
+                <span>Toll Free: </span>
+                <a href="tel:8776405673" style={{ color: accentColor, textDecoration: 'none', fontWeight: 'bold' }}>(877) 640-5673</a>
+              </div>
             </motion.div>
           </div>
         ) : (
