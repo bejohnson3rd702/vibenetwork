@@ -366,7 +366,7 @@ export default function N2NHome({ wlConfig, categories, activeVideo, setActiveVi
       {/* NCAA College Ticker — bottom of hero */}
       <div style={{ position: 'relative', zIndex: 10 }}>
         <Suspense fallback={null}>
-          <CollegeTicker accent={config.accent} isOlympian={isOlympian} isB2K={isB2K} />
+          <CollegeTicker accent={config.accent} isOlympian={isOlympian} isB2K={isB2K} isKple={isKple} />
         </Suspense>
       </div>
 
@@ -722,7 +722,7 @@ export default function N2NHome({ wlConfig, categories, activeVideo, setActiveVi
         )}
 
         {/* ── College Sports News Feed ──────────────────────── */}
-        {!isOlympian && !isB2K && (
+        {!isOlympian && !isB2K && !isKple && (
           <Suspense fallback={null}>
             <CollegeNewsFeed accent={config.accent} />
           </Suspense>

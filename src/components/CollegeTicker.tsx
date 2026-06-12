@@ -32,9 +32,15 @@ const B2K_EVENTS = [
   { sport: '✨ FINALE', away: { name: 'Hampton, VA' }, home: { name: 'Hampton Coliseum' }, status: 'APR 19 · 7:00 PM' },
 ];
 
+const KPLE_EVENTS = [
+  { sport: '📢 HEALING ROOMS', away: { name: 'The Killeen Healing Rooms' }, home: { name: 'KPLE-TV Building (502 E. Elms Rd., Killeen)' }, status: '2nd Sat (9:30-11:30 AM) & Last Tue (6:45-8:00 PM)' },
+  { sport: '🙏 PRAYER LINE', away: { name: 'Need Prayer? We are here for you' }, home: { name: 'Toll-Free Prayer Request Line' }, status: 'Call (877) 640-5673' },
+  { sport: '✝️ MEMBER SUPPORT', away: { name: 'KKCBC 501(c)3 Media Mission' }, home: { name: 'Become a Partner / Monthly Member' }, status: 'members.kple-tv.org' },
+];
+
 const API_BASE = '/api/ncaa';
 
-export default function CollegeTicker({ accent = '#D35400', isOlympian = false, isB2K = false }: { accent?: string; isOlympian?: boolean; isB2K?: boolean }) {
+export default function CollegeTicker({ accent = '#D35400', isOlympian = false, isB2K = false, isKple = false }: { accent?: string; isOlympian?: boolean; isB2K?: boolean; isKple?: boolean }) {
   const [games, setGames] = useState<GameScore[]>([]);
   const [loading, setLoading] = useState(true);
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -57,6 +63,19 @@ export default function CollegeTicker({ accent = '#D35400', isOlympian = false, 
     if (isB2K) {
       const allGames: GameScore[] = B2K_EVENTS.map((e, idx) => ({
         id: `b2k-${idx}`,
+        away: { name: e.away.name, score: '' },
+        home: { name: e.home.name, score: '' },
+        status: e.status,
+        sport: e.sport,
+      }));
+      setGames(allGames);
+      setLoading(false);
+      return;
+    }
+
+    if (isKple) {
+      const allGames: GameScore[] = KPLE_EVENTS.map((e, idx) => ({
+        id: `kple-${idx}`,
         away: { name: e.away.name, score: '' },
         home: { name: e.home.name, score: '' },
         status: e.status,
@@ -114,7 +133,7 @@ export default function CollegeTicker({ accent = '#D35400', isOlympian = false, 
     fetchScores();
     const interval = setInterval(fetchScores, 90000);
     return () => clearInterval(interval);
-  }, [isOlympian, isB2K]);
+  }, [isOlympian, isB2K, isKple]);
 
   useEffect(() => {
     if (!scrollRef.current || paused || games.length === 0) return;
@@ -143,7 +162,7 @@ export default function CollegeTicker({ accent = '#D35400', isOlympian = false, 
         fontSize: '13px', color: '#444', letterSpacing: '2px', textTransform: 'uppercase',
         fontFamily: "'Inter', system-ui, sans-serif",
       }}>
-        ● {isOlympian ? 'OLYMPIA SCHEDULE LOADING' : (isB2K ? 'B2K TOUR DATES LOADING' : 'NCAA SCOREBOARD LOADING')}
+        ● {isOlympian ? 'OLYMPIA SCHEDULE LOADING' : (isB2K ? 'B2K TOUR DATES LOADING' : (isKple ? 'KPLE LOCAL EVENTS LOADING' : 'NCAA SCOREBOARD LOADING'))}
       </div>
     );
   }
@@ -179,7 +198,7 @@ export default function CollegeTicker({ accent = '#D35400', isOlympian = false, 
         fontSize: '13px', fontWeight: 900, letterSpacing: '2px', color: accent,
         textTransform: 'uppercase',
       }}>
-        {isOlympian ? 'OLYMPIA' : (isB2K ? 'B2K TOUR' : 'NCAA')}
+        {isOlympian ? 'OLYMPIA' : (isB2K ? 'B2K TOUR' : (isKple ? 'LOCAL EVENTS' : 'NCAA'))}
       </div>
 
       <div
