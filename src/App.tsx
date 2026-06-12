@@ -443,7 +443,7 @@ function App() {
             </Suspense>
           )}
 
-          {wlConfig && (wlConfig.id === '33742e2f-430b-4c2d-9cba-42507891ef02' || wlConfig.parent_network_id === '33742e2f-430b-4c2d-9cba-42507891ef02') && (
+          {wlConfig && wlConfig.id === '33742e2f-430b-4c2d-9cba-42507891ef02' && (
             <Suspense fallback={null}>
               <BibleDrawer accent={wlConfig.theme?.accent || wlConfig.accent || '#004e98'} />
             </Suspense>
