@@ -274,6 +274,7 @@ export default function N2NHome({ wlConfig, categories, activeVideo, setActiveVi
             </p>
             <button
               onClick={() => {
+                if (isKple) return; // Go nowhere for now
                 const targetLink = HERO_SLIDES[heroSlide % HERO_SLIDES.length]?.link;
                 if (targetLink) {
                   if (targetLink.startsWith('http')) {
@@ -289,11 +290,19 @@ export default function N2NHome({ wlConfig, categories, activeVideo, setActiveVi
                 display: 'inline-block', padding: '13px 40px', fontSize: '11px', fontWeight: 800,
                 textTransform: 'uppercase', letterSpacing: '2.5px',
                 background: 'transparent', color: '#fff',
-                border: '1.5px solid #fff', cursor: 'pointer',
+                border: '1.5px solid #fff', cursor: isKple ? 'default' : 'pointer',
                 transition: 'all 0.25s',
               }}
-              onMouseOver={e => { e.currentTarget.style.background = '#fff'; e.currentTarget.style.color = '#000'; }}
-              onMouseOut={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = '#fff'; }}
+              onMouseOver={e => {
+                if (isKple) return;
+                e.currentTarget.style.background = '#fff';
+                e.currentTarget.style.color = '#000';
+              }}
+              onMouseOut={e => {
+                if (isKple) return;
+                e.currentTarget.style.background = 'transparent';
+                e.currentTarget.style.color = '#fff';
+              }}
             >
               {isOlympian ? "View Schedule" : (isB2K ? "Learn More" : (isKple ? "Watch Network" : "Shop Now"))}
             </button>
