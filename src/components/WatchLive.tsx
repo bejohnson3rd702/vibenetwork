@@ -57,7 +57,7 @@ const STATIC_KPLE_CLIPS: VideoClip[] = [
     id: '5BFZ5rg1ZLc',
     headline: 'God doesn’t want robotic prayers—He wants your heart.',
     description: 'Join TCT Network for a deep Bible study on walking in faith and living the Word of God daily.',
-    thumbnail: 'https://images.unsplash.com/photo-1504052434569-70ad585e5151?auto=format&fit=crop&q=80&w=600',
+    thumbnail: 'https://images.unsplash.com/photo-1507434965515-61970f2bd7c6?auto=format&fit=crop&q=80&w=600',
     videoUrl: 'https://www.youtube.com/watch?v=5BFZ5rg1ZLc',
     duration: 2450,
     source: 'TCT Network',

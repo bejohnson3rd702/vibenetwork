@@ -47,7 +47,7 @@ const HOSTS = [
       {
         title: 'God doesn’t want robotic prayers—He wants your heart.',
         url: 'https://www.youtube.com/watch?v=5BFZ5rg1ZLc',
-        image: 'https://images.unsplash.com/photo-1504052434569-70ad585e5151?auto=format&fit=crop&q=80&w=600',
+        image: 'https://images.unsplash.com/photo-1507434965515-61970f2bd7c6?auto=format&fit=crop&q=80&w=600',
         category: 'Bible Studies',
         tags: ['TCT', 'Bible Study', 'Bread of Life']
       },
@@ -62,7 +62,7 @@ const HOSTS = [
     post: {
       content: "Blessed to share our new Bible study series on Bread of Life. Join us as we examine the depth of God's grace this Wednesday at 8 PM.",
       likes: 120,
-      image: 'https://images.unsplash.com/photo-1504052434569-70ad585e5151?auto=format&fit=crop&q=80&w=600'
+      image: 'https://images.unsplash.com/photo-1507434965515-61970f2bd7c6?auto=format&fit=crop&q=80&w=600'
     }
   },
   {
