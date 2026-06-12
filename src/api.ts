@@ -27,6 +27,7 @@ export async function getCategoriesWithVideos(tenantId?: string) {
     '3915f1e5-4c79-4b2a-ad41-7029ce8052d7', // AVO NETWORK
     '4d16dae7-518d-440e-bb21-b6f3a7cfcd64', // B2K Network
     '7a017c4d-c08f-4260-8540-a0cc8bed4e11', // Muscle & Fitness | Mr. Olympian
+    '33742e2f-430b-4c2d-9cba-42507891ef02', // KPLE TV
   ];
 
   const mappedNetworks = (whitelabels || []).filter((wl: any) => {
