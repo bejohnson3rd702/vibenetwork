@@ -57,13 +57,18 @@ export async function getCategoriesWithVideos(tenantId?: string) {
     }
     
     return true;
-  }).map((wl: any) => ({
-    id: 'wl_' + wl.id,
-    title: wl.name || wl.domain || 'Tenant Platform',
-    image: wl.theme?.heroImage || wl.logo || `https://ui-avatars.com/api/?name=${encodeURIComponent(wl.name || 'W')}&background=0D8ABC&color=fff`,
-    tags: ['Firm'],
-    linkUrl: `/?tenant=${wl.id}`
-  }));
+  }).map((wl: any) => {
+    const heroImg = wl.theme?.heroImage || '';
+    const isLogo = heroImg.includes('logo') || (wl.logo && wl.logo.includes('logo'));
+    return {
+      id: 'wl_' + wl.id,
+      title: wl.name || wl.domain || 'Tenant Platform',
+      image: wl.theme?.heroImage || wl.logo || `https://ui-avatars.com/api/?name=${encodeURIComponent(wl.name || 'W')}&background=0D8ABC&color=fff`,
+      tags: isLogo ? ['Network'] : ['Firm'],
+      accent: wl.theme?.accent || wl.accent || '#D35400',
+      linkUrl: `/?tenant=${wl.id}`
+    };
+  });
 
 
 

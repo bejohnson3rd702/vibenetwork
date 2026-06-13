@@ -25,6 +25,7 @@ const SlideItem: React.FC<{ item: Item, aspectRatio: string, onClick?: () => voi
   const [isHovered, setIsHovered] = useState(false);
   const isInfluencer = !item.videoUrl || (item.tags && item.tags.includes('Influencer Channel'));
   const isNetwork = item.tags && item.tags.includes('Network');
+  const isOlympian = item.title?.toLowerCase().includes('olympia') || item.image?.toLowerCase().includes('olympia');
 
   const innerContent = (
     <motion.div 
@@ -50,10 +51,10 @@ const SlideItem: React.FC<{ item: Item, aspectRatio: string, onClick?: () => voi
         referrerPolicy="no-referrer"
         style={{
           position: 'absolute',
-          top: isNetwork ? '8%' : 0,
-          left: isNetwork ? '8%' : 0,
-          width: isNetwork ? '84%' : '100%',
-          height: isNetwork ? '84%' : '100%',
+          top: isNetwork ? (isOlympian ? '2%' : '8%') : 0,
+          left: isNetwork ? (isOlympian ? '2%' : '8%') : 0,
+          width: isNetwork ? (isOlympian ? '96%' : '84%') : '100%',
+          height: isNetwork ? (isOlympian ? '96%' : '84%') : '100%',
           objectFit: isNetwork ? 'contain' : 'cover',
           zIndex: 0,
         }}
