@@ -76,7 +76,7 @@ export async function getCategoriesWithVideos(tenantId?: string) {
   const mappedProfiles = (profiles || []).map((p: any) => ({
     id: p.id,
     title: p.username || 'Creator Profile',
-    image: p.avatar_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(p.username || 'U')}`,
+    image: p.avatar_url || '/n2n/default_avatar.png',
     tags: [p.role === 'influencer' ? 'Creator' : 'Member'],
     linkUrl: `/profile/${p.id}`
   }));
@@ -186,7 +186,7 @@ export async function getN2NCategories(parentId: string, childNetworkIds: string
   const mappedProfiles = profiles.map((p: any) => ({
     id: p.id,
     title: p.username || 'Creator Profile',
-    image: p.avatar_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(p.username || 'U')}`,
+    image: p.avatar_url || '/n2n/default_avatar.png',
     tags: [p.role === 'influencer' ? 'Creator' : 'Member'],
     linkUrl: `/profile/${p.id}`
   }));
