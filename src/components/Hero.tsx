@@ -8,14 +8,14 @@ const VIBE_HERO_SLIDES = [
     short: 'Entertainment', 
     subtitle: 'LATEST LIVE SETS & SHOWS', 
     copy: 'Experience top DJ sets, live concerts, and exclusive music releases streaming 24/7 on the network.', 
-    image: 'https://images.unsplash.com/photo-1514525253161-7a46d19cd819?auto=format&fit=crop&q=80&w=1200' 
+    image: '/n2n/vibe_entertainment.png' 
   },
   { 
     title: 'News', 
     short: 'News', 
     subtitle: 'GLOBAL REPORTS & UPDATES', 
     copy: 'Get real-time updates, deep-dive investigative journalism, and breaking stories from around the globe.', 
-    image: 'https://images.unsplash.com/photo-1585829365295-ab7cd400c167?auto=format&fit=crop&q=80&w=1200' 
+    image: '/n2n/vibe_newsroom.png' 
   },
   { 
     title: 'Sports', 
