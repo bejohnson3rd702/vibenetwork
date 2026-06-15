@@ -25,7 +25,9 @@ const Navbar: React.FC<NavbarProps> = ({ user, onLoginClick, onAdminClick }) => 
   const appLogo = wlConfig?.logoImage || '';
   const [parentName, setParentName] = useState<string>('AVO Network');
 
-  const showBackToVibe = new URLSearchParams(window.location.search).get('fromVibe') === 'true';
+  const showBackToVibe = 
+    new URLSearchParams(window.location.search).get('fromVibe') === 'true' &&
+    new URLSearchParams(window.location.search).has('tenant');
 
   useEffect(() => {
     if (wlConfig?.parent_network_id) {
