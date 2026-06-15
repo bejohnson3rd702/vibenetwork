@@ -743,7 +743,7 @@ export default function WatchLive({ accent = '#D35400', isOlympian = false, isB2
 
   if (loading) {
     return (
-      <section style={{ padding: '60px 0', width: '100%', overflow: 'hidden' }}>
+      <section style={{ padding: '20px 0', width: '100%', overflow: 'hidden' }}>
         <div className="px-mobile-sm" style={{ maxWidth: '1400px', margin: '0 auto', padding: '0 40px' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '20px' }}>
             <Tv size={24} color={accent} />
@@ -762,7 +762,7 @@ export default function WatchLive({ accent = '#D35400', isOlympian = false, isB2
 
   return (
     <>
-      <section style={{ padding: '60px 0', width: '100%', overflow: 'hidden' }}>
+      <section style={{ padding: '20px 0', width: '100%', overflow: 'hidden' }}>
         <div className="px-mobile-sm" style={{ maxWidth: '1400px', margin: '0 auto', padding: '0 40px' }}>
         {/* Header */}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '28px', flexWrap: 'wrap', gap: '16px' }}>

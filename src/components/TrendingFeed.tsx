@@ -162,7 +162,7 @@ export default function TrendingFeed() {
   const visiblePosts = posts.slice(0, limit);
 
   return (
-    <section style={{ padding: '60px 0', width: '100%', overflow: 'hidden', background: 'transparent' }}>
+    <section style={{ padding: '20px 0', width: '100%', overflow: 'hidden', background: 'transparent' }}>
       <div style={{ maxWidth: '1400px', margin: '0 auto', padding: '0 40px' }}>
         
         {/* Section Header */}
