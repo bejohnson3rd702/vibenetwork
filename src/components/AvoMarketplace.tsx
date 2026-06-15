@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ShoppingBag, X, ExternalLink } from 'lucide-react';
+import { useWhiteLabel } from '../context/WhiteLabelContext';
 
 interface Product {
   id: number;
@@ -27,23 +28,66 @@ const COLLECTIONS = [
 ];
 
 export default function AvoMarketplace({ accent = '#D35400' }: { accent?: string }) {
+  const { wlConfig } = useWhiteLabel();
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState('all');
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [selectedImage, setSelectedImage] = useState(0);
 
+  const getSchoolHandle = () => {
+    const shopifyUrl = wlConfig?.shopifyUrl || wlConfig?.theme?.shopifyUrl || '';
+    let handle = 'all';
+    if (shopifyUrl) {
+      if (shopifyUrl.includes('/collections/')) {
+        handle = shopifyUrl.split('/collections/')[1]?.split('?')[0]?.replace(/\/$/, '') || 'all';
+      } else if (shopifyUrl.includes('/pages/')) {
+        handle = shopifyUrl.split('/pages/')[1]?.split('?')[0]?.replace(/\/$/, '') || 'all';
+      }
+    }
+    if (handle === 'all' && wlConfig?.name) {
+      const nameLower = wlConfig.name.toLowerCase();
+      if (nameLower.includes('baylor')) handle = 'baylor';
+      else if (nameLower.includes('colorado')) handle = 'colorado';
+      else if (nameLower.includes('georgia')) handle = 'georgia';
+      else if (nameLower.includes('mississippi')) handle = 'mississippi-state';
+      else if (nameLower.includes('ole miss')) handle = 'ole-miss';
+      else if (nameLower.includes('vanderbilt')) handle = 'vanderbilt';
+      else if (nameLower.includes('penn state')) handle = 'penn-state';
+      else if (nameLower.includes('alabama')) handle = 'avo-x-bama';
+    }
+    return handle;
+  };
+
+  const isChildNetwork = !!(wlConfig?.parent_network_id === '3915f1e5-4c79-4b2a-ad41-7029ce8052d7' || (wlConfig?.id !== '3915f1e5-4c79-4b2a-ad41-7029ce8052d7' && wlConfig?.parent_network_id));
+
   useEffect(() => {
     const fetchAll = async () => {
+      setLoading(true);
       const all: Product[] = [];
+      const activeHandle = getSchoolHandle();
+
+      // If it's a child network (specific college), we only query their collection
+      const targetCollections = isChildNetwork && activeHandle !== 'all'
+        ? COLLECTIONS.filter(c => c.handle === activeHandle)
+        : COLLECTIONS;
+
+      const fetchLimit = isChildNetwork ? 40 : 10;
+
+      // Update default filter
+      if (activeHandle !== 'all') {
+        setFilter(activeHandle);
+      } else {
+        setFilter('all');
+      }
 
       await Promise.all(
-        COLLECTIONS.map(async (col) => {
+        targetCollections.map(async (col) => {
           try {
             const isBama = col.handle === 'avo-x-bama';
             const url = isBama
-              ? `/api/bama/api/v1/shopify/products?status=active&limit=10&vendor=AVO`
-              : `/api/shop/collections/${col.handle}/products.json?limit=10`;
+              ? `/api/bama/api/v1/shopify/products?status=active&limit=${fetchLimit}&vendor=AVO`
+              : `/api/shop/collections/${col.handle}/products.json?limit=${fetchLimit}`;
             
             const headers: Record<string, string> = {};
             if (isBama) {
@@ -90,14 +134,14 @@ export default function AvoMarketplace({ accent = '#D35400' }: { accent?: string
         })
       );
 
-      // Shuffle for variety
-      const shuffled = all.sort(() => Math.random() - 0.5);
-      setProducts(shuffled);
+      // Only shuffle if loading multiple schools
+      const finalProducts = isChildNetwork ? all : all.sort(() => Math.random() - 0.5);
+      setProducts(finalProducts);
       setLoading(false);
     };
 
     fetchAll();
-  }, []);
+  }, [wlConfig]);
 
   useEffect(() => {
     if (selectedProduct) document.body.style.overflow = 'hidden';
@@ -106,7 +150,7 @@ export default function AvoMarketplace({ accent = '#D35400' }: { accent?: string
   }, [selectedProduct]);
 
   const filtered = filter === 'all' ? products : products.filter(p => p.collection === filter);
-  const displayed = filtered.slice(0, 10);
+  const displayed = isChildNetwork ? filtered : filtered.slice(0, 10);
 
   const schoolColor = (collection: string) =>
     COLLECTIONS.find(c => c.handle === collection)?.color || accent;
@@ -144,29 +188,38 @@ export default function AvoMarketplace({ accent = '#D35400' }: { accent?: string
               <ShoppingBag size={20} color="#fff" />
             </div>
             <div>
-              <h2 style={{ margin: 0, fontSize: '28px', fontWeight: 900, letterSpacing: '-1px', color: '#fff' }}>Shop All Programs</h2>
-              <p style={{ margin: 0, fontSize: '13px', color: 'rgba(255,255,255,0.35)' }}>{products.length} items across {COLLECTIONS.length} schools</p>
+              <h2 style={{ margin: 0, fontSize: '28px', fontWeight: 900, letterSpacing: '-1px', color: '#fff' }}>
+                {isChildNetwork ? `Official ${wlConfig?.name || 'School'} Store` : 'Shop All Programs'}
+              </h2>
+              <p style={{ margin: 0, fontSize: '13px', color: 'rgba(255,255,255,0.35)' }}>
+                {isChildNetwork
+                  ? `Showing products for ${COLLECTIONS.find(c => c.handle === filter)?.label || wlConfig?.name || 'our school'}`
+                  : `${products.length} items across ${COLLECTIONS.length} schools`
+                }
+              </p>
             </div>
           </div>
           {/* Filter pills */}
-          <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
-            <button onClick={() => setFilter('all')} style={{
-              padding: '7px 16px', borderRadius: '20px', fontSize: '11px', fontWeight: 700,
-              border: filter === 'all' ? `1.5px solid ${accent}` : '1.5px solid rgba(255,255,255,0.06)',
-              background: filter === 'all' ? `${accent}18` : 'transparent',
-              color: filter === 'all' ? accent : 'rgba(255,255,255,0.4)', cursor: 'pointer',
-              textTransform: 'uppercase', letterSpacing: '0.5px', transition: 'all 0.2s',
-            }}>All</button>
-            {COLLECTIONS.map(col => (
-              <button key={col.handle} onClick={() => setFilter(col.handle)} style={{
+          {!isChildNetwork && (
+            <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
+              <button onClick={() => setFilter('all')} style={{
                 padding: '7px 16px', borderRadius: '20px', fontSize: '11px', fontWeight: 700,
-                border: filter === col.handle ? `1.5px solid ${col.color}` : '1.5px solid rgba(255,255,255,0.06)',
-                background: filter === col.handle ? `${col.color}22` : 'transparent',
-                color: filter === col.handle ? col.color : 'rgba(255,255,255,0.4)', cursor: 'pointer',
+                border: filter === 'all' ? `1.5px solid ${accent}` : '1.5px solid rgba(255,255,255,0.06)',
+                background: filter === 'all' ? `${accent}18` : 'transparent',
+                color: filter === 'all' ? accent : 'rgba(255,255,255,0.4)', cursor: 'pointer',
                 textTransform: 'uppercase', letterSpacing: '0.5px', transition: 'all 0.2s',
-              }}>{col.label}</button>
-            ))}
-          </div>
+              }}>All</button>
+              {COLLECTIONS.map(col => (
+                <button key={col.handle} onClick={() => setFilter(col.handle)} style={{
+                  padding: '7px 16px', borderRadius: '20px', fontSize: '11px', fontWeight: 700,
+                  border: filter === col.handle ? `1.5px solid ${col.color}` : '1.5px solid rgba(255,255,255,0.06)',
+                  background: filter === col.handle ? `${col.color}22` : 'transparent',
+                  color: filter === col.handle ? col.color : 'rgba(255,255,255,0.4)', cursor: 'pointer',
+                  textTransform: 'uppercase', letterSpacing: '0.5px', transition: 'all 0.2s',
+                }}>{col.label}</button>
+              ))}
+            </div>
+          )}
         </div>
 
         {/* Product Grid — 5 per row on desktop */}
@@ -233,7 +286,9 @@ export default function AvoMarketplace({ accent = '#D35400' }: { accent?: string
         {/* View all link */}
         <div style={{ textAlign: 'center', marginTop: '40px' }}>
           <a
-            href="https://shopavo.la"
+            href={isChildNetwork && filter !== 'all'
+              ? (filter === 'avo-x-bama' ? 'https://shopavo.la/pages/avo-x-bama' : `https://shopavo.la/collections/${filter}`)
+              : 'https://shopavo.la'}
             target="_blank"
             rel="noopener noreferrer"
             style={{

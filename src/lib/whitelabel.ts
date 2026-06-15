@@ -27,6 +27,7 @@ export interface WlConfig {
   logo?: string;
   n2n_enabled: boolean;
   parent_network_id: string | null;
+  shopifyUrl?: string | null;
 }
 
 export function normalizeWlConfig(
@@ -58,6 +59,8 @@ export function normalizeWlConfig(
     platform_fee_percentage: raw?.platform_fee_percentage || 0,
     n2n_enabled: !!(raw?.n2n_enabled || theme.n2n_enabled || raw?.id === 'adb92e36-5ebc-4dc3-ae96-429f3dc1bb30' || raw?.domain === 'vibenetwork.tv'),
     parent_network_id: raw?.parent_network_id ?? theme.parent_network_id ?? null,
+    theme: theme,
+    shopifyUrl: raw?.shopifyUrl || theme.shopifyUrl || null,
     ...overrides,
   };
 }
