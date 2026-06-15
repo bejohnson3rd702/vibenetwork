@@ -326,7 +326,7 @@ const STATIC_VIBE_CLIPS: VideoClip[] = [
     id: '4cqcl3Jy_hw',
     headline: 'FAA wants to change this old system',
     description: "Many of America's busiest air traffic control towers still rely on paper flight strips to track aircraft movements. Now, the FAA is pushing to replace...",
-    thumbnail: 'https://i1.ytimg.com/vi/4cqcl3Jy_hw/hqdefault.jpg',
+    thumbnail: '/n2n/air_traffic_control.png',
     videoUrl: 'https://www.youtube.com/watch?v=4cqcl3Jy_hw',
     duration: 0,
     source: 'YouTube',
