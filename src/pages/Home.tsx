@@ -17,6 +17,7 @@ interface HomeProps {
 
 import { useWhiteLabel } from '../context/WhiteLabelContext';
 import { getChildNetworks, mergeQueryParams } from '../lib/n2n';
+import { OLYMPIA_CHAMPIONS } from './N2NHome';
 
 export default function Home({ categories, activeVideo, setActiveVideo, user }: HomeProps) {
   const { wlConfig } = useWhiteLabel();
@@ -97,24 +98,43 @@ export default function Home({ categories, activeVideo, setActiveVideo, user }: 
               const isArtist = category.aspectRatio === '3/4' || category.title.includes('Artist');
               const ratio = isArtist ? '3/4' : '16/9';
               const multiplier = 1; 
+              
+              const isNewProfiles = category.title === 'New Profiles';
+              
               return (
-                <SliderSection 
-                  key={category.title} 
-                  title={category.title} 
-                  items={category.items} 
-                  delay={index * 0.2}
-                  aspectRatio={ratio}
-                  sizeMultiplier={multiplier}
-                  onItemClick={(item) => {
-                    if (item.linkUrl) {
-                      window.location.href = mergeQueryParams(item.linkUrl, window.location.search);
-                    } else if (item.tags && item.tags.includes('Influencer Channel')) {
-                      window.location.href = mergeQueryParams(`/profile/${item.id}`, window.location.search);
-                    } else {
-                      setActiveVideo(item);
-                    }
-                  }}
-                />
+                <div key={category.title}>
+                  <SliderSection 
+                    title={category.title} 
+                    items={category.items} 
+                    delay={index * 0.2}
+                    aspectRatio={category.aspectRatio || ratio}
+                    sizeMultiplier={multiplier}
+                    onItemClick={(item) => {
+                      if (item.linkUrl) {
+                        window.location.href = mergeQueryParams(item.linkUrl, window.location.search);
+                      } else if (item.tags && item.tags.includes('Influencer Channel')) {
+                        window.location.href = mergeQueryParams(`/profile/${item.id}`, window.location.search);
+                      } else {
+                        setActiveVideo(item);
+                      }
+                    }}
+                  />
+                  {isNewProfiles && (
+                    <SliderSection
+                      title="MR. & MRS. OLYMPIA"
+                      items={OLYMPIA_CHAMPIONS.map(champion => ({
+                        ...champion,
+                        linkUrl: `/profile/${champion.id}?tenant=7a017c4d-c08f-4260-8540-a0cc8bed4e11`
+                      }))}
+                      aspectRatio="1/1"
+                      onItemClick={(item) => {
+                        if (item.linkUrl) {
+                          window.location.href = mergeQueryParams(item.linkUrl, window.location.search);
+                        }
+                      }}
+                    />
+                  )}
+                </div>
               );
             })}
         </div>

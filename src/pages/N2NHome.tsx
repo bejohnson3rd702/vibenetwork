@@ -24,7 +24,7 @@ interface N2NHomeProps {
   setActiveVideo: (video: VideoItem | null) => void;
 }
 
-const OLYMPIA_CHAMPIONS = [
+export const OLYMPIA_CHAMPIONS = [
   {
     id: '84071a35-5f73-4927-a0a7-828800245096',
     title: 'Samson Dauda',
