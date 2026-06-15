@@ -743,13 +743,15 @@ export default function WatchLive({ accent = '#D35400', isOlympian = false, isB2
 
   if (loading) {
     return (
-      <div style={{ padding: '60px 40px', maxWidth: '1400px', margin: '0 auto' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '20px' }}>
-          <Tv size={24} color={accent} />
-          <h2 style={{ margin: 0, fontSize: '28px', fontWeight: 900, letterSpacing: '-1px' }}>Watch</h2>
+      <section style={{ padding: '60px 0', width: '100%', overflow: 'hidden' }}>
+        <div className="px-mobile-sm" style={{ maxWidth: '1400px', margin: '0 auto', padding: '0 40px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '20px' }}>
+            <Tv size={24} color={accent} />
+            <h2 style={{ margin: 0, fontSize: '28px', fontWeight: 900, letterSpacing: '-1px' }}>Watch</h2>
+          </div>
+          <div style={{ textAlign: 'center', padding: '40px', color: '#555', fontSize: '14px' }}>Loading clips...</div>
         </div>
-        <div style={{ textAlign: 'center', padding: '40px', color: '#555', fontSize: '14px' }}>Loading clips...</div>
-      </div>
+      </section>
     );
   }
 
@@ -760,7 +762,8 @@ export default function WatchLive({ accent = '#D35400', isOlympian = false, isB2
 
   return (
     <>
-      <div style={{ padding: '60px 40px', maxWidth: '1400px', margin: '0 auto' }}>
+      <section style={{ padding: '60px 0', width: '100%', overflow: 'hidden' }}>
+        <div className="px-mobile-sm" style={{ maxWidth: '1400px', margin: '0 auto', padding: '0 40px' }}>
         {/* Header */}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '28px', flexWrap: 'wrap', gap: '16px' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
@@ -811,24 +814,24 @@ export default function WatchLive({ accent = '#D35400', isOlympian = false, isB2
             onMouseOver={e => { e.currentTarget.style.transform = 'scale(1.003)'; }}
             onMouseOut={e => { e.currentTarget.style.transform = 'scale(1)'; }}
           >
-            <div style={{ position: 'relative', width: '100%', aspectRatio: '21/9', overflow: 'hidden' }}>
+            <div className="watch-featured-container" style={{ position: 'relative', width: '100%', overflow: 'hidden' }}>
               <img src={featured.thumbnail} alt={featured.headline} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
               <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(0,0,0,0.95) 0%, rgba(0,0,0,0.3) 50%, transparent 70%)' }} />
               {/* Play / Link button */}
               <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <div style={{
-                  width: '72px', height: '72px', borderRadius: '50%',
+                <div className="watch-play-button" style={{
+                  borderRadius: '50%',
                   background: `${accent}dd`, display: 'flex', alignItems: 'center', justifyContent: 'center',
                   boxShadow: `0 8px 30px ${accent}55`, transition: 'transform 0.2s',
                 }}>
                   {(!featured.videoUrl.includes('youtube.com') && !featured.videoUrl.includes('youtu.be') && !featured.videoUrl.toLowerCase().endsWith('.mp4')) ? (
-                    <ExternalLink size={28} color="#fff" />
+                    <ExternalLink className="watch-play-icon" size={28} color="#fff" />
                   ) : (
-                    <Play size={28} color="#fff" fill="#fff" style={{ marginLeft: '3px' }} />
+                    <Play className="watch-play-icon" size={28} color="#fff" fill="#fff" style={{ marginLeft: '3px' }} />
                   )}
                 </div>
               </div>
-              <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, padding: '40px' }}>
+              <div className="watch-featured-content" style={{ position: 'absolute', bottom: 0, left: 0, right: 0 }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '10px' }}>
                   <span style={{ padding: '4px 10px', borderRadius: '6px', background: accent, color: '#000', fontSize: '10px', fontWeight: 900, textTransform: 'uppercase', letterSpacing: '1px' }}>
                     {isOlympian 
@@ -842,8 +845,8 @@ export default function WatchLive({ accent = '#D35400', isOlympian = false, isB2
                     </span>
                   )}
                 </div>
-                <h3 style={{ margin: '0 0 6px 0', fontSize: '26px', fontWeight: 900, lineHeight: 1.2, maxWidth: '700px' }}>{featured.headline}</h3>
-                <p style={{ margin: 0, fontSize: '13px', color: '#aaa', maxWidth: '600px', lineHeight: 1.5 }}>{featured.description}</p>
+                <h3 className="watch-featured-title" style={{ margin: '0 0 6px 0', fontWeight: 900, lineHeight: 1.2, maxWidth: '700px' }}>{featured.headline}</h3>
+                <p className="watch-featured-desc" style={{ margin: 0, fontSize: '13px', color: '#aaa', maxWidth: '600px', lineHeight: 1.5 }}>{featured.description}</p>
               </div>
             </div>
           </div>
@@ -866,8 +869,9 @@ export default function WatchLive({ accent = '#D35400', isOlympian = false, isB2
                 <div
                   key={clip.id}
                   onClick={() => handleClipClick(clip)}
+                  className="watch-clip-card"
                   style={{
-                    flexShrink: 0, width: '320px', borderRadius: '14px', overflow: 'hidden', cursor: 'pointer',
+                    flexShrink: 0, borderRadius: '14px', overflow: 'hidden', cursor: 'pointer',
                     background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)', transition: 'all 0.3s',
                   }}
                   onMouseOver={e => { e.currentTarget.style.borderColor = `${accent}44`; e.currentTarget.style.transform = 'translateY(-3px)'; }}
@@ -906,7 +910,8 @@ export default function WatchLive({ accent = '#D35400', isOlympian = false, isB2
             </div>
           </>
         )}
-      </div>
+        </div>
+      </section>
 
       {/* ═══ Video Player Overlay ═══ */}
       <AnimatePresence>

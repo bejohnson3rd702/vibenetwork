@@ -437,3 +437,54 @@ img, video {
   object-fit: cover;
   border-radius: inherit; /* Preserves any rounded corners applied to the parent container */
 }
+
+/* Watch Section Responsive Enhancements */
+.watch-featured-container {
+  aspect-ratio: 21/9;
+}
+.watch-featured-content {
+  padding: 40px !important;
+}
+.watch-featured-title {
+  font-size: 26px !important;
+}
+.watch-featured-desc {
+  display: block;
+}
+.watch-play-button {
+  width: 72px !important;
+  height: 72px !important;
+}
+.watch-play-icon {
+  width: 28px !important;
+  height: 28px !important;
+}
+.watch-clip-card {
+  width: 320px !important;
+}
+
+@media (max-width: 768px) {
+  .watch-featured-container {
+    aspect-ratio: 16/10 !important;
+  }
+  .watch-featured-content {
+    padding: 20px !important;
+  }
+  .watch-featured-title {
+    font-size: 18px !important;
+  }
+  .watch-featured-desc {
+    display: none !important;
+  }
+  .watch-play-button {
+    width: 52px !important;
+    height: 52px !important;
+  }
+  .watch-play-icon {
+    width: 20px !important;
+    height: 20px !important;
+  }
+  .watch-clip-card {
+    width: 240px !important;
+  }
+}
