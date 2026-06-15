@@ -389,6 +389,7 @@ export default function WatchLive({ accent = '#D35400', isOlympian = false, isB2
   const [loading, setLoading] = useState(true);
   const [activeVideo, setActiveVideo] = useState<VideoClip | null>(null);
   const [filter, setFilter] = useState('all');
+  const [lastChecked, setLastChecked] = useState<string>('');
   const scrollRef = useRef<HTMLDivElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
 
@@ -594,7 +595,7 @@ export default function WatchLive({ accent = '#D35400', isOlympian = false, isB2
         for (const feed of VIBE_FEEDS) {
           try {
             if (feed.source === 'Dailymotion' && feed.query) {
-              const res = await fetch(`https://api.dailymotion.com/videos?search=${encodeURIComponent(feed.query)}&languages=en&flags=verified&limit=10&fields=id,title,description,thumbnail_720_url,duration,url`);
+              const res = await fetch(`https://api.dailymotion.com/videos?search=${encodeURIComponent(feed.query)}&languages=en&flags=verified&limit=10&fields=id,title,description,thumbnail_720_url,duration,url&t=${Date.now()}`);
               if (res.ok) {
                 const json = await res.json();
                 for (const item of (json.list || [])) {
@@ -704,6 +705,7 @@ export default function WatchLive({ accent = '#D35400', isOlympian = false, isB2
       }
 
       setClips(allClips);
+      setLastChecked(new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }));
       setLoading(false);
     };
 
@@ -771,7 +773,14 @@ export default function WatchLive({ accent = '#D35400', isOlympian = false, isB2
             </div>
             <div>
               <h2 style={{ margin: 0, fontSize: '28px', fontWeight: 900, letterSpacing: '-1px' }}>Watch</h2>
-              <p style={{ margin: 0, fontSize: '12px', color: '#555' }}>Analysis, highlights & recaps</p>
+              <p style={{ margin: 0, fontSize: '12px', color: '#555', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                Analysis, highlights & recaps
+                {lastChecked && (
+                  <span style={{ color: 'rgba(255,255,255,0.25)', fontSize: '11px', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                    • <Clock size={10} /> hourly checks (Last: {lastChecked})
+                  </span>
+                )}
+              </p>
             </div>
           </div>
           {/* Filter pills */}
