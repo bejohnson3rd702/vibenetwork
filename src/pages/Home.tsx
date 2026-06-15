@@ -1,6 +1,6 @@
 import { motion, AnimatePresence } from 'framer-motion';
 import { X } from 'lucide-react';
-import { lazy, Suspense } from 'react';
+import { lazy, Suspense, useState, useEffect } from 'react';
 import Hero from '../components/Hero';
 const WatchLive = lazy(() => import('../components/WatchLive'));
 import SliderSection from '../components/SliderSection';
@@ -16,10 +16,33 @@ interface HomeProps {
 }
 
 import { useWhiteLabel } from '../context/WhiteLabelContext';
-import { mergeQueryParams } from '../lib/n2n';
+import { getChildNetworks, mergeQueryParams } from '../lib/n2n';
 
 export default function Home({ categories, activeVideo, setActiveVideo, user }: HomeProps) {
   const { wlConfig } = useWhiteLabel();
+  const [avoColleges, setAvoColleges] = useState<any[]>([]);
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      // AVO parent network ID is 3915f1e5-4c79-4b2a-ad41-7029ce8052d7
+      const colleges = await getChildNetworks('3915f1e5-4c79-4b2a-ad41-7029ce8052d7');
+      if (!cancelled && colleges) {
+        setAvoColleges(
+          colleges.map((c: any) => ({
+            id: c.id,
+            title: c.name,
+            image: c.logoImage || c.heroImage || `https://ui-avatars.com/api/?name=${encodeURIComponent(c.name)}&background=111&color=fff&size=400`,
+            tags: ['College'],
+            videoUrl: '',
+            linkUrl: '/?tenant=' + c.id,
+            accent: c.accent,
+          }))
+        );
+      }
+    })();
+    return () => { cancelled = true; };
+  }, []);
 
   return (
     <>
@@ -53,30 +76,47 @@ export default function Home({ categories, activeVideo, setActiveVideo, user }: 
         )}
 
         <div id="slider-section-container">
-          {categories.filter((c: any) => !c.title.toLowerCase().includes('network')).map((category: any, index: number) => {
-            const isArtist = category.aspectRatio === '3/4' || category.title.includes('Artist');
-          const ratio = isArtist ? '3/4' : '16/9';
-          const multiplier = 1; 
-          return (
-            <SliderSection 
-              key={category.title} 
-              title={category.title} 
-              items={category.items} 
-              delay={index * 0.2}
-              aspectRatio={ratio}
-              sizeMultiplier={multiplier}
+          {/* AVO Colleges Slider */}
+          {avoColleges.length > 0 && (
+            <SliderSection
+              title="AVO COLLEGES"
+              items={avoColleges}
+              aspectRatio="16/9"
               onItemClick={(item) => {
                 if (item.linkUrl) {
                   window.location.href = mergeQueryParams(item.linkUrl, window.location.search);
-                } else if (item.tags && item.tags.includes('Influencer Channel')) {
-                  window.location.href = mergeQueryParams(`/profile/${item.id}`, window.location.search);
-                } else {
-                  setActiveVideo(item);
                 }
               }}
             />
-          );
-        })}
+          )}
+
+          {/* Other Sliders (excluding network categories and New Content) */}
+          {categories
+            .filter((c: any) => !c.title.toLowerCase().includes('network') && c.title !== 'New Content')
+            .map((category: any, index: number) => {
+              const isArtist = category.aspectRatio === '3/4' || category.title.includes('Artist');
+              const ratio = isArtist ? '3/4' : '16/9';
+              const multiplier = 1; 
+              return (
+                <SliderSection 
+                  key={category.title} 
+                  title={category.title} 
+                  items={category.items} 
+                  delay={index * 0.2}
+                  aspectRatio={ratio}
+                  sizeMultiplier={multiplier}
+                  onItemClick={(item) => {
+                    if (item.linkUrl) {
+                      window.location.href = mergeQueryParams(item.linkUrl, window.location.search);
+                    } else if (item.tags && item.tags.includes('Influencer Channel')) {
+                      window.location.href = mergeQueryParams(`/profile/${item.id}`, window.location.search);
+                    } else {
+                      setActiveVideo(item);
+                    }
+                  }}
+                />
+              );
+            })}
         </div>
 
         {/* New content section below sliders */}
