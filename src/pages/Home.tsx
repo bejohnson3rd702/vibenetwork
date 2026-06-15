@@ -7,6 +7,7 @@ import SliderSection from '../components/SliderSection';
 import type { Category, VideoItem, User } from '../types';
 
 const LiveChat = lazy(() => import('../components/LiveChat'));
+const TrendingFeed = lazy(() => import('../components/TrendingFeed'));
 
 interface HomeProps {
   categories: Category[];
@@ -138,6 +139,10 @@ export default function Home({ categories, activeVideo, setActiveVideo, user }: 
               );
             })}
         </div>
+
+        <Suspense fallback={null}>
+          <TrendingFeed />
+        </Suspense>
 
         {/* New content section below sliders */}
         <section style={{ maxWidth: '1400px', margin: '40px auto 40px', padding: '0 40px' }}>
