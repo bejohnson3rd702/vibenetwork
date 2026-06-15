@@ -406,8 +406,8 @@ export default function WatchLive({ accent = '#D35400', isOlympian = false, isB2
   };
 
   useEffect(() => {
-    const fetchClips = async () => {
-      setLoading(true);
+    const fetchClips = async (silent = false) => {
+      if (!silent) setLoading(true);
       const allClips: VideoClip[] = [];
       const seen = new Set<string>();
 
@@ -707,8 +707,8 @@ export default function WatchLive({ accent = '#D35400', isOlympian = false, isB2
       setLoading(false);
     };
 
-    fetchClips();
-    const interval = setInterval(fetchClips, 300000);
+    fetchClips(false);
+    const interval = setInterval(() => fetchClips(true), 3600000); // refresh silently every hour
     return () => clearInterval(interval);
   }, [isOlympian, isB2K, isVibe, isKple]);
 
