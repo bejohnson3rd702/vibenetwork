@@ -1,198 +1,185 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Play, ArrowRight, ChevronRight, Sparkles } from 'lucide-react';
-import { ASSETS } from '../data';
 import { useWhiteLabel } from '../context/WhiteLabelContext';
+
+const VIBE_HERO_SLIDES = [
+  { 
+    title: 'Entertainment', 
+    short: 'Entertainment', 
+    subtitle: 'LATEST LIVE SETS & SHOWS', 
+    copy: 'Experience top DJ sets, live concerts, and exclusive music releases streaming 24/7 on the network.', 
+    image: 'https://images.unsplash.com/photo-1514525253161-7a46d19cd819?auto=format&fit=crop&q=80&w=1200' 
+  },
+  { 
+    title: 'News', 
+    short: 'News', 
+    subtitle: 'GLOBAL REPORTS & UPDATES', 
+    copy: 'Get real-time updates, deep-dive investigative journalism, and breaking stories from around the globe.', 
+    image: 'https://images.unsplash.com/photo-1585829365295-ab7cd400c167?auto=format&fit=crop&q=80&w=1200' 
+  },
+  { 
+    title: 'Sports', 
+    short: 'Sports', 
+    subtitle: 'LIVE ACTION & EXPERT ANALYSIS', 
+    copy: 'Catch game highlights, athlete interviews, and live coverage of collegiate and professional sports.', 
+    image: 'https://images.unsplash.com/photo-1546519638-68e109498ffc?auto=format&fit=crop&q=80&w=1200' 
+  },
+  { 
+    title: 'Money', 
+    short: 'Money', 
+    subtitle: 'FINANCIAL INSIGHTS & MARKETS', 
+    copy: 'Stay ahead with market analytics, personal finance tips, and investment strategies from leading experts.', 
+    image: 'https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?auto=format&fit=crop&q=80&w=1200' 
+  }
+];
 
 const Hero: React.FC = () => {
   const { wlConfig } = useWhiteLabel();
-  const [showVideoTitle, setShowVideoTitle] = useState(true);
+  const accent = wlConfig?.accent || 'var(--accent-primary)';
+  const [heroSlide, setHeroSlide] = useState(0);
 
   useEffect(() => {
-    // Keep the video title overlay visible permanently
-    setShowVideoTitle(true);
-  }, [wlConfig?.heroLayoutMode, wlConfig?.heroVideoTitle]);
+    const timer = setInterval(() => {
+      setHeroSlide(prev => (prev + 1) % VIBE_HERO_SLIDES.length);
+    }, 5000);
+    return () => clearInterval(timer);
+  }, []);
+
+  const handleActionClick = () => {
+    const section = document.getElementById('whats-on-now');
+    if (section) {
+      section.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
 
   return (
-    <div style={{ position: 'relative', width: '100%', minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: 'var(--bg-color)', overflow: 'hidden' }}>
+    <div style={{ position: 'relative', width: '100%', height: '100vh', backgroundColor: '#000', overflow: 'hidden' }}>
       
-      {/* Dynamic Background */}
-      <motion.div 
-        initial={{ scale: 1.1, opacity: 0 }}
-        animate={{ scale: 1, opacity: 1 }}
-        transition={{ duration: 2, ease: 'easeOut' }}
-        style={{ position: 'absolute', inset: 0, zIndex: 0 }}
-      >
-        <div style={{ position: 'absolute', inset: 0, backgroundImage: `url(${wlConfig?.heroImage || ASSETS.heroMain})`, backgroundSize: 'cover', backgroundPosition: 'center', filter: 'brightness(0.3) saturate(1.3) contrast(1.1)' }} />
-      </motion.div>
-      
-      {/* Darkening filter applied directly to image for sharp readability without soft overlays */}
-      
-      <div className="px-mobile-sm px-tablet-md" style={{ position: 'relative', zIndex: 2, width: '100%', maxWidth: '1200px', padding: '0 40px', textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-        
-
-
-        
-        {/* Massive 3D Typography */}
-        <h1 
-          className="hero-title-mobile hero-title-tablet"
-          style={{ 
-            fontSize: '95px', fontWeight: 900, lineHeight: 1.1, letterSpacing: '-3px', color: 'var(--text-primary)',
-            margin: '0 0 24px 0', fontFamily: "'RNS Miles', sans-serif"
-          }}
+      {/* Full-bleed hero slideshow */}
+      <AnimatePresence mode="wait">
+        <motion.div
+          key={heroSlide}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.8, ease: 'easeInOut' }}
+          style={{ position: 'absolute', inset: 0, zIndex: 0 }}
         >
-          {wlConfig?.theme?.heroTitle || wlConfig?.name ? (
-            <><span style={{ color: wlConfig?.accent || 'var(--accent-primary)' }}>Welcome to</span><br/> <span style={{ color: '#fff', textShadow: '0 4px 20px rgba(0,0,0,0.8)' }}>{(wlConfig?.theme?.heroTitle || wlConfig.name)?.toUpperCase()}</span></>
-          ) : (
-            <><span style={{ color: wlConfig?.accent || 'var(--accent-primary)' }}>Step Into The</span><br/> <span style={{ color: '#fff', textShadow: '0 4px 20px rgba(0,0,0,0.8)' }}>New Dimension</span></>
-          )}
-        </h1>
-        
-        {(!wlConfig?.heroLayoutMode || wlConfig.heroLayoutMode === 'verbiage') && (
-          <>
-            <motion.p 
-              className="hero-sub-mobile hero-sub-tablet"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8, delay: 0.6 }}
-              style={{ 
-                fontSize: '24px', color: 'rgba(255,255,255,0.8)', maxWidth: '850px', 
-                margin: '0 0 40px 0', lineHeight: 1.6, fontWeight: 400, textShadow: '0 10px 20px rgba(0,0,0,0.8)'
-              }}
-            >
-              {wlConfig?.theme?.heroCopy || wlConfig?.heroCopy || "Built for brands, creators, and enterprise teams that demand instant performance, flawless quality, and infrastructure that scales without compromise."}
-            </motion.p>
+          <img
+            src={VIBE_HERO_SLIDES[heroSlide % VIBE_HERO_SLIDES.length]?.image}
+            alt={VIBE_HERO_SLIDES[heroSlide % VIBE_HERO_SLIDES.length]?.title}
+            style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center center' }}
+          />
+        </motion.div>
+      </AnimatePresence>
 
-          </>
-        )}
+      {/* Bottom gradient */}
+      <div style={{ position: 'absolute', inset: 0, zIndex: 1, background: 'linear-gradient(to bottom, transparent 40%, rgba(0,0,0,0.8) 85%, #000 100%)' }} />
 
-        {wlConfig?.heroLayoutMode === 'video' && (
-          <motion.div
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.8, delay: 0.6 }}
-            style={{ width: '100%', maxWidth: '800px', minHeight: '300px', margin: '0 auto 50px', borderRadius: '24px', overflow: 'hidden', border: `1px solid ${wlConfig.accent || '#fff'}44`, boxShadow: `0 20px 50px ${wlConfig.accent || '#fff'}33`, aspectRatio: '16/9', background: '#000', position: 'relative' }}
+      {/* Hero text overlay */}
+      <AnimatePresence mode="wait">
+        <motion.div
+          key={heroSlide}
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -10 }}
+          transition={{ duration: 0.6 }}
+          style={{ position: 'absolute', bottom: '180px', left: '0', zIndex: 2, padding: '0 60px', maxWidth: '700px' }}
+        >
+          <p style={{ fontSize: '13px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '3px', color: 'rgba(255,255,255,0.6)', marginBottom: '8px' }}>
+            {VIBE_HERO_SLIDES[heroSlide % VIBE_HERO_SLIDES.length]?.subtitle}
+          </p>
+          <h1 style={{ fontSize: '52px', fontWeight: 900, lineHeight: 1.05, letterSpacing: '-1px', color: '#fff', margin: '0 0 16px 0', textTransform: 'uppercase', fontFamily: "'RNS Miles', sans-serif" }}>
+            {VIBE_HERO_SLIDES[heroSlide % VIBE_HERO_SLIDES.length]?.title}
+          </h1>
+          <p style={{ fontSize: '15px', color: 'rgba(255,255,255,0.65)', margin: '0 0 24px 0', lineHeight: 1.6 }}>
+            {VIBE_HERO_SLIDES[heroSlide % VIBE_HERO_SLIDES.length]?.copy}
+          </p>
+          <button
+            onClick={handleActionClick}
+            style={{
+              display: 'inline-block', padding: '13px 40px', fontSize: '11px', fontWeight: 800,
+              textTransform: 'uppercase', letterSpacing: '2.5px',
+              background: 'transparent', color: '#fff',
+              border: '1.5px solid #fff', cursor: 'pointer',
+              transition: 'all 0.25s',
+            }}
+            onMouseOver={e => {
+              e.currentTarget.style.background = '#fff';
+              e.currentTarget.style.color = '#000';
+            }}
+            onMouseOut={e => {
+              e.currentTarget.style.background = 'transparent';
+              e.currentTarget.style.color = '#fff';
+            }}
           >
-             <AnimatePresence>
-               {wlConfig?.heroVideoTitle && showVideoTitle && (
-                 <motion.div 
-                   initial={{ opacity: 0, x: -20 }}
-                   animate={{ opacity: 1, x: 0 }}
-                   exit={{ opacity: 0, x: 50 }}
-                   transition={{ duration: 0.8 }}
-                   style={{ 
-                     position: 'absolute', top: 24, left: 24, zIndex: 10, 
-                     background: 'linear-gradient(135deg, rgba(0,0,0,0.8), rgba(0,0,0,0.4))', 
-                     backdropFilter: 'blur(20px)', padding: '12px 24px', 
-                     borderRadius: '16px', border: `1px solid ${wlConfig?.accent || 'var(--accent-primary)'}55`,
-                     borderLeft: `4px solid ${wlConfig?.accent || 'var(--accent-primary)'}`,
-                     boxShadow: `0 10px 30px rgba(0,0,0,0.5)`,
-                     display: 'flex', alignItems: 'center', gap: '14px'
-                   }}
-                 >
-                   <motion.div 
-                     animate={{ opacity: [1, 0.3, 1] }} 
-                     transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }} 
-                     style={{ width: 10, height: 10, borderRadius: '50%', background: '#ff3366', boxShadow: '0 0 12px #ff3366' }} 
-                   />
-                   <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
-                     <span style={{ fontSize: '11px', color: 'rgba(255,255,255,0.6)', textTransform: 'uppercase', letterSpacing: '2px', marginBottom: '4px', fontWeight: 700 }}>Now Playing</span>
-                     <h3 style={{ margin: 0, color: '#fff', fontSize: '18px', fontWeight: '800', letterSpacing: '0.5px', textShadow: '0 2px 10px rgba(0,0,0,0.8)' }}>{wlConfig.heroVideoTitle}</h3>
-                   </div>
-                 </motion.div>
-               )}
-             </AnimatePresence>
-             {(() => {
-                const url = wlConfig.heroVideoUrl || '';
-                const match = url.match(/^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/);
-                const ytId = (match && match[2].length === 11) ? match[2] : null;
-                
-                if (ytId) {
-                  return (
-                    <iframe 
-                      src={`https://www.youtube.com/embed/${ytId}?autoplay=1&mute=1&loop=1&playlist=${ytId}&controls=1`}
-                      title="Welcome Video"
-                      frameBorder="0"
-                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                      allowFullScreen
-                      style={{ width: '100%', height: '100%', position: 'absolute', inset: 0 }}
-                    />
-                  );
-                } else if (url && (url.includes('supabase.co') || url.endsWith('.mp4') || url.endsWith('.webm') || url.startsWith('http'))) {
-                  return (
-                    <video 
-                      src={url}
-                      controls
-                      autoPlay 
-                      loop 
-                      muted 
-                      playsInline
-                      style={{ width: '100%', height: '100%', objectFit: 'cover', position: 'absolute', inset: 0 }}
-                    />
-                  );
-                }
-                
-                return <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff' }}>Invalid or missing video URL</div>;
-             })()}
-          </motion.div>
-        )}
+            Watch Now
+          </button>
 
-        {wlConfig?.heroLayoutMode === 'slider' && (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.6 }}
-            style={{ width: '100%', maxWidth: '1000px', margin: '0 auto 50px', display: 'flex', gap: '20px', overflowX: 'auto', paddingBottom: '20px', scrollbarWidth: 'none' }}
-          >
-             {[1, 2, 3].map(i => (
-                <div key={i} style={{ minWidth: '300px', flex: 1, aspectRatio: '16/9', borderRadius: '20px', background: `linear-gradient(45deg, #111, #222)`, border: `1px solid ${wlConfig.accent || '#fff'}22`, position: 'relative', overflow: 'hidden', boxShadow: '0 10px 30px rgba(0,0,0,0.5)' }}>
-                   <div style={{ position: 'absolute', inset: 0, backgroundImage: `url('https://images.unsplash.com/photo-${1550751827 + i}?auto=format&fit=crop&w=600&q=80')`, backgroundSize: 'cover', opacity: 0.5 }} />
-                   <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                      <div style={{ width: 50, height: 50, borderRadius: '50%', background: 'rgba(255,255,255,0.2)', backdropFilter: 'blur(10px)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                         <Play fill="white" size={24} />
-                      </div>
-                   </div>
-                </div>
-             ))}
-          </motion.div>
-        )}
-          
-          <motion.div 
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.8 }}
-            className="flex-col-mobile flex-col-tablet gap-mobile-sm" 
-            style={{ display: 'flex', gap: '20px', justifyContent: 'center' }}
-          >
-            <motion.button 
-              style={{ 
-                display: 'flex', alignItems: 'center', gap: '12px', padding: '18px 40px', 
-                fontSize: '14px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '2px',
-                background: wlConfig?.accent || 'var(--accent-primary)', color: 'var(--text-primary)', border: 'none', borderRadius: '14px',
-                boxShadow: `0 10px 30px ${wlConfig?.accent ? wlConfig.accent + '66' : 'rgba(211, 84, 0, 0.4)'}`, transition: 'all 0.3s ease'
-              }}
-            >
-              <Play fill="white" size={18} />
-              Watch Live Now
-            </motion.button>
-            
-            {/* Secondary Glass Button */}
-            <motion.button 
-              onClick={() => window.location.href = `/more-info${window.location.search}`}
-              whileHover={{ scale: 1.05, y: -2, backgroundColor: 'rgba(255,255,255,0.1)' }}
-              whileTap={{ scale: 0.95 }}
-              style={{ 
-                display: 'flex', alignItems: 'center', gap: '12px', padding: '18px 40px', 
-                fontSize: '14px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '2px', 
-                background: 'rgba(100,100,100,0.1)', backdropFilter: 'blur(10px)', color: 'var(--text-primary)',
-                border: '1px solid rgba(100,100,100,0.2)', borderRadius: '14px', cursor: 'pointer', transition: 'all 0.3s ease'
-              }}
-            >
-              More Info
-              <ArrowRight size={18} />
-            </motion.button>
-          </motion.div>
+          {/* Legacy stat panel */}
+          <div style={{
+            marginTop: '32px', padding: '16px 24px',
+            borderLeft: `3px solid ${accent}`,
+            background: 'rgba(255,255,255,0.05)', backdropFilter: 'blur(10px)',
+          }}>
+            <p style={{ margin: 0, fontSize: '32px', fontWeight: 900, color: '#fff', letterSpacing: '-1px', lineHeight: 1.2 }}>
+              24/7 Live<span style={{ color: accent }}>+</span>
+            </p>
+            <p style={{ margin: '4px 0 0', fontSize: '13px', fontWeight: 600, color: 'rgba(255,255,255,0.6)', textTransform: 'uppercase', letterSpacing: '2px' }}>
+              Entertainment, News, Sports & Finance Streams
+            </p>
+          </div>
+        </motion.div>
+      </AnimatePresence>
+
+      {/* Slide dots — right side, vertical */}
+      <div style={{ position: 'absolute', right: '30px', top: '50%', transform: 'translateY(-50%)', zIndex: 3, display: 'flex', flexDirection: 'column', gap: '10px' }}>
+        {VIBE_HERO_SLIDES.map((_, i) => (
+          <button
+            key={i}
+            onClick={() => setHeroSlide(i)}
+            style={{
+              width: '10px', height: heroSlide === i ? '28px' : '10px',
+              borderRadius: '5px', border: 'none', cursor: 'pointer',
+              background: heroSlide === i ? '#fff' : 'rgba(255,255,255,0.3)',
+              transition: 'all 0.3s', padding: 0,
+            }}
+          />
+        ))}
       </div>
+
+      {/* Bottom collection bar — category thumbnails */}
+      <div style={{
+        position: 'absolute', bottom: 0, left: 0, right: 0, zIndex: 2,
+        background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(10px)',
+        padding: '0', display: 'flex', borderTop: '1px solid rgba(255,255,255,0.06)',
+      }}>
+        {VIBE_HERO_SLIDES.map((slide, i) => (
+          <button
+            key={i}
+            onClick={() => setHeroSlide(i)}
+            style={{
+              flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center',
+              padding: '14px 8px', gap: '0', border: 'none',
+              background: heroSlide === i ? 'rgba(255,255,255,0.08)' : 'transparent',
+              borderBottom: heroSlide === i ? '2px solid #fff' : '2px solid transparent',
+              cursor: 'pointer', transition: 'all 0.25s',
+              flexDirection: 'column',
+            }}
+            onMouseOver={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.05)'; }}
+            onMouseOut={e => { e.currentTarget.style.background = heroSlide === i ? 'rgba(255,255,255,0.08)' : 'transparent'; }}
+          >
+            <span style={{
+              fontSize: '10px', fontWeight: 800, color: heroSlide === i ? '#fff' : 'rgba(255,255,255,0.4)',
+              textTransform: 'uppercase', letterSpacing: '1.5px',
+              transition: 'color 0.25s', whiteSpace: 'nowrap',
+            }}>
+              {slide.short}
+            </span>
+          </button>
+        ))}
+      </div>
+
     </div>
   );
 };
