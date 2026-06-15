@@ -31,8 +31,24 @@ const Footer: React.FC = () => {
           Contact Support
         </Link>
       </div>
-      <div style={{ color: 'rgba(255,255,255,0.3)', fontSize: '12px', textAlign: 'center' }}>
-        &copy; {year} {platformName}. All rights reserved.
+      <div style={{ 
+        width: '100%', 
+        maxWidth: '1400px', 
+        display: 'flex', 
+        justifyContent: 'space-between', 
+        alignItems: 'center', 
+        color: 'rgba(255,255,255,0.3)', 
+        fontSize: '12px',
+        padding: '0 40px',
+        flexWrap: 'wrap',
+        gap: '12px'
+      }}>
+        <div>
+          &copy; {year} {platformName}. All rights reserved.
+        </div>
+        <div style={{ fontSize: '10px', letterSpacing: '1px', textTransform: 'uppercase', fontWeight: 700 }}>
+          Powered By: <span style={{ color: 'rgba(255,255,255,0.5)' }}>VIBE NETWORK</span>
+        </div>
       </div>
     </footer>
   );

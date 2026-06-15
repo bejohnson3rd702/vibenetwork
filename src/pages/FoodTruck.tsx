@@ -185,7 +185,25 @@ const FoodTruck: React.FC = () => {
           <Camera size={24} cursor="pointer" />
           <Phone size={24} cursor="pointer" />
         </div>
-        <p style={{ color: '#444', fontSize: '12px' }}>© 2026 Vegas Taco Truck. All Rights Reserved.</p>
+        <div style={{ 
+          maxWidth: '1400px', 
+          margin: '0 auto',
+          display: 'flex', 
+          justifyContent: 'space-between', 
+          alignItems: 'center', 
+          color: '#444', 
+          fontSize: '12px',
+          padding: '0 20px',
+          flexWrap: 'wrap',
+          gap: '12px'
+        }}>
+          <div>
+            © 2026 Vegas Taco Truck. All Rights Reserved.
+          </div>
+          <div style={{ fontSize: '10px', letterSpacing: '1px', textTransform: 'uppercase', fontWeight: 700, color: '#444' }}>
+            Powered By: <span style={{ color: '#666' }}>VIBE NETWORK</span>
+          </div>
+        </div>
       </footer>
 
     </div>
