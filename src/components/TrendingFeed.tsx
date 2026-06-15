@@ -200,7 +200,10 @@ export default function TrendingFeed() {
                   exit={{ opacity: 0, y: -20 }}
                   transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
                   onClick={() => {
-                    window.location.href = mergeQueryParams(profileLink, window.location.search);
+                    const targetUrl = profileLink.includes('?') 
+                      ? `${profileLink}&fromVibe=true` 
+                      : `${profileLink}?fromVibe=true`;
+                    window.location.href = mergeQueryParams(targetUrl, window.location.search);
                   }}
                   style={{
                     background: 'rgba(255, 255, 255, 0.02)',

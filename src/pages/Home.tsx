@@ -61,7 +61,10 @@ export default function Home({ categories, activeVideo, setActiveVideo, user }: 
             sizeMultiplier={1}
             onItemClick={(item) => {
               if (item.linkUrl) {
-                window.location.href = mergeQueryParams(item.linkUrl, window.location.search);
+                const targetUrl = item.linkUrl.includes('?') 
+                  ? `${item.linkUrl}&fromVibe=true` 
+                  : `${item.linkUrl}?fromVibe=true`;
+                window.location.href = mergeQueryParams(targetUrl, window.location.search);
               } else {
                 setActiveVideo(item);
               }
@@ -86,7 +89,10 @@ export default function Home({ categories, activeVideo, setActiveVideo, user }: 
               aspectRatio="16/9"
               onItemClick={(item) => {
                 if (item.linkUrl) {
-                  window.location.href = mergeQueryParams(item.linkUrl, window.location.search);
+                  const targetUrl = item.linkUrl.includes('?') 
+                    ? `${item.linkUrl}&fromVibe=true` 
+                    : `${item.linkUrl}?fromVibe=true`;
+                  window.location.href = mergeQueryParams(targetUrl, window.location.search);
                 }
               }}
             />
@@ -130,7 +136,10 @@ export default function Home({ categories, activeVideo, setActiveVideo, user }: 
                       aspectRatio="1/1"
                       onItemClick={(item) => {
                         if (item.linkUrl) {
-                          window.location.href = mergeQueryParams(item.linkUrl, window.location.search);
+                          const targetUrl = item.linkUrl.includes('?') 
+                            ? `${item.linkUrl}&fromVibe=true` 
+                            : `${item.linkUrl}?fromVibe=true`;
+                          window.location.href = mergeQueryParams(targetUrl, window.location.search);
                         }
                       }}
                     />

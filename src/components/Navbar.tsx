@@ -25,6 +25,8 @@ const Navbar: React.FC<NavbarProps> = ({ user, onLoginClick, onAdminClick }) => 
   const appLogo = wlConfig?.logoImage || '';
   const [parentName, setParentName] = useState<string>('AVO Network');
 
+  const showBackToVibe = new URLSearchParams(window.location.search).get('fromVibe') === 'true';
+
   useEffect(() => {
     if (wlConfig?.parent_network_id) {
       supabase
@@ -112,6 +114,7 @@ const Navbar: React.FC<NavbarProps> = ({ user, onLoginClick, onAdminClick }) => 
       }}>
         {[
           { label: 'Home', path: '/' },
+          ...(showBackToVibe ? [{ label: 'Back to Vibe', path: 'back-to-vibe' }] : []),
           ...(wlConfig?.parent_network_id ? [{ label: parentName, path: 'parent' }] : []),
           { label: 'Marketplace', path: '/marketplace', hidden: Boolean(wlConfig?.domain && wlConfig.domain !== 'vibenetwork.tv') },
           { label: 'About Us', path: '/about' },
@@ -120,21 +123,26 @@ const Navbar: React.FC<NavbarProps> = ({ user, onLoginClick, onAdminClick }) => 
         ].filter(item => !item.hidden).map((item, i) => (
           <li key={item.label} style={{ 
             cursor: 'pointer',
-            color: i === 0 ? 'white' : 'rgba(255,255,255,0.6)',
+            color: item.path === 'back-to-vibe' ? 'var(--accent-primary)' : (i === 0 ? 'white' : 'rgba(255,255,255,0.6)'),
             transition: 'color 0.2s',
           }}
-          onMouseOver={(e) => e.currentTarget.style.color = 'white'}
-          onMouseOut={(e) => e.currentTarget.style.color = i === 0 ? 'white' : 'rgba(255,255,255,0.6)'}
+          onMouseOver={(e) => e.currentTarget.style.color = item.path === 'back-to-vibe' ? 'var(--accent-primary)' : 'white'}
+          onMouseOut={(e) => e.currentTarget.style.color = item.path === 'back-to-vibe' ? 'var(--accent-primary)' : (i === 0 ? 'white' : 'rgba(255,255,255,0.6)')}
           onClick={() => {
              if (item.path === 'parent') {
-                 window.location.href = getParentNetworkUrl();
+                  window.location.href = getParentNetworkUrl();
+             } else if (item.path === 'back-to-vibe') {
+                  const params = new URLSearchParams(window.location.search);
+                  params.delete('tenant');
+                  const searchStr = params.toString();
+                  window.location.href = searchStr ? `/?${searchStr}` : '/';
              } else if (item.path.startsWith('/#')) {
-                 navigate(`/${window.location.search}`);
-                 setTimeout(() => {
-                     document.getElementById(item.path.substring(2))?.scrollIntoView({ behavior: 'smooth' });
-                 }, 100);
+                  navigate(`/${window.location.search}`);
+                  setTimeout(() => {
+                      document.getElementById(item.path.substring(2))?.scrollIntoView({ behavior: 'smooth' });
+                  }, 100);
              } else {
-                 navigate(`${item.path}${window.location.search}`);
+                  navigate(`${item.path}${window.location.search}`);
              }
           }}
           >
@@ -192,6 +200,20 @@ const Navbar: React.FC<NavbarProps> = ({ user, onLoginClick, onAdminClick }) => 
           
           {isMenuOpen && (
             <div style={{ position: 'absolute', top: '100%', right: 0, marginTop: '24px', background: 'var(--bg-surface)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px', padding: '8px', minWidth: '220px', display: 'flex', flexDirection: 'column', gap: '4px', zIndex: 1000, boxShadow: '0 20px 40px rgba(0,0,0,0.5)' }}>
+              {showBackToVibe && (
+                <>
+                  <div onClick={() => {
+                    setIsMenuOpen(false);
+                    const params = new URLSearchParams(window.location.search);
+                    params.delete('tenant');
+                    const searchStr = params.toString();
+                    window.location.href = searchStr ? `/?${searchStr}` : '/';
+                  }} style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '12px 16px', color: 'var(--accent-primary)', textDecoration: 'none', fontSize: '14px', borderRadius: '8px', cursor: 'pointer', transition: 'background 0.2s', fontWeight: 'bold' }} onMouseOver={e => e.currentTarget.style.background='rgba(255,255,255,0.1)'} onMouseOut={e => e.currentTarget.style.background='transparent'}>
+                    🛸 Back to Vibe
+                  </div>
+                  <div style={{ height: '1px', background: 'rgba(255,255,255,0.1)', margin: '4px 0' }} />
+                </>
+              )}
               {wlConfig?.parent_network_id && (
                 <>
                   <div onClick={() => { setIsMenuOpen(false); window.location.href = getParentNetworkUrl(); }} style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '12px 16px', color: 'var(--text-primary)', textDecoration: 'none', fontSize: '14px', borderRadius: '8px', cursor: 'pointer', transition: 'background 0.2s', fontWeight: 'bold' }} onMouseOver={e => e.currentTarget.style.background='rgba(255,255,255,0.1)'} onMouseOut={e => e.currentTarget.style.background='transparent'}>
