@@ -62,7 +62,8 @@ export default function Community({ user }: { user: any }) {
           author:profiles(id, username, avatar_url)
         `)
         .eq('channel_id', activeChannel.id)
-        .order('created_at', { ascending: false });
+        .order('created_at', { ascending: false })
+        .limit(100);
         
       if (data) setPosts(data);
     };

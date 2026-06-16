@@ -465,7 +465,8 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
       else postsQuery = postsQuery.eq('creator_id', targetProfileId);
       const postsPromise = postsQuery
         .order('is_pinned', { ascending: false })
-        .order('created_at', { ascending: false });
+        .order('created_at', { ascending: false })
+        .limit(50);
 
       const [{ data, error }, { data: postsDataRaw, error: postsError }] = await Promise.all([
         profilePromise,

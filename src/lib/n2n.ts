@@ -69,7 +69,8 @@ export async function getN2NProfiles(parentId: string): Promise<any[]> {
     .from('profiles')
     .select('*')
     .in('whitelabel_id', networkIds)
-    .order('created_at', { ascending: false });
+    .order('created_at', { ascending: false })
+    .limit(100);
 
   if (error) {
     console.error('N2N: Failed to fetch profiles', error);
@@ -97,7 +98,8 @@ export async function getN2NLedger(parentId: string): Promise<any[]> {
     .from('ledger')
     .select('*')
     .in('creator_id', creatorIds)
-    .order('created_at', { ascending: false });
+    .order('created_at', { ascending: false })
+    .limit(100);
 
   if (error) {
     console.error('N2N: Failed to fetch ledger', error);

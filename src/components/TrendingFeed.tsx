@@ -48,7 +48,9 @@ export default function TrendingFeed() {
               creator:profiles(id, username, avatar_url, whitelabel_id),
               post_likes(id),
               post_comments(id)
-            `),
+            `)
+            .order('created_at', { ascending: false })
+            .limit(100),
           supabase
             .from('whitelabel_configs')
             .select('id, name')
