@@ -5,6 +5,7 @@ import Hero from '../components/Hero';
 const WatchLive = lazy(() => import('../components/WatchLive'));
 import SliderSection from '../components/SliderSection';
 import type { Category, VideoItem, User } from '../types';
+import { useNavigate } from 'react-router-dom';
 
 const LiveChat = lazy(() => import('../components/LiveChat'));
 const TrendingFeed = lazy(() => import('../components/TrendingFeed'));
@@ -22,6 +23,7 @@ import { OLYMPIA_CHAMPIONS } from './N2NHome';
 
 export default function Home({ categories, activeVideo, setActiveVideo, user }: HomeProps) {
   const { wlConfig } = useWhiteLabel();
+  const navigate = useNavigate();
   const [avoColleges, setAvoColleges] = useState<any[]>([]);
 
   useEffect(() => {
@@ -187,6 +189,7 @@ export default function Home({ categories, activeVideo, setActiveVideo, user }: 
                               Premium bodybuilding and lifestyle apparel engineered for champions. Rep the legacy with official Mr. Olympia hoodies, workout shirts, and accessories.
                             </p>
                             <button
+                              onClick={() => navigate('/marketplace?network=olympia')}
                               style={{
                                 display: 'inline-block', padding: '13px 40px', fontSize: '11px', fontWeight: 800,
                                 textTransform: 'uppercase', letterSpacing: '2.5px', width: 'fit-content',
