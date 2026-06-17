@@ -25,6 +25,7 @@ export async function getCategoriesWithVideos(tenantId?: string) {
   ]);
 
   const APPROVED_N2N_PARENT_IDS = [
+    'e5c100aa-c08f-4260-8540-a0cc8bed4e11', // VIBE 100
     '3915f1e5-4c79-4b2a-ad41-7029ce8052d7', // AVO NETWORK
     '4d16dae7-518d-440e-bb21-b6f3a7cfcd64', // B2K Network
     '7a017c4d-c08f-4260-8540-a0cc8bed4e11', // Mr. Olympia
@@ -64,15 +65,26 @@ export async function getCategoriesWithVideos(tenantId?: string) {
   }).map((wl: any) => {
     const normalized = normalizeWlConfig(wl);
     const heroImg = normalized.theme?.heroImage || '';
-    const isLogo = heroImg.includes('logo') || (normalized.logo && normalized.logo.includes('logo'));
+    const isVibe100 = normalized.id === 'e5c100aa-c08f-4260-8540-a0cc8bed4e11';
+    const isLogo = isVibe100 || heroImg.includes('logo') || (normalized.logo && normalized.logo.includes('logo'));
     return {
       id: 'wl_' + normalized.id,
       title: normalized.name,
-      image: normalized.theme?.heroImage || normalized.logo || `https://ui-avatars.com/api/?name=${encodeURIComponent(normalized.name || 'W')}&background=0D8ABC&color=fff`,
+      image: isVibe100
+        ? (normalized.logo || normalized.theme?.logoImage || normalized.theme?.heroImage)
+        : (normalized.theme?.heroImage || normalized.logo || `https://ui-avatars.com/api/?name=${encodeURIComponent(normalized.name || 'W')}&background=0D8ABC&color=fff`),
       tags: isLogo ? ['Network'] : ['Firm'],
       accent: normalized.theme?.accent || normalized.accent || '#D35400',
       linkUrl: `/?tenant=${normalized.id}`
     };
+  });
+
+  // Sort VIBE 100 to the top of the list
+  mappedNetworks.sort((a: any, b: any) => {
+    const vibe100Id = 'wl_e5c100aa-c08f-4260-8540-a0cc8bed4e11';
+    if (a.id === vibe100Id) return -1;
+    if (b.id === vibe100Id) return 1;
+    return 0;
   });
 
 

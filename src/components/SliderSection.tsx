@@ -25,7 +25,10 @@ const SlideItem: React.FC<{ item: Item, aspectRatio: string, onClick?: () => voi
   const [isHovered, setIsHovered] = useState(false);
   const isInfluencer = !item.videoUrl || (item.tags && item.tags.includes('Influencer Channel'));
   const isNetwork = item.tags && item.tags.includes('Network');
-  const isOlympian = item.title?.toLowerCase().includes('olympia') || item.image?.toLowerCase().includes('olympia');
+  const isOlympian = item.title?.toLowerCase().includes('olympia') || 
+                     item.image?.toLowerCase().includes('olympia') ||
+                     item.title?.toLowerCase().includes('vibe 100') ||
+                     item.image?.toLowerCase().includes('vibe_100');
 
   const innerContent = (
     <motion.div 
