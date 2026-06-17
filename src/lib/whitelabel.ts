@@ -34,7 +34,7 @@ export function normalizeWlConfig(
   raw: any,
   overrides?: Partial<WlConfig>
 ): WlConfig {
-  const isKple = raw?.id === '33742e2f-430b-4c2d-9cba-42507891ef02' || raw?.name === 'KPLE TV';
+  const isKple = raw?.id === '33742e2f-430b-4c2d-9cba-42507891ef02' || raw?.name === 'KPLE TV' || overrides?.name === 'KPLE TV';
   const theme = {
     ...(raw?.theme || {}),
     ...(isKple ? {
@@ -42,7 +42,7 @@ export function normalizeWlConfig(
       logoImage: 'https://ui-avatars.com/api/?name=Christian+Revival+Network&background=004e98&color=fff'
     } : {})
   };
-  return {
+  const base = {
     id: raw?.id || 'master',
     name: isKple ? 'Christian Revival Network' : (raw?.name || DEFAULT_PLATFORM_NAME),
     domain: raw?.domain || MASTER_DOMAIN,
@@ -70,4 +70,12 @@ export function normalizeWlConfig(
     shopifyUrl: raw?.shopifyUrl || theme.shopifyUrl || null,
     ...overrides,
   };
+
+  if (isKple) {
+    base.name = 'Christian Revival Network';
+    base.logoImage = 'https://ui-avatars.com/api/?name=Christian+Revival+Network&background=004e98&color=fff';
+    base.heroCopy = 'Christian Revival Network — Come All Revival. Class A Christian Broadcasting.';
+  }
+
+  return base;
 }
