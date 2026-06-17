@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { Play, Tv, X, ChevronLeft, ChevronRight, Clock, ExternalLink } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from '../supabaseClient';
@@ -992,136 +993,139 @@ export default function WatchLive({ accent = '#D35400', isOlympian = false, isB2
       </section>
 
       {/* ═══ Video Player Overlay ═══ */}
-      <AnimatePresence>
-        {activeVideo && (
-          <motion.div
-            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-            onClick={() => setActiveVideo(null)}
-            style={{
-              position: 'fixed', inset: 0, zIndex: 9999,
-              background: 'rgba(0,0,0,0.92)', backdropFilter: 'blur(20px)',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              flexDirection: 'column', padding: '60px 40px',
-            }}
-          >
+      {typeof document !== 'undefined' && createPortal(
+        <AnimatePresence>
+          {activeVideo && (
             <motion.div
-              initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.95, opacity: 0 }}
-              onClick={e => e.stopPropagation()}
-              style={{ width: '100%', maxWidth: '960px', position: 'relative' }}
+              initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+              onClick={() => setActiveVideo(null)}
+              style={{
+                position: 'fixed', inset: 0, zIndex: 99999,
+                background: 'rgba(0,0,0,0.92)', backdropFilter: 'blur(20px)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                flexDirection: 'column', padding: '60px 40px',
+              }}
             >
-              <button onClick={() => setActiveVideo(null)}
-                style={{
-                  position: 'absolute', 
-                  top: '16px', 
-                  right: '16px', 
-                  zIndex: 10,
-                  width: '40px', 
-                  height: '40px', 
-                  borderRadius: '50%',
-                  background: 'rgba(0,0,0,0.5)', 
-                  border: '1px solid rgba(255,255,255,0.2)',
-                  color: '#fff', 
-                  cursor: 'pointer', 
-                  display: 'flex', 
-                  alignItems: 'center', 
-                  justifyContent: 'center',
-                  backdropFilter: 'blur(10px)',
-                  transition: 'all 0.2s ease',
-                }}
-                onMouseOver={e => { e.currentTarget.style.background = 'rgba(0,0,0,0.8)'; e.currentTarget.style.transform = 'scale(1.05)'; }}
-                onMouseOut={e => { e.currentTarget.style.background = 'rgba(0,0,0,0.5)'; e.currentTarget.style.transform = 'scale(1)'; }}
+              <motion.div
+                initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.95, opacity: 0 }}
+                onClick={e => e.stopPropagation()}
+                style={{ width: '100%', maxWidth: '960px', position: 'relative' }}
               >
-                <X size={20} />
-              </button>
-              <div style={{ borderRadius: '16px', overflow: 'hidden', background: '#000', aspectRatio: '16/9', position: 'relative' }}>
-                {(() => {
-                  const isYouTube = activeVideo.videoUrl.includes('youtube.com') || activeVideo.videoUrl.includes('youtu.be') || activeVideo.source === 'YouTube';
-                  const isDailymotion = activeVideo.videoUrl.includes('dailymotion.com') || activeVideo.videoUrl.includes('dai.ly') || activeVideo.source === 'Dailymotion';
-                  
-                  if (isYouTube) {
-                    const match = activeVideo.videoUrl.match(/^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/);
-                    const ytId = (match && match[2].length === 11) ? match[2] : (activeVideo.id.length === 11 ? activeVideo.id : '');
+                <button onClick={() => setActiveVideo(null)}
+                  style={{
+                    position: 'absolute', 
+                    top: '16px', 
+                    right: '16px', 
+                    zIndex: 10,
+                    width: '40px', 
+                    height: '40px', 
+                    borderRadius: '50%',
+                    background: 'rgba(0,0,0,0.5)', 
+                    border: '1px solid rgba(255,255,255,0.2)',
+                    color: '#fff', 
+                    cursor: 'pointer', 
+                    display: 'flex', 
+                    alignItems: 'center', 
+                    justifyContent: 'center',
+                    backdropFilter: 'blur(10px)',
+                    transition: 'all 0.2s ease',
+                  }}
+                  onMouseOver={e => { e.currentTarget.style.background = 'rgba(0,0,0,0.8)'; e.currentTarget.style.transform = 'scale(1.05)'; }}
+                  onMouseOut={e => { e.currentTarget.style.background = 'rgba(0,0,0,0.5)'; e.currentTarget.style.transform = 'scale(1)'; }}
+                >
+                  <X size={20} />
+                </button>
+                <div style={{ borderRadius: '16px', overflow: 'hidden', background: '#000', aspectRatio: '16/9', position: 'relative' }}>
+                  {(() => {
+                    const isYouTube = activeVideo.videoUrl.includes('youtube.com') || activeVideo.videoUrl.includes('youtu.be') || activeVideo.source === 'YouTube';
+                    const isDailymotion = activeVideo.videoUrl.includes('dailymotion.com') || activeVideo.videoUrl.includes('dai.ly') || activeVideo.source === 'Dailymotion';
                     
-                    return (
-                      <iframe
-                        src={`https://www.youtube.com/embed/${ytId}?autoplay=1&controls=1&rel=0`}
-                        title={activeVideo.headline}
-                        frameBorder="0"
-                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                        allowFullScreen
-                        style={{ width: '100%', height: '100%', position: 'absolute', inset: 0, border: 'none' }}
-                      />
-                    );
-                  } else if (isDailymotion) {
-                    const match = activeVideo.videoUrl.match(/\/video\/([a-zA-Z0-9]+)/);
-                    const dmId = match ? match[1] : activeVideo.id;
-                    return (
-                      <iframe
-                        src={`https://www.dailymotion.com/embed/video/${dmId}?autoplay=1`}
-                        title={activeVideo.headline}
-                        frameBorder="0"
-                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                        allowFullScreen
-                        style={{ width: '100%', height: '100%', position: 'absolute', inset: 0, border: 'none' }}
-                      />
-                    );
-                  } else {
-                    return (
-                      <video
-                        key={activeVideo.videoUrl}
-                        ref={videoRef}
-                        src={activeVideo.videoUrl}
-                        controls
-                        autoPlay
-                        playsInline
-                        preload="auto"
-                        style={{ width: '100%', display: 'block', height: '100%', objectFit: 'contain' }}
-                        poster={activeVideo.thumbnail}
-                      >
-                        <source src={activeVideo.videoUrl} type="video/mp4" />
-                        Your browser does not support the video tag.
-                      </video>
-                    );
-                  }
-                })()}
-              </div>
-              <div style={{ marginTop: '16px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '24px' }}>
-                <div style={{ flex: 1 }}>
-                  <h3 style={{ margin: '0 0 6px 0', fontSize: '18px', fontWeight: 800, color: '#fff' }}>{activeVideo.headline}</h3>
-                  <p style={{ margin: 0, fontSize: '13px', color: '#888', lineHeight: 1.5 }}>{activeVideo.description}</p>
+                    if (isYouTube) {
+                      const match = activeVideo.videoUrl.match(/^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/);
+                      const ytId = (match && match[2].length === 11) ? match[2] : (activeVideo.id.length === 11 ? activeVideo.id : '');
+                      
+                      return (
+                        <iframe
+                          src={`https://www.youtube.com/embed/${ytId}?autoplay=1&controls=1&rel=0`}
+                          title={activeVideo.headline}
+                          frameBorder="0"
+                          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                          allowFullScreen
+                          style={{ width: '100%', height: '100%', position: 'absolute', inset: 0, border: 'none' }}
+                        />
+                      );
+                    } else if (isDailymotion) {
+                      const match = activeVideo.videoUrl.match(/\/video\/([a-zA-Z0-9]+)/);
+                      const dmId = match ? match[1] : activeVideo.id;
+                      return (
+                        <iframe
+                          src={`https://www.dailymotion.com/embed/video/${dmId}?autoplay=1`}
+                          title={activeVideo.headline}
+                          frameBorder="0"
+                          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                          allowFullScreen
+                          style={{ width: '100%', height: '100%', position: 'absolute', inset: 0, border: 'none' }}
+                        />
+                      );
+                    } else {
+                      return (
+                        <video
+                          key={activeVideo.videoUrl}
+                          ref={videoRef}
+                          src={activeVideo.videoUrl}
+                          controls
+                          autoPlay
+                          playsInline
+                          preload="auto"
+                          style={{ width: '100%', display: 'block', height: '100%', objectFit: 'contain' }}
+                          poster={activeVideo.thumbnail}
+                        >
+                          <source src={activeVideo.videoUrl} type="video/mp4" />
+                          Your browser does not support the video tag.
+                        </video>
+                      );
+                    }
+                  })()}
                 </div>
-                {activeVideo.articleUrl && (
-                  <a
-                    href={activeVideo.articleUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    style={{
-                      display: 'inline-flex',
-                      alignItems: 'center',
-                      gap: '8px',
-                      padding: '12px 24px',
-                      borderRadius: '8px',
-                      background: accent,
-                      color: '#000',
-                      fontSize: '12px',
-                      fontWeight: 800,
-                      textDecoration: 'none',
-                      textTransform: 'uppercase',
-                      letterSpacing: '1px',
-                      whiteSpace: 'nowrap',
-                      transition: 'opacity 0.2s',
-                    }}
-                    onMouseOver={e => e.currentTarget.style.opacity = '0.85'}
-                    onMouseOut={e => e.currentTarget.style.opacity = '1'}
-                  >
-                    Read Story <ExternalLink size={14} />
-                  </a>
-                )}
-              </div>
+                <div style={{ marginTop: '16px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '24px' }}>
+                  <div style={{ flex: 1 }}>
+                    <h3 style={{ margin: '0 0 6px 0', fontSize: '18px', fontWeight: 800, color: '#fff' }}>{activeVideo.headline}</h3>
+                    <p style={{ margin: 0, fontSize: '13px', color: '#888', lineHeight: 1.5 }}>{activeVideo.description}</p>
+                  </div>
+                  {activeVideo.articleUrl && (
+                    <a
+                      href={activeVideo.articleUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      style={{
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '8px',
+                        padding: '12px 24px',
+                        borderRadius: '8px',
+                        background: accent,
+                        color: '#000',
+                        fontSize: '12px',
+                        fontWeight: 800,
+                        textDecoration: 'none',
+                        textTransform: 'uppercase',
+                        letterSpacing: '1px',
+                        whiteSpace: 'nowrap',
+                        transition: 'opacity 0.2s',
+                      }}
+                      onMouseOver={e => e.currentTarget.style.opacity = '0.85'}
+                      onMouseOut={e => e.currentTarget.style.opacity = '1'}
+                    >
+                      Read Story <ExternalLink size={14} />
+                    </a>
+                  )}
+                </div>
+              </motion.div>
             </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+          )}
+        </AnimatePresence>,
+        document.body
+      )}
     </>
   );
 }
