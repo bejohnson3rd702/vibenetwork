@@ -1,4 +1,5 @@
 import { supabase } from './supabaseClient';
+import { normalizeWlConfig } from './lib/whitelabel';
 
 export async function getCategoriesWithVideos(tenantId?: string) {
   if (!supabase) return [];
@@ -62,15 +63,16 @@ export async function getCategoriesWithVideos(tenantId?: string) {
     
     return true;
   }).map((wl: any) => {
-    const heroImg = wl.theme?.heroImage || '';
-    const isLogo = heroImg.includes('logo') || (wl.logo && wl.logo.includes('logo'));
+    const normalized = normalizeWlConfig(wl);
+    const heroImg = normalized.theme?.heroImage || '';
+    const isLogo = heroImg.includes('logo') || (normalized.logo && normalized.logo.includes('logo'));
     return {
-      id: 'wl_' + wl.id,
-      title: wl.name || wl.domain || 'Tenant Platform',
-      image: wl.theme?.heroImage || wl.logo || `https://ui-avatars.com/api/?name=${encodeURIComponent(wl.name || 'W')}&background=0D8ABC&color=fff`,
+      id: 'wl_' + normalized.id,
+      title: normalized.name,
+      image: normalized.theme?.heroImage || normalized.logo || `https://ui-avatars.com/api/?name=${encodeURIComponent(normalized.name || 'W')}&background=0D8ABC&color=fff`,
       tags: isLogo ? ['Network'] : ['Firm'],
-      accent: wl.theme?.accent || wl.accent || '#D35400',
-      linkUrl: `/?tenant=${wl.id}`
+      accent: normalized.theme?.accent || normalized.accent || '#D35400',
+      linkUrl: `/?tenant=${normalized.id}`
     };
   });
 
