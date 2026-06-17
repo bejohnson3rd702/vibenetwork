@@ -13,6 +13,7 @@ interface VideoClip {
   source: string;
   sport: string;
   articleUrl?: string;
+  published?: Date;
 }
 
 const FEEDS = [
@@ -384,6 +385,36 @@ const STATIC_VIBE_CLIPS: VideoClip[] = [
   }
 ];
 
+const getAiThumbnail = (
+  headline: string,
+  ctx: { isOlympian?: boolean; isB2K?: boolean; isVibe?: boolean; isKple?: boolean }
+) => {
+  const cleanHeadline = (headline || '').replace(/[#]/g, '').trim().substring(0, 150);
+  let hash = 0;
+  for (let i = 0; i < cleanHeadline.length; i++) {
+    hash = (hash << 5) - hash + cleanHeadline.charCodeAt(i);
+    hash |= 0;
+  }
+  const seed = Math.abs(hash);
+
+  let genrePrompt = 'breaking news broadcast style coverage';
+  if (ctx.isOlympian) {
+    genrePrompt = 'Mr. Olympia bodybuilding competition coverage, professional bodybuilding stage photography, dramatic spotlighting, muscular bodybuilders';
+  } else if (ctx.isB2K) {
+    genrePrompt = 'B2K R&B music group style, music video scene, 90s/2000s boyband aesthetic, stage lighting, cinematic music broadcast';
+  } else if (ctx.isKple) {
+    genrePrompt = 'inspirational Christian gospel broadcast style, warm welcoming TV studio, hope and faith theme, professional television studio';
+  } else if (ctx.isVibe) {
+    genrePrompt = 'breaking news broadcast style coverage, professional news anchor desk, news studio background, cinematic lighting';
+  } else {
+    // AVO / College Sports fallback
+    genrePrompt = 'college sports action shot, dynamic college athletic photography, high energy action scene, stadium background';
+  }
+
+  const prompt = `${genrePrompt}: ${cleanHeadline}, photorealistic, 16:9 aspect ratio`;
+  return `https://image.pollinations.ai/prompt/${encodeURIComponent(prompt)}?width=960&height=540&nologo=true&seed=${seed}`;
+};
+
 export default function WatchLive({ accent = '#D35400', isOlympian = false, isB2K = false, isVibe = false, isKple = false }: { accent?: string; isOlympian?: boolean; isB2K?: boolean; isVibe?: boolean; isKple?: boolean }) {
   const [clips, setClips] = useState<VideoClip[]>([]);
   const [loading, setLoading] = useState(true);
@@ -413,11 +444,7 @@ export default function WatchLive({ accent = '#D35400', isOlympian = false, isB2
       const seen = new Set<string>();
 
       if (isOlympian) {
-        // Pre-populate with high quality static videos to guarantee content
-        allClips.push(...STATIC_OLYMPIAN_CLIPS);
-        for (const item of STATIC_OLYMPIAN_CLIPS) {
-          seen.add(item.id);
-        }
+        const dynamicClips: VideoClip[] = [];
         for (const feed of OLYMPIAN_FEEDS) {
           try {
             const res = await fetch(`/api/yt-rss/${feed.channelId}`);
@@ -444,10 +471,12 @@ export default function WatchLive({ accent = '#D35400', isOlympian = false, isB2
                 || `https://i.ytimg.com/vi/${id}/hqdefault.jpg`;
               
               const videoUrl = `https://www.youtube.com/watch?v=${id}`;
+              const publishedText = entry.getElementsByTagName('published')[0]?.textContent || '';
+              const published = publishedText ? new Date(publishedText) : new Date(0);
               
               if (id && !seen.has(id)) {
                 seen.add(id);
-                allClips.push({
+                dynamicClips.push({
                   id,
                   headline,
                   description,
@@ -456,6 +485,7 @@ export default function WatchLive({ accent = '#D35400', isOlympian = false, isB2
                   duration: 0,
                   source: 'YouTube',
                   sport: feed.key,
+                  published,
                 });
               }
             }
@@ -463,16 +493,24 @@ export default function WatchLive({ accent = '#D35400', isOlympian = false, isB2
             console.warn(`WatchLive: failed to fetch YouTube RSS for ${feed.label}`, err);
           }
         }
+        
+        // Sort dynamic clips by date descending
+        dynamicClips.sort((a, b) => (b.published?.getTime() || 0) - (a.published?.getTime() || 0));
+        allClips.push(...dynamicClips);
+        
+        // Append static fallbacks
+        for (const item of STATIC_OLYMPIAN_CLIPS) {
+          if (!seen.has(item.id)) {
+            seen.add(item.id);
+            allClips.push(item);
+          }
+        }
       } else if (isB2K) {
         allClips.push(...B2K_CLIPS);
       } else if (isKple) {
-        // Pre-populate with high quality static videos to guarantee content
-        allClips.push(...STATIC_KPLE_CLIPS);
-        for (const item of STATIC_KPLE_CLIPS) {
-          seen.add(item.id);
-        }
-
-        // Fetch YouTube feeds for child networks that have channelId (TCT Network, Smile, ACT, Enlace, etc.)
+        const dynamicClips: VideoClip[] = [];
+        
+        // 1. Fetch YouTube RSS feeds
         for (const feed of KPLE_FEEDS) {
           if (feed.channelId) {
             try {
@@ -489,23 +527,21 @@ export default function WatchLive({ accent = '#D35400', isOlympian = false, isB2
                     || entry.getElementsByTagName('id')[0]?.textContent?.split(':').pop() 
                     || '';
                   
-                  // Filter content by keywords to assign to the right tab if it's the KPLE channel UCdorw7uL4mZnPby7T78bT7A
                   let matchedFeedKey = feed.key;
                   const headline = entry.getElementsByTagName('title')[0]?.textContent || '';
                   
                   if (feed.channelId === 'UCdorw7uL4mZnPby7T78bT7A') {
-                    // For the shared KPLE TV channel, sort the videos into the right tab
                     const lowerHeadline = headline.toLowerCase();
                     if (lowerHeadline.includes('integrity') || lowerHeadline.includes('men of')) {
-                      matchedFeedKey = 'the_walk'; // Men Of Integrity runs on The Walk TV
+                      matchedFeedKey = 'the_walk';
                     } else if (lowerHeadline.includes('identidad') || lowerHeadline.includes('palabra de') || lowerHeadline.includes('enlace')) {
-                      matchedFeedKey = 'enlace_usa'; // Spanish content maps to Enlace
+                      matchedFeedKey = 'enlace_usa';
                     } else if (lowerHeadline.includes('temptation') || lowerHeadline.includes('walk') || lowerHeadline.includes('bible study')) {
                       matchedFeedKey = 'the_walk';
                     } else if (lowerHeadline.includes('veteran') || lowerHeadline.includes('act') || lowerHeadline.includes('attention')) {
                       matchedFeedKey = 'act_local';
                     } else {
-                      matchedFeedKey = 'act_local'; // fallback to local ACT
+                      matchedFeedKey = 'act_local';
                     }
                   }
                   
@@ -518,10 +554,12 @@ export default function WatchLive({ accent = '#D35400', isOlympian = false, isB2
                     || `https://i.ytimg.com/vi/${id}/hqdefault.jpg`;
                   
                   const videoUrl = `https://www.youtube.com/watch?v=${id}`;
+                  const publishedText = entry.getElementsByTagName('published')[0]?.textContent || '';
+                  const published = publishedText ? new Date(publishedText) : new Date(0);
                   
                   if (id && !seen.has(id)) {
                     seen.add(id);
-                    allClips.push({
+                    dynamicClips.push({
                       id,
                       headline,
                       description,
@@ -530,6 +568,7 @@ export default function WatchLive({ accent = '#D35400', isOlympian = false, isB2
                       duration: 0,
                       source: 'YouTube',
                       sport: matchedFeedKey,
+                      published,
                     });
                   }
                 }
@@ -540,9 +579,8 @@ export default function WatchLive({ accent = '#D35400', isOlympian = false, isB2
           }
         }
         
+        // 2. Fetch KPLE child network videos from Supabase
         try {
-          // Fetch all videos from child networks of KPLE TV parent network
-          // Parent network ID is '33742e2f-430b-4c2d-9cba-42507891ef02'
           const { data: vidsData, error: vidsErr } = await supabase
             .from('videos')
             .select('*, creator:profiles!inner(whitelabel_id, whitelabel:whitelabel_configs!inner(name, parent_network_id))')
@@ -552,7 +590,6 @@ export default function WatchLive({ accent = '#D35400', isOlympian = false, isB2
           if (!vidsErr && vidsData) {
             for (const v of vidsData) {
               const netName = v.creator?.whitelabel?.name || '';
-              // Determine which feed key it maps to
               let feedKey = 'tct_network';
               if (netName.toLowerCase().includes('attention') || netName.toLowerCase().includes('act')) {
                 feedKey = 'act_local';
@@ -568,7 +605,7 @@ export default function WatchLive({ accent = '#D35400', isOlympian = false, isB2
               
               if (!seen.has(v.id)) {
                 seen.add(v.id);
-                allClips.push({
+                dynamicClips.push({
                   id: v.id,
                   headline: v.title,
                   description: v.title || '',
@@ -576,7 +613,8 @@ export default function WatchLive({ accent = '#D35400', isOlympian = false, isB2
                   videoUrl: v.video_url,
                   duration: v.preview_duration || 0,
                   source: netName,
-                  sport: feedKey
+                  sport: feedKey,
+                  published: v.created_at ? new Date(v.created_at) : new Date(0),
                 });
               }
             }
@@ -584,24 +622,31 @@ export default function WatchLive({ accent = '#D35400', isOlympian = false, isB2
         } catch (err) {
           console.warn("Failed to load dynamic KPLE clips:", err);
         }
-      } else if (isVibe) {
-        // Pre-populate with static fallback clips
-        allClips.push(...STATIC_VIBE_CLIPS);
-        for (const item of STATIC_VIBE_CLIPS) {
-          seen.add(item.id);
+        
+        // Sort dynamic clips by date descending
+        dynamicClips.sort((a, b) => (b.published?.getTime() || 0) - (a.published?.getTime() || 0));
+        allClips.push(...dynamicClips);
+        
+        // Append static KPLE fallbacks
+        for (const item of STATIC_KPLE_CLIPS) {
+          if (!seen.has(item.id)) {
+            seen.add(item.id);
+            allClips.push(item);
+          }
         }
-
-        // Fetch each video feed (DailyMotion search or YouTube RSS)
+      } else if (isVibe) {
+        const dynamicClips: VideoClip[] = [];
+        
         for (const feed of VIBE_FEEDS) {
           try {
             if (feed.source === 'Dailymotion' && feed.query) {
-              const res = await fetch(`https://api.dailymotion.com/videos?search=${encodeURIComponent(feed.query)}&languages=en&flags=verified&limit=10&fields=id,title,description,thumbnail_720_url,duration,url&t=${Date.now()}`);
+              const res = await fetch(`https://api.dailymotion.com/videos?search=${encodeURIComponent(feed.query)}&languages=en&flags=verified&limit=10&fields=id,title,description,thumbnail_720_url,duration,url,created_time&t=${Date.now()}`);
               if (res.ok) {
                 const json = await res.json();
                 for (const item of (json.list || [])) {
                   if (item.id && !seen.has(item.id)) {
                     seen.add(item.id);
-                    allClips.push({
+                    dynamicClips.push({
                       id: item.id,
                       headline: item.title || '',
                       description: item.description || '',
@@ -610,6 +655,7 @@ export default function WatchLive({ accent = '#D35400', isOlympian = false, isB2
                       duration: item.duration || 0,
                       source: 'Dailymotion',
                       sport: feed.key,
+                      published: item.created_time ? new Date(item.created_time * 1000) : new Date(0),
                     });
                   }
                 }
@@ -634,10 +680,12 @@ export default function WatchLive({ accent = '#D35400', isOlympian = false, isB2
                   const thumbnail = mediaGroup?.getElementsByTagName('media:thumbnail')[0]?.getAttribute('url')
                     || `https://i.ytimg.com/vi/${id}/hqdefault.jpg`;
                   const videoUrl = `https://www.youtube.com/watch?v=${id}`;
+                  const publishedText = entry.getElementsByTagName('published')[0]?.textContent || '';
+                  const published = publishedText ? new Date(publishedText) : new Date(0);
                   
                   if (id && !seen.has(id)) {
                     seen.add(id);
-                    allClips.push({
+                    dynamicClips.push({
                       id,
                       headline,
                       description,
@@ -646,6 +694,7 @@ export default function WatchLive({ accent = '#D35400', isOlympian = false, isB2
                       duration: 0,
                       source: 'YouTube',
                       sport: feed.key,
+                      published,
                     });
                   }
                 }
@@ -653,6 +702,18 @@ export default function WatchLive({ accent = '#D35400', isOlympian = false, isB2
             }
           } catch (err) {
             console.warn(`WatchLive: failed to fetch video feed for ${feed.label}`, err);
+          }
+        }
+        
+        // Sort dynamic clips by date descending
+        dynamicClips.sort((a, b) => (b.published?.getTime() || 0) - (a.published?.getTime() || 0));
+        allClips.push(...dynamicClips);
+        
+        // Append static fallbacks
+        for (const item of STATIC_VIBE_CLIPS) {
+          if (!seen.has(item.id)) {
+            seen.add(item.id);
+            allClips.push(item);
           }
         }
       } else {
@@ -695,6 +756,7 @@ export default function WatchLive({ accent = '#D35400', isOlympian = false, isB2
                   duration: v.duration || 0,
                   source: 'ESPN',
                   sport: feed.key,
+                  published: h.published ? new Date(h.published) : new Date(0),
                 });
               }
             }
@@ -702,6 +764,8 @@ export default function WatchLive({ accent = '#D35400', isOlympian = false, isB2
             console.warn(`WatchLive: failed to fetch ${feed.key}`, err);
           }
         }
+        // NCAA clips can also be sorted by date
+        allClips.sort((a, b) => (b.published?.getTime() || 0) - (a.published?.getTime() || 0));
       }
 
       setClips(allClips);
@@ -815,7 +879,14 @@ export default function WatchLive({ accent = '#D35400', isOlympian = false, isB2
             onMouseOut={e => { e.currentTarget.style.transform = 'scale(1)'; }}
           >
             <div className="watch-featured-container" style={{ position: 'relative', width: '100%', overflow: 'hidden' }}>
-              <img src={featured.thumbnail} alt={featured.headline} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+              <img 
+                src={featured.thumbnail || getAiThumbnail(featured.headline, { isOlympian, isB2K, isVibe, isKple })} 
+                alt={featured.headline} 
+                onError={(e) => {
+                  e.currentTarget.src = getAiThumbnail(featured.headline, { isOlympian, isB2K, isVibe, isKple });
+                }}
+                style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
+              />
               <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(0,0,0,0.95) 0%, rgba(0,0,0,0.3) 50%, transparent 70%)' }} />
               {/* Play / Link button */}
               <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -878,7 +949,14 @@ export default function WatchLive({ accent = '#D35400', isOlympian = false, isB2
                   onMouseOut={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.05)'; e.currentTarget.style.transform = 'translateY(0)'; }}
                 >
                   <div style={{ position: 'relative', aspectRatio: '16/9' }}>
-                    <img src={clip.thumbnail} alt={clip.headline} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                    <img 
+                      src={clip.thumbnail || getAiThumbnail(clip.headline, { isOlympian, isB2K, isVibe, isKple })} 
+                      alt={clip.headline} 
+                      onError={(e) => {
+                        e.currentTarget.src = getAiThumbnail(clip.headline, { isOlympian, isB2K, isVibe, isKple });
+                      }}
+                      style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
+                    />
                     <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(0,0,0,0.25)' }}>
                       <div style={{ width: '44px', height: '44px', borderRadius: '50%', background: `${accent}bb`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                         {(!clip.videoUrl.includes('youtube.com') && !clip.videoUrl.includes('youtu.be') && !clip.videoUrl.toLowerCase().endsWith('.mp4')) ? (
