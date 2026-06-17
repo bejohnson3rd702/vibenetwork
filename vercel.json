@@ -21,6 +21,10 @@
       "destination": "https://api.nil-prod.rallyhub.net/:path*"
     },
     {
+      "source": "/api/yt-rss/:channelId",
+      "destination": "https://www.youtube.com/feeds/videos.xml?channel_id=:channelId"
+    },
+    {
       "source": "/(.*)",
       "destination": "/index.html"
     }
