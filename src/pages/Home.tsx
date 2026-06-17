@@ -127,22 +127,99 @@ export default function Home({ categories, activeVideo, setActiveVideo, user }: 
                     }}
                   />
                   {isNewProfiles && (
-                    <SliderSection
-                      title="MR. & MRS. OLYMPIA"
-                      items={OLYMPIA_CHAMPIONS.map(champion => ({
-                        ...champion,
-                        linkUrl: `/profile/${champion.id}?tenant=7a017c4d-c08f-4260-8540-a0cc8bed4e11`
-                      }))}
-                      aspectRatio="1/1"
-                      onItemClick={(item) => {
-                        if (item.linkUrl) {
-                          const targetUrl = item.linkUrl.includes('?') 
-                            ? `${item.linkUrl}&fromVibe=true` 
-                            : `${item.linkUrl}?fromVibe=true`;
-                          window.location.href = mergeQueryParams(targetUrl, window.location.search);
-                        }
-                      }}
-                    />
+                    <>
+                      {/* ── Mr. Olympia Call to Action Banner ── */}
+                      <section style={{ maxWidth: '1400px', margin: '40px auto', padding: '0 40px' }}>
+                        <div style={{
+                          position: 'relative', overflow: 'hidden',
+                          display: 'flex', minHeight: '340px',
+                          border: '1px solid rgba(255,255,255,0.06)',
+                          background: '#000',
+                        }}>
+                          {/* Left — Image */}
+                          <div style={{
+                            flex: '0 0 45%', position: 'relative', overflow: 'hidden',
+                          }}>
+                            <img
+                              src="https://images.unsplash.com/photo-1583454110551-21f2fa2afe61?auto=format&fit=crop&q=80&w=800"
+                              alt="Official Gear"
+                              style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+                            />
+                            <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to right, transparent 60%, #000 100%)' }} />
+                            {/* OFFICIAL GEAR pill */}
+                            <div style={{
+                              position: 'absolute', top: '24px', left: '24px',
+                              padding: '6px 14px', background: '#E31B23', color: '#fff',
+                              fontSize: '10px', fontWeight: 900, letterSpacing: '2px', textTransform: 'uppercase',
+                            }}>
+                              Official Gear
+                            </div>
+                          </div>
+
+                          {/* Right — Content */}
+                          <div style={{
+                            flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center',
+                            padding: '48px 48px 48px 32px', position: 'relative',
+                          }}>
+                            {/* Subtle accent glow */}
+                            <div style={{
+                              position: 'absolute', right: '-80px', top: '-40px',
+                              width: '300px', height: '300px', borderRadius: '50%',
+                              background: '#E31B23', filter: 'blur(120px)', opacity: 0.12,
+                            }} />
+
+                            <p style={{
+                              fontSize: '11px', fontWeight: 800, textTransform: 'uppercase',
+                              letterSpacing: '3px', color: '#E31B23', margin: '0 0 12px 0',
+                            }}>
+                              Olympia Collection
+                            </p>
+                            <h2 style={{
+                              fontSize: '34px', fontWeight: 900, color: '#fff', margin: '0 0 14px 0',
+                              lineHeight: 1.15, letterSpacing: '-1px', textTransform: 'uppercase',
+                            }}>
+                              Official Weekend<br />Gear & Wear
+                            </h2>
+                            <p style={{
+                              fontSize: '14px', color: 'rgba(255,255,255,0.5)', lineHeight: 1.7,
+                              margin: '0 0 28px 0', maxWidth: '380px',
+                            }}>
+                              Premium bodybuilding and lifestyle apparel engineered for champions. Rep the legacy with official Mr. Olympia hoodies, workout shirts, and accessories.
+                            </p>
+                            <button
+                              style={{
+                                display: 'inline-block', padding: '13px 40px', fontSize: '11px', fontWeight: 800,
+                                textTransform: 'uppercase', letterSpacing: '2.5px', width: 'fit-content',
+                                background: 'transparent', color: '#fff',
+                                border: '1.5px solid #fff', cursor: 'pointer',
+                                transition: 'all 0.25s',
+                              }}
+                              onMouseOver={e => { e.currentTarget.style.background = '#fff'; e.currentTarget.style.color = '#000'; }}
+                              onMouseOut={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = '#fff'; }}
+                            >
+                              Shop The Collection
+                            </button>
+                          </div>
+                        </div>
+                      </section>
+
+                      <SliderSection
+                        title="MR. & MRS. OLYMPIA"
+                        items={OLYMPIA_CHAMPIONS.map(champion => ({
+                          ...champion,
+                          linkUrl: `/profile/${champion.id}?tenant=7a017c4d-c08f-4260-8540-a0cc8bed4e11`
+                        }))}
+                        aspectRatio="1/1"
+                        onItemClick={(item) => {
+                          if (item.linkUrl) {
+                            const targetUrl = item.linkUrl.includes('?') 
+                              ? `${item.linkUrl}&fromVibe=true` 
+                              : `${item.linkUrl}?fromVibe=true`;
+                            window.location.href = mergeQueryParams(targetUrl, window.location.search);
+                          }
+                        }}
+                      />
+                    </>
                   )}
                 </div>
               );
