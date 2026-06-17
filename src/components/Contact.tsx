@@ -19,7 +19,12 @@ const Contact: React.FC = () => {
                      wlConfig?.domain?.includes('mrolympia.com') ||
                      wlConfig?.name?.toLowerCase().includes('muscle') ||
                      wlConfig?.name?.toLowerCase().includes('fitness');
-  const isTenant = wlConfig && wlConfig.domain !== 'vibenetwork.tv';
+  const isTenant = wlConfig && 
+                   wlConfig.id !== 'master' && 
+                   wlConfig.domain !== 'vibenetwork.tv' && 
+                   wlConfig.domain !== 'vibenetwork.com' && 
+                   wlConfig.domain !== 'vibenetwork.vercel.app' && 
+                   !wlConfig.domain?.includes('vercel.app');
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

@@ -118,7 +118,14 @@ const Navbar: React.FC<NavbarProps> = ({ user, onLoginClick, onAdminClick }) => 
           { label: 'Home', path: '/' },
           ...(showBackToVibe ? [{ label: 'Back to Vibe', path: 'back-to-vibe' }] : []),
           ...(wlConfig?.parent_network_id ? [{ label: parentName, path: 'parent' }] : []),
-          { label: 'Marketplace', path: '/marketplace', hidden: Boolean(wlConfig?.domain && wlConfig.domain !== 'vibenetwork.tv') },
+          { label: 'Marketplace', path: '/marketplace', hidden: Boolean(
+            wlConfig?.domain && 
+            wlConfig.id !== 'master' && 
+            wlConfig.domain !== 'vibenetwork.tv' && 
+            wlConfig.domain !== 'vibenetwork.com' && 
+            wlConfig.domain !== 'vibenetwork.vercel.app' && 
+            !wlConfig.domain?.includes('vercel.app')
+          ) },
           { label: 'About Us', path: '/about' },
           { label: 'Watch Live', path: '/#whats-on-now', hidden: wlConfig?.enableWatchLive === false },
           { label: 'Contact', path: '/contact' }

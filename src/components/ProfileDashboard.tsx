@@ -556,7 +556,8 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
         const loadSecondaryData = async () => {
           let prodQuery = supabase!.from('products').select(isNetworkLevel ? '*, creator:profiles!inner(username, avatar_url, whitelabel_id)' : '*');
           if (isNetworkLevel) {
-            if (wlConfig?.domain && wlConfig.domain !== 'vibenetwork.tv') prodQuery = prodQuery.eq('creator.whitelabel_id', wlConfig.id);
+            const isMasterPlatform = !wlConfig || wlConfig.id === 'master' || wlConfig.domain === 'vibenetwork.tv' || wlConfig.domain === 'vibenetwork.com' || wlConfig.domain?.includes('vercel.app');
+            if (wlConfig?.domain && !isMasterPlatform) prodQuery = prodQuery.eq('creator.whitelabel_id', wlConfig.id);
           } else {
             prodQuery = prodQuery.eq('creator_id', loadedProfileId);
           }
@@ -644,7 +645,7 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
            username: user?.user_metadata?.username || user?.email?.split('@')[0] || 'NewCreator',
            bio: 'Welcome to my official channel!',
            role: user?.user_metadata?.role || 'viewer',
-           whitelabel_id: wlConfig?.domain === 'vibenetwork.tv' ? null : wlConfig?.id
+           whitelabel_id: (!wlConfig || wlConfig.id === 'master' || wlConfig.domain === 'vibenetwork.tv' || wlConfig.domain === 'vibenetwork.com' || wlConfig.domain?.includes('vercel.app')) ? null : wlConfig?.id
         }).select().single();
         
         if (!insertError && newProfile) {        

@@ -21,8 +21,8 @@ const Marketplace: React.FC = () => {
         .from('products')
         .select('*, creator:profiles!inner(username, avatar_url, whitelabel_id)');
 
-      // If wlConfig exists and is not vibenetwork.tv, filter by tenant ID
-      if (wlConfig?.domain && wlConfig.domain !== 'vibenetwork.tv') {
+      const isMasterPlatform = !wlConfig || wlConfig.id === 'master' || wlConfig.domain === 'vibenetwork.tv' || wlConfig.domain === 'vibenetwork.com' || wlConfig.domain?.includes('vercel.app');
+      if (wlConfig?.domain && !isMasterPlatform) {
         query.eq('creator.whitelabel_id', wlConfig.id);
       } else {
         // Master Vibe Marketplace: Only show products explicitly featured by Vibe Admins

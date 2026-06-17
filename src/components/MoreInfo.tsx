@@ -4,7 +4,12 @@ import { useWhiteLabel } from '../context/WhiteLabelContext';
 
 const MoreInfo: React.FC = () => {
   const { wlConfig } = useWhiteLabel();
-  const isTenant = wlConfig && wlConfig.domain !== 'vibenetwork.tv';
+  const isTenant = wlConfig && 
+                   wlConfig.id !== 'master' && 
+                   wlConfig.domain !== 'vibenetwork.tv' && 
+                   wlConfig.domain !== 'vibenetwork.com' && 
+                   wlConfig.domain !== 'vibenetwork.vercel.app' && 
+                   !wlConfig.domain?.includes('vercel.app');
   const isAvo = wlConfig?.id === '3915f1e5-4c79-4b2a-ad41-7029ce8052d7' || wlConfig?.parent_network_id === '3915f1e5-4c79-4b2a-ad41-7029ce8052d7';
   const isOlympian = wlConfig?.name?.toLowerCase().includes('olympia') || 
                      wlConfig?.domain?.includes('mrolympia.com') ||
