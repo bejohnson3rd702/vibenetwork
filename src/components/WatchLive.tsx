@@ -54,6 +54,176 @@ const KPLE_FEEDS = [
   { key: 'smile_kids', label: '👶 Smile of a Child', channelId: 'UCmkgg5el8Fg3IX_baZyfSaQ' },
 ];
 
+const VIBE_100_FEEDS = [
+  { key: 'avo', label: '🎒 AVO Channel' },
+  { key: 'olympia', label: '🏆 Mr. Olympia' },
+  { key: 'b2k', label: '🎤 B2K Channel' },
+  { key: 'kple', label: '📺 Christian Revival' },
+  { key: 'finfire', label: '💵 FINFIRE Channel' },
+];
+
+const VIBE_100_CLIPS: VideoClip[] = [
+  // AVO Channel
+  {
+    id: 'vyqy7PcDGLM',
+    headline: 'AVO Campus Tour Highlight Reel',
+    description: 'Explore the campus lifestyle and exclusive tailgate essentials with the official AVO team tour.',
+    thumbnail: 'https://images.unsplash.com/photo-1562774053-701939374585?auto=format&fit=crop&q=80&w=800',
+    videoUrl: 'https://www.youtube.com/watch?v=vyqy7PcDGLM',
+    duration: 540,
+    source: 'AVO Channel',
+    sport: 'avo'
+  },
+  {
+    id: 'MCWS-experience',
+    headline: "Men's College World Series Tailgate Gear Showcase",
+    description: 'AVO breaks down the ultimate collegiate tailgate essentials and new arrivals for the championship season.',
+    thumbnail: 'https://i3.ytimg.com/vi/vyqy7PcDGLM/hqdefault.jpg',
+    videoUrl: 'https://www.youtube.com/watch?v=vyqy7PcDGLM',
+    duration: 320,
+    source: 'AVO Channel',
+    sport: 'avo'
+  },
+  {
+    id: 'avo-lifestyle',
+    headline: 'AVO Premium College Apparel Style Guide',
+    description: 'From campus to gameday: how to style the latest AVO collections and represent your school in style.',
+    thumbnail: 'https://images.unsplash.com/photo-1523050854058-8df90110c476?auto=format&fit=crop&q=80&w=800',
+    videoUrl: 'https://www.youtube.com/watch?v=vyqy7PcDGLM',
+    duration: 210,
+    source: 'AVO Channel',
+    sport: 'avo'
+  },
+
+  // Mr. Olympia Channel
+  {
+    id: 'SV7JP7y80UM',
+    headline: 'Mr. Olympia 2024 Men’s Open Prejudging Analysis',
+    description: 'Expert bodybuilding commentators break down the top contenders and side-by-side pose comparisons from the main stage.',
+    thumbnail: 'https://images.unsplash.com/photo-1517838277536-f5f99be501cd?auto=format&fit=crop&q=80&w=800',
+    videoUrl: 'https://www.youtube.com/watch?v=SV7JP7y80UM',
+    duration: 1845,
+    source: 'Mr. Olympia Channel',
+    sport: 'olympia'
+  },
+  {
+    id: 'MzWgJtFIxg8',
+    headline: 'The Bodybuilding Legends That Changed the Sport',
+    description: 'A look back at how Arnold Schwarzenegger, Lee Haney, Dorian Yates and Ronnie Coleman redefined muscular perfection.',
+    thumbnail: 'https://i.ytimg.com/vi/MzWgJtFIxg8/hqdefault.jpg',
+    videoUrl: 'https://www.youtube.com/watch?v=MzWgJtFIxg8',
+    duration: 780,
+    source: 'Mr. Olympia Channel',
+    sport: 'olympia'
+  },
+  {
+    id: 'dTqpdNacxYM',
+    headline: 'Cutler Nutrition Q&A with 4x Mr. Olympia Jay Cutler',
+    description: 'Jay Cutler answers fan questions about his training routines, nutrition strategies, and championship mindset.',
+    thumbnail: 'https://i.ytimg.com/vi/dTqpdNacxYM/hqdefault.jpg',
+    videoUrl: 'https://www.youtube.com/watch?v=dTqpdNacxYM',
+    duration: 645,
+    source: 'Mr. Olympia Channel',
+    sport: 'olympia'
+  },
+
+  // B2K Channel
+  {
+    id: 'lgyEYMxzVpw',
+    headline: 'B2K Reunion Tour Live Performance',
+    description: 'Watch the highlights and full-bleed stage footage of B2K performing their greatest hits live on tour.',
+    thumbnail: '/n2n/b2k_tour.png',
+    videoUrl: 'https://www.youtube.com/watch?v=lgyEYMxzVpw',
+    duration: 238,
+    source: 'B2K Channel',
+    sport: 'b2k'
+  },
+  {
+    id: 'CgiX53hjAPc',
+    headline: 'B2K - Uh Huh (Official Music Video)',
+    description: "Rewind to the platinum-selling debut single 'Uh Huh' off B2K's self-titled record.",
+    thumbnail: 'https://i.ytimg.com/vi/CgiX53hjAPc/hqdefault.jpg',
+    videoUrl: 'https://www.youtube.com/watch?v=CgiX53hjAPc',
+    duration: 253,
+    source: 'B2K Channel',
+    sport: 'b2k'
+  },
+  {
+    id: '6OihwykYdBc',
+    headline: 'B2K - Girlfriend (Official Music Video)',
+    description: "Experience the iconic choreography and vocals in the official video for 'Girlfriend'.",
+    thumbnail: 'https://i.ytimg.com/vi/6OihwykYdBc/hqdefault.jpg',
+    videoUrl: 'https://www.youtube.com/watch?v=6OihwykYdBc',
+    duration: 204,
+    source: 'B2K Channel',
+    sport: 'b2k'
+  },
+
+  // Christian Revival Channel
+  {
+    id: '5BFZ5rg1ZLc',
+    headline: 'Walking in Faith — Daily Gospel Message',
+    description: 'An inspiring and empowering sermon on relying on God through times of spiritual drought and challenge.',
+    thumbnail: 'https://images.unsplash.com/photo-1507434965515-61970f2bd7c6?auto=format&fit=crop&q=80&w=800',
+    videoUrl: 'https://www.youtube.com/watch?v=5BFZ5rg1ZLc',
+    duration: 2450,
+    source: 'Christian Revival Channel',
+    sport: 'kple'
+  },
+  {
+    id: 'vwmCBGEmpY0',
+    headline: 'God is Fighting For You in Hidden Ways',
+    description: 'Pastor James breaks down the promises of Ephesians 2 and how God works behind the scenes in our lives.',
+    thumbnail: 'https://images.unsplash.com/photo-1544717305-2782549b5136?auto=format&fit=crop&q=80&w=800',
+    videoUrl: 'https://www.youtube.com/watch?v=vwmCBGEmpY0',
+    duration: 2120,
+    source: 'Christian Revival Channel',
+    sport: 'kple'
+  },
+  {
+    id: 'vdHg6fe8P5Y',
+    headline: 'Attention Central Texas - Local Public Service Bulletin',
+    description: 'Highlighting community initiatives, church schedules, and non-profit projects in Central Texas.',
+    thumbnail: 'https://images.unsplash.com/photo-1492534513006-37715f336a39?auto=format&fit=crop&q=80&w=800',
+    videoUrl: 'https://www.youtube.com/watch?v=vdHg6fe8P5Y',
+    duration: 645,
+    source: 'Christian Revival Channel',
+    sport: 'kple'
+  },
+
+  // FINFIRE Channel
+  {
+    id: 'vwOxJJ80t3k',
+    headline: 'Index Fund Investing Explained in 10 Minutes',
+    description: 'A beginner-friendly guide to passive index fund investing, asset allocation, and building generational wealth.',
+    thumbnail: 'https://images.unsplash.com/photo-1559526324-4b87b5e36e44?auto=format&fit=crop&q=80&w=800',
+    videoUrl: 'https://www.youtube.com/watch?v=vwOxJJ80t3k',
+    duration: 600,
+    source: 'FINFIRE Channel',
+    sport: 'finfire'
+  },
+  {
+    id: 'finfire-realestate',
+    headline: 'Why KFC Has Fallen Behind In The U.S. (Market Analysis)',
+    description: 'An analysis of corporate strategy, brand dilution, and real estate portfolios of fast food franchises.',
+    thumbnail: 'https://i3.ytimg.com/vi/vwOxJJ80t3k/hqdefault.jpg',
+    videoUrl: 'https://www.youtube.com/watch?v=vwOxJJ80t3k',
+    duration: 540,
+    source: 'FINFIRE Channel',
+    sport: 'finfire'
+  },
+  {
+    id: 'finfire-passive',
+    headline: 'Passive Income Streams: 7 Ideas to Start Today',
+    description: 'Learn how to generate cash flow through dividend investing, rental real estate, and digital properties.',
+    thumbnail: 'https://images.unsplash.com/photo-1579621970563-ebec7560ff3e?auto=format&fit=crop&q=80&w=800',
+    videoUrl: 'https://www.youtube.com/watch?v=vwOxJJ80t3k',
+    duration: 480,
+    source: 'FINFIRE Channel',
+    sport: 'finfire'
+  }
+];
+
 const STATIC_KPLE_CLIPS: VideoClip[] = [
   {
     id: '5BFZ5rg1ZLc',
@@ -388,7 +558,7 @@ const STATIC_VIBE_CLIPS: VideoClip[] = [
 
 const getAiThumbnail = (
   headline: string,
-  ctx: { isOlympian?: boolean; isB2K?: boolean; isVibe?: boolean; isKple?: boolean }
+  ctx: { isOlympian?: boolean; isB2K?: boolean; isVibe?: boolean; isKple?: boolean; isVibe100?: boolean }
 ) => {
   const cleanHeadline = (headline || '').replace(/[#]/g, '').trim().substring(0, 150);
   let hash = 0;
@@ -407,6 +577,8 @@ const getAiThumbnail = (
     genrePrompt = 'inspirational Christian gospel broadcast style, warm welcoming TV studio, hope and faith theme, professional television studio';
   } else if (ctx.isVibe) {
     genrePrompt = 'breaking news broadcast style coverage, professional news anchor desk, news studio background, cinematic lighting';
+  } else if (ctx.isVibe100) {
+    genrePrompt = 'premium lifestyle and entertainment coverage, modern neon aesthetic, high-end broadcast studio';
   } else {
     // AVO / College Sports fallback
     genrePrompt = 'college sports action shot, dynamic college athletic photography, high energy action scene, stadium background';
@@ -416,7 +588,7 @@ const getAiThumbnail = (
   return `https://image.pollinations.ai/prompt/${encodeURIComponent(prompt)}?width=960&height=540&nologo=true&seed=${seed}`;
 };
 
-export default function WatchLive({ accent = '#D35400', isOlympian = false, isB2K = false, isVibe = false, isKple = false }: { accent?: string; isOlympian?: boolean; isB2K?: boolean; isVibe?: boolean; isKple?: boolean }) {
+export default function WatchLive({ accent = '#D35400', isOlympian = false, isB2K = false, isVibe = false, isKple = false, isVibe100 = false }: { accent?: string; isOlympian?: boolean; isB2K?: boolean; isVibe?: boolean; isKple?: boolean; isVibe100?: boolean }) {
   const [clips, setClips] = useState<VideoClip[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeVideo, setActiveVideo] = useState<VideoClip | null>(null);
@@ -425,7 +597,7 @@ export default function WatchLive({ accent = '#D35400', isOlympian = false, isB2
   const scrollRef = useRef<HTMLDivElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
 
-  const feedsToUse = isOlympian ? OLYMPIAN_FEEDS : (isB2K ? B2K_FEEDS : (isVibe ? VIBE_FEEDS : (isKple ? KPLE_FEEDS : FEEDS)));
+  const feedsToUse = isOlympian ? OLYMPIAN_FEEDS : (isB2K ? B2K_FEEDS : (isVibe ? VIBE_FEEDS : (isKple ? KPLE_FEEDS : (isVibe100 ? VIBE_100_FEEDS : FEEDS))));
 
   const handleClipClick = (clip: VideoClip) => {
     const isYouTube = clip.videoUrl.includes('youtube.com') || clip.videoUrl.includes('youtu.be');
@@ -717,6 +889,62 @@ export default function WatchLive({ accent = '#D35400', isOlympian = false, isB2
             allClips.push(item);
           }
         }
+      } else if (isVibe100) {
+        const dynamicClips: VideoClip[] = [];
+        
+        // 1. Fetch child network videos from Supabase
+        try {
+          const { data: vidsData, error: vidsErr } = await supabase
+            .from('videos')
+            .select('*, creator:profiles!inner(whitelabel_id, whitelabel:whitelabel_configs!inner(name, parent_network_id))')
+            .eq('creator.whitelabel.parent_network_id', 'e5c100aa-c08f-4260-8540-a0cc8bed4e11')
+            .order('created_at', { ascending: false });
+
+          if (!vidsErr && vidsData) {
+            for (const v of vidsData) {
+              const netName = v.creator?.whitelabel?.name || '';
+              let feedKey = 'avo';
+              if (netName.toLowerCase().includes('olympia')) {
+                feedKey = 'olympia';
+              } else if (netName.toLowerCase().includes('b2k')) {
+                feedKey = 'b2k';
+              } else if (netName.toLowerCase().includes('revival') || netName.toLowerCase().includes('kple')) {
+                feedKey = 'kple';
+              } else if (netName.toLowerCase().includes('finfire')) {
+                feedKey = 'finfire';
+              }
+              
+              if (!seen.has(v.id)) {
+                seen.add(v.id);
+                dynamicClips.push({
+                  id: v.id,
+                  headline: v.title,
+                  description: v.title || '',
+                  thumbnail: v.image_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(v.title)}`,
+                  videoUrl: v.video_url,
+                  duration: v.preview_duration || 0,
+                  source: netName,
+                  sport: feedKey,
+                  published: v.created_at ? new Date(v.created_at) : new Date(0),
+                });
+              }
+            }
+          }
+        } catch (err) {
+          console.warn("Failed to load dynamic VIBE 100 clips:", err);
+        }
+        
+        // Sort dynamic clips by date descending
+        dynamicClips.sort((a, b) => (b.published?.getTime() || 0) - (a.published?.getTime() || 0));
+        allClips.push(...dynamicClips);
+        
+        // 2. Append static fallback clips for VIBE 100
+        for (const item of VIBE_100_CLIPS) {
+          if (!seen.has(item.id)) {
+            seen.add(item.id);
+            allClips.push(item);
+          }
+        }
       } else {
         const NCAA_KEYWORDS = ['college', 'ncaa'];
 
@@ -777,7 +1005,7 @@ export default function WatchLive({ accent = '#D35400', isOlympian = false, isB2
     fetchClips(false);
     const interval = setInterval(() => fetchClips(true), 3600000); // refresh silently every hour
     return () => clearInterval(interval);
-  }, [isOlympian, isB2K, isVibe, isKple]);
+  }, [isOlympian, isB2K, isVibe, isKple, isVibe100]);
 
   useEffect(() => {
     if (activeVideo) document.body.style.overflow = 'hidden';
@@ -914,8 +1142,7 @@ export default function WatchLive({ accent = '#D35400', isOlympian = false, isB2
                   <span style={{ padding: '4px 10px', borderRadius: '6px', background: accent, color: '#000', fontSize: '10px', fontWeight: 900, textTransform: 'uppercase', letterSpacing: '1px' }}>
                     {isOlympian 
                       ? '💪 Fitness' 
-                      : (isB2K ? '🎤 R&B Music' : (isKple ? (featured.sport === 'tct_network' ? '📺 TCT Network' : featured.sport === 'act_local' ? '🎥 ACT Local' : featured.sport === 'the_walk' ? '🚶 The Walk TV' : featured.sport === 'enlace_usa' ? '🌎 Enlace USA' : featured.sport === 'positiv_movies' ? '🎬 Positiv Family' : '👶 Smile of a Child') : (isVibe ? (featured.sport === 'news' ? '📰 News' : featured.sport === 'foxnews' ? '🦊 Fox News' : featured.sport === 'politics' ? '⚖️ Politics' : featured.sport === 'entertainment' ? '🎭 Entertainment' : featured.sport === 'money' ? '💵 Money' : '🏈 Sports') : (featured.sport === 'cfb' ? '🏈 Football' : featured.sport === 'cbb' ? '🏀 Basketball' : '⚾ Baseball'))))
-                    }
+                      : (isB2K ? '🎤 R&B Music' : (isKple ? (featured.sport === 'tct_network' ? '📺 TCT Network' : featured.sport === 'act_local' ? '🎥 ACT Local' : featured.sport === 'the_walk' ? '🚶 The Walk TV' : featured.sport === 'enlace_usa' ? '🌎 Enlace USA' : featured.sport === 'positiv_movies' ? '🎬 Positiv Family' : '👶 Smile of a Child') : (isVibe ? (featured.sport === 'news' ? '📰 News' : featured.sport === 'foxnews' ? '🦊 Fox News' : featured.sport === 'politics' ? '⚖️ Politics' : featured.sport === 'entertainment' ? '🎭 Entertainment' : featured.sport === 'money' ? '💵 Money' : '🏈 Sports') : (isVibe100 ? (featured.sport === 'avo' ? '🎒 AVO Channel' : featured.sport === 'olympia' ? '🏆 Mr. Olympia' : featured.sport === 'b2k' ? '🎤 B2K Channel' : featured.sport === 'kple' ? '📺 Christian Revival' : '💵 FINFIRE Channel') : (featured.sport === 'cfb' ? '🏈 Football' : featured.sport === 'cbb' ? '🏀 Basketball' : '⚾ Baseball')))))}
                   </span>
                   {featured.duration > 0 && (
                     <span style={{ fontSize: '11px', color: '#888', display: 'flex', alignItems: 'center', gap: '4px' }}>
@@ -988,8 +1215,7 @@ export default function WatchLive({ accent = '#D35400', isOlympian = false, isB2
                     <div style={{ fontSize: '9px', fontWeight: 700, color: accent, textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '4px' }}>
                       {isOlympian 
                         ? 'Bodybuilding' 
-                        : (isB2K ? 'Music' : (isKple ? (clip.sport === 'tct_network' ? 'TCT Network' : clip.sport === 'act_local' ? 'ACT Local' : clip.sport === 'the_walk' ? 'The Walk TV' : clip.sport === 'enlace_usa' ? 'Enlace USA' : clip.sport === 'positiv_movies' ? 'Positiv' : 'Smile of a Child') : (isVibe ? (clip.sport === 'news' ? 'News' : clip.sport === 'foxnews' ? 'Fox News' : clip.sport === 'politics' ? 'Politics' : clip.sport === 'entertainment' ? 'Entertainment' : clip.sport === 'money' ? 'Money' : 'Sports') : (clip.sport === 'cfb' ? 'Football' : clip.sport === 'cbb' ? 'Basketball' : 'Baseball'))))
-                      } · {clip.source}
+                        : (isB2K ? 'Music' : (isKple ? (clip.sport === 'tct_network' ? 'TCT Network' : clip.sport === 'act_local' ? 'ACT Local' : clip.sport === 'the_walk' ? 'The Walk TV' : clip.sport === 'enlace_usa' ? 'Enlace USA' : clip.sport === 'positiv_movies' ? 'Positiv' : 'Smile of a Child') : (isVibe ? (clip.sport === 'news' ? 'News' : clip.sport === 'foxnews' ? 'Fox News' : clip.sport === 'politics' ? 'Politics' : clip.sport === 'entertainment' ? 'Entertainment' : clip.sport === 'money' ? 'Money' : 'Sports') : (isVibe100 ? (clip.sport === 'avo' ? 'AVO Channel' : clip.sport === 'olympia' ? 'Mr. Olympia' : clip.sport === 'b2k' ? 'B2K Channel' : clip.sport === 'kple' ? 'Christian Revival' : 'FINFIRE Channel') : (clip.sport === 'cfb' ? 'Football' : clip.sport === 'cbb' ? 'Basketball' : 'Baseball')))))} · {clip.source}
                     </div>
                     <div style={{ fontSize: '13px', fontWeight: 600, lineHeight: 1.4, color: '#ccc', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
                       {clip.headline}
