@@ -886,6 +886,12 @@ export default function WatchLive({ accent = '#D35400', isOlympian = false, isB2
                 onError={(e) => {
                   e.currentTarget.src = getAiThumbnail(featured.headline, { isOlympian, isB2K, isVibe, isKple });
                 }}
+                onLoad={(e) => {
+                  const img = e.currentTarget;
+                  if (!img.src.includes('image.pollinations.ai') && img.naturalWidth < 480) {
+                    img.src = getAiThumbnail(featured.headline, { isOlympian, isB2K, isVibe, isKple });
+                  }
+                }}
                 style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
               />
               <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(0,0,0,0.95) 0%, rgba(0,0,0,0.3) 50%, transparent 70%)' }} />
@@ -954,6 +960,12 @@ export default function WatchLive({ accent = '#D35400', isOlympian = false, isB2
                       alt={clip.headline} 
                       onError={(e) => {
                         e.currentTarget.src = getAiThumbnail(clip.headline, { isOlympian, isB2K, isVibe, isKple });
+                      }}
+                      onLoad={(e) => {
+                        const img = e.currentTarget;
+                        if (!img.src.includes('image.pollinations.ai') && img.naturalWidth < 480) {
+                          img.src = getAiThumbnail(clip.headline, { isOlympian, isB2K, isVibe, isKple });
+                        }
                       }}
                       style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
                     />
