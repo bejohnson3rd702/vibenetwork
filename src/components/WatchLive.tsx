@@ -917,8 +917,7 @@ export default function WatchLive({ accent = '#D35400', isOlympian = false, isB2
                     </span>
                   )}
                 </div>
-                <h3 className="watch-featured-title" style={{ margin: '0 0 6px 0', fontWeight: 900, lineHeight: 1.2, maxWidth: '700px' }}>{featured.headline}</h3>
-                <p className="watch-featured-desc" style={{ margin: 0, fontSize: '13px', color: '#aaa', maxWidth: '600px', lineHeight: 1.5 }}>{featured.description}</p>
+                <h3 className="watch-featured-title" style={{ margin: '0', fontWeight: 900, lineHeight: 1.2, maxWidth: '700px' }}>{featured.headline}</h3>
               </div>
             </div>
           </div>
