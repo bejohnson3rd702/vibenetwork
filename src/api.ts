@@ -31,7 +31,6 @@ export async function getCategoriesWithVideos(tenantId?: string) {
     '33742e2f-430b-4c2d-9cba-42507891ef02', // KPLE TV
     '00000000-0000-0000-0000-000000000001', // Jamie's Girls
     'faa887c6-e49b-4f5a-97e4-bc117572e82f', // FINFIRE
-    'c8c4084d-56b4-4c45-94f6-e4b1821dad75', // Sacred Serpent
     '074ac2e4-8ca2-486c-ab94-8537d0dc1fab', // Life is good LLC
   ];
 
