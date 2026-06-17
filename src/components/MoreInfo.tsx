@@ -20,6 +20,7 @@ const MoreInfo: React.FC = () => {
   const isKple = wlConfig?.id === '33742e2f-430b-4c2d-9cba-42507891ef02' || 
                  wlConfig?.parent_network_id === '33742e2f-430b-4c2d-9cba-42507891ef02' ||
                  wlConfig?.name?.toLowerCase().includes('kple') ||
+                 wlConfig?.name?.toLowerCase().includes('christian revival') ||
                  wlConfig?.domain?.includes('kpletv.org');
   const accentColor = wlConfig?.accent || 'var(--accent-primary)';
 
@@ -46,7 +47,7 @@ const MoreInfo: React.FC = () => {
         >
           {isAvo 
             ? (wlConfig?.parent_network_id ? `About AVO & ${wlConfig.name}` : 'About AVO Network')
-            : (isB2K ? 'About B2K Network' : (isKple ? (wlConfig?.parent_network_id ? `About KPLE & ${wlConfig.name}` : 'About KPLE TV Network') : (isTenant ? `About ${wlConfig.name}` : 'About Vibe Network Architecture')))}
+            : (isB2K ? 'About B2K Network' : (isKple ? (wlConfig?.parent_network_id ? `About CRN & ${wlConfig.name}` : 'About Christian Revival Network') : (isTenant ? `About ${wlConfig.name}` : 'About Vibe Network Architecture')))}
         </motion.h1>
         
         {isAvo ? (
@@ -105,9 +106,9 @@ const MoreInfo: React.FC = () => {
               transition={{ delay: 0.2 }}
               style={{ fontSize: '20px', color: 'var(--text-secondary)', lineHeight: 1.8, marginBottom: '0px' }}
             >
-              KPLE-TV is a broadcast facility located in Killeen/Ft Hood, Texas, broadcasting the Gospel since 1993. 
+              The Christian Revival Network is a broadcast facility located in Killeen/Ft Hood, Texas, broadcasting the Gospel since 1993. 
               We offer 24/7/365 of inspirational programming that appeals to a wide variety of those seeking Christian programming. 
-              Understanding the diversity of the communities it serves, KPLE-TV offers programming in Spanish and English. 
+              Understanding the diversity of the communities it serves, the Christian Revival Network offers programming in Spanish and English. 
               We are available on Roku, iOS, Google Play Store, Fire TV, Apple TV, and online, continuing to drive Christian programming that prepares all nations for a global revival of our Lord Jesus Christ.
             </motion.p>
             
@@ -140,7 +141,7 @@ const MoreInfo: React.FC = () => {
                 <p style={{ color: 'var(--text-secondary)', fontSize: '18px', lineHeight: 1.8, margin: 0 }}>
                   We believe in supporting Bell County's non-profit organizations that meet crucial community needs. 
                   Our station acts as a networking hub, helping these organizations share their vital services utilizing 
-                  KPLE's Local Events Calendar, broadcast announcements, and public program interviews.
+                  Christian Revival Network's Local Events Calendar, broadcast announcements, and public program interviews.
                 </p>
               </motion.div>
             </div>
@@ -185,7 +186,7 @@ const MoreInfo: React.FC = () => {
                     Our Lord & Savior
                   </div>
                   <p style={{ color: 'var(--text-secondary)', fontSize: '15px', lineHeight: 1.6, margin: 0 }}>
-                    Serving as the head and ultimate leader of KPLE's mission, guiding the station in sharing the Gospel, spreading salvation, and preparing all nations for a global revival.
+                    Serving as the head and ultimate leader of Christian Revival Network's mission, guiding the station in sharing the Gospel, spreading salvation, and preparing all nations for a global revival.
                   </p>
                 </motion.div>
 
@@ -223,7 +224,7 @@ const MoreInfo: React.FC = () => {
                     Founder (1927–2022)
                   </div>
                   <p style={{ color: 'var(--text-secondary)', fontSize: '15px', lineHeight: 1.6, margin: 0 }}>
-                    Co-founded KPLE-TV alongside other faithful women after a calling to bring Christian television to Central Texas. With a Master's in early childhood education, she spent nearly 30 years leading the station, famously skydiving at age 81 to raise funds for digital equipment.
+                    Co-founded the Christian Revival Network (formerly KPLE-TV) alongside other faithful women after a calling to bring Christian television to Central Texas. With a Master's in early childhood education, she spent nearly 30 years leading the station, famously skydiving at age 81 to raise funds for digital equipment.
                   </p>
                 </motion.div>
 
@@ -289,7 +290,7 @@ const MoreInfo: React.FC = () => {
                 Killeen Christian Broadcasting Corporation
               </h3>
               <p style={{ margin: '0 0 16px 0', fontSize: '18px', color: 'var(--text-primary)', lineHeight: 1.8 }}>
-                KPLE-TV is operated by the Killeen Christian Broadcasting Corporation, a 501(c)3 not-for-profit media mission. 
+                The Christian Revival Network is operated by the Killeen Christian Broadcasting Corporation, a 501(c)3 not-for-profit media mission. 
                 We are dedicated to broadcasting faith-based and family programming to communities across Central Texas and the world.
               </p>
               <div style={{ display: 'flex', gap: '8px', alignItems: 'center', fontSize: '18px', color: 'var(--text-secondary)' }}>

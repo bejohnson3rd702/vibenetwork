@@ -180,6 +180,7 @@ export default function N2NHome({ wlConfig, categories, activeVideo, setActiveVi
 
   const isKple = config?.id === '33742e2f-430b-4c2d-9cba-42507891ef02' ||
                  config?.name?.toLowerCase().includes('kple') ||
+                 config?.name?.toLowerCase().includes('christian revival') ||
                  config?.domain?.includes('kpletv.org');
 
 
@@ -213,7 +214,7 @@ export default function N2NHome({ wlConfig, categories, activeVideo, setActiveVi
     { school: 'Positiv', short: 'Positiv', subtitle: 'Family Movies & Stories', copy: 'Good stories and positive family-friendly movies that inspire hope, encourage values, and bring families together.', image: '/n2n/kple_hero_positiv.png', link: '/?tenant=3de7bfde-e4e4-4d80-88ca-9f4724bd0c85' },
     { school: 'The Walk TV', short: 'The Walk', subtitle: 'Christian Lifestyle', copy: 'Walk in faith every day with practical Christian living programming, outdoor shows, talk programs, and ministry feeds.', image: '/n2n/kple_hero_thewalk.png', link: '/?tenant=273a7d16-0533-4a98-92cb-62ad90f08ffa' },
     { school: 'Enlace USA', short: 'Enlace', subtitle: 'Inspirando tu Vida', copy: 'Programación en español de alta calidad que transmite esperanza, fe y valores para la comunidad hispana en EE.UU.', image: '/n2n/kple_hero_enlace.png', link: '/?tenant=5699e417-4b64-4a95-90e2-f813223fdd32' },
-    { school: 'Attention Central Texas', short: 'ACT', subtitle: 'Local Community News', copy: "KPLE's flagship local program featuring interviews from local churches, non-profit organizations, and community events.", image: '/n2n/kple_hero_act.png', link: '/?tenant=0421af68-56cb-4735-b7ee-f72454963bdd' },
+    { school: 'Attention Central Texas', short: 'ACT', subtitle: 'Local Community News', copy: "Christian Revival Network's flagship local program featuring interviews from local churches, non-profit organizations, and community events.", image: '/n2n/kple_hero_act.png', link: '/?tenant=0421af68-56cb-4735-b7ee-f72454963bdd' },
   ];
 
   const HERO_SLIDES = isOlympian ? OLYMPIAN_HERO_SLIDES : (isB2K ? B2K_HERO_SLIDES : (isKple ? KPLE_HERO_SLIDES : AVO_HERO_SLIDES));
@@ -402,7 +403,7 @@ export default function N2NHome({ wlConfig, categories, activeVideo, setActiveVi
             }}>
               <img
                 src={isOlympian ? "https://images.unsplash.com/photo-1583454110551-21f2fa2afe61?auto=format&fit=crop&q=80&w=800" : (isB2K ? "https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?auto=format&fit=crop&q=80&w=800" : (isKple ? "https://images.unsplash.com/photo-1593113598332-cd288d649433?auto=format&fit=crop&q=80&w=800" : "https://shopavo.la/cdn/shop/files/bama-desk-hp-1_1500x.jpg?v=1774210820"))}
-                alt={isOlympian ? "Official Gear" : (isB2K ? "Official Tour Merch" : (isKple ? "Support KPLE TV" : "New Drop"))}
+                alt={isOlympian ? "Official Gear" : (isB2K ? "Official Tour Merch" : (isKple ? "Support CRN" : "New Drop"))}
                 style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
               />
               <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to right, transparent 60%, #000 100%)' }} />
@@ -456,7 +457,7 @@ export default function N2NHome({ wlConfig, categories, activeVideo, setActiveVi
                 fontSize: '14px', color: 'rgba(255,255,255,0.5)', lineHeight: 1.7,
                 margin: '0 0 28px 0', maxWidth: '380px',
               }}>
-                {isOlympian ? "Premium bodybuilding and lifestyle apparel engineered for champions. Rep the legacy with official Mr. Olympia hoodies, workout shirts, and accessories." : (isB2K ? "Pre-order exclusive Boys 4 Life tour hoodies, vintage graphic tees, and autographed vinyl. Rep the legendary boy band reunion in style." : (isKple ? "KPLE-TV is a 501(c)3 non-profit media mission. Your donations help us broadcast the Gospel 24/7 to Central Texas and the world. Support our ministry today." : "Premium collegiate apparel for every school in the AVO family. Rep your team with style — new colorways and exclusive designs just dropped."))}
+                {isOlympian ? "Premium bodybuilding and lifestyle apparel engineered for champions. Rep the legacy with official Mr. Olympia hoodies, workout shirts, and accessories." : (isB2K ? "Pre-order exclusive Boys 4 Life tour hoodies, vintage graphic tees, and autographed vinyl. Rep the legendary boy band reunion in style." : (isKple ? "The Christian Revival Network is a 501(c)3 non-profit media mission. Your donations help us broadcast the Gospel 24/7 to Central Texas and the world. Support our ministry today." : "Premium collegiate apparel for every school in the AVO family. Rep your team with style — new colorways and exclusive designs just dropped."))}
               </p>
               <a
                 href={isKple ? "https://www.paypal.com/donate/?hosted_button_id=A7WXAKZEAGBPA" : ('/shop' + (typeof window !== 'undefined' ? window.location.search : ''))}
@@ -494,7 +495,7 @@ export default function N2NHome({ wlConfig, categories, activeVideo, setActiveVi
         {childItems.length > 0 && (
           <div id="child-networks-slider">
             <SliderSection
-              title={isOlympian ? "OLYMPIA PARTNERS" : (isB2K ? "B2K MEMBERS" : (isKple ? "KPLE NETWORKS" : "AVO NETWORKS"))}
+              title={isOlympian ? "OLYMPIA PARTNERS" : (isB2K ? "B2K MEMBERS" : (isKple ? "CHRISTIAN REVIVAL NETWORKS" : "AVO NETWORKS"))}
               items={childItems}
               delay={isOlympian ? 0.1 : 0}
               aspectRatio="16/9"
@@ -889,7 +890,7 @@ export default function N2NHome({ wlConfig, categories, activeVideo, setActiveVi
                       <>B2K Street Team &amp;<br />Millennium Ambassador</>
                     ) : (
                       isKple ? (
-                        <>Become A Partner &amp;<br />Support KPLE TV</>
+                        <>Become A Partner &amp;<br />Support CRN</>
                       ) : (
                         <>Represent AVO<br />On Your Campus</>
                       )
@@ -903,7 +904,7 @@ export default function N2NHome({ wlConfig, categories, activeVideo, setActiveVi
                     ? "Join the official Mr. Olympia Ambassador Program. Share fitness tips, review premium workout apparel, and earn exclusive event credentials, early access, and commissions."
                     : (isB2K 
                       ? "Join the official B2K Millennium Street Team. Promote the Boys 4 Life Tour, share new music updates, and earn exclusive backstage passes, VIP meet-and-greets, and limited edition merch."
-                      : (isKple ? "Become a supporting partner of KPLE TV. Join our media mission to keep the Gospel broadcasting 24/7. Your support enables us to continue revealing the love of Jesus Christ." : "Join the AVO Ambassador Program and bring premium college apparel to your school. Earn exclusive perks, early access to drops, and commissions on every sale.")
+                      : (isKple ? "Become a supporting partner of the Christian Revival Network. Join our media mission to keep the Gospel broadcasting 24/7. Your support enables us to continue revealing the love of Jesus Christ." : "Join the AVO Ambassador Program and bring premium college apparel to your school. Earn exclusive perks, early access to drops, and commissions on every sale.")
                     )}
                 </p>
               </div>

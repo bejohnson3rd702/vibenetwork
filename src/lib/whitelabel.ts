@@ -34,10 +34,17 @@ export function normalizeWlConfig(
   raw: any,
   overrides?: Partial<WlConfig>
 ): WlConfig {
-  const theme = raw?.theme || {};
+  const isKple = raw?.id === '33742e2f-430b-4c2d-9cba-42507891ef02' || raw?.name === 'KPLE TV';
+  const theme = {
+    ...(raw?.theme || {}),
+    ...(isKple ? {
+      heroCopy: 'Christian Revival Network — Come All Revival. Class A Christian Broadcasting.',
+      logoImage: 'https://ui-avatars.com/api/?name=Christian+Revival+Network&background=004e98&color=fff'
+    } : {})
+  };
   return {
     id: raw?.id || 'master',
-    name: raw?.name || DEFAULT_PLATFORM_NAME,
+    name: isKple ? 'Christian Revival Network' : (raw?.name || DEFAULT_PLATFORM_NAME),
     domain: raw?.domain || MASTER_DOMAIN,
     accent: raw?.accent || theme.accent || '#D35400',
     bg: theme.bg || raw?.bg || 'var(--bg-color)',

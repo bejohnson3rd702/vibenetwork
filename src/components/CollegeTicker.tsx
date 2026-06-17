@@ -33,7 +33,7 @@ const B2K_EVENTS = [
 ];
 
 const KPLE_EVENTS = [
-  { sport: '📢 HEALING ROOMS', away: { name: 'The Killeen Healing Rooms' }, home: { name: 'KPLE-TV Building (502 E. Elms Rd., Killeen)' }, status: '2nd Sat (9:30-11:30 AM) & Last Tue (6:45-8:00 PM)' },
+  { sport: '📢 HEALING ROOMS', away: { name: 'The Killeen Healing Rooms' }, home: { name: 'Christian Revival Network Building (502 E. Elms Rd., Killeen)' }, status: '2nd Sat (9:30-11:30 AM) & Last Tue (6:45-8:00 PM)' },
   { sport: '🙏 PRAYER LINE', away: { name: 'Need Prayer? We are here for you' }, home: { name: 'Toll-Free Prayer Request Line' }, status: 'Call (877) 640-5673' },
   { sport: '✝️ MEMBER SUPPORT', away: { name: 'KKCBC 501(c)3 Media Mission' }, home: { name: 'Become a Partner / Monthly Member' }, status: 'members.kple-tv.org' },
 ];
@@ -162,7 +162,7 @@ export default function CollegeTicker({ accent = '#D35400', isOlympian = false, 
         fontSize: '13px', color: '#444', letterSpacing: '2px', textTransform: 'uppercase',
         fontFamily: "'Inter', system-ui, sans-serif",
       }}>
-        ● {isOlympian ? 'OLYMPIA SCHEDULE LOADING' : (isB2K ? 'B2K TOUR DATES LOADING' : (isKple ? 'KPLE LOCAL EVENTS LOADING' : 'NCAA SCOREBOARD LOADING'))}
+        ● {isOlympian ? 'OLYMPIA SCHEDULE LOADING' : (isB2K ? 'B2K TOUR DATES LOADING' : (isKple ? 'CRN LOCAL EVENTS LOADING' : 'NCAA SCOREBOARD LOADING'))}
       </div>
     );
   }
