@@ -195,9 +195,6 @@ export default function Home({ categories, activeVideo, setActiveVideo, user }: 
               </p>
               <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap' }}>
                 <button
-                  onClick={() => {
-                    window.open("/?tenant=3915f1e5-4c79-4b2a-ad41-7029ce8052d7&fromVibe=true#shop", "_blank");
-                  }}
                   style={{
                     display: 'inline-block', padding: '14px 44px', fontSize: '11px', fontWeight: 800,
                     textTransform: 'uppercase', letterSpacing: '2.5px',
@@ -211,9 +208,6 @@ export default function Home({ categories, activeVideo, setActiveVideo, user }: 
                   Buy Now
                 </button>
                 <button
-                  onClick={() => {
-                    window.location.href = "/?tenant=3915f1e5-4c79-4b2a-ad41-7029ce8052d7&fromVibe=true#whats-on-now";
-                  }}
                   style={{
                     display: 'inline-block', padding: '14px 44px', fontSize: '11px', fontWeight: 800,
                     textTransform: 'uppercase', letterSpacing: '2.5px',
