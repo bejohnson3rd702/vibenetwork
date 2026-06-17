@@ -597,7 +597,7 @@ export default function WatchLive({ accent = '#D35400', isOlympian = false, isB2
   const scrollRef = useRef<HTMLDivElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
 
-  const feedsToUse = isOlympian ? OLYMPIAN_FEEDS : (isB2K ? B2K_FEEDS : (isVibe ? VIBE_FEEDS : (isKple ? KPLE_FEEDS : (isVibe100 ? VIBE_100_FEEDS : FEEDS))));
+  const feedsToUse = isOlympian ? OLYMPIAN_FEEDS : (isB2K ? B2K_FEEDS : (isVibe100 ? VIBE_100_FEEDS : (isVibe ? VIBE_FEEDS : (isKple ? KPLE_FEEDS : FEEDS))));
 
   const handleClipClick = (clip: VideoClip) => {
     const isYouTube = clip.videoUrl.includes('youtube.com') || clip.videoUrl.includes('youtu.be');
@@ -807,6 +807,62 @@ export default function WatchLive({ accent = '#D35400', isOlympian = false, isB2
             allClips.push(item);
           }
         }
+      } else if (isVibe100) {
+        const dynamicClips: VideoClip[] = [];
+        
+        // 1. Fetch child network videos from Supabase
+        try {
+          const { data: vidsData, error: vidsErr } = await supabase
+            .from('videos')
+            .select('*, creator:profiles!inner(whitelabel_id, whitelabel:whitelabel_configs!inner(name, parent_network_id))')
+            .eq('creator.whitelabel.parent_network_id', 'e5c100aa-c08f-4260-8540-a0cc8bed4e11')
+            .order('created_at', { ascending: false });
+
+          if (!vidsErr && vidsData) {
+            for (const v of vidsData) {
+              const netName = v.creator?.whitelabel?.name || '';
+              let feedKey = 'avo';
+              if (netName.toLowerCase().includes('olympia')) {
+                feedKey = 'olympia';
+              } else if (netName.toLowerCase().includes('b2k')) {
+                feedKey = 'b2k';
+              } else if (netName.toLowerCase().includes('revival') || netName.toLowerCase().includes('kple')) {
+                feedKey = 'kple';
+              } else if (netName.toLowerCase().includes('finfire')) {
+                feedKey = 'finfire';
+              }
+              
+              if (!seen.has(v.id)) {
+                seen.add(v.id);
+                dynamicClips.push({
+                  id: v.id,
+                  headline: v.title,
+                  description: v.title || '',
+                  thumbnail: v.image_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(v.title)}`,
+                  videoUrl: v.video_url,
+                  duration: v.preview_duration || 0,
+                  source: netName,
+                  sport: feedKey,
+                  published: v.created_at ? new Date(v.created_at) : new Date(0),
+                });
+              }
+            }
+          }
+        } catch (err) {
+          console.warn("Failed to load dynamic VIBE 100 clips:", err);
+        }
+        
+        // Sort dynamic clips by date descending
+        dynamicClips.sort((a, b) => (b.published?.getTime() || 0) - (a.published?.getTime() || 0));
+        allClips.push(...dynamicClips);
+        
+        // 2. Append static fallback clips for VIBE 100
+        for (const item of VIBE_100_CLIPS) {
+          if (!seen.has(item.id)) {
+            seen.add(item.id);
+            allClips.push(item);
+          }
+        }
       } else if (isVibe) {
         const dynamicClips: VideoClip[] = [];
         
@@ -884,62 +940,6 @@ export default function WatchLive({ accent = '#D35400', isOlympian = false, isB2
         
         // Append static fallbacks
         for (const item of STATIC_VIBE_CLIPS) {
-          if (!seen.has(item.id)) {
-            seen.add(item.id);
-            allClips.push(item);
-          }
-        }
-      } else if (isVibe100) {
-        const dynamicClips: VideoClip[] = [];
-        
-        // 1. Fetch child network videos from Supabase
-        try {
-          const { data: vidsData, error: vidsErr } = await supabase
-            .from('videos')
-            .select('*, creator:profiles!inner(whitelabel_id, whitelabel:whitelabel_configs!inner(name, parent_network_id))')
-            .eq('creator.whitelabel.parent_network_id', 'e5c100aa-c08f-4260-8540-a0cc8bed4e11')
-            .order('created_at', { ascending: false });
-
-          if (!vidsErr && vidsData) {
-            for (const v of vidsData) {
-              const netName = v.creator?.whitelabel?.name || '';
-              let feedKey = 'avo';
-              if (netName.toLowerCase().includes('olympia')) {
-                feedKey = 'olympia';
-              } else if (netName.toLowerCase().includes('b2k')) {
-                feedKey = 'b2k';
-              } else if (netName.toLowerCase().includes('revival') || netName.toLowerCase().includes('kple')) {
-                feedKey = 'kple';
-              } else if (netName.toLowerCase().includes('finfire')) {
-                feedKey = 'finfire';
-              }
-              
-              if (!seen.has(v.id)) {
-                seen.add(v.id);
-                dynamicClips.push({
-                  id: v.id,
-                  headline: v.title,
-                  description: v.title || '',
-                  thumbnail: v.image_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(v.title)}`,
-                  videoUrl: v.video_url,
-                  duration: v.preview_duration || 0,
-                  source: netName,
-                  sport: feedKey,
-                  published: v.created_at ? new Date(v.created_at) : new Date(0),
-                });
-              }
-            }
-          }
-        } catch (err) {
-          console.warn("Failed to load dynamic VIBE 100 clips:", err);
-        }
-        
-        // Sort dynamic clips by date descending
-        dynamicClips.sort((a, b) => (b.published?.getTime() || 0) - (a.published?.getTime() || 0));
-        allClips.push(...dynamicClips);
-        
-        // 2. Append static fallback clips for VIBE 100
-        for (const item of VIBE_100_CLIPS) {
           if (!seen.has(item.id)) {
             seen.add(item.id);
             allClips.push(item);
@@ -1109,15 +1109,15 @@ export default function WatchLive({ accent = '#D35400', isOlympian = false, isB2
           >
             <div className="watch-featured-container" style={{ position: 'relative', width: '100%', overflow: 'hidden' }}>
               <img 
-                src={featured.thumbnail || getAiThumbnail(featured.headline, { isOlympian, isB2K, isVibe, isKple })} 
+                src={featured.thumbnail || getAiThumbnail(featured.headline, { isOlympian, isB2K, isVibe, isKple, isVibe100 })} 
                 alt={featured.headline} 
                 onError={(e) => {
-                  e.currentTarget.src = getAiThumbnail(featured.headline, { isOlympian, isB2K, isVibe, isKple });
+                  e.currentTarget.src = getAiThumbnail(featured.headline, { isOlympian, isB2K, isVibe, isKple, isVibe100 });
                 }}
                 onLoad={(e) => {
                   const img = e.currentTarget;
                   if (!img.src.includes('image.pollinations.ai') && img.naturalWidth < 480) {
-                    img.src = getAiThumbnail(featured.headline, { isOlympian, isB2K, isVibe, isKple });
+                    img.src = getAiThumbnail(featured.headline, { isOlympian, isB2K, isVibe, isKple, isVibe100 });
                   }
                 }}
                 style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
@@ -1183,15 +1183,15 @@ export default function WatchLive({ accent = '#D35400', isOlympian = false, isB2
                 >
                   <div style={{ position: 'relative', aspectRatio: '16/9' }}>
                     <img 
-                      src={clip.thumbnail || getAiThumbnail(clip.headline, { isOlympian, isB2K, isVibe, isKple })} 
+                      src={clip.thumbnail || getAiThumbnail(clip.headline, { isOlympian, isB2K, isVibe, isKple, isVibe100 })} 
                       alt={clip.headline} 
                       onError={(e) => {
-                        e.currentTarget.src = getAiThumbnail(clip.headline, { isOlympian, isB2K, isVibe, isKple });
+                        e.currentTarget.src = getAiThumbnail(clip.headline, { isOlympian, isB2K, isVibe, isKple, isVibe100 });
                       }}
                       onLoad={(e) => {
                         const img = e.currentTarget;
                         if (!img.src.includes('image.pollinations.ai') && img.naturalWidth < 480) {
-                          img.src = getAiThumbnail(clip.headline, { isOlympian, isB2K, isVibe, isKple });
+                          img.src = getAiThumbnail(clip.headline, { isOlympian, isB2K, isVibe, isKple, isVibe100 });
                         }
                       }}
                       style={{ width: '100%', height: '100%', objectFit: 'cover' }} 

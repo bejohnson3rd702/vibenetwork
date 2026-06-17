@@ -174,18 +174,18 @@ export default function N2NHome({ wlConfig, categories, activeVideo, setActiveVi
   const isAvo = config?.id === '3915f1e5-4c79-4b2a-ad41-7029ce8052d7' ||
                 config?.name?.toLowerCase().includes('avo');
 
-  const isVibe = config?.name?.toLowerCase().includes('vibe') || 
+  const isVibe100 = config?.id === 'e5c100aa-c08f-4260-8540-a0cc8bed4e11' || 
+                    config?.name?.toLowerCase().includes('vibe 100') ||
+                    config?.domain?.includes('vibe100');
+
+  const isVibe = !isVibe100 && (config?.name?.toLowerCase().includes('vibe') || 
                  config?.domain?.includes('vibenetwork.tv') ||
-                 config?.id === 'adb92e36-5ebc-4dc3-ae96-429f3dc1bb30';
+                 config?.id === 'adb92e36-5ebc-4dc3-ae96-429f3dc1bb30');
 
   const isKple = config?.id === '33742e2f-430b-4c2d-9cba-42507891ef02' ||
                  config?.name?.toLowerCase().includes('kple') ||
                  config?.name?.toLowerCase().includes('christian revival') ||
                  config?.domain?.includes('kpletv.org');
-
-  const isVibe100 = config?.id === 'e5c100aa-c08f-4260-8540-a0cc8bed4e11' || 
-                    config?.name?.toLowerCase().includes('vibe 100') ||
-                    config?.domain?.includes('vibe100');
 
 
   // ─── AVO Hero Slides — real shopavo.la CDN images ───────────────
