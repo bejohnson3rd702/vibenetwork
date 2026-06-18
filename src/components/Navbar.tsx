@@ -178,7 +178,7 @@ const Navbar: React.FC<NavbarProps> = ({ user, onLoginClick, onAdminClick }) => 
         <div className="hide-on-mobile hide-on-tablet" style={{ display: 'flex', alignItems: 'center', gap: '8px', borderLeft: '1px solid rgba(255,255,255,0.2)', paddingLeft: '24px' }}>
           {user ? (
             <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
-              {((wlConfig?.owner_id && user?.id === wlConfig?.owner_id) || (!wlConfig?.owner_id && user?.user_metadata?.role === 'business') || user?.email?.includes('bennie') || user?.email?.includes('admin') || user?.user_metadata?.role === 'admin') && onAdminClick && (
+              {((wlConfig?.owner_id && user?.id === wlConfig?.owner_id) || (!wlConfig?.owner_id && user?.user_metadata?.role === 'business') || user?.email?.toLowerCase().includes('bennie') || user?.email?.toLowerCase().includes('admin') || user?.user_metadata?.role === 'admin') && onAdminClick && (
                 <button 
                   onClick={onAdminClick}
                   style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', background: appAccent || '#D35400', padding: '6px 14px', borderRadius: '8px', border: 'none' }}
@@ -236,6 +236,12 @@ const Navbar: React.FC<NavbarProps> = ({ user, onLoginClick, onAdminClick }) => 
                   <div style={{ padding: '8px 16px', color: 'var(--text-muted)', fontSize: '13px', fontWeight: 'bold', textTransform: 'uppercase' }}>
                      System Options
                   </div>
+                  
+                  {((wlConfig?.owner_id && user?.id === wlConfig?.owner_id) || (!wlConfig?.owner_id && user?.user_metadata?.role === 'business') || user?.email?.toLowerCase().includes('bennie') || user?.email?.toLowerCase().includes('admin') || user?.user_metadata?.role === 'admin') && onAdminClick && (
+                    <div onClick={() => { setIsMenuOpen(false); onAdminClick(); }} style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '12px 16px', color: 'var(--text-primary)', textDecoration: 'none', fontSize: '14px', borderRadius: '8px', cursor: 'pointer', transition: 'background 0.2s' }} onMouseOver={e => e.currentTarget.style.background='rgba(255,255,255,0.1)'} onMouseOut={e => e.currentTarget.style.background='transparent'}>
+                      <Settings size={16} /> Business Dashboard
+                    </div>
+                  )}
                   
                   <Link to={`/profile${window.location.search}${window.location.search ? '&' : '?'}tab=wallet`} onClick={() => setIsMenuOpen(false)} style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '12px 16px', color: 'var(--text-primary)', textDecoration: 'none', fontSize: '14px', borderRadius: '8px', cursor: 'pointer', transition: 'background 0.2s' }} onMouseOver={e => e.currentTarget.style.background='rgba(255,255,255,0.1)'} onMouseOut={e => e.currentTarget.style.background='transparent'}>
                     <Wallet size={16} /> Digital Wallet
