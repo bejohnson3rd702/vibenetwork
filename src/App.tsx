@@ -93,22 +93,17 @@ function App() {
     return () => window.removeEventListener('open_auth', handleOpenAuth);
   }, []);
 
-  // Load NaluAsk Widget Script dynamically in local development only
+  // Load NaluAsk Widget Script dynamically
   useEffect(() => {
-    const isDev = window.location.hostname === 'localhost' || 
-                  window.location.hostname === '127.0.0.1' || 
-                  import.meta.env.DEV;
-    if (isDev) {
-      const script = document.createElement('script');
-      script.src = 'https://naluask.com/widget.js';
-      script.setAttribute('data-client-key', 'vbn_k_2026_vibenetwork');
-      script.defer = true;
-      document.body.appendChild(script);
+    const script = document.createElement('script');
+    script.src = 'https://naluask.com/widget.js';
+    script.setAttribute('data-client-key', 'vbn_k_2026_vibenetwork');
+    script.defer = true;
+    document.body.appendChild(script);
 
-      return () => {
-        document.body.removeChild(script);
-      };
-    }
+    return () => {
+      document.body.removeChild(script);
+    };
   }, []);
 
   useEffect(() => {
