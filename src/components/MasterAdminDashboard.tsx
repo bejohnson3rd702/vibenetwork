@@ -3,13 +3,15 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Globe, Users, Activity, Database, 
   ShieldAlert, Terminal, ChevronRight, BarChart3, 
-  Network, Server, Play, StopCircle, CheckCircle, Wallet, AlertCircle, Mail, ShoppingBag
+  Network, Server, Play, StopCircle, CheckCircle, Wallet, AlertCircle, Mail, ShoppingBag,
+  Brain
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../supabaseClient';
 import { ErrorBoundary } from './ErrorBoundary';
 import { BrandingTab } from './admin/BrandingTab';
 import { AnalyticsTab } from './admin/AnalyticsTab';
+import { EnterpriseAiTab } from './admin/EnterpriseAiTab';
 import { getChildNetworks, deleteChildNetwork, createChildNetwork } from '../lib/n2n';
 
 /** Inline component to list child networks in the Master Admin N2N panel */
@@ -229,6 +231,7 @@ function MasterAdminDashboard() {
             { id: 'users', icon: <Users size={18} />, label: 'Network Directory' },
             { id: 'database', icon: <Database size={18} />, label: 'Data Clusters' },
             { id: 'analytics', icon: <BarChart3 size={18} />, label: 'Global Analytics' },
+            { id: 'enterprise-ai', icon: <Brain size={18} />, label: 'Enterprise AI' },
             { id: 'marketplace', icon: <ShoppingBag size={18} />, label: 'Global Marketplace' },
             { id: 'leads', icon: <Mail size={18} />, label: 'Global Leads' },
             { id: 'accounting', icon: <Wallet size={18} />, label: 'Global Ledger' },
@@ -897,6 +900,12 @@ function MasterAdminDashboard() {
                   @keyframes blinker { 50% { opacity: 0; } }
                   .blink { animation: blinker 1s linear infinite; }
                 `}</style>
+             </motion.div>
+          )}
+
+          {activeTab === 'enterprise-ai' && (
+             <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
+                <EnterpriseAiTab wlConfig={{ name: 'Vibe Master', accent: '#0055ff' }} />
              </motion.div>
           )}
 
