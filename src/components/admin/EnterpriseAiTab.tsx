@@ -28,27 +28,6 @@ export function EnterpriseAiTab({ wlConfig }: { wlConfig: any }) {
         </p>
       </div>
 
-      {/* Dev Mode Notification Banner */}
-      <div style={{ 
-        background: `linear-gradient(135deg, rgba(211, 84, 0, 0.1) 0%, rgba(166, 0, 255, 0.05) 100%)`, 
-        border: `1px solid rgba(211, 84, 0, 0.25)`, 
-        borderRadius: '16px', 
-        padding: '20px 24px', 
-        display: 'flex', 
-        alignItems: 'center', 
-        gap: '16px' 
-      }}>
-        <div style={{ background: 'rgba(255, 255, 255, 0.05)', padding: '10px', borderRadius: '12px', display: 'flex', color: accent }}>
-          <Shield size={24} />
-        </div>
-        <div>
-          <h4 style={{ margin: '0 0 4px 0', fontSize: '16px', fontWeight: 'bold' }}>Development Mode Active</h4>
-          <p style={{ margin: 0, fontSize: '14px', color: 'var(--text-muted)' }}>
-            The NaluAsk chatbot widget is configured to load on local development instances (`localhost`/`127.0.0.1`) only. Changes to the KB will reflect immediately in your dev environment.
-          </p>
-        </div>
-      </div>
-
       {/* Credentials Cards */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '20px' }}>
         <CredentialCard 
