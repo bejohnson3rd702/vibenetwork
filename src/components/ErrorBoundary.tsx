@@ -26,6 +26,9 @@ export class ErrorBoundary extends Component<Props, State> {
 
   public render() {
     if (this.state.hasError) {
+      if (this.props.fallback) {
+        return this.props.fallback;
+      }
       return (
         <div style={{ padding: '40px', background: '#ff000022', border: '2px solid red', borderRadius: '12px', color: 'var(--text-primary)' }}>
           <h2>FATAL UI CRASH</h2>

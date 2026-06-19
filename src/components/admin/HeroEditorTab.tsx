@@ -4,6 +4,8 @@ import { useToast } from '../../context/ToastContext';
 import { processAndEnhanceImage } from '../../lib/imageProcessor';
 import { AiTextArea, AiInput } from './AiComponents';
 import { DictationButton } from '../DictationButton';
+import { moderateVideoContent } from '../../lib/videoModerator';
+import { VideoModerationScanner } from './VideoModerationScanner';
 
 export const HeroEditorTab = ({ wlConfig }: { wlConfig: any }) => {
   const toast = useToast();
@@ -16,6 +18,14 @@ export const HeroEditorTab = ({ wlConfig }: { wlConfig: any }) => {
   const [uploadingHeroVideo, setUploadingHeroVideo] = useState(false);
   const [uploadingHeroImage, setUploadingHeroImage] = useState(false);
   const [uploadStatus, setUploadStatus] = useState<string | null>(null);
+
+  // AI Video Shield States
+  const [showScanner, setShowScanner] = useState(false);
+  const [scannerLogs, setScannerLogs] = useState<string[]>([]);
+  const [scannerFrames, setScannerFrames] = useState<string[]>([]);
+  const [scannerStatus, setScannerStatus] = useState<'scanning' | 'passed' | 'failed'>('scanning');
+  const [scannerReason, setScannerReason] = useState('');
+  const [abortUpload, setAbortUpload] = useState<(() => void) | null>(null);
 
   // Drag and drop states
   const [dragActiveHeroImage, setDragActiveHeroImage] = useState(false);
@@ -30,7 +40,61 @@ export const HeroEditorTab = ({ wlConfig }: { wlConfig: any }) => {
         file = eventOrFile.target.files[0];
       }
       if (!file) return;
+
+      // 1. Verify file size limit (50MB)
+      const MAX_VIDEO_SIZE = 50 * 1024 * 1024; // 50MB
+      if (file.size > MAX_VIDEO_SIZE) {
+        toast.error('Video file size exceeds the 50MB limit. Please upload a compressed clip.');
+        return;
+      }
+
+      // 2. Verify mimetype starts with video/
+      if (!file.type.startsWith('video/')) {
+        toast.error('Invalid file format. Please upload a valid video file.');
+        return;
+      }
+
+      // 3. Start Moderation Scan
       setUploadingHeroVideo(true);
+      setScannerLogs([]);
+      setScannerFrames([]);
+      setScannerStatus('scanning');
+      setScannerReason('');
+      setShowScanner(true);
+
+      let isCancelled = false;
+      setAbortUpload(() => () => {
+        isCancelled = true;
+        setShowScanner(false);
+        setUploadingHeroVideo(false);
+        toast.info('Video upload cancelled by user.');
+      });
+
+      const result = await moderateVideoContent(
+        file,
+        (log) => {
+          if (isCancelled) return;
+          setScannerLogs(prev => [...prev, log]);
+        },
+        (frame) => {
+          if (isCancelled) return;
+          setScannerFrames(prev => [...prev, frame]);
+        }
+      );
+
+      if (isCancelled) return;
+
+      if (!result.safe) {
+        setScannerStatus('failed');
+        setScannerReason(result.reason || 'Adult content keywords matched.');
+        toast.error('Vibes Shield: Video contains unsafe/restricted content and was blocked!');
+        return;
+      }
+
+      setScannerStatus('passed');
+      setScannerLogs(prev => [...prev, '[Vibes Shield] ✔ Visual safety confirmed. Uploading to storage...']);
+
+      // 4. Proceed with Storage upload
       const fileExt = file.name.split('.').pop();
       const fileName = `${Date.now()}_${Math.random()}.${fileExt}`;
       const filePath = `hero/${fileName}`;
@@ -41,9 +105,12 @@ export const HeroEditorTab = ({ wlConfig }: { wlConfig: any }) => {
       const { data } = supabase.storage.from('videos').getPublicUrl(filePath);
       if (data?.publicUrl) {
         setHeroVideoUrl(data.publicUrl);
+        setScannerLogs(prev => [...prev, `[Vibes Shield] ✔ Success! Public URL: ${data.publicUrl}`]);
         toast.success('Video uploaded successfully!');
       }
     } catch (err: any) {
+      setScannerStatus('failed');
+      setScannerReason(err.message || 'Verification or upload failed.');
       toast.error('Upload failed: ' + err.message);
     } finally {
       setUploadingHeroVideo(false);
@@ -232,6 +299,16 @@ export const HeroEditorTab = ({ wlConfig }: { wlConfig: any }) => {
       <button onClick={executeSave} disabled={uploadStatus === 'uploading'} style={{ padding: '18px 40px', background: wlConfig.accent, color: 'var(--text-primary)', fontWeight: 'bold', border: 'none', borderRadius: '12px', fontSize: '16px', cursor: 'pointer', maxWidth: '300px', boxShadow: `0 8px 30px ${wlConfig.accent}44` }}>
         {uploadStatus === 'uploading' ? 'Saving...' : 'Save & Deploy to Live Site'}
       </button>
+
+      <VideoModerationScanner
+        isOpen={showScanner}
+        logs={scannerLogs}
+        frames={scannerFrames}
+        status={scannerStatus}
+        reason={scannerReason}
+        onClose={abortUpload || (() => setShowScanner(false))}
+        accentColor={wlConfig?.accent || '#ff4d85'}
+      />
     </div>
   );
 };

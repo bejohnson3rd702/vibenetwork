@@ -6,8 +6,11 @@ import { DictationButton } from './DictationButton';
 import { EmojiPickerButton } from './EmojiPickerButton';
 import EndUserAuthModal from './EndUserAuthModal';
 import { ProfileLive } from './ProfileLive';
+import { ErrorBoundary } from './ErrorBoundary';
 const LiveChat = React.lazy(() => import('./LiveChat'));
 const ShopifyStore = React.lazy(() => import('./ShopifyStore'));
+const AiReportTab = React.lazy(() => import('./admin/AiReportTab').then(m => ({ default: m.AiReportTab })));
+import { SecuritySettingsForm } from './admin/SecuritySettingsForm';
 import Community from '../pages/Community';
 import { useNavigate, useParams, useLocation } from 'react-router-dom';
 import { useStreaming } from '../hooks/useStreaming';
@@ -61,27 +64,7 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
   const [walletBalance, setWalletBalance] = useState(() => (typeof window !== 'undefined' ? Number(localStorage.getItem('vibe_host_wallet') || 0.00) : 0.00));
   const [paySubsWithWallet, setPaySubsWithWallet] = useState(true);
 
-  const [newPassword, setNewPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
-  const [updatingPassword, setUpdatingPassword] = useState(false);
 
-  const handlePasswordChange = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (newPassword !== confirmPassword) {
-      toast.error('Passwords do not match.');
-      return;
-    }
-    setUpdatingPassword(true);
-    const { error } = await supabase!.auth.updateUser({ password: newPassword });
-    setUpdatingPassword(false);
-    if (error) {
-      toast.error(error.message);
-    } else {
-      toast.success('Password successfully updated!');
-      setNewPassword('');
-      setConfirmPassword('');
-    }
-  };
 
   const [products, setProducts] = useState<any[]>([]);
   const [selectedDate, setSelectedDate] = useState<number | null>(null);
@@ -1732,7 +1715,7 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
                 { id: 'series', label: 'Episodes' },
                 { id: 'courses', label: 'Sessions' },
                 { id: 'flipbook', label: 'Flip Book' }
-              ].concat(isNetworkLevel ? [{ id: 'members', label: 'Network Profiles' }, { id: 'community', label: 'Community' }] : []).concat((user && viewMode === 'edit') ? [{ id: 'my_bookings', label: 'My Bookings' }] : []).concat((myNetworks.length > 0 && !isNetworkLevel) ? [{ id: 'networks', label: 'My Networks' }] : []).map(tab => (
+              ].concat(isNetworkLevel ? [{ id: 'members', label: 'Network Profiles' }, { id: 'community', label: 'Community' }] : []).concat((user && viewMode === 'edit') ? [{ id: 'my_bookings', label: 'My Bookings' }, { id: 'ai_report', label: '📊 AI Creator Report' }] : []).concat((myNetworks.length > 0 && !isNetworkLevel) ? [{ id: 'networks', label: 'My Networks' }] : []).map(tab => (
                 <button 
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id as any)}
@@ -2106,9 +2089,11 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
         <div id="profile-storefront" style={{ display: 'flex', flexDirection: 'column', gap: '30px' }}>
           {/* Shopify Products (fetched from child network's Shopify store) */}
           {wlConfig?.theme?.shopifyUrl && (
-            <React.Suspense fallback={<div style={{ textAlign: 'center', padding: '40px', color: 'var(--text-muted)' }}>Loading store...</div>}>
-              <ShopifyStore />
-            </React.Suspense>
+            <ErrorBoundary fallback={<div style={{ padding: '40px', color: '#ff4d4d', textAlign: 'center' }}>⚠️ Storefront failed to load.</div>}>
+              <React.Suspense fallback={<div style={{ textAlign: 'center', padding: '40px', color: 'var(--text-muted)' }}>Loading store...</div>}>
+                <ShopifyStore />
+              </React.Suspense>
+            </ErrorBoundary>
           )}
           {/* Storefront Header */}
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '16px', marginBottom: '10px' }}>
@@ -3315,53 +3300,16 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
         {activeTab === 'security' && isOwnProfile && viewMode === 'edit' && (
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
             <h2 style={{ fontSize: '24px', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '16px', margin: 0 }}>Security Settings</h2>
-            
-            <div style={{ background: 'rgba(15, 15, 15, 0.4)', backdropFilter: 'blur(24px)', padding: '40px', borderRadius: '32px', border: '1px solid rgba(255,255,255,0.08)', boxShadow: '0 20px 40px rgba(0,0,0,0.4)', maxWidth: '500px', margin: '0 auto', width: '100%', boxSizing: 'border-box' }}>
-               <h3 style={{ margin: '0 0 10px 0', fontSize: '18px', color: '#ff4d85', display: 'flex', alignItems: 'center', gap: '8px' }}><Lock size={20} /> Update Password</h3>
-               <p style={{ color: 'var(--text-muted)', fontSize: '14px', marginBottom: '24px', lineHeight: '1.5' }}>Ensure your account stays secure. Enter a new strong password below to update it.</p>
-               
-               <form onSubmit={handlePasswordChange} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-                  <div style={{ position: 'relative' }}>
-                    <Lock size={18} style={{ position: 'absolute', left: '16px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
-                    <input 
-                      type="password" placeholder="New Password" required minLength={6}
-                      value={newPassword} onChange={e => setNewPassword(e.target.value)}
-                      style={{
-                        width: '100%', padding: '16px 16px 16px 44px', boxSizing: 'border-box',
-                        background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.1)',
-                        borderRadius: '12px', color: 'var(--text-primary)', fontSize: '16px', outline: 'none'
-                      }}
-                    />
-                  </div>
-
-                  <div style={{ position: 'relative' }}>
-                    <Lock size={18} style={{ position: 'absolute', left: '16px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
-                    <input 
-                      type="password" placeholder="Confirm New Password" required minLength={6}
-                      value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)}
-                      style={{
-                        width: '100%', padding: '16px 16px 16px 44px', boxSizing: 'border-box',
-                        background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.1)',
-                        borderRadius: '12px', color: 'var(--text-primary)', fontSize: '16px', outline: 'none'
-                      }}
-                    />
-                  </div>
-
-                  <button 
-                    type="submit" 
-                    disabled={updatingPassword}
-                    style={{
-                      width: '100%', padding: '18px', marginTop: '10px',
-                      background: wlConfig?.theme?.accent || wlConfig?.accent || '#ff4d85', color: '#fff', fontWeight: 'bold', fontSize: '16px',
-                      border: 'none', borderRadius: '12px', cursor: updatingPassword ? 'not-allowed' : 'pointer',
-                      opacity: updatingPassword ? 0.7 : 1, transition: 'all 0.2s'
-                    }}
-                  >
-                    {updatingPassword ? 'Updating...' : 'Update Password'}
-                  </button>
-               </form>
-            </div>
+            <SecuritySettingsForm accentColor={wlConfig?.theme?.accent || wlConfig?.accent || '#ff4d85'} />
           </motion.div>
+        )}
+
+        {activeTab === 'ai_report' && isOwnProfile && viewMode === 'edit' && (
+          <ErrorBoundary fallback={<div style={{ padding: '40px', color: '#ff4d4d', textAlign: 'center' }}>⚠️ Vibes Creator Report failed to load.</div>}>
+            <React.Suspense fallback={<div style={{ padding: '40px', textAlign: 'center', color: '#888' }}>Analyzing feed & fan metrics...</div>}>
+              <AiReportTab wlConfig={wlConfig} profile={profile} accentColor={wlConfig?.theme?.accent || wlConfig?.accent || '#ff4d85'} />
+            </React.Suspense>
+          </ErrorBoundary>
         )}
 
       </div>

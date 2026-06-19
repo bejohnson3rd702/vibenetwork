@@ -6,6 +6,12 @@ export async function processAndEnhanceImage(
   file: File,
   aspectMode: 'avatar' | 'logo' | 'favicon' | 'homepage' | 'hero' | 'product' | 'post'
 ): Promise<File> {
+  // Enforce maximum file size of 15MB
+  const MAX_SIZE = 15 * 1024 * 1024; // 15MB
+  if (file.size > MAX_SIZE) {
+    throw new Error('Image file exceeds the maximum size limit of 15MB. Please upload a smaller image.');
+  }
+
   // If it is not an image, skip processing
   if (!file.type.startsWith('image/')) {
     return file;
@@ -96,7 +102,9 @@ export async function processAndEnhanceImage(
 
           canvas.toBlob((blob) => {
             if (blob) {
-              const enhancedFile = new File([blob], file.name, {
+              const baseName = file.name.substring(0, file.name.lastIndexOf('.')) || file.name;
+              const newName = `${baseName}.jpg`;
+              const enhancedFile = new File([blob], newName, {
                 type: 'image/jpeg',
                 lastModified: Date.now()
               });

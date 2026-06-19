@@ -188,6 +188,8 @@ const AuthModal: React.FC<AuthModalProps> = ({ onClose, onSuccess, defaultIsLogi
         exit={{ opacity: 0, scale: 0.9, y: 30 }}
         style={{
           width: '100%', maxWidth: '440px',
+          maxHeight: '90vh',
+          overflowY: 'auto',
           background: 'linear-gradient(180deg, rgba(30,30,30,0.95) 0%, rgba(15,15,15,0.95) 100%)',
           border: '1px solid rgba(255,255,255,0.1)',
           borderRadius: '24px',

@@ -4,6 +4,7 @@ import { Lock, Settings, Camera, Video, Sparkles, Globe, X, Mic, MicOff, VideoOf
 import { useToast } from '../context/ToastContext';
 import Peer from 'peerjs';
 import { supabase } from '../supabaseClient';
+import { ErrorBoundary } from './ErrorBoundary';
 
 // We import LiveChat dynamically
 const LiveChat = React.lazy(() => import('./LiveChat').catch(() => ({ default: () => <div/> })));
@@ -1004,9 +1005,11 @@ export const ProfileLive: React.FC<ProfileLiveProps> = ({
                         </div>
                       </div>
                     ) : (
-                      <React.Suspense fallback={<div style={{ padding: '20px', color: 'var(--text-secondary)' }}>Loading chat...</div>}>
-                        <LiveChat streamId={profile?.username || 'profile'} />
-                      </React.Suspense>
+                      <ErrorBoundary fallback={<div style={{ padding: '20px', color: '#ff4d4d' }}>⚠️ Live chat crashed.</div>}>
+                        <React.Suspense fallback={<div style={{ padding: '20px', color: 'var(--text-secondary)' }}>Loading chat...</div>}>
+                          <LiveChat streamId={profile?.username || 'profile'} />
+                        </React.Suspense>
+                      </ErrorBoundary>
                     )}
                   </div>
               </div>
