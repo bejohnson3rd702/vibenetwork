@@ -15,14 +15,18 @@ export async function getCategoriesWithVideos(tenantId?: string) {
 
   // Fetch all core domain objects concurrently to maximize network efficiency
   const [
-    { data: whitelabels },
+    whitelabelsResult,
     { data: profiles },
     { data: videos }
   ] = await Promise.all([
-    supabase.from('whitelabel_configs').select('id, name, domain, logo, theme, parent_network_id').order('created_at', { ascending: false }).limit(100),
+    tenantId 
+      ? Promise.resolve({ data: [] })
+      : supabase.from('whitelabel_configs').select('id, name, domain, logo, theme, parent_network_id').order('created_at', { ascending: false }).limit(100),
     profilesQuery,
     supabase.from('videos').select('id, title, image_url, tags, video_url').order('created_at', { ascending: false }).limit(20)
   ]);
+
+  const whitelabels = whitelabelsResult.data || [];
 
   const APPROVED_N2N_PARENT_IDS = [
     'e5c100aa-c08f-4260-8540-a0cc8bed4e11', // VIBE 100

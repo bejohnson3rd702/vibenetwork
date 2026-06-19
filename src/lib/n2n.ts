@@ -22,8 +22,8 @@ export async function getChildNetworks(parentId: string): Promise<WlConfig[]> {
     .order('created_at', { ascending: true });
   data = initialData;
 
-  // If the column doesn't exist or no results, fallback to theme JSONB
-  if ((error || !data || data.length === 0)) {
+  // If the column doesn't exist (indicated by database error), fallback to theme JSONB
+  if (error) {
     const { data: allConfigs } = await supabase
       .from('whitelabel_configs')
       .select('*')

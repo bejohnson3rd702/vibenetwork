@@ -47,6 +47,8 @@ export default function WhiteLabelHome({ wlConfig, categories, user, activeVideo
            transition={{ duration: 1.5, ease: 'easeOut' }}
            src={wlConfig.heroImage || ASSETS.heroMain}
            alt="Atmospheric Hero Background" 
+           loading="eager"
+           fetchPriority="high"
            style={{ width: '100%', height: '100%', objectFit: 'cover', filter: 'brightness(0.3) contrast(1.2) saturate(1.3)' }} 
          />
          {/* Soft fade into network profile background */}

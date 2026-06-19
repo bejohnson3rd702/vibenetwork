@@ -68,6 +68,8 @@ const Hero: React.FC = () => {
           <img
             src={VIBE_HERO_SLIDES[heroSlide % VIBE_HERO_SLIDES.length]?.image}
             alt={VIBE_HERO_SLIDES[heroSlide % VIBE_HERO_SLIDES.length]?.title}
+            loading="eager"
+            fetchPriority="high"
             style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center center' }}
           />
         </motion.div>

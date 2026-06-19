@@ -104,33 +104,51 @@ function App() {
   useEffect(() => {
     if (!wlConfig) return;
 
-    // 1. Remove existing NaluAsk elements to prevent duplicates on color/accent changes
-    const existingBubble = document.getElementById('nalu-bubble');
-    if (existingBubble) existingBubble.remove();
-    
-    const existingContainer = document.getElementById('nalu-container');
-    if (existingContainer) existingContainer.remove();
+    let timeoutId: any;
 
-    const existingScripts = document.querySelectorAll('script[src*="naluask.com/widget.js"]');
-    existingScripts.forEach(s => s.remove());
+    const loadNalu = () => {
+      // 1. Remove existing NaluAsk elements to prevent duplicates on color/accent changes
+      const existingBubble = document.getElementById('nalu-bubble');
+      if (existingBubble) existingBubble.remove();
+      
+      const existingContainer = document.getElementById('nalu-container');
+      if (existingContainer) existingContainer.remove();
 
-    // 2. Append new script with dynamic color
-    const script = document.createElement('script');
-    const accentColor = wlConfig.accent || '#D35400';
+      const existingScripts = document.querySelectorAll('script[src*="naluask.com/widget.js"]');
+      existingScripts.forEach(s => s.remove());
+
+      // 2. Append new script with dynamic color
+      const script = document.createElement('script');
+      const accentColor = wlConfig.accent || '#D35400';
+      
+      // Use a color-specific query parameter to force browser to re-execute the widget script
+      script.src = `https://naluask.com/widget.js?color=${encodeURIComponent(accentColor)}`;
+      script.setAttribute('data-client-key', 'vbn_k_2026_vibenetwork');
+      script.setAttribute('data-color', accentColor);
+      script.defer = true;
+      document.body.appendChild(script);
+    };
+
+    // Load after 3 seconds on mobile to prioritize main thread rendering, 1.5 seconds on desktop
+    const delay = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ? 3000 : 1500;
     
-    // Use a color-specific query parameter to force browser to re-execute the widget script
-    script.src = `https://naluask.com/widget.js?color=${encodeURIComponent(accentColor)}`;
-    script.setAttribute('data-client-key', 'vbn_k_2026_vibenetwork');
-    script.setAttribute('data-color', accentColor);
-    script.defer = true;
-    document.body.appendChild(script);
+    timeoutId = setTimeout(() => {
+      if (typeof window !== 'undefined' && 'requestIdleCallback' in window) {
+        (window as any).requestIdleCallback(() => loadNalu(), { timeout: 2000 });
+      } else {
+        loadNalu();
+      }
+    }, delay);
 
     return () => {
+      clearTimeout(timeoutId);
       const bubble = document.getElementById('nalu-bubble');
       if (bubble) bubble.remove();
       const container = document.getElementById('nalu-container');
       if (container) container.remove();
-      script.remove();
+      // Remove any scripts created during this lifecycle
+      const scripts = document.querySelectorAll('script[src*="naluask.com/widget.js"]');
+      scripts.forEach(s => s.remove());
     };
   }, [wlConfig?.accent, wlConfig?.id]);
 
@@ -283,54 +301,54 @@ function App() {
         } catch (e) {
           console.warn('Could not parse local networks', e);
         }
+
+        const isMaster = hostname === 'localhost' || hostname === '127.0.0.1' || hostname === MASTER_DOMAIN || hostname === 'vibenetwork.com' || hostname === 'vibenetwork.tv' || hostname.includes('vercel.app');
         
+        let configPromise;
+        let categoriesPromise;
+
         if (forceTenant) {
-          // Always try to fetch from DB first as the absolute source of truth
-          const { data: dbTenantData } = await supabase!.from('whitelabel_configs').select('*').eq('id', forceTenant).limit(1);
-          
-          if (dbTenantData && dbTenantData.length > 0) {
-             isTenant = true;
-             setIsTenantMode(true);
-             loadedTenantId = forceTenant;
-             const dbConf = dbTenantData[0];
-             loadedConfig = normalizeWlConfig(dbConf, { name: dbConf.name || 'Vibe B2B Enterprise' });
-          } else {
-             // Fallback to local storage for completely un-published preview networks
-             const localTenant = localNetworks.find((n: any) => n.id === forceTenant);
-             if (localTenant) {
-                isTenant = true;
-                setIsTenantMode(true);
-                loadedTenantId = forceTenant;
-                loadedConfig = normalizeWlConfig(localTenant, { name: localTenant.name || 'Vibe B2B Enterprise' });
-             }
-          }
-        } else if (!(hostname === 'localhost' || hostname === '127.0.0.1' || hostname === MASTER_DOMAIN || hostname === 'vibenetwork.com' || hostname === 'vibenetwork.tv' || hostname.includes('vercel.app'))) {
-          query = query.eq('domain', hostname).limit(1);
           isTenant = true;
           setIsTenantMode(true);
+          loadedTenantId = forceTenant;
+          configPromise = supabase!.from('whitelabel_configs').select('*').eq('id', forceTenant).limit(1);
+          categoriesPromise = getCategoriesWithVideos(forceTenant);
+        } else if (!isMaster) {
+          isTenant = true;
+          setIsTenantMode(true);
+          configPromise = supabase!.from('whitelabel_configs').select('*').eq('domain', hostname).limit(1);
         } else {
-          // Master Platform Mode (localhost or MASTER_DOMAIN)
           isTenant = false;
           setIsTenantMode(false);
-          const localMaster = localNetworks.find((n: any) => n.domain === MASTER_DOMAIN || n.id === 'master');
-          
-          const { data: masterData } = await supabase!.from('whitelabel_configs').select('*').eq('domain', MASTER_DOMAIN).limit(1);
-          if (masterData && masterData.length > 0) {
-             const mConf = masterData[0];
-             // Merge local Master overrides if they exist (for local dev without DB write access)
-             loadedConfig = normalizeWlConfig({ ...mConf, ...localMaster }, { accent: localMaster?.accent || localMaster?.theme?.accent || mConf.accent || mConf.theme?.accent || '#D35400', enableWatchLive: true });
-          } else if (localMaster) {
-             // Fallback if DB query completely fails but local exists
-             loadedConfig = normalizeWlConfig(localMaster, { accent: localMaster.accent || localMaster.theme?.accent || '#D35400', enableWatchLive: true });
-          }
+          configPromise = supabase!.from('whitelabel_configs').select('*').eq('domain', MASTER_DOMAIN).limit(1);
+          categoriesPromise = getCategoriesWithVideos(undefined);
         }
 
-        if (isTenant && !loadedTenantId) {
-          const { data } = await query;
-          if (data && data.length > 0) {
-            const dbConf = data[0];
-            loadedTenantId = dbConf.id;
-            loadedConfig = normalizeWlConfig(dbConf, { name: dbConf.name || 'Vibe B2B Enterprise' });
+        const [configRes, categoriesRes] = await Promise.all([
+          configPromise,
+          categoriesPromise || Promise.resolve(null)
+        ]);
+
+        const dbTenantData = configRes?.data;
+        if (dbTenantData && dbTenantData.length > 0) {
+          const dbConf = dbTenantData[0];
+          loadedTenantId = dbConf.id;
+          loadedConfig = normalizeWlConfig(dbConf, { name: dbConf.name || 'Vibe B2B Enterprise' });
+        } else {
+          // Fallback to local storage for completely un-published preview networks or offline domain matches
+          const localTenant = localNetworks.find((n: any) => n.id === forceTenant || n.domain === hostname);
+          if (localTenant) {
+            isTenant = true;
+            setIsTenantMode(true);
+            loadedTenantId = localTenant.id;
+            loadedConfig = normalizeWlConfig(localTenant, { name: localTenant.name || 'Vibe B2B Enterprise' });
+          }
+
+          if (!isTenant && !loadedConfig) {
+            const localMaster = localNetworks.find((n: any) => n.domain === MASTER_DOMAIN || n.id === 'master');
+            if (localMaster) {
+              loadedConfig = normalizeWlConfig(localMaster, { accent: localMaster.accent || localMaster.theme?.accent || '#D35400', enableWatchLive: true });
+            }
           }
         }
 
@@ -340,7 +358,10 @@ function App() {
 
         setWlConfig(loadedConfig);
 
-        const freshCategories = await getCategoriesWithVideos(loadedTenantId);
+        let freshCategories = categoriesRes;
+        if (!freshCategories) {
+          freshCategories = await getCategoriesWithVideos(loadedTenantId);
+        }
         setCategories(freshCategories || []);
       } catch (err) {
         console.error("Critical error during Network OS initialization", err);
