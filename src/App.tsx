@@ -25,13 +25,13 @@ const Footer = lazy(() => import('./components/Footer'));
 const FoodTruck = lazy(() => import('./pages/FoodTruck'));
 const ResetPassword = lazy(() => import('./pages/ResetPassword'));
 const Community = lazy(() => import('./pages/Community'));
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { Routes, Route, useLocation } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import { WhiteLabelContext } from './context/WhiteLabelContext';
 import { supabase, storageKey } from './supabaseClient';
 import { MASTER_DOMAIN, DEFAULT_PLATFORM_NAME } from './constants';
 const Home = lazy(() => import('./pages/Home'));
-import { normalizeWlConfig } from './lib/whitelabel';
+import { normalizeWlConfig, isOlympianConfig, isKpleConfig } from './lib/whitelabel';
 const WhiteLabelHome = lazy(() => import('./pages/WhiteLabelHome'));
 const N2NHome = lazy(() => import('./pages/N2NHome'));
 const AvoMarketplace = lazy(() => import('./components/AvoMarketplace'));
@@ -40,9 +40,16 @@ const BibleDrawer = lazy(() => import('./components/BibleDrawer'));
 import { motion, AnimatePresence } from 'framer-motion';
 import { X } from 'lucide-react';
 
+
+
 function App() {
+
+  const location = useLocation();
+  const tenantParam = new URLSearchParams(location.search).get('tenant');
+
   const [activeVideo, setActiveVideo] = useState<any>(null);
   const [categories, setCategories] = useState<any[]>([]);
+
   
   const [user, setUser] = useState<any>(null);
   const [showAuthModal, setShowAuthModal] = useState(false);
@@ -93,18 +100,39 @@ function App() {
     return () => window.removeEventListener('open_auth', handleOpenAuth);
   }, []);
 
-  // Load NaluAsk Widget Script dynamically
+  // Load NaluAsk Widget Script dynamically with dynamic branding accent
   useEffect(() => {
+    if (!wlConfig) return;
+
+    // 1. Remove existing NaluAsk elements to prevent duplicates on color/accent changes
+    const existingBubble = document.getElementById('nalu-bubble');
+    if (existingBubble) existingBubble.remove();
+    
+    const existingContainer = document.getElementById('nalu-container');
+    if (existingContainer) existingContainer.remove();
+
+    const existingScripts = document.querySelectorAll('script[src*="naluask.com/widget.js"]');
+    existingScripts.forEach(s => s.remove());
+
+    // 2. Append new script with dynamic color
     const script = document.createElement('script');
-    script.src = 'https://naluask.com/widget.js';
+    const accentColor = wlConfig.accent || '#D35400';
+    
+    // Use a color-specific query parameter to force browser to re-execute the widget script
+    script.src = `https://naluask.com/widget.js?color=${encodeURIComponent(accentColor)}`;
     script.setAttribute('data-client-key', 'vbn_k_2026_vibenetwork');
+    script.setAttribute('data-color', accentColor);
     script.defer = true;
     document.body.appendChild(script);
 
     return () => {
-      document.body.removeChild(script);
+      const bubble = document.getElementById('nalu-bubble');
+      if (bubble) bubble.remove();
+      const container = document.getElementById('nalu-container');
+      if (container) container.remove();
+      script.remove();
     };
-  }, []);
+  }, [wlConfig?.accent, wlConfig?.id]);
 
   useEffect(() => {
     // Check Active Session
@@ -239,79 +267,81 @@ function App() {
     async function initPlatform() {
       try {
         const hostname = window.location.hostname.replace(/^www\./, '');
-      const urlParams = new URLSearchParams(window.location.search);
-      const forceTenant = urlParams.get('tenant');
+        const urlParams = new URLSearchParams(window.location.search);
+        const forceTenant = urlParams.get('tenant');
 
-      let query = supabase!.from('whitelabel_configs').select('*');
-      let isTenant = false;
-      let loadedTenantId = undefined;
-      let localNetworks = [];
-      try {
-        const stored = localStorage.getItem('vibe_local_networks');
-        if (stored && stored !== 'undefined') {
-          localNetworks = JSON.parse(stored);
+        let query = supabase!.from('whitelabel_configs').select('*');
+        let isTenant = false;
+        let loadedTenantId = undefined;
+        let loadedConfig = null;
+        let localNetworks = [];
+        try {
+          const stored = localStorage.getItem('vibe_local_networks');
+          if (stored && stored !== 'undefined') {
+            localNetworks = JSON.parse(stored);
+          }
+        } catch (e) {
+          console.warn('Could not parse local networks', e);
         }
-      } catch (e) {
-        console.warn('Could not parse local networks', e);
-      }
-      
-      if (forceTenant) {
         
-        // Always try to fetch from DB first as the absolute source of truth
-        const { data: dbTenantData } = await supabase!.from('whitelabel_configs').select('*').eq('id', forceTenant).limit(1);
-        
-        if (dbTenantData && dbTenantData.length > 0) {
-           isTenant = true;
-           setIsTenantMode(true);
-           loadedTenantId = forceTenant;
-           const dbConf = dbTenantData[0];
-           setWlConfig(normalizeWlConfig(dbConf, { name: dbConf.name || 'Vibe B2B Enterprise' }));
+        if (forceTenant) {
+          // Always try to fetch from DB first as the absolute source of truth
+          const { data: dbTenantData } = await supabase!.from('whitelabel_configs').select('*').eq('id', forceTenant).limit(1);
+          
+          if (dbTenantData && dbTenantData.length > 0) {
+             isTenant = true;
+             setIsTenantMode(true);
+             loadedTenantId = forceTenant;
+             const dbConf = dbTenantData[0];
+             loadedConfig = normalizeWlConfig(dbConf, { name: dbConf.name || 'Vibe B2B Enterprise' });
+          } else {
+             // Fallback to local storage for completely un-published preview networks
+             const localTenant = localNetworks.find((n: any) => n.id === forceTenant);
+             if (localTenant) {
+                isTenant = true;
+                setIsTenantMode(true);
+                loadedTenantId = forceTenant;
+                loadedConfig = normalizeWlConfig(localTenant, { name: localTenant.name || 'Vibe B2B Enterprise' });
+             }
+          }
+        } else if (!(hostname === 'localhost' || hostname === '127.0.0.1' || hostname === MASTER_DOMAIN || hostname === 'vibenetwork.com' || hostname === 'vibenetwork.tv' || hostname.includes('vercel.app'))) {
+          query = query.eq('domain', hostname).limit(1);
+          isTenant = true;
+          setIsTenantMode(true);
         } else {
-           // Fallback to local storage for completely un-published preview networks
-           const localTenant = localNetworks.find((n: any) => n.id === forceTenant);
-           if (localTenant) {
-              isTenant = true;
-              setIsTenantMode(true);
-              loadedTenantId = forceTenant;
-              setWlConfig(normalizeWlConfig(localTenant, { name: localTenant.name || 'Vibe B2B Enterprise' }));
-           }
+          // Master Platform Mode (localhost or MASTER_DOMAIN)
+          isTenant = false;
+          setIsTenantMode(false);
+          const localMaster = localNetworks.find((n: any) => n.domain === MASTER_DOMAIN || n.id === 'master');
+          
+          const { data: masterData } = await supabase!.from('whitelabel_configs').select('*').eq('domain', MASTER_DOMAIN).limit(1);
+          if (masterData && masterData.length > 0) {
+             const mConf = masterData[0];
+             // Merge local Master overrides if they exist (for local dev without DB write access)
+             loadedConfig = normalizeWlConfig({ ...mConf, ...localMaster }, { accent: localMaster?.accent || localMaster?.theme?.accent || mConf.accent || mConf.theme?.accent || '#D35400', enableWatchLive: true });
+          } else if (localMaster) {
+             // Fallback if DB query completely fails but local exists
+             loadedConfig = normalizeWlConfig(localMaster, { accent: localMaster.accent || localMaster.theme?.accent || '#D35400', enableWatchLive: true });
+          }
         }
-      } else if (!(hostname === 'localhost' || hostname === '127.0.0.1' || hostname === MASTER_DOMAIN || hostname === 'vibenetwork.com' || hostname === 'vibenetwork.tv' || hostname.includes('vercel.app'))) {
-        query = query.eq('domain', hostname).limit(1);
-        isTenant = true;
-        setIsTenantMode(true);
-      } else {
-        // Master Platform Mode (localhost or MASTER_DOMAIN)
-        const localMaster = localNetworks.find((n: any) => n.domain === MASTER_DOMAIN || n.id === 'master');
-        
-        const { data: masterData } = await supabase!.from('whitelabel_configs').select('*').eq('domain', MASTER_DOMAIN).limit(1);
-        if (masterData && masterData.length > 0) {
-           const mConf = masterData[0];
-           // Merge local Master overrides if they exist (for local dev without DB write access)
-           setWlConfig(normalizeWlConfig({ ...mConf, ...localMaster }, { accent: localMaster?.accent || localMaster?.theme?.accent || mConf.accent || mConf.theme?.accent || '#D35400', enableWatchLive: true }));
-        } else if (localMaster) {
-           // Fallback if DB query completely fails but local exists
-           setWlConfig(normalizeWlConfig(localMaster, { accent: localMaster.accent || localMaster.theme?.accent || '#D35400', enableWatchLive: true }));
+
+        if (isTenant && !loadedTenantId) {
+          const { data } = await query;
+          if (data && data.length > 0) {
+            const dbConf = data[0];
+            loadedTenantId = dbConf.id;
+            loadedConfig = normalizeWlConfig(dbConf, { name: dbConf.name || 'Vibe B2B Enterprise' });
+          }
         }
-      }
 
-      if (isTenant && !loadedTenantId) {
-        const { data } = await query;
-        if (data && data.length > 0) {
-          const dbConf = data[0];
-          loadedTenantId = dbConf.id;
-          setWlConfig(normalizeWlConfig(dbConf, { name: dbConf.name || 'Vibe B2B Enterprise' }));
+        if (!loadedConfig) {
+          loadedConfig = normalizeWlConfig({});
         }
-      }
 
-      setWlConfig(prev => {
-        if (prev) return prev;
-        // Ultimate Fallback: if we still haven't found a config from DB or local storage, load defaults
-        return normalizeWlConfig({});
-      });
+        setWlConfig(loadedConfig);
 
-      const freshCategories = await getCategoriesWithVideos(loadedTenantId);
-      setCategories(freshCategories || []);
+        const freshCategories = await getCategoriesWithVideos(loadedTenantId);
+        setCategories(freshCategories || []);
       } catch (err) {
         console.error("Critical error during Network OS initialization", err);
         // Guarantee the site loads in fallback mode even if DB/network throws an exception
@@ -319,7 +349,7 @@ function App() {
       }
     }
     initPlatform();
-  }, []);
+  }, [tenantParam]);
 
   useEffect(() => {
     if (wlConfig) {
@@ -327,11 +357,8 @@ function App() {
          document.documentElement.style.setProperty('--accent-primary', wlConfig.accent);
       }
       
-      // Dynamic High-Impact Typography for Mr. Olympia
-      const isOlympian = wlConfig.name?.toLowerCase().includes('olympia') || 
-                         wlConfig.domain?.includes('mrolympia.com') ||
-                         wlConfig.name?.toLowerCase().includes('muscle') ||
-                         wlConfig.name?.toLowerCase().includes('fitness');
+      // Dynamic High-Impact Typography for Muscle & Fitness / Olympia
+      const isOlympian = isOlympianConfig(wlConfig);
       if (isOlympian) {
         document.documentElement.style.setProperty('--font-heading', "'Barlow Condensed', 'Outfit', sans-serif");
       } else {
@@ -380,7 +407,6 @@ function App() {
     
     return (
       <WhiteLabelContext.Provider value={{ wlConfig, setWlConfig }}>
-        <Router>
           <div style={{ background: 'var(--content-bg)', minHeight: '100vh', color: 'var(--text-primary)', overflowX: 'hidden' }}>
             <Helmet>
               <title>{wlConfig.name || 'Vibe Network'}</title>
@@ -456,20 +482,19 @@ function App() {
             </Suspense>
           )}
 
-          {wlConfig && (wlConfig.id === '33742e2f-430b-4c2d-9cba-42507891ef02' || wlConfig.parent_network_id === '33742e2f-430b-4c2d-9cba-42507891ef02') && (
+          {wlConfig && isKpleConfig(wlConfig) && (
             <Suspense fallback={null}>
               <BibleDrawer accent={wlConfig.theme?.accent || wlConfig.accent || '#004e98'} />
             </Suspense>
           )}
+
         </div>
-      </Router>
       </WhiteLabelContext.Provider>
     );
   }
 
   return (
     <WhiteLabelContext.Provider value={{ wlConfig: wlConfig || normalizeWlConfig({}), setWlConfig }}>
-      <Router>
         <div style={{ background: 'var(--content-bg)', minHeight: '100vh', display: 'flex', flexDirection: 'column', overflowX: 'hidden' }}>
           <Helmet>
             <title>Vibe Network OS</title>
@@ -535,8 +560,8 @@ function App() {
              <Footer />
              <CookieConsent />
           </Suspense>
+
         </div>
-      </Router>
     </WhiteLabelContext.Provider>
   );
 }

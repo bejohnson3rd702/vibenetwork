@@ -5,6 +5,7 @@ import { Send, Mail, MapPin, Phone } from 'lucide-react';
 import { useWhiteLabel } from '../context/WhiteLabelContext';
 import { useToast } from '../context/ToastContext';
 import { supabase } from '../supabaseClient';
+import { isOlympianConfig } from '../lib/whitelabel';
 
 const Contact: React.FC = () => {
   const { wlConfig } = useWhiteLabel();
@@ -15,10 +16,7 @@ const Contact: React.FC = () => {
   const [isSending, setIsSending] = useState(false);
 
   const isAvo = wlConfig?.id === '3915f1e5-4c79-4b2a-ad41-7029ce8052d7' || wlConfig?.parent_network_id === '3915f1e5-4c79-4b2a-ad41-7029ce8052d7';
-  const isOlympian = wlConfig?.name?.toLowerCase().includes('olympia') || 
-                     wlConfig?.domain?.includes('mrolympia.com') ||
-                     wlConfig?.name?.toLowerCase().includes('muscle') ||
-                     wlConfig?.name?.toLowerCase().includes('fitness');
+  const isOlympian = isOlympianConfig(wlConfig);
   const isTenant = wlConfig && 
                    wlConfig.id !== 'master' && 
                    wlConfig.domain !== 'vibenetwork.tv' && 
@@ -59,7 +57,7 @@ const Contact: React.FC = () => {
       <h3 style={{ fontSize: '28px', fontWeight: 800, marginBottom: '12px' }}>Message Sent!</h3>
       <p style={{ color: 'var(--text-secondary)', lineHeight: 1.6 }}>
         {isOlympian 
-          ? "Thank you for reaching out to Mr. Olympia support. We will get back to you within 24 hours."
+          ? `Thank you for reaching out to ${wlConfig?.name || 'Muscle & Fitness'} support. We will get back to you within 24 hours.`
           : `Thank you for reaching out to ${wlConfig?.name || 'Vibe Network'}. Our team will get back to you within 24 hours.`
         }
       </p>
@@ -155,7 +153,7 @@ const Contact: React.FC = () => {
             style={{ fontSize: '18px', color: 'var(--text-secondary)', maxWidth: '600px', margin: '0 auto', lineHeight: 1.6 }}
           >
             {isOlympian 
-              ? "Have questions about the Mr. Olympia weekend, partner opportunities, or official gear? Contact us and we will get back to you shortly."
+              ? `Have questions about ${wlConfig?.name || 'Muscle & Fitness'}, partner opportunities, or official gear? Contact us and we will get back to you shortly.`
               : isTenant 
                 ? `Have questions about ${wlConfig?.name || 'our platform'}? Contact us and we will get back to you shortly.`
                 : "Ready to scale your architecture? Reach out to our enterprise specialists to discuss custom deployments, pricing, and infrastructure."

@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { X, Check } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useWhiteLabel } from '../context/WhiteLabelContext';
+import { isOlympianConfig, isB2kConfig } from '../lib/whitelabel';
 
 interface AmbassadorModalProps {
   isOpen: boolean;
@@ -11,12 +12,8 @@ interface AmbassadorModalProps {
 
 export default function AmbassadorModal({ isOpen, onClose, accent = 'var(--accent-primary)' }: AmbassadorModalProps) {
   const { wlConfig } = useWhiteLabel();
-  const isOlympian = wlConfig?.name?.toLowerCase().includes('olympia') || 
-                     wlConfig?.domain?.includes('mrolympia.com') ||
-                     wlConfig?.name?.toLowerCase().includes('muscle') ||
-                     wlConfig?.name?.toLowerCase().includes('fitness');
-  const isB2K = wlConfig?.name?.toLowerCase().includes('b2k') || 
-                wlConfig?.domain?.includes('b2k.vibenetwork.tv');
+  const isOlympian = isOlympianConfig(wlConfig);
+  const isB2K = isB2kConfig(wlConfig);
   const appName = wlConfig?.name || 'AVO';
 
   const [formData, setFormData] = useState({
@@ -150,7 +147,7 @@ export default function AmbassadorModal({ isOpen, onClose, accent = 'var(--accen
                 </h3>
                 <p style={{ margin: '0 0 28px 0', fontSize: '13px', color: 'var(--text-secondary)', lineHeight: 1.5 }}>
                   {isOlympian 
-                    ? "Rep the Mr. Olympia brand, share your fitness journey, and earn exclusive perks. Tell us about yourself to get started."
+                    ? `Rep the ${wlConfig?.name || 'Muscle & Fitness'} brand, share your fitness journey, and earn exclusive perks. Tell us about yourself to get started.`
                     : (isB2K
                       ? "Join the official B2K Millennium Street Team. Promote the reunion tour, share new updates, and earn exclusive backstage passes."
                       : (wlConfig?.name 
@@ -286,7 +283,7 @@ export default function AmbassadorModal({ isOpen, onClose, accent = 'var(--accen
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
                     <label style={{ fontSize: '10px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '1px', color: 'var(--text-secondary)' }}>
                       {isOlympian 
-                        ? "Why do you want to represent Mr. Olympia?" 
+                        ? `Why do you want to represent ${wlConfig?.name || 'Muscle & Fitness'}?` 
                         : (isB2K ? "Why do you want to join the B2K Street Team?" : `Why do you want to represent ${appName}?`)
                       }
                     </label>
@@ -294,7 +291,7 @@ export default function AmbassadorModal({ isOpen, onClose, accent = 'var(--accen
                       value={formData.comments}
                       onChange={e => setFormData(prev => ({ ...prev, comments: e.target.value }))}
                       placeholder={isOlympian 
-                        ? "Tell us about your fitness journey, training style, social presence, or why you love bodybuilding and Mr. Olympia..." 
+                        ? `Tell us about your fitness journey, training style, social presence, or why you love bodybuilding and ${wlConfig?.name || 'Muscle & Fitness'}...` 
                         : (isB2K 
                           ? "Tell us about your love for B2K, your social channels, your experience promoting street teams, or why you want to support the reunion tour..."
                           : "Tell us a bit about your campus activities, student organizations, or why you love college apparel..."

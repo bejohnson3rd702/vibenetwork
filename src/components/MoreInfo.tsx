@@ -1,6 +1,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { useWhiteLabel } from '../context/WhiteLabelContext';
+import { isOlympianConfig, isB2kConfig, isKpleConfig } from '../lib/whitelabel';
 
 const MoreInfo: React.FC = () => {
   const { wlConfig } = useWhiteLabel();
@@ -11,17 +12,9 @@ const MoreInfo: React.FC = () => {
                    wlConfig.domain !== 'vibenetwork.vercel.app' && 
                    !wlConfig.domain?.includes('vercel.app');
   const isAvo = wlConfig?.id === '3915f1e5-4c79-4b2a-ad41-7029ce8052d7' || wlConfig?.parent_network_id === '3915f1e5-4c79-4b2a-ad41-7029ce8052d7';
-  const isOlympian = wlConfig?.name?.toLowerCase().includes('olympia') || 
-                     wlConfig?.domain?.includes('mrolympia.com') ||
-                     wlConfig?.name?.toLowerCase().includes('muscle') ||
-                     wlConfig?.name?.toLowerCase().includes('fitness');
-  const isB2K = wlConfig?.name?.toLowerCase().includes('b2k') || 
-                wlConfig?.domain?.includes('b2k.vibenetwork.tv');
-  const isKple = wlConfig?.id === '33742e2f-430b-4c2d-9cba-42507891ef02' || 
-                 wlConfig?.parent_network_id === '33742e2f-430b-4c2d-9cba-42507891ef02' ||
-                 wlConfig?.name?.toLowerCase().includes('kple') ||
-                 wlConfig?.name?.toLowerCase().includes('christian revival') ||
-                 wlConfig?.domain?.includes('kpletv.org');
+  const isOlympian = isOlympianConfig(wlConfig);
+  const isB2K = isB2kConfig(wlConfig);
+  const isKple = isKpleConfig(wlConfig);
   const accentColor = wlConfig?.accent || 'var(--accent-primary)';
 
   return (
@@ -308,7 +301,7 @@ const MoreInfo: React.FC = () => {
               style={{ fontSize: '20px', color: 'var(--text-secondary)', lineHeight: 1.8, marginBottom: '0px' }}
             >
               {isOlympian 
-                ? "Mr. Olympia is the ultimate arena of professional bodybuilding. For more than half a century, the iconic competition has crowned the finest physiques on Earth, establishing a legacy of discipline, athletic brilliance, and physical perfection."
+                ? `${wlConfig?.name || 'Muscle & Fitness'} is the ultimate arena of professional bodybuilding. For more than half a century, the iconic competition has crowned the finest physiques on Earth, establishing a legacy of discipline, athletic brilliance, and physical perfection.`
                 : (isB2K 
                   ? "B2K is one of the most successful boy bands of the 2000s. Formed in 1998, the R&B group consists of Omarion, Lil' Fizz, J-Boog, and Raz-B. Celebrating their 25th anniversary, the members have reunited for the Boys 4 Life Tour alongside solo ventures."
                   : (isTenant 
@@ -346,7 +339,7 @@ const MoreInfo: React.FC = () => {
                       Network of Networks (N2N)
                     </h2>
                     <p style={{ color: 'var(--text-secondary)', fontSize: '17px', lineHeight: 1.8, margin: 0 }}>
-                      Our proprietary Network-to-Network (N2N) architecture enables parent networks to easily scale by launching and syndicating child channels. Whether you are managing multiple sub-conferences in sports (like AVO), multiple partner brands (like Mr. Olympia), or localized community groups, Vibe Network handles the orchestration under a single, unified administrative dashboard.
+                      Our proprietary Network-to-Network (N2N) architecture enables parent networks to easily scale by launching and syndicating child channels. Whether you are managing multiple sub-conferences in sports (like AVO), multiple partner brands (like {wlConfig?.name || 'Muscle & Fitness'}), or localized community groups, Vibe Network handles the orchestration under a single, unified administrative dashboard.
                     </p>
                   </motion.div>
                 </div>
@@ -434,12 +427,12 @@ const MoreInfo: React.FC = () => {
                 style={{ background: 'var(--bg-surface)', padding: '40px', borderRadius: '24px', border: '1px solid var(--bg-surface-hover)' }}
               >
                 <h2 style={{ fontSize: '24px', fontWeight: 700, marginBottom: '16px' }}>
-                  {isOlympian ? 'About Mr. Olympia' : (isB2K ? 'About B2K' : 'Our Platform')}
+                  {isOlympian ? `About ${wlConfig?.name || 'Muscle & Fitness'}` : (isB2K ? `About ${wlConfig?.name || 'B2K'}` : 'Our Platform')}
                 </h2>
                 
                 {isOlympian ? (
                   <p style={{ color: 'var(--text-secondary)', fontSize: '18px', lineHeight: 1.8, margin: 0 }}>
-                    The official Mr. Olympia Network-to-Network (N2N) platform connects bodybuilding enthusiasts globally with exclusive media clips, event schedules, and official gear from legendary partner brands: Gold's Gym, Gaspari Nutrition, Rogue Fitness, Redcon1, and Gymshark. Together, we celebrate the passion and dedication that defines the fitness lifestyle.
+                    The official {wlConfig?.name || 'Muscle & Fitness'} Network-to-Network (N2N) platform connects bodybuilding enthusiasts globally with exclusive media clips, event schedules, and official gear from legendary partner brands: Gold's Gym, Gaspari Nutrition, Rogue Fitness, Redcon1, and Gymshark. Together, we celebrate the passion and dedication that defines the fitness lifestyle.
                   </p>
                 ) : isB2K ? (
                   <p style={{ color: 'var(--text-secondary)', fontSize: '18px', lineHeight: 1.8, margin: 0 }}>

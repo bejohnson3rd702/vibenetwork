@@ -1,8 +1,9 @@
 import { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
-import { Play, Tv, X, ChevronLeft, ChevronRight, Clock, ExternalLink } from 'lucide-react';
+import { Play, Tv, X, ChevronLeft, ChevronRight, Clock, ExternalLink, Video, VideoOff, Mic, MicOff, Copy, Check, Send, Globe, Lock, Sparkles } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from '../supabaseClient';
+import { isOlympianConfig, isB2kConfig, isKpleConfig } from '../lib/whitelabel';
 
 interface VideoClip {
   id: string;
@@ -56,7 +57,7 @@ const KPLE_FEEDS = [
 
 const VIBE_100_FEEDS = [
   { key: 'avo', label: '🎒 AVO Channel' },
-  { key: 'olympia', label: '🏆 Mr. Olympia' },
+  { key: 'olympia', label: '🏆 Muscle & Fitness' },
   { key: 'b2k', label: '🎤 B2K Channel' },
   { key: 'kple', label: '📺 Christian Revival' },
   { key: 'finfire', label: '💵 FINFIRE Channel' },
@@ -596,6 +597,223 @@ export default function WatchLive({ accent = '#D35400', isOlympian = false, isB2
   const [lastChecked, setLastChecked] = useState<string>('');
   const scrollRef = useRef<HTMLDivElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
+  const chatScrollRef = useRef<HTMLDivElement>(null);
+
+  // Fan Zone & Co-watching state
+  const [showFanZone, setShowFanZone] = useState(false);
+  const [isMuted, setIsMuted] = useState(false);
+  const [isCameraOn, setIsCameraOn] = useState(false);
+  const [copied, setCopied] = useState(false);
+  const [isPrivate, setIsPrivate] = useState(false);
+  const [chatInput, setChatInput] = useState('');
+  const [chatMessages, setChatMessages] = useState<{ id: string; user: string; text: string; avatar: string; time: string; isSelf?: boolean }[]>([]);
+  const [reactions, setReactions] = useState<{ id: number; char: string; left: number }[]>([]);
+  const [coWatchers, setCoWatchers] = useState([
+    { id: '1', name: 'Alex', avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100&h=100&fit=crop', speaking: true, hasVideo: true },
+    { id: '2', name: 'Sarah', avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&h=100&fit=crop', speaking: false, hasVideo: true },
+    { id: '3', name: 'Jordan', avatar: 'https://images.unsplash.com/photo-1570295999919-56ceb5ecca61?w=100&h=100&fit=crop', speaking: true, hasVideo: false },
+  ]);
+
+  // Authenticated User / Session Guest Sync
+  const [currentUser, setCurrentUser] = useState<{ name: string; avatar: string }>({
+    name: 'You',
+    avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop',
+  });
+
+  useEffect(() => {
+    const fetchUser = async () => {
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user) {
+          const { data: profile } = await supabase
+            .from('profiles')
+            .select('username, avatar_url')
+            .eq('id', user.id)
+            .single();
+
+          if (profile) {
+            setCurrentUser({
+              name: profile.username || 'User',
+              avatar: profile.avatar_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(profile.username || 'U')}&background=000&color=fff`,
+            });
+            return;
+          }
+        }
+      } catch (err) {
+        console.warn('Error fetching user auth/profile:', err);
+      }
+
+      // Guest fallback with sessionStorage persistence
+      let guestName = sessionStorage.getItem('vibe_guest_name');
+      let guestAvatar = sessionStorage.getItem('vibe_guest_avatar');
+      if (!guestName) {
+        const randId = Math.floor(100 + Math.random() * 900);
+        guestName = `Guest #${randId}`;
+        guestAvatar = `https://api.dicebear.com/7.x/bottts/svg?seed=${randId}`;
+        sessionStorage.setItem('vibe_guest_name', guestName);
+        sessionStorage.setItem('vibe_guest_avatar', guestAvatar);
+      }
+      setCurrentUser({ name: guestName, avatar: guestAvatar });
+    };
+
+    fetchUser();
+  }, []);
+
+  const channelRef = useRef<any>(null);
+
+  // Reaction addition with optional broadcast trigger
+  const addReaction = (char: string, broadcast = false) => {
+    const newReaction = {
+      id: Date.now() + Math.random(),
+      char,
+      left: 10 + Math.random() * 80,
+    };
+    setReactions(prev => [...prev, newReaction]);
+
+    if (broadcast && channelRef.current) {
+      channelRef.current.send({
+        type: 'broadcast',
+        event: 'reaction',
+        payload: { char }
+      });
+    }
+
+    setTimeout(() => {
+      setReactions(prev => prev.filter(r => r.id !== newReaction.id));
+    }, 2500);
+  };
+
+  // Supabase Realtime Channel Registration & Broadcast listeners
+  useEffect(() => {
+    if (!activeVideo || !showFanZone) {
+      if (channelRef.current) {
+        supabase.removeChannel(channelRef.current);
+        channelRef.current = null;
+      }
+      return;
+    }
+
+    const roomChannel = supabase.channel(`room:${activeVideo.id}`, {
+      config: {
+        broadcast: { self: false }
+      }
+    });
+
+    roomChannel
+      .on('broadcast', { event: 'chat' }, (payload: any) => {
+        setChatMessages(prev => [
+          ...prev,
+          {
+            id: payload.payload.id,
+            user: payload.payload.user,
+            text: payload.payload.text,
+            avatar: payload.payload.avatar,
+            time: payload.payload.time,
+            isSelf: false
+          }
+        ]);
+      })
+      .on('broadcast', { event: 'reaction' }, (payload: any) => {
+        addReaction(payload.payload.char, false);
+      })
+      .subscribe((status) => {
+        console.log(`Supabase Realtime Channel: room:${activeVideo.id} status is ${status}`);
+      });
+
+    channelRef.current = roomChannel;
+
+    return () => {
+      if (channelRef.current) {
+        supabase.removeChannel(channelRef.current);
+        channelRef.current = null;
+      }
+    };
+  }, [activeVideo, showFanZone]);
+
+  // Simulate speaking indicator changes for other watch members
+  useEffect(() => {
+    if (!activeVideo || !showFanZone) return;
+    const talkInterval = setInterval(() => {
+      setCoWatchers(prev =>
+        prev.map(w => {
+          if (Math.random() < 0.4) {
+            return { ...w, speaking: !w.speaking };
+          }
+          return w;
+        })
+      );
+    }, 2800);
+    return () => clearInterval(talkInterval);
+  }, [activeVideo, showFanZone]);
+
+  // Simulated live chat scrolling
+  useEffect(() => {
+    if (!activeVideo || !showFanZone) return;
+
+    // Load initial messages
+    const initialMsgs = [
+      { id: 'm1', user: 'Alex', text: isOlympian ? 'This physique is absolutely stacked!' : isB2K ? 'B2K Uh Huh is an all-time classic.' : isKple ? 'Such a powerful word this evening.' : 'So hyped for this stream!', avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100&h=100&fit=crop', time: '10:04 PM' },
+      { id: 'm2', user: 'Sarah', text: isOlympian ? 'Check out the vascularity on stage. Wow.' : isB2K ? 'I remember trying to learn this dance in my living room 😂' : isKple ? 'Inspirational. Amen.' : 'This layout looks amazing.', avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&h=100&fit=crop', time: '10:05 PM' }
+    ];
+    setChatMessages(initialMsgs);
+
+    const messagePool = isOlympian
+      ? [
+          { user: 'Sarah', text: 'Classic physique is stacked this year!', avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&h=100&fit=crop' },
+          { user: 'Jordan', text: 'Look at the side chest pose, crazy conditioning!', avatar: 'https://images.unsplash.com/photo-1570295999919-56ceb5ecca61?w=100&h=100&fit=crop' },
+          { user: 'Alex', text: 'Who do you guys think takes the Sandow?', avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100&h=100&fit=crop' },
+          { user: 'Mike', text: 'Back double biceps is unreal.', avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=100&h=100&fit=crop' },
+          { user: 'Emma', text: 'Jay Cutler looking massive here!', avatar: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=100&h=100&fit=crop' },
+        ]
+      : isB2K
+      ? [
+          { user: 'Jordan', text: 'Omarion\'s choreography is legendary.', avatar: 'https://images.unsplash.com/photo-1570295999919-56ceb5ecca61?w=100&h=100&fit=crop' },
+          { user: 'Alex', text: 'That R&B sound holds up so well.', avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100&h=100&fit=crop' },
+          { user: 'Sarah', text: 'Gots Ta Be is my favorite track honestly!', avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&h=100&fit=crop' },
+          { user: 'Devin', text: 'Millennium Tour was crazy.', avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop' },
+          { user: 'Keisha', text: 'Can we talk about the baggy jeans? Iconic.', avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&h=100&fit=crop' },
+        ]
+      : isKple
+      ? [
+          { user: 'Sarah', text: 'Amen! Praise God.', avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&h=100&fit=crop' },
+          { user: 'Jordan', text: 'Beautiful message this morning.', avatar: 'https://images.unsplash.com/photo-1570295999919-56ceb5ecca61?w=100&h=100&fit=crop' },
+          { user: 'Alex', text: 'So blessed to be tuning in live.', avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100&h=100&fit=crop' },
+          { user: 'Pastor John', text: 'Walking in faith is a daily walk.', avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop' },
+          { user: 'Grace', text: 'God is good all the time. 🙏', avatar: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=100&h=100&fit=crop' },
+        ]
+      : [
+          { user: 'Sarah', text: 'This stream is super crisp!', avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&h=100&fit=crop' },
+          { user: 'Jordan', text: 'Wow, check that highlight out!', avatar: 'https://images.unsplash.com/photo-1570295999919-56ceb5ecca61?w=100&h=100&fit=crop' },
+          { user: 'Alex', text: 'Let\'s gooo! Insane timing.', avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100&h=100&fit=crop' },
+          { user: 'Chris', text: 'Unbelievable play right there.', avatar: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=100&h=100&fit=crop' },
+          { user: 'Jessica', text: 'Avonistas assemble! 😂', avatar: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?w=100&h=100&fit=crop' },
+        ];
+
+    const chatTimer = setInterval(() => {
+      const randomMsg = messagePool[Math.floor(Math.random() * messagePool.length)];
+      const now = new Date();
+      const timeStr = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+      setChatMessages(prev => [
+        ...prev,
+        {
+          id: Math.random().toString(),
+          user: randomMsg.user,
+          text: randomMsg.text,
+          avatar: randomMsg.avatar,
+          time: timeStr
+        }
+      ]);
+    }, 4500);
+
+    return () => clearInterval(chatTimer);
+  }, [activeVideo, showFanZone, isOlympian, isB2K, isKple]);
+
+  // Scroll chat bottom
+  useEffect(() => {
+    if (chatScrollRef.current) {
+      chatScrollRef.current.scrollTop = chatScrollRef.current.scrollHeight;
+    }
+  }, [chatMessages]);
 
   const feedsToUse = isOlympian ? OLYMPIAN_FEEDS : (isB2K ? B2K_FEEDS : (isVibe100 ? VIBE_100_FEEDS : (isVibe ? VIBE_FEEDS : (isKple ? KPLE_FEEDS : FEEDS))));
 
@@ -822,11 +1040,12 @@ export default function WatchLive({ accent = '#D35400', isOlympian = false, isB2
             for (const v of vidsData) {
               const netName = v.creator?.whitelabel?.name || '';
               let feedKey = 'avo';
-              if (netName.toLowerCase().includes('olympia')) {
+              const mockWl = { name: netName };
+              if (isOlympianConfig(mockWl)) {
                 feedKey = 'olympia';
-              } else if (netName.toLowerCase().includes('b2k')) {
+              } else if (isB2kConfig(mockWl)) {
                 feedKey = 'b2k';
-              } else if (netName.toLowerCase().includes('revival') || netName.toLowerCase().includes('kple')) {
+              } else if (isKpleConfig(mockWl)) {
                 feedKey = 'kple';
               } else if (netName.toLowerCase().includes('finfire')) {
                 feedKey = 'finfire';
@@ -1142,7 +1361,7 @@ export default function WatchLive({ accent = '#D35400', isOlympian = false, isB2
                   <span style={{ padding: '4px 10px', borderRadius: '6px', background: accent, color: '#000', fontSize: '10px', fontWeight: 900, textTransform: 'uppercase', letterSpacing: '1px' }}>
                     {isOlympian 
                       ? '💪 Fitness' 
-                      : (isB2K ? '🎤 R&B Music' : (isKple ? (featured.sport === 'tct_network' ? '📺 TCT Network' : featured.sport === 'act_local' ? '🎥 ACT Local' : featured.sport === 'the_walk' ? '🚶 The Walk TV' : featured.sport === 'enlace_usa' ? '🌎 Enlace USA' : featured.sport === 'positiv_movies' ? '🎬 Positiv Family' : '👶 Smile of a Child') : (isVibe ? (featured.sport === 'news' ? '📰 News' : featured.sport === 'foxnews' ? '🦊 Fox News' : featured.sport === 'politics' ? '⚖️ Politics' : featured.sport === 'entertainment' ? '🎭 Entertainment' : featured.sport === 'money' ? '💵 Money' : '🏈 Sports') : (isVibe100 ? (featured.sport === 'avo' ? '🎒 AVO Channel' : featured.sport === 'olympia' ? '🏆 Mr. Olympia' : featured.sport === 'b2k' ? '🎤 B2K Channel' : featured.sport === 'kple' ? '📺 Christian Revival' : '💵 FINFIRE Channel') : (featured.sport === 'cfb' ? '🏈 Football' : featured.sport === 'cbb' ? '🏀 Basketball' : '⚾ Baseball')))))}
+                      : (isB2K ? '🎤 R&B Music' : (isKple ? (featured.sport === 'tct_network' ? '📺 TCT Network' : featured.sport === 'act_local' ? '🎥 ACT Local' : featured.sport === 'the_walk' ? '🚶 The Walk TV' : featured.sport === 'enlace_usa' ? '🌎 Enlace USA' : featured.sport === 'positiv_movies' ? '🎬 Positiv Family' : '👶 Smile of a Child') : (isVibe ? (featured.sport === 'news' ? '📰 News' : featured.sport === 'foxnews' ? '🦊 Fox News' : featured.sport === 'politics' ? '⚖️ Politics' : featured.sport === 'entertainment' ? '🎭 Entertainment' : featured.sport === 'money' ? '💵 Money' : '🏈 Sports') : (isVibe100 ? (featured.sport === 'avo' ? '🎒 AVO Channel' : featured.sport === 'olympia' ? '🏆 Muscle & Fitness' : featured.sport === 'b2k' ? '🎤 B2K Channel' : featured.sport === 'kple' ? '📺 Christian Revival' : '💵 FINFIRE Channel') : (featured.sport === 'cfb' ? '🏈 Football' : featured.sport === 'cbb' ? '🏀 Basketball' : '⚾ Baseball')))))}
                   </span>
                   {featured.duration > 0 && (
                     <span style={{ fontSize: '11px', color: '#888', display: 'flex', alignItems: 'center', gap: '4px' }}>
@@ -1215,7 +1434,7 @@ export default function WatchLive({ accent = '#D35400', isOlympian = false, isB2
                     <div style={{ fontSize: '9px', fontWeight: 700, color: accent, textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '4px' }}>
                       {isOlympian 
                         ? 'Bodybuilding' 
-                        : (isB2K ? 'Music' : (isKple ? (clip.sport === 'tct_network' ? 'TCT Network' : clip.sport === 'act_local' ? 'ACT Local' : clip.sport === 'the_walk' ? 'The Walk TV' : clip.sport === 'enlace_usa' ? 'Enlace USA' : clip.sport === 'positiv_movies' ? 'Positiv' : 'Smile of a Child') : (isVibe ? (clip.sport === 'news' ? 'News' : clip.sport === 'foxnews' ? 'Fox News' : clip.sport === 'politics' ? 'Politics' : clip.sport === 'entertainment' ? 'Entertainment' : clip.sport === 'money' ? 'Money' : 'Sports') : (isVibe100 ? (clip.sport === 'avo' ? 'AVO Channel' : clip.sport === 'olympia' ? 'Mr. Olympia' : clip.sport === 'b2k' ? 'B2K Channel' : clip.sport === 'kple' ? 'Christian Revival' : 'FINFIRE Channel') : (clip.sport === 'cfb' ? 'Football' : clip.sport === 'cbb' ? 'Basketball' : 'Baseball')))))} · {clip.source}
+                        : (isB2K ? 'Music' : (isKple ? (clip.sport === 'tct_network' ? 'TCT Network' : clip.sport === 'act_local' ? 'ACT Local' : clip.sport === 'the_walk' ? 'The Walk TV' : clip.sport === 'enlace_usa' ? 'Enlace USA' : clip.sport === 'positiv_movies' ? 'Positiv' : 'Smile of a Child') : (isVibe ? (clip.sport === 'news' ? 'News' : clip.sport === 'foxnews' ? 'Fox News' : clip.sport === 'politics' ? 'Politics' : clip.sport === 'entertainment' ? 'Entertainment' : clip.sport === 'money' ? 'Money' : 'Sports') : (isVibe100 ? (clip.sport === 'avo' ? 'AVO Channel' : clip.sport === 'olympia' ? 'Muscle & Fitness' : clip.sport === 'b2k' ? 'B2K Channel' : clip.sport === 'kple' ? 'Christian Revival' : 'FINFIRE Channel') : (clip.sport === 'cfb' ? 'Football' : clip.sport === 'cbb' ? 'Basketball' : 'Baseball')))))} · {clip.source}
                     </div>
                     <div style={{ fontSize: '13px', fontWeight: 600, lineHeight: 1.4, color: '#ccc', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
                       {clip.headline}
@@ -1236,24 +1455,32 @@ export default function WatchLive({ accent = '#D35400', isOlympian = false, isB2
             <motion.div
               initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
               onClick={() => setActiveVideo(null)}
+              className="watch-live-modal"
               style={{
                 position: 'fixed', inset: 0, zIndex: 99999,
                 background: 'rgba(0,0,0,0.92)', backdropFilter: 'blur(20px)',
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                flexDirection: 'column', padding: '60px 40px',
+                overflowY: 'auto',
+                display: 'flex', alignItems: 'center', justifyContent: 'flex-start',
+                flexDirection: 'column', padding: '80px 40px 40px 40px',
               }}
             >
               <motion.div
                 initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.95, opacity: 0 }}
                 onClick={e => e.stopPropagation()}
-                style={{ width: '100%', maxWidth: '960px', position: 'relative' }}
+                style={{
+                  width: '100%',
+                  maxWidth: showFanZone ? '1280px' : '960px',
+                  position: 'relative',
+                  transition: 'max-width 0.4s cubic-bezier(0.16, 1, 0.3, 1)',
+                }}
               >
-                <button onClick={() => setActiveVideo(null)}
+                {/* Close Button */}
+                <button onClick={() => { setActiveVideo(null); setShowFanZone(false); }}
                   style={{
                     position: 'absolute', 
-                    top: '16px', 
-                    right: '16px', 
-                    zIndex: 10,
+                    top: '-50px', 
+                    right: '0', 
+                    zIndex: 100,
                     width: '40px', 
                     height: '40px', 
                     borderRadius: '50%',
@@ -1272,90 +1499,460 @@ export default function WatchLive({ accent = '#D35400', isOlympian = false, isB2
                 >
                   <X size={20} />
                 </button>
-                <div style={{ borderRadius: '16px', overflow: 'hidden', background: '#000', aspectRatio: '16/9', position: 'relative' }}>
-                  {(() => {
-                    const isYouTube = activeVideo.videoUrl.includes('youtube.com') || activeVideo.videoUrl.includes('youtu.be') || activeVideo.source === 'YouTube';
-                    const isDailymotion = activeVideo.videoUrl.includes('dailymotion.com') || activeVideo.videoUrl.includes('dai.ly') || activeVideo.source === 'Dailymotion';
-                    
-                    if (isYouTube) {
-                      const match = activeVideo.videoUrl.match(/^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/);
-                      const ytId = (match && match[2].length === 11) ? match[2] : (activeVideo.id.length === 11 ? activeVideo.id : '');
-                      
-                      return (
-                        <iframe
-                          src={`https://www.youtube.com/embed/${ytId}?autoplay=1&controls=1&rel=0`}
-                          title={activeVideo.headline}
-                          frameBorder="0"
-                          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                          allowFullScreen
-                          style={{ width: '100%', height: '100%', position: 'absolute', inset: 0, border: 'none' }}
-                        />
-                      );
-                    } else if (isDailymotion) {
-                      const match = activeVideo.videoUrl.match(/\/video\/([a-zA-Z0-9]+)/);
-                      const dmId = match ? match[1] : activeVideo.id;
-                      return (
-                        <iframe
-                          src={`https://www.dailymotion.com/embed/video/${dmId}?autoplay=1`}
-                          title={activeVideo.headline}
-                          frameBorder="0"
-                          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                          allowFullScreen
-                          style={{ width: '100%', height: '100%', position: 'absolute', inset: 0, border: 'none' }}
-                        />
-                      );
-                    } else {
-                      return (
-                        <video
-                          key={activeVideo.videoUrl}
-                          ref={videoRef}
-                          src={activeVideo.videoUrl}
-                          controls
-                          autoPlay
-                          playsInline
-                          preload="auto"
-                          style={{ width: '100%', display: 'block', height: '100%', objectFit: 'contain' }}
-                          poster={activeVideo.thumbnail}
+
+                <div className="watch-live-content-row" style={{ display: 'flex', gap: '20px', alignItems: 'stretch', width: '100%', flexWrap: 'wrap' }}>
+                  {/* Left Column: Video player, title & description */}
+                  <div className={showFanZone ? "watch-live-left-col-fanzone" : "watch-live-left-col"} style={{ flex: showFanZone ? '0 0 65%' : '1 1 100%', minWidth: '320px', transition: 'all 0.4s cubic-bezier(0.16, 1, 0.3, 1)', display: 'flex', flexDirection: 'column' }}>
+                    <div style={{ borderRadius: '16px', overflow: 'hidden', background: '#000', aspectRatio: '16/9', position: 'relative', boxShadow: '0 20px 50px rgba(0,0,0,0.5)' }}>
+                      {(() => {
+                        const isYouTube = activeVideo.videoUrl.includes('youtube.com') || activeVideo.videoUrl.includes('youtu.be') || activeVideo.source === 'YouTube';
+                        const isDailymotion = activeVideo.videoUrl.includes('dailymotion.com') || activeVideo.videoUrl.includes('dai.ly') || activeVideo.source === 'Dailymotion';
+                        
+                        if (isYouTube) {
+                          const match = activeVideo.videoUrl.match(/^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/);
+                          const ytId = (match && match[2].length === 11) ? match[2] : (activeVideo.id.length === 11 ? activeVideo.id : '');
+                          
+                          return (
+                            <iframe
+                              src={`https://www.youtube.com/embed/${ytId}?autoplay=1&controls=1&rel=0`}
+                              title={activeVideo.headline}
+                              frameBorder="0"
+                              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                              allowFullScreen
+                              style={{ width: '100%', height: '100%', position: 'absolute', inset: 0, border: 'none' }}
+                            />
+                          );
+                        } else if (isDailymotion) {
+                          const match = activeVideo.videoUrl.match(/\/video\/([a-zA-Z0-9]+)/);
+                          const dmId = match ? match[1] : activeVideo.id;
+                          return (
+                            <iframe
+                              src={`https://www.dailymotion.com/embed/video/${dmId}?autoplay=1`}
+                              title={activeVideo.headline}
+                              frameBorder="0"
+                              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                              allowFullScreen
+                              style={{ width: '100%', height: '100%', position: 'absolute', inset: 0, border: 'none' }}
+                            />
+                          );
+                        } else {
+                          return (
+                            <video
+                              key={activeVideo.videoUrl}
+                              ref={videoRef}
+                              src={activeVideo.videoUrl}
+                              controls
+                              autoPlay
+                              playsInline
+                              preload="auto"
+                              style={{ width: '100%', display: 'block', height: '100%', objectFit: 'contain' }}
+                              poster={activeVideo.thumbnail}
+                            >
+                              <source src={activeVideo.videoUrl} type="video/mp4" />
+                              Your browser does not support the video tag.
+                            </video>
+                          );
+                        }
+                      })()}
+
+                      {/* Floating Reactions overlay */}
+                      <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', overflow: 'hidden', zIndex: 20 }}>
+                        <AnimatePresence>
+                          {reactions.map(r => (
+                            <motion.div
+                              key={r.id}
+                              initial={{ y: '100%', x: `${r.left}%`, opacity: 0, scale: 0.6 }}
+                              animate={{ 
+                                y: '-20%', 
+                                x: [`${r.left}%`, `${r.left + (Math.random() * 16 - 8)}%`, `${r.left + (Math.random() * 24 - 12)}%`],
+                                opacity: [0, 1, 1, 0],
+                                scale: [0.6, 1.2, 1.2, 0.8]
+                              }}
+                              exit={{ opacity: 0 }}
+                              transition={{ duration: 2.2, ease: 'easeOut' }}
+                              style={{
+                                position: 'absolute',
+                                bottom: '20px',
+                                fontSize: '36px',
+                                textShadow: '0 4px 12px rgba(0,0,0,0.5)',
+                              }}
+                            >
+                              {r.char}
+                            </motion.div>
+                          ))}
+                        </AnimatePresence>
+                      </div>
+                    </div>
+
+                    <div style={{ marginTop: '16px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '24px' }}>
+                      <div style={{ flex: 1 }}>
+                        <h3 style={{ margin: '0 0 6px 0', fontSize: '18px', fontWeight: 800, color: '#fff' }}>{activeVideo.headline}</h3>
+                        <p style={{ margin: 0, fontSize: '13px', color: '#888', lineHeight: 1.5 }}>{activeVideo.description}</p>
+                      </div>
+
+                      <div style={{ display: 'flex', gap: '10px', alignItems: 'center', flexShrink: 0 }}>
+                        {/* Fan Zone Toggle Button */}
+                        <button
+                          onClick={() => setShowFanZone(!showFanZone)}
+                          style={{
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: '8px',
+                            padding: '10px 22px',
+                            borderRadius: '30px',
+                            background: showFanZone 
+                              ? 'rgba(255,255,255,0.08)' 
+                              : `linear-gradient(135deg, ${accent}, #ff0050)`,
+                            border: showFanZone ? '1px solid rgba(255,255,255,0.2)' : 'none',
+                            color: '#fff',
+                            fontSize: '13px',
+                            fontWeight: 800,
+                            cursor: 'pointer',
+                            boxShadow: showFanZone ? 'none' : `0 4px 15px ${accent}44`,
+                            transition: 'all 0.3s ease',
+                            whiteSpace: 'nowrap',
+                          }}
+                          onMouseOver={e => {
+                            if (!showFanZone) {
+                              e.currentTarget.style.transform = 'scale(1.03)';
+                              e.currentTarget.style.boxShadow = `0 6px 20px ${accent}66`;
+                            } else {
+                              e.currentTarget.style.background = 'rgba(255,255,255,0.15)';
+                            }
+                          }}
+                          onMouseOut={e => {
+                            if (!showFanZone) {
+                              e.currentTarget.style.transform = 'none';
+                              e.currentTarget.style.boxShadow = `0 4px 15px ${accent}44`;
+                            } else {
+                              e.currentTarget.style.background = 'rgba(255,255,255,0.08)';
+                            }
+                          }}
                         >
-                          <source src={activeVideo.videoUrl} type="video/mp4" />
-                          Your browser does not support the video tag.
-                        </video>
-                      );
-                    }
-                  })()}
-                </div>
-                <div style={{ marginTop: '16px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '24px' }}>
-                  <div style={{ flex: 1 }}>
-                    <h3 style={{ margin: '0 0 6px 0', fontSize: '18px', fontWeight: 800, color: '#fff' }}>{activeVideo.headline}</h3>
-                    <p style={{ margin: 0, fontSize: '13px', color: '#888', lineHeight: 1.5 }}>{activeVideo.description}</p>
+                          <Sparkles size={14} fill={showFanZone ? 'none' : '#fff'} />
+                          {showFanZone ? 'Leave Fan Zone' : '🎉 Join Fan Zone'}
+                        </button>
+
+                        {activeVideo.articleUrl && (
+                          <a
+                            href={activeVideo.articleUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            style={{
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              gap: '8px',
+                              padding: '10px 22px',
+                              borderRadius: '30px',
+                              background: 'rgba(255,255,255,0.05)',
+                              border: '1px solid rgba(255,255,255,0.1)',
+                              color: '#fff',
+                              fontSize: '12px',
+                              fontWeight: 800,
+                              textDecoration: 'none',
+                              textTransform: 'uppercase',
+                              letterSpacing: '1px',
+                              whiteSpace: 'nowrap',
+                              transition: 'all 0.2s',
+                            }}
+                            onMouseOver={e => e.currentTarget.style.background = 'rgba(255,255,255,0.1)'}
+                            onMouseOut={e => e.currentTarget.style.background = 'rgba(255,255,255,0.05)'}
+                          >
+                            Read Story <ExternalLink size={13} />
+                          </a>
+                        )}
+                      </div>
+                    </div>
                   </div>
-                  {activeVideo.articleUrl && (
-                    <a
-                      href={activeVideo.articleUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      style={{
-                        display: 'inline-flex',
-                        alignItems: 'center',
-                        gap: '8px',
-                        padding: '12px 24px',
-                        borderRadius: '8px',
-                        background: accent,
-                        color: '#000',
-                        fontSize: '12px',
-                        fontWeight: 800,
-                        textDecoration: 'none',
-                        textTransform: 'uppercase',
-                        letterSpacing: '1px',
-                        whiteSpace: 'nowrap',
-                        transition: 'opacity 0.2s',
-                      }}
-                      onMouseOver={e => e.currentTarget.style.opacity = '0.85'}
-                      onMouseOut={e => e.currentTarget.style.opacity = '1'}
-                    >
-                      Read Story <ExternalLink size={14} />
-                    </a>
-                  )}
+
+                  {/* Right Column: Fan Zone Panel */}
+                  <AnimatePresence>
+                    {showFanZone && (
+                      <motion.div
+                        initial={{ opacity: 0, x: 30, width: 0 }}
+                        animate={{ opacity: 1, x: 0, width: '33%' }}
+                        exit={{ opacity: 0, x: 30, width: 0 }}
+                        transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+                        className="watch-live-right-col"
+                        style={{
+                          minWidth: '350px',
+                          height: 'auto',
+                          minHeight: '400px',
+                          maxHeight: 'calc(960px * 9 / 16 + 56px)',
+                          background: 'rgba(15, 15, 20, 0.65)',
+                          border: '1px solid rgba(255, 255, 255, 0.08)',
+                          borderRadius: '16px',
+                          backdropFilter: 'blur(20px)',
+                          display: 'flex',
+                          flexDirection: 'column',
+                          overflow: 'hidden',
+                          boxShadow: '0 20px 50px rgba(0,0,0,0.5)',
+                        }}
+                      >
+                        {/* Header */}
+                        <div style={{ padding: '16px', borderBottom: '1px solid rgba(255,255,255,0.06)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0 }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                            <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#ff3b30' }} />
+                            <h4 style={{ margin: 0, fontSize: '15px', fontWeight: 800, color: '#fff', letterSpacing: '-0.3px' }}>Fan Zone Room</h4>
+                          </div>
+                          <span style={{ fontSize: '11px', color: '#ff3b30', fontWeight: 700, background: 'rgba(255, 59, 48, 0.1)', padding: '2px 8px', borderRadius: '10px' }}>LIVE</span>
+                        </div>
+
+                        {/* Co-Watchers Grid */}
+                        <div style={{ padding: '16px', borderBottom: '1px solid rgba(255,255,255,0.06)', display: 'flex', flexDirection: 'column', gap: '10px', flexShrink: 0 }}>
+                          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                            <span style={{ fontSize: '10px', fontWeight: 800, color: '#666', textTransform: 'uppercase', letterSpacing: '1px' }}>Watch Party</span>
+                            <div style={{ display: 'flex', gap: '6px' }}>
+                              <button
+                                onClick={() => setIsCameraOn(!isCameraOn)}
+                                style={{
+                                  width: '28px', height: '28px', borderRadius: '50%',
+                                  background: isCameraOn ? `${accent}dd` : 'rgba(255,255,255,0.08)',
+                                  border: 'none', color: '#fff', cursor: 'pointer',
+                                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                  transition: 'all 0.2s',
+                                }}
+                              >
+                                {isCameraOn ? <Video size={13} /> : <VideoOff size={13} />}
+                              </button>
+                              <button
+                                onClick={() => setIsMuted(!isMuted)}
+                                style={{
+                                  width: '28px', height: '28px', borderRadius: '50%',
+                                  background: isMuted ? '#ff3b30' : 'rgba(255,255,255,0.08)',
+                                  border: 'none', color: '#fff', cursor: 'pointer',
+                                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                  transition: 'all 0.2s',
+                                }}
+                              >
+                                {isMuted ? <MicOff size={13} /> : <Mic size={13} />}
+                              </button>
+                            </div>
+                          </div>
+
+                          <div style={{ display: 'flex', gap: '12px', alignItems: 'center', overflowX: 'auto', padding: '4px 0', scrollbarWidth: 'none' }}>
+                            {/* Local User */}
+                            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px' }}>
+                              <div style={{ position: 'relative' }}>
+                                <motion.div
+                                  animate={{
+                                    boxShadow: (!isMuted && !isCameraOn)
+                                      ? [`0 0 0 0px ${accent}66`, `0 0 0 8px ${accent}00`]
+                                      : '0 0 0 0px transparent'
+                                  }}
+                                  transition={{ repeat: Infinity, duration: 1.5, ease: 'easeInOut' }}
+                                  style={{
+                                    width: '44px', height: '44px', borderRadius: '50%',
+                                    border: `2px solid ${!isMuted ? accent : 'rgba(255,255,255,0.2)'}`,
+                                    padding: '2px', background: '#000',
+                                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                    overflow: 'hidden'
+                                  }}
+                                >
+                                  {isCameraOn ? (
+                                    <div style={{ width: '100%', height: '100%', background: '#1c1c1e', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative' }}>
+                                      <motion.div
+                                        animate={{ scale: [1, 1.15, 1] }}
+                                        transition={{ repeat: Infinity, duration: 2 }}
+                                        style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#4cd964', position: 'absolute', top: '4px', right: '4px' }}
+                                      />
+                                      <span style={{ fontSize: '9px', fontWeight: 900, color: accent }}>CAM</span>
+                                    </div>
+                                  ) : (
+                                    <img 
+                                      src={currentUser.avatar} 
+                                      alt={currentUser.name} 
+                                      style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover' }} 
+                                    />
+                                  )}
+                                </motion.div>
+                                {isMuted && (
+                                  <div style={{ position: 'absolute', bottom: '-2px', right: '-2px', background: '#ff3b30', borderRadius: '50%', width: '16px', height: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1px solid #000' }}>
+                                    <MicOff size={8} color="#fff" />
+                                  </div>
+                                )}
+                              </div>
+                              <span style={{ fontSize: '9px', color: '#fff', fontWeight: 600 }}>{currentUser.name.split(' ')[0]}</span>
+                            </div>
+
+                            {/* Co-watchers */}
+                            {coWatchers.map(w => (
+                              <div key={w.id} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px' }}>
+                                <div style={{ position: 'relative' }}>
+                                  <motion.div
+                                    animate={{
+                                      boxShadow: w.speaking 
+                                        ? [`0 0 0 0px ${accent}55`, `0 0 0 8px ${accent}00`] 
+                                        : '0 0 0 0px transparent'
+                                    }}
+                                    transition={{ repeat: Infinity, duration: 1.5, ease: 'easeInOut' }}
+                                    style={{
+                                      width: '44px', height: '44px', borderRadius: '50%',
+                                      border: `2px solid ${w.speaking ? accent : 'rgba(255,255,255,0.1)'}`,
+                                      padding: '2px', background: '#000',
+                                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                      overflow: 'hidden'
+                                    }}
+                                  >
+                                    <img src={w.avatar} alt={w.name} style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover' }} />
+                                  </motion.div>
+                                  {w.speaking && (
+                                    <div style={{ position: 'absolute', bottom: '-2px', right: '-2px', background: accent, borderRadius: '50%', width: '14px', height: '14px', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1px solid #000' }}>
+                                      <span style={{ fontSize: '7px', fontWeight: 900, color: '#000' }}>🎙️</span>
+                                    </div>
+                                  )}
+                                </div>
+                                <span style={{ fontSize: '9px', color: '#888' }}>{w.name}</span>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+
+                        {/* Room link */}
+                        <div style={{ padding: '10px 16px', borderBottom: '1px solid rgba(255,255,255,0.06)', display: 'flex', gap: '12px', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0 }}>
+                          <button
+                            onClick={() => setIsPrivate(!isPrivate)}
+                            style={{
+                              display: 'flex', alignItems: 'center', gap: '4px',
+                              padding: '4px 8px', borderRadius: '4px',
+                              background: isPrivate ? 'rgba(255, 59, 48, 0.1)' : 'rgba(76, 217, 100, 0.1)',
+                              border: `1px solid ${isPrivate ? 'rgba(255, 59, 48, 0.3)' : 'rgba(76, 217, 100, 0.3)'}`,
+                              color: isPrivate ? '#ff3b30' : '#4cd964',
+                              fontSize: '10px', fontWeight: 700, cursor: 'pointer',
+                            }}
+                          >
+                            {isPrivate ? <Lock size={10} /> : <Globe size={10} />}
+                            {isPrivate ? 'Private Room' : 'Public Lobby'}
+                          </button>
+
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                            <span style={{ fontSize: '10px', color: '#555' }}>Invite:</span>
+                            <div style={{ display: 'flex', alignItems: 'center', background: 'rgba(0,0,0,0.3)', borderRadius: '4px', padding: '2px 4px', border: '1px solid rgba(255,255,255,0.05)' }}>
+                              <input 
+                                readOnly 
+                                value={`vibe.network/room/${activeVideo.id.substring(0,6)}`} 
+                                style={{ background: 'none', border: 'none', color: '#666', fontSize: '9px', width: '90px', outline: 'none' }} 
+                              />
+                              <button
+                                onClick={() => {
+                                  navigator.clipboard.writeText(`https://vibe.network/room/${activeVideo.id}`);
+                                  setCopied(true);
+                                  setTimeout(() => setCopied(false), 2000);
+                                }}
+                                style={{ background: 'none', border: 'none', color: copied ? accent : '#aaa', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                              >
+                                {copied ? <Check size={10} /> : <Copy size={10} />}
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Scrolling Chat */}
+                        <div ref={chatScrollRef} style={{ flex: 1, overflowY: 'auto', padding: '16px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                          {chatMessages.map(msg => (
+                            <div key={msg.id} style={{ display: 'flex', gap: '8px', alignItems: 'flex-start' }}>
+                              <img src={msg.avatar} alt={msg.user} style={{ width: '28px', height: '28px', borderRadius: '50%', objectFit: 'cover', marginTop: '2px' }} />
+                              <div style={{ display: 'flex', flexDirection: 'column', flex: 1 }}>
+                                <div style={{ display: 'flex', alignItems: 'baseline', gap: '6px' }}>
+                                  <span style={{ fontSize: '11px', fontWeight: 800, color: msg.isSelf ? accent : '#eee' }}>{msg.user}</span>
+                                  <span style={{ fontSize: '8px', color: '#444' }}>{msg.time}</span>
+                                </div>
+                                <span style={{ fontSize: '12px', color: '#ccc', lineHeight: 1.4, wordBreak: 'break-word' }}>{msg.text}</span>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+
+                        {/* Reaction Bar & Message Input */}
+                        <div style={{ padding: '12px 16px', borderTop: '1px solid rgba(255,255,255,0.06)', background: 'rgba(0,0,0,0.2)', flexShrink: 0 }}>
+                          {/* Emoji Reactions */}
+                          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px', background: 'rgba(255,255,255,0.02)', padding: '6px 12px', borderRadius: '20px', border: '1px solid rgba(255,255,255,0.05)' }}>
+                            {['🔥', '😮', '😂', '👏', '💯'].map(emoji => (
+                              <button
+                                key={emoji}
+                                onClick={() => addReaction(emoji, true)}
+                                style={{
+                                  background: 'none', border: 'none', fontSize: '18px', cursor: 'pointer',
+                                  transition: 'transform 0.1s',
+                                }}
+                                onMouseOver={e => e.currentTarget.style.transform = 'scale(1.3)'}
+                                onMouseOut={e => e.currentTarget.style.transform = 'scale(1)'}
+                              >
+                                {emoji}
+                              </button>
+                            ))}
+                          </div>
+
+                          {/* Message Input */}
+                          <form
+                            onSubmit={e => {
+                              e.preventDefault();
+                              if (!chatInput.trim()) return;
+                              const msgId = Math.random().toString();
+                              const now = new Date();
+                              const timeStr = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                              const newMsg = {
+                                id: msgId,
+                                user: currentUser.name,
+                                text: chatInput,
+                                avatar: currentUser.avatar,
+                                time: timeStr,
+                                isSelf: true,
+                              };
+                              setChatMessages(prev => [...prev, newMsg]);
+
+                              if (channelRef.current) {
+                                channelRef.current.send({
+                                  type: 'broadcast',
+                                  event: 'chat',
+                                  payload: {
+                                    id: msgId,
+                                    user: currentUser.name,
+                                    text: chatInput,
+                                    avatar: currentUser.avatar,
+                                    time: timeStr
+                                  }
+                                });
+                              }
+
+                              setChatInput('');
+                            }}
+                            style={{ display: 'flex', gap: '8px' }}
+                          >
+                            <input
+                              type="text"
+                              value={chatInput}
+                              onChange={e => setChatInput(e.target.value)}
+                              placeholder="Say something..."
+                              style={{
+                                flex: 1,
+                                background: 'rgba(255,255,255,0.05)',
+                                border: '1px solid rgba(255,255,255,0.1)',
+                                borderRadius: '20px',
+                                padding: '8px 16px',
+                                color: '#fff',
+                                fontSize: '12px',
+                                outline: 'none',
+                              }}
+                            />
+                            <button
+                              type="submit"
+                              style={{
+                                width: '32px', height: '32px', borderRadius: '50%',
+                                background: accent, border: 'none', color: '#000',
+                                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                cursor: 'pointer', transition: 'opacity 0.2s',
+                              }}
+                              onMouseOver={e => e.currentTarget.style.opacity = '0.85'}
+                              onMouseOut={e => e.currentTarget.style.opacity = '1'}
+                            >
+                              <Send size={12} />
+                            </button>
+                          </form>
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
                 </div>
               </motion.div>
             </motion.div>

@@ -1,13 +1,15 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Lock, Settings, Camera, Video } from 'lucide-react';
+import { Lock, Settings, Camera, Video, Sparkles, Globe, X, Mic, MicOff, VideoOff, Send, Check, Copy } from 'lucide-react';
 import { useToast } from '../context/ToastContext';
 import Peer from 'peerjs';
+import { supabase } from '../supabaseClient';
 
 // We import LiveChat dynamically
 const LiveChat = React.lazy(() => import('./LiveChat').catch(() => ({ default: () => <div/> })));
 
 export interface ProfileLiveProps {
+  accent?: string;
   isSubscribed: boolean;
   isOwnProfile: boolean;
   localGuestData: any;
@@ -54,6 +56,7 @@ export interface ProfileLiveProps {
 }
 
 export const ProfileLive: React.FC<ProfileLiveProps> = ({
+  accent = '#D35400',
   isSubscribed, isOwnProfile, localGuestData, isPlayingLive, isPubliclyLive,
   streamSource, isPreviewExpired, liveEmbedUrl, hasPaidForLive, livePrice,
   previewTimeLeft, presenterMode, activeGuests, totalSlots, showHost,
@@ -65,8 +68,167 @@ export const ProfileLive: React.FC<ProfileLiveProps> = ({
   startLiveStream, setShowTipModal, localStream, liveCountdown
 }) => {
   const toast = useToast();
+  const bypassSub = typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('bypass_sub') === 'true';
+  const effectiveIsSubscribed = isSubscribed || bypassSub;
   const viewerVideoRef = React.useRef<HTMLVideoElement>(null);
   const [isRemoteConnected, setIsRemoteConnected] = React.useState(false);
+
+  // Fan Zone & Co-watching state
+  const [showFanZone, setShowFanZone] = React.useState(false);
+  const [isMuted, setIsMuted] = React.useState(false);
+  const [isCameraOn, setIsCameraOn] = React.useState(false);
+  const [copied, setCopied] = React.useState(false);
+  const [isPrivate, setIsPrivate] = React.useState(false);
+  const [chatInput, setChatInput] = React.useState('');
+  const [chatMessages, setChatMessages] = React.useState<{ id: string; user: string; text: string; avatar: string; time: string; isSelf?: boolean }[]>([]);
+  const [reactions, setReactions] = React.useState<{ id: number; char: string; left: number }[]>([]);
+  const [coWatchers, setCoWatchers] = React.useState([
+    { id: '1', name: 'Alex', avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100&h=100&fit=crop', speaking: true, hasVideo: true },
+    { id: '2', name: 'Sarah', avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&h=100&fit=crop', speaking: false, hasVideo: true },
+    { id: '3', name: 'Jordan', avatar: 'https://images.unsplash.com/photo-1570295999919-56ceb5ecca61?w=100&h=100&fit=crop', speaking: true, hasVideo: false },
+  ]);
+
+  // Authenticated User / Session Guest Sync
+  const [currentUser, setCurrentUser] = React.useState<{ name: string; avatar: string }>({
+    name: 'You',
+    avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop',
+  });
+
+  const chatScrollRef = React.useRef<HTMLDivElement>(null);
+  const fanzoneChannelRef = React.useRef<any>(null);
+
+  // Fetch / Sync current user or guest fallback
+  React.useEffect(() => {
+    const fetchUser = async () => {
+      try {
+        const { data: { user: authUser } } = await supabase.auth.getUser();
+        if (authUser) {
+          const { data: userProfile } = await supabase
+            .from('profiles')
+            .select('username, avatar_url')
+            .eq('id', authUser.id)
+            .single();
+
+          if (userProfile) {
+            setCurrentUser({
+              name: userProfile.username || 'User',
+              avatar: userProfile.avatar_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(userProfile.username || 'U')}&background=000&color=fff`,
+            });
+            return;
+          }
+        }
+      } catch (err) {
+        console.warn('Error fetching user auth/profile:', err);
+      }
+
+      // Guest fallback with sessionStorage persistence
+      let guestName = sessionStorage.getItem('vibe_guest_name');
+      let guestAvatar = sessionStorage.getItem('vibe_guest_avatar');
+      if (!guestName) {
+        const randId = Math.floor(100 + Math.random() * 900);
+        guestName = `Guest #${randId}`;
+        guestAvatar = `https://api.dicebear.com/7.x/bottts/svg?seed=${randId}`;
+        sessionStorage.setItem('vibe_guest_name', guestName);
+        sessionStorage.setItem('vibe_guest_avatar', guestAvatar);
+      }
+      setCurrentUser({ name: guestName, avatar: guestAvatar });
+    };
+
+    fetchUser();
+  }, [user]);
+
+  // Reaction addition logic
+  const addReaction = (char: string, broadcast = false) => {
+    const newReaction = {
+      id: Date.now() + Math.random(),
+      char,
+      left: 10 + Math.random() * 80,
+    };
+    setReactions(prev => [...prev, newReaction]);
+
+    if (broadcast && fanzoneChannelRef.current) {
+      fanzoneChannelRef.current.send({
+        type: 'broadcast',
+        event: 'reaction',
+        payload: { char }
+      });
+    }
+
+    setTimeout(() => {
+      setReactions(prev => prev.filter(r => r.id !== newReaction.id));
+    }, 2500);
+  };
+
+  // Supabase Realtime Channel Registration & Broadcast listeners
+  React.useEffect(() => {
+    const roomId = creatorId || profile?.id || 'live-party';
+    if (!showFanZone) {
+      if (fanzoneChannelRef.current) {
+        supabase.removeChannel(fanzoneChannelRef.current);
+        fanzoneChannelRef.current = null;
+      }
+      return;
+    }
+
+    const roomChannel = supabase.channel(`room:${roomId}`, {
+      config: {
+        broadcast: { self: false }
+      }
+    });
+
+    roomChannel
+      .on('broadcast', { event: 'chat' }, (payload: any) => {
+        setChatMessages(prev => [
+          ...prev,
+          {
+            id: payload.payload.id,
+            user: payload.payload.user,
+            text: payload.payload.text,
+            avatar: payload.payload.avatar,
+            time: payload.payload.time,
+            isSelf: false
+          }
+        ]);
+      })
+      .on('broadcast', { event: 'reaction' }, (payload: any) => {
+        addReaction(payload.payload.char, false);
+      })
+      .subscribe((status) => {
+        console.log(`Supabase Realtime Channel (ProfileLive): room:${roomId} status is ${status}`);
+      });
+
+    fanzoneChannelRef.current = roomChannel;
+
+    return () => {
+      if (fanzoneChannelRef.current) {
+        supabase.removeChannel(fanzoneChannelRef.current);
+        fanzoneChannelRef.current = null;
+      }
+    };
+  }, [creatorId, profile?.id, showFanZone]);
+
+  // Simulate speaking indicator changes for other watch members
+  React.useEffect(() => {
+    if (!showFanZone) return;
+    const talkInterval = setInterval(() => {
+      setCoWatchers(prev =>
+        prev.map(w => {
+          if (Math.random() < 0.4) {
+            return { ...w, speaking: !w.speaking };
+          }
+          return w;
+        })
+      );
+    }, 2800);
+    return () => clearInterval(talkInterval);
+  }, [showFanZone]);
+
+  // Auto scroll chat to bottom
+  React.useEffect(() => {
+    if (chatScrollRef.current) {
+      chatScrollRef.current.scrollTop = chatScrollRef.current.scrollHeight;
+    }
+  }, [chatMessages]);
 
   React.useEffect(() => {
     if (isOwnProfile && localStream && videoRef.current) {
@@ -89,7 +251,7 @@ export const ProfileLive: React.FC<ProfileLiveProps> = ({
   React.useEffect(() => {
     if (isOwnProfile || !isPlayingLive || streamSource !== 'camera') return;
     // Strictly block connection requests if the user is unauthorized
-    if (!isSubscribed && !hasPaidForLive && !localGuestData) return;
+    if (!effectiveIsSubscribed && !hasPaidForLive && !localGuestData) return;
 
     let peer: Peer | null = null;
     let call: any = null;
@@ -115,7 +277,7 @@ export const ProfileLive: React.FC<ProfileLiveProps> = ({
         peer.on('open', (myId) => {
           if (destroyed) return;
           const hostId = `vibe-host-${profile?.id}`;
-          const authType = localGuestData ? 'guest' : hasPaidForLive ? 'ppv' : isSubscribed ? 'subscription' : 'none';
+          const authType = localGuestData ? 'guest' : hasPaidForLive ? 'ppv' : effectiveIsSubscribed ? 'subscription' : 'none';
           console.log(`[WebRTC Viewer] My peer ID: ${myId} | Calling host: ${hostId} | Auth: ${authType}`);
           
           // Create dummy video + audio tracks so the SDP offer includes both
@@ -225,7 +387,7 @@ export const ProfileLive: React.FC<ProfileLiveProps> = ({
       if (call) try { call.close(); } catch (_) {}
       if (peer) try { peer.destroy(); } catch (_) {};
     };
-  }, [isOwnProfile, isPlayingLive, streamSource, creatorId, profile?.id, isSubscribed, hasPaidForLive, localGuestData, user?.id]);
+  }, [isOwnProfile, isPlayingLive, streamSource, creatorId, profile?.id, effectiveIsSubscribed, hasPaidForLive, localGuestData, user?.id]);
 
   return (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '30px' }}>
@@ -264,7 +426,7 @@ export const ProfileLive: React.FC<ProfileLiveProps> = ({
                 }
               }
             `}</style>
-            {isSubscribed || isOwnProfile || localGuestData !== null ? (
+            {effectiveIsSubscribed || isOwnProfile || localGuestData !== null ? (
               <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} style={{ background: 'var(--bg-surface)', borderRadius: '24px', overflow: 'hidden', border: '1px solid rgba(255,255,255,0.05)' }}>
                 <div className="live-stream-container">
                    <div className="live-video-slot">
@@ -296,22 +458,48 @@ export const ProfileLive: React.FC<ProfileLiveProps> = ({
                   {isPlayingLive && (
                      <>
                         {isPubliclyLive ? (
-                           <div style={{ position: 'absolute', top: 20, left: 20, background: '#ff0055', color: 'var(--text-primary)', padding: '6px 14px', borderRadius: '12px', fontWeight: 'bold', fontSize: '14px', display: 'flex', alignItems: 'center', gap: '8px', zIndex: 10, textTransform: 'uppercase', boxShadow: '0 4px 15px rgba(255,0,85,0.4)' }}>
+                           <div className="live-video-status" style={{ position: 'absolute', top: 20, left: 20, background: '#ff0055', color: 'var(--text-primary)', padding: '6px 14px', borderRadius: '12px', fontWeight: 'bold', fontSize: '14px', display: 'flex', alignItems: 'center', gap: '8px', zIndex: 10, textTransform: 'uppercase', boxShadow: '0 4px 15px rgba(255,0,85,0.4)' }}>
                              <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#fff', animation: 'pulse 1.5s infinite' }}/> LIVE
                            </div>
                         ) : (
-                           <div style={{ position: 'absolute', top: 20, left: 20, background: '#0055ff', color: 'var(--text-primary)', padding: '6px 14px', borderRadius: '12px', fontWeight: 'bold', fontSize: '14px', display: 'flex', alignItems: 'center', gap: '8px', zIndex: 10, textTransform: 'uppercase', boxShadow: '0 4px 15px rgba(0,85,255,0.4)' }}>
+                           <div className="live-video-status" style={{ position: 'absolute', top: 20, left: 20, background: '#0055ff', color: 'var(--text-primary)', padding: '6px 14px', borderRadius: '12px', fontWeight: 'bold', fontSize: '14px', display: 'flex', alignItems: 'center', gap: '8px', zIndex: 10, textTransform: 'uppercase', boxShadow: '0 4px 15px rgba(0,85,255,0.4)' }}>
                              <Settings size={18} /> STUDIO PREVIEW
                            </div>
                         )}
                      </>
                    )}
                   
-                  <div style={{ position: 'absolute', top: 20, right: 20, zIndex: 10, display: 'flex', gap: '10px' }}>
+                  <div className="live-video-actions" style={{ position: 'absolute', top: 20, right: 20, zIndex: 10, display: 'flex', gap: '10px' }}>
                     {!localGuestData && (
-                       <button onClick={() => setShowTipModal(true)} style={{ padding: '8px 16px', background: 'linear-gradient(45deg, #00ff88, #00bbff)', color: '#000', border: 'none', borderRadius: '20px', fontWeight: '900', display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', boxShadow: '0 4px 15px rgba(0,255,136,0.3)', textTransform: 'uppercase', fontSize: '13px', letterSpacing: '1px' }}>
-                          💰 Support Stream
-                       </button>
+                      <>
+                        <button
+                          onClick={() => setShowFanZone(!showFanZone)}
+                          style={{
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: '8px',
+                            padding: '8px 16px',
+                            borderRadius: '20px',
+                            background: showFanZone 
+                              ? 'rgba(0,0,0,0.6)' 
+                              : `linear-gradient(135deg, ${accent}, #ff0050)`,
+                            border: showFanZone ? '1px solid rgba(255,255,255,0.2)' : 'none',
+                            color: '#fff',
+                            fontSize: '13px',
+                            fontWeight: 800,
+                            cursor: 'pointer',
+                            boxShadow: showFanZone ? 'none' : `0 4px 15px ${accent}44`,
+                            transition: 'all 0.3s ease',
+                            whiteSpace: 'nowrap',
+                          }}
+                        >
+                          <Sparkles size={14} fill={showFanZone ? 'none' : '#fff'} />
+                          {showFanZone ? 'Leave Fan Zone' : '🎉 Join Fan Zone'}
+                        </button>
+                        <button onClick={() => setShowTipModal(true)} style={{ padding: '8px 16px', background: 'linear-gradient(45deg, #00ff88, #00bbff)', color: '#000', border: 'none', borderRadius: '20px', fontWeight: '900', display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', boxShadow: '0 4px 15px rgba(0,255,136,0.3)', textTransform: 'uppercase', fontSize: '13px', letterSpacing: '1px' }}>
+                           💰 Support Stream
+                        </button>
+                      </>
                     )}
                   </div>
                   
@@ -360,7 +548,7 @@ export const ProfileLive: React.FC<ProfileLiveProps> = ({
                             />
                           )
                         )}
-                       {!isOwnProfile && isPlayingLive && !isSubscribed && !hasPaidForLive ? (
+                       {!isOwnProfile && isPlayingLive && !effectiveIsSubscribed && !hasPaidForLive ? (
                          isPreviewExpired ? (
                            <div style={{ position: 'absolute', inset: 0, zIndex: 30, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: 'var(--bg-surface)', padding: '40px', textAlign: 'center' }}>
                              <Lock size={48} color="#ff4d85" style={{ marginBottom: '16px' }} />
@@ -491,8 +679,33 @@ export const ProfileLive: React.FC<ProfileLiveProps> = ({
                            ))}
                          </div>
                        )}
-
-
+                                    {/* Floating Reactions overlay */}
+                      <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', overflow: 'hidden', zIndex: 20 }}>
+                        <AnimatePresence>
+                          {reactions.map(r => (
+                            <motion.div
+                              key={r.id}
+                              initial={{ y: '100%', x: `${r.left}%`, opacity: 0, scale: 0.6 }}
+                              animate={{ 
+                                y: '-20%', 
+                                x: [`${r.left}%`, `${r.left + (Math.random() * 16 - 8)}%`, `${r.left + (Math.random() * 24 - 12)}%`],
+                                opacity: [0, 1, 1, 0],
+                                scale: [0.6, 1.2, 1.2, 0.8]
+                              }}
+                              exit={{ opacity: 0 }}
+                              transition={{ duration: 2.2, ease: 'easeOut' }}
+                              style={{
+                                position: 'absolute',
+                                bottom: '20px',
+                                fontSize: '36px',
+                                textShadow: '0 4px 12px rgba(0,0,0,0.5)',
+                              }}
+                            >
+                              {r.char}
+                            </motion.div>
+                          ))}
+                        </AnimatePresence>
+                      </div>
                      </>
                   ) : (
                     <>
@@ -505,11 +718,297 @@ export const ProfileLive: React.FC<ProfileLiveProps> = ({
                     </>
                   )}
                 </div>
-                 <div className="live-chat-slot">
-                    <React.Suspense fallback={<div style={{ padding: '20px', color: 'var(--text-secondary)' }}>Loading chat...</div>}>
-                      <LiveChat streamId={profile?.username || 'profile'} />
-                    </React.Suspense>
-                 </div>
+
+                <div className="live-chat-slot" style={{ display: 'flex', flexDirection: 'column', height: 'auto', minHeight: '450px' }}>
+                  {showFanZone ? (
+                    <div
+                      style={{
+                        width: '100%',
+                        height: '100%',
+                        background: 'rgba(15, 15, 20, 0.65)',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        overflow: 'hidden',
+                      }}
+                    >
+                      {/* Header */}
+                      <div style={{ padding: '16px', borderBottom: '1px solid rgba(255,255,255,0.06)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0 }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                          <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#ff3b30', animation: 'pulse 1.5s infinite' }} />
+                          <h4 style={{ margin: 0, fontSize: '15px', fontWeight: 800, color: '#fff', letterSpacing: '-0.3px' }}>Fan Zone Room</h4>
+                        </div>
+                        <span style={{ fontSize: '11px', color: '#ff3b30', fontWeight: 700, background: 'rgba(255, 59, 48, 0.1)', padding: '2px 8px', borderRadius: '10px' }}>LIVE</span>
+                      </div>
+
+                      {/* Co-Watchers Grid */}
+                      <div style={{ padding: '16px', borderBottom: '1px solid rgba(255,255,255,0.06)', display: 'flex', flexDirection: 'column', gap: '10px', flexShrink: 0 }}>
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                          <span style={{ fontSize: '10px', fontWeight: 800, color: '#666', textTransform: 'uppercase', letterSpacing: '1px' }}>Watch Party</span>
+                          <div style={{ display: 'flex', gap: '6px' }}>
+                            <button
+                              onClick={() => setIsCameraOn(!isCameraOn)}
+                              style={{
+                                width: '28px', height: '28px', borderRadius: '50%',
+                                background: isCameraOn ? `${accent}dd` : 'rgba(255,255,255,0.08)',
+                                border: 'none', color: '#fff', cursor: 'pointer',
+                                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                transition: 'all 0.2s',
+                              }}
+                            >
+                              {isCameraOn ? <Video size={13} /> : <VideoOff size={13} />}
+                            </button>
+                            <button
+                              onClick={() => setIsMuted(!isMuted)}
+                              style={{
+                                width: '28px', height: '28px', borderRadius: '50%',
+                                background: isMuted ? '#ff3b30' : 'rgba(255,255,255,0.08)',
+                                border: 'none', color: '#fff', cursor: 'pointer',
+                                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                transition: 'all 0.2s',
+                              }}
+                            >
+                              {isMuted ? <MicOff size={13} /> : <Mic size={13} />}
+                            </button>
+                          </div>
+                        </div>
+
+                        <div style={{ display: 'flex', gap: '12px', alignItems: 'center', overflowX: 'auto', padding: '4px 0', scrollbarWidth: 'none' }}>
+                          {/* Local User */}
+                          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px' }}>
+                            <div style={{ position: 'relative' }}>
+                              <motion.div
+                                  animate={{
+                                    boxShadow: (!isMuted && !isCameraOn)
+                                      ? [`0 0 0 0px ${accent}66`, `0 0 0 8px ${accent}00`]
+                                      : '0 0 0 0px transparent'
+                                  }}
+                                  transition={{ repeat: Infinity, duration: 1.5, ease: 'easeInOut' }}
+                                  style={{
+                                    width: '44px', height: '44px', borderRadius: '50%',
+                                    border: `2px solid ${!isMuted ? accent : 'rgba(255,255,255,0.2)'}`,
+                                    padding: '2px', background: '#000',
+                                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                    overflow: 'hidden'
+                                  }}
+                                >
+                                  {isCameraOn ? (
+                                    <div style={{ width: '100%', height: '100%', background: '#1c1c1e', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative' }}>
+                                      <motion.div
+                                        animate={{ scale: [1, 1.15, 1] }}
+                                        transition={{ repeat: Infinity, duration: 2 }}
+                                        style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#4cd964', position: 'absolute', top: '4px', right: '4px' }}
+                                      />
+                                      <span style={{ fontSize: '9px', fontWeight: 900, color: accent }}>CAM</span>
+                                    </div>
+                                  ) : (
+                                    <img 
+                                      src={currentUser.avatar} 
+                                      alt={currentUser.name} 
+                                      style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover' }} 
+                                    />
+                                  )}
+                                </motion.div>
+                                {isMuted && (
+                                  <div style={{ position: 'absolute', bottom: '-2px', right: '-2px', background: '#ff3b30', borderRadius: '50%', width: '16px', height: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1px solid #000' }}>
+                                    <MicOff size={8} color="#fff" />
+                                  </div>
+                                )}
+                              </div>
+                              <span style={{ fontSize: '9px', color: '#fff', fontWeight: 600 }}>{currentUser.name.split(' ')[0]}</span>
+                            </div>
+
+                            {/* Co-watchers */}
+                            {coWatchers.map(w => (
+                              <div key={w.id} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px' }}>
+                                <div style={{ position: 'relative' }}>
+                                  <motion.div
+                                    animate={{
+                                      boxShadow: w.speaking 
+                                        ? [`0 0 0 0px ${accent}55`, `0 0 0 8px ${accent}00`] 
+                                        : '0 0 0 0px transparent'
+                                    }}
+                                    transition={{ repeat: Infinity, duration: 1.5, ease: 'easeInOut' }}
+                                    style={{
+                                      width: '44px', height: '44px', borderRadius: '50%',
+                                      border: `2px solid ${w.speaking ? accent : 'rgba(255,255,255,0.1)'}`,
+                                      padding: '2px', background: '#000',
+                                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                      overflow: 'hidden'
+                                    }}
+                                  >
+                                    <img src={w.avatar} alt={w.name} style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover' }} />
+                                  </motion.div>
+                                  {w.speaking && (
+                                    <div style={{ position: 'absolute', bottom: '-2px', right: '-2px', background: accent, borderRadius: '50%', width: '14px', height: '14px', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1px solid #000' }}>
+                                      <span style={{ fontSize: '7px', fontWeight: 900, color: '#000' }}>🎙️</span>
+                                    </div>
+                                  )}
+                                </div>
+                                <span style={{ fontSize: '9px', color: '#888' }}>{w.name}</span>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+
+                        {/* Room Link */}
+                        <div style={{ padding: '10px 16px', borderBottom: '1px solid rgba(255,255,255,0.06)', display: 'flex', gap: '12px', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0 }}>
+                          <button
+                            onClick={() => setIsPrivate(!isPrivate)}
+                            style={{
+                              display: 'flex', alignItems: 'center', gap: '4px',
+                              padding: '4px 8px', borderRadius: '4px',
+                              background: isPrivate ? 'rgba(255, 59, 48, 0.1)' : 'rgba(76, 217, 100, 0.1)',
+                              border: `1px solid ${isPrivate ? 'rgba(255, 59, 48, 0.3)' : 'rgba(76, 217, 100, 0.3)'}`,
+                              color: isPrivate ? '#ff3b30' : '#4cd964',
+                              fontSize: '10px', fontWeight: 700, cursor: 'pointer',
+                              borderStyle: 'solid',
+                            }}
+                          >
+                            {isPrivate ? <Lock size={10} /> : <Globe size={10} />}
+                            {isPrivate ? 'Private Room' : 'Public Lobby'}
+                          </button>
+
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                            <span style={{ fontSize: '10px', color: '#555' }}>Invite:</span>
+                            <div style={{ display: 'flex', alignItems: 'center', background: 'rgba(0,0,0,0.3)', borderRadius: '4px', padding: '2px 4px', border: '1px solid rgba(255,255,255,0.05)' }}>
+                              <input 
+                                readOnly 
+                                value={`vibe.network/room/${(creatorId || profile?.id || 'live').substring(0,6)}`} 
+                                style={{ background: 'none', border: 'none', color: '#666', fontSize: '9px', width: '90px', outline: 'none' }} 
+                              />
+                              <button
+                                onClick={() => {
+                                  const roomId = creatorId || profile?.id || 'live';
+                                  navigator.clipboard.writeText(`${window.location.origin}${window.location.pathname}?fanzone=true&room=${roomId}`);
+                                  setCopied(true);
+                                  toast.success('Room Invite Link copied!');
+                                  setTimeout(() => setCopied(false), 2000);
+                                }}
+                                style={{ background: 'none', border: 'none', color: copied ? accent : '#aaa', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                              >
+                                {copied ? <Check size={10} /> : <Copy size={10} />}
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Chat Messages scroll area */}
+                        <div ref={chatScrollRef} style={{ flex: 1, overflowY: 'auto', padding: '16px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                          {chatMessages.length === 0 ? (
+                            <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', color: '#555', fontSize: '12px' }}>
+                              <p style={{ margin: 0 }}>🎉 Welcome to the Fan Zone!</p>
+                              <p style={{ margin: '4px 0 0 0', fontSize: '11px', textAlign: 'center' }}>Send a message to start syncing with co-watchers in real-time.</p>
+                            </div>
+                          ) : (
+                            chatMessages.map(msg => (
+                              <div key={msg.id} style={{ display: 'flex', gap: '8px', alignItems: 'flex-start' }}>
+                                <img src={msg.avatar} alt={msg.user} style={{ width: '28px', height: '28px', borderRadius: '50%', objectFit: 'cover', marginTop: '2px' }} />
+                                <div style={{ display: 'flex', flexDirection: 'column', flex: 1 }}>
+                                  <div style={{ display: 'flex', alignItems: 'baseline', gap: '6px' }}>
+                                    <span style={{ fontSize: '11px', fontWeight: 800, color: msg.isSelf ? accent : '#eee' }}>{msg.user}</span>
+                                    <span style={{ fontSize: '8px', color: '#444' }}>{msg.time}</span>
+                                  </div>
+                                  <span style={{ fontSize: '12px', color: '#ccc', lineHeight: 1.4, wordBreak: 'break-word' }}>{msg.text}</span>
+                                </div>
+                              </div>
+                            ))
+                          )}
+                        </div>
+
+                        {/* Reaction Bar & Message Input */}
+                        <div style={{ padding: '12px 16px', borderTop: '1px solid rgba(255,255,255,0.06)', background: 'rgba(0,0,0,0.2)', flexShrink: 0 }}>
+                          {/* Emoji Reactions */}
+                          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px', background: 'rgba(255,255,255,0.02)', padding: '6px 12px', borderRadius: '20px', border: '1px solid rgba(255,255,255,0.05)' }}>
+                            {['🔥', '😮', '😂', '👏', '💯'].map(emoji => (
+                              <button
+                                key={emoji}
+                                onClick={() => addReaction(emoji, true)}
+                                style={{
+                                  background: 'none', border: 'none', fontSize: '18px', cursor: 'pointer',
+                                  transition: 'transform 0.1s',
+                                }}
+                                onMouseOver={e => e.currentTarget.style.transform = 'scale(1.3)'}
+                                onMouseOut={e => e.currentTarget.style.transform = 'scale(1)'}
+                              >
+                                {emoji}
+                              </button>
+                            ))}
+                          </div>
+
+                          {/* Message Input */}
+                          <form
+                            onSubmit={e => {
+                              e.preventDefault();
+                              if (!chatInput.trim()) return;
+                              const msgId = Math.random().toString();
+                              const now = new Date();
+                              const timeStr = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                              const newMsg = {
+                                id: msgId,
+                                user: currentUser.name,
+                                text: chatInput,
+                                avatar: currentUser.avatar,
+                                time: timeStr,
+                                isSelf: true,
+                              };
+                              setChatMessages(prev => [...prev, newMsg]);
+
+                              if (fanzoneChannelRef.current) {
+                                fanzoneChannelRef.current.send({
+                                  type: 'broadcast',
+                                  event: 'chat',
+                                  payload: {
+                                    id: msgId,
+                                    user: currentUser.name,
+                                    text: chatInput,
+                                    avatar: currentUser.avatar,
+                                    time: timeStr
+                                  }
+                                });
+                              }
+
+                              setChatInput('');
+                            }}
+                            style={{ display: 'flex', gap: '8px' }}
+                          >
+                            <input
+                              type="text"
+                              value={chatInput}
+                              onChange={e => setChatInput(e.target.value)}
+                              placeholder="Say something in Fan Zone..."
+                              style={{
+                                flex: 1,
+                                background: 'rgba(255,255,255,0.05)',
+                                border: '1px solid rgba(255,255,255,0.1)',
+                                borderRadius: '20px',
+                                padding: '8px 16px',
+                                color: '#fff',
+                                fontSize: '12px',
+                                outline: 'none',
+                              }}
+                            />
+                            <button
+                              type="submit"
+                              style={{
+                                width: '32px', height: '32px', borderRadius: '50%',
+                                background: accent, border: 'none', color: '#000',
+                                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                cursor: 'pointer', transition: 'opacity 0.2s',
+                              }}
+                              onMouseOver={e => e.currentTarget.style.opacity = '0.85'}
+                              onMouseOut={e => e.currentTarget.style.opacity = '1'}
+                            >
+                              <Send size={12} />
+                            </button>
+                          </form>
+                        </div>
+                      </div>
+                    ) : (
+                      <React.Suspense fallback={<div style={{ padding: '20px', color: 'var(--text-secondary)' }}>Loading chat...</div>}>
+                        <LiveChat streamId={profile?.username || 'profile'} />
+                      </React.Suspense>
+                    )}
+                  </div>
               </div>
               {localGuestData && (
                 <div style={{ padding: '0 24px', display: 'flex', justifyContent: 'flex-end', marginTop: '16px' }}>
@@ -536,7 +1035,7 @@ export const ProfileLive: React.FC<ProfileLiveProps> = ({
                   <h3 style={{ margin: '0 0 8px 0', fontSize: '20px' }}>VIP Backstage Broadcast</h3>
                   <p style={{ margin: 0, color: 'var(--text-muted)' }}>
                     {isOwnProfile ? 'Configure your live stream settings below.' : 
-                     isSubscribed ? 'Live stream is free since you are subscribed!' : 
+                     effectiveIsSubscribed ? 'Live stream is free since you are subscribed!' : 
                      'Streaming live now. Subscribe for free access, or unlock this broadcast below.'}
                   </p>
                   

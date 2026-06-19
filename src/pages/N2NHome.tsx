@@ -8,6 +8,7 @@ import { getChildNetworks, mergeQueryParams } from '../lib/n2n';
 import { getN2NCategories } from '../api';
 import type { Category, VideoItem, User } from '../types';
 import { supabase } from '../supabaseClient';
+import { isOlympianConfig, isB2kConfig, isKpleConfig } from '../lib/whitelabel';
 const CollegeTicker = lazy(() => import('../components/CollegeTicker'));
 const CollegeNewsFeed = lazy(() => import('../components/CollegeNewsFeed'));
 const WatchLive = lazy(() => import('../components/WatchLive'));
@@ -163,13 +164,9 @@ export default function N2NHome({ wlConfig, categories, activeVideo, setActiveVi
     }
   }, [activeVideo]);
 
-  const isOlympian = config?.name?.toLowerCase().includes('olympia') || 
-                     config?.domain?.includes('mrolympia.com') ||
-                     config?.name?.toLowerCase().includes('muscle') ||
-                     config?.name?.toLowerCase().includes('fitness');
-
-  const isB2K = config?.name?.toLowerCase().includes('b2k') || 
-                config?.domain?.includes('b2k.vibenetwork.tv');
+  const isOlympian = isOlympianConfig(config);
+  const isB2K = isB2kConfig(config);
+  const isKple = isKpleConfig(config);
 
   const isAvo = config?.id === '3915f1e5-4c79-4b2a-ad41-7029ce8052d7' ||
                 config?.name?.toLowerCase().includes('avo');
@@ -181,11 +178,6 @@ export default function N2NHome({ wlConfig, categories, activeVideo, setActiveVi
   const isVibe = !isVibe100 && (config?.name?.toLowerCase().includes('vibe') || 
                  config?.domain?.includes('vibenetwork.tv') ||
                  config?.id === 'adb92e36-5ebc-4dc3-ae96-429f3dc1bb30');
-
-  const isKple = config?.id === '33742e2f-430b-4c2d-9cba-42507891ef02' ||
-                 config?.name?.toLowerCase().includes('kple') ||
-                 config?.name?.toLowerCase().includes('christian revival') ||
-                 config?.domain?.includes('kpletv.org');
 
 
   // ─── AVO Hero Slides — real shopavo.la CDN images ───────────────
@@ -223,7 +215,7 @@ export default function N2NHome({ wlConfig, categories, activeVideo, setActiveVi
 
   const VIBE_100_HERO_SLIDES = [
     { school: 'AVO Channel', short: 'AVO', subtitle: 'VIBE 100', copy: 'Premium college lifestyle and gameday apparel.', image: '/n2n/baylor.png', link: '/?tenant=100a0000-c08f-4260-8540-a0cc8bed4e11' },
-    { school: 'Mr. Olympia Channel', short: 'Mr. Olympia', subtitle: 'VIBE 100', copy: 'Celebrate legendary fitness icons and bodybuilding excellence.', image: '/n2n/mr_olympia_hero.png', link: '/?tenant=100b0000-c08f-4260-8540-a0cc8bed4e11' },
+    { school: 'Muscle & Fitness Channel', short: 'Muscle & Fitness', subtitle: 'VIBE 100', copy: 'The ultimate resource for bodybuilding, workouts, nutrition, and fitness.', image: 'https://images.unsplash.com/photo-1517838277536-f5f99be501cd?auto=format&fit=crop&q=80&w=1200', link: '/?tenant=100b0000-c08f-4260-8540-a0cc8bed4e11' },
     { school: 'B2K Channel', short: 'B2K', subtitle: 'VIBE 100', copy: 'Celebrate 25 years of multi-platinum hits and boy band legacy.', image: 'https://www.vibe.com/wp-content/uploads/2019/05/VIBE-B2K-5-1557518926.jpg', link: '/?tenant=100c0000-c08f-4260-8540-a0cc8bed4e11' },
     { school: 'Christian Revival Channel', short: 'Christian Revival', subtitle: 'VIBE 100', copy: 'Inspirational programming, local community news, and sermons.', image: '/kple_network_thumbnail.png', link: '/?tenant=100d0000-c08f-4260-8540-a0cc8bed4e11' },
     { school: 'FINFIRE Channel', short: 'FINFIRE', subtitle: 'VIBE 100', copy: 'Empowering financial freedom, investment guides, and real estate strategy.', image: 'https://images.unsplash.com/photo-1559526324-4b87b5e36e44?auto=format&fit=crop&q=80&w=1200', link: '/?tenant=100e0000-c08f-4260-8540-a0cc8bed4e11' }
@@ -301,10 +293,10 @@ export default function N2NHome({ wlConfig, categories, activeVideo, setActiveVi
                   if (targetLink.startsWith('http')) {
                     window.open(targetLink, '_blank');
                   } else {
-                    window.location.href = targetLink + window.location.search;
+                    window.location.href = mergeQueryParams(targetLink, window.location.search);
                   }
                 } else {
-                  window.location.href = '/shop' + window.location.search;
+                  window.location.href = mergeQueryParams('/shop', window.location.search);
                 }
               }}
               style={{
@@ -411,14 +403,14 @@ export default function N2NHome({ wlConfig, categories, activeVideo, setActiveVi
 
         {/* ── New Drop CTA Banner ─────────────────────────────── */}
         <section style={{ maxWidth: '1400px', margin: '20px auto 40px', padding: '0 40px' }}>
-          <div style={{
+          <div className="banner-flex-container" style={{
             position: 'relative', overflow: 'hidden',
             display: 'flex', minHeight: '340px',
             border: '1px solid rgba(255,255,255,0.06)',
             background: '#000',
           }}>
             {/* Left — Image */}
-            <div style={{
+            <div className="banner-image-column" style={{
               flex: '0 0 45%', position: 'relative', overflow: 'hidden',
             }}>
               <img
@@ -438,7 +430,7 @@ export default function N2NHome({ wlConfig, categories, activeVideo, setActiveVi
             </div>
 
             {/* Right — Content */}
-            <div style={{
+            <div className="banner-text-column" style={{
               flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center',
               padding: '48px 48px 48px 32px', position: 'relative',
             }}>
@@ -481,7 +473,7 @@ export default function N2NHome({ wlConfig, categories, activeVideo, setActiveVi
                 fontSize: '14px', color: 'rgba(255,255,255,0.5)', lineHeight: 1.7,
                 margin: '0 0 28px 0', maxWidth: '380px',
               }}>
-                {isOlympian ? "Premium bodybuilding and lifestyle apparel engineered for champions. Rep the legacy with official Mr. Olympia hoodies, workout shirts, and accessories." : (isB2K ? "Pre-order exclusive Boys 4 Life tour hoodies, vintage graphic tees, and autographed vinyl. Rep the legendary boy band reunion in style." : (isKple ? "The Christian Revival Network is a 501(c)3 non-profit media mission. Your donations help us broadcast the Gospel 24/7 to Central Texas and the world. Support our ministry today." : (isVibe100 ? "Explore premium merchandise, albums, and exclusive releases from all Top 100 networks. Shop official gear and support your favorite channels." : "Premium collegiate apparel for every school in the AVO family. Rep your team with style — new colorways and exclusive designs just dropped.")))}
+                {isOlympian ? `Premium bodybuilding and lifestyle apparel engineered for champions. Rep the legacy with official ${config?.name || 'Muscle & Fitness'} hoodies, workout shirts, and accessories.` : (isB2K ? "Pre-order exclusive Boys 4 Life tour hoodies, vintage graphic tees, and autographed vinyl. Rep the legendary boy band reunion in style." : (isKple ? "The Christian Revival Network is a 501(c)3 non-profit media mission. Your donations help us broadcast the Gospel 24/7 to Central Texas and the world. Support our ministry today." : (isVibe100 ? "Explore premium merchandise, albums, and exclusive releases from all Top 100 networks. Shop official gear and support your favorite channels." : "Premium collegiate apparel for every school in the AVO family. Rep your team with style — new colorways and exclusive designs just dropped.")))}
               </p>
               <a
                 href={isKple ? "https://www.paypal.com/donate/?hosted_button_id=A7WXAKZEAGBPA" : ('/shop' + (typeof window !== 'undefined' ? window.location.search : ''))}
@@ -574,13 +566,13 @@ export default function N2NHome({ wlConfig, categories, activeVideo, setActiveVi
               {/* Gradient overlay */}
               <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(135deg, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.4) 50%, rgba(0,0,0,0.7) 100%)' }} />
 
-              <div style={{
+              <div className="banner-cta-container" style={{
                 position: 'relative', zIndex: 2,
                 padding: '64px 60px', display: 'flex', alignItems: 'center',
                 justifyContent: 'space-between', flexWrap: 'wrap', gap: '40px',
               }}>
                 {/* Left — Content */}
-                <div style={{ maxWidth: '520px' }}>
+                <div className="banner-cta-content" style={{ maxWidth: '520px' }}>
                   <div style={{
                     display: 'inline-flex', alignItems: 'center', gap: '8px',
                     padding: '6px 14px', background: accent, color: '#000',
@@ -651,7 +643,7 @@ export default function N2NHome({ wlConfig, categories, activeVideo, setActiveVi
                 </div>
 
                 {/* Right — Image */}
-                <div style={{ flexShrink: 0, width: '320px', position: 'relative' }}>
+                <div className="banner-cta-right" style={{ flexShrink: 0, width: '320px', position: 'relative' }}>
                   <img
                     src={isKple ? "https://images.unsplash.com/photo-1544717305-2782549b5136?auto=format&fit=crop&q=80&w=600" : "/n2n/hoodie-competition.png"}
                     alt={isKple ? "Prayer Request" : "College Hoodie Competition"}
@@ -688,7 +680,7 @@ export default function N2NHome({ wlConfig, categories, activeVideo, setActiveVi
               {/* Gradient Overlay */}
               <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to right, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.4) 60%, transparent 100%)' }} />
 
-              <div style={{
+              <div className="banner-full-bleed-content" style={{
                 position: 'relative', zIndex: 2,
                 padding: '64px 60px', maxWidth: '640px',
               }}>
@@ -896,8 +888,8 @@ export default function N2NHome({ wlConfig, categories, activeVideo, setActiveVi
               }} />
               <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to right, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.5) 60%, transparent 100%)' }} />
 
-              <div style={{ position: 'relative', zIndex: 2, padding: '80px 60px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '40px' }}>
-                <div style={{ maxWidth: '550px' }}>
+              <div className="banner-cta-container" style={{ position: 'relative', zIndex: 2, padding: '80px 60px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '40px' }}>
+                <div className="banner-cta-content" style={{ maxWidth: '550px' }}>
                   <p style={{
                     fontSize: '11px', fontWeight: 800, textTransform: 'uppercase',
                     letterSpacing: '3px', color: accent, marginBottom: '12px',
@@ -909,7 +901,7 @@ export default function N2NHome({ wlConfig, categories, activeVideo, setActiveVi
                     lineHeight: 1.15, letterSpacing: '-1px', textTransform: 'uppercase',
                   }}>
                     {isOlympian ? (
-                      <>Represent Mr. Olympia<br />In Your Community</>
+                      <>Represent {config?.name || 'Muscle & Fitness'}<br />In Your Community</>
                     ) : (
                       isB2K ? (
                         <>B2K Street Team &amp;<br />Millennium Ambassador</>
@@ -926,7 +918,7 @@ export default function N2NHome({ wlConfig, categories, activeVideo, setActiveVi
                     fontSize: '15px', color: 'rgba(255,255,255,0.55)', lineHeight: 1.7, margin: 0,
                   }}>
                     {isOlympian 
-                      ? "Join the official Mr. Olympia Ambassador Program. Share fitness tips, review premium workout apparel, and earn exclusive event credentials, early access, and commissions."
+                      ? `Join the official ${config?.name || 'Muscle & Fitness'} Ambassador Program. Share fitness tips, review premium workout apparel, and earn exclusive event credentials, early access, and commissions.`
                       : (isB2K 
                         ? "Join the official B2K Millennium Street Team. Promote the Boys 4 Life Tour, share new music updates, and earn exclusive backstage passes, VIP meet-and-greets, and limited edition merch."
                         : (isKple ? "Become a supporting partner of the Christian Revival Network. Join our media mission to keep the Gospel broadcasting 24/7. Your support enables us to continue revealing the love of Jesus Christ." : "Join the AVO Ambassador Program and bring premium college apparel to your school. Earn exclusive perks, early access to drops, and commissions on every sale.")
@@ -934,6 +926,7 @@ export default function N2NHome({ wlConfig, categories, activeVideo, setActiveVi
                   </p>
                 </div>
                 <button
+                  className="banner-cta-right"
                   onClick={() => {
                     if (isKple) {
                       window.open("https://members.kple-tv.org/", "_blank");

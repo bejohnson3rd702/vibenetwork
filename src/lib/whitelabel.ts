@@ -30,11 +30,43 @@ export interface WlConfig {
   shopifyUrl?: string | null;
 }
 
+export function isOlympianConfig(config: any): boolean {
+  if (!config) return false;
+  const name = config.name?.toLowerCase() || '';
+  const domain = config.domain?.toLowerCase() || '';
+  return name.includes('olympia') || domain.includes('mrolympia.com') || name.includes('muscle') || name.includes('fitness');
+}
+
+export function isB2kConfig(config: any): boolean {
+  if (!config) return false;
+  const name = config.name?.toLowerCase() || '';
+  const domain = config.domain?.toLowerCase() || '';
+  return name.includes('b2k') || domain.includes('b2k.vibenetwork.tv');
+}
+
+export function isKpleConfig(config: any): boolean {
+  if (!config) return false;
+  const id = config.id || '';
+  const name = config.name?.toLowerCase() || '';
+  const domain = config.domain?.toLowerCase() || '';
+  const parentId = config.parent_network_id || '';
+  return id === '33742e2f-430b-4c2d-9cba-42507891ef02' ||
+         parentId === '33742e2f-430b-4c2d-9cba-42507891ef02' ||
+         name.includes('kple') ||
+         name.includes('christian revival') ||
+         domain.includes('kpletv.org');
+}
+
 export function normalizeWlConfig(
   raw: any,
   overrides?: Partial<WlConfig>
 ): WlConfig {
-  const isKple = raw?.id === '33742e2f-430b-4c2d-9cba-42507891ef02' || raw?.name === 'KPLE TV' || overrides?.name === 'KPLE TV';
+  const isKple = isKpleConfig(raw) || isKpleConfig(overrides);
+  const isOlympian = isOlympianConfig(raw) || isOlympianConfig(overrides);
+  const isB2k = isB2kConfig(raw) || isB2kConfig(overrides);
+
+  const defaultAccent = isKple ? '#004e98' : (isOlympian ? '#E31B23' : (isB2k ? '#FF2A54' : '#D35400'));
+
   const theme = {
     ...(raw?.theme || {}),
     ...(isKple ? {
@@ -46,7 +78,7 @@ export function normalizeWlConfig(
     id: raw?.id || 'master',
     name: isKple ? 'Christian Revival Network' : (raw?.name || DEFAULT_PLATFORM_NAME),
     domain: raw?.domain || MASTER_DOMAIN,
-    accent: raw?.accent || theme.accent || '#D35400',
+    accent: raw?.accent || theme.accent || defaultAccent,
     bg: theme.bg || raw?.bg || 'var(--bg-color)',
     heroCopy: theme.heroCopy || raw?.heroCopy || FALLBACK_HERO_COPY,
     btnPrimary: theme.btnPrimary || raw?.btnPrimary || 'Explore Content',
@@ -75,6 +107,11 @@ export function normalizeWlConfig(
     base.name = 'Christian Revival Network';
     base.logoImage = 'https://ui-avatars.com/api/?name=Christian+Revival+Network&background=004e98&color=fff';
     base.heroCopy = 'Christian Revival Network — Come All Revival. Class A Christian Broadcasting.';
+  }
+
+  // Ensure default accent is correct if none exists
+  if (!base.accent || base.accent === '#D35400') {
+    base.accent = defaultAccent;
   }
 
   return base;

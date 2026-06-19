@@ -13,6 +13,7 @@ import { BrandingTab } from './admin/BrandingTab';
 import { AnalyticsTab } from './admin/AnalyticsTab';
 import { EnterpriseAiTab } from './admin/EnterpriseAiTab';
 import { getChildNetworks, deleteChildNetwork, createChildNetwork } from '../lib/n2n';
+import LiveTelemetry from './LiveTelemetry';
 
 /** Inline component to list child networks in the Master Admin N2N panel */
 function N2NChildrenList({ parentId, parentAccent, showToast }: { parentId: string; parentAccent?: string; showToast: (msg: string, type: 'success' | 'error') => void }) {
@@ -295,10 +296,7 @@ function MasterAdminDashboard() {
 
                <div style={{ background: 'var(--bg-surface)', borderRadius: '24px', border: '1px solid rgba(255,255,255,0.05)', padding: '30px' }}>
                  <h3 style={{ margin: '0 0 24px 0', fontSize: '20px' }}>Live Platform Telemetry</h3>
-                 <div style={{ width: '100%', height: '300px', background: 'rgba(0,85,255,0.05)', borderRadius: '16px', border: '1px solid rgba(0,85,255,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#0055ff', flexDirection: 'column', gap: '16px' }}>
-                    <Activity size={48} />
-                    <span>Real-time traffic visualization engine connected</span>
-                 </div>
+                 <LiveTelemetry accentColor="#0055ff" />
                </div>
 
             </motion.div>

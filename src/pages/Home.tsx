@@ -132,14 +132,14 @@ export default function Home({ categories, activeVideo, setActiveVideo, user }: 
                     <>
                       {/* ── Mr. Olympia Call to Action Banner ── */}
                       <section style={{ maxWidth: '1400px', margin: '40px auto', padding: '0 40px' }}>
-                        <div style={{
+                        <div className="banner-flex-container" style={{
                           position: 'relative', overflow: 'hidden',
                           display: 'flex', minHeight: '340px',
                           border: '1px solid rgba(255,255,255,0.06)',
                           background: '#000',
                         }}>
                           {/* Left — Image */}
-                          <div style={{
+                          <div className="banner-image-column" style={{
                             flex: '0 0 45%', position: 'relative', overflow: 'hidden',
                           }}>
                             <img
@@ -159,7 +159,7 @@ export default function Home({ categories, activeVideo, setActiveVideo, user }: 
                           </div>
 
                           {/* Right — Content */}
-                          <div style={{
+                          <div className="banner-text-column" style={{
                             flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center',
                             padding: '48px 48px 48px 32px', position: 'relative',
                           }}>
@@ -174,7 +174,7 @@ export default function Home({ categories, activeVideo, setActiveVideo, user }: 
                               fontSize: '11px', fontWeight: 800, textTransform: 'uppercase',
                               letterSpacing: '3px', color: '#E31B23', margin: '0 0 12px 0',
                             }}>
-                              Olympia Collection
+                              Muscle & Fitness Collection
                             </p>
                             <h2 style={{
                               fontSize: '34px', fontWeight: 900, color: '#fff', margin: '0 0 14px 0',
@@ -186,10 +186,10 @@ export default function Home({ categories, activeVideo, setActiveVideo, user }: 
                               fontSize: '14px', color: 'rgba(255,255,255,0.5)', lineHeight: 1.7,
                               margin: '0 0 28px 0', maxWidth: '380px',
                             }}>
-                              Premium bodybuilding and lifestyle apparel engineered for champions. Rep the legacy with official Mr. Olympia hoodies, workout shirts, and accessories.
+                              Premium bodybuilding and lifestyle apparel engineered for champions. Rep the legacy with official Muscle & Fitness hoodies, workout shirts, and accessories.
                             </p>
                             <button
-                              onClick={() => navigate('/marketplace?network=olympia')}
+                              onClick={() => navigate('/marketplace?network=muscle')}
                               style={{
                                 display: 'inline-block', padding: '13px 40px', fontSize: '11px', fontWeight: 800,
                                 textTransform: 'uppercase', letterSpacing: '2.5px', width: 'fit-content',
@@ -249,7 +249,7 @@ export default function Home({ categories, activeVideo, setActiveVideo, user }: 
             {/* Gradient Overlay */}
             <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to right, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.4) 60%, transparent 100%)' }} />
 
-            <div style={{
+            <div className="banner-full-bleed-content" style={{
               position: 'relative', zIndex: 2,
               padding: '64px 60px', maxWidth: '640px',
             }}>
@@ -351,6 +351,7 @@ export default function Home({ categories, activeVideo, setActiveVideo, user }: 
             }}
           >
             <button 
+              className="modal-close-btn"
               onClick={() => setActiveVideo(null)}
               style={{
                 position: 'absolute',

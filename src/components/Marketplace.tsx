@@ -35,8 +35,8 @@ const Marketplace: React.FC = () => {
     const net = params.get('network');
     if (net) {
       const netLower = net.toLowerCase();
-      if (netLower.includes('olympia') || netLower.includes('mr. olympia')) {
-        setSelectedNetwork('Mr. Olympia');
+      if (netLower.includes('olympia') || netLower.includes('mr. olympia') || netLower.includes('muscle') || netLower.includes('fitness')) {
+        setSelectedNetwork('Muscle & Fitness');
       } else if (netLower.includes('avo')) {
         setSelectedNetwork('AVO');
       } else if (netLower.includes('b2k')) {
@@ -196,7 +196,7 @@ const Marketplace: React.FC = () => {
         if (selectedNetwork !== 'All') {
           if (selectedNetwork === 'AVO') {
             matchesNetwork = isAvo;
-          } else if (selectedNetwork === 'Mr. Olympia') {
+          } else if (selectedNetwork === 'Muscle & Fitness') {
             matchesNetwork = isOlympia;
           } else {
             matchesNetwork = false;
@@ -247,7 +247,7 @@ const Marketplace: React.FC = () => {
                  Filter by Network
                </span>
                <div style={{ display: 'flex', gap: '8px', overflowX: 'auto', paddingBottom: '8px' }}>
-                 {['All', 'AVO', 'Mr. Olympia'].map(net => (
+                 {['All', 'AVO', 'Muscle & Fitness'].map(net => (
                    <button
                      key={net}
                      onClick={() => setSelectedNetwork(net)}

@@ -73,15 +73,15 @@ const CHILD_NETWORKS = [
   },
   {
     id: '100b0000-c08f-4260-8540-a0cc8bed4e11',
-    name: 'Mr. Olympia Channel',
-    domain: 'v100-olympia.vibenetwork.tv',
-    logo: '/n2n/mr_olympia_logo.png',
+    name: 'Muscle & Fitness Channel',
+    domain: 'v100-muscle.vibenetwork.tv',
+    logo: '/n2n/muscle_fitness_logo.svg',
     parent_network_id: VIBE_100_ID,
     theme: {
-      accent: '#C5A059',
-      heroCopy: 'Mr. Olympia — Bodybuilding Legends & Champion Apparel',
-      heroImage: '/n2n/mr_olympia_hero.png',
-      logoImage: '/n2n/mr_olympia_logo.png',
+      accent: '#E31B23',
+      heroCopy: 'Muscle & Fitness — Bodybuilding Legends & Champion Apparel',
+      heroImage: 'https://images.unsplash.com/photo-1517838277536-f5f99be501cd?auto=format&fit=crop&q=80&w=1200',
+      logoImage: '/n2n/muscle_fitness_logo.svg',
       enableWatchLive: true,
       enableBooking: false,
       heroLayoutMode: 'verbiage',
@@ -89,16 +89,16 @@ const CHILD_NETWORKS = [
       parent_network_id: VIBE_100_ID
     },
     influencer: {
-      email: 'v100_olympia@vibe100.tv',
-      username: 'Olympia_V100_Host',
+      email: 'v100_muscle@vibe100.tv',
+      username: 'Muscle_Fitness_Host',
       avatar: 'https://images.unsplash.com/photo-1583454110551-21f2fa2afe61?auto=format&fit=crop&q=80&w=600',
-      bio: 'Official Host for Mr. Olympia Channel on VIBE 100. The Legacy of Champions.'
+      bio: 'Official Host for Muscle & Fitness Channel on VIBE 100.'
     },
     video: {
-      title: 'Mr. Olympia 2024 Men’s Open Prejudging Analysis',
+      title: 'Muscle & Fitness Training and Conditioning Guide',
       video_url: 'https://www.youtube.com/watch?v=SV7JP7y80UM',
       image_url: 'https://images.unsplash.com/photo-1517838277536-f5f99be501cd?auto=format&fit=crop&q=80&w=800',
-      tags: ['Bodybuilding', 'Prejudging']
+      tags: ['Bodybuilding', 'Conditioning']
     }
   },
   {

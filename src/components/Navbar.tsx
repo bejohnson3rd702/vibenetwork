@@ -204,7 +204,7 @@ const Navbar: React.FC<NavbarProps> = ({ user, onLoginClick, onAdminClick }) => 
             </div>
           )}
         </div>
-        <div className={user ? "" : "show-on-mobile"} style={{ display: 'flex', alignItems: 'center', marginLeft: '12px', position: 'relative' }}>
+        <div className={user ? "" : "show-on-mobile-tablet"} style={{ display: 'flex', alignItems: 'center', marginLeft: '12px', position: 'relative' }}>
           <Menu size={24} color="white" cursor="pointer" onClick={() => setIsMenuOpen(!isMenuOpen)} />
           
           {isMenuOpen && (

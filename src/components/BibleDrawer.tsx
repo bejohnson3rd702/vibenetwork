@@ -203,7 +203,7 @@ export default function BibleDrawer({ accent }: BibleDrawerProps) {
         style={{
           position: 'fixed',
           bottom: '24px',
-          right: '24px',
+          left: '24px',
           width: '56px',
           height: '56px',
           borderRadius: '50%',
@@ -236,22 +236,22 @@ export default function BibleDrawer({ accent }: BibleDrawerProps) {
       <AnimatePresence>
         {isOpen && (
           <motion.div
-            initial={{ x: '100%' }}
+            initial={{ x: '-100%' }}
             animate={{ x: 0 }}
-            exit={{ x: '100%' }}
+            exit={{ x: '-100%' }}
             transition={{ type: 'spring', damping: 25, stiffness: 220 }}
             style={{
               position: 'fixed',
               top: 0,
               bottom: 0,
-              right: 0,
+              left: 0,
               width: '100%',
               maxWidth: '440px',
               background: 'rgba(10, 10, 10, 0.85)',
               backdropFilter: 'blur(20px)',
-              borderLeft: '1px solid rgba(255, 255, 255, 0.08)',
+              borderRight: '1px solid rgba(255, 255, 255, 0.08)',
               zIndex: 10001,
-              boxShadow: '-10px 0 40px rgba(0,0,0,0.6)',
+              boxShadow: '10px 0 40px rgba(0,0,0,0.6)',
               display: 'flex',
               flexDirection: 'column',
               color: '#fff',
