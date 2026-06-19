@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { supabase } from '../../supabaseClient';
 import { useToast } from '../../context/ToastContext';
+import { processAndEnhanceImage } from '../../lib/imageProcessor';
 
 export const BrandingTab = ({ wlConfig }: { wlConfig: any }) => {
   const toast = useToast();
@@ -26,16 +27,21 @@ export const BrandingTab = ({ wlConfig }: { wlConfig: any }) => {
       if (!file) return;
       
       setUploading(true);
-      const fileExt = file.name.split('.').pop();
+      const isLogo = setUploading === setUploadingLogo;
+      toast.info(`✨ Nalu AI is enhancing and auto-cropping your branding ${isLogo ? 'logo' : 'favicon'}...`);
+      const enhancedFile = await processAndEnhanceImage(file, isLogo ? 'logo' : 'favicon');
+
+      const fileExt = enhancedFile.name.split('.').pop();
       const fileName = `${Date.now()}_${Math.random()}.${fileExt}`;
       const filePath = `brand/${fileName}`;
       
-      const { error: uploadError } = await supabase.storage.from('images').upload(filePath, file);
+      const { error: uploadError } = await supabase.storage.from('images').upload(filePath, enhancedFile);
       if (uploadError) throw uploadError;
       
       const { data } = supabase.storage.from('images').getPublicUrl(filePath);
       if (data?.publicUrl) {
         setUrl(data.publicUrl);
+        toast.success(`${isLogo ? 'Logo' : 'Favicon'} processed and uploaded!`);
       }
     } catch (err: any) {
       toast.error('Upload failed: ' + err.message);

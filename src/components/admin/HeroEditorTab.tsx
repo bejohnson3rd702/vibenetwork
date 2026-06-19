@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { supabase } from '../../supabaseClient';
 import { useToast } from '../../context/ToastContext';
+import { processAndEnhanceImage } from '../../lib/imageProcessor';
 import { AiTextArea, AiInput } from './AiComponents';
 import { DictationButton } from '../DictationButton';
 
@@ -59,11 +60,15 @@ export const HeroEditorTab = ({ wlConfig }: { wlConfig: any }) => {
       }
       if (!file) return;
       setUploadingHeroImage(true);
-      const fileExt = file.name.split('.').pop();
+
+      toast.info("✨ Nalu AI is enhancing and auto-cropping your hero banner...");
+      const enhancedFile = await processAndEnhanceImage(file, 'hero');
+
+      const fileExt = enhancedFile.name.split('.').pop();
       const fileName = `${Date.now()}_${Math.random()}.${fileExt}`;
       const filePath = `hero/${fileName}`;
       
-      const { error: uploadError } = await supabase.storage.from('images').upload(filePath, file);
+      const { error: uploadError } = await supabase.storage.from('images').upload(filePath, enhancedFile);
       if (uploadError) throw uploadError;
       
       const { data } = supabase.storage.from('images').getPublicUrl(filePath);

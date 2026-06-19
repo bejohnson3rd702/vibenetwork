@@ -14,6 +14,7 @@ import { useStreaming } from '../hooks/useStreaming';
 import { useWhiteLabel } from '../context/WhiteLabelContext';
 import { Helmet } from 'react-helmet-async';
 import { useToast } from '../context/ToastContext';
+import { processAndEnhanceImage } from '../lib/imageProcessor';
 
 let stripePromise: Promise<any> | null = null;
 const getStripe = () => {
@@ -696,11 +697,16 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
       }
       if (!file) return;
       setSaving(true);
-      const fileExt = file.name.split('.').pop();
+      
+      // AI aspect ratio crop and enhance
+      toast.info(`✨ Nalu AI is enhancing and auto-cropping your ${imageTarget === 'avatar' ? 'avatar/logo' : 'background banner'}...`);
+      const enhancedFile = await processAndEnhanceImage(file, imageTarget === 'avatar' ? 'avatar' : 'homepage');
+
+      const fileExt = enhancedFile.name.split('.').pop();
       const fileName = `${Math.random()}.${fileExt}`;
       const filePath = `${user?.id}/${fileName}`;
       
-      const { error: uploadError } = await supabase!.storage.from('images').upload(filePath, file);
+      const { error: uploadError } = await supabase!.storage.from('images').upload(filePath, enhancedFile);
       if (uploadError) throw uploadError;
       
       const { data } = supabase!.storage.from('images').getPublicUrl(filePath);
@@ -759,8 +765,12 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
       }
       if (!file) return;
       setUploadingProductImg(true);
-      const filePath = `${user?.id}/prod_${Math.random()}.${file.name.split('.').pop()}`;
-      await supabase!.storage.from('images').upload(filePath, file);
+      
+      toast.info("✨ Nalu AI is enhancing and auto-cropping your product photo...");
+      const enhancedFile = await processAndEnhanceImage(file, 'product');
+
+      const filePath = `${user?.id}/prod_${Math.random()}.${enhancedFile.name.split('.').pop()}`;
+      await supabase!.storage.from('images').upload(filePath, enhancedFile);
       const { data } = supabase!.storage.from('images').getPublicUrl(filePath);
       setNewProduct(prev => ({ ...prev, image_url: data.publicUrl }));
     } catch {
@@ -1048,8 +1058,12 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
       }
       if (!file) return;
       setUploadingPostMedia(true);
-      const filePath = `${user?.id}/post_${Math.random()}.${file.name.split('.').pop()}`;
-      await supabase!.storage.from('images').upload(filePath, file);
+      
+      toast.info("✨ Nalu AI is enhancing and auto-cropping your post media...");
+      const enhancedFile = await processAndEnhanceImage(file, 'post');
+
+      const filePath = `${user?.id}/post_${Math.random()}.${enhancedFile.name.split('.').pop()}`;
+      await supabase!.storage.from('images').upload(filePath, enhancedFile);
       const { data } = supabase!.storage.from('images').getPublicUrl(filePath);
       setPostMediaUrl(data.publicUrl);
     } catch {
