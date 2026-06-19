@@ -827,4 +827,61 @@ img, video {
   }
 }
 
+/* Vibe Home Hero Responsive Adjustments */
+@media (max-width: 768px) {
+  .vibe-hero-container {
+    height: 90vh !important; /* Limit height slightly on mobile to prevent extreme cropping */
+  }
+  .vibe-hero-image {
+    object-position: center 20% !important; /* Bias crop upward to keep heads/main subjects in frame */
+  }
+  .vibe-hero-text-overlay {
+    bottom: 64px !important;
+    padding: 0 20px !important;
+    max-width: 100% !important;
+  }
+  .vibe-hero-title {
+    font-size: 36px !important;
+    margin-bottom: 12px !important;
+  }
+  .vibe-hero-subtitle {
+    font-size: 11px !important;
+    letter-spacing: 2px !important;
+    margin-bottom: 6px !important;
+  }
+  .vibe-hero-copy {
+    font-size: 13px !important;
+    line-height: 1.45 !important;
+    margin-bottom: 18px !important;
+  }
+  .vibe-hero-button {
+    padding: 10px 30px !important;
+    font-size: 10px !important;
+  }
+  .vibe-hero-stat-panel {
+    margin-top: 18px !important;
+    padding: 12px 16px !important;
+  }
+  .vibe-hero-stat-panel p {
+    font-size: 20px !important;
+  }
+  .vibe-hero-stat-panel p + p {
+    font-size: 11px !important;
+    letter-spacing: 1px !important;
+  }
+  .vibe-hero-dots {
+    display: none !important; /* Hide vertical side dots on mobile to avoid overlap */
+  }
+}
+
+@media (max-width: 480px) {
+  .vibe-hero-bar-btn {
+    padding: 10px 4px !important;
+  }
+  .vibe-hero-bar-text {
+    font-size: 8px !important;
+    letter-spacing: 0.5px !important;
+  }
+}
+
 

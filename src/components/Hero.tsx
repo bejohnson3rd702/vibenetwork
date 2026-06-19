@@ -53,7 +53,7 @@ const Hero: React.FC = () => {
   };
 
   return (
-    <div style={{ position: 'relative', width: '100%', height: '100vh', backgroundColor: '#000', overflow: 'hidden' }}>
+    <div className="vibe-hero-container" style={{ position: 'relative', width: '100%', height: '100vh', backgroundColor: '#000', overflow: 'hidden' }}>
       
       {/* Full-bleed hero slideshow */}
       <AnimatePresence mode="wait">
@@ -68,6 +68,7 @@ const Hero: React.FC = () => {
           <img
             src={VIBE_HERO_SLIDES[heroSlide % VIBE_HERO_SLIDES.length]?.image}
             alt={VIBE_HERO_SLIDES[heroSlide % VIBE_HERO_SLIDES.length]?.title}
+            className="vibe-hero-image"
             loading="eager"
             fetchPriority="high"
             style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center center' }}
@@ -86,19 +87,21 @@ const Hero: React.FC = () => {
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: -10 }}
           transition={{ duration: 0.6 }}
+          className="vibe-hero-text-overlay"
           style={{ position: 'absolute', bottom: '180px', left: '0', zIndex: 2, padding: '0 60px', maxWidth: '700px' }}
         >
-          <p style={{ fontSize: '13px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '3px', color: 'rgba(255,255,255,0.6)', marginBottom: '8px' }}>
+          <p className="vibe-hero-subtitle" style={{ fontSize: '13px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '3px', color: 'rgba(255,255,255,0.6)', marginBottom: '8px' }}>
             {VIBE_HERO_SLIDES[heroSlide % VIBE_HERO_SLIDES.length]?.subtitle}
           </p>
-          <h1 style={{ fontSize: '52px', fontWeight: 900, lineHeight: 1.05, letterSpacing: '-1px', color: '#fff', margin: '0 0 16px 0', textTransform: 'uppercase', fontFamily: "'RNS Miles', sans-serif" }}>
+          <h1 className="vibe-hero-title" style={{ fontSize: '52px', fontWeight: 900, lineHeight: 1.05, letterSpacing: '-1px', color: '#fff', margin: '0 0 16px 0', textTransform: 'uppercase', fontFamily: "'RNS Miles', sans-serif" }}>
             {VIBE_HERO_SLIDES[heroSlide % VIBE_HERO_SLIDES.length]?.title}
           </h1>
-          <p style={{ fontSize: '15px', color: 'rgba(255,255,255,0.65)', margin: '0 0 24px 0', lineHeight: 1.6 }}>
+          <p className="vibe-hero-copy" style={{ fontSize: '15px', color: 'rgba(255,255,255,0.65)', margin: '0 0 24px 0', lineHeight: 1.6 }}>
             {VIBE_HERO_SLIDES[heroSlide % VIBE_HERO_SLIDES.length]?.copy}
           </p>
           <button
             onClick={handleActionClick}
+            className="vibe-hero-button"
             style={{
               display: 'inline-block', padding: '13px 40px', fontSize: '11px', fontWeight: 800,
               textTransform: 'uppercase', letterSpacing: '2.5px',
@@ -119,7 +122,7 @@ const Hero: React.FC = () => {
           </button>
 
           {/* Legacy stat panel */}
-          <div style={{
+          <div className="vibe-hero-stat-panel" style={{
             marginTop: '32px', padding: '16px 24px',
             borderLeft: `3px solid ${accent}`,
             background: 'rgba(255,255,255,0.05)', backdropFilter: 'blur(10px)',
@@ -135,7 +138,7 @@ const Hero: React.FC = () => {
       </AnimatePresence>
 
       {/* Slide dots — right side, vertical */}
-      <div style={{ position: 'absolute', right: '30px', top: '50%', transform: 'translateY(-50%)', zIndex: 3, display: 'flex', flexDirection: 'column', gap: '10px' }}>
+      <div className="vibe-hero-dots" style={{ position: 'absolute', right: '30px', top: '50%', transform: 'translateY(-50%)', zIndex: 3, display: 'flex', flexDirection: 'column', gap: '10px' }}>
         {VIBE_HERO_SLIDES.map((_, i) => (
           <button
             key={i}
@@ -151,7 +154,7 @@ const Hero: React.FC = () => {
       </div>
 
       {/* Bottom collection bar — category thumbnails */}
-      <div style={{
+      <div className="vibe-hero-bar" style={{
         position: 'absolute', bottom: 0, left: 0, right: 0, zIndex: 2,
         background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(10px)',
         padding: '0', display: 'flex', borderTop: '1px solid rgba(255,255,255,0.06)',
@@ -160,6 +163,7 @@ const Hero: React.FC = () => {
           <button
             key={i}
             onClick={() => setHeroSlide(i)}
+            className="vibe-hero-bar-btn"
             style={{
               flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center',
               padding: '14px 8px', gap: '0', border: 'none',
@@ -171,7 +175,7 @@ const Hero: React.FC = () => {
             onMouseOver={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.05)'; }}
             onMouseOut={e => { e.currentTarget.style.background = heroSlide === i ? 'rgba(255,255,255,0.08)' : 'transparent'; }}
           >
-            <span style={{
+            <span className="vibe-hero-bar-text" style={{
               fontSize: '10px', fontWeight: 800, color: heroSlide === i ? '#fff' : 'rgba(255,255,255,0.4)',
               textTransform: 'uppercase', letterSpacing: '1.5px',
               transition: 'color 0.25s', whiteSpace: 'nowrap',
