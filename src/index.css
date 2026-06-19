@@ -894,7 +894,15 @@ body:has(.watch-live-modal) #kple-bible-fab {
   pointer-events: none !important;
 }
 
+.watch-live-chat-input {
+  font-size: 14px !important;
+}
+
 @media (max-width: 768px) {
+  .watch-live-chat-input {
+    font-size: 16px !important; /* Prevents auto-zoom on iOS focus */
+  }
+
   /* Toggle button visible only on mobile */
   .watch-live-info-toggle-btn {
     display: inline-block !important;

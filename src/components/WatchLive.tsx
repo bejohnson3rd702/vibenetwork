@@ -1987,6 +1987,7 @@ export default function WatchLive({ accent = '#D35400', isOlympian = false, isB2
                               value={chatInput}
                               onChange={e => setChatInput(e.target.value)}
                               placeholder="Say something..."
+                              className="watch-live-chat-input"
                               style={{
                                 flex: 1,
                                 background: 'rgba(255,255,255,0.05)',
@@ -1994,7 +1995,6 @@ export default function WatchLive({ accent = '#D35400', isOlympian = false, isB2
                                 borderRadius: '20px',
                                 padding: '8px 16px',
                                 color: '#fff',
-                                fontSize: '12px',
                                 outline: 'none',
                               }}
                             />
