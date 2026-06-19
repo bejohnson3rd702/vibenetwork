@@ -773,3 +773,30 @@ img, video {
   }
 }
 
+/* Mobile Filter Slider */
+.filter-slider-container {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  white-space: nowrap;
+  max-width: 100%;
+  padding-bottom: 6px;
+  margin-bottom: -6px; /* offset padding-bottom so it doesn't add extra layout spacing */
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE 10+ */
+}
+
+.filter-slider-container::-webkit-scrollbar {
+  display: none; /* WebKit */
+}
+
+@media (max-width: 768px) {
+  .filter-slider-container {
+    width: 100%;
+    /* Ensure it can stretch full width when wrapped */
+    flex: 1 1 100%;
+  }
+}
+
+

@@ -1299,9 +1299,10 @@ export default function WatchLive({ accent = '#D35400', isOlympian = false, isB2
             </div>
           </div>
           {/* Filter pills */}
-          <div style={{ display: 'flex', gap: '8px' }}>
+          <div className="filter-slider-container">
             {[{ key: 'all', label: 'All' }, ...feedsToUse.map(f => ({ key: f.key, label: f.label }))].map(f => (
               <button key={f.key} onClick={() => setFilter(f.key)} style={{
+                flexShrink: 0,
                 padding: '6px 16px', borderRadius: '20px',
                 border: `1px solid ${filter === f.key ? accent : 'rgba(255,255,255,0.08)'}`,
                 background: filter === f.key ? `${accent}20` : 'rgba(255,255,255,0.03)',
