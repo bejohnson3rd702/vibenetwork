@@ -884,4 +884,58 @@ img, video {
   }
 }
 
+/* Hide floating assistants while any full-screen modal/watch-live modal is open */
+body.modal-open #nalu-bubble,
+body.modal-open #kple-bible-fab,
+body:has(.watch-live-modal) #nalu-bubble,
+body:has(.watch-live-modal) #kple-bible-fab {
+  display: none !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+}
+
+@media (max-width: 768px) {
+  /* Toggle button visible only on mobile */
+  .watch-live-info-toggle-btn {
+    display: inline-block !important;
+  }
+  
+  /* Hide co-watchers grid and room link section by default on mobile to fit chat */
+  .watch-live-cowatchers-section,
+  .watch-live-roomlink-section {
+    display: none !important;
+  }
+  
+  /* Show them when toggled */
+  .show-mobile-info .watch-live-cowatchers-section,
+  .show-mobile-info .watch-live-roomlink-section {
+    display: flex !important;
+  }
+  
+  /* Right column compact height default on mobile */
+  .watch-live-right-col {
+    min-width: 100% !important;
+    flex: 1 1 100% !important;
+    max-height: 280px !important;
+    transition: max-height 0.3s ease-in-out !important;
+  }
+  
+  /* Expand when info is toggled */
+  .watch-live-right-col.show-mobile-info {
+    max-height: 420px !important;
+  }
+  
+  /* Hide description in Fan Zone mode to save space */
+  .watch-live-left-col-fanzone .watch-live-meta-row p {
+    display: none !important;
+  }
+  
+  /* Tighten spacing */
+  .watch-live-left-col-fanzone .watch-live-meta-row {
+    margin-top: 8px !important;
+    gap: 8px !important;
+  }
+}
+
+
 

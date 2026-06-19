@@ -602,6 +602,7 @@ export default function WatchLive({ accent = '#D35400', isOlympian = false, isB2
 
   // Fan Zone & Co-watching state
   const [showFanZone, setShowFanZone] = useState(false);
+  const [showRoomInfo, setShowRoomInfo] = useState(false);
   const [isMuted, setIsMuted] = useState(false);
   const [isCameraOn, setIsCameraOn] = useState(false);
   const [copied, setCopied] = useState(false);
@@ -1243,9 +1244,29 @@ export default function WatchLive({ accent = '#D35400', isOlympian = false, isB2
   }, [isOlympian, isB2K, isVibe, isKple, isVibe100]);
 
   useEffect(() => {
-    if (activeVideo) document.body.style.overflow = 'hidden';
-    else document.body.style.overflow = '';
-    return () => { document.body.style.overflow = ''; };
+    if (activeVideo) {
+      document.body.style.overflow = 'hidden';
+      document.body.classList.add('modal-open');
+      const bubble = document.getElementById('nalu-bubble');
+      if (bubble) bubble.style.setProperty('display', 'none', 'important');
+      const bibleFab = document.getElementById('kple-bible-fab');
+      if (bibleFab) bibleFab.style.setProperty('display', 'none', 'important');
+    } else {
+      document.body.style.overflow = '';
+      document.body.classList.remove('modal-open');
+      const bubble = document.getElementById('nalu-bubble');
+      if (bubble) bubble.style.display = 'block';
+      const bibleFab = document.getElementById('kple-bible-fab');
+      if (bibleFab) bibleFab.style.display = 'flex';
+    }
+    return () => {
+      document.body.style.overflow = '';
+      document.body.classList.remove('modal-open');
+      const bubble = document.getElementById('nalu-bubble');
+      if (bubble) bubble.style.display = 'block';
+      const bibleFab = document.getElementById('kple-bible-fab');
+      if (bibleFab) bibleFab.style.display = 'flex';
+    };
   }, [activeVideo]);
 
   useEffect(() => {
@@ -1692,7 +1713,7 @@ export default function WatchLive({ accent = '#D35400', isOlympian = false, isB2
                         animate={{ opacity: 1, x: 0, width: '33%' }}
                         exit={{ opacity: 0, x: 30, width: 0 }}
                         transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
-                        className="watch-live-right-col"
+                        className={`watch-live-right-col ${showRoomInfo ? 'show-mobile-info' : ''}`}
                         style={{
                           minWidth: '350px',
                           height: 'auto',
@@ -1714,11 +1735,31 @@ export default function WatchLive({ accent = '#D35400', isOlympian = false, isB2
                             <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#ff3b30' }} />
                             <h4 style={{ margin: 0, fontSize: '15px', fontWeight: 800, color: '#fff', letterSpacing: '-0.3px' }}>Fan Zone Room</h4>
                           </div>
-                          <span style={{ fontSize: '11px', color: '#ff3b30', fontWeight: 700, background: 'rgba(255, 59, 48, 0.1)', padding: '2px 8px', borderRadius: '10px' }}>LIVE</span>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                            <button
+                              className="watch-live-info-toggle-btn"
+                              onClick={() => setShowRoomInfo(!showRoomInfo)}
+                              style={{
+                                display: 'none',
+                                background: 'rgba(255,255,255,0.08)',
+                                border: '1px solid rgba(255,255,255,0.15)',
+                                borderRadius: '12px',
+                                color: '#fff',
+                                fontSize: '10px',
+                                fontWeight: 800,
+                                padding: '4px 10px',
+                                cursor: 'pointer',
+                                transition: 'all 0.25s',
+                              }}
+                            >
+                              {showRoomInfo ? 'Hide Info' : 'Show Info'}
+                            </button>
+                            <span style={{ fontSize: '11px', color: '#ff3b30', fontWeight: 700, background: 'rgba(255, 59, 48, 0.1)', padding: '2px 8px', borderRadius: '10px' }}>LIVE</span>
+                          </div>
                         </div>
 
                         {/* Co-Watchers Grid */}
-                        <div style={{ padding: '16px', borderBottom: '1px solid rgba(255,255,255,0.06)', display: 'flex', flexDirection: 'column', gap: '10px', flexShrink: 0 }}>
+                        <div className="watch-live-cowatchers-section" style={{ padding: '16px', borderBottom: '1px solid rgba(255,255,255,0.06)', display: 'flex', flexDirection: 'column', gap: '10px', flexShrink: 0 }}>
                           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                             <span style={{ fontSize: '10px', fontWeight: 800, color: '#666', textTransform: 'uppercase', letterSpacing: '1px' }}>Watch Party</span>
                             <div style={{ display: 'flex', gap: '6px' }}>
@@ -1828,7 +1869,7 @@ export default function WatchLive({ accent = '#D35400', isOlympian = false, isB2
                         </div>
 
                         {/* Room link */}
-                        <div style={{ padding: '10px 16px', borderBottom: '1px solid rgba(255,255,255,0.06)', display: 'flex', gap: '12px', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0 }}>
+                        <div className="watch-live-roomlink-section" style={{ padding: '10px 16px', borderBottom: '1px solid rgba(255,255,255,0.06)', display: 'flex', gap: '12px', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0 }}>
                           <button
                             onClick={() => setIsPrivate(!isPrivate)}
                             style={{
@@ -1889,7 +1930,10 @@ export default function WatchLive({ accent = '#D35400', isOlympian = false, isB2
                             {['🔥', '😮', '😂', '👏', '💯'].map(emoji => (
                               <button
                                 key={emoji}
-                                onClick={() => addReaction(emoji, true)}
+                                onClick={() => {
+                                  addReaction(emoji, true);
+                                  setChatInput(prev => prev + emoji);
+                                }}
                                 style={{
                                   background: 'none', border: 'none', fontSize: '18px', cursor: 'pointer',
                                   transition: 'transform 0.1s',
