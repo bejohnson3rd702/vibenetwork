@@ -598,6 +598,7 @@ export default function WatchLive({ accent = '#D35400', isOlympian = false, isB2
   const scrollRef = useRef<HTMLDivElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const chatScrollRef = useRef<HTMLDivElement>(null);
+  const modalRef = useRef<HTMLDivElement>(null);
 
   // Fan Zone & Co-watching state
   const [showFanZone, setShowFanZone] = useState(false);
@@ -814,6 +815,21 @@ export default function WatchLive({ accent = '#D35400', isOlympian = false, isB2
       chatScrollRef.current.scrollTop = chatScrollRef.current.scrollHeight;
     }
   }, [chatMessages]);
+
+  // Auto-scroll modal on mobile when entering Fan Zone so the chat isn't below the fold
+  useEffect(() => {
+    if (showFanZone && modalRef.current && typeof window !== 'undefined' && window.innerWidth <= 768) {
+      const timer = setTimeout(() => {
+        if (modalRef.current) {
+          modalRef.current.scrollTo({
+            top: modalRef.current.scrollHeight,
+            behavior: 'smooth'
+          });
+        }
+      }, 350);
+      return () => clearTimeout(timer);
+    }
+  }, [showFanZone]);
 
   const feedsToUse = isOlympian ? OLYMPIAN_FEEDS : (isB2K ? B2K_FEEDS : (isVibe100 ? VIBE_100_FEEDS : (isVibe ? VIBE_FEEDS : (isKple ? KPLE_FEEDS : FEEDS))));
 
@@ -1454,6 +1470,7 @@ export default function WatchLive({ accent = '#D35400', isOlympian = false, isB2
         <AnimatePresence>
           {activeVideo && (
             <motion.div
+              ref={modalRef}
               initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
               onClick={() => setActiveVideo(null)}
               className="watch-live-modal"
@@ -1477,6 +1494,7 @@ export default function WatchLive({ accent = '#D35400', isOlympian = false, isB2
               >
                 {/* Close Button */}
                 <button onClick={() => { setActiveVideo(null); setShowFanZone(false); }}
+                  className="watch-live-close-btn"
                   style={{
                     position: 'absolute', 
                     top: '-50px', 
@@ -1503,7 +1521,7 @@ export default function WatchLive({ accent = '#D35400', isOlympian = false, isB2
 
                 <div className="watch-live-content-row" style={{ display: 'flex', gap: '20px', alignItems: 'stretch', width: '100%', flexWrap: 'wrap' }}>
                   {/* Left Column: Video player, title & description */}
-                  <div className={showFanZone ? "watch-live-left-col-fanzone" : "watch-live-left-col"} style={{ flex: showFanZone ? '0 0 65%' : '1 1 100%', minWidth: '320px', transition: 'all 0.4s cubic-bezier(0.16, 1, 0.3, 1)', display: 'flex', flexDirection: 'column' }}>
+                  <div className={showFanZone ? "watch-live-left-col-fanzone" : "watch-live-left-col"} style={{ flex: showFanZone ? '0 0 65%' : '1 1 100%', minWidth: '280px', transition: 'all 0.4s cubic-bezier(0.16, 1, 0.3, 1)', display: 'flex', flexDirection: 'column' }}>
                     <div style={{ borderRadius: '16px', overflow: 'hidden', background: '#000', aspectRatio: '16/9', position: 'relative', boxShadow: '0 20px 50px rgba(0,0,0,0.5)' }}>
                       {(() => {
                         const isYouTube = activeVideo.videoUrl.includes('youtube.com') || activeVideo.videoUrl.includes('youtu.be') || activeVideo.source === 'YouTube';
@@ -1585,13 +1603,13 @@ export default function WatchLive({ accent = '#D35400', isOlympian = false, isB2
                       </div>
                     </div>
 
-                    <div style={{ marginTop: '16px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '24px' }}>
+                    <div className="watch-live-meta-row" style={{ marginTop: '16px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '24px' }}>
                       <div style={{ flex: 1 }}>
                         <h3 style={{ margin: '0 0 6px 0', fontSize: '18px', fontWeight: 800, color: '#fff' }}>{activeVideo.headline}</h3>
                         <p style={{ margin: 0, fontSize: '13px', color: '#888', lineHeight: 1.5 }}>{activeVideo.description}</p>
                       </div>
 
-                      <div style={{ display: 'flex', gap: '10px', alignItems: 'center', flexShrink: 0 }}>
+                      <div className="watch-live-actions-container" style={{ display: 'flex', gap: '10px', alignItems: 'center', flexShrink: 0 }}>
                         {/* Fan Zone Toggle Button */}
                         <button
                           onClick={() => setShowFanZone(!showFanZone)}
