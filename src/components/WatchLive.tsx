@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
-import { Play, Tv, X, ChevronLeft, ChevronRight, Clock, ExternalLink, Video, VideoOff, Mic, MicOff, Copy, Check, Send, Globe, Lock, Sparkles } from 'lucide-react';
+import { Play, Tv, X, ChevronLeft, ChevronRight, Clock, ExternalLink, Video, VideoOff, Mic, MicOff, Copy, Check, Send, Globe, Lock, Sparkles, Languages, Volume2, VolumeX } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from '../supabaseClient';
 import { isOlympianConfig, isB2kConfig, isKpleConfig } from '../lib/whitelabel';
