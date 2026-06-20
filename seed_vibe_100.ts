@@ -161,6 +161,7 @@ const CHILD_NETWORKS = [
       tags: ['Gospel', 'Faith']
     }
   },
+  /*
   {
     id: '100e0000-c08f-4260-8540-a0cc8bed4e11',
     name: 'FINFIRE Channel',
@@ -191,6 +192,7 @@ const CHILD_NETWORKS = [
       tags: ['Finance', 'Investing']
     }
   }
+  */
 ];
 
 async function run() {

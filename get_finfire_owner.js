@@ -1,3 +1,4 @@
+/*
 import { createClient } from '@supabase/supabase-js';
 import fs from 'fs';
 
@@ -22,3 +23,4 @@ async function run() {
   }
 }
 run();
+*/

@@ -35,7 +35,7 @@ export async function getCategoriesWithVideos(tenantId?: string) {
     '7a017c4d-c08f-4260-8540-a0cc8bed4e11', // Mr. Olympia
     '33742e2f-430b-4c2d-9cba-42507891ef02', // KPLE TV
     '00000000-0000-0000-0000-000000000001', // Jamie's Girls
-    'faa887c6-e49b-4f5a-97e4-bc117572e82f', // FINFIRE
+    // 'faa887c6-e49b-4f5a-97e4-bc117572e82f', // FINFIRE
     '074ac2e4-8ca2-486c-ab94-8537d0dc1fab', // Life is good LLC
   ];
 
@@ -49,11 +49,13 @@ export async function getCategoriesWithVideos(tenantId?: string) {
     // Filter out child networks
     if (wl.parent_network_id || wl.theme?.parent_network_id) return false;
     
-    // Filter out test networks (Noelani, Bennie, Leilani, Leiloe, etc.)
+    // Filter out test networks (Noelani, Bennie, Leilani, Leiloe, etc.) and deleted/finfire networks
     if (
       nameLower.includes('bennie') || nameLower.includes('noelani') || 
       nameLower.includes('leilani') || nameLower.includes('leiloe') ||
-      domainLower.includes('bennie') || domainLower.includes('noelani')
+      nameLower.includes('deleted') || nameLower.includes('finfire') ||
+      domainLower.includes('bennie') || domainLower.includes('noelani') ||
+      domainLower.includes('deleted') || domainLower.includes('finfire')
     ) {
       return false;
     }

@@ -1,3 +1,4 @@
+/*
 INSERT INTO whitelabel_configs (name, domain, logo, theme)
 VALUES (
   'FINFIRE',
@@ -15,3 +16,4 @@ VALUES (
     "heroTitle": "FINFIRE"
   }'::jsonb
 );
+*/

@@ -60,7 +60,7 @@ const VIBE_100_FEEDS = [
   { key: 'olympia', label: '🏆 Muscle & Fitness' },
   { key: 'b2k', label: '🎤 B2K Channel' },
   { key: 'kple', label: '📺 Christian Revival' },
-  { key: 'finfire', label: '💵 FINFIRE Channel' },
+  // { key: 'finfire', label: '💵 FINFIRE Channel' },
 ];
 
 const VIBE_100_CLIPS: VideoClip[] = [
@@ -192,6 +192,7 @@ const VIBE_100_CLIPS: VideoClip[] = [
     sport: 'kple'
   },
 
+  /*
   // FINFIRE Channel
   {
     id: 'vwOxJJ80t3k',
@@ -223,6 +224,7 @@ const VIBE_100_CLIPS: VideoClip[] = [
     source: 'FINFIRE Channel',
     sport: 'finfire'
   }
+  */
 ];
 
 const STATIC_KPLE_CLIPS: VideoClip[] = [
@@ -1064,8 +1066,8 @@ export default function WatchLive({ accent = '#D35400', isOlympian = false, isB2
                 feedKey = 'b2k';
               } else if (isKpleConfig(mockWl)) {
                 feedKey = 'kple';
-              } else if (netName.toLowerCase().includes('finfire')) {
-                feedKey = 'finfire';
+              /* } else if (netName.toLowerCase().includes('finfire')) {
+                feedKey = 'finfire'; */
               }
               
               if (!seen.has(v.id)) {
@@ -1399,7 +1401,7 @@ export default function WatchLive({ accent = '#D35400', isOlympian = false, isB2
                   <span style={{ padding: '4px 10px', borderRadius: '6px', background: accent, color: '#000', fontSize: '10px', fontWeight: 900, textTransform: 'uppercase', letterSpacing: '1px' }}>
                     {isOlympian 
                       ? '💪 Fitness' 
-                      : (isB2K ? '🎤 R&B Music' : (isKple ? (featured.sport === 'tct_network' ? '📺 TCT Network' : featured.sport === 'act_local' ? '🎥 ACT Local' : featured.sport === 'the_walk' ? '🚶 The Walk TV' : featured.sport === 'enlace_usa' ? '🌎 Enlace USA' : featured.sport === 'positiv_movies' ? '🎬 Positiv Family' : '👶 Smile of a Child') : (isVibe ? (featured.sport === 'news' ? '📰 News' : featured.sport === 'foxnews' ? '🦊 Fox News' : featured.sport === 'politics' ? '⚖️ Politics' : featured.sport === 'entertainment' ? '🎭 Entertainment' : featured.sport === 'money' ? '💵 Money' : '🏈 Sports') : (isVibe100 ? (featured.sport === 'avo' ? '🎒 AVO Channel' : featured.sport === 'olympia' ? '🏆 Muscle & Fitness' : featured.sport === 'b2k' ? '🎤 B2K Channel' : featured.sport === 'kple' ? '📺 Christian Revival' : '💵 FINFIRE Channel') : (featured.sport === 'cfb' ? '🏈 Football' : featured.sport === 'cbb' ? '🏀 Basketball' : '⚾ Baseball')))))}
+                      : (isB2K ? '🎤 R&B Music' : (isKple ? (featured.sport === 'tct_network' ? '📺 TCT Network' : featured.sport === 'act_local' ? '🎥 ACT Local' : featured.sport === 'the_walk' ? '🚶 The Walk TV' : featured.sport === 'enlace_usa' ? '🌎 Enlace USA' : featured.sport === 'positiv_movies' ? '🎬 Positiv Family' : '👶 Smile of a Child') : (isVibe ? (featured.sport === 'news' ? '📰 News' : featured.sport === 'foxnews' ? '🦊 Fox News' : featured.sport === 'politics' ? '⚖️ Politics' : featured.sport === 'entertainment' ? '🎭 Entertainment' : featured.sport === 'money' ? '💵 Money' : '🏈 Sports') : (isVibe100 ? (featured.sport === 'avo' ? '🎒 AVO Channel' : featured.sport === 'olympia' ? '🏆 Muscle & Fitness' : featured.sport === 'b2k' ? '🎤 B2K Channel' : featured.sport === 'kple' ? '📺 Christian Revival' : '📺 VIBE 100') : (featured.sport === 'cfb' ? '🏈 Football' : featured.sport === 'cbb' ? '🏀 Basketball' : '⚾ Baseball')))))}
                   </span>
                   {featured.duration > 0 && (
                     <span style={{ fontSize: '11px', color: '#888', display: 'flex', alignItems: 'center', gap: '4px' }}>
@@ -1472,7 +1474,7 @@ export default function WatchLive({ accent = '#D35400', isOlympian = false, isB2
                     <div style={{ fontSize: '9px', fontWeight: 700, color: accent, textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '4px' }}>
                       {isOlympian 
                         ? 'Bodybuilding' 
-                        : (isB2K ? 'Music' : (isKple ? (clip.sport === 'tct_network' ? 'TCT Network' : clip.sport === 'act_local' ? 'ACT Local' : clip.sport === 'the_walk' ? 'The Walk TV' : clip.sport === 'enlace_usa' ? 'Enlace USA' : clip.sport === 'positiv_movies' ? 'Positiv' : 'Smile of a Child') : (isVibe ? (clip.sport === 'news' ? 'News' : clip.sport === 'foxnews' ? 'Fox News' : clip.sport === 'politics' ? 'Politics' : clip.sport === 'entertainment' ? 'Entertainment' : clip.sport === 'money' ? 'Money' : 'Sports') : (isVibe100 ? (clip.sport === 'avo' ? 'AVO Channel' : clip.sport === 'olympia' ? 'Muscle & Fitness' : clip.sport === 'b2k' ? 'B2K Channel' : clip.sport === 'kple' ? 'Christian Revival' : 'FINFIRE Channel') : (clip.sport === 'cfb' ? 'Football' : clip.sport === 'cbb' ? 'Basketball' : 'Baseball')))))} · {clip.source}
+                        : (isB2K ? 'Music' : (isKple ? (clip.sport === 'tct_network' ? 'TCT Network' : clip.sport === 'act_local' ? 'ACT Local' : clip.sport === 'the_walk' ? 'The Walk TV' : clip.sport === 'enlace_usa' ? 'Enlace USA' : clip.sport === 'positiv_movies' ? 'Positiv' : 'Smile of a Child') : (isVibe ? (clip.sport === 'news' ? 'News' : clip.sport === 'foxnews' ? 'Fox News' : clip.sport === 'politics' ? 'Politics' : clip.sport === 'entertainment' ? 'Entertainment' : clip.sport === 'money' ? 'Money' : 'Sports') : (isVibe100 ? (clip.sport === 'avo' ? 'AVO Channel' : clip.sport === 'olympia' ? 'Muscle & Fitness' : clip.sport === 'b2k' ? 'B2K Channel' : clip.sport === 'kple' ? 'Christian Revival' : 'VIBE 100') : (clip.sport === 'cfb' ? 'Football' : clip.sport === 'cbb' ? 'Basketball' : 'Baseball')))))} · {clip.source}
                     </div>
                     <div style={{ fontSize: '13px', fontWeight: 600, lineHeight: 1.4, color: '#ccc', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
                       {clip.headline}

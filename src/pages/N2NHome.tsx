@@ -218,7 +218,7 @@ export default function N2NHome({ wlConfig, categories, activeVideo, setActiveVi
     { school: 'Muscle & Fitness Channel', short: 'Muscle & Fitness', subtitle: 'VIBE 100', copy: 'The ultimate resource for bodybuilding, workouts, nutrition, and fitness.', image: 'https://images.unsplash.com/photo-1517838277536-f5f99be501cd?auto=format&fit=crop&q=80&w=1200', link: '/?tenant=100b0000-c08f-4260-8540-a0cc8bed4e11' },
     { school: 'B2K Channel', short: 'B2K', subtitle: 'VIBE 100', copy: 'Celebrate 25 years of multi-platinum hits and boy band legacy.', image: 'https://www.vibe.com/wp-content/uploads/2019/05/VIBE-B2K-5-1557518926.jpg', link: '/?tenant=100c0000-c08f-4260-8540-a0cc8bed4e11' },
     { school: 'Christian Revival Channel', short: 'Christian Revival', subtitle: 'VIBE 100', copy: 'Inspirational programming, local community news, and sermons.', image: '/kple_network_thumbnail.png', link: '/?tenant=100d0000-c08f-4260-8540-a0cc8bed4e11' },
-    { school: 'FINFIRE Channel', short: 'FINFIRE', subtitle: 'VIBE 100', copy: 'Empowering financial freedom, investment guides, and real estate strategy.', image: 'https://images.unsplash.com/photo-1559526324-4b87b5e36e44?auto=format&fit=crop&q=80&w=1200', link: '/?tenant=100e0000-c08f-4260-8540-a0cc8bed4e11' }
+    // { school: 'FINFIRE Channel', short: 'FINFIRE', subtitle: 'VIBE 100', copy: 'Empowering financial freedom, investment guides, and real estate strategy.', image: 'https://images.unsplash.com/photo-1559526324-4b87b5e36e44?auto=format&fit=crop&q=80&w=1200', link: '/?tenant=100e0000-c08f-4260-8540-a0cc8bed4e11' }
   ];
 
   const HERO_SLIDES = isOlympian 

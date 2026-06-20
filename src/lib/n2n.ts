@@ -43,8 +43,10 @@ export async function getChildNetworks(parentId: string): Promise<WlConfig[]> {
     if (
       nameLower.includes('bennie') || nameLower.includes('noelani') || 
       nameLower.includes('leilani') || nameLower.includes('leiloe') ||
+      nameLower.includes('deleted') || nameLower.includes('finfire') ||
       domainLower.includes('bennie') || domainLower.includes('noelani') ||
-      domainLower.includes('leilani') || domainLower.includes('leiloe')
+      domainLower.includes('leilani') || domainLower.includes('leiloe') ||
+      domainLower.includes('deleted') || domainLower.includes('finfire')
     ) {
       return false;
     }

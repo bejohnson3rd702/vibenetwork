@@ -1,3 +1,4 @@
+/*
 -- 1. Remove any duplicate or incomplete FinFire records
 DELETE FROM whitelabel_configs WHERE domain = 'finfire.com';
 
@@ -20,3 +21,4 @@ VALUES (
   }'::jsonb,
   (SELECT id FROM profiles ORDER BY created_at ASC LIMIT 1) -- Assigns the God Admin as the owner so the profile loads
 );
+*/
