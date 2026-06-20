@@ -1800,6 +1800,144 @@ export default function WatchLive({ accent = '#D35400', isOlympian = false, isB2
                           ))}
                         </AnimatePresence>
                       </div>
+
+                      {/* Floating Translation button overlayed on the video player */}
+                      <div style={{ position: 'absolute', top: '16px', left: '16px', zIndex: 30, display: 'flex', gap: '8px' }}>
+                        <div style={{ position: 'relative' }}>
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setShowInfoLangDropdown(!showInfoLangDropdown);
+                            }}
+                            style={{
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              width: '36px',
+                              height: '36px',
+                              borderRadius: '50%',
+                              background: 'rgba(0,0,0,0.6)',
+                              border: '1px solid rgba(255,255,255,0.2)',
+                              color: '#fff',
+                              cursor: 'pointer',
+                              backdropFilter: 'blur(10px)',
+                              transition: 'all 0.2s',
+                              boxShadow: '0 4px 12px rgba(0,0,0,0.3)',
+                            }}
+                            onMouseOver={e => e.currentTarget.style.background = 'rgba(0,0,0,0.8)'}
+                            onMouseOut={e => e.currentTarget.style.background = 'rgba(0,0,0,0.6)'}
+                            title="Translate Video Info"
+                          >
+                            <Globe size={18} />
+                          </button>
+                          
+                          {/* Dropdown menu */}
+                          {showInfoLangDropdown && (
+                            <div style={{
+                              position: 'absolute',
+                              top: '44px',
+                              left: 0,
+                              background: 'rgba(20, 20, 25, 0.95)',
+                              border: '1px solid rgba(255,255,255,0.1)',
+                              borderRadius: '12px',
+                              boxShadow: '0 10px 30px rgba(0,0,0,0.5)',
+                              padding: '8px',
+                              width: '220px',
+                              maxHeight: '200px',
+                              overflowY: 'auto',
+                              zIndex: 999,
+                              backdropFilter: 'blur(20px)',
+                            }}>
+                              {wwtcLanguages.length === 0 ? (
+                                <div style={{ padding: '8px', fontSize: '11px', color: '#666' }}>Loading languages...</div>
+                              ) : (
+                                wwtcLanguages.map(l => (
+                                  <button
+                                    key={`player-lang-${l.code}`}
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      handleTranslateVideoInfo(l.code);
+                                      setShowInfoLangDropdown(false);
+                                    }}
+                                    style={{
+                                      width: '100%',
+                                      padding: '8px 10px',
+                                      background: 'none',
+                                      border: 'none',
+                                      color: '#fff',
+                                      fontSize: '12px',
+                                      textAlign: 'left',
+                                      borderRadius: '6px',
+                                      cursor: 'pointer',
+                                      display: 'flex',
+                                      alignItems: 'center',
+                                      gap: '8px',
+                                    }}
+                                    onMouseOver={e => e.currentTarget.style.background = `${accent}22`}
+                                    onMouseOut={e => e.currentTarget.style.background = 'none'}
+                                  >
+                                    {l.flag && <img src={l.flag} alt="" style={{ width: '16px', height: '11px', borderRadius: '2px', objectFit: 'cover' }} />}
+                                    <span>{l.name}</span>
+                                  </button>
+                                ))
+                              )}
+                            </div>
+                          )}
+                        </div>
+
+                        {translatedInfo && (
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setTranslatedInfo(null);
+                              setInfoAudioBase64(null);
+                              setIsPlayingInfoAudio(false);
+                              if (infoAudioRef.current) infoAudioRef.current.pause();
+                            }}
+                            style={{
+                              height: '36px',
+                              padding: '0 16px',
+                              borderRadius: '18px',
+                              background: 'rgba(255,59,48,0.2)',
+                              border: '1px solid rgba(255,59,48,0.4)',
+                              color: '#ff3b30',
+                              fontWeight: 'bold',
+                              fontSize: '12px',
+                              cursor: 'pointer',
+                              backdropFilter: 'blur(10px)',
+                            }}
+                          >
+                            Reset
+                          </button>
+                        )}
+
+                        {infoAudioBase64 && (
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              toggleInfoAudio();
+                            }}
+                            style={{
+                              height: '36px',
+                              padding: '0 16px',
+                              borderRadius: '18px',
+                              background: isPlayingInfoAudio ? '#ff3b30' : accent,
+                              border: 'none',
+                              color: '#fff',
+                              fontWeight: 'bold',
+                              fontSize: '12px',
+                              cursor: 'pointer',
+                              boxShadow: '0 4px 12px rgba(0,0,0,0.3)',
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: '6px',
+                            }}
+                          >
+                            {isPlayingInfoAudio ? <VolumeX size={14} /> : <Volume2 size={14} />}
+                            {isPlayingInfoAudio ? 'Mute' : 'Listen'}
+                          </button>
+                        )}
+                      </div>
                     </div>
 
                     <div className="watch-live-meta-row" style={{ marginTop: '16px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '24px' }}>
@@ -1815,132 +1953,6 @@ export default function WatchLive({ accent = '#D35400', isOlympian = false, isB2
                         <p style={{ margin: '0 0 12px 0', fontSize: '13px', color: '#ccc', lineHeight: 1.5 }}>
                           {translatedInfo ? translatedInfo.description : activeVideo.description}
                         </p>
-
-                        {/* Translation Controls Underneath */}
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
-                          <div style={{ position: 'relative' }}>
-                            <button
-                              onClick={() => setShowInfoLangDropdown(!showInfoLangDropdown)}
-                              style={{
-                                display: 'inline-flex',
-                                alignItems: 'center',
-                                gap: '6px',
-                                padding: '6px 12px',
-                                borderRadius: '8px',
-                                background: 'rgba(255,255,255,0.05)',
-                                border: '1px solid rgba(255,255,255,0.1)',
-                                color: '#fff',
-                                fontSize: '12px',
-                                cursor: 'pointer',
-                                transition: '0.2s',
-                              }}
-                              onMouseOver={e => e.currentTarget.style.background = 'rgba(255,255,255,0.1)'}
-                              onMouseOut={e => e.currentTarget.style.background = 'rgba(255,255,255,0.05)'}
-                            >
-                              <Globe size={13} />
-                              {isTranslatingInfo ? 'Translating...' : 'Translate Info'}
-                            </button>
-
-                            {/* Dropdown menu */}
-                            {showInfoLangDropdown && (
-                              <div style={{
-                                position: 'absolute',
-                                bottom: '100%',
-                                left: 0,
-                                marginBottom: '8px',
-                                background: 'rgba(20, 20, 25, 0.95)',
-                                border: '1px solid rgba(255,255,255,0.1)',
-                                borderRadius: '12px',
-                                boxShadow: '0 10px 30px rgba(0,0,0,0.5)',
-                                padding: '8px',
-                                width: '220px',
-                                maxHeight: '200px',
-                                overflowY: 'auto',
-                                zIndex: 999,
-                                backdropFilter: 'blur(20px)',
-                              }}>
-                                {wwtcLanguages.length === 0 ? (
-                                  <div style={{ padding: '8px', fontSize: '11px', color: '#666' }}>Loading languages...</div>
-                                ) : (
-                                  wwtcLanguages.map(l => (
-                                    <button
-                                      key={`info-lang-${l.code}`}
-                                      onClick={() => {
-                                        handleTranslateVideoInfo(l.code);
-                                        setShowInfoLangDropdown(false);
-                                      }}
-                                      style={{
-                                        width: '100%',
-                                        padding: '8px 10px',
-                                        background: 'none',
-                                        border: 'none',
-                                        color: '#fff',
-                                        fontSize: '12px',
-                                        textAlign: 'left',
-                                        borderRadius: '6px',
-                                        cursor: 'pointer',
-                                        display: 'flex',
-                                        alignItems: 'center',
-                                        gap: '8px',
-                                      }}
-                                      onMouseOver={e => e.currentTarget.style.background = `${accent}22`}
-                                      onMouseOut={e => e.currentTarget.style.background = 'none'}
-                                    >
-                                      {l.flag && <img src={l.flag} alt="" style={{ width: '16px', height: '11px', borderRadius: '2px', objectFit: 'cover' }} />}
-                                      <span>{l.name}</span>
-                                    </button>
-                                  ))
-                                )}
-                              </div>
-                            )}
-                          </div>
-
-                          {translatedInfo && (
-                            <button
-                              onClick={() => {
-                                setTranslatedInfo(null);
-                                setInfoAudioBase64(null);
-                                setIsPlayingInfoAudio(false);
-                                if (infoAudioRef.current) infoAudioRef.current.pause();
-                              }}
-                              style={{
-                                background: 'none',
-                                border: 'none',
-                                color: '#ff3b30',
-                                fontSize: '12px',
-                                cursor: 'pointer',
-                                padding: '6px 12px',
-                              }}
-                            >
-                              Reset
-                            </button>
-                          )}
-
-                          {infoAudioBase64 && (
-                            <button
-                              onClick={toggleInfoAudio}
-                              style={{
-                                display: 'inline-flex',
-                                alignItems: 'center',
-                                gap: '6px',
-                                padding: '6px 14px',
-                                borderRadius: '20px',
-                                background: isPlayingInfoAudio ? '#ff3b30' : accent,
-                                border: 'none',
-                                color: '#fff',
-                                fontSize: '11px',
-                                fontWeight: 'bold',
-                                cursor: 'pointer',
-                                transition: 'transform 0.1s',
-                              }}
-                              onMouseOver={e => e.currentTarget.style.transform = 'scale(1.05)'}
-                              onMouseOut={e => e.currentTarget.style.transform = 'none'}
-                            >
-                              {isPlayingInfoAudio ? <VolumeX size={12} /> : <Volume2 size={12} />}
-                              {isPlayingInfoAudio ? 'Mute' : 'Listen'}
-                            </button>
-                          )}
-                        </div>
                       </div>
 
                       <div className="watch-live-actions-container" style={{ display: 'flex', gap: '10px', alignItems: 'center', flexShrink: 0 }}>
