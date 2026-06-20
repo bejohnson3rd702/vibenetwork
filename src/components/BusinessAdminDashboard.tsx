@@ -15,8 +15,9 @@ import { N2NFleetTab } from './admin/N2NFleetTab';
 import { N2NUsersTab } from './admin/N2NUsersTab';
 import { N2NLedgerTab } from './admin/N2NLedgerTab';
 import { N2NBrandingTab } from './admin/N2NBrandingTab';
-import { Network, BookUser, Receipt, Palette, Brain } from 'lucide-react';
+import { Network, BookUser, Receipt, Palette, Brain, Languages } from 'lucide-react';
 import { EnterpriseAiTab } from './admin/EnterpriseAiTab';
+import { TranslationTab } from './admin/TranslationTab';
 
 export default function BusinessAdminDashboard({ onClose }: { onClose: () => void }) {
   const { wlConfig } = useWhiteLabel();
@@ -76,6 +77,10 @@ export default function BusinessAdminDashboard({ onClose }: { onClose: () => voi
                 <Brain size={22} /> Enterprise AI (NaluAsk)
              </button>
 
+             <button onClick={() => setActiveTab('translation')} style={{ padding: '16px 20px', background: activeTab === 'translation' ? wlConfig.accent : 'transparent', color: activeTab === 'translation' ? '#fff' : '#888', border: 'none', borderRadius: '12px', display: 'flex', alignItems: 'center', gap: '16px', cursor: 'pointer', textAlign: 'left', fontWeight: 'bold', fontSize: '15px', transition: '0.2s' }}>
+                <Languages size={22} /> WWTC Translation
+             </button>
+
              <div style={{ height: '1px', background: 'rgba(255,255,255,0.05)', margin: '10px 0' }} />
 
               <button onClick={() => setActiveTab('wallet')} style={{ padding: '16px 20px', background: activeTab === 'wallet' ? wlConfig.accent : 'transparent', color: activeTab === 'wallet' ? '#fff' : '#888', border: 'none', borderRadius: '12px', display: 'flex', alignItems: 'center', gap: '16px', cursor: 'pointer', textAlign: 'left', fontWeight: 'bold', fontSize: '15px', transition: '0.2s' }}>
@@ -116,6 +121,7 @@ export default function BusinessAdminDashboard({ onClose }: { onClose: () => voi
             {activeTab === 'pages' && <PagesTab wlConfig={wlConfig} />}
             {activeTab === 'inbox' && <InboxTab wlConfig={wlConfig} />}
             {activeTab === 'enterprise-ai' && <EnterpriseAiTab wlConfig={wlConfig} />}
+            {activeTab === 'translation' && <TranslationTab wlConfig={wlConfig} />}
             {activeTab === 'wallet' && <WalletTab wlConfig={wlConfig} />}
             {activeTab === 'n2n-fleet' && <N2NFleetTab wlConfig={wlConfig} />}
             {activeTab === 'n2n-users' && <N2NUsersTab wlConfig={wlConfig} />}

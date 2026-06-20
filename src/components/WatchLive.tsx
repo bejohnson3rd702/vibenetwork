@@ -4,6 +4,7 @@ import { Play, Tv, X, ChevronLeft, ChevronRight, Clock, ExternalLink, Video, Vid
 import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from '../supabaseClient';
 import { isOlympianConfig, isB2kConfig, isKpleConfig } from '../lib/whitelabel';
+import { getWwtcLanguages, translateText } from '../lib/wwtc';
 
 interface VideoClip {
   id: string;
@@ -601,6 +602,181 @@ export default function WatchLive({ accent = '#D35400', isOlympian = false, isB2
   const videoRef = useRef<HTMLVideoElement>(null);
   const chatScrollRef = useRef<HTMLDivElement>(null);
   const modalRef = useRef<HTMLDivElement>(null);
+
+  // WWTC Translation Center state
+  const [wwtcLanguages, setWwtcLanguages] = useState<any[]>([]);
+  const [preferredLang, setPreferredLang] = useState('spanish-international');
+  const [isTranslatingInfo, setIsTranslatingInfo] = useState(false);
+  const [translatedInfo, setTranslatedInfo] = useState<{ headline: string; description: string } | null>(null);
+  const [infoAudioBase64, setInfoAudioBase64] = useState<string | null>(null);
+  const [isPlayingInfoAudio, setIsPlayingInfoAudio] = useState(false);
+  const [showInfoLangDropdown, setShowInfoLangDropdown] = useState(false);
+  const [translatedChats, setTranslatedChats] = useState<{ [msgId: string]: { text: string; audio?: string; isPlaying?: boolean } }>({});
+
+  const infoAudioRef = useRef<HTMLAudioElement | null>(null);
+  const chatAudioRef = useRef<HTMLAudioElement | null>(null);
+
+  // Load WWTC languages
+  useEffect(() => {
+    async function loadLangs() {
+      try {
+        const langs = await getWwtcLanguages();
+        setWwtcLanguages(langs.sort((a, b) => a.name.localeCompare(b.name)));
+      } catch (e) {
+        console.error('Failed to load WWTC languages in WatchLive:', e);
+      }
+    }
+    loadLangs();
+  }, []);
+
+  // Cleanup audios
+  useEffect(() => {
+    return () => {
+      if (infoAudioRef.current) infoAudioRef.current.pause();
+      if (chatAudioRef.current) chatAudioRef.current.pause();
+    };
+  }, []);
+
+  // Reset translated video info when active video changes
+  useEffect(() => {
+    setTranslatedInfo(null);
+    setInfoAudioBase64(null);
+    setIsPlayingInfoAudio(false);
+    setShowInfoLangDropdown(false);
+    if (infoAudioRef.current) {
+      infoAudioRef.current.pause();
+    }
+  }, [activeVideo]);
+
+  // Translate active video title & description
+  const handleTranslateVideoInfo = async (targetLanguage: string) => {
+    if (!activeVideo) return;
+    setIsTranslatingInfo(true);
+    setTranslatedInfo(null);
+    setInfoAudioBase64(null);
+    setIsPlayingInfoAudio(false);
+    if (infoAudioRef.current) {
+      infoAudioRef.current.pause();
+    }
+
+    try {
+      const headlineRes = await translateText({
+        text: activeVideo.headline,
+        sourceLang: 'english-united-states',
+        targetLang: targetLanguage,
+        serviceCode: 'ttt'
+      });
+
+      const descRes = await translateText({
+        text: activeVideo.description || '',
+        sourceLang: 'english-united-states',
+        targetLang: targetLanguage,
+        serviceCode: 'tts'
+      });
+
+      setTranslatedInfo({
+        headline: headlineRes.translated_text || activeVideo.headline,
+        description: descRes.translated_text || activeVideo.description
+      });
+
+      if (descRes.audio) {
+        setInfoAudioBase64(descRes.audio);
+      }
+    } catch (err) {
+      console.error('Failed to translate video info:', err);
+    } finally {
+      setIsTranslatingInfo(false);
+    }
+  };
+
+  const toggleInfoAudio = () => {
+    if (!infoAudioBase64) return;
+    if (!infoAudioRef.current) {
+      infoAudioRef.current = new Audio(`data:audio/wav;base64,${infoAudioBase64}`);
+      infoAudioRef.current.onEnded = () => setIsPlayingInfoAudio(false);
+      infoAudioRef.current.onPause = () => setIsPlayingInfoAudio(false);
+      infoAudioRef.current.onPlay = () => setIsPlayingInfoAudio(true);
+    }
+    if (isPlayingInfoAudio) {
+      infoAudioRef.current.pause();
+    } else {
+      infoAudioRef.current.src = `data:audio/wav;base64,${infoAudioBase64}`;
+      infoAudioRef.current.play().catch(e => {
+        console.error(e);
+        setIsPlayingInfoAudio(false);
+      });
+    }
+  };
+
+  // Translate single chat message
+  const handleTranslateChat = async (msgId: string, text: string) => {
+    if (translatedChats[msgId]) {
+      const chatVal = translatedChats[msgId];
+      if (chatVal.audio) {
+        if (!chatAudioRef.current) {
+          chatAudioRef.current = new Audio();
+          chatAudioRef.current.onEnded = () => {
+            setTranslatedChats(prev => ({
+              ...prev,
+              [msgId]: { ...prev[msgId], isPlaying: false }
+            }));
+          };
+          chatAudioRef.current.onPause = () => {
+            setTranslatedChats(prev => ({
+              ...prev,
+              [msgId]: { ...prev[msgId], isPlaying: false }
+            }));
+          };
+          chatAudioRef.current.onPlay = () => {
+            setTranslatedChats(prev => ({
+              ...prev,
+              [msgId]: { ...prev[msgId], isPlaying: true }
+            }));
+          };
+        }
+
+        const isPlayingNow = chatVal.isPlaying;
+        if (chatAudioRef.current) {
+          chatAudioRef.current.pause();
+        }
+
+        if (!isPlayingNow) {
+          chatAudioRef.current.src = `data:audio/wav;base64,${chatVal.audio}`;
+          chatAudioRef.current.play().catch(err => console.error(err));
+        }
+      }
+      return;
+    }
+
+    try {
+      setTranslatedChats(prev => ({
+        ...prev,
+        [msgId]: { text: 'Translating...', isPlaying: false }
+      }));
+
+      const res = await translateText({
+        text,
+        sourceLang: 'english-united-states',
+        targetLang: preferredLang,
+        serviceCode: 'tts'
+      });
+
+      setTranslatedChats(prev => ({
+        ...prev,
+        [msgId]: {
+          text: res.translated_text || 'Error translating',
+          audio: res.audio || undefined,
+          isPlaying: false
+        }
+      }));
+    } catch (e) {
+      console.error(e);
+      setTranslatedChats(prev => ({
+        ...prev,
+        [msgId]: { text: 'Translation failed.', isPlaying: false }
+      }));
+    }
+  };
 
   // Fan Zone & Co-watching state
   const [showFanZone, setShowFanZone] = useState(false);
@@ -1627,9 +1803,144 @@ export default function WatchLive({ accent = '#D35400', isOlympian = false, isB2
                     </div>
 
                     <div className="watch-live-meta-row" style={{ marginTop: '16px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '24px' }}>
-                      <div style={{ flex: 1 }}>
-                        <h3 style={{ margin: '0 0 6px 0', fontSize: '18px', fontWeight: 800, color: '#fff' }}>{activeVideo.headline}</h3>
-                        <p style={{ margin: 0, fontSize: '13px', color: '#888', lineHeight: 1.5 }}>{activeVideo.description}</p>
+                      <div style={{ flex: 1, position: 'relative' }}>
+                        <h3 style={{ margin: '0 0 6px 0', fontSize: '18px', fontWeight: 800, color: '#fff', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                          {translatedInfo ? translatedInfo.headline : activeVideo.headline}
+                          {translatedInfo && (
+                            <span style={{ fontSize: '11px', background: `${accent}22`, border: `1px solid ${accent}44`, color: accent, padding: '2px 8px', borderRadius: '10px', fontWeight: 'bold' }}>
+                              Translated
+                            </span>
+                          )}
+                        </h3>
+                        <p style={{ margin: '0 0 12px 0', fontSize: '13px', color: '#ccc', lineHeight: 1.5 }}>
+                          {translatedInfo ? translatedInfo.description : activeVideo.description}
+                        </p>
+
+                        {/* Translation Controls Underneath */}
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
+                          <div style={{ position: 'relative' }}>
+                            <button
+                              onClick={() => setShowInfoLangDropdown(!showInfoLangDropdown)}
+                              style={{
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                gap: '6px',
+                                padding: '6px 12px',
+                                borderRadius: '8px',
+                                background: 'rgba(255,255,255,0.05)',
+                                border: '1px solid rgba(255,255,255,0.1)',
+                                color: '#fff',
+                                fontSize: '12px',
+                                cursor: 'pointer',
+                                transition: '0.2s',
+                              }}
+                              onMouseOver={e => e.currentTarget.style.background = 'rgba(255,255,255,0.1)'}
+                              onMouseOut={e => e.currentTarget.style.background = 'rgba(255,255,255,0.05)'}
+                            >
+                              <Globe size={13} />
+                              {isTranslatingInfo ? 'Translating...' : 'Translate Info'}
+                            </button>
+
+                            {/* Dropdown menu */}
+                            {showInfoLangDropdown && (
+                              <div style={{
+                                position: 'absolute',
+                                bottom: '100%',
+                                left: 0,
+                                marginBottom: '8px',
+                                background: 'rgba(20, 20, 25, 0.95)',
+                                border: '1px solid rgba(255,255,255,0.1)',
+                                borderRadius: '12px',
+                                boxShadow: '0 10px 30px rgba(0,0,0,0.5)',
+                                padding: '8px',
+                                width: '220px',
+                                maxHeight: '200px',
+                                overflowY: 'auto',
+                                zIndex: 999,
+                                backdropFilter: 'blur(20px)',
+                              }}>
+                                {wwtcLanguages.length === 0 ? (
+                                  <div style={{ padding: '8px', fontSize: '11px', color: '#666' }}>Loading languages...</div>
+                                ) : (
+                                  wwtcLanguages.map(l => (
+                                    <button
+                                      key={`info-lang-${l.code}`}
+                                      onClick={() => {
+                                        handleTranslateVideoInfo(l.code);
+                                        setShowInfoLangDropdown(false);
+                                      }}
+                                      style={{
+                                        width: '100%',
+                                        padding: '8px 10px',
+                                        background: 'none',
+                                        border: 'none',
+                                        color: '#fff',
+                                        fontSize: '12px',
+                                        textAlign: 'left',
+                                        borderRadius: '6px',
+                                        cursor: 'pointer',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        gap: '8px',
+                                      }}
+                                      onMouseOver={e => e.currentTarget.style.background = `${accent}22`}
+                                      onMouseOut={e => e.currentTarget.style.background = 'none'}
+                                    >
+                                      {l.flag && <img src={l.flag} alt="" style={{ width: '16px', height: '11px', borderRadius: '2px', objectFit: 'cover' }} />}
+                                      <span>{l.name}</span>
+                                    </button>
+                                  ))
+                                )}
+                              </div>
+                            )}
+                          </div>
+
+                          {translatedInfo && (
+                            <button
+                              onClick={() => {
+                                setTranslatedInfo(null);
+                                setInfoAudioBase64(null);
+                                setIsPlayingInfoAudio(false);
+                                if (infoAudioRef.current) infoAudioRef.current.pause();
+                              }}
+                              style={{
+                                background: 'none',
+                                border: 'none',
+                                color: '#ff3b30',
+                                fontSize: '12px',
+                                cursor: 'pointer',
+                                padding: '6px 12px',
+                              }}
+                            >
+                              Reset
+                            </button>
+                          )}
+
+                          {infoAudioBase64 && (
+                            <button
+                              onClick={toggleInfoAudio}
+                              style={{
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                gap: '6px',
+                                padding: '6px 14px',
+                                borderRadius: '20px',
+                                background: isPlayingInfoAudio ? '#ff3b30' : accent,
+                                border: 'none',
+                                color: '#fff',
+                                fontSize: '11px',
+                                fontWeight: 'bold',
+                                cursor: 'pointer',
+                                transition: 'transform 0.1s',
+                              }}
+                              onMouseOver={e => e.currentTarget.style.transform = 'scale(1.05)'}
+                              onMouseOut={e => e.currentTarget.style.transform = 'none'}
+                            >
+                              {isPlayingInfoAudio ? <VolumeX size={12} /> : <Volume2 size={12} />}
+                              {isPlayingInfoAudio ? 'Mute' : 'Listen'}
+                            </button>
+                          )}
+                        </div>
                       </div>
 
                       <div className="watch-live-actions-container" style={{ display: 'flex', gap: '10px', alignItems: 'center', flexShrink: 0 }}>
@@ -1736,6 +2047,32 @@ export default function WatchLive({ accent = '#D35400', isOlympian = false, isB2
                           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                             <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#ff3b30' }} />
                             <h4 style={{ margin: 0, fontSize: '15px', fontWeight: 800, color: '#fff', letterSpacing: '-0.3px' }}>Fan Zone Room</h4>
+                          </div>
+
+                          {/* Chat Language Selector */}
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginLeft: 'auto', marginRight: '10px' }}>
+                            <Globe size={12} color="var(--text-muted)" />
+                            <select
+                              value={preferredLang}
+                              onChange={(e) => setPreferredLang(e.target.value)}
+                              style={{
+                                background: 'rgba(255,255,255,0.05)',
+                                border: '1px solid rgba(255,255,255,0.1)',
+                                borderRadius: '6px',
+                                color: '#fff',
+                                fontSize: '10px',
+                                padding: '2px 4px',
+                                cursor: 'pointer',
+                                outline: 'none',
+                                maxWidth: '100px',
+                              }}
+                            >
+                              {wwtcLanguages.map(l => (
+                                <option key={`pref-lang-${l.code}`} value={l.code} style={{ background: '#111', color: '#fff' }}>
+                                  {l.name}
+                                </option>
+                              ))}
+                            </select>
                           </div>
                           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                             <button
@@ -1911,18 +2248,81 @@ export default function WatchLive({ accent = '#D35400', isOlympian = false, isB2
 
                         {/* Scrolling Chat */}
                         <div ref={chatScrollRef} style={{ flex: 1, overflowY: 'auto', padding: '16px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                          {chatMessages.map(msg => (
-                            <div key={msg.id} style={{ display: 'flex', gap: '8px', alignItems: 'flex-start' }}>
-                              <img src={msg.avatar} alt={msg.user} style={{ width: '28px', height: '28px', borderRadius: '50%', objectFit: 'cover', marginTop: '2px' }} />
-                              <div style={{ display: 'flex', flexDirection: 'column', flex: 1 }}>
-                                <div style={{ display: 'flex', alignItems: 'baseline', gap: '6px' }}>
-                                  <span style={{ fontSize: '11px', fontWeight: 800, color: msg.isSelf ? accent : '#eee' }}>{msg.user}</span>
-                                  <span style={{ fontSize: '8px', color: '#444' }}>{msg.time}</span>
+                          {chatMessages.map(msg => {
+                            const translation = translatedChats[msg.id];
+                            return (
+                              <div key={msg.id} style={{ display: 'flex', gap: '8px', alignItems: 'flex-start', position: 'relative' }}>
+                                <img src={msg.avatar} alt={msg.user} style={{ width: '28px', height: '28px', borderRadius: '50%', objectFit: 'cover', marginTop: '2px' }} />
+                                <div style={{ display: 'flex', flexDirection: 'column', flex: 1 }}>
+                                  <div style={{ display: 'flex', alignItems: 'baseline', gap: '6px' }}>
+                                    <span style={{ fontSize: '11px', fontWeight: 800, color: msg.isSelf ? accent : '#eee' }}>{msg.user}</span>
+                                    <span style={{ fontSize: '8px', color: '#444' }}>{msg.time}</span>
+                                    
+                                    {/* Translate Icon Button */}
+                                    <button
+                                      onClick={() => handleTranslateChat(msg.id, msg.text)}
+                                      style={{
+                                        background: 'none',
+                                        border: 'none',
+                                        color: translation ? accent : 'var(--text-muted)',
+                                        cursor: 'pointer',
+                                        fontSize: '9px',
+                                        padding: '0 4px',
+                                        marginLeft: '6px',
+                                        display: 'inline-flex',
+                                        alignItems: 'center',
+                                        gap: '2px',
+                                        opacity: 0.6,
+                                      }}
+                                      onMouseOver={e => e.currentTarget.style.opacity = '1'}
+                                      onMouseOut={e => e.currentTarget.style.opacity = '0.6'}
+                                    >
+                                      <Languages size={10} />
+                                      <span>{translation ? 'Listen' : 'Translate'}</span>
+                                    </button>
+                                  </div>
+                                  <span style={{ fontSize: '12px', color: '#ccc', lineHeight: 1.4, wordBreak: 'break-word' }}>{msg.text}</span>
+                                  
+                                  {/* Rendered Translation Bubble */}
+                                  {translation && (
+                                    <div style={{
+                                      marginTop: '4px',
+                                      padding: '6px 10px',
+                                      background: 'rgba(255,255,255,0.03)',
+                                      borderLeft: `2px solid ${accent}`,
+                                      borderRadius: '4px',
+                                      display: 'flex',
+                                      alignItems: 'center',
+                                      justifyContent: 'space-between',
+                                      gap: '10px',
+                                      animation: 'fadeIn 0.2s ease-out'
+                                    }}>
+                                      <span style={{ fontSize: '11px', color: '#aaa', fontStyle: 'italic', wordBreak: 'break-word' }}>
+                                        {translation.text}
+                                      </span>
+                                      {translation.audio && (
+                                        <button
+                                          onClick={() => handleTranslateChat(msg.id, msg.text)}
+                                          style={{
+                                            background: 'none',
+                                            border: 'none',
+                                            color: translation.isPlaying ? '#ff3b30' : accent,
+                                            cursor: 'pointer',
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            justifyContent: 'center',
+                                            padding: '2px',
+                                          }}
+                                        >
+                                          {translation.isPlaying ? <VolumeX size={10} /> : <Volume2 size={10} />}
+                                        </button>
+                                      )}
+                                    </div>
+                                  )}
                                 </div>
-                                <span style={{ fontSize: '12px', color: '#ccc', lineHeight: 1.4, wordBreak: 'break-word' }}>{msg.text}</span>
                               </div>
-                            </div>
-                          ))}
+                            );
+                          })}
                         </div>
 
                         {/* Reaction Bar & Message Input */}
