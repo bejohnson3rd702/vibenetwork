@@ -105,6 +105,7 @@ function App() {
     if (!wlConfig?.id) return;
 
     let timeoutId: any;
+    let observer: MutationObserver | null = null;
 
     const loadNalu = () => {
       // 1. Remove existing NaluAsk elements to prevent duplicates
@@ -127,6 +128,25 @@ function App() {
       script.setAttribute('data-color', accentColor);
       script.defer = true;
       document.body.appendChild(script);
+
+      // 3. Start MutationObserver to fix sandbox/iframe issues on mobile Safari/Chrome
+      observer = new MutationObserver(() => {
+        const iframe = document.querySelector('#nalu-container iframe') as HTMLIFrameElement;
+        if (iframe) {
+          // Remove sandboxing to ensure third-party cookies/localStorage work on iOS/mobile Safari
+          if (iframe.hasAttribute('sandbox')) {
+            iframe.removeAttribute('sandbox');
+          }
+          
+          // Style container background so it's not transparent during iframe load
+          const container = document.getElementById('nalu-container');
+          if (container) {
+            container.style.background = '#0a0a0a';
+            container.style.border = '1px solid rgba(255, 255, 255, 0.1)';
+          }
+        }
+      });
+      observer.observe(document.body, { childList: true, subtree: true });
     };
 
     // Load after 3 seconds on mobile to prioritize main thread rendering, 1.5 seconds on desktop
@@ -138,6 +158,9 @@ function App() {
 
     return () => {
       clearTimeout(timeoutId);
+      if (observer) {
+        observer.disconnect();
+      }
       const bubble = document.getElementById('nalu-bubble');
       if (bubble) bubble.remove();
       const container = document.getElementById('nalu-container');
