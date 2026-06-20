@@ -100,14 +100,14 @@ function App() {
     return () => window.removeEventListener('open_auth', handleOpenAuth);
   }, []);
 
-  // Load NaluAsk Widget Script dynamically with dynamic branding accent
+  // Load NaluAsk Widget Script dynamically with dynamic branding accent (only on tenant change to prevent chat state resets)
   useEffect(() => {
-    if (!wlConfig) return;
+    if (!wlConfig?.id) return;
 
     let timeoutId: any;
 
     const loadNalu = () => {
-      // 1. Remove existing NaluAsk elements to prevent duplicates on color/accent changes
+      // 1. Remove existing NaluAsk elements to prevent duplicates
       const existingBubble = document.getElementById('nalu-bubble');
       if (existingBubble) existingBubble.remove();
       
@@ -133,11 +133,7 @@ function App() {
     const delay = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ? 3000 : 1500;
     
     timeoutId = setTimeout(() => {
-      if (typeof window !== 'undefined' && 'requestIdleCallback' in window) {
-        (window as any).requestIdleCallback(() => loadNalu(), { timeout: 2000 });
-      } else {
-        loadNalu();
-      }
+      loadNalu();
     }, delay);
 
     return () => {
@@ -150,7 +146,16 @@ function App() {
       const scripts = document.querySelectorAll('script[src*="naluask.com/widget.js"]');
       scripts.forEach(s => s.remove());
     };
-  }, [wlConfig?.accent, wlConfig?.id]);
+  }, [wlConfig?.id]);
+
+  // Dynamically update Nalu bubble background color when accent changes, without re-injecting the script
+  useEffect(() => {
+    if (!wlConfig?.accent) return;
+    const bubble = document.getElementById('nalu-bubble');
+    if (bubble) {
+      bubble.style.background = `linear-gradient(135deg, ${wlConfig.accent}, ${wlConfig.accent}cc)`;
+    }
+  }, [wlConfig?.accent]);
 
   useEffect(() => {
     // Check Active Session
