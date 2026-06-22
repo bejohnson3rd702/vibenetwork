@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { supabase } from '../supabaseClient';
 import { motion, AnimatePresence } from 'framer-motion';
-import { LogOut, Camera, Lock, Unlock, Image as ImageIcon, Star, ShieldCheck, Eye, Edit2, Trash2, Wand, Calendar, Edit3, Clock, CheckCircle, Heart, MessageCircle, Wallet, ArrowUpRight, ArrowDownLeft, Activity, Monitor, Settings, Video, DollarSign, Share2, Pin } from 'lucide-react';
+import { LogOut, Camera, Lock, Unlock, Image as ImageIcon, Star, ShieldCheck, Eye, Edit2, Trash2, Wand, Calendar, Edit3, Clock, CheckCircle, Heart, MessageCircle, Wallet, ArrowUpRight, ArrowDownLeft, Activity, Monitor, Settings, Video, DollarSign, Share2, Pin, ChevronLeft, ChevronRight } from 'lucide-react';
 import { DictationButton } from './DictationButton';
 import { EmojiPickerButton } from './EmojiPickerButton';
 import EndUserAuthModal from './EndUserAuthModal';
@@ -395,8 +395,9 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
   const [postTitle, setPostTitle] = useState('');
   const [isLocked, setIsLocked] = useState(true);
   const [requestFeature, setRequestFeature] = useState(false);
-  const [postMediaUrl, setPostMediaUrl] = useState('');
+  const [postMediaUrls, setPostMediaUrls] = useState<string[]>([]);
   const [uploadingPostMedia, setUploadingPostMedia] = useState(false);
+  const [postImageIndexes, setPostImageIndexes] = useState<Record<string | number, number>>({});
   
   // Interactions
   const [commentTexts, setCommentTexts] = useState<Record<string, string>>({});
@@ -512,6 +513,23 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
         if (postsData && postsData.length > 0) {
           setFeed(postsData.map((p: any) => {
             const creatorObj = Array.isArray(p.creator) ? p.creator[0] : p.creator;
+            
+            // Handle multiple images stored as JSON array string or comma separated
+            let imgsList: string[] = [];
+            if (p.image_url) {
+              if (p.image_url.startsWith('[') && p.image_url.endsWith(']')) {
+                try {
+                  imgsList = JSON.parse(p.image_url);
+                } catch {
+                  imgsList = [p.image_url];
+                }
+              } else if (p.image_url.includes(',')) {
+                imgsList = p.image_url.split(',').map((url: string) => url.trim());
+              } else {
+                imgsList = [p.image_url];
+              }
+            }
+
             return {
               id: p.id,
               title: p.content || p.title,
@@ -523,7 +541,8 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
                 return { id: c.id, text: c.content, user: userObj?.username || 'User', avatar: userObj?.avatar_url || '' };
               }) : [],
               date: p.created_at ? new Date(p.created_at).toLocaleDateString() : 'Just now',
-              img: p.image_url || null,
+              img: imgsList[0] || null,
+              imgs: imgsList,
               creator_id: p.creator_id,
               creator_username: creatorObj?.username,
               creator_avatar: creatorObj?.avatar_url,
@@ -1031,24 +1050,45 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
     setSaving(false);
   };
 
-  const handlePostMediaUpload = async (eventOrFile: React.ChangeEvent<HTMLInputElement> | File) => {
+  const handlePrevImage = (postId: string | number, maxImages: number) => {
+    setPostImageIndexes(prev => ({
+      ...prev,
+      [postId]: (prev[postId] ? prev[postId] - 1 : maxImages - 1 + maxImages) % maxImages
+    }));
+  };
+
+  const handleNextImage = (postId: string | number, maxImages: number) => {
+    setPostImageIndexes(prev => ({
+      ...prev,
+      [postId]: ((prev[postId] || 0) + 1) % maxImages
+    }));
+  };
+
+  const handlePostMediaUpload = async (eventOrFiles: React.ChangeEvent<HTMLInputElement> | FileList | File) => {
     try {
-      let file: File | undefined;
-      if (eventOrFile instanceof File) {
-        file = eventOrFile;
-      } else if (eventOrFile.target?.files && eventOrFile.target.files.length > 0) {
-        file = eventOrFile.target.files[0];
+      let filesToUpload: File[] = [];
+      if (eventOrFiles instanceof File) {
+        filesToUpload = [eventOrFiles];
+      } else if (eventOrFiles instanceof FileList) {
+        filesToUpload = Array.from(eventOrFiles);
+      } else if (eventOrFiles && 'target' in eventOrFiles && eventOrFiles.target?.files) {
+        filesToUpload = Array.from(eventOrFiles.target.files);
       }
-      if (!file) return;
+      if (filesToUpload.length === 0) return;
       setUploadingPostMedia(true);
       
-      toast.info("✨ Nalu AI is enhancing and auto-cropping your post media...");
-      const enhancedFile = await processAndEnhanceImage(file, 'post');
+      const newUrls: string[] = [];
+      for (const file of filesToUpload) {
+        toast.info(`✨ Nalu AI is enhancing and auto-cropping your post media: ${file.name}...`);
+        const enhancedFile = await processAndEnhanceImage(file, 'post');
 
-      const filePath = `${user?.id}/post_${Math.random()}.${enhancedFile.name.split('.').pop()}`;
-      await supabase!.storage.from('images').upload(filePath, enhancedFile);
-      const { data } = supabase!.storage.from('images').getPublicUrl(filePath);
-      setPostMediaUrl(data.publicUrl);
+        const filePath = `${user?.id}/post_${Math.random()}.${enhancedFile.name.split('.').pop()}`;
+        await supabase!.storage.from('images').upload(filePath, enhancedFile);
+        const { data } = supabase!.storage.from('images').getPublicUrl(filePath);
+        newUrls.push(data.publicUrl);
+      }
+      
+      setPostMediaUrls(prev => [...prev, ...newUrls]);
     } catch {
       toast.error('Upload failed. Did you run the storage buckets script?');
     } finally {
@@ -1156,8 +1196,22 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
       content: postTitle,
       is_locked: lockedStatus,
       likes: 0,
-      image_url: postMediaUrl || 'https://vibenetwork.tv/wp-content/uploads/2026/02/mukap-vibe-tv-networkk_11zon.png'
+      image_url: postMediaUrls.length > 0 
+        ? JSON.stringify(postMediaUrls) 
+        : 'https://vibenetwork.tv/wp-content/uploads/2026/02/mukap-vibe-tv-networkk_11zon.png'
     };
+    
+    // Parse images list for the feed state
+    let localImgs: string[] = [];
+    if (newPost.image_url.startsWith('[') && newPost.image_url.endsWith(']')) {
+      try {
+        localImgs = JSON.parse(newPost.image_url);
+      } catch {
+        localImgs = [newPost.image_url];
+      }
+    } else {
+      localImgs = [newPost.image_url];
+    }
     
     // Add to supabase
     const { data } = await supabase!.from('posts').insert([newPost]).select();
@@ -1165,19 +1219,21 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
      if (data && data[0]) {
        setFeed([{ 
          id: data[0].id, title: data[0].content || postTitle, locked: data[0].is_locked || lockedStatus, likes: 0, date: 'Just now', 
-         img: data[0].image_url || newPost.image_url,
+         img: localImgs[0] || null,
+         imgs: localImgs,
          is_pinned: false
        }, ...feed]);
      } else {
        // Fallback local state if table doesn't exist yet
        setFeed([{ 
          id: Date.now(), title: postTitle, locked: lockedStatus, likes: 0, date: 'Just now', 
-         img: newPost.image_url,
+         img: localImgs[0] || null,
+         imgs: localImgs,
          is_pinned: false
        }, ...feed]);
      }
     setPostTitle('');
-    setPostMediaUrl('');
+    setPostMediaUrls([]);
     toast.success('Content Published Successfully!');
   };
 
@@ -1441,11 +1497,29 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
       
       {/* Immersive Hero Banner */}
       {!isGuestMode && !isNetworkLevel && (
-        <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '400px', zIndex: 0 }}>
-          <div style={{ position: 'absolute', inset: 0, backgroundImage: homepageImageUrl ? `url(${homepageImageUrl.split(',')[currentBgIndex]})` : 'none', backgroundSize: 'cover', backgroundPosition: 'center', filter: 'var(--hero-img-filter)', transition: 'background-image 1s ease-in-out' }} />
-          <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to bottom, transparent 30%, var(--hero-bg) 100%)' }} />
+        <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '400px', zIndex: 0, overflow: 'hidden' }}>
+          <AnimatePresence initial={false} mode="popLayout">
+            {homepageImageUrl && (
+              <motion.div
+                key={`hero-bg-${currentBgIndex}`}
+                initial={{ x: '100%' }}
+                animate={{ x: 0 }}
+                exit={{ x: '-100%' }}
+                transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1] }}
+                style={{
+                  position: 'absolute',
+                  inset: 0,
+                  backgroundImage: `url(${homepageImageUrl.split(',')[currentBgIndex]})`,
+                  backgroundSize: 'cover',
+                  backgroundPosition: 'center',
+                  filter: 'var(--hero-img-filter)'
+                }}
+              />
+            )}
+          </AnimatePresence>
+          <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to bottom, transparent 30%, var(--hero-bg) 100%)', zIndex: 1 }} />
           {/* Dynamic Glowing Accent */}
-          <div style={{ position: 'absolute', inset: 0, background: 'radial-gradient(circle at 50% 50%, rgba(255, 77, 133, 0.2), transparent 70%)', mixBlendMode: 'screen' }} />
+          <div style={{ position: 'absolute', inset: 0, background: 'radial-gradient(circle at 50% 50%, rgba(255, 77, 133, 0.2), transparent 70%)', mixBlendMode: 'screen', zIndex: 2 }} />
         </div>
       )}
 
@@ -1777,8 +1851,8 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
             onDrop={(e) => {
               e.preventDefault();
               setIsDraggingPostForm(false);
-              if (e.dataTransfer.files && e.dataTransfer.files[0]) {
-                handlePostMediaUpload(e.dataTransfer.files[0]);
+              if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+                handlePostMediaUpload(e.dataTransfer.files);
               }
             }}
             style={{ 
@@ -1817,8 +1891,8 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
                   onDrop={(e) => {
                     e.preventDefault();
                     setIsDraggingPostMedia(false);
-                    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
-                      handlePostMediaUpload(e.dataTransfer.files[0]);
+                    if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+                      handlePostMediaUpload(e.dataTransfer.files);
                     }
                   }}
                   style={{ 
@@ -1834,14 +1908,18 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
                     transition: 'all 0.2s ease'
                   }}
                 >
-                  <input type="file" accept="image/*" onChange={handlePostMediaUpload} style={{ display: 'none' }} disabled={uploadingPostMedia} />
+                  <input type="file" accept="image/*" multiple onChange={handlePostMediaUpload} style={{ display: 'none' }} disabled={uploadingPostMedia} />
                   <ImageIcon size={18} /> {uploadingPostMedia ? 'Uploading...' : isDraggingPostMedia ? 'Drop here!' : 'Media (Drag & Drop)'}
                 </label>
                 
-                {postMediaUrl && (
-                  <div style={{ position: 'relative', width: '40px', height: '40px', borderRadius: '8px', overflow: 'hidden' }}>
-                    <img src={postMediaUrl} alt="Preview" loading="lazy" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                    <button type="button" onClick={() => setPostMediaUrl('')} style={{ position: 'absolute', top: 2, right: 2, background: 'rgba(0,0,0,0.5)', color: '#fff', border: 'none', borderRadius: '50%', padding: '2px', cursor: 'pointer' }}>×</button>
+                {postMediaUrls.length > 0 && (
+                  <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                    {postMediaUrls.map((url, index) => (
+                      <div key={`preview-${index}`} style={{ position: 'relative', width: '40px', height: '40px', borderRadius: '8px', overflow: 'hidden', border: '1px solid rgba(255,255,255,0.1)' }}>
+                        <img src={url} alt={`Preview ${index}`} loading="lazy" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                        <button type="button" onClick={() => setPostMediaUrls(prev => prev.filter((_, i) => i !== index))} style={{ position: 'absolute', top: 2, right: 2, background: 'rgba(0,0,0,0.6)', color: '#fff', border: 'none', borderRadius: '50%', width: '16px', height: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', fontSize: '9px', fontWeight: 'bold' }}>×</button>
+                      </div>
+                    ))}
                   </div>
                 )}
               </div>
@@ -1993,9 +2071,84 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
                   </div>
 
                   {/* Post Payload (Image/Video) */}
-                  {post.img && (
-                    <div style={{ width: '100%', display: 'flex', justifyContent: 'center', background: 'rgba(0,0,0,0.3)', padding: '20px 0', borderTop: '1px solid rgba(255,255,255,0.02)', borderBottom: '1px solid rgba(255,255,255,0.02)' }}>
-                      <img src={post.img} alt="Post content" loading="lazy" style={{ maxWidth: '50%', maxHeight: '400px', objectFit: 'contain', borderRadius: '12px', boxShadow: '0 10px 30px rgba(0,0,0,0.4)' }} />
+                  {post.imgs && post.imgs.length > 0 && (
+                    <div style={{ width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', background: 'rgba(0,0,0,0.3)', padding: '20px 0', borderTop: '1px solid rgba(255,255,255,0.02)', borderBottom: '1px solid rgba(255,255,255,0.02)', position: 'relative' }}>
+                      {post.imgs.length === 1 ? (
+                        <img src={post.imgs[0]} alt="Post content" loading="lazy" style={{ maxWidth: '50%', maxHeight: '400px', objectFit: 'contain', borderRadius: '12px', boxShadow: '0 10px 30px rgba(0,0,0,0.4)' }} />
+                      ) : (
+                        <div style={{ position: 'relative', width: '100%', maxWidth: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                          {/* Slide Container */}
+                          <div style={{ position: 'relative', width: '100%', height: '400px', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', borderRadius: '12px' }}>
+                            <img src={post.imgs[postImageIndexes[post.id] || 0]} alt={`Post content ${(postImageIndexes[post.id] || 0) + 1}`} loading="lazy" style={{ width: '100%', height: '100%', objectFit: 'contain', borderRadius: '12px', boxShadow: '0 10px 30px rgba(0,0,0,0.4)' }} />
+                          </div>
+
+                          {/* Left Arrow Button */}
+                          <button
+                            type="button"
+                            onClick={(e) => { e.stopPropagation(); handlePrevImage(post.id, post.imgs.length); }}
+                            style={{
+                              position: 'absolute',
+                              left: '12px',
+                              background: 'rgba(0,0,0,0.5)',
+                              border: '1px solid rgba(255,255,255,0.15)',
+                              backdropFilter: 'blur(5px)',
+                              color: '#fff',
+                              width: '32px',
+                              height: '32px',
+                              borderRadius: '50%',
+                              cursor: 'pointer',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              transition: 'all 0.2s',
+                              zIndex: 10
+                            }}
+                          >
+                            <ChevronLeft size={18} />
+                          </button>
+
+                          {/* Right Arrow Button */}
+                          <button
+                            type="button"
+                            onClick={(e) => { e.stopPropagation(); handleNextImage(post.id, post.imgs.length); }}
+                            style={{
+                              position: 'absolute',
+                              right: '12px',
+                              background: 'rgba(0,0,0,0.5)',
+                              border: '1px solid rgba(255,255,255,0.15)',
+                              backdropFilter: 'blur(5px)',
+                              color: '#fff',
+                              width: '32px',
+                              height: '32px',
+                              borderRadius: '50%',
+                              cursor: 'pointer',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              transition: 'all 0.2s',
+                              zIndex: 10
+                            }}
+                          >
+                            <ChevronRight size={18} />
+                          </button>
+
+                          {/* Pagination Dots Overlay */}
+                          <div style={{ position: 'absolute', bottom: '15px', display: 'flex', gap: '6px', zIndex: 10, background: 'rgba(0,0,0,0.4)', padding: '4px 8px', borderRadius: '10px' }}>
+                            {post.imgs.map((_, idx) => (
+                              <div
+                                key={`dot-${idx}`}
+                                style={{
+                                  width: '6px',
+                                  height: '6px',
+                                  borderRadius: '50%',
+                                  background: idx === (postImageIndexes[post.id] || 0) ? '#00ff88' : 'rgba(255,255,255,0.4)',
+                                  transition: 'background 0.2s'
+                                }}
+                              />
+                            ))}
+                          </div>
+                        </div>
+                      )}
                     </div>
                   )}
                 </div>
@@ -2929,9 +3082,25 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
                 
                 {homepageImageUrl ? (
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                    <div style={{ position: 'relative', width: '100%', aspectRatio: '21/9', borderRadius: '12px', overflow: 'hidden', backgroundImage: `url("${homepageImageUrl.split(',')[currentBgIndex]}")`, backgroundSize: 'cover', backgroundPosition: 'center', border: '1px solid rgba(255,255,255,0.1)', transition: 'background-image 0.5s' }}>
-                      <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(0,0,0,0.8), transparent)' }} />
-                      <button onClick={() => { setImageTarget('homepage'); setShowImageModal(true); }} style={{ position: 'absolute', bottom: 16, right: 16, padding: '10px 20px', background: 'rgba(255,255,255,0.15)', backdropFilter: 'blur(8px)', color: 'white', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.2)', cursor: 'pointer', fontSize: '13px', fontWeight: 'bold', transition: 'background 0.2s' }} onMouseOver={e=>e.currentTarget.style.background='rgba(255,255,255,0.25)'} onMouseOut={e=>e.currentTarget.style.background='rgba(255,255,255,0.15)'}>
+                    <div style={{ position: 'relative', width: '100%', aspectRatio: '21/9', borderRadius: '12px', overflow: 'hidden', border: '1px solid rgba(255,255,255,0.1)' }}>
+                      <AnimatePresence initial={false} mode="popLayout">
+                        <motion.div
+                          key={`preview-bg-${currentBgIndex}`}
+                          initial={{ x: '100%' }}
+                          animate={{ x: 0 }}
+                          exit={{ x: '-100%' }}
+                          transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+                          style={{
+                            position: 'absolute',
+                            inset: 0,
+                            backgroundImage: `url("${homepageImageUrl.split(',')[currentBgIndex]}")`,
+                            backgroundSize: 'cover',
+                            backgroundPosition: 'center',
+                          }}
+                        />
+                      </AnimatePresence>
+                      <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(0,0,0,0.8), transparent)', zIndex: 1 }} />
+                      <button onClick={() => { setImageTarget('homepage'); setShowImageModal(true); }} style={{ position: 'absolute', bottom: 16, right: 16, padding: '10px 20px', background: 'rgba(255,255,255,0.15)', backdropFilter: 'blur(8px)', color: 'white', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.2)', cursor: 'pointer', fontSize: '13px', fontWeight: 'bold', transition: 'background 0.2s', zIndex: 2 }} onMouseOver={e=>e.currentTarget.style.background='rgba(255,255,255,0.25)'} onMouseOut={e=>e.currentTarget.style.background='rgba(255,255,255,0.15)'}>
                         + Add Background
                       </button>
                       <button onClick={() => {
@@ -2948,7 +3117,7 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
                            const currentTheme = wlConfig.theme || {};
                            supabase!.from('whitelabel_configs').update({ theme: { ...currentTheme, heroImage: newHero } }).eq('id', wlConfig.id).then();
                         }
-                      }} style={{ position: 'absolute', top: 16, right: 16, padding: '8px 16px', background: 'rgba(255,0,0,0.5)', backdropFilter: 'blur(8px)', color: 'white', borderRadius: '12px', border: 'none', cursor: 'pointer', fontSize: '12px', fontWeight: 'bold' }}>
+                      }} style={{ position: 'absolute', top: 16, right: 16, padding: '8px 16px', background: 'rgba(255,0,0,0.5)', backdropFilter: 'blur(8px)', color: 'white', borderRadius: '12px', border: 'none', cursor: 'pointer', fontSize: '12px', fontWeight: 'bold', zIndex: 2 }}>
                         Remove Image
                       </button>
                     </div>

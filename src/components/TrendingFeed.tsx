@@ -98,7 +98,19 @@ export default function TrendingFeed() {
           return {
             id: p.id,
             content: p.content || '',
-            imageUrl: p.image_url || undefined,
+            imageUrl: (() => {
+              if (!p.image_url) return undefined;
+              let url = p.image_url;
+              if (url.startsWith('[') && url.endsWith(']')) {
+                try {
+                  const parsed = JSON.parse(url);
+                  url = Array.isArray(parsed) ? parsed[0] : url;
+                } catch {}
+              } else if (url.includes(',')) {
+                url = url.split(',')[0].trim();
+              }
+              return url || undefined;
+            })(),
             created_at: p.created_at,
             creator: {
               id: creatorObj?.id || p.creator_id,

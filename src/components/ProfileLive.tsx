@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Lock, Settings, Camera, Video, Sparkles, Globe, X, Mic, MicOff, VideoOff, Send, Check, Copy } from 'lucide-react';
+import { Lock, Settings, Camera, Video, Globe, X, Mic, MicOff, VideoOff, Send, Check, Copy } from 'lucide-react';
 import { useToast } from '../context/ToastContext';
 import Peer from 'peerjs';
 import { supabase } from '../supabaseClient';
@@ -75,7 +75,7 @@ export const ProfileLive: React.FC<ProfileLiveProps> = ({
   const [isRemoteConnected, setIsRemoteConnected] = React.useState(false);
 
   // Fan Zone & Co-watching state
-  const [showFanZone, setShowFanZone] = React.useState(false);
+  const showFanZone = false;
   const [isMuted, setIsMuted] = React.useState(false);
   const [isCameraOn, setIsCameraOn] = React.useState(false);
   const [copied, setCopied] = React.useState(false);
@@ -472,35 +472,9 @@ export const ProfileLive: React.FC<ProfileLiveProps> = ({
                   
                   <div className="live-video-actions" style={{ position: 'absolute', top: 20, right: 20, zIndex: 10, display: 'flex', gap: '10px' }}>
                     {!localGuestData && (
-                      <>
-                        <button
-                          onClick={() => setShowFanZone(!showFanZone)}
-                          style={{
-                            display: 'inline-flex',
-                            alignItems: 'center',
-                            gap: '8px',
-                            padding: '8px 16px',
-                            borderRadius: '20px',
-                            background: showFanZone 
-                              ? 'rgba(0,0,0,0.6)' 
-                              : `linear-gradient(135deg, ${accent}, #ff0050)`,
-                            border: showFanZone ? '1px solid rgba(255,255,255,0.2)' : 'none',
-                            color: '#fff',
-                            fontSize: '13px',
-                            fontWeight: 800,
-                            cursor: 'pointer',
-                            boxShadow: showFanZone ? 'none' : `0 4px 15px ${accent}44`,
-                            transition: 'all 0.3s ease',
-                            whiteSpace: 'nowrap',
-                          }}
-                        >
-                          <Sparkles size={14} fill={showFanZone ? 'none' : '#fff'} />
-                          {showFanZone ? 'Leave Fan Zone' : '🎉 Join Fan Zone'}
-                        </button>
-                        <button onClick={() => setShowTipModal(true)} style={{ padding: '8px 16px', background: 'linear-gradient(45deg, #00ff88, #00bbff)', color: '#000', border: 'none', borderRadius: '20px', fontWeight: '900', display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', boxShadow: '0 4px 15px rgba(0,255,136,0.3)', textTransform: 'uppercase', fontSize: '13px', letterSpacing: '1px' }}>
-                           💰 Support Stream
-                        </button>
-                      </>
+                      <button onClick={() => setShowTipModal(true)} style={{ padding: '8px 16px', background: 'linear-gradient(45deg, #00ff88, #00bbff)', color: '#000', border: 'none', borderRadius: '20px', fontWeight: '900', display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', boxShadow: '0 4px 15px rgba(0,255,136,0.3)', textTransform: 'uppercase', fontSize: '13px', letterSpacing: '1px' }}>
+                         💰 Support Stream
+                      </button>
                     )}
                   </div>
                   
@@ -710,7 +684,23 @@ export const ProfileLive: React.FC<ProfileLiveProps> = ({
                      </>
                   ) : (
                     <>
-                      {homepageImageUrl && <img src={homepageImageUrl} alt="Live Stream Thumbnail" style={{ position: 'absolute', width: '100%', height: '100%', objectFit: 'cover', opacity: 0.5, filter: 'blur(2px)' }} />}
+                      {(profile?.avatar_url || homepageImageUrl) && (
+                        <>
+                          <img 
+                            src={profile?.avatar_url || homepageImageUrl} 
+                            alt="Live Stream Background" 
+                            style={{ 
+                              position: 'absolute', 
+                              width: '100%', 
+                              height: '100%', 
+                              objectFit: 'cover', 
+                              opacity: 0.5, 
+                              filter: 'blur(6px)' 
+                            }} 
+                          />
+                          <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.3)', zIndex: 1 }} />
+                        </>
+                      )}
                       <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 10 }}>
                         <button onClick={() => setIsPlayingLive(true)} style={{ width: '80px', height: '80px', borderRadius: '50%', background: 'rgba(255,77,133,0.9)', border: 'none', color: 'var(--text-primary)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 0 20px rgba(255,77,133,0.5)', transition: 'transform 0.2s' }} onMouseOver={e=>e.currentTarget.style.transform='scale(1.1)'} onMouseOut={e=>e.currentTarget.style.transform='scale(1)'}>
                           <svg width="32" height="32" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>

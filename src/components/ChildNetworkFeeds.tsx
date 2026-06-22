@@ -281,28 +281,41 @@ export default function ChildNetworkFeeds({ parentId, accent = 'var(--accent-pri
                 </div>
 
                 {/* Post Media (Image) - Sleeker Aspect Ratio */}
-                {post.image_url && (
-                  <div style={{
-                    width: '100%',
-                    aspectRatio: '16/10',
-                    overflow: 'hidden',
-                    background: '#000',
-                    borderTop: '1px solid rgba(255,255,255,0.02)',
-                    borderBottom: '1px solid rgba(255,255,255,0.02)'
-                  }}>
-                    <img
-                      src={post.image_url}
-                      alt="Trending moment"
-                      loading="lazy"
-                      referrerPolicy="no-referrer"
-                      style={{
-                        width: '100%',
-                        height: '100%',
-                        objectFit: 'cover',
-                      }}
-                    />
-                  </div>
-                )}
+                {(() => {
+                  if (!post.image_url) return null;
+                  let src = post.image_url;
+                  if (src.startsWith('[') && src.endsWith(']')) {
+                    try {
+                      const parsed = JSON.parse(src);
+                      src = Array.isArray(parsed) ? parsed[0] || '' : src;
+                    } catch {}
+                  } else if (src.includes(',')) {
+                    src = src.split(',')[0].trim();
+                  }
+                  if (!src) return null;
+                  return (
+                    <div style={{
+                      width: '100%',
+                      aspectRatio: '16/10',
+                      overflow: 'hidden',
+                      background: '#000',
+                      borderTop: '1px solid rgba(255,255,255,0.02)',
+                      borderBottom: '1px solid rgba(255,255,255,0.02)'
+                    }}>
+                      <img
+                        src={src}
+                        alt="Trending moment"
+                        loading="lazy"
+                        referrerPolicy="no-referrer"
+                        style={{
+                          width: '100%',
+                          height: '100%',
+                          objectFit: 'cover',
+                        }}
+                      />
+                    </div>
+                  );
+                })()}
 
                 {/* Post Body (Content Text) - Shorter height for compactness */}
                 <div style={{
