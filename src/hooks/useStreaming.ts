@@ -271,6 +271,7 @@ export function useStreaming({ profileId, isOwnProfile, user, supabase, channelR
   useEffect(() => {
     if (!supabase || !profileId) return;
 
+    console.log("[useStreaming sync effect] Setting up channel for profileId:", profileId, "isOwnProfile:", isOwnProfile);
     const channel = supabase.channel(`stream-room-${profileId}`);
     channelRef.current = channel;
 
@@ -325,6 +326,7 @@ export function useStreaming({ profileId, isOwnProfile, user, supabase, channelR
     });
 
     channel.subscribe((status: string) => {
+      console.log("[useStreaming channel subscription status] status:", status, "for room:", profileId);
       if (status === 'SUBSCRIBED') {
         if (user?.id === profileId && typeof window !== 'undefined') {
           const current = JSON.parse(localStorage.getItem('vibe_host_guests_session') || '[]');
