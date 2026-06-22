@@ -130,21 +130,24 @@ export default function N2NHome({ wlConfig, categories, activeVideo, setActiveVi
           .eq('role', 'influencer');
 
         if (!cancelled && athletesData) {
+          const isKpleActive = isKpleConfig(config);
           const getCollegeShortName = (wlId: string) => {
             const child = children.find(c => c.id === wlId);
-            if (!child) return 'Athlete';
+            if (!child) return isKpleActive ? 'Host' : 'Athlete';
             let name = child.name || '';
-            name = name.replace(/University of /gi, '');
-            name = name.replace(/ University/gi, '');
+            if (!isKpleActive) {
+              name = name.replace(/University of /gi, '');
+              name = name.replace(/ University/gi, '');
+            }
             return name;
           };
 
           setAthleteItems(
             athletesData.map((athlete: any) => ({
               id: athlete.id,
-              title: athlete.username ? athlete.username.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase()) : 'Student Athlete',
+              title: athlete.username ? athlete.username.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase()) : (isKpleActive ? 'Channel Host' : 'Student Athlete'),
               image: athlete.avatar_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(athlete.username || 'A')}&background=111&color=fff&size=400`,
-              tags: [getCollegeShortName(athlete.whitelabel_id), 'Athlete'],
+              tags: [getCollegeShortName(athlete.whitelabel_id), isKpleActive ? 'Host' : 'Athlete'],
               videoUrl: '',
               linkUrl: `/profile/${athlete.id}`
             }))
@@ -524,11 +527,11 @@ export default function N2NHome({ wlConfig, categories, activeVideo, setActiveVi
           </div>
         )}
 
-        {/* ── AVO Campus Athletes Slider ──────────────────────── */}
-        {isAvo && athleteItems.length > 0 && (
+        {/* ── AVO Campus Athletes / KPLE Channel Profiles Slider ──────────────────────── */}
+        {((isAvo || isKple) && athleteItems.length > 0) && (
           <div id="avo-athletes-slider">
             <SliderSection
-              title="CAMPUS ATHLETES"
+              title={isKple ? "CHANNEL PROFILES" : "CAMPUS ATHLETES"}
               items={athleteItems}
               delay={0.1}
               aspectRatio="1/1"
