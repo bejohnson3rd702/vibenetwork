@@ -81,14 +81,16 @@ export const ProfileLive: React.FC<ProfileLiveProps> = ({
   const [isDrawerOpen, setIsDrawerOpen] = React.useState(false);
   const [lastPinnedCount, setLastPinnedCount] = React.useState(0);
 
+  const safePinnedProducts = Array.isArray(pinnedProducts) ? pinnedProducts : [];
+
   React.useEffect(() => {
-    if (pinnedProducts && pinnedProducts.length > lastPinnedCount) {
+    if (safePinnedProducts.length > lastPinnedCount) {
       setIsDrawerOpen(true);
     }
-    setLastPinnedCount(pinnedProducts ? pinnedProducts.length : 0);
-  }, [pinnedProducts, lastPinnedCount]);
+    setLastPinnedCount(safePinnedProducts.length);
+  }, [safePinnedProducts, lastPinnedCount]);
 
-  console.log("[ProfileLive Render] state:", { isOwnProfile, isPlayingLive, pinnedProductsCount: pinnedProducts.length, isDrawerOpen });
+  console.log("[ProfileLive Render] state:", { isOwnProfile, isPlayingLive, pinnedProductsCount: safePinnedProducts.length, isDrawerOpen });
 
   // Fan Zone & Co-watching state
   const showFanZone = false;
@@ -726,7 +728,7 @@ export const ProfileLive: React.FC<ProfileLiveProps> = ({
                   )}
 
                   {/* Floating Pinned Product Overlay for Viewers */}
-                  {!(isOwnProfile && viewMode === 'edit') && isPlayingLive && pinnedProducts.length > 0 && (
+                  {!(isOwnProfile && viewMode === 'edit') && isPlayingLive && safePinnedProducts.length > 0 && (
                     <AnimatePresence>
                       {!isDrawerOpen ? (
                         <motion.button
@@ -760,7 +762,7 @@ export const ProfileLive: React.FC<ProfileLiveProps> = ({
                         >
                           <span style={{ fontSize: '14px' }}>🛍️</span>
                           <span style={{ fontSize: '11px', fontWeight: '900', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-                            {pinnedProducts.length} {pinnedProducts.length === 1 ? 'Live Offer' : 'Live Offers'}
+                            {safePinnedProducts.length} {safePinnedProducts.length === 1 ? 'Live Offer' : 'Live Offers'}
                           </span>
                           <span style={{
                             width: '6px',
@@ -802,7 +804,7 @@ export const ProfileLive: React.FC<ProfileLiveProps> = ({
                             <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
                               <span style={{ fontSize: '14px' }}>🛍️</span>
                               <span style={{ fontSize: '10px', fontWeight: '900', textTransform: 'uppercase', letterSpacing: '0.5px', color: '#00ff88' }}>
-                                Live Offers ({pinnedProducts.length})
+                                Live Offers ({safePinnedProducts.length})
                               </span>
                             </div>
                             <button
@@ -834,7 +836,7 @@ export const ProfileLive: React.FC<ProfileLiveProps> = ({
                             paddingRight: '2px',
                             scrollbarWidth: 'thin'
                           }}>
-                            {pinnedProducts.map((prod: any) => (
+                            {safePinnedProducts.map((prod: any) => (
                               <div
                                 key={prod.id}
                                 style={{
@@ -1249,7 +1251,7 @@ export const ProfileLive: React.FC<ProfileLiveProps> = ({
                             ) : (
                               <div style={{ display: 'flex', gap: '12px', overflowX: 'auto', paddingBottom: '8px', scrollbarWidth: 'thin' }}>
                                 {products.map((prod: any) => {
-                                  const isPinned = pinnedProducts.some((p: any) => p.id === prod.id);
+                                  const isPinned = safePinnedProducts.some((p: any) => p.id === prod.id);
                                   return (
                                     <div key={prod.id} style={{ minWidth: '220px', width: '220px', background: isPinned ? 'rgba(255, 0, 85, 0.05)' : 'rgba(255,255,255,0.02)', border: isPinned ? '1px solid rgba(255, 0, 85, 0.3)' : '1px solid rgba(255,255,255,0.05)', borderRadius: '8px', padding: '12px', display: 'flex', flexDirection: 'column', gap: '8px', transition: 'all 0.2s' }} onMouseOver={e=>e.currentTarget.style.borderColor=isPinned ? 'rgba(255, 0, 85, 0.5)' : 'rgba(255,255,255,0.15)'} onMouseOut={e=>e.currentTarget.style.borderColor=isPinned ? 'rgba(255, 0, 85, 0.3)' : 'rgba(255,255,255,0.05)'}>
                                       <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
@@ -1271,10 +1273,10 @@ export const ProfileLive: React.FC<ProfileLiveProps> = ({
                                       <button
                                         onClick={() => {
                                           if (isPinned) {
-                                            setPinnedProducts(pinnedProducts.filter((p: any) => p.id !== prod.id));
+                                            setPinnedProducts(safePinnedProducts.filter((p: any) => p.id !== prod.id));
                                             toast.info(`Unpinned "${prod.title}" from stream.`);
                                           } else {
-                                            setPinnedProducts([...pinnedProducts, prod]);
+                                            setPinnedProducts([...safePinnedProducts, prod]);
                                             toast.success(`Pinned "${prod.title}" live!`);
                                           }
                                         }}

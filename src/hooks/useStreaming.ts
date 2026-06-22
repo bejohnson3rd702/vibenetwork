@@ -278,12 +278,24 @@ export function useStreaming({ profileId, isOwnProfile, user, supabase, channelR
     // Listen for live stream status announcements
     channel.on('broadcast', { event: 'stream_status' }, (payload: any) => {
       console.log("[useStreaming broadcast receive] payload:", payload.payload);
-      const { isPlayingLive: hostIsPlaying, isPubliclyLive: hostIsPublic, streamSource: hostSource, liveEmbedUrl: hostUrl, pinnedProducts: hostPinnedProducts } = payload.payload;
+      const { 
+        isPlayingLive: hostIsPlaying, 
+        isPubliclyLive: hostIsPublic, 
+        streamSource: hostSource, 
+        liveEmbedUrl: hostUrl, 
+        pinnedProducts: hostPinnedProducts,
+        pinnedProduct: hostPinnedProduct
+      } = payload.payload;
       setIsPlayingLive(hostIsPlaying);
       setIsPubliclyLive(hostIsPublic);
       if (hostSource) setStreamSource(hostSource);
       if (hostUrl !== undefined) setLiveEmbedUrl(hostUrl);
-      if (hostPinnedProducts !== undefined) setPinnedProducts(hostPinnedProducts || []);
+      
+      if (hostPinnedProducts !== undefined) {
+        setPinnedProducts(Array.isArray(hostPinnedProducts) ? hostPinnedProducts : (hostPinnedProducts ? [hostPinnedProducts] : []));
+      } else if (hostPinnedProduct !== undefined) {
+        setPinnedProducts(hostPinnedProduct ? [hostPinnedProduct] : []);
+      }
     });
 
     // Listen for guest list sync from host
