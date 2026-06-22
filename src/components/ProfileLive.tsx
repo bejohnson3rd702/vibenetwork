@@ -56,8 +56,8 @@ export interface ProfileLiveProps {
   liveCountdown?: number | null;
 
   products?: any[];
-  pinnedProduct?: any | null;
-  setPinnedProduct?: (p: any | null) => void;
+  pinnedProducts?: any[];
+  setPinnedProducts?: (products: any[]) => void;
 }
 
 export const ProfileLive: React.FC<ProfileLiveProps> = ({
@@ -71,26 +71,24 @@ export const ProfileLive: React.FC<ProfileLiveProps> = ({
   setIsPlayingLive, setIsPubliclyLive, setPresenterMode, setGuests,
   setLocalGuestData, handleStripeCheckout, handleUnlockLive, handleSubscribe,
   startLiveStream, setShowTipModal, localStream, liveCountdown,
-  products = [], pinnedProduct = null, setPinnedProduct = () => {}
+  products = [], pinnedProducts = [], setPinnedProducts = () => {}
 }) => {
   const toast = useToast();
   const bypassSub = typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('bypass_sub') === 'true';
   const effectiveIsSubscribed = isSubscribed || bypassSub;
   const viewerVideoRef = React.useRef<HTMLVideoElement>(null);
   const [isRemoteConnected, setIsRemoteConnected] = React.useState(false);
-  const [isProductDismissed, setIsProductDismissed] = React.useState(false);
-  const [lastPinnedProductId, setLastPinnedProductId] = React.useState<string | null>(null);
+  const [isDrawerOpen, setIsDrawerOpen] = React.useState(false);
+  const [lastPinnedCount, setLastPinnedCount] = React.useState(0);
 
   React.useEffect(() => {
-    if (pinnedProduct && pinnedProduct.id !== lastPinnedProductId) {
-      setIsProductDismissed(false);
-      setLastPinnedProductId(pinnedProduct.id);
-    } else if (!pinnedProduct) {
-      setLastPinnedProductId(null);
+    if (pinnedProducts && pinnedProducts.length > lastPinnedCount) {
+      setIsDrawerOpen(true);
     }
-  }, [pinnedProduct, lastPinnedProductId]);
+    setLastPinnedCount(pinnedProducts ? pinnedProducts.length : 0);
+  }, [pinnedProducts, lastPinnedCount]);
 
-  console.log("[ProfileLive Render] state:", { isOwnProfile, isPlayingLive, pinnedProduct, isProductDismissed });
+  console.log("[ProfileLive Render] state:", { isOwnProfile, isPlayingLive, pinnedProductsCount: pinnedProducts.length, isDrawerOpen });
 
   // Fan Zone & Co-watching state
   const showFanZone = false;
@@ -727,167 +725,176 @@ export const ProfileLive: React.FC<ProfileLiveProps> = ({
                     </>
                   )}
 
-                  {/* Floating Pinned Product Overlay Card for Viewers */}
-                  {!(isOwnProfile && viewMode === 'edit') && isPlayingLive && pinnedProduct && !isProductDismissed && (
-                    <motion.div
-                      initial={{ opacity: 0, x: -40, scale: 0.95 }}
-                      animate={{ opacity: 1, x: 0, scale: 1 }}
-                      exit={{ opacity: 0, scale: 0.95 }}
-                      transition={{ type: 'spring', damping: 20, stiffness: 120 }}
-                      style={{
-                        position: 'absolute',
-                        bottom: '12px',
-                        left: '12px',
-                        zIndex: 25,
-                        width: '180px',
-                        background: 'rgba(10, 10, 15, 0.85)',
-                        backdropFilter: 'blur(16px)',
-                        WebkitBackdropFilter: 'blur(16px)',
-                        borderRadius: '10px',
-                        border: '1px solid rgba(255, 255, 255, 0.08)',
-                        padding: '10px',
-                        boxShadow: '0 8px 24px rgba(0, 0, 0, 0.5), 0 0 15px rgba(0, 255, 136, 0.06)',
-                        display: 'flex',
-                        flexDirection: 'column',
-                        gap: '6px',
-                        pointerEvents: 'auto'
-                      }}
-                    >
-                      {/* Card Header with pulsing Live Offer and Close button */}
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                        <span style={{
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: '3px',
-                          fontSize: '8px',
-                          fontWeight: '900',
-                          color: '#00ff88',
-                          textTransform: 'uppercase',
-                          letterSpacing: '1px',
-                          background: 'rgba(0, 255, 136, 0.1)',
-                          padding: '2px 5px',
-                          borderRadius: '8px',
-                          border: '1px solid rgba(0, 255, 136, 0.15)'
-                        }}>
+                  {/* Floating Pinned Product Overlay for Viewers */}
+                  {!(isOwnProfile && viewMode === 'edit') && isPlayingLive && pinnedProducts.length > 0 && (
+                    <AnimatePresence>
+                      {!isDrawerOpen ? (
+                        <motion.button
+                          key="capsule"
+                          initial={{ opacity: 0, scale: 0.8, y: 10 }}
+                          animate={{ opacity: 1, scale: 1, y: 0 }}
+                          exit={{ opacity: 0, scale: 0.8, y: 10 }}
+                          onClick={() => setIsDrawerOpen(true)}
+                          style={{
+                            position: 'absolute',
+                            bottom: '12px',
+                            left: '12px',
+                            zIndex: 25,
+                            background: 'rgba(10, 10, 15, 0.85)',
+                            backdropFilter: 'blur(16px)',
+                            WebkitBackdropFilter: 'blur(16px)',
+                            borderRadius: '20px',
+                            border: '1px solid rgba(255, 255, 255, 0.1)',
+                            padding: '8px 16px',
+                            boxShadow: '0 8px 24px rgba(0, 0, 0, 0.5), 0 0 15px rgba(0, 255, 136, 0.1)',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '6px',
+                            cursor: 'pointer',
+                            pointerEvents: 'auto',
+                            color: '#fff',
+                            transition: 'all 0.2s'
+                          }}
+                          whileHover={{ scale: 1.05 }}
+                          whileTap={{ scale: 0.95 }}
+                        >
+                          <span style={{ fontSize: '14px' }}>🛍️</span>
+                          <span style={{ fontSize: '11px', fontWeight: '900', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                            {pinnedProducts.length} {pinnedProducts.length === 1 ? 'Live Offer' : 'Live Offers'}
+                          </span>
                           <span style={{
-                            width: '4px',
-                            height: '4px',
+                            width: '6px',
+                            height: '6px',
                             borderRadius: '50%',
                             background: '#00ff88',
                             boxShadow: '0 0 6px #00ff88',
-                            animation: 'pulse 1.5s infinite'
+                            animation: 'pulse 1.5s infinite',
+                            marginLeft: '2px'
                           }} />
-                          Live Offer
-                        </span>
-                        <button
-                          onClick={() => setIsProductDismissed(true)}
+                        </motion.button>
+                      ) : (
+                        <motion.div
+                          key="drawer"
+                          initial={{ opacity: 0, y: 20, scale: 0.95 }}
+                          animate={{ opacity: 1, y: 0, scale: 1 }}
+                          exit={{ opacity: 0, y: 20, scale: 0.95 }}
                           style={{
-                            background: 'none',
-                            border: 'none',
-                            color: '#888',
-                            cursor: 'pointer',
+                            position: 'absolute',
+                            bottom: '12px',
+                            left: '12px',
+                            zIndex: 30,
+                            width: '240px',
+                            background: 'rgba(10, 10, 15, 0.9)',
+                            backdropFilter: 'blur(20px)',
+                            WebkitBackdropFilter: 'blur(20px)',
+                            borderRadius: '14px',
+                            border: '1px solid rgba(255, 255, 255, 0.12)',
+                            padding: '12px',
+                            boxShadow: '0 12px 32px rgba(0, 0, 0, 0.6), 0 0 20px rgba(0, 255, 136, 0.08)',
                             display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            padding: '2px',
-                            borderRadius: '50%',
-                            transition: 'color 0.2s, background-color 0.2s'
+                            flexDirection: 'column',
+                            gap: '10px',
+                            pointerEvents: 'auto'
                           }}
-                          onMouseOver={e => { e.currentTarget.style.color = '#fff'; e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.05)'; }}
-                          onMouseOut={e => { e.currentTarget.style.color = '#888'; e.currentTarget.style.backgroundColor = 'transparent'; }}
                         >
-                          <X size={10} />
-                        </button>
-                      </div>
+                          {/* Drawer Header */}
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+                              <span style={{ fontSize: '14px' }}>🛍️</span>
+                              <span style={{ fontSize: '10px', fontWeight: '900', textTransform: 'uppercase', letterSpacing: '0.5px', color: '#00ff88' }}>
+                                Live Offers ({pinnedProducts.length})
+                              </span>
+                            </div>
+                            <button
+                              onClick={() => setIsDrawerOpen(false)}
+                              style={{
+                                background: 'none',
+                                border: 'none',
+                                color: '#888',
+                                cursor: 'pointer',
+                                padding: '2px',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center'
+                              }}
+                              onMouseOver={e => e.currentTarget.style.color = '#fff'}
+                              onMouseOut={e => e.currentTarget.style.color = '#888'}
+                            >
+                              <X size={12} />
+                            </button>
+                          </div>
 
-                      {/* Product details */}
-                      <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-                        {pinnedProduct.image_url ? (
-                          <img
-                            src={pinnedProduct.image_url}
-                            alt={pinnedProduct.title}
-                            style={{
-                              width: '36px',
-                              height: '36px',
-                              objectFit: 'cover',
-                              borderRadius: '6px',
-                              border: '1px solid rgba(255,255,255,0.05)'
-                            }}
-                          />
-                        ) : (
+                          {/* Drawer List */}
                           <div style={{
-                            width: '36px',
-                            height: '36px',
-                            background: 'rgba(255,255,255,0.03)',
-                            border: '1px solid rgba(255,255,255,0.05)',
-                            borderRadius: '6px',
                             display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            fontSize: '16px'
+                            flexDirection: 'column',
+                            gap: '8px',
+                            overflowY: 'auto',
+                            maxHeight: '180px',
+                            paddingRight: '2px',
+                            scrollbarWidth: 'thin'
                           }}>
-                            🛍️
+                            {pinnedProducts.map((prod: any) => (
+                              <div
+                                key={prod.id}
+                                style={{
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  gap: '8px',
+                                  background: 'rgba(255, 255, 255, 0.03)',
+                                  border: '1px solid rgba(255, 255, 255, 0.05)',
+                                  borderRadius: '8px',
+                                  padding: '6px'
+                                }}
+                              >
+                                {prod.image_url ? (
+                                  <img src={prod.image_url} alt={prod.title} style={{ width: '32px', height: '32px', objectFit: 'cover', borderRadius: '4px' }} />
+                                ) : (
+                                  <div style={{ width: '32px', height: '32px', background: 'rgba(255,255,255,0.05)', borderRadius: '4px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '14px' }}>🛍️</div>
+                                )}
+                                <div style={{ flex: 1, minWidth: 0 }}>
+                                  <div style={{ color: 'var(--text-primary)', fontWeight: 'bold', fontSize: '11px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                                    {prod.title}
+                                  </div>
+                                  <div style={{ color: '#00ff88', fontWeight: '900', fontSize: '11px', marginTop: '1px' }}>
+                                    ${Number(prod.price).toFixed(2)}
+                                  </div>
+                                </div>
+                                <button
+                                  onClick={() => {
+                                    handleStripeCheckout(
+                                      prod.title,
+                                      Number(prod.price),
+                                      { product_id: prod.id, is_live_purchase: true }
+                                    );
+                                  }}
+                                  style={{
+                                    padding: '4px 8px',
+                                    background: 'linear-gradient(45deg, #00ff88, #00bbff)',
+                                    color: '#000',
+                                    border: 'none',
+                                    borderRadius: '4px',
+                                    fontSize: '9px',
+                                    fontWeight: '900',
+                                    textTransform: 'uppercase',
+                                    cursor: 'pointer',
+                                    transition: 'all 0.15s ease'
+                                  }}
+                                  onMouseOver={e => {
+                                    e.currentTarget.style.transform = 'scale(1.05)';
+                                  }}
+                                  onMouseOut={e => {
+                                    e.currentTarget.style.transform = 'none';
+                                  }}
+                                >
+                                  Buy
+                                </button>
+                              </div>
+                            ))}
                           </div>
-                        )}
-                        <div style={{ flex: 1, minWidth: 0 }}>
-                          <h4 style={{
-                            margin: 0,
-                            fontSize: '11px',
-                            fontWeight: 'bold',
-                            color: 'var(--text-primary)',
-                            overflow: 'hidden',
-                            textOverflow: 'ellipsis',
-                            whiteSpace: 'nowrap'
-                          }}>
-                            {pinnedProduct.title}
-                          </h4>
-                          <div style={{
-                            fontSize: '13px',
-                            fontWeight: '900',
-                            color: '#00ff88',
-                            marginTop: '1px'
-                          }}>
-                            ${Number(pinnedProduct.price).toFixed(2)}
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* Buy button */}
-                      <button
-                        onClick={() => {
-                          handleStripeCheckout(
-                            pinnedProduct.title,
-                            Number(pinnedProduct.price),
-                            { product_id: pinnedProduct.id, is_live_purchase: true }
-                          );
-                        }}
-                        style={{
-                          width: '100%',
-                          padding: '6px',
-                          background: 'linear-gradient(45deg, #00ff88, #00bbff)',
-                          color: '#000',
-                          border: 'none',
-                          borderRadius: '6px',
-                          fontSize: '10px',
-                          fontWeight: '900',
-                          textTransform: 'uppercase',
-                          letterSpacing: '0.5px',
-                          cursor: 'pointer',
-                          boxShadow: '0 2px 6px rgba(0,255,136,0.15)',
-                          transition: 'all 0.2s ease'
-                        }}
-                        onMouseOver={e => {
-                          e.currentTarget.style.transform = 'translateY(-1px)';
-                          e.currentTarget.style.boxShadow = '0 4px 10px rgba(0,255,136,0.25)';
-                        }}
-                        onMouseOut={e => {
-                          e.currentTarget.style.transform = 'none';
-                          e.currentTarget.style.boxShadow = '0 2px 6px rgba(0,255,136,0.15)';
-                        }}
-                      >
-                        ⚡ Buy Now
-                      </button>
-                    </motion.div>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
                   )}
                 </div>
 
@@ -1234,33 +1241,6 @@ export const ProfileLive: React.FC<ProfileLiveProps> = ({
                           Select a product from your store to feature as a floating overlay card to all active viewers in real-time.
                         </p>
 
-                        {pinnedProduct ? (
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '16px', background: 'rgba(255, 0, 85, 0.1)', padding: '16px', borderRadius: '10px', border: '1px solid rgba(255, 0, 85, 0.3)' }}>
-                            {pinnedProduct.image_url ? (
-                              <img src={pinnedProduct.image_url} alt={pinnedProduct.title} style={{ width: '50px', height: '50px', objectFit: 'cover', borderRadius: '8px' }} />
-                            ) : (
-                              <div style={{ width: '50px', height: '50px', background: 'rgba(255,255,255,0.05)', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '24px' }}>🛍️</div>
-                            )}
-                            <div style={{ flex: 1 }}>
-                              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                <span style={{ background: '#ff0055', color: '#fff', fontSize: '9px', fontWeight: 'bold', padding: '2px 6px', borderRadius: '4px', textTransform: 'uppercase' }}>Currently Pinned</span>
-                                <span style={{ color: 'var(--text-primary)', fontWeight: 'bold', fontSize: '14px' }}>{pinnedProduct.title}</span>
-                              </div>
-                              <div style={{ color: '#00ff88', fontWeight: 'bold', fontSize: '13px', marginTop: '4px' }}>${Number(pinnedProduct.price).toFixed(2)}</div>
-                            </div>
-                            <button
-                              onClick={() => {
-                                setPinnedProduct(null);
-                                toast.info('Product unpinned from stream.');
-                              }}
-                              style={{ padding: '8px 16px', background: 'rgba(255,255,255,0.1)', color: '#fff', border: 'none', borderRadius: '6px', cursor: 'pointer', fontSize: '12px', fontWeight: 'bold', transition: '0.2s' }}
-                              onMouseOver={e => e.currentTarget.style.background = 'rgba(255,255,255,0.15)'}
-                              onMouseOut={e => e.currentTarget.style.background = 'rgba(255,255,255,0.1)'}
-                            >
-                              Unpin Product
-                            </button>
-                          </div>
-                        ) : (
                           <div>
                             {products.length === 0 ? (
                               <div style={{ color: 'var(--text-secondary)', fontSize: '13px', fontStyle: 'italic', padding: '10px', textAlign: 'center', background: 'rgba(0,0,0,0.1)', borderRadius: '8px' }}>
@@ -1268,36 +1248,74 @@ export const ProfileLive: React.FC<ProfileLiveProps> = ({
                               </div>
                             ) : (
                               <div style={{ display: 'flex', gap: '12px', overflowX: 'auto', paddingBottom: '8px', scrollbarWidth: 'thin' }}>
-                                {products.map((prod: any) => (
-                                  <div key={prod.id} style={{ minWidth: '220px', width: '220px', background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '8px', padding: '12px', display: 'flex', flexDirection: 'column', gap: '8px', transition: 'all 0.2s' }} onMouseOver={e=>e.currentTarget.style.borderColor='rgba(255,255,255,0.15)'} onMouseOut={e=>e.currentTarget.style.borderColor='rgba(255,255,255,0.05)'}>
-                                    <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
-                                      {prod.image_url ? (
-                                        <img src={prod.image_url} alt={prod.title} style={{ width: '40px', height: '40px', objectFit: 'cover', borderRadius: '6px' }} />
-                                      ) : (
-                                        <div style={{ width: '40px', height: '40px', background: 'rgba(255,255,255,0.05)', borderRadius: '6px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '18px' }}>🛍️</div>
-                                      )}
-                                      <div style={{ overflow: 'hidden', flex: 1 }}>
-                                        <div style={{ color: 'var(--text-primary)', fontWeight: 'bold', fontSize: '12px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{prod.title}</div>
-                                        <div style={{ color: '#00ff88', fontWeight: 'bold', fontSize: '11px', marginTop: '2px' }}>${Number(prod.price).toFixed(2)}</div>
+                                {products.map((prod: any) => {
+                                  const isPinned = pinnedProducts.some((p: any) => p.id === prod.id);
+                                  return (
+                                    <div key={prod.id} style={{ minWidth: '220px', width: '220px', background: isPinned ? 'rgba(255, 0, 85, 0.05)' : 'rgba(255,255,255,0.02)', border: isPinned ? '1px solid rgba(255, 0, 85, 0.3)' : '1px solid rgba(255,255,255,0.05)', borderRadius: '8px', padding: '12px', display: 'flex', flexDirection: 'column', gap: '8px', transition: 'all 0.2s' }} onMouseOver={e=>e.currentTarget.style.borderColor=isPinned ? 'rgba(255, 0, 85, 0.5)' : 'rgba(255,255,255,0.15)'} onMouseOut={e=>e.currentTarget.style.borderColor=isPinned ? 'rgba(255, 0, 85, 0.3)' : 'rgba(255,255,255,0.05)'}>
+                                      <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+                                        {prod.image_url ? (
+                                          <img src={prod.image_url} alt={prod.title} style={{ width: '40px', height: '40px', objectFit: 'cover', borderRadius: '6px' }} />
+                                        ) : (
+                                          <div style={{ width: '40px', height: '40px', background: 'rgba(255,255,255,0.05)', borderRadius: '6px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '18px' }}>🛍️</div>
+                                        )}
+                                        <div style={{ overflow: 'hidden', flex: 1 }}>
+                                          <div style={{ display: 'flex', alignItems: 'center', gap: '4px', flexWrap: 'wrap' }}>
+                                            {isPinned && (
+                                              <span style={{ background: '#ff0055', color: '#fff', fontSize: '8px', fontWeight: 'bold', padding: '1px 4px', borderRadius: '3px', textTransform: 'uppercase' }}>Live</span>
+                                            )}
+                                            <div style={{ color: 'var(--text-primary)', fontWeight: 'bold', fontSize: '12px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', flex: 1 }}>{prod.title}</div>
+                                          </div>
+                                          <div style={{ color: '#00ff88', fontWeight: 'bold', fontSize: '11px', marginTop: '2px' }}>${Number(prod.price).toFixed(2)}</div>
+                                        </div>
                                       </div>
+                                      <button
+                                        onClick={() => {
+                                          if (isPinned) {
+                                            setPinnedProducts(pinnedProducts.filter((p: any) => p.id !== prod.id));
+                                            toast.info(`Unpinned "${prod.title}" from stream.`);
+                                          } else {
+                                            setPinnedProducts([...pinnedProducts, prod]);
+                                            toast.success(`Pinned "${prod.title}" live!`);
+                                          }
+                                        }}
+                                        style={{
+                                          width: '100%',
+                                          padding: '6px',
+                                          background: isPinned ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 255, 136, 0.1)',
+                                          color: isPinned ? '#fff' : '#00ff88',
+                                          border: isPinned ? '1px solid rgba(255, 255, 255, 0.2)' : '1px solid rgba(0, 255, 136, 0.2)',
+                                          borderRadius: '6px',
+                                          fontSize: '11px',
+                                          fontWeight: 'bold',
+                                          cursor: 'pointer',
+                                          transition: '0.2s'
+                                        }}
+                                        onMouseOver={e => {
+                                          if (isPinned) {
+                                            e.currentTarget.style.background = 'rgba(255, 255, 255, 0.15)';
+                                          } else {
+                                            e.currentTarget.style.background = '#00ff88';
+                                            e.currentTarget.style.color = '#000';
+                                          }
+                                        }}
+                                        onMouseOut={e => {
+                                          if (isPinned) {
+                                            e.currentTarget.style.background = 'rgba(255, 255, 255, 0.1)';
+                                            e.currentTarget.style.color = '#fff';
+                                          } else {
+                                            e.currentTarget.style.background = 'rgba(0, 255, 136, 0.1)';
+                                            e.currentTarget.style.color = '#00ff88';
+                                          }
+                                        }}
+                                      >
+                                        {isPinned ? 'Unpin Product' : 'Pin to Stream'}
+                                      </button>
                                     </div>
-                                    <button
-                                      onClick={() => {
-                                        setPinnedProduct(prod);
-                                        toast.success(`Pinned "${prod.title}" live!`);
-                                      }}
-                                      style={{ width: '100%', padding: '6px', background: 'rgba(0, 255, 136, 0.1)', color: '#00ff88', border: '1px solid rgba(0, 255, 136, 0.2)', borderRadius: '6px', fontSize: '11px', fontWeight: 'bold', cursor: 'pointer', transition: '0.2s' }}
-                                      onMouseOver={e => { e.currentTarget.style.background = '#00ff88'; e.currentTarget.style.color = '#000'; }}
-                                      onMouseOut={e => { e.currentTarget.style.background = 'rgba(0, 255, 136, 0.1)'; e.currentTarget.style.color = '#00ff88'; }}
-                                    >
-                                      Pin to Stream
-                                    </button>
-                                  </div>
-                                ))}
+                                  );
+                                })}
                               </div>
                             )}
                           </div>
-                        )}
                       </div>
 
                       <label style={{ display: 'block', marginBottom: '12px', color: '#ff4d85', fontWeight: 'bold', fontSize: '15px' }}>Configure Live Stream Origin</label>

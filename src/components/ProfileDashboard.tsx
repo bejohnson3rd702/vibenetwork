@@ -144,7 +144,7 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
     previewTimeLeft,
     isSubscribed, setIsSubscribed,
     subPrice, setSubPrice,
-    pinnedProduct, setPinnedProduct,
+    pinnedProducts, setPinnedProducts,
     showTipModal, setShowTipModal,
     tipAmount, setTipAmount,
     showExitScreen, setShowExitScreen,
@@ -2501,8 +2501,8 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
             localStream={localStream}
             liveCountdown={liveCountdown}
             products={products}
-            pinnedProduct={pinnedProduct}
-            setPinnedProduct={setPinnedProduct}
+            pinnedProducts={pinnedProducts}
+            setPinnedProducts={setPinnedProducts}
           />
         )}
 
