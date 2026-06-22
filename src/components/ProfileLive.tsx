@@ -90,6 +90,8 @@ export const ProfileLive: React.FC<ProfileLiveProps> = ({
     }
   }, [pinnedProduct, lastPinnedProductId]);
 
+  console.log("[ProfileLive Render] state:", { isOwnProfile, isPlayingLive, pinnedProduct, isProductDismissed });
+
   // Fan Zone & Co-watching state
   const showFanZone = false;
   const [isMuted, setIsMuted] = React.useState(false);

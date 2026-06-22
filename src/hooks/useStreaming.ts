@@ -276,6 +276,7 @@ export function useStreaming({ profileId, isOwnProfile, user, supabase, channelR
 
     // Listen for live stream status announcements
     channel.on('broadcast', { event: 'stream_status' }, (payload: any) => {
+      console.log("[useStreaming broadcast receive] payload:", payload.payload);
       const { isPlayingLive: hostIsPlaying, isPubliclyLive: hostIsPublic, streamSource: hostSource, liveEmbedUrl: hostUrl, pinnedProduct: hostPinnedProduct } = payload.payload;
       setIsPlayingLive(hostIsPlaying);
       setIsPubliclyLive(hostIsPublic);

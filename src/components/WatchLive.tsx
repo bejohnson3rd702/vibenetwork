@@ -660,27 +660,52 @@ export default function WatchLive({ accent = '#D35400', isOlympian = false, isB2
     }
 
     try {
-      const headlineRes = await translateText({
-        text: activeVideo.headline,
-        sourceLang: 'english-united-states',
-        targetLang: targetLanguage,
-        serviceCode: 'ttt'
-      });
+      const targetLangObj = wwtcLanguages.find(l => l.code === targetLanguage);
+      const services = targetLangObj?.services || '';
+      const servicesParts = services.split('-');
+      const supportsTtt = servicesParts[1] ? servicesParts[1] !== 'x' : true;
+      const supportsTts = servicesParts[2] ? servicesParts[2] !== 'x' : true;
 
-      const descRes = await translateText({
-        text: activeVideo.description || '',
-        sourceLang: 'english-united-states',
-        targetLang: targetLanguage,
-        serviceCode: 'tts'
-      });
+      let translatedHeadline = activeVideo.headline;
+      if (supportsTtt) {
+        const headlineRes = await translateText({
+          text: activeVideo.headline,
+          sourceLang: 'english-united-states',
+          targetLang: targetLanguage,
+          serviceCode: 'ttt'
+        });
+        if (headlineRes.translated_text) {
+          translatedHeadline = headlineRes.translated_text;
+        }
+      }
+
+      let translatedDesc = activeVideo.description || '';
+      let audioPayload = null;
+
+      if (activeVideo.description && activeVideo.description.trim()) {
+        const descMode = supportsTts ? 'tts' : 'ttt';
+        const descRes = await translateText({
+          text: activeVideo.description,
+          sourceLang: 'english-united-states',
+          targetLang: targetLanguage,
+          serviceCode: descMode
+        });
+        
+        if (descRes.translated_text) {
+          translatedDesc = descRes.translated_text;
+        }
+        if (descRes.audio) {
+          audioPayload = descRes.audio;
+        }
+      }
 
       setTranslatedInfo({
-        headline: headlineRes.translated_text || activeVideo.headline,
-        description: descRes.translated_text || activeVideo.description
+        headline: translatedHeadline,
+        description: translatedDesc
       });
 
-      if (descRes.audio) {
-        setInfoAudioBase64(descRes.audio);
+      if (audioPayload) {
+        setInfoAudioBase64(audioPayload);
       }
     } catch (err) {
       console.error('Failed to translate video info:', err);
@@ -754,11 +779,17 @@ export default function WatchLive({ accent = '#D35400', isOlympian = false, isB2
         [msgId]: { text: 'Translating...', isPlaying: false }
       }));
 
+      const targetLangObj = wwtcLanguages.find(l => l.code === preferredLang);
+      const services = targetLangObj?.services || '';
+      const servicesParts = services.split('-');
+      const supportsTts = servicesParts[2] ? servicesParts[2] !== 'x' : true;
+      const chatMode = supportsTts ? 'tts' : 'ttt';
+
       const res = await translateText({
         text,
         sourceLang: 'english-united-states',
         targetLang: preferredLang,
-        serviceCode: 'tts'
+        serviceCode: chatMode
       });
 
       setTranslatedChats(prev => ({
