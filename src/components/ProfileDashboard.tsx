@@ -144,6 +144,7 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
     previewTimeLeft,
     isSubscribed, setIsSubscribed,
     subPrice, setSubPrice,
+    pinnedProduct, setPinnedProduct,
     showTipModal, setShowTipModal,
     tipAmount, setTipAmount,
     showExitScreen, setShowExitScreen,
@@ -2499,6 +2500,9 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
             handleSubscribe={handleSubscribe} startLiveStream={startLiveStream} setShowTipModal={setShowTipModal}
             localStream={localStream}
             liveCountdown={liveCountdown}
+            products={products}
+            pinnedProduct={pinnedProduct}
+            setPinnedProduct={setPinnedProduct}
           />
         )}
 

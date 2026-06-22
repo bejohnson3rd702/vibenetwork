@@ -48,6 +48,7 @@ export function useStreaming({ profileId, isOwnProfile, user, supabase, channelR
   const [previewTimeLeft, setPreviewTimeLeft] = useState(90);
   const [isSubscribed, setIsSubscribed] = useState(false);
   const [subPrice, setSubPrice] = useState('9.99');
+  const [pinnedProduct, setPinnedProduct] = useState<any | null>(null);
 
   // ── UI State ──
   const [showTipModal, setShowTipModal] = useState(false);
@@ -275,11 +276,12 @@ export function useStreaming({ profileId, isOwnProfile, user, supabase, channelR
 
     // Listen for live stream status announcements
     channel.on('broadcast', { event: 'stream_status' }, (payload: any) => {
-      const { isPlayingLive: hostIsPlaying, isPubliclyLive: hostIsPublic, streamSource: hostSource, liveEmbedUrl: hostUrl } = payload.payload;
+      const { isPlayingLive: hostIsPlaying, isPubliclyLive: hostIsPublic, streamSource: hostSource, liveEmbedUrl: hostUrl, pinnedProduct: hostPinnedProduct } = payload.payload;
       setIsPlayingLive(hostIsPlaying);
       setIsPubliclyLive(hostIsPublic);
       if (hostSource) setStreamSource(hostSource);
       if (hostUrl !== undefined) setLiveEmbedUrl(hostUrl);
+      if (hostPinnedProduct !== undefined) setPinnedProduct(hostPinnedProduct);
     });
 
     // Listen for guest list sync from host
@@ -363,7 +365,7 @@ export function useStreaming({ profileId, isOwnProfile, user, supabase, channelR
         channelRef.current.send({
           type: 'broadcast',
           event: 'stream_status',
-          payload: { isPlayingLive: false, isPubliclyLive: false },
+          payload: { isPlayingLive: false, isPubliclyLive: false, pinnedProduct: null },
         });
       }
       return;
@@ -374,7 +376,7 @@ export function useStreaming({ profileId, isOwnProfile, user, supabase, channelR
         channelRef.current.send({
           type: 'broadcast',
           event: 'stream_status',
-          payload: { isPlayingLive, isPubliclyLive, streamSource, liveEmbedUrl },
+          payload: { isPlayingLive, isPubliclyLive, streamSource, liveEmbedUrl, pinnedProduct },
         });
       }
     };
@@ -382,7 +384,7 @@ export function useStreaming({ profileId, isOwnProfile, user, supabase, channelR
 
     const interval = setInterval(broadcastStatus, 3000);
     return () => clearInterval(interval);
-  }, [isOwnProfile, isPlayingLive, isPubliclyLive, streamSource, liveEmbedUrl]);
+  }, [isOwnProfile, isPlayingLive, isPubliclyLive, streamSource, liveEmbedUrl, pinnedProduct]);
 
   return {
     // Core live state
@@ -411,6 +413,7 @@ export function useStreaming({ profileId, isOwnProfile, user, supabase, channelR
     previewTimeLeft,
     isSubscribed, setIsSubscribed,
     subPrice, setSubPrice,
+    pinnedProduct, setPinnedProduct,
 
     // UI
     showTipModal, setShowTipModal,

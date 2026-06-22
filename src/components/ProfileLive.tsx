@@ -47,13 +47,17 @@ export interface ProfileLiveProps {
   setPresenterMode: (b: boolean) => void;
   setGuests: (g: any[]) => void;
   setLocalGuestData: (d: any) => void;
-  handleStripeCheckout: (title: string, amount: number) => void;
+  handleStripeCheckout: (title: string, amount: number, extraMetadata?: any) => void;
   handleUnlockLive: () => void;
   handleSubscribe: () => void;
   startLiveStream: () => void;
   setShowTipModal: (b: boolean) => void;
   localStream?: MediaStream | null;
   liveCountdown?: number | null;
+
+  products?: any[];
+  pinnedProduct?: any | null;
+  setPinnedProduct?: (p: any | null) => void;
 }
 
 export const ProfileLive: React.FC<ProfileLiveProps> = ({
@@ -66,13 +70,25 @@ export const ProfileLive: React.FC<ProfileLiveProps> = ({
   user, guests, subPrice, setLivePrice, setStreamSource, setLiveEmbedUrl,
   setIsPlayingLive, setIsPubliclyLive, setPresenterMode, setGuests,
   setLocalGuestData, handleStripeCheckout, handleUnlockLive, handleSubscribe,
-  startLiveStream, setShowTipModal, localStream, liveCountdown
+  startLiveStream, setShowTipModal, localStream, liveCountdown,
+  products = [], pinnedProduct = null, setPinnedProduct = () => {}
 }) => {
   const toast = useToast();
   const bypassSub = typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('bypass_sub') === 'true';
   const effectiveIsSubscribed = isSubscribed || bypassSub;
   const viewerVideoRef = React.useRef<HTMLVideoElement>(null);
   const [isRemoteConnected, setIsRemoteConnected] = React.useState(false);
+  const [isProductDismissed, setIsProductDismissed] = React.useState(false);
+  const [lastPinnedProductId, setLastPinnedProductId] = React.useState<string | null>(null);
+
+  React.useEffect(() => {
+    if (pinnedProduct && pinnedProduct.id !== lastPinnedProductId) {
+      setIsProductDismissed(false);
+      setLastPinnedProductId(pinnedProduct.id);
+    } else if (!pinnedProduct) {
+      setLastPinnedProductId(null);
+    }
+  }, [pinnedProduct, lastPinnedProductId]);
 
   // Fan Zone & Co-watching state
   const showFanZone = false;
@@ -708,6 +724,172 @@ export const ProfileLive: React.FC<ProfileLiveProps> = ({
                       </div>
                     </>
                   )}
+
+                  {/* Floating Pinned Product Overlay Card for Viewers */}
+                  {!isOwnProfile && isPlayingLive && pinnedProduct && !isProductDismissed && (
+                    <motion.div
+                      initial={{ opacity: 0, x: 50, scale: 0.9 }}
+                      animate={{ opacity: 1, x: 0, scale: 1 }}
+                      exit={{ opacity: 0, scale: 0.9 }}
+                      transition={{ type: 'spring', damping: 20, stiffness: 100 }}
+                      style={{
+                        position: 'absolute',
+                        bottom: '24px',
+                        right: '24px',
+                        zIndex: 25,
+                        width: '320px',
+                        background: 'rgba(10, 10, 15, 0.75)',
+                        backdropFilter: 'blur(16px)',
+                        WebkitBackdropFilter: 'blur(16px)',
+                        borderRadius: '16px',
+                        border: '1px solid rgba(255, 255, 255, 0.1)',
+                        padding: '16px',
+                        boxShadow: '0 10px 30px rgba(0, 0, 0, 0.5), 0 0 20px rgba(0, 255, 136, 0.1)',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        gap: '12px',
+                        pointerEvents: 'auto'
+                      }}
+                    >
+                      {/* Card Header with pulsing Live Offer and Close button */}
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <span style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '6px',
+                          fontSize: '10px',
+                          fontWeight: '900',
+                          color: '#00ff88',
+                          textTransform: 'uppercase',
+                          letterSpacing: '1.5px',
+                          background: 'rgba(0, 255, 136, 0.1)',
+                          padding: '3px 8px',
+                          borderRadius: '20px',
+                          border: '1px solid rgba(0, 255, 136, 0.2)'
+                        }}>
+                          <span style={{
+                            width: '6px',
+                            height: '6px',
+                            borderRadius: '50%',
+                            background: '#00ff88',
+                            boxShadow: '0 0 8px #00ff88',
+                            animation: 'pulse 1.5s infinite'
+                          }} />
+                          Live Special Offer
+                        </span>
+                        <button
+                          onClick={() => setIsProductDismissed(true)}
+                          style={{
+                            background: 'none',
+                            border: 'none',
+                            color: '#888',
+                            cursor: 'pointer',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            padding: '4px',
+                            borderRadius: '50%',
+                            transition: 'color 0.2s, background-color 0.2s'
+                          }}
+                          onMouseOver={e => { e.currentTarget.style.color = '#fff'; e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.05)'; }}
+                          onMouseOut={e => { e.currentTarget.style.color = '#888'; e.currentTarget.style.backgroundColor = 'transparent'; }}
+                        >
+                          <X size={14} />
+                        </button>
+                      </div>
+
+                      {/* Product details */}
+                      <div style={{ display: 'flex', gap: '14px', alignItems: 'center' }}>
+                        {pinnedProduct.image_url ? (
+                          <img
+                            src={pinnedProduct.image_url}
+                            alt={pinnedProduct.title}
+                            style={{
+                              width: '70px',
+                              height: '70px',
+                              objectFit: 'cover',
+                              borderRadius: '10px',
+                              border: '1px solid rgba(255,255,255,0.05)',
+                              boxShadow: '0 4px 10px rgba(0,0,0,0.3)'
+                            }}
+                          />
+                        ) : (
+                          <div style={{
+                            width: '70px',
+                            height: '70px',
+                            background: 'rgba(255,255,255,0.03)',
+                            border: '1px solid rgba(255,255,255,0.05)',
+                            borderRadius: '10px',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            fontSize: '32px',
+                            boxShadow: '0 4px 10px rgba(0,0,0,0.3)'
+                          }}>
+                            🛍️
+                          </div>
+                        )}
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                          <h4 style={{
+                            margin: 0,
+                            fontSize: '14px',
+                            fontWeight: 'bold',
+                            color: 'var(--text-primary)',
+                            overflow: 'hidden',
+                            textOverflow: 'ellipsis',
+                            whiteSpace: 'nowrap'
+                          }}>
+                            {pinnedProduct.title}
+                          </h4>
+                          <div style={{
+                            fontSize: '18px',
+                            fontWeight: '900',
+                            color: '#00ff88',
+                            marginTop: '4px',
+                            textShadow: '0 0 10px rgba(0, 255, 136, 0.2)'
+                          }}>
+                            ${Number(pinnedProduct.price).toFixed(2)}
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Buy button */}
+                      <button
+                        onClick={() => {
+                          handleStripeCheckout(
+                            pinnedProduct.title,
+                            Number(pinnedProduct.price),
+                            { product_id: pinnedProduct.id, is_live_purchase: true }
+                          );
+                        }}
+                        style={{
+                          width: '100%',
+                          padding: '12px',
+                          background: 'linear-gradient(45deg, #00ff88, #00bbff)',
+                          color: '#000',
+                          border: 'none',
+                          borderRadius: '10px',
+                          fontSize: '13px',
+                          fontWeight: '900',
+                          textTransform: 'uppercase',
+                          letterSpacing: '1px',
+                          cursor: 'pointer',
+                          boxShadow: '0 4px 15px rgba(0,255,136,0.3)',
+                          transition: 'all 0.2s ease'
+                        }}
+                        onMouseOver={e => {
+                          e.currentTarget.style.transform = 'translateY(-1px)';
+                          e.currentTarget.style.boxShadow = '0 6px 20px rgba(0,255,136,0.4)';
+                        }}
+                        onMouseOut={e => {
+                          e.currentTarget.style.transform = 'none';
+                          e.currentTarget.style.boxShadow = '0 4px 15px rgba(0,255,136,0.3)';
+                        }}
+                      >
+                        ⚡ Buy Now
+                      </button>
+                    </motion.div>
+                  )}
                 </div>
 
                 <div className="live-chat-slot" style={{ display: 'flex', flexDirection: 'column', height: 'auto', minHeight: '450px' }}>
@@ -1041,7 +1223,82 @@ export const ProfileLive: React.FC<ProfileLiveProps> = ({
                         <input type="number" value={livePrice} onChange={e => setLivePrice(e.target.value)} style={{ background: 'transparent', border: '1px solid rgba(255,255,255,0.2)', color: 'var(--text-primary)', padding: '6px 12px', borderRadius: '6px', width: '80px', fontSize: '15px' }} />
                         <span style={{ color: 'var(--text-muted)', fontSize: '13px' }}>(Free for subscribers)</span>
                       </div>
-                      
+
+                      {/* Live Product Pinning (Broadcaster Panel) */}
+                      <div style={{ marginBottom: '24px', background: 'rgba(0,0,0,0.2)', padding: '20px', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.05)' }}>
+                        <label style={{ display: 'block', marginBottom: '12px', color: '#00ff88', fontWeight: 'bold', fontSize: '15px', textTransform: 'uppercase', letterSpacing: '1px' }}>
+                          🛍️ Feature Product Live
+                        </label>
+                        <p style={{ color: 'var(--text-secondary)', fontSize: '12px', marginBottom: '16px', marginTop: '-4px' }}>
+                          Select a product from your store to feature as a floating overlay card to all active viewers in real-time.
+                        </p>
+
+                        {pinnedProduct ? (
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '16px', background: 'rgba(255, 0, 85, 0.1)', padding: '16px', borderRadius: '10px', border: '1px solid rgba(255, 0, 85, 0.3)' }}>
+                            {pinnedProduct.image_url ? (
+                              <img src={pinnedProduct.image_url} alt={pinnedProduct.title} style={{ width: '50px', height: '50px', objectFit: 'cover', borderRadius: '8px' }} />
+                            ) : (
+                              <div style={{ width: '50px', height: '50px', background: 'rgba(255,255,255,0.05)', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '24px' }}>🛍️</div>
+                            )}
+                            <div style={{ flex: 1 }}>
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                <span style={{ background: '#ff0055', color: '#fff', fontSize: '9px', fontWeight: 'bold', padding: '2px 6px', borderRadius: '4px', textTransform: 'uppercase' }}>Currently Pinned</span>
+                                <span style={{ color: 'var(--text-primary)', fontWeight: 'bold', fontSize: '14px' }}>{pinnedProduct.title}</span>
+                              </div>
+                              <div style={{ color: '#00ff88', fontWeight: 'bold', fontSize: '13px', marginTop: '4px' }}>${Number(pinnedProduct.price).toFixed(2)}</div>
+                            </div>
+                            <button
+                              onClick={() => {
+                                setPinnedProduct(null);
+                                toast.info('Product unpinned from stream.');
+                              }}
+                              style={{ padding: '8px 16px', background: 'rgba(255,255,255,0.1)', color: '#fff', border: 'none', borderRadius: '6px', cursor: 'pointer', fontSize: '12px', fontWeight: 'bold', transition: '0.2s' }}
+                              onMouseOver={e => e.currentTarget.style.background = 'rgba(255,255,255,0.15)'}
+                              onMouseOut={e => e.currentTarget.style.background = 'rgba(255,255,255,0.1)'}
+                            >
+                              Unpin Product
+                            </button>
+                          </div>
+                        ) : (
+                          <div>
+                            {products.length === 0 ? (
+                              <div style={{ color: 'var(--text-secondary)', fontSize: '13px', fontStyle: 'italic', padding: '10px', textAlign: 'center', background: 'rgba(0,0,0,0.1)', borderRadius: '8px' }}>
+                                No products found in your store. Add products in the Store tab to feature them here.
+                              </div>
+                            ) : (
+                              <div style={{ display: 'flex', gap: '12px', overflowX: 'auto', paddingBottom: '8px', scrollbarWidth: 'thin' }}>
+                                {products.map((prod: any) => (
+                                  <div key={prod.id} style={{ minWidth: '220px', width: '220px', background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '8px', padding: '12px', display: 'flex', flexDirection: 'column', gap: '8px', transition: 'all 0.2s' }} onMouseOver={e=>e.currentTarget.style.borderColor='rgba(255,255,255,0.15)'} onMouseOut={e=>e.currentTarget.style.borderColor='rgba(255,255,255,0.05)'}>
+                                    <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+                                      {prod.image_url ? (
+                                        <img src={prod.image_url} alt={prod.title} style={{ width: '40px', height: '40px', objectFit: 'cover', borderRadius: '6px' }} />
+                                      ) : (
+                                        <div style={{ width: '40px', height: '40px', background: 'rgba(255,255,255,0.05)', borderRadius: '6px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '18px' }}>🛍️</div>
+                                      )}
+                                      <div style={{ overflow: 'hidden', flex: 1 }}>
+                                        <div style={{ color: 'var(--text-primary)', fontWeight: 'bold', fontSize: '12px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{prod.title}</div>
+                                        <div style={{ color: '#00ff88', fontWeight: 'bold', fontSize: '11px', marginTop: '2px' }}>${Number(prod.price).toFixed(2)}</div>
+                                      </div>
+                                    </div>
+                                    <button
+                                      onClick={() => {
+                                        setPinnedProduct(prod);
+                                        toast.success(`Pinned "${prod.title}" live!`);
+                                      }}
+                                      style={{ width: '100%', padding: '6px', background: 'rgba(0, 255, 136, 0.1)', color: '#00ff88', border: '1px solid rgba(0, 255, 136, 0.2)', borderRadius: '6px', fontSize: '11px', fontWeight: 'bold', cursor: 'pointer', transition: '0.2s' }}
+                                      onMouseOver={e => { e.currentTarget.style.background = '#00ff88'; e.currentTarget.style.color = '#000'; }}
+                                      onMouseOut={e => { e.currentTarget.style.background = 'rgba(0, 255, 136, 0.1)'; e.currentTarget.style.color = '#00ff88'; }}
+                                    >
+                                      Pin to Stream
+                                    </button>
+                                  </div>
+                                ))}
+                              </div>
+                            )}
+                          </div>
+                        )}
+                      </div>
+
                       <label style={{ display: 'block', marginBottom: '12px', color: '#ff4d85', fontWeight: 'bold', fontSize: '15px' }}>Configure Live Stream Origin</label>
                       <div style={{ display: 'flex', gap: '12px', marginBottom: '16px', flexWrap: 'wrap' }}>
                          <button onClick={() => { setStreamSource('camera'); setIsPlayingLive(false); }} style={{ padding: '10px 20px', background: streamSource === 'camera' ? '#0055ff' : 'rgba(255,255,255,0.05)', color: streamSource === 'camera' ? '#fff' : '#888', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '8px' }}><Camera size={16}/> Direct Webcam</button>
