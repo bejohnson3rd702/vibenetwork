@@ -730,26 +730,26 @@ export const ProfileLive: React.FC<ProfileLiveProps> = ({
                   {/* Floating Pinned Product Overlay Card for Viewers */}
                   {!(isOwnProfile && viewMode === 'edit') && isPlayingLive && pinnedProduct && !isProductDismissed && (
                     <motion.div
-                      initial={{ opacity: 0, x: 50, scale: 0.9 }}
+                      initial={{ opacity: 0, x: -40, scale: 0.95 }}
                       animate={{ opacity: 1, x: 0, scale: 1 }}
-                      exit={{ opacity: 0, scale: 0.9 }}
-                      transition={{ type: 'spring', damping: 20, stiffness: 100 }}
+                      exit={{ opacity: 0, scale: 0.95 }}
+                      transition={{ type: 'spring', damping: 20, stiffness: 120 }}
                       style={{
                         position: 'absolute',
-                        bottom: '24px',
-                        right: '24px',
+                        bottom: '12px',
+                        left: '12px',
                         zIndex: 25,
-                        width: '320px',
-                        background: 'rgba(10, 10, 15, 0.75)',
+                        width: '180px',
+                        background: 'rgba(10, 10, 15, 0.85)',
                         backdropFilter: 'blur(16px)',
                         WebkitBackdropFilter: 'blur(16px)',
-                        borderRadius: '16px',
-                        border: '1px solid rgba(255, 255, 255, 0.1)',
-                        padding: '16px',
-                        boxShadow: '0 10px 30px rgba(0, 0, 0, 0.5), 0 0 20px rgba(0, 255, 136, 0.1)',
+                        borderRadius: '10px',
+                        border: '1px solid rgba(255, 255, 255, 0.08)',
+                        padding: '10px',
+                        boxShadow: '0 8px 24px rgba(0, 0, 0, 0.5), 0 0 15px rgba(0, 255, 136, 0.06)',
                         display: 'flex',
                         flexDirection: 'column',
-                        gap: '12px',
+                        gap: '6px',
                         pointerEvents: 'auto'
                       }}
                     >
@@ -758,26 +758,26 @@ export const ProfileLive: React.FC<ProfileLiveProps> = ({
                         <span style={{
                           display: 'flex',
                           alignItems: 'center',
-                          gap: '6px',
-                          fontSize: '10px',
+                          gap: '3px',
+                          fontSize: '8px',
                           fontWeight: '900',
                           color: '#00ff88',
                           textTransform: 'uppercase',
-                          letterSpacing: '1.5px',
+                          letterSpacing: '1px',
                           background: 'rgba(0, 255, 136, 0.1)',
-                          padding: '3px 8px',
-                          borderRadius: '20px',
-                          border: '1px solid rgba(0, 255, 136, 0.2)'
+                          padding: '2px 5px',
+                          borderRadius: '8px',
+                          border: '1px solid rgba(0, 255, 136, 0.15)'
                         }}>
                           <span style={{
-                            width: '6px',
-                            height: '6px',
+                            width: '4px',
+                            height: '4px',
                             borderRadius: '50%',
                             background: '#00ff88',
-                            boxShadow: '0 0 8px #00ff88',
+                            boxShadow: '0 0 6px #00ff88',
                             animation: 'pulse 1.5s infinite'
                           }} />
-                          Live Special Offer
+                          Live Offer
                         </span>
                         <button
                           onClick={() => setIsProductDismissed(true)}
@@ -789,44 +789,42 @@ export const ProfileLive: React.FC<ProfileLiveProps> = ({
                             display: 'flex',
                             alignItems: 'center',
                             justifyContent: 'center',
-                            padding: '4px',
+                            padding: '2px',
                             borderRadius: '50%',
                             transition: 'color 0.2s, background-color 0.2s'
                           }}
                           onMouseOver={e => { e.currentTarget.style.color = '#fff'; e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.05)'; }}
                           onMouseOut={e => { e.currentTarget.style.color = '#888'; e.currentTarget.style.backgroundColor = 'transparent'; }}
                         >
-                          <X size={14} />
+                          <X size={10} />
                         </button>
                       </div>
 
                       {/* Product details */}
-                      <div style={{ display: 'flex', gap: '14px', alignItems: 'center' }}>
+                      <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
                         {pinnedProduct.image_url ? (
                           <img
                             src={pinnedProduct.image_url}
                             alt={pinnedProduct.title}
                             style={{
-                              width: '70px',
-                              height: '70px',
+                              width: '36px',
+                              height: '36px',
                               objectFit: 'cover',
-                              borderRadius: '10px',
-                              border: '1px solid rgba(255,255,255,0.05)',
-                              boxShadow: '0 4px 10px rgba(0,0,0,0.3)'
+                              borderRadius: '6px',
+                              border: '1px solid rgba(255,255,255,0.05)'
                             }}
                           />
                         ) : (
                           <div style={{
-                            width: '70px',
-                            height: '70px',
+                            width: '36px',
+                            height: '36px',
                             background: 'rgba(255,255,255,0.03)',
                             border: '1px solid rgba(255,255,255,0.05)',
-                            borderRadius: '10px',
+                            borderRadius: '6px',
                             display: 'flex',
                             alignItems: 'center',
                             justifyContent: 'center',
-                            fontSize: '32px',
-                            boxShadow: '0 4px 10px rgba(0,0,0,0.3)'
+                            fontSize: '16px'
                           }}>
                             🛍️
                           </div>
@@ -834,7 +832,7 @@ export const ProfileLive: React.FC<ProfileLiveProps> = ({
                         <div style={{ flex: 1, minWidth: 0 }}>
                           <h4 style={{
                             margin: 0,
-                            fontSize: '14px',
+                            fontSize: '11px',
                             fontWeight: 'bold',
                             color: 'var(--text-primary)',
                             overflow: 'hidden',
@@ -844,11 +842,10 @@ export const ProfileLive: React.FC<ProfileLiveProps> = ({
                             {pinnedProduct.title}
                           </h4>
                           <div style={{
-                            fontSize: '18px',
+                            fontSize: '13px',
                             fontWeight: '900',
                             color: '#00ff88',
-                            marginTop: '4px',
-                            textShadow: '0 0 10px rgba(0, 255, 136, 0.2)'
+                            marginTop: '1px'
                           }}>
                             ${Number(pinnedProduct.price).toFixed(2)}
                           </div>
@@ -866,26 +863,26 @@ export const ProfileLive: React.FC<ProfileLiveProps> = ({
                         }}
                         style={{
                           width: '100%',
-                          padding: '12px',
+                          padding: '6px',
                           background: 'linear-gradient(45deg, #00ff88, #00bbff)',
                           color: '#000',
                           border: 'none',
-                          borderRadius: '10px',
-                          fontSize: '13px',
+                          borderRadius: '6px',
+                          fontSize: '10px',
                           fontWeight: '900',
                           textTransform: 'uppercase',
-                          letterSpacing: '1px',
+                          letterSpacing: '0.5px',
                           cursor: 'pointer',
-                          boxShadow: '0 4px 15px rgba(0,255,136,0.3)',
+                          boxShadow: '0 2px 6px rgba(0,255,136,0.15)',
                           transition: 'all 0.2s ease'
                         }}
                         onMouseOver={e => {
                           e.currentTarget.style.transform = 'translateY(-1px)';
-                          e.currentTarget.style.boxShadow = '0 6px 20px rgba(0,255,136,0.4)';
+                          e.currentTarget.style.boxShadow = '0 4px 10px rgba(0,255,136,0.25)';
                         }}
                         onMouseOut={e => {
                           e.currentTarget.style.transform = 'none';
-                          e.currentTarget.style.boxShadow = '0 4px 15px rgba(0,255,136,0.3)';
+                          e.currentTarget.style.boxShadow = '0 2px 6px rgba(0,255,136,0.15)';
                         }}
                       >
                         ⚡ Buy Now
