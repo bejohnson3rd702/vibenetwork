@@ -728,7 +728,7 @@ export const ProfileLive: React.FC<ProfileLiveProps> = ({
                   )}
 
                   {/* Floating Pinned Product Overlay Card for Viewers */}
-                  {!isOwnProfile && isPlayingLive && pinnedProduct && !isProductDismissed && (
+                  {!(isOwnProfile && viewMode === 'edit') && isPlayingLive && pinnedProduct && !isProductDismissed && (
                     <motion.div
                       initial={{ opacity: 0, x: 50, scale: 0.9 }}
                       animate={{ opacity: 1, x: 0, scale: 1 }}
@@ -1209,9 +1209,11 @@ export const ProfileLive: React.FC<ProfileLiveProps> = ({
                 </div>
               )}
               <div style={{ padding: '24px' }}>
-                  <h3 style={{ margin: '0 0 8px 0', fontSize: '20px' }}>VIP Backstage Broadcast</h3>
+                  <h3 style={{ margin: '0 0 8px 0', fontSize: '20px' }}>
+                    {isOwnProfile && viewMode === 'edit' ? 'VIP Backstage Broadcast' : 'Live Broadcast'}
+                  </h3>
                   <p style={{ margin: 0, color: 'var(--text-muted)' }}>
-                    {isOwnProfile ? 'Configure your live stream settings below.' : 
+                    {isOwnProfile && viewMode === 'edit' ? 'Configure your live stream settings below.' : 
                      effectiveIsSubscribed ? 'Live stream is free since you are subscribed!' : 
                      'Streaming live now. Subscribe for free access, or unlock this broadcast below.'}
                   </p>
