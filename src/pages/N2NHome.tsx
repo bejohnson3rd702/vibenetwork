@@ -122,16 +122,17 @@ export default function N2NHome({ wlConfig, categories, activeVideo, setActiveVi
         const cats = await getN2NCategories(config.id, childIds);
         if (!cancelled) setChildCategories(cats);
 
-        // Fetch collegiate athletes
+        const isKpleActive = isKpleConfig(config);
+        const fetchIds = isKpleActive ? [config.id, ...childIds] : childIds;
         const { data: athletesData } = await supabase
           .from('profiles')
           .select('id, username, avatar_url, bio, whitelabel_id')
-          .in('whitelabel_id', childIds)
+          .in('whitelabel_id', fetchIds)
           .eq('role', 'influencer');
 
         if (!cancelled && athletesData) {
-          const isKpleActive = isKpleConfig(config);
           const getCollegeShortName = (wlId: string) => {
+            if (wlId === config.id) return config.name || 'KPLE TV';
             const child = children.find(c => c.id === wlId);
             if (!child) return isKpleActive ? 'Host' : 'Athlete';
             let name = child.name || '';
