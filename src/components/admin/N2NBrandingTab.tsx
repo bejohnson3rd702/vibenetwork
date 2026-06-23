@@ -1,7 +1,9 @@
 import { useState, useEffect } from 'react';
-import { Palette, Save, Eye, Type, Image, Link, ChevronDown } from 'lucide-react';
+import { Palette, Save, Eye, Type, Image, Link, ChevronDown, Upload } from 'lucide-react';
 import { useToast } from '../../context/ToastContext';
 import { getChildNetworks, updateChildBranding } from '../../lib/n2n';
+import { supabase } from '../../supabaseClient';
+import { processAndEnhanceImage } from '../../lib/imageProcessor';
 
 export const N2NBrandingTab = ({ wlConfig }: { wlConfig: any }) => {
   const toast = useToast();
@@ -18,6 +20,50 @@ export const N2NBrandingTab = ({ wlConfig }: { wlConfig: any }) => {
   const [heroCopy, setHeroCopy] = useState('');
   const [logoUrl, setLogoUrl] = useState('');
   const [heroImageUrl, setHeroImageUrl] = useState('');
+
+  // Upload/Drag states
+  const [uploadingLogo, setUploadingLogo] = useState(false);
+  const [uploadingHeroImage, setUploadingHeroImage] = useState(false);
+  const [dragActiveLogo, setDragActiveLogo] = useState(false);
+  const [dragActiveHeroImage, setDragActiveHeroImage] = useState(false);
+
+  const handleImageUpload = async (
+    eventOrFile: React.ChangeEvent<HTMLInputElement> | File,
+    setUrl: (url: string) => void,
+    setUploading: (u: boolean) => void,
+    aspectMode: 'logo' | 'homepage'
+  ) => {
+    try {
+      let file: File | undefined;
+      if (eventOrFile instanceof File) {
+        file = eventOrFile;
+      } else if (eventOrFile.target?.files && eventOrFile.target.files.length > 0) {
+        file = eventOrFile.target.files[0];
+      }
+      if (!file) return;
+
+      setUploading(true);
+      toast.info(`✨ Nalu AI is enhancing and auto-cropping your image...`);
+      const enhancedFile = await processAndEnhanceImage(file, aspectMode);
+
+      const fileExt = enhancedFile.name.split('.').pop();
+      const fileName = `${Date.now()}_${Math.random()}.${fileExt}`;
+      const filePath = `brand/${fileName}`;
+
+      const { error: uploadError } = await supabase.storage.from('images').upload(filePath, enhancedFile);
+      if (uploadError) throw uploadError;
+
+      const { data } = supabase.storage.from('images').getPublicUrl(filePath);
+      if (data?.publicUrl) {
+        setUrl(data.publicUrl);
+        toast.success('Image processed and uploaded successfully!');
+      }
+    } catch (err: any) {
+      toast.error('Upload failed: ' + err.message);
+    } finally {
+      setUploading(false);
+    }
+  };
 
   const applyChild = (child: any) => {
     setName(child.name || '');
@@ -207,25 +253,90 @@ export const N2NBrandingTab = ({ wlConfig }: { wlConfig: any }) => {
 
             <div style={labelStyle}>
               <span style={labelTextStyle}><Link size={14} /> Logo URL</span>
-              <input
-                type="text"
-                value={logoUrl}
-                onChange={e => setLogoUrl(e.target.value)}
-                style={inputStyle}
-                placeholder="https://..."
-              />
+              <div style={{ display: 'flex', gap: '12px' }}>
+                <input
+                  type="text"
+                  value={logoUrl}
+                  onChange={e => setLogoUrl(e.target.value)}
+                  style={inputStyle}
+                  placeholder="https://..."
+                />
+                <label 
+                  onDragOver={(e) => { e.preventDefault(); setDragActiveLogo(true); }}
+                  onDragLeave={() => setDragActiveLogo(false)}
+                  onDrop={(e) => {
+                    e.preventDefault();
+                    setDragActiveLogo(false);
+                    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+                      handleImageUpload(e.dataTransfer.files[0], setLogoUrl, setUploadingLogo, 'logo');
+                    }
+                  }}
+                  style={{ 
+                    display: 'flex', 
+                    alignItems: 'center', 
+                    justifyContent: 'center', 
+                    padding: '12px 20px', 
+                    background: dragActiveLogo ? 'rgba(0, 255, 136, 0.05)' : 'rgba(255,255,255,0.02)', 
+                    border: dragActiveLogo ? '2px dashed #00ff88' : '1px solid rgba(255,255,255,0.1)', 
+                    borderRadius: '12px', 
+                    cursor: uploadingLogo ? 'not-allowed' : 'pointer', 
+                    fontWeight: 'bold',
+                    transition: 'all 0.2s ease',
+                    minWidth: '140px',
+                    textAlign: 'center',
+                    fontSize: '13px',
+                    color: 'var(--text-primary)'
+                  }}
+                >
+                  <span>{uploadingLogo ? 'Uploading...' : dragActiveLogo ? 'Drop!' : 'Upload Logo'}</span>
+                  <input type="file" accept="image/*" onChange={(e) => handleImageUpload(e, setLogoUrl, setUploadingLogo, 'logo')} style={{ display: 'none' }} disabled={uploadingLogo} />
+                </label>
+              </div>
             </div>
 
             <div style={labelStyle}>
               <span style={labelTextStyle}><Image size={14} /> Hero Image URL</span>
-              <input
-                type="text"
-                value={heroImageUrl}
-                onChange={e => setHeroImageUrl(e.target.value)}
-                style={inputStyle}
-                placeholder="https://..."
-              />
+              <div style={{ display: 'flex', gap: '12px' }}>
+                <input
+                  type="text"
+                  value={heroImageUrl}
+                  onChange={e => setHeroImageUrl(e.target.value)}
+                  style={inputStyle}
+                  placeholder="https://..."
+                />
+                <label 
+                  onDragOver={(e) => { e.preventDefault(); setDragActiveHeroImage(true); }}
+                  onDragLeave={() => setDragActiveHeroImage(false)}
+                  onDrop={(e) => {
+                    e.preventDefault();
+                    setDragActiveHeroImage(false);
+                    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+                      handleImageUpload(e.dataTransfer.files[0], setHeroImageUrl, setUploadingHeroImage, 'homepage');
+                    }
+                  }}
+                  style={{ 
+                    display: 'flex', 
+                    alignItems: 'center', 
+                    justifyContent: 'center', 
+                    padding: '12px 20px', 
+                    background: dragActiveHeroImage ? 'rgba(0, 255, 136, 0.05)' : 'rgba(255,255,255,0.02)', 
+                    border: dragActiveHeroImage ? '2px dashed #00ff88' : '1px solid rgba(255,255,255,0.1)', 
+                    borderRadius: '12px', 
+                    cursor: uploadingHeroImage ? 'not-allowed' : 'pointer', 
+                    fontWeight: 'bold',
+                    transition: 'all 0.2s ease',
+                    minWidth: '140px',
+                    textAlign: 'center',
+                    fontSize: '13px',
+                    color: 'var(--text-primary)'
+                  }}
+                >
+                  <span>{uploadingHeroImage ? 'Uploading...' : dragActiveHeroImage ? 'Drop!' : 'Upload Banner'}</span>
+                  <input type="file" accept="image/*" onChange={(e) => handleImageUpload(e, setHeroImageUrl, setUploadingHeroImage, 'homepage')} style={{ display: 'none' }} disabled={uploadingHeroImage} />
+                </label>
+              </div>
             </div>
+
 
             <div style={{ height: '1px', background: 'rgba(255,255,255,0.05)' }} />
 

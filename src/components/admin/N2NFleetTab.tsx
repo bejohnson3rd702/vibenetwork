@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react';
-import { Network, Users, Globe, Trash2, ExternalLink, Shield, Activity } from 'lucide-react';
+import { Network, Users, Globe, Trash2, ExternalLink, Shield, Activity, Upload, Image as ImageIcon, Link as LinkIcon } from 'lucide-react';
 import { useToast } from '../../context/ToastContext';
 import { getChildNetworks, getN2NProfiles, updateChildFee, deleteChildNetwork, createChildNetwork } from '../../lib/n2n';
 import { supabase } from '../../supabaseClient';
+import { processAndEnhanceImage } from '../../lib/imageProcessor';
 
 export const N2NFleetTab = ({ wlConfig }: { wlConfig: any }) => {
   const toast = useToast();
@@ -17,6 +18,52 @@ export const N2NFleetTab = ({ wlConfig }: { wlConfig: any }) => {
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [whitelabelsList, setWhitelabelsList] = useState<any[]>([]);
   const [usersList, setUsersList] = useState<any[]>([]);
+
+  // Image Upload States
+  const [logoUrl, setLogoUrl] = useState('');
+  const [heroImageUrl, setHeroImageUrl] = useState('');
+  const [uploadingLogo, setUploadingLogo] = useState(false);
+  const [uploadingHeroImage, setUploadingHeroImage] = useState(false);
+  const [dragActiveLogo, setDragActiveLogo] = useState(false);
+  const [dragActiveHeroImage, setDragActiveHeroImage] = useState(false);
+
+  const handleImageUpload = async (
+    eventOrFile: React.ChangeEvent<HTMLInputElement> | File,
+    setUrl: (url: string) => void,
+    setUploading: (u: boolean) => void,
+    aspectMode: 'logo' | 'homepage'
+  ) => {
+    try {
+      let file: File | undefined;
+      if (eventOrFile instanceof File) {
+        file = eventOrFile;
+      } else if (eventOrFile.target?.files && eventOrFile.target.files.length > 0) {
+        file = eventOrFile.target.files[0];
+      }
+      if (!file) return;
+
+      setUploading(true);
+      toast.info(`✨ Nalu AI is enhancing and auto-cropping your image...`);
+      const enhancedFile = await processAndEnhanceImage(file, aspectMode);
+
+      const fileExt = enhancedFile.name.split('.').pop();
+      const fileName = `${Date.now()}_${Math.random()}.${fileExt}`;
+      const filePath = `brand/${fileName}`;
+
+      const { error: uploadError } = await supabase.storage.from('images').upload(filePath, enhancedFile);
+      if (uploadError) throw uploadError;
+
+      const { data } = supabase.storage.from('images').getPublicUrl(filePath);
+      if (data?.publicUrl) {
+        setUrl(data.publicUrl);
+        toast.success('Image processed and uploaded successfully!');
+      }
+    } catch (err: any) {
+      toast.error('Upload failed: ' + err.message);
+    } finally {
+      setUploading(false);
+    }
+  };
 
   useEffect(() => {
     if (!wlConfig?.id) return;
@@ -168,6 +215,80 @@ export const N2NFleetTab = ({ wlConfig }: { wlConfig: any }) => {
               </div>
               <input id="n2n-child-hero-fleet" placeholder="Hero Copy (e.g. Sic 'Em Bears)" style={inputStyle} />
               
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                <label style={{ color: 'var(--text-muted)', fontSize: '12px', fontWeight: '600' }}>Logo URL / Upload:</label>
+                <div style={{ display: 'flex', gap: '8px', width: '100%' }}>
+                  <input id="n2n-child-logo-fleet" placeholder="Logo URL (or upload)" value={logoUrl} onChange={(e) => setLogoUrl(e.target.value)} style={inputStyle} />
+                  <label 
+                    onDragOver={(e) => { e.preventDefault(); setDragActiveLogo(true); }}
+                    onDragLeave={() => setDragActiveLogo(false)}
+                    onDrop={(e) => {
+                      e.preventDefault();
+                      setDragActiveLogo(false);
+                      if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+                        handleImageUpload(e.dataTransfer.files[0], setLogoUrl, setUploadingLogo, 'logo');
+                      }
+                    }}
+                    style={{ 
+                      display: 'flex', 
+                      alignItems: 'center', 
+                      justifyContent: 'center', 
+                      padding: '8px 16px', 
+                      background: dragActiveLogo ? 'rgba(0, 255, 136, 0.05)' : 'rgba(255,255,255,0.02)', 
+                      border: dragActiveLogo ? '2px dashed #00ff88' : '1px solid rgba(255,255,255,0.1)', 
+                      borderRadius: '12px', 
+                      cursor: uploadingLogo ? 'not-allowed' : 'pointer', 
+                      fontWeight: 'bold',
+                      transition: 'all 0.2s ease',
+                      minWidth: '100px',
+                      textAlign: 'center',
+                      fontSize: '12px',
+                      color: 'var(--text-primary)'
+                    }}
+                  >
+                    <span>{uploadingLogo ? '...' : dragActiveLogo ? 'Drop!' : 'Upload'}</span>
+                    <input type="file" accept="image/*" onChange={(e) => handleImageUpload(e, setLogoUrl, setUploadingLogo, 'logo')} style={{ display: 'none' }} disabled={uploadingLogo} />
+                  </label>
+                </div>
+              </div>
+
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                <label style={{ color: 'var(--text-muted)', fontSize: '12px', fontWeight: '600' }}>Hero Image URL / Upload:</label>
+                <div style={{ display: 'flex', gap: '8px', width: '100%' }}>
+                  <input id="n2n-child-heroimage-fleet" placeholder="Hero Image URL (or upload)" value={heroImageUrl} onChange={(e) => setHeroImageUrl(e.target.value)} style={inputStyle} />
+                  <label 
+                    onDragOver={(e) => { e.preventDefault(); setDragActiveHeroImage(true); }}
+                    onDragLeave={() => setDragActiveHeroImage(false)}
+                    onDrop={(e) => {
+                      e.preventDefault();
+                      setDragActiveHeroImage(false);
+                      if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+                        handleImageUpload(e.dataTransfer.files[0], setHeroImageUrl, setUploadingHeroImage, 'homepage');
+                      }
+                    }}
+                    style={{ 
+                      display: 'flex', 
+                      alignItems: 'center', 
+                      justifyContent: 'center', 
+                      padding: '8px 16px', 
+                      background: dragActiveHeroImage ? 'rgba(0, 255, 136, 0.05)' : 'rgba(255,255,255,0.02)', 
+                      border: dragActiveHeroImage ? '2px dashed #00ff88' : '1px solid rgba(255,255,255,0.1)', 
+                      borderRadius: '12px', 
+                      cursor: uploadingHeroImage ? 'not-allowed' : 'pointer', 
+                      fontWeight: 'bold',
+                      transition: 'all 0.2s ease',
+                      minWidth: '100px',
+                      textAlign: 'center',
+                      fontSize: '12px',
+                      color: 'var(--text-primary)'
+                    }}
+                  >
+                    <span>{uploadingHeroImage ? '...' : dragActiveHeroImage ? 'Drop!' : 'Upload'}</span>
+                    <input type="file" accept="image/*" onChange={(e) => handleImageUpload(e, setHeroImageUrl, setUploadingHeroImage, 'homepage')} style={{ display: 'none' }} disabled={uploadingHeroImage} />
+                  </label>
+                </div>
+              </div>
+
               <div style={{ display: 'flex', alignItems: 'center', gap: '10px', width: '100%' }}>
                 <label style={{ color: 'var(--text-muted)', fontSize: '13px', fontWeight: '600', whiteSpace: 'nowrap' }}>Template:</label>
                 <select id="n2n-child-template-fleet" style={{ ...inputStyle, cursor: 'pointer' }}>
@@ -207,6 +328,8 @@ export const N2NFleetTab = ({ wlConfig }: { wlConfig: any }) => {
                     domain: domainEl?.value?.trim() || '',
                     accent: accentEl?.value,
                     heroCopy: heroEl?.value,
+                    logo: logoUrl || undefined,
+                    heroImage: heroImageUrl || undefined,
                     templateId: templateEl?.value || undefined
                   }, ownerEl?.value || '');
                   
@@ -223,6 +346,8 @@ export const N2NFleetTab = ({ wlConfig }: { wlConfig: any }) => {
                   if (heroEl) heroEl.value = '';
                   if (templateEl) templateEl.value = '';
                   if (ownerEl) ownerEl.value = '';
+                  setLogoUrl('');
+                  setHeroImageUrl('');
                   
                   setShowCreateForm(false);
                 }}
@@ -231,7 +356,11 @@ export const N2NFleetTab = ({ wlConfig }: { wlConfig: any }) => {
                 Create Child
               </button>
               <button 
-                onClick={() => setShowCreateForm(false)} 
+                onClick={() => {
+                  setShowCreateForm(false);
+                  setLogoUrl('');
+                  setHeroImageUrl('');
+                }} 
                 style={{ padding: '10px 24px', background: 'rgba(255,255,255,0.05)', color: 'var(--text-muted)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '10px', fontWeight: '600', cursor: 'pointer', fontSize: '13px' }}
               >
                 Cancel
