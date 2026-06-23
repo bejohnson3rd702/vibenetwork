@@ -126,9 +126,10 @@ export default function N2NHome({ wlConfig, categories, activeVideo, setActiveVi
         const fetchIds = isKpleActive ? [config.id, ...childIds] : childIds;
         const { data: athletesData } = await supabase
           .from('profiles')
-          .select('id, username, avatar_url, bio, whitelabel_id')
+          .select('id, username, avatar_url, bio, whitelabel_id, created_at')
           .in('whitelabel_id', fetchIds)
-          .eq('role', 'influencer');
+          .eq('role', 'influencer')
+          .order('created_at', { ascending: false });
 
         if (!cancelled && athletesData) {
           const getCollegeShortName = (wlId: string) => {
