@@ -509,14 +509,15 @@ export default function N2NAuthModal({ onClose, initialRole }: N2NAuthModalProps
                 <div style={{ marginTop: '5px' }}>
                   <p style={{ color: '#ccc', fontSize: '14px', marginBottom: '10px' }}>Account Type</p>
                   <div style={{ display: 'flex', gap: '8px' }}>
-                    {(['viewer', 'influencer', 'business'] as const).map(r => {
+                    {(['viewer', 'influencer'] as const).map(r => {
                       const isActive = role === r;
-                      const label = r === 'viewer' ? 'Viewer' : r === 'influencer' ? 'Creator' : 'Network';
+                      const label = r === 'viewer' ? 'Viewer' : 'Creator';
                       return (
                         <button
                           key={r}
                           type="button"
                           onClick={() => setRole(r)}
+
                           style={{
                             flex: 1,
                             padding: '10px',

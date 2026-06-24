@@ -312,7 +312,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ onClose, onSuccess, defaultIsLogi
                 >
                   Creator
                 </button>
-                <button 
+                {/* <button 
                   type="button" 
                   onClick={() => setRole('business')}
                   style={{
@@ -324,8 +324,9 @@ const AuthModal: React.FC<AuthModalProps> = ({ onClose, onSuccess, defaultIsLogi
                   }}
                 >
                   Business
-                </button>
+                </button> */}
               </div>
+
             </div>
           )}
 
