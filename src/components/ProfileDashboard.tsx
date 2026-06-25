@@ -394,7 +394,7 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
   
   // New Post States
   const [postTitle, setPostTitle] = useState('');
-  const [isLocked, setIsLocked] = useState(true);
+  const [isLocked, setIsLocked] = useState(false);
   const [requestFeature, setRequestFeature] = useState(false);
   const [postMediaUrls, setPostMediaUrls] = useState<string[]>([]);
   const [uploadingPostMedia, setUploadingPostMedia] = useState(false);
