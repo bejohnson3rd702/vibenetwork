@@ -1223,16 +1223,18 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
   const handleUpdateSeries = async (updatedSeries: any) => {
     setSaving(true);
     try {
+      const billingLevel = updatedSeries.billing_level || 'series';
+      const isSeriesLevel = billingLevel === 'series';
       const { error } = await supabase!
         .from('series')
         .update({
           title: updatedSeries.title,
           description: updatedSeries.description,
-          price: updatedSeries.billing_level === 'series' ? parseFloat(updatedSeries.price || '0') : 0,
+          price: isSeriesLevel ? parseFloat(updatedSeries.price || '0') : 0,
           img: updatedSeries.img,
-          billing_level: updatedSeries.billing_level,
+          billing_level: billingLevel,
           subscriber_free: updatedSeries.subscriber_free,
-          subscriber_price: (updatedSeries.billing_level === 'series' && updatedSeries.subscriber_price) ? parseFloat(updatedSeries.subscriber_price) : null
+          subscriber_price: (isSeriesLevel && updatedSeries.subscriber_price) ? parseFloat(updatedSeries.subscriber_price) : null
         })
         .eq('id', updatedSeries.id);
 
@@ -1247,11 +1249,11 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
               ...s,
               title: updatedSeries.title,
               description: updatedSeries.description,
-              price: updatedSeries.billing_level === 'series' ? parseFloat(updatedSeries.price || '0') : 0,
+              price: isSeriesLevel ? parseFloat(updatedSeries.price || '0') : 0,
               img: updatedSeries.img,
-              billing_level: updatedSeries.billing_level,
+              billing_level: billingLevel,
               subscriber_free: updatedSeries.subscriber_free,
-              subscriber_price: (updatedSeries.billing_level === 'series' && updatedSeries.subscriber_price) ? parseFloat(updatedSeries.subscriber_price) : null
+              subscriber_price: (isSeriesLevel && updatedSeries.subscriber_price) ? parseFloat(updatedSeries.subscriber_price) : null
             };
           }
           return s;
@@ -1264,11 +1266,11 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
               ...prev,
               title: updatedSeries.title,
               description: updatedSeries.description,
-              price: updatedSeries.billing_level === 'series' ? parseFloat(updatedSeries.price || '0') : 0,
+              price: isSeriesLevel ? parseFloat(updatedSeries.price || '0') : 0,
               img: updatedSeries.img,
-              billing_level: updatedSeries.billing_level,
+              billing_level: billingLevel,
               subscriber_free: updatedSeries.subscriber_free,
-              subscriber_price: (updatedSeries.billing_level === 'series' && updatedSeries.subscriber_price) ? parseFloat(updatedSeries.subscriber_price) : null
+              subscriber_price: (isSeriesLevel && updatedSeries.subscriber_price) ? parseFloat(updatedSeries.subscriber_price) : null
             };
           });
         }
@@ -5642,7 +5644,7 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
                 <div>
                   <label style={{ display: 'block', marginBottom: '6px', fontSize: '13px', color: '#ccc' }}>Billing Model</label>
                   <select 
-                    value={editingSeries.billing_level} 
+                    value={editingSeries.billing_level || 'series'} 
                     onChange={e => setEditingSeries({ ...editingSeries, billing_level: e.target.value, price: e.target.value === 'episode' ? '' : editingSeries.price })}
                     style={{ width: '100%', background: 'rgba(0,0,0,0.4)', border: '1px solid rgba(255,255,255,0.1)', padding: '12px', borderRadius: '10px', color: 'var(--text-primary)', outline: 'none', cursor: 'pointer' }}
                   >
@@ -5651,7 +5653,7 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
                   </select>
                 </div>
 
-                {editingSeries.billing_level === 'series' && (
+                {(editingSeries.billing_level === 'series' || !editingSeries.billing_level) && (
                   <>
                     <div>
                       <label style={{ display: 'block', marginBottom: '6px', fontSize: '13px', color: '#ccc' }}>Full Season Price ($)</label>
