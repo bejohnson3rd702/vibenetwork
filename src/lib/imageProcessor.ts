@@ -47,9 +47,9 @@ export async function processAndEnhanceImage(
         maxHeight = 1200;
         break;
       case 'product':
-        targetAspect = 4 / 3; // 4:3 E-commerce product image
+        targetAspect = 1.0; // 1:1 E-commerce product image
         maxWidth = 1024;
-        maxHeight = 768;
+        maxHeight = 1024;
         break;
       default:
         targetAspect = 1.0;
