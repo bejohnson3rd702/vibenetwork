@@ -75,7 +75,7 @@ export function normalizeWlConfig(
     ...(raw?.theme || {}),
     ...(isKpleParent ? {
       heroCopy: 'Christian Revival Network — Come All Revival. Class A Christian Broadcasting.',
-      logoImage: 'https://ui-avatars.com/api/?name=Christian+Revival+Network&background=004e98&color=fff'
+      logoImage: 'https://fimzetmvrmbmdggvqzpr.supabase.co/storage/v1/object/public/images/whitelabel/kple_logo_1782369339776.png'
     } : {})
   };
   const base = {
@@ -110,7 +110,7 @@ export function normalizeWlConfig(
 
   if (isKpleParent) {
     base.name = 'Christian Revival Network';
-    base.logoImage = 'https://ui-avatars.com/api/?name=Christian+Revival+Network&background=004e98&color=fff';
+    base.logoImage = 'https://fimzetmvrmbmdggvqzpr.supabase.co/storage/v1/object/public/images/whitelabel/kple_logo_1782369339776.png';
     base.heroCopy = 'Christian Revival Network — Come All Revival. Class A Christian Broadcasting.';
   }
 
