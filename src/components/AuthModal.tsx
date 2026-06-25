@@ -1,7 +1,8 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { supabase } from '../supabaseClient';
-import { X, Lock, Mail, AtSign } from 'lucide-react';
+import { X, Lock, Mail, AtSign, Info } from 'lucide-react';
+
 import { useWhiteLabel } from '../context/WhiteLabelContext';
 import { DictationButton } from './DictationButton';
 
@@ -327,7 +328,16 @@ const AuthModal: React.FC<AuthModalProps> = ({ onClose, onSuccess, defaultIsLogi
                 </button> */}
               </div>
 
+              <div style={{ marginTop: '14px', display: 'flex', alignItems: 'flex-start', gap: '10px', background: 'rgba(255,255,255,0.02)', padding: '12px', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.05)' }}>
+                <Info size={16} color={accentColor} style={{ flexShrink: 0, marginTop: '2px' }} />
+                <p style={{ margin: 0, fontSize: '12px', color: '#aaa', lineHeight: 1.5 }}>
+                  {role === 'viewer' 
+                    ? 'Viewer Account: Watch live streams, follow your favorite channels, buy merch, and chat in real-time.' 
+                    : 'Creator Account: Host your own streams, upload videos, publish posts, sell products, and build your audience.'}
+                </p>
+              </div>
             </div>
+
           )}
 
           <button 

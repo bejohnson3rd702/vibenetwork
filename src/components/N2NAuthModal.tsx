@@ -3,7 +3,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from '../supabaseClient';
 import { useWhiteLabel } from '../context/WhiteLabelContext';
 import { useToast } from '../context/ToastContext';
-import { X, ShieldCheck, Mail, Lock, AtSign, Loader, ArrowRight, Network, Palette, Type, Check } from 'lucide-react';
+import { X, ShieldCheck, Mail, Lock, AtSign, Loader, ArrowRight, Network, Palette, Type, Check, Info } from 'lucide-react';
+
 
 interface N2NAuthModalProps {
   onClose: () => void;
@@ -543,11 +544,15 @@ export default function N2NAuthModal({ onClose, initialRole }: N2NAuthModalProps
                       );
                     })}
                   </div>
-                  {role === 'business' && (
-                    <p style={{ color: 'var(--text-muted)', fontSize: '12px', marginTop: '10px', lineHeight: 1.5 }}>
-                      After signing up you'll configure your new child network in a quick 3-step wizard.
+                  <div style={{ marginTop: '14px', display: 'flex', alignItems: 'flex-start', gap: '10px', background: 'rgba(255,255,255,0.02)', padding: '12px', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.05)' }}>
+                    <Info size={16} color={accentColor} style={{ flexShrink: 0, marginTop: '2px' }} />
+                    <p style={{ margin: 0, fontSize: '12px', color: '#aaa', lineHeight: 1.5 }}>
+                      {role === 'viewer' 
+                        ? 'Viewer Account: Watch live streams, follow your favorite channels, buy merch, and chat in real-time.' 
+                        : 'Creator Account: Host your own streams, upload videos, publish posts, sell products, and build your audience.'}
                     </p>
-                  )}
+                  </div>
+
                 </div>
               )}
 
