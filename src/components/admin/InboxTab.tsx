@@ -56,6 +56,48 @@ export const InboxTab = ({ wlConfig }: { wlConfig: any }) => {
     }
   };
 
+  const handleForwardToCrm = async () => {
+    if (!selectedLead) return;
+    try {
+      // Parse name from message
+      const nameMatch = selectedLead.message.match(/^Name:\s*(.*)$/m);
+      const name = nameMatch ? nameMatch[1].trim() : '';
+      const nameParts = name.split(/\s+/);
+      const firstName = nameParts[0] || '';
+      const lastName = nameParts.slice(1).join(' ') || '';
+
+      const { data: contact, error: insertErr } = await supabase
+        .from('crm_contacts')
+        .insert({
+          whitelabel_id: wlConfig.id,
+          creator_id: wlConfig.owner_id || null,
+          first_name: firstName,
+          last_name: lastName,
+          email: selectedLead.email,
+          source: 'contact_form'
+        })
+        .select()
+        .single();
+
+      if (insertErr) {
+        if (insertErr.code === '23505') {
+          toast.error("Contact already exists in your Sales CRM.");
+          return;
+        }
+        throw insertErr;
+      }
+
+      if (contact) {
+        const { syncContactToExternalCrms } = await import('../../lib/crmSync');
+        await syncContactToExternalCrms(contact);
+      }
+
+      toast.success("Lead successfully forwarded to Sales CRM!");
+    } catch (e: any) {
+      toast.error("Forwarding failed: " + e.message);
+    }
+  };
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '30px' }}>
       <div style={{ padding: '40px', background: 'rgba(0,0,0,0.3)', borderRadius: '24px', border: '1px solid rgba(255,255,255,0.05)' }}>
@@ -97,7 +139,7 @@ export const InboxTab = ({ wlConfig }: { wlConfig: any }) => {
                  {selectedLead.message}
               </div>
               <div style={{ display: 'flex', gap: '16px', marginTop: '30px' }}>
-                 <button style={{ padding: '12px 24px', background: wlConfig.accent, color: 'var(--text-primary)', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold' }}>Forward to Sales CRM</button>
+                 <button onClick={handleForwardToCrm} style={{ padding: '12px 24px', background: wlConfig.accent, color: 'var(--text-primary)', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold' }}>Forward to Sales CRM</button>
                  <button onClick={async () => {
                     await supabase.from('network_leads').delete().eq('id', selectedLead.id);
                     setLeads(leads.filter(l => l.id !== selectedLead.id));
