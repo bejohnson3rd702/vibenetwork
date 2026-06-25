@@ -1898,56 +1898,94 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
                 { id: 'series', label: 'Episodes' },
                 { id: 'courses', label: 'Sessions' },
                 { id: 'flipbook', label: 'Flip Book' }
-              ].concat(isNetworkLevel ? [{ id: 'members', label: 'Network Profiles' }, { id: 'community', label: 'Community' }] : []).concat((user && viewMode === 'edit') ? [{ id: 'my_bookings', label: 'My Bookings' }, { id: 'ai_report', label: '📊 AI Creator Report' }] : []).concat((myNetworks.length > 0 && !isNetworkLevel) ? [{ id: 'networks', label: 'My Networks' }] : []).map(tab => (
-                <button 
-                  key={tab.id}
-                  onClick={() => setActiveTab(tab.id as any)}
-                  style={{ position: 'relative', background: 'none', border: 'none', padding: '12px 24px', color: activeTab === tab.id ? '#fff' : '#888', fontSize: '15px', fontWeight: 'bold', cursor: 'pointer', borderRadius: '100px', transition: 'color 0.3s' }}
-                >
-                  {activeTab === tab.id && (
-                    <motion.div layoutId="activetab" style={{ position: 'absolute', inset: 0, background: 'rgba(255,77,133,0.2)', borderRadius: '100px', border: '1px solid rgba(255,77,133,0.5)' }} />
-                  )}
-                  <span style={{ position: 'relative', zIndex: 1 }}>{tab.label}</span>
-                </button>
-              ))}
-
-              {isOwnProfile && viewMode === 'edit' && !isNetworkLevel && (
-                <button 
-                  onClick={() => setActiveTab('appearance')}
-                  style={{ position: 'relative', background: 'none', border: 'none', padding: '12px 24px', color: activeTab === 'appearance' ? '#D35400' : '#888', fontSize: '15px', fontWeight: 'bold', cursor: 'pointer', borderRadius: '100px', display: 'flex', alignItems: 'center', gap: '8px', transition: 'color 0.3s' }}
-                >
-                  {activeTab === 'appearance' && (
-                    <motion.div layoutId="activetab" style={{ position: 'absolute', inset: 0, background: 'rgba(211,84,0,0.1)', borderRadius: '100px', border: '1px solid rgba(211,84,0,0.4)' }} />
-                  )}
-                  <span style={{ position: 'relative', zIndex: 1, display: 'flex', alignItems: 'center', gap: '8px' }}><Wand size={16} /> Appearance</span>
-                </button>
-              )}
-
-              {isOwnProfile && viewMode === 'edit' && !isNetworkLevel && (wlConfig?.theme?.creator_splits?.[profile?.id] ?? profile?.platform_fee_percentage ?? wlConfig?.platform_fee_percentage ?? 0) > 0 && (
-                <button 
-                  onClick={() => setActiveTab('wallet')}
-                  style={{ position: 'relative', background: 'none', border: 'none', padding: '12px 24px', color: activeTab === 'wallet' ? '#00ff88' : '#888', fontSize: '15px', fontWeight: 'bold', cursor: 'pointer', borderRadius: '100px', display: 'flex', alignItems: 'center', gap: '8px', transition: 'color 0.3s' }}
-                >
-                  {activeTab === 'wallet' && (
-                    <motion.div layoutId="activetab" style={{ position: 'absolute', inset: 0, background: 'rgba(0,255,136,0.1)', borderRadius: '100px', border: '1px solid rgba(0,255,136,0.4)' }} />
-                  )}
-                  <span style={{ position: 'relative', zIndex: 1, display: 'flex', alignItems: 'center', gap: '8px' }}><Wallet size={16} /> Wallet</span>
-                </button>
-              )}
-
-              {isOwnProfile && viewMode === 'edit' && (
-                <button 
-                  onClick={() => setActiveTab('security' as any)}
-                  style={{ position: 'relative', background: 'none', border: 'none', padding: '12px 24px', color: activeTab === 'security' ? '#ff4d85' : '#888', fontSize: '15px', fontWeight: 'bold', cursor: 'pointer', borderRadius: '100px', display: 'flex', alignItems: 'center', gap: '8px', transition: 'color 0.3s' }}
-                >
-                  {activeTab === 'security' && (
-                    <motion.div layoutId="activetab" style={{ position: 'absolute', inset: 0, background: 'rgba(255,77,133,0.1)', borderRadius: '100px', border: '1px solid rgba(255,77,133,0.4)' }} />
-                  )}
-                  <span style={{ position: 'relative', zIndex: 1, display: 'flex', alignItems: 'center', gap: '8px' }}><Lock size={16} /> Security</span>
-                </button>
-              )}
+              ].concat(isNetworkLevel ? [{ id: 'members', label: 'Network Profiles' }, { id: 'community', label: 'Community' }] : []).concat((myNetworks.length > 0 && !isNetworkLevel) ? [{ id: 'networks', label: 'My Networks' }] : []).map(tab => {
+                const isActive = activeTab === tab.id;
+                const accentColor = wlConfig?.accent || '#ff4d85';
+                return (
+                  <button 
+                    key={tab.id}
+                    onClick={() => setActiveTab(tab.id as any)}
+                    style={{ position: 'relative', background: 'none', border: 'none', padding: '12px 24px', color: isActive ? '#fff' : '#888', fontSize: '15px', fontWeight: 'bold', cursor: 'pointer', borderRadius: '100px', transition: 'color 0.3s' }}
+                  >
+                    {isActive && (
+                      <motion.div layoutId="activetab" style={{ position: 'absolute', inset: 0, background: `${accentColor}26`, borderRadius: '100px', border: `1px solid ${accentColor}7f` }} />
+                    )}
+                    <span style={{ position: 'relative', zIndex: 1 }}>{tab.label}</span>
+                  </button>
+                );
+              })}
             </div>
           </div>
+
+          {/* Creator Control Panel */}
+          {isOwnProfile && viewMode === 'edit' && (
+            <div className="creator-tools-panel">
+              <div className="creator-tools-card">
+                <div className="creator-tools-header">
+                  <Settings size={14} color={wlConfig?.accent || '#ff4d85'} style={{ opacity: 0.8 }} />
+                  <span>Creator Control Panel</span>
+                </div>
+                <div className="creator-tools-list">
+                  {[
+                    { id: 'my_bookings', label: 'My Bookings', icon: <Calendar size={16} />, color: '#b380ff', bg: 'rgba(179,128,255,0.12)', border: 'rgba(179,128,255,0.4)', show: !!user },
+                    { id: 'ai_report', label: 'AI Creator Report', icon: <Activity size={16} />, color: '#3399ff', bg: 'rgba(51,153,255,0.12)', border: 'rgba(51,153,255,0.4)', show: !!user },
+                    { id: 'appearance', label: 'Appearance', icon: <Wand size={16} />, color: '#ff9933', bg: 'rgba(255,153,51,0.12)', border: 'rgba(255,153,51,0.4)', show: !isNetworkLevel },
+                    { 
+                      id: 'wallet', 
+                      label: 'Wallet', 
+                      icon: <Wallet size={16} />, 
+                      color: '#00ff88', 
+                      bg: 'rgba(0,255,136,0.12)', 
+                      border: 'rgba(0,255,136,0.4)', 
+                      show: !isNetworkLevel && (wlConfig?.theme?.creator_splits?.[profile?.id] ?? profile?.platform_fee_percentage ?? wlConfig?.platform_fee_percentage ?? 0) > 0 
+                    },
+                    { id: 'security', label: 'Security', icon: <Lock size={16} />, color: '#ff4d85', bg: 'rgba(255,77,133,0.12)', border: 'rgba(255,77,133,0.4)', show: true }
+                  ].filter(tool => tool.show).map(tool => {
+                    const isActive = activeTab === tool.id;
+                    return (
+                      <button 
+                        key={tool.id}
+                        onClick={() => setActiveTab(tool.id as any)}
+                        style={{ 
+                          position: 'relative', 
+                          background: isActive ? tool.bg : 'rgba(255,255,255,0.02)', 
+                          border: isActive ? `1px solid ${tool.border}` : '1px solid transparent', 
+                          padding: '12px 20px', 
+                          color: isActive ? tool.color : '#888', 
+                          fontSize: '14px', 
+                          fontWeight: 'bold', 
+                          cursor: 'pointer', 
+                          borderRadius: '12px', 
+                          display: 'flex', 
+                          alignItems: 'center', 
+                          gap: '8px', 
+                          transition: 'color 0.2s, background-color 0.2s, border-color 0.2s' 
+                        }}
+                        onMouseOver={(e) => {
+                          if (!isActive) {
+                            e.currentTarget.style.color = '#fff';
+                            e.currentTarget.style.background = 'rgba(255,255,255,0.05)';
+                          }
+                        }}
+                        onMouseOut={(e) => {
+                          if (!isActive) {
+                            e.currentTarget.style.color = '#888';
+                            e.currentTarget.style.background = 'rgba(255,255,255,0.02)';
+                          }
+                        }}
+                      >
+                        <span style={{ display: 'flex', alignItems: 'center', color: isActive ? tool.color : 'inherit' }}>
+                          {tool.icon}
+                        </span>
+                        <span>{tool.label}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
+          )}
+
 
         {activeTab === 'feed' && (
           <>
