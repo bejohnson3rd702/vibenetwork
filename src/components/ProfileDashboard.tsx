@@ -60,7 +60,7 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
   const [currentBannerIndex, setCurrentBannerIndex] = useState(0);
   const [currentBgIndex, setCurrentBgIndex] = useState(0);
   const [saving, setSaving] = useState(false);
-  const [activeTab, setActiveTab] = useState<'feed' | 'store' | 'live' | 'booking' | 'series' | 'courses' | 'wallet' | 'flipbook' | 'appearance' | 'my_bookings' | 'networks' | 'members' | 'community' | 'security' | 'crm'>('feed');
+  const [activeTab, setActiveTab] = useState<'feed' | 'store' | 'live' | 'booking' | 'series' | 'courses' | 'wallet' | 'flipbook' | 'appearance' | 'my_bookings' | 'networks' | 'members' | 'community' | 'security' | 'crm' | 'subscriptions'>('feed');
   const [expandedComments, setExpandedComments] = useState<Record<string, boolean>>({});
   const [networkProfiles, setNetworkProfiles] = useState<any[]>([]);
   const [walletBalance, setWalletBalance] = useState(() => (typeof window !== 'undefined' ? Number(localStorage.getItem('vibe_host_wallet') || 0.00) : 0.00));
@@ -112,6 +112,144 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
   const [crmOpportunities, setCrmOpportunities] = useState<any[]>([]);
   const [crmIntegrations, setCrmIntegrations] = useState<any[]>([]);
   const [crmLoading, setCrmLoading] = useState(false);
+
+  // Follows & Subscriptions States
+  const [isFollowing, setIsFollowing] = useState(false);
+  const [followLoading, setFollowLoading] = useState(false);
+  const [myConnections, setMyConnections] = useState<any[]>([]);
+  const [loadingConnections, setLoadingConnections] = useState(false);
+
+  const loadMyConnections = async () => {
+    if (!user) return;
+    setLoadingConnections(true);
+    try {
+      const { data, error } = await supabase
+        .from('user_follows')
+        .select('*, target_profile:profiles(*), whitelabel:whitelabel_configs(*)')
+        .eq('user_id', user.id);
+      
+      if (error) {
+        console.error("Error loading connections:", error);
+      } else {
+        setMyConnections(data || []);
+      }
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoadingConnections(false);
+    }
+  };
+
+  const handleUnfollowFromDashboard = async (connectionId: string) => {
+    try {
+      const { error } = await supabase
+        .from('user_follows')
+        .delete()
+        .eq('id', connectionId);
+
+      if (error) throw error;
+      toast.success("Connection removed successfully.");
+      loadMyConnections();
+    } catch (err: any) {
+      toast.error("Failed to remove connection: " + err.message);
+    }
+  };
+
+  const handleToggleFollow = async () => {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) {
+      window.dispatchEvent(new CustomEvent('open_auth', { detail: { isLogin: true } }));
+      return;
+    }
+
+    setFollowLoading(true);
+    try {
+      if (isFollowing) {
+        // Unfollow
+        const { error } = await supabase
+          .from('user_follows')
+          .delete()
+          .eq('user_id', session.user.id)
+          .eq('type', 'follow')
+          .or(`target_profile_id.eq.${targetProfileId},whitelabel_id.eq.${wlConfig?.id}`);
+
+        if (error) throw error;
+        setIsFollowing(false);
+        toast.success("Unfollowed successfully.");
+      } else {
+        // Follow
+        const insertData: any = {
+          user_id: session.user.id,
+          type: 'follow'
+        };
+        if (wlConfig?.id && targetProfileId === wlConfig?.owner_id) {
+          insertData.whitelabel_id = wlConfig.id;
+        } else {
+          insertData.target_profile_id = targetProfileId;
+        }
+
+        const { error } = await supabase
+          .from('user_follows')
+          .insert(insertData);
+
+        if (error) throw error;
+        setIsFollowing(true);
+        toast.success("Following successfully!");
+        
+        // Also auto-save follower to CRM contacts
+        try {
+          const { data: contact } = await supabase
+            .from('crm_contacts')
+            .insert({
+              whitelabel_id: wlConfig?.id || null,
+              creator_id: targetProfileId,
+              first_name: session.user.user_metadata?.username || 'Follower',
+              last_name: '',
+              email: session.user.email,
+              source: 'follow'
+            })
+            .select()
+            .single();
+
+          if (contact) {
+            syncContactToExternalCrms(contact);
+          }
+        } catch (crmErr) {
+          console.error("Auto-save CRM contact failed on follow:", crmErr);
+        }
+      }
+    } catch (err: any) {
+      toast.error("Failed to update follow status: " + err.message);
+    } finally {
+      setFollowLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    const checkFollowStatus = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session || !targetProfileId) return;
+
+      const { data } = await supabase
+        .from('user_follows')
+        .select('*')
+        .eq('user_id', session.user.id)
+        .eq('type', 'follow')
+        .or(`target_profile_id.eq.${targetProfileId},whitelabel_id.eq.${wlConfig?.id}`);
+      
+      setIsFollowing(!!(data && data.length > 0));
+    };
+
+    if (user?.id) {
+      checkFollowStatus();
+    }
+  }, [user?.id, targetProfileId, wlConfig?.id]);
+
+  useEffect(() => {
+    if (activeTab === 'subscriptions') {
+      loadMyConnections();
+    }
+  }, [activeTab]);
 
   // Forms for adding CRM records
   const [newContact, setNewContact] = useState({ first_name: '', last_name: '', email: '', phone: '', source: 'manual', tagString: '' });
@@ -463,7 +601,7 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
     if (postParam) {
       setActiveTab('feed');
     } else if (tabParam) {
-      const validTabs = ['feed', 'store', 'live', 'booking', 'series', 'courses', 'wallet', 'flipbook', 'appearance', 'my_bookings', 'networks', 'members', 'community', 'security'];
+      const validTabs = ['feed', 'store', 'live', 'booking', 'series', 'courses', 'wallet', 'flipbook', 'appearance', 'my_bookings', 'networks', 'members', 'community', 'security', 'crm', 'subscriptions'];
       if (validTabs.includes(tabParam)) {
         setActiveTab(tabParam as any);
       }
@@ -605,6 +743,40 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
        }, { onConflict: 'subscriber_id,creator_id' });
        if (error) {
          console.warn('[Subscribe] Supabase upsert failed, using localStorage fallback:', error.message);
+       }
+
+       // ALSO save to user_follows table with type = 'subscribe'
+       try {
+         const insertData: any = {
+           user_id: user.id,
+           type: 'subscribe'
+         };
+         if (wlConfig?.id && targetProfileId === wlConfig?.owner_id) {
+           insertData.whitelabel_id = wlConfig.id;
+         } else {
+           insertData.target_profile_id = targetProfileId;
+         }
+         await supabase.from('user_follows').insert(insertData);
+
+         // Auto-save subscriber as contact in Vibe CRM
+         const { data: contact } = await supabase
+           .from('crm_contacts')
+           .insert({
+             whitelabel_id: wlConfig?.id || null,
+             creator_id: targetProfileId,
+             first_name: user.user_metadata?.username || 'Subscriber',
+             last_name: '',
+             email: user.email,
+             source: 'subscription'
+           })
+           .select()
+           .single();
+
+         if (contact) {
+           syncContactToExternalCrms(contact);
+         }
+       } catch (crmErr) {
+         console.error("Auto-save CRM contact failed on subscribe:", crmErr);
        }
      }
      // Keep localStorage as fast local cache
@@ -2482,59 +2654,71 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
               <div className="profile-header-card" style={{ background: isNetworkLevel ? 'transparent' : 'rgba(15, 15, 15, 0.4)', backdropFilter: isNetworkLevel ? 'none' : 'blur(24px)', padding: isNetworkLevel ? '0 40px 40px' : '40px', borderRadius: '32px', border: isNetworkLevel ? 'none' : '1px solid rgba(255,255,255,0.08)', position: 'relative', boxShadow: isNetworkLevel ? 'none' : '0 20px 40px rgba(0,0,0,0.4)' }}>
             
             {!isOwnProfile && (
-              <button
-                className="profile-subscribe-btn"
-                onClick={handleSubscribe}
-                style={{
-                  position: 'absolute',
-                  top: '30px',
-                  right: '30px',
-                  padding: '12px 28px',
-                  background: isSubscribed
-                    ? 'rgba(255,255,255,0.08)'
-                    : 'linear-gradient(135deg, #FF0055, #8A2BE2)',
-                  color: '#fff',
-                  border: isSubscribed ? '1px solid rgba(255,255,255,0.15)' : 'none',
-                  borderRadius: '100px',
-                  fontWeight: 'bold',
-                  fontSize: '15px',
-                  cursor: 'pointer',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '8px',
-                  boxShadow: isSubscribed ? 'none' : '0 8px 25px rgba(255,0,85,0.4)',
-                  transition: 'all 0.3s ease',
-                  backdropFilter: 'blur(10px)',
-                  zIndex: 20
-                }}
-                onMouseOver={e => {
-                  e.currentTarget.style.transform = 'scale(1.05)';
-                  if (!isSubscribed) {
-                    e.currentTarget.style.boxShadow = '0 12px 30px rgba(255,0,85,0.6)';
-                  } else {
-                    e.currentTarget.style.background = 'rgba(255,255,255,0.15)';
-                  }
-                }}
-                onMouseOut={e => {
-                  e.currentTarget.style.transform = 'scale(1)';
-                  if (!isSubscribed) {
-                    e.currentTarget.style.boxShadow = '0 8px 25px rgba(255,0,85,0.4)';
-                  } else {
-                    e.currentTarget.style.background = 'rgba(255,255,255,0.08)';
-                  }
-                }}
-              >
-                {isSubscribed ? (
-                  <>
-                    <CheckCircle size={16} color="#00ff88" />
-                    <span style={{ color: '#00ff88' }}>Subscribed</span>
-                  </>
-                ) : (
-                  <span>
-                    {Number(subPrice) > 0 ? `Subscribe $${Number(subPrice).toFixed(2)}/mo` : 'Subscribe Free'}
-                  </span>
-                )}
-              </button>
+              <div style={{ position: 'absolute', top: '30px', right: '30px', display: 'flex', gap: '12px', zIndex: 20 }}>
+                {/* Follow Button */}
+                <button
+                  onClick={handleToggleFollow}
+                  disabled={followLoading}
+                  style={{
+                    padding: '10px 24px',
+                    background: isFollowing ? 'rgba(255,255,255,0.08)' : 'rgba(255, 204, 0, 0.15)',
+                    color: isFollowing ? '#aaa' : '#ffcc00',
+                    border: '1px solid',
+                    borderColor: isFollowing ? 'rgba(255,255,255,0.15)' : 'rgba(255, 204, 0, 0.4)',
+                    borderRadius: '100px',
+                    fontWeight: 'bold',
+                    fontSize: '14px',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                    transition: 'all 0.3s ease',
+                    backdropFilter: 'blur(10px)'
+                  }}
+                  onMouseOver={e => e.currentTarget.style.transform = 'scale(1.05)'}
+                  onMouseOut={e => e.currentTarget.style.transform = 'scale(1)'}
+                >
+                  <Star size={14} fill={isFollowing ? '#aaa' : 'transparent'} />
+                  {isFollowing ? 'Following' : 'Follow'}
+                </button>
+
+                {/* Subscribe Button */}
+                <button
+                  className="profile-subscribe-btn"
+                  onClick={handleSubscribe}
+                  style={{
+                    padding: '10px 24px',
+                    background: isSubscribed
+                      ? 'rgba(255,255,255,0.08)'
+                      : 'linear-gradient(135deg, #FF0055, #8A2BE2)',
+                    color: '#fff',
+                    border: isSubscribed ? '1px solid rgba(255,255,255,0.15)' : 'none',
+                    borderRadius: '100px',
+                    fontWeight: 'bold',
+                    fontSize: '14px',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                    boxShadow: isSubscribed ? 'none' : '0 8px 20px rgba(255,0,85,0.3)',
+                    transition: 'all 0.3s ease',
+                    backdropFilter: 'blur(10px)'
+                  }}
+                  onMouseOver={e => e.currentTarget.style.transform = 'scale(1.05)'}
+                  onMouseOut={e => e.currentTarget.style.transform = 'scale(1)'}
+                >
+                  {isSubscribed ? (
+                    <>
+                      <CheckCircle size={14} color="#00ff88" />
+                      <span style={{ color: '#00ff88' }}>Subscribed</span>
+                    </>
+                  ) : (
+                    <span>
+                      {Number(subPrice) > 0 ? `Subscribe $${Number(subPrice).toFixed(2)}/mo` : 'Subscribe Free'}
+                    </span>
+                  )}
+                </button>
+              </div>
             )}
 
             {isOwnProfile && (
@@ -2788,14 +2972,15 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
               <div className="creator-tools-card">
                 <div className="creator-tools-header">
                   <Settings size={14} color={wlConfig?.accent || '#ff4d85'} style={{ opacity: 0.8 }} />
-                  <span>Creator Control Panel</span>
+                  <span>{isInfluencer ? 'Creator Control Panel' : 'User Control Panel'}</span>
                 </div>
                 <div className="creator-tools-list">
                   {[
                     { id: 'my_bookings', label: 'My Bookings', icon: <Calendar size={16} />, color: '#b380ff', bg: 'rgba(179,128,255,0.12)', border: 'rgba(179,128,255,0.4)', show: !!user },
-                    { id: 'ai_report', label: 'AI Creator Report', icon: <Activity size={16} />, color: '#3399ff', bg: 'rgba(51,153,255,0.12)', border: 'rgba(51,153,255,0.4)', show: !!user },
-                    { id: 'crm', label: 'Vibe CRM', icon: <Users size={16} />, color: '#00ffcc', bg: 'rgba(0,255,204,0.12)', border: 'rgba(0,255,204,0.4)', show: !!user },
-                    { id: 'appearance', label: 'Appearance', icon: <Wand size={16} />, color: '#ff9933', bg: 'rgba(255,153,51,0.12)', border: 'rgba(255,153,51,0.4)', show: !isNetworkLevel },
+                    { id: 'subscriptions', label: 'Following & Subs', icon: <Star size={16} />, color: '#ffcc00', bg: 'rgba(255,204,0,0.12)', border: 'rgba(255,204,0,0.4)', show: !!user },
+                    { id: 'ai_report', label: 'AI Creator Report', icon: <Activity size={16} />, color: '#3399ff', bg: 'rgba(51,153,255,0.12)', border: 'rgba(51,153,255,0.4)', show: isInfluencer },
+                    { id: 'crm', label: 'Vibe CRM', icon: <Users size={16} />, color: '#00ffcc', bg: 'rgba(0,255,204,0.12)', border: 'rgba(0,255,204,0.4)', show: isInfluencer },
+                    { id: 'appearance', label: 'Appearance', icon: <Wand size={16} />, color: '#ff9933', bg: 'rgba(255,153,51,0.12)', border: 'rgba(255,153,51,0.4)', show: isInfluencer && !isNetworkLevel },
                     { 
                       id: 'wallet', 
                       label: 'Wallet', 
@@ -2803,7 +2988,7 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
                       color: '#00ff88', 
                       bg: 'rgba(0,255,136,0.12)', 
                       border: 'rgba(0,255,136,0.4)', 
-                      show: !isNetworkLevel && (wlConfig?.theme?.creator_splits?.[profile?.id] ?? profile?.platform_fee_percentage ?? wlConfig?.platform_fee_percentage ?? 0) > 0 
+                      show: isInfluencer && !isNetworkLevel && (wlConfig?.theme?.creator_splits?.[profile?.id] ?? profile?.platform_fee_percentage ?? wlConfig?.platform_fee_percentage ?? 0) > 0 
                     },
                     { id: 'security', label: 'Security', icon: <Lock size={16} />, color: '#ff4d85', bg: 'rgba(255,77,133,0.12)', border: 'rgba(255,77,133,0.4)', show: true }
                   ].filter(tool => tool.show).map(tool => {
@@ -5813,6 +5998,134 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
               </>
             )}
 
+          </motion.div>
+        )}
+
+        {/* --- SUBSCRIPTIONS & FOLLOWS TAB --- */}
+        {activeTab === 'subscriptions' && isOwnProfile && viewMode === 'edit' && (
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+            <div style={{ borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '16px' }}>
+              <h2 style={{ fontSize: '28px', fontWeight: 900, margin: 0, display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <Star size={28} color={wlConfig?.accent || '#ffcc00'} /> Following & Subscriptions
+              </h2>
+              <p style={{ margin: '4px 0 0 0', color: '#888', fontSize: '14px' }}>Manage all the channels, networks, and creator profiles you follow or subscribe to.</p>
+            </div>
+
+            {loadingConnections ? (
+              <div style={{ padding: '40px', textAlign: 'center', color: '#888' }}>Loading your connections...</div>
+            ) : myConnections.length === 0 ? (
+              <div style={{ padding: '60px 40px', background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '24px', textAlign: 'center', color: 'var(--text-muted)' }}>
+                <Star size={40} style={{ opacity: 0.3, marginBottom: '16px' }} />
+                <h3 style={{ margin: '0 0 8px 0', color: '#fff' }}>No Active Subscriptions or Follows</h3>
+                <p style={{ margin: 0, fontSize: '14px' }}>Explore the platform to follow creators and subscribe to networks.</p>
+              </div>
+            ) : (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '30px' }}>
+                
+                {/* 1. Subscribed / Followed Channels & Networks */}
+                <div>
+                  <h3 style={{ fontSize: '18px', fontWeight: 'bold', marginBottom: '16px', color: '#fff', borderBottom: '1px solid rgba(255,255,255,0.05)', paddingBottom: '8px' }}>Channels & Networks</h3>
+                  {myConnections.filter(c => c.whitelabel).length === 0 ? (
+                    <p style={{ fontSize: '13px', color: '#666', margin: 0 }}>You are not following any channels or networks yet.</p>
+                  ) : (
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '20px' }}>
+                      {myConnections.filter(c => c.whitelabel).map((conn) => {
+                        const wl = conn.whitelabel;
+                        return (
+                          <div key={conn.id} style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '16px', padding: '20px', display: 'flex', flexDirection: 'column', gap: '14px', position: 'relative' }}>
+                            <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+                              <img 
+                                src={wl.logo || `https://ui-avatars.com/api/?name=${encodeURIComponent(wl.name)}&background=random`} 
+                                style={{ width: '48px', height: '48px', borderRadius: '10px', objectFit: 'contain', background: 'rgba(255,255,255,0.05)' }} 
+                                alt={wl.name} 
+                              />
+                              <div style={{ display: 'flex', flexDirection: 'column' }}>
+                                <h4 style={{ margin: 0, fontSize: '16px', color: '#fff' }}>{wl.name}</h4>
+                                <span style={{ fontSize: '11px', color: '#888' }}>{wl.domain || 'vibenetwork.tv'}</span>
+                              </div>
+                            </div>
+                            
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '10px' }}>
+                              <span style={{ fontSize: '11px', padding: '2px 8px', borderRadius: '10px', fontWeight: 'bold', background: conn.type === 'subscribe' ? 'rgba(0,255,136,0.1)' : 'rgba(255,255,255,0.05)', color: conn.type === 'subscribe' ? '#00ff88' : '#aaa' }}>
+                                {conn.type.toUpperCase()}
+                              </span>
+                              <div style={{ display: 'flex', gap: '8px' }}>
+                                <button 
+                                  onClick={() => window.open(wl.domain ? `https://${wl.domain}` : '/', '_blank')}
+                                  style={{ padding: '6px 12px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: '#fff', borderRadius: '8px', fontSize: '12px', fontWeight: 'bold', cursor: 'pointer' }}
+                                >
+                                  Visit
+                                </button>
+                                <button 
+                                  onClick={() => handleUnfollowFromDashboard(conn.id)}
+                                  style={{ padding: '6px 12px', background: 'rgba(255,0,0,0.1)', border: 'none', color: '#ff4d4d', borderRadius: '8px', fontSize: '12px', fontWeight: 'bold', cursor: 'pointer' }}
+                                >
+                                  Remove
+                                </button>
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+
+                {/* 2. Subscribed / Followed Creator Profiles */}
+                <div>
+                  <h3 style={{ fontSize: '18px', fontWeight: 'bold', marginBottom: '16px', color: '#fff', borderBottom: '1px solid rgba(255,255,255,0.05)', paddingBottom: '8px' }}>Creators & Profiles</h3>
+                  {myConnections.filter(c => c.target_profile).length === 0 ? (
+                    <p style={{ fontSize: '13px', color: '#666', margin: 0 }}>You are not following any creators yet.</p>
+                  ) : (
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '20px' }}>
+                      {myConnections.filter(c => c.target_profile).map((conn) => {
+                        const prof = conn.target_profile;
+                        return (
+                          <div key={conn.id} style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '16px', padding: '20px', display: 'flex', flexDirection: 'column', gap: '14px' }}>
+                            <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+                              <img 
+                                src={prof.avatar_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(prof.username || 'User')}&background=random`} 
+                                style={{ width: '48px', height: '48px', borderRadius: '50%', objectFit: 'cover' }} 
+                                alt={prof.username} 
+                              />
+                              <div style={{ display: 'flex', flexDirection: 'column' }}>
+                                <h4 style={{ margin: 0, fontSize: '16px', color: '#fff' }}>{prof.full_name || prof.username}</h4>
+                                <span style={{ fontSize: '11px', color: '#888' }}>@{prof.username}</span>
+                              </div>
+                            </div>
+                            
+                            <p style={{ margin: 0, fontSize: '12px', color: '#888', minHeight: '34px', overflow: 'hidden', textOverflow: 'ellipsis', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', lineHeight: 1.4 }}>
+                              {prof.bio || 'No bio provided.'}
+                            </p>
+
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '10px' }}>
+                              <span style={{ fontSize: '11px', padding: '2px 8px', borderRadius: '10px', fontWeight: 'bold', background: conn.type === 'subscribe' ? 'rgba(0,255,136,0.1)' : 'rgba(255,255,255,0.05)', color: conn.type === 'subscribe' ? '#00ff88' : '#aaa' }}>
+                                {conn.type.toUpperCase()}
+                              </span>
+                              <div style={{ display: 'flex', gap: '8px' }}>
+                                <button 
+                                  onClick={() => navigate({ pathname: `/profile/${prof.id}`, search: location.search })}
+                                  style={{ padding: '6px 12px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: '#fff', borderRadius: '8px', fontSize: '12px', fontWeight: 'bold', cursor: 'pointer' }}
+                                >
+                                  Profile
+                                </button>
+                                <button 
+                                  onClick={() => handleUnfollowFromDashboard(conn.id)}
+                                  style={{ padding: '6px 12px', background: 'rgba(255,0,0,0.1)', border: 'none', color: '#ff4d4d', borderRadius: '8px', fontSize: '12px', fontWeight: 'bold', cursor: 'pointer' }}
+                                >
+                                  Remove
+                                </button>
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+
+              </div>
+            )}
           </motion.div>
         )}
 
