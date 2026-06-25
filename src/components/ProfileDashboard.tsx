@@ -2053,33 +2053,82 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
           </>
           )}
 
-          {/* Modern Pill Navigation */}
-          <div className="profile-tabs-outer">
-            <div className="profile-tabs-inner">
-              {[
-                { id: 'feed', label: 'Content Feed' },
-                { id: 'store', label: 'Store' },
-                { id: 'live', label: 'Live Stream' },
-                ...(wlConfig?.enableBooking !== false ? [{ id: 'booking', label: 'Booking' }] : []),
-                { id: 'series', label: 'Episodes' },
-                { id: 'courses', label: 'Sessions' },
-                { id: 'flipbook', label: 'Flip Book' }
-              ].concat(isNetworkLevel ? [{ id: 'members', label: 'Network Profiles' }, { id: 'community', label: 'Community' }] : []).concat((myNetworks.length > 0 && !isNetworkLevel) ? [{ id: 'networks', label: 'My Networks' }] : []).map(tab => {
-                const isActive = activeTab === tab.id;
-                const accentColor = wlConfig?.accent || '#ff4d85';
-                return (
-                  <button 
-                    key={tab.id}
-                    onClick={() => setActiveTab(tab.id as any)}
-                    style={{ position: 'relative', background: 'none', border: 'none', padding: '12px 24px', color: isActive ? '#fff' : '#888', fontSize: '15px', fontWeight: 'bold', cursor: 'pointer', borderRadius: '100px', transition: 'color 0.3s' }}
-                  >
-                    {isActive && (
-                      <motion.div layoutId="activetab" style={{ position: 'absolute', inset: 0, background: `${accentColor}26`, borderRadius: '100px', border: `1px solid ${accentColor}7f` }} />
-                    )}
-                    <span style={{ position: 'relative', zIndex: 1 }}>{tab.label}</span>
-                  </button>
-                );
-              })}
+          {/* Public Channel Sections Panel */}
+          <div className="creator-tools-panel" style={{ marginTop: '16px' }}>
+            <div className="creator-tools-card">
+              <div className="creator-tools-header">
+                <Monitor size={14} color={wlConfig?.accent || '#ff4d85'} style={{ opacity: 0.8 }} />
+                <span>Channel Sections</span>
+              </div>
+              <div className="creator-tools-list">
+                {[
+                  { id: 'feed', label: 'Content Feed', icon: <Activity size={16} /> },
+                  { id: 'store', label: 'Store', icon: <DollarSign size={16} /> },
+                  { id: 'live', label: 'Live Stream', icon: <Video size={16} /> },
+                  ...(wlConfig?.enableBooking !== false ? [{ id: 'booking', label: 'Booking', icon: <Calendar size={16} /> }] : []),
+                  { id: 'series', label: 'Episodes', icon: <Video size={16} /> },
+                  { id: 'courses', label: 'Sessions', icon: <CheckCircle size={16} /> },
+                  { id: 'flipbook', label: 'Flip Book', icon: <ImageIcon size={16} /> }
+                ]
+                  .concat(isNetworkLevel ? [
+                    { id: 'members', label: 'Network Profiles', icon: <Monitor size={16} /> },
+                    { id: 'community', label: 'Community', icon: <MessageCircle size={16} /> }
+                  ] : [])
+                  .concat((myNetworks.length > 0 && !isNetworkLevel) ? [{ id: 'networks', label: 'My Networks', icon: <Monitor size={16} /> }] : [])
+                  .map(tab => {
+                    const isActive = activeTab === tab.id;
+                    const accentColor = wlConfig?.accent || '#ff4d85';
+                    return (
+                      <button 
+                        key={tab.id}
+                        onClick={() => setActiveTab(tab.id as any)}
+                        style={{ 
+                          position: 'relative', 
+                          background: 'none',
+                          border: 'none', 
+                          padding: '12px 20px', 
+                          color: isActive ? accentColor : '#888', 
+                          fontSize: '14px', 
+                          fontWeight: 'bold', 
+                          cursor: 'pointer', 
+                          borderRadius: '12px', 
+                          display: 'flex', 
+                          alignItems: 'center', 
+                          gap: '8px', 
+                          transition: 'color 0.2s'
+                        }}
+                        onMouseOver={(e) => {
+                          if (!isActive) {
+                            e.currentTarget.style.color = '#fff';
+                          }
+                        }}
+                        onMouseOut={(e) => {
+                          if (!isActive) {
+                            e.currentTarget.style.color = '#888';
+                          }
+                        }}
+                      >
+                        {isActive && (
+                          <motion.div 
+                            layoutId="activepublictab" 
+                            style={{ 
+                              position: 'absolute', 
+                              inset: 0, 
+                              background: `${accentColor}26`, 
+                              borderRadius: '12px', 
+                              border: `1px solid ${accentColor}7f`,
+                              zIndex: 0
+                            }} 
+                          />
+                        )}
+                        <span style={{ display: 'flex', alignItems: 'center', color: isActive ? accentColor : 'inherit', position: 'relative', zIndex: 1 }}>
+                          {tab.icon}
+                        </span>
+                        <span style={{ position: 'relative', zIndex: 1 }}>{tab.label}</span>
+                      </button>
+                    );
+                  })}
+              </div>
             </div>
           </div>
 
