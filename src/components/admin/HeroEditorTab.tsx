@@ -7,15 +7,16 @@ import { DictationButton } from '../DictationButton';
 import { moderateVideoContent } from '../../lib/videoModerator';
 import { VideoModerationScanner } from './VideoModerationScanner';
 import { isOlympianConfig, isB2kConfig, isKpleConfig } from '../../lib/whitelabel';
+import { ASSETS } from '../../data';
 
 export const HeroEditorTab = ({ wlConfig }: { wlConfig: any }) => {
   const toast = useToast();
-  const [heroCopy, setHeroCopy] = useState(wlConfig.heroCopy || '');
+  const [heroCopy, setHeroCopy] = useState(wlConfig?.theme?.heroCopy || wlConfig?.heroCopy || '');
   const [heroTitle, setHeroTitle] = useState(wlConfig?.theme?.heroTitle || wlConfig?.name || '');
-  const [heroLayoutMode, setHeroLayoutMode] = useState<'verbiage' | 'video' | 'slider'>(wlConfig?.heroLayoutMode || 'verbiage');
-  const [heroVideoUrl, setHeroVideoUrl] = useState(wlConfig?.heroVideoUrl || '');
+  const [heroLayoutMode, setHeroLayoutMode] = useState<'verbiage' | 'video' | 'slider'>(wlConfig?.theme?.heroLayoutMode || wlConfig?.heroLayoutMode || 'verbiage');
+  const [heroVideoUrl, setHeroVideoUrl] = useState(wlConfig?.theme?.heroVideoUrl || wlConfig?.heroVideoUrl || '');
   const [heroVideoTitle, setHeroVideoTitle] = useState(wlConfig?.theme?.heroVideoTitle || wlConfig?.heroVideoTitle || '');
-  const [heroImage, setHeroImage] = useState(wlConfig?.theme?.heroImage || '');
+  const [heroImage, setHeroImage] = useState(wlConfig?.theme?.heroImage || wlConfig?.heroImage || ASSETS.heroMain || '');
   const [uploadingHeroVideo, setUploadingHeroVideo] = useState(false);
   const [uploadingHeroImage, setUploadingHeroImage] = useState(false);
   const [uploadStatus, setUploadStatus] = useState<string | null>(null);
