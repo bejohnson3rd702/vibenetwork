@@ -164,16 +164,29 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
 
     setFollowLoading(true);
     try {
+      const wlId = (!wlConfig?.id || wlConfig.id === 'master') ? null : wlConfig.id;
       if (isFollowing) {
         // Unfollow
-        const { error } = await supabase
-          .from('user_follows')
-          .delete()
-          .eq('user_id', session.user.id)
-          .eq('type', 'follow')
-          .or(`target_profile_id.eq.${targetProfileId},whitelabel_id.eq.${wlConfig?.id}`);
+        let deleteErr;
+        if (wlId) {
+          const { error } = await supabase
+            .from('user_follows')
+            .delete()
+            .eq('user_id', session.user.id)
+            .eq('type', 'follow')
+            .or(`target_profile_id.eq.${targetProfileId},whitelabel_id.eq.${wlId}`);
+          deleteErr = error;
+        } else {
+          const { error } = await supabase
+            .from('user_follows')
+            .delete()
+            .eq('user_id', session.user.id)
+            .eq('type', 'follow')
+            .eq('target_profile_id', targetProfileId);
+          deleteErr = error;
+        }
 
-        if (error) throw error;
+        if (deleteErr) throw deleteErr;
         setIsFollowing(false);
         toast.success("Unfollowed successfully.");
       } else {
@@ -182,17 +195,17 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
           user_id: session.user.id,
           type: 'follow'
         };
-        if (wlConfig?.id && targetProfileId === wlConfig?.owner_id) {
-          insertData.whitelabel_id = wlConfig.id;
+        if (wlId && targetProfileId === wlConfig?.owner_id) {
+          insertData.whitelabel_id = wlId;
         } else {
           insertData.target_profile_id = targetProfileId;
         }
 
-        const { error } = await supabase
+        const { error: insertErr } = await supabase
           .from('user_follows')
           .insert(insertData);
 
-        if (error) throw error;
+        if (insertErr) throw insertErr;
         setIsFollowing(true);
         toast.success("Following successfully!");
         
@@ -201,7 +214,7 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
           const { data: contact } = await supabase
             .from('crm_contacts')
             .insert({
-              whitelabel_id: wlConfig?.id || null,
+              whitelabel_id: wlId,
               creator_id: targetProfileId,
               first_name: session.user.user_metadata?.username || 'Follower',
               last_name: '',
@@ -230,12 +243,20 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
       const { data: { session } } = await supabase.auth.getSession();
       if (!session || !targetProfileId) return;
 
-      const { data } = await supabase
+      const wlId = (!wlConfig?.id || wlConfig.id === 'master') ? null : wlConfig.id;
+      let query = supabase
         .from('user_follows')
         .select('*')
         .eq('user_id', session.user.id)
-        .eq('type', 'follow')
-        .or(`target_profile_id.eq.${targetProfileId},whitelabel_id.eq.${wlConfig?.id}`);
+        .eq('type', 'follow');
+
+      if (wlId) {
+        query = query.or(`target_profile_id.eq.${targetProfileId},whitelabel_id.eq.${wlId}`);
+      } else {
+        query = query.eq('target_profile_id', targetProfileId);
+      }
+
+      const { data } = await query;
       
       setIsFollowing(!!(data && data.length > 0));
     };
@@ -344,10 +365,11 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
       // Auto-initialize a default pipeline if none exists
       if (!pipeErr && (!pipelines || pipelines.length === 0)) {
         console.log("Initializing default pipeline...");
+        const wlId = (!wlConfig?.id || wlConfig.id === 'master') ? null : wlConfig.id;
         const { data: defaultPipe, error: defaultPipeErr } = await supabase
           .from('crm_pipelines')
           .insert({
-            whitelabel_id: wlConfig?.id || null,
+            whitelabel_id: wlId,
             creator_id: targetProfileId,
             name: 'Standard Deal Pipeline'
           })
@@ -407,10 +429,11 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
       return;
     }
     try {
+      const wlId = (!wlConfig?.id || wlConfig.id === 'master') ? null : wlConfig.id;
       const { data: contact, error } = await supabase
         .from('crm_contacts')
         .insert({
-          whitelabel_id: wlConfig?.id || null,
+          whitelabel_id: wlId,
           creator_id: targetProfileId,
           first_name: newContact.first_name,
           last_name: newContact.last_name,
@@ -508,10 +531,11 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
           .update({ credentials: credentialsJson })
           .eq('id', existing.id));
       } else {
+        const wlId = (!wlConfig?.id || wlConfig.id === 'master') ? null : wlConfig.id;
         ({ error } = await supabase
           .from('crm_integrations')
           .insert({
-            whitelabel_id: wlConfig?.id || null,
+            whitelabel_id: wlId,
             creator_id: targetProfileId,
             provider_name: provider,
             credentials: credentialsJson,
@@ -747,12 +771,13 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
 
        // ALSO save to user_follows table with type = 'subscribe'
        try {
+         const wlId = (!wlConfig?.id || wlConfig.id === 'master') ? null : wlConfig.id;
          const insertData: any = {
            user_id: user.id,
            type: 'subscribe'
          };
-         if (wlConfig?.id && targetProfileId === wlConfig?.owner_id) {
-           insertData.whitelabel_id = wlConfig.id;
+         if (wlId && targetProfileId === wlConfig?.owner_id) {
+           insertData.whitelabel_id = wlId;
          } else {
            insertData.target_profile_id = targetProfileId;
          }
@@ -762,7 +787,7 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
          const { data: contact } = await supabase
            .from('crm_contacts')
            .insert({
-             whitelabel_id: wlConfig?.id || null,
+             whitelabel_id: wlId,
              creator_id: targetProfileId,
              first_name: user.user_metadata?.username || 'Subscriber',
              last_name: '',

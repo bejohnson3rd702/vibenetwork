@@ -31,9 +31,11 @@ const Contact: React.FC = () => {
 
     const fullMessage = `Name: ${formData.name}\nSubject: ${formData.subject}\n\n${formData.message}`;
 
+    const wlId = (!wlConfig?.id || wlConfig.id === 'master') ? null : wlConfig.id;
+
     const { error } = await supabase.from('network_leads').insert([
        {
-          whitelabel_id: wlConfig?.id || null,
+          whitelabel_id: wlId,
           email: formData.email,
           message: fullMessage,
           status: 'new'
@@ -50,7 +52,7 @@ const Contact: React.FC = () => {
         const { data: contact } = await supabase
           .from('crm_contacts')
           .insert({
-            whitelabel_id: wlConfig?.id || null,
+            whitelabel_id: wlId,
             creator_id: wlConfig?.owner_id || null,
             first_name: firstName,
             last_name: lastName,

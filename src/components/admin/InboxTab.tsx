@@ -66,10 +66,12 @@ export const InboxTab = ({ wlConfig }: { wlConfig: any }) => {
       const firstName = nameParts[0] || '';
       const lastName = nameParts.slice(1).join(' ') || '';
 
+      const wlId = (!wlConfig?.id || wlConfig.id === 'master') ? null : wlConfig.id;
+
       const { data: contact, error: insertErr } = await supabase
         .from('crm_contacts')
         .insert({
-          whitelabel_id: wlConfig.id,
+          whitelabel_id: wlId,
           creator_id: wlConfig.owner_id || null,
           first_name: firstName,
           last_name: lastName,
