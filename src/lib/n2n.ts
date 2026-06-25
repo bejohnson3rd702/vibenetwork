@@ -230,6 +230,7 @@ export async function updateChildBranding(
     heroCopy?: string;
     heroImage?: string;
     bg?: string;
+    defaultBio?: string;
   }
 ): Promise<boolean> {
   // First get current config to merge theme
@@ -251,7 +252,9 @@ export async function updateChildBranding(
     ...(updates.heroCopy && { heroCopy: updates.heroCopy }),
     ...(updates.heroImage && { heroImage: updates.heroImage }),
     ...(updates.bg && { bg: updates.bg }),
+    ...(updates.defaultBio !== undefined && { defaultBio: updates.defaultBio }),
   };
+
 
   const { error } = await supabase
     .from('whitelabel_configs')

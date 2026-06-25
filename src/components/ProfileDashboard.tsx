@@ -465,7 +465,7 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
         setViewMode(isOwn ? 'edit' : 'public');
 
         setProfile(data);
-        setBio(data.bio || 'Welcome to my official channel!');
+        setBio(data.bio !== null && data.bio !== undefined ? data.bio : (wlConfig?.theme?.defaultBio || 'Welcome to my official channel!'));
         setAvatarUrl(data.avatar_url || '');
         setHomepageImageUrl(data.homepage_image_url || '');
         setFlipbookImages(data.flipbook_images || '');
@@ -647,7 +647,7 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
         const { data: newProfile, error: insertError } = await supabase!.from('profiles').insert({
            id: targetProfileId,
            username: user?.user_metadata?.username || user?.email?.split('@')[0] || 'NewCreator',
-           bio: 'Welcome to my official channel!',
+           bio: wlConfig?.theme?.defaultBio || 'Welcome to my official channel!',
            role: user?.user_metadata?.role || 'viewer',
            whitelabel_id: (!wlConfig || wlConfig.id === 'master' || wlConfig.domain === 'vibenetwork.tv' || wlConfig.domain === 'vibenetwork.com' || wlConfig.domain?.includes('vercel.app')) ? null : wlConfig?.id
         }).select().single();

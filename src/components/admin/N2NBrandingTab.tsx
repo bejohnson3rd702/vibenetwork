@@ -20,6 +20,7 @@ export const N2NBrandingTab = ({ wlConfig }: { wlConfig: any }) => {
   const [heroCopy, setHeroCopy] = useState('');
   const [logoUrl, setLogoUrl] = useState('');
   const [heroImageUrl, setHeroImageUrl] = useState('');
+  const [defaultBio, setDefaultBio] = useState('');
 
   // Upload/Drag states
   const [uploadingLogo, setUploadingLogo] = useState(false);
@@ -71,6 +72,7 @@ export const N2NBrandingTab = ({ wlConfig }: { wlConfig: any }) => {
     setHeroCopy(child.theme?.heroCopy || '');
     setLogoUrl(child.logo || '');
     setHeroImageUrl(child.theme?.heroImage || '');
+    setDefaultBio(child.theme?.defaultBio || '');
   };
 
   useEffect(() => {
@@ -103,6 +105,7 @@ export const N2NBrandingTab = ({ wlConfig }: { wlConfig: any }) => {
       heroCopy,
       logo: logoUrl,
       heroImage: heroImageUrl,
+      defaultBio,
     });
     setSaving(false);
     if (ok) {
@@ -110,7 +113,7 @@ export const N2NBrandingTab = ({ wlConfig }: { wlConfig: any }) => {
         ...c,
         name,
         logo: logoUrl,
-        theme: { ...c.theme, accent: childAccent, heroCopy, heroImage: heroImageUrl },
+        theme: { ...c.theme, accent: childAccent, heroCopy, heroImage: heroImageUrl, defaultBio },
       } : c));
       toast.success('Branding saved successfully!');
     } else {
@@ -248,6 +251,17 @@ export const N2NBrandingTab = ({ wlConfig }: { wlConfig: any }) => {
                 rows={4}
                 style={{ ...inputStyle, resize: 'vertical', fontFamily: 'inherit', lineHeight: 1.6 }}
                 placeholder="Welcome headline or hero text..."
+              />
+            </div>
+
+            <div style={labelStyle}>
+              <span style={labelTextStyle}><Type size={14} /> Default Channel Bio</span>
+              <textarea
+                value={defaultBio}
+                onChange={e => setDefaultBio(e.target.value)}
+                rows={4}
+                style={{ ...inputStyle, resize: 'vertical', fontFamily: 'inherit', lineHeight: 1.6 }}
+                placeholder="e.g. Welcome to my official channel!"
               />
             </div>
 

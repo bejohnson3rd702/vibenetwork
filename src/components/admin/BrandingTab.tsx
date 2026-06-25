@@ -8,6 +8,7 @@ export const BrandingTab = ({ wlConfig }: { wlConfig: any }) => {
   const [logoImage, setLogoImage] = useState(wlConfig?.logoImage || wlConfig?.logo || '');
   const [faviconImage, setFaviconImage] = useState(wlConfig?.theme?.faviconImage || '');
   const [accentColor, setAccentColor] = useState(wlConfig?.accent || '#D35400');
+  const [defaultBio, setDefaultBio] = useState(wlConfig?.theme?.defaultBio || '');
   const [uploadingLogo, setUploadingLogo] = useState(false);
   const [uploadingFavicon, setUploadingFavicon] = useState(false);
   const [uploadStatus, setUploadStatus] = useState<string | null>(null);
@@ -60,7 +61,7 @@ export const BrandingTab = ({ wlConfig }: { wlConfig: any }) => {
           const { error } = await supabase.from('whitelabel_configs').update({
             logo: logoImage,
             accent: accentColor,
-            theme: { ...(existing[0].theme || {}), accent: accentColor, faviconImage: faviconImage }
+            theme: { ...(existing[0].theme || {}), accent: accentColor, faviconImage: faviconImage, defaultBio }
           }).eq('id', existing[0].id);
           if (error) throw error;
         } else {
@@ -69,7 +70,7 @@ export const BrandingTab = ({ wlConfig }: { wlConfig: any }) => {
             domain: 'vibenetwork.tv',
             logo: logoImage,
             accent: accentColor,
-            theme: { accent: accentColor, faviconImage: faviconImage }
+            theme: { accent: accentColor, faviconImage: faviconImage, defaultBio }
           }]);
           if (error) throw error;
         }
@@ -77,7 +78,7 @@ export const BrandingTab = ({ wlConfig }: { wlConfig: any }) => {
         const { error } = await supabase.from('whitelabel_configs').update({
           logo: logoImage,
           accent: accentColor,
-          theme: { ...wlConfig.theme, accent: accentColor, faviconImage: faviconImage }
+          theme: { ...wlConfig.theme, accent: accentColor, faviconImage: faviconImage, defaultBio }
         }).eq('id', wlConfig.id);
         if (error) throw error;
       }
@@ -89,6 +90,7 @@ export const BrandingTab = ({ wlConfig }: { wlConfig: any }) => {
         if (!localNetworks[index].theme) localNetworks[index].theme = {};
         localNetworks[index].theme.accent = accentColor;
         localNetworks[index].theme.faviconImage = faviconImage;
+        localNetworks[index].theme.defaultBio = defaultBio;
         localStorage.setItem('vibe_local_networks', JSON.stringify(localNetworks));
       }
       
@@ -116,6 +118,31 @@ export const BrandingTab = ({ wlConfig }: { wlConfig: any }) => {
            <input type="color" value={accentColor} onChange={(e) => setAccentColor(e.target.value)} style={{ width: '60px', height: '60px', padding: 0, border: 'none', borderRadius: '8px', cursor: 'pointer', background: 'transparent' }} />
            <span style={{ fontFamily: 'monospace', fontSize: '18px', background: 'rgba(255,255,255,0.05)', padding: '8px 16px', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.1)' }}>{accentColor.toUpperCase()}</span>
          </div>
+      </div>
+
+      <div style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)', padding: '30px', borderRadius: '20px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
+         <h3 style={{ margin: 0, fontSize: '20px' }}>Default Channel Bio</h3>
+         <p style={{ margin: 0, color: 'var(--text-muted)', fontSize: '15px' }}>The default bio copy shown on newly created channels/profiles under this network.</p>
+         <textarea 
+            value={defaultBio} 
+            onChange={(e) => setDefaultBio(e.target.value)} 
+            placeholder="e.g. Welcome to my official channel!"
+            rows={4}
+            style={{
+              padding: '12px 16px',
+              background: 'rgba(0,0,0,0.4)',
+              border: '1px solid rgba(255,255,255,0.1)',
+              borderRadius: '12px',
+              color: 'var(--text-primary)',
+              fontSize: '15px',
+              outline: 'none',
+              width: '100%',
+              boxSizing: 'border-box',
+              resize: 'vertical',
+              fontFamily: 'inherit',
+              lineHeight: 1.6
+            }}
+         />
       </div>
 
       <div style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)', padding: '30px', borderRadius: '20px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
