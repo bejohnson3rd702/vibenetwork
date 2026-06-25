@@ -1712,6 +1712,30 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
                     )}
                   </div>
                 )}
+                {/* Camera Badge/Icon on Edit Mode */}
+                {viewMode === 'edit' && !isDraggingDirectAvatar && (
+                  <div 
+                    className="camera-badge" 
+                    style={{
+                      position: 'absolute',
+                      bottom: '0px',
+                      right: '0px',
+                      background: wlConfig?.accent || 'var(--accent-primary)',
+                      borderRadius: '50%',
+                      width: '38px',
+                      height: '38px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      border: '3px solid #0d0d0d',
+                      boxShadow: '0 4px 12px rgba(0,0,0,0.5)',
+                      zIndex: 3,
+                      transition: 'all 0.2s ease-in-out'
+                    }}
+                  >
+                    <Camera size={18} color="#fff" />
+                  </div>
+                )}
                 <input type="file" ref={fileInputRef} style={{ display: 'none' }} accept="image/*" />
               </div>
 
@@ -3567,6 +3591,10 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
 
       <style>{`
         .camera-overlay:hover { opacity: 1 !important; }
+        .group:hover .camera-badge {
+          transform: scale(1.1);
+          filter: brightness(1.1);
+        }
       `}</style>
       
       {/* TIP MODAL */}
