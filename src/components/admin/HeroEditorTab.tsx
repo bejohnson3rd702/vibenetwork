@@ -30,55 +30,111 @@ export const HeroEditorTab = ({ wlConfig }: { wlConfig: any }) => {
     const isB2k = isB2kConfig(wlConfig);
     const isKple = isKpleConfig(wlConfig);
     const isVibe100 = wlConfig?.name?.toLowerCase().includes('vibe 100') || wlConfig?.domain?.toLowerCase().includes('vibe100');
+    const isVibe = wlConfig?.id === 'master' || wlConfig?.domain?.includes('vibenetwork.tv') || wlConfig?.domain?.includes('vibenetwork.com');
+
+    if (isVibe) {
+      return [
+        {
+          id: 'vibe-1',
+          title: 'Entertainment',
+          short: 'Entertainment',
+          subtitle: 'LATEST LIVE SETS & SHOWS',
+          copy: 'Experience top DJ sets, live concerts, and exclusive music releases streaming 24/7 on the network.',
+          imageUrl: '/n2n/vibe_entertainment.png',
+          videoUrl: ''
+        },
+        {
+          id: 'vibe-2',
+          title: 'News',
+          short: 'News',
+          subtitle: 'GLOBAL REPORTS & UPDATES',
+          copy: 'Get real-time updates, deep-dive investigative journalism, and breaking stories from around the globe.',
+          imageUrl: '/n2n/vibe_newsroom.png',
+          videoUrl: ''
+        },
+        {
+          id: 'vibe-3',
+          title: 'Sports',
+          short: 'Sports',
+          subtitle: 'LIVE ACTION & EXPERT ANALYSIS',
+          copy: 'Catch game highlights, athlete interviews, and live coverage of collegiate and professional sports.',
+          imageUrl: 'https://images.unsplash.com/photo-1546519638-68e109498ffc?auto=format&fit=crop&q=80&w=1200',
+          videoUrl: ''
+        },
+        {
+          id: 'vibe-4',
+          title: 'Money',
+          short: 'Money',
+          subtitle: 'FINANCIAL INSIGHTS & MARKETS',
+          copy: 'Stay ahead with market analytics, personal finance tips, and investment strategies from leading experts.',
+          imageUrl: 'https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?auto=format&fit=crop&q=80&w=1200',
+          videoUrl: ''
+        }
+      ];
+    }
 
     if (isOlympian) {
       return [
-        { id: 'olympia-1', title: 'Mr. Olympia Finals', imageUrl: '/n2n/mr_olympia_hero.png', videoUrl: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ' }
+        { id: 'olympia-1', title: 'Olympia Finals', short: 'Finals', subtitle: 'The Sandow Trophy', copy: 'Watch the historic battle of the titans live from Las Vegas. Witness bodybuilding history.', imageUrl: '/n2n/mr_olympia_hero.png', videoUrl: 'https://mrolympia.com/weekend-schedule' },
+        { id: 'olympia-2', title: 'Meet the Olympians', short: 'Expo & Fan Experience', subtitle: 'Expo Weekend', copy: 'Connect with legendary fitness icons, explore world-class brands, and discover new supplements.', imageUrl: 'https://images.unsplash.com/photo-1517838277536-f5f99be501cd?auto=format&fit=crop&q=80&w=1500', videoUrl: 'https://mrolympia.com/weekend-schedule' },
+        { id: 'olympia-3', title: 'Press Conference', short: 'Press Conf.', subtitle: 'Face‑offs & Predictions', copy: 'Hear from the world\'s best athletes as they face off before taking the stage.', imageUrl: 'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?auto=format&fit=crop&q=80&w=1500', videoUrl: 'https://mrolympia.com/weekend-schedule' }
       ];
     }
     if (isB2k) {
       return [
-        { id: 'b2k-1', title: 'B2K Members Tour', imageUrl: 'https://www.vibe.com/wp-content/uploads/2019/05/B2K-vibe-magazine-digital-cover-1557942120.jpg', videoUrl: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ' }
+        { id: 'b2k-1', title: 'The Millennium Tour', short: 'Boys 4 Life Tour', subtitle: '25th Anniversary Reunion', copy: 'B2K and Bow Wow live, featuring Jeremih, Pretty Ricky, Amerie, and more. Celebrate 25 years of the boy band legacy.', imageUrl: 'https://www.vibe.com/wp-content/uploads/2019/05/VIBE-B2K-5-1557518926.jpg', videoUrl: 'https://b2kofficial.com/tour' },
+        { id: 'b2k-2', title: 'New Studio Album', short: 'New Album', subtitle: 'First Album in Over 20 Years', copy: 'Pre-order the new Boys 4 Life album, capturing the classic B2K R&B harmonies and modern beats.', imageUrl: 'https://www.vibe.com/wp-content/uploads/2019/05/VIBE-B2K-6-1557518986-e1660607966438.jpg', videoUrl: '/shop' },
+        { id: 'b2k-3', title: 'B2K Members', short: 'The Members', subtitle: 'Omarion, Lil Fizz, J-Boog & Raz-B', copy: 'Explore individual child networks to get exclusive updates, behind-the-scenes content, and solo releases from all four members.', imageUrl: 'https://www.vibe.com/wp-content/uploads/2019/05/B2K-vibe-magazine-digital-cover-1557942120.jpg', videoUrl: '#child-networks-slider' }
       ];
     }
     if (isKple) {
       return [
-        { id: 'kple-1', title: 'TCT Network', imageUrl: '/n2n/kple_hero_tct.png', videoUrl: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ' },
-        { id: 'kple-2', title: 'Smile of a Child', imageUrl: '/n2n/kple_hero_smile.png', videoUrl: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ' },
-        { id: 'kple-3', title: 'Positiv Family Movies', imageUrl: '/n2n/kple_hero_positiv.png', videoUrl: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ' },
-        { id: 'kple-4', title: 'The Walk TV', imageUrl: '/n2n/kple_hero_thewalk.png', videoUrl: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ' },
-        { id: 'kple-5', title: 'Enlace USA', imageUrl: '/n2n/kple_hero_enlace.png', videoUrl: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ' },
-        { id: 'kple-6', title: 'Attention Central Texas', imageUrl: '/n2n/kple_hero_act.png', videoUrl: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ' }
+        { id: 'kple-1', title: 'TCT Network', short: 'TCT', subtitle: 'Share the Word of God', copy: 'TCT Network provides quality Christian television programming 24 hours a day, featuring teaching, music, and ministries.', imageUrl: '/n2n/kple_hero_tct.png', videoUrl: '/?tenant=05b1ac75-a8ed-42d2-a147-c139f389cc35' },
+        { id: 'kple-2', title: 'Smile of a Child', short: 'Smile', subtitle: 'Faith-filled Children', copy: 'Inspiring children with faith-filled programs, cartoon series, Bible lessons, and positive, educational entertainment.', imageUrl: '/n2n/kple_hero_smile.png', videoUrl: '/?tenant=ffa6fa1b-9597-4734-a086-32b113959c8a' },
+        { id: 'kple-3', title: 'Positiv', short: 'Positiv', subtitle: 'Family Movies & Stories', copy: 'Good stories and positive family-friendly movies that inspire hope, encourage values, and bring families together.', imageUrl: '/n2n/kple_hero_positiv.png', videoUrl: '/?tenant=3de7bfde-e4e4-4d80-88ca-9f4724bd0c85' },
+        { id: 'kple-4', title: 'The Walk TV', short: 'The Walk', subtitle: 'Christian Lifestyle', copy: 'Walk in faith every day with practical Christian living programming, outdoor shows, talk programs, and ministry feeds.', imageUrl: '/n2n/kple_hero_thewalk.png', videoUrl: '/?tenant=273a7d16-0533-4a98-92cb-62ad90f08ffa' },
+        { id: 'kple-5', title: 'Enlace USA', short: 'Enlace', subtitle: 'Inspirando tu Vida', copy: 'Programación en español de alta calidad que transmite esperanza, fe y valores para la comunidad hispana en EE.UU.', imageUrl: '/n2n/kple_hero_enlace.png', videoUrl: '/?tenant=5699e417-4b64-4a95-90e2-f813223fdd32' },
+        { id: 'kple-6', title: 'Attention Central Texas', short: 'ACT', subtitle: 'Local Community News', copy: 'Christian Revival Network\'s flagship local program featuring interviews from local churches, non-profit organizations, and community events.', imageUrl: '/n2n/kple_hero_act.png', videoUrl: '/?tenant=0421af68-56cb-4735-b7ee-f72454963bdd' }
       ];
     }
     if (isVibe100) {
       return [
-        { id: 'vibe100-1', title: 'AVO Channel', imageUrl: '/n2n/baylor.png', videoUrl: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ' },
-        { id: 'vibe100-2', title: 'Muscle & Fitness Channel', imageUrl: 'https://images.unsplash.com/photo-1517838277536-f5f99be501cd?auto=format&fit=crop&q=80&w=1200', videoUrl: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ' },
-        { id: 'vibe100-3', title: 'B2K Channel', imageUrl: 'https://www.vibe.com/wp-content/uploads/2019/05/VIBE-B2K-5-1557518926.jpg', videoUrl: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ' },
-        { id: 'vibe100-4', title: 'Christian Revival Channel', imageUrl: '/kple_network_thumbnail.png', videoUrl: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ' }
+        { id: 'vibe100-1', title: 'AVO Channel', short: 'AVO', subtitle: 'VIBE 100', copy: 'Premium college lifestyle and gameday apparel.', imageUrl: '/n2n/baylor.png', videoUrl: '/?tenant=100a0000-c08f-4260-8540-a0cc8bed4e11' },
+        { id: 'vibe100-2', title: 'Muscle & Fitness Channel', short: 'Muscle & Fitness', subtitle: 'VIBE 100', copy: 'The ultimate resource for bodybuilding, workouts, nutrition, and fitness.', imageUrl: 'https://images.unsplash.com/photo-1517838277536-f5f99be501cd?auto=format&fit=crop&q=80&w=1200', videoUrl: '/?tenant=100b0000-c08f-4260-8540-a0cc8bed4e11' },
+        { id: 'vibe100-3', title: 'B2K Channel', short: 'B2K', subtitle: 'VIBE 100', copy: 'Celebrate 25 years of multi-platinum hits and boy band legacy.', imageUrl: 'https://www.vibe.com/wp-content/uploads/2019/05/VIBE-B2K-5-1557518926.jpg', videoUrl: '/?tenant=100c0000-c08f-4260-8540-a0cc8bed4e11' },
+        { id: 'vibe100-4', title: 'Christian Revival Channel', short: 'Christian Revival', subtitle: 'VIBE 100', copy: 'Inspirational programming, local community news, and sermons.', imageUrl: '/kple_network_thumbnail.png', videoUrl: '/?tenant=100d0000-c08f-4260-8540-a0cc8bed4e11' }
       ];
     }
     const isAvo = wlConfig?.name?.toLowerCase().includes('avo') || wlConfig?.domain?.toLowerCase().includes('avo');
     if (isAvo) {
       return [
-        { id: 'avo-1', title: 'Baylor Collection', imageUrl: 'https://shopavo.la/cdn/shop/files/msu-hp-hero_1500x.jpg?v=1775144388', videoUrl: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ' }
+        { id: 'avo-1', title: 'Baylor', short: 'Baylor', subtitle: 'New Collection', copy: 'Represent the Bears with our newest campus essentials.', imageUrl: 'https://shopavo.la/cdn/shop/files/msu-hp-hero_1500x.jpg?v=1775144388', videoUrl: 'https://shopavo.la/collections/baylor' },
+        { id: 'avo-2', title: 'Mississippi State', short: 'Miss. State', subtitle: 'Hail State', copy: 'Maroon and white — gear up for every tailgate and beyond.', imageUrl: 'https://shopavo.la/cdn/shop/files/MSU_Homepage_Desktop_1500x.jpg?v=1776105569', videoUrl: 'https://shopavo.la/collections/mississippi-state' },
+        { id: 'avo-3', title: 'Vanderbilt', short: 'Vanderbilt', subtitle: 'Anchor Down', copy: 'Premium campus wear for the Commodores faithful.', imageUrl: 'https://shopavo.la/cdn/shop/files/Homepage_Vanderbilt_Desktop_1500x.jpg?v=1776284269', videoUrl: 'https://shopavo.la/collections/vanderbilt' },
+        { id: 'avo-4', title: 'Penn State', short: 'Penn State', subtitle: 'We Are', copy: 'Nittany Lions gear crafted for the Happy Valley lifestyle.', imageUrl: 'https://shopavo.la/cdn/shop/files/PSU_Homepage_Banner_Desktop2_1500x.jpg?v=1776375978', videoUrl: 'https://shopavo.la/collections/penn-state' },
+        { id: 'avo-5', title: 'Alabama', short: 'Alabama', subtitle: 'Roll Tide', copy: 'Crimson and cream essentials for the Crimson Tide.', imageUrl: 'https://shopavo.la/cdn/shop/files/bama-desk-hp-1_1500x.jpg?v=1774210820', videoUrl: 'https://shopavo.la/pages/avo-x-bama' },
+        { id: 'avo-6', title: 'Ole Miss', short: 'Ole Miss', subtitle: 'Hotty Toddy', copy: 'Oxford-inspired style meets college spirit.', imageUrl: 'https://shopavo.la/cdn/shop/files/desk-ole-miss-hp_1500x.jpg?v=1774210006', videoUrl: 'https://shopavo.la/collections/ole-miss' },
+        { id: 'avo-7', title: 'Colorado', short: 'Colorado', subtitle: 'Sko Buffs', copy: 'Boulder vibes and mountain-ready campus apparel.', imageUrl: 'https://shopavo.la/cdn/shop/files/co-desktop2_4230eb90-9553-4d72-b205-30e62658bcce_1500x.jpg?v=1776445128', videoUrl: 'https://shopavo.la/collections/colorado' },
+        { id: 'avo-8', title: 'Georgia', short: 'Georgia', subtitle: 'Go Dawgs', copy: 'Red and black essentials for the Bulldog nation.', imageUrl: 'https://shopavo.la/cdn/shop/files/UGA_Collections_Desktop_1500x.jpg?v=1776210559', videoUrl: 'https://shopavo.la/collections/georgia' }
       ];
     }
 
     return [
-      { id: 'default-1', title: 'Featured Content 1', imageUrl: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=800', videoUrl: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ' },
-      { id: 'default-2', title: 'Featured Content 2', imageUrl: 'https://images.unsplash.com/photo-1579783900882-c0d3dad7b119?w=800', videoUrl: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ' },
-      { id: 'default-3', title: 'Featured Content 3', imageUrl: 'https://images.unsplash.com/photo-1611162617213-7d7a39e9b1d7?w=800', videoUrl: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ' }
+      { id: 'default-1', title: 'Featured Content 1', short: 'Featured 1', subtitle: 'New Feature', copy: 'Explore premium content from the global network.', imageUrl: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=800', videoUrl: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ' },
+      { id: 'default-2', title: 'Featured Content 2', short: 'Featured 2', subtitle: 'Spotlight', copy: 'Catch the latest releases and live streams.', imageUrl: 'https://images.unsplash.com/photo-1579783900882-c0d3dad7b119?w=800', videoUrl: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ' },
+      { id: 'default-3', title: 'Featured Content 3', short: 'Featured 3', subtitle: 'Trending', copy: 'What\'s popular on the platform today.', imageUrl: 'https://images.unsplash.com/photo-1611162617213-7d7a39e9b1d7?w=800', videoUrl: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ' }
     ];
   };
 
   // Slider State
-  const [heroSlider, setHeroSlider] = useState<Array<{ id: string, title: string, imageUrl: string, videoUrl: string }>>(
+  const [heroSlider, setHeroSlider] = useState<Array<{ id: string, title: string, imageUrl: string, videoUrl: string, short?: string, subtitle?: string, copy?: string }>>(
     getInitialSlider()
   );
   const [editingSlideId, setEditingSlideId] = useState<string | null>(null);
   const [slideTitle, setSlideTitle] = useState('');
+  const [slideShort, setSlideShort] = useState('');
+  const [slideSubtitle, setSlideSubtitle] = useState('');
+  const [slideCopy, setSlideCopy] = useState('');
   const [slideImageUrl, setSlideImageUrl] = useState('');
   const [slideVideoUrl, setSlideVideoUrl] = useState('');
   const [uploadingSlideImage, setUploadingSlideImage] = useState(false);
@@ -278,22 +334,31 @@ export const HeroEditorTab = ({ wlConfig }: { wlConfig: any }) => {
         <p style={{ color: 'var(--text-muted)', fontSize: '18px', lineHeight: 1.5 }}>Tune the primary verbiage, dynamic CTA buttons, and background master layers of the main site entry point.</p>
       </div>
       
-      <div style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)', padding: '24px 30px', borderRadius: '20px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
-         <h3 style={{ margin: '0 0 4px 0', fontSize: '20px' }}>Hero Layout Mode</h3>
-         <p style={{ margin: 0, color: 'var(--text-muted)', fontSize: '15px', marginBottom: '10px' }}>Choose the primary format for the center of the hero section.</p>
-         <select value={heroLayoutMode} onChange={(e: any) => setHeroLayoutMode(e.target.value)} style={{ padding: '14px', background: 'rgba(0,0,0,0.5)', color: 'var(--text-primary)', border: '1px solid rgba(255,255,255,0.2)', borderRadius: '12px', fontSize: '16px', outline: 'none' }}>
-            <option value="verbiage">Verbiage (Standard Title & Subtext)</option>
-            <option value="video">Welcome Video (Embedded Player)</option>
-            <option value="slider">Video Slider (Mini Carousel)</option>
-         </select>
-         
-         {heroLayoutMode === 'verbiage' && (
-            <div style={{ marginTop: '16px', display: 'flex', flexDirection: 'column', gap: '24px', borderTop: '1px solid rgba(255,255,255,0.1)', paddingTop: '24px' }}>
-               <AiInput label="Hero Title" defaultValue={heroTitle} placeholder="e.g. Vibe Network" accent={wlConfig.accent} onChange={(v) => setHeroTitle(v)} />
-               <AiTextArea label="Hero Marketing Verbiage" defaultValue={heroCopy} accent={wlConfig.accent} onChange={(v) => setHeroCopy(v)} />
-            </div>
-         )}
-      </div>
+      {!(wlConfig.n2n_enabled || wlConfig.id === 'master') ? (
+        <div style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)', padding: '24px 30px', borderRadius: '20px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
+           <h3 style={{ margin: '0 0 4px 0', fontSize: '20px' }}>Hero Layout Mode</h3>
+           <p style={{ margin: 0, color: 'var(--text-muted)', fontSize: '15px', marginBottom: '10px' }}>Choose the primary format for the center of the hero section.</p>
+           <select value={heroLayoutMode} onChange={(e: any) => setHeroLayoutMode(e.target.value)} style={{ padding: '14px', background: 'rgba(0,0,0,0.5)', color: 'var(--text-primary)', border: '1px solid rgba(255,255,255,0.2)', borderRadius: '12px', fontSize: '16px', outline: 'none' }}>
+              <option value="verbiage">Verbiage (Standard Title & Subtext)</option>
+              <option value="video">Welcome Video (Embedded Player)</option>
+              <option value="slider">Video Slider (Mini Carousel)</option>
+           </select>
+           
+           {heroLayoutMode === 'verbiage' && (
+              <div style={{ marginTop: '16px', display: 'flex', flexDirection: 'column', gap: '24px', borderTop: '1px solid rgba(255,255,255,0.1)', paddingTop: '24px' }}>
+                 <AiInput label="Hero Title" defaultValue={heroTitle} placeholder="e.g. Vibe Network" accent={wlConfig.accent} onChange={(v) => setHeroTitle(v)} />
+                 <AiTextArea label="Hero Marketing Verbiage" defaultValue={heroCopy} accent={wlConfig.accent} onChange={(v) => setHeroCopy(v)} />
+              </div>
+           )}
+        </div>
+      ) : (
+        <div style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)', padding: '24px 30px', borderRadius: '20px' }}>
+           <h3 style={{ margin: '0 0 4px 0', fontSize: '20px' }}>Hero Layout Mode</h3>
+           <p style={{ margin: 0, color: 'var(--text-muted)', fontSize: '15px' }}>
+              This network is configured with a high-impact multi-slide hero layout. You can manage, add, or replace individual slides in the section below.
+           </p>
+        </div>
+      )}
 
       <div style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)', padding: '24px 30px', borderRadius: '20px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
          <h3 style={{ margin: '0 0 4px 0', fontSize: '20px' }}>Hero Background Image</h3>
@@ -377,7 +442,7 @@ export const HeroEditorTab = ({ wlConfig }: { wlConfig: any }) => {
       )}
 
 
-      {heroLayoutMode === 'slider' && (
+      {(heroLayoutMode === 'slider' || wlConfig.n2n_enabled || wlConfig.id === 'master') && (
         <div style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)', padding: '24px 30px', borderRadius: '20px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <div>
@@ -389,6 +454,9 @@ export const HeroEditorTab = ({ wlConfig }: { wlConfig: any }) => {
                 onClick={() => {
                   setEditingSlideId('new');
                   setSlideTitle('');
+                  setSlideShort('');
+                  setSlideSubtitle('');
+                  setSlideCopy('');
                   setSlideImageUrl('');
                   setSlideVideoUrl('');
                 }}
@@ -404,13 +472,46 @@ export const HeroEditorTab = ({ wlConfig }: { wlConfig: any }) => {
               <h4 style={{ margin: 0 }}>{editingSlideId === 'new' ? 'Add New Slider Banner' : 'Edit Slider Banner'}</h4>
               
               <div>
-                <label style={{ display: 'block', fontSize: '14px', marginBottom: '8px', color: 'var(--text-muted)' }}>Slide Title</label>
+                <label style={{ display: 'block', fontSize: '14px', marginBottom: '8px', color: 'var(--text-muted)' }}>Slide Title (Main Headline)</label>
                 <input 
                   type="text" 
                   value={slideTitle} 
                   onChange={(e) => setSlideTitle(e.target.value)} 
-                  placeholder="e.g. Action Packed Trailer" 
+                  placeholder="e.g. Entertainment" 
                   style={{ width: '100%', padding: '12px', background: 'rgba(0,0,0,0.5)', color: 'var(--text-primary)', border: '1px solid rgba(255,255,255,0.2)', borderRadius: '10px', fontSize: '15px', outline: 'none' }} 
+                />
+              </div>
+
+              <div>
+                <label style={{ display: 'block', fontSize: '14px', marginBottom: '8px', color: 'var(--text-muted)' }}>Tab Label / Short Title (Appears in bottom bar buttons)</label>
+                <input 
+                  type="text" 
+                  value={slideShort} 
+                  onChange={(e) => setSlideShort(e.target.value)} 
+                  placeholder="e.g. Entertainment" 
+                  style={{ width: '100%', padding: '12px', background: 'rgba(0,0,0,0.5)', color: 'var(--text-primary)', border: '1px solid rgba(255,255,255,0.2)', borderRadius: '10px', fontSize: '15px', outline: 'none' }} 
+                />
+              </div>
+
+              <div>
+                <label style={{ display: 'block', fontSize: '14px', marginBottom: '8px', color: 'var(--text-muted)' }}>Overhead Subtitle</label>
+                <input 
+                  type="text" 
+                  value={slideSubtitle} 
+                  onChange={(e) => setSlideSubtitle(e.target.value)} 
+                  placeholder="e.g. LATEST LIVE SETS & SHOWS" 
+                  style={{ width: '100%', padding: '12px', background: 'rgba(0,0,0,0.5)', color: 'var(--text-primary)', border: '1px solid rgba(255,255,255,0.2)', borderRadius: '10px', fontSize: '15px', outline: 'none' }} 
+                />
+              </div>
+
+              <div>
+                <label style={{ display: 'block', fontSize: '14px', marginBottom: '8px', color: 'var(--text-muted)' }}>Description Copy / Paragraph</label>
+                <textarea 
+                  value={slideCopy} 
+                  onChange={(e) => setSlideCopy(e.target.value)} 
+                  placeholder="e.g. Experience top DJ sets, live concerts, and exclusive music releases streaming 24/7." 
+                  rows={3}
+                  style={{ width: '100%', padding: '12px', background: 'rgba(0,0,0,0.5)', color: 'var(--text-primary)', border: '1px solid rgba(255,255,255,0.2)', borderRadius: '10px', fontSize: '15px', outline: 'none', resize: 'vertical' }} 
                 />
               </div>
 
@@ -459,7 +560,7 @@ export const HeroEditorTab = ({ wlConfig }: { wlConfig: any }) => {
               </div>
 
               <div>
-                <label style={{ display: 'block', fontSize: '14px', marginBottom: '8px', color: 'var(--text-muted)' }}>Slide Video Link (YouTube or Direct File)</label>
+                <label style={{ display: 'block', fontSize: '14px', marginBottom: '8px', color: 'var(--text-muted)' }}>Slide Video Link (YouTube or Direct File - Optional)</label>
                 <div style={{ display: 'flex', gap: '10px' }}>
                   <input 
                     type="text" 
@@ -515,15 +616,23 @@ export const HeroEditorTab = ({ wlConfig }: { wlConfig: any }) => {
                 </button>
                 <button 
                   onClick={() => {
-                    if (!slideTitle || !slideImageUrl || !slideVideoUrl) {
-                      toast.error('Please enter all fields (Title, Image, and Video URL).');
+                    if (!slideTitle || !slideImageUrl) {
+                      toast.error('Please enter all required fields (Title and Image URL).');
                       return;
                     }
+                    const newSlide = {
+                      id: editingSlideId === 'new' ? Date.now().toString() : editingSlideId,
+                      title: slideTitle,
+                      short: slideShort || slideTitle,
+                      subtitle: slideSubtitle || 'Featured',
+                      copy: slideCopy || '',
+                      imageUrl: slideImageUrl,
+                      videoUrl: slideVideoUrl || ''
+                    };
                     if (editingSlideId === 'new') {
-                      const newSlide = { id: Date.now().toString(), title: slideTitle, imageUrl: slideImageUrl, videoUrl: slideVideoUrl };
                       setHeroSlider([...heroSlider, newSlide]);
                     } else {
-                      setHeroSlider(heroSlider.map(s => s.id === editingSlideId ? { ...s, title: slideTitle, imageUrl: slideImageUrl, videoUrl: slideVideoUrl } : s));
+                      setHeroSlider(heroSlider.map(s => s.id === editingSlideId ? newSlide : s));
                     }
                     setEditingSlideId(null);
                     toast.success('Slide temporarily saved! Save configurations to publish.');
@@ -546,8 +655,21 @@ export const HeroEditorTab = ({ wlConfig }: { wlConfig: any }) => {
                 <div key={slide.id} style={{ display: 'flex', alignItems: 'center', gap: '16px', padding: '16px', background: 'rgba(255,255,255,0.01)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '14px' }}>
                   <img src={slide.imageUrl} style={{ width: '100px', aspectRatio: '16/9', objectFit: 'cover', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.1)' }} alt="" />
                   <div style={{ flex: 1 }}>
-                    <h4 style={{ margin: 0, fontSize: '16px' }}>{slide.title}</h4>
-                    <span style={{ fontSize: '13px', color: 'var(--text-muted)', wordBreak: 'break-all' }}>{slide.videoUrl}</span>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <h4 style={{ margin: 0, fontSize: '16px' }}>{slide.title}</h4>
+                      {slide.short && slide.short !== slide.title && (
+                        <span style={{ fontSize: '11px', background: 'rgba(255,255,255,0.1)', padding: '2px 6px', borderRadius: '4px', color: 'var(--text-muted)' }}>Tab: {slide.short}</span>
+                      )}
+                    </div>
+                    {slide.subtitle && (
+                      <p style={{ margin: '4px 0 0 0', fontSize: '12px', color: wlConfig.accent, fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '0.5px' }}>{slide.subtitle}</p>
+                    )}
+                    {slide.copy && (
+                      <p style={{ margin: '4px 0 0 0', fontSize: '13px', color: 'var(--text-muted)', lineHeight: 1.4 }}>{slide.copy}</p>
+                    )}
+                    {slide.videoUrl && (
+                      <span style={{ fontSize: '12px', color: 'rgba(255,255,255,0.4)', wordBreak: 'break-all', display: 'block', marginTop: '4px' }}>Link: {slide.videoUrl}</span>
+                    )}
                   </div>
                   
                   <div style={{ display: 'flex', gap: '8px' }}>
@@ -584,9 +706,12 @@ export const HeroEditorTab = ({ wlConfig }: { wlConfig: any }) => {
                     <button 
                       onClick={() => {
                         setEditingSlideId(slide.id);
-                        setSlideTitle(slide.title);
-                        setSlideImageUrl(slide.imageUrl);
-                        setSlideVideoUrl(slide.videoUrl);
+                        setSlideTitle(slide.title || '');
+                        setSlideShort(slide.short || '');
+                        setSlideSubtitle(slide.subtitle || '');
+                        setSlideCopy(slide.copy || '');
+                        setSlideImageUrl(slide.imageUrl || '');
+                        setSlideVideoUrl(slide.videoUrl || '');
                       }}
                       style={{ padding: '6px 12px', background: 'rgba(255,255,255,0.05)', border: 'none', borderRadius: '6px', color: '#fff', cursor: 'pointer' }}
                     >

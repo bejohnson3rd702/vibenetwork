@@ -50,7 +50,7 @@ export default function Home({ categories, activeVideo, setActiveVideo, user }: 
 
   return (
     <>
-      <Hero />
+      <Hero setActiveVideo={setActiveVideo} />
       <main style={{ background: 'var(--bg-color)', paddingBottom: '100px', zIndex: 10, position: 'relative', width: '100%' }}>
         {/* ── Networks slider (above Watch) ── */}
         {categories.filter((c: any) => c.title.toLowerCase().includes('network')).map((category: any, index: number) => (

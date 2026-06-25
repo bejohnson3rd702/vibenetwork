@@ -33,19 +33,52 @@ const VIBE_HERO_SLIDES = [
   }
 ];
 
-const Hero: React.FC = () => {
+interface HeroProps {
+  setActiveVideo?: (video: any) => void;
+}
+
+const Hero: React.FC<HeroProps> = ({ setActiveVideo }) => {
   const { wlConfig } = useWhiteLabel();
   const accent = wlConfig?.accent || 'var(--accent-primary)';
+
+  const slides = (wlConfig?.theme?.heroSlider && wlConfig.theme.heroSlider.length > 0)
+    ? wlConfig.theme.heroSlider.map((s: any) => ({
+        title: s.title,
+        short: s.short || s.title,
+        subtitle: s.subtitle || 'LATEST LIVE SETS & SHOWS',
+        copy: s.copy || '',
+        image: s.imageUrl,
+        videoUrl: s.videoUrl
+      }))
+    : VIBE_HERO_SLIDES;
+
   const [heroSlide, setHeroSlide] = useState(0);
 
   useEffect(() => {
     const timer = setInterval(() => {
-      setHeroSlide(prev => (prev + 1) % VIBE_HERO_SLIDES.length);
+      setHeroSlide(prev => (prev + 1) % slides.length);
     }, 5000);
     return () => clearInterval(timer);
-  }, []);
+  }, [slides.length]);
 
   const handleActionClick = () => {
+    const currentSlide = slides[heroSlide % slides.length];
+    if (currentSlide.videoUrl) {
+      const isVideo = currentSlide.videoUrl.includes('youtube.com') || currentSlide.videoUrl.includes('youtu.be') || currentSlide.videoUrl.endsWith('.mp4');
+      if (isVideo && setActiveVideo) {
+        setActiveVideo({
+          id: `vibe-slide-${heroSlide}`,
+          title: currentSlide.title,
+          videoUrl: currentSlide.videoUrl,
+          image: currentSlide.image,
+          tags: ['Featured']
+        });
+        return;
+      } else {
+        window.location.href = currentSlide.videoUrl;
+        return;
+      }
+    }
     const section = document.getElementById('whats-on-now');
     if (section) {
       section.scrollIntoView({ behavior: 'smooth' });
@@ -66,8 +99,8 @@ const Hero: React.FC = () => {
           style={{ position: 'absolute', inset: 0, zIndex: 0 }}
         >
           <img
-            src={VIBE_HERO_SLIDES[heroSlide % VIBE_HERO_SLIDES.length]?.image}
-            alt={VIBE_HERO_SLIDES[heroSlide % VIBE_HERO_SLIDES.length]?.title}
+            src={slides[heroSlide % slides.length]?.image}
+            alt={slides[heroSlide % slides.length]?.title}
             className="vibe-hero-image"
             loading="eager"
             fetchPriority="high"
@@ -91,13 +124,13 @@ const Hero: React.FC = () => {
           style={{ position: 'absolute', bottom: '180px', left: '0', zIndex: 2, padding: '0 60px', maxWidth: '700px' }}
         >
           <p className="vibe-hero-subtitle" style={{ fontSize: '13px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '3px', color: 'rgba(255,255,255,0.6)', marginBottom: '8px' }}>
-            {VIBE_HERO_SLIDES[heroSlide % VIBE_HERO_SLIDES.length]?.subtitle}
+            {slides[heroSlide % slides.length]?.subtitle}
           </p>
           <h1 className="vibe-hero-title" style={{ fontSize: '52px', fontWeight: 900, lineHeight: 1.05, letterSpacing: '-1px', color: '#fff', margin: '0 0 16px 0', textTransform: 'uppercase', fontFamily: "'RNS Miles', sans-serif" }}>
-            {VIBE_HERO_SLIDES[heroSlide % VIBE_HERO_SLIDES.length]?.title}
+            {slides[heroSlide % slides.length]?.title}
           </h1>
           <p className="vibe-hero-copy" style={{ fontSize: '15px', color: 'rgba(255,255,255,0.65)', margin: '0 0 24px 0', lineHeight: 1.6 }}>
-            {VIBE_HERO_SLIDES[heroSlide % VIBE_HERO_SLIDES.length]?.copy}
+            {slides[heroSlide % slides.length]?.copy}
           </p>
           <button
             onClick={handleActionClick}
@@ -118,7 +151,7 @@ const Hero: React.FC = () => {
               e.currentTarget.style.color = '#fff';
             }}
           >
-            Watch Now
+            {slides[heroSlide % slides.length]?.videoUrl ? 'Watch Trailer' : 'Watch Now'}
           </button>
 
           {/* Legacy stat panel */}
@@ -139,7 +172,7 @@ const Hero: React.FC = () => {
 
       {/* Slide dots — right side, vertical */}
       <div className="vibe-hero-dots" style={{ position: 'absolute', right: '30px', top: '50%', transform: 'translateY(-50%)', zIndex: 3, display: 'flex', flexDirection: 'column', gap: '10px' }}>
-        {VIBE_HERO_SLIDES.map((_, i) => (
+        {slides.map((_, i) => (
           <button
             key={i}
             onClick={() => setHeroSlide(i)}
@@ -159,7 +192,7 @@ const Hero: React.FC = () => {
         background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(10px)',
         padding: '0', display: 'flex', borderTop: '1px solid rgba(255,255,255,0.06)',
       }}>
-        {VIBE_HERO_SLIDES.map((slide, i) => (
+        {slides.map((slide, i) => (
           <button
             key={i}
             onClick={() => setHeroSlide(i)}

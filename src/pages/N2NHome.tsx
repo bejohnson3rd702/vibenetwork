@@ -238,9 +238,9 @@ export default function N2NHome({ wlConfig, categories, activeVideo, setActiveVi
     ? config.theme.heroSlider.map((s: any) => ({
         id: s.id,
         school: s.title,
-        short: s.title,
-        subtitle: 'Featured Slide',
-        copy: 'Explore custom content dynamically managed by admin.',
+        short: s.short || s.title,
+        subtitle: s.subtitle || 'Featured Slide',
+        copy: s.copy || '',
         image: s.imageUrl,
         videoUrl: s.videoUrl,
         link: s.videoUrl
