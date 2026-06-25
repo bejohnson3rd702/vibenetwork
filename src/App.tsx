@@ -330,17 +330,32 @@ function App() {
           console.warn('Could not parse local networks', e);
         }
 
+        // Check if there is an active user session to fall back on their whitelabel config
+        let userWlId = null;
+        try {
+          const { data: { session } } = await supabase!.auth.getSession();
+          if (session?.user) {
+            const { data: prof } = await supabase!.from('profiles').select('whitelabel_id').eq('id', session.user.id).single();
+            if (prof?.whitelabel_id) {
+              userWlId = prof.whitelabel_id;
+            }
+          }
+        } catch (authErr) {
+          console.warn('Could not retrieve session for tenant resolution', authErr);
+        }
+
+        const activeTenantId = forceTenant || userWlId;
         const isMaster = hostname === 'localhost' || hostname === '127.0.0.1' || hostname === MASTER_DOMAIN || hostname === 'vibenetwork.com' || hostname === 'vibenetwork.tv' || hostname.includes('vercel.app');
         
         let configPromise;
         let categoriesPromise;
 
-        if (forceTenant) {
+        if (activeTenantId) {
           isTenant = true;
           setIsTenantMode(true);
-          loadedTenantId = forceTenant;
-          configPromise = supabase!.from('whitelabel_configs').select('*').eq('id', forceTenant).limit(1);
-          categoriesPromise = getCategoriesWithVideos(forceTenant);
+          loadedTenantId = activeTenantId;
+          configPromise = supabase!.from('whitelabel_configs').select('*').eq('id', activeTenantId).limit(1);
+          categoriesPromise = getCategoriesWithVideos(activeTenantId);
         } else if (!isMaster) {
           isTenant = true;
           setIsTenantMode(true);
