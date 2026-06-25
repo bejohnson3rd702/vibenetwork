@@ -81,6 +81,7 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
     return [];
   });
   const [expandedModules, setExpandedModules] = useState<Record<number, boolean>>({});
+  const [expandedSeries, setExpandedSeries] = useState<Record<string, boolean>>({});
 
   // Upgrade 2: Store / Product Editing
   const [editingProduct, setEditingProduct] = useState<any | null>(null);
@@ -3210,6 +3211,259 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
             {seriesList.length === 0 ? (
               <div style={{ padding: '60px 20px', textAlign: 'center', background: 'rgba(255,255,255,0.02)', borderRadius: '24px', border: '1px dashed rgba(255,255,255,0.1)' }}>
                 <p style={{ color: 'var(--text-muted)', fontSize: '16px', margin: 0 }}>No original series published yet.</p>
+              </div>
+            ) : (!isOwnProfile || viewMode === 'public') ? (
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '24px' }}>
+                {seriesList.map((series) => {
+                  const isSeasonUnlocked = isOwnProfile || purchasedSeasons.includes(series.id);
+                  const isExpanded = expandedSeries[series.id];
+                  
+                  return (
+                    <motion.div
+                      key={series.id}
+                      initial={{ opacity: 0, scale: 0.95 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      style={{
+                        background: 'rgba(255, 255, 255, 0.02)',
+                        backdropFilter: 'blur(20px)',
+                        borderRadius: '20px',
+                        overflow: 'hidden',
+                        border: '1px solid rgba(255, 255, 255, 0.05)',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        boxShadow: '0 8px 32px 0 rgba(0, 0, 0, 0.37)',
+                        transition: 'all 0.3s ease'
+                      }}
+                    >
+                      <div style={{ height: '200px', width: '100%', overflow: 'hidden', position: 'relative' }}>
+                        <motion.div
+                          whileHover={{ scale: 1.05 }}
+                          transition={{ duration: 0.3 }}
+                          style={{
+                            width: '100%',
+                            height: '100%',
+                            backgroundImage: `url(${series.img || 'https://picsum.photos/seed/cybercity/600/300'})`,
+                            backgroundSize: 'cover',
+                            backgroundPosition: 'center'
+                          }}
+                        />
+                        <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(0,0,0,0.8), rgba(0,0,0,0))' }} />
+                        
+                        {/* Badges */}
+                        <div style={{ position: 'absolute', top: '12px', left: '12px', display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
+                          <span style={{ background: 'rgba(255,77,133,0.25)', color: '#ff4d85', border: '1px solid #ff4d85', padding: '4px 10px', borderRadius: '8px', fontSize: '11px', fontWeight: 'bold', textTransform: 'uppercase', backdropFilter: 'blur(4px)' }}>
+                            Original
+                          </span>
+                          <span style={{ background: 'rgba(0, 0, 0, 0.6)', color: '#fff', padding: '4px 10px', borderRadius: '8px', fontSize: '11px', fontWeight: 'bold', backdropFilter: 'blur(4px)', border: '1px solid rgba(255,255,255,0.1)' }}>
+                            {series.episodes?.length || 0} {series.episodes?.length === 1 ? 'Episode' : 'Episodes'}
+                          </span>
+                        </div>
+                      </div>
+
+                      <div style={{ padding: '20px', display: 'flex', flexDirection: 'column', flex: 1, gap: '12px' }}>
+                        <h3 style={{ margin: 0, fontSize: '20px', fontWeight: 'bold', color: 'var(--text-primary)', lineHeight: 1.3 }}>
+                          {series.title}
+                        </h3>
+                        
+                        <p style={{
+                          margin: 0,
+                          color: '#ccc',
+                          fontSize: '13px',
+                          lineHeight: '1.5',
+                          display: '-webkit-box',
+                          WebkitLineClamp: 3,
+                          WebkitBoxOrient: 'vertical',
+                          overflow: 'hidden',
+                          height: '58px'
+                        }}>
+                          {series.description}
+                        </p>
+
+                        {/* Actions */}
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginTop: 'auto' }}>
+                          {isSeasonUnlocked ? (
+                            <button 
+                              onClick={() => {
+                                setActiveCinemaSeries(series);
+                                setActiveCinemaEpisode(series.episodes?.[0] || null);
+                                setShowCinemaModal(true);
+                              }} 
+                              style={{ 
+                                width: '100%',
+                                padding: '12px', 
+                                background: 'linear-gradient(135deg, #ff4d85, #8A2BE2)', 
+                                color: '#fff', 
+                                border: 'none', 
+                                borderRadius: '12px', 
+                                fontWeight: 'bold', 
+                                fontSize: '14px', 
+                                cursor: 'pointer', 
+                                transition: 'all 0.2s', 
+                                boxShadow: '0 4px 12px rgba(138,43,226,0.2)' 
+                              }}
+                              onMouseOver={e=>e.currentTarget.style.transform='scale(1.02)'}
+                              onMouseOut={e=>e.currentTarget.style.transform='scale(1)'}
+                            >
+                              Stream Season 🍿
+                            </button>
+                          ) : (
+                            <button 
+                              onClick={() => handleBuySeasonSimulation(series)} 
+                              style={{ 
+                                width: '100%',
+                                padding: '12px', 
+                                background: '#fff', 
+                                color: '#000', 
+                                border: 'none', 
+                                borderRadius: '12px', 
+                                fontWeight: 'bold', 
+                                fontSize: '14px', 
+                                cursor: 'pointer', 
+                                transition: 'all 0.2s', 
+                                boxShadow: '0 4px 12px rgba(255,255,255,0.1)' 
+                              }} 
+                              onMouseOver={e=>e.currentTarget.style.transform='scale(1.02)'}
+                              onMouseOut={e=>e.currentTarget.style.transform='scale(1)'}
+                            >
+                              Buy Full Season (${series.price})
+                            </button>
+                          )}
+
+                          {series.episodes && series.episodes.length > 0 && (
+                            <button
+                              onClick={() => setExpandedSeries(prev => ({ ...prev, [series.id]: !prev[series.id] }))}
+                              style={{
+                                width: '100%',
+                                padding: '10px',
+                                background: 'rgba(255,255,255,0.05)',
+                                border: '1px solid rgba(255,255,255,0.1)',
+                                color: 'var(--text-primary)',
+                                borderRadius: '12px',
+                                fontWeight: 'bold',
+                                fontSize: '13px',
+                                cursor: 'pointer',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                gap: '6px',
+                                transition: 'all 0.2s'
+                              }}
+                              onMouseOver={e=>e.currentTarget.style.background='rgba(255,255,255,0.1)'}
+                              onMouseOut={e=>e.currentTarget.style.background='rgba(255,255,255,0.05)'}
+                            >
+                              {isExpanded ? 'Hide Episodes ▲' : `View Episodes (${series.episodes.length}) ▾`}
+                            </button>
+                          )}
+                        </div>
+
+                        {/* Collapsible Episodes inside grid card */}
+                        {isExpanded && series.episodes && series.episodes.length > 0 && (
+                          <motion.div
+                            initial={{ opacity: 0, height: 0 }}
+                            animate={{ opacity: 1, height: 'auto' }}
+                            style={{
+                              marginTop: '12px',
+                              borderTop: '1px solid rgba(255,255,255,0.08)',
+                              paddingTop: '12px',
+                              display: 'flex',
+                              flexDirection: 'column',
+                              gap: '8px',
+                              maxHeight: '240px',
+                              overflowY: 'auto'
+                            }}
+                          >
+                            {series.episodes.map((episode: any, idx: number) => {
+                              const isEpUnlocked = isSeasonUnlocked || purchasedEpisodes.includes(episode.id);
+                              return (
+                                <div 
+                                  key={episode.id} 
+                                  style={{ 
+                                    display: 'flex', 
+                                    gap: '10px', 
+                                    alignItems: 'center', 
+                                    background: 'rgba(255,255,255,0.02)', 
+                                    padding: '8px', 
+                                    borderRadius: '10px', 
+                                    border: '1px solid rgba(255,255,255,0.04)' 
+                                  }}
+                                >
+                                  <div 
+                                    style={{ 
+                                      width: '64px', 
+                                      height: '36px', 
+                                      borderRadius: '4px', 
+                                      background: `url(${episode.thumbnail_url || `https://picsum.photos/seed/ep${idx+1}/150/75`}) center/cover`, 
+                                      position: 'relative', 
+                                      flexShrink: 0 
+                                    }}
+                                  >
+                                    <div style={{ position: 'absolute', bottom: 2, right: 2, background: 'rgba(0,0,0,0.8)', padding: '1px 3px', borderRadius: '2px', fontSize: '8px', fontWeight: 'bold' }}>
+                                      {episode.length || 'TBD'}
+                                    </div>
+                                  </div>
+                                  
+                                  <div style={{ flex: 1, minWidth: 0 }}>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '4px', color: 'var(--text-muted)', fontSize: '9px', fontWeight: 'bold', marginBottom: '2px' }}>
+                                      <span>Ep {idx + 1}</span>
+                                      {episode.rating && (
+                                        <span style={{ padding: '0px 3px', background: 'rgba(255,255,255,0.08)', borderRadius: '2px', fontSize: '8px', color: '#fff' }}>
+                                          {episode.rating}
+                                        </span>
+                                      )}
+                                    </div>
+                                    <h4 style={{ margin: 0, fontSize: '12px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', color: 'var(--text-primary)' }}>
+                                      {episode.title}
+                                    </h4>
+                                  </div>
+
+                                  {isEpUnlocked ? (
+                                    <button 
+                                      onClick={() => {
+                                        setActiveCinemaSeries(series);
+                                        setActiveCinemaEpisode(episode);
+                                        setShowCinemaModal(true);
+                                      }} 
+                                      style={{ 
+                                        padding: '4px 8px', 
+                                        background: 'linear-gradient(135deg, #00ff88, #00bbff)', 
+                                        border: 'none', 
+                                        color: '#000', 
+                                        borderRadius: '8px', 
+                                        fontWeight: 'bold', 
+                                        fontSize: '10px',
+                                        cursor: 'pointer',
+                                        flexShrink: 0
+                                      }}
+                                    >
+                                      Play
+                                    </button>
+                                  ) : (
+                                    <button 
+                                      onClick={() => handleBuyEpisodeSimulation(episode, series)} 
+                                      style={{ 
+                                        padding: '4px 8px', 
+                                        background: 'rgba(255,255,255,0.08)', 
+                                        border: 'none', 
+                                        color: 'var(--text-primary)', 
+                                        borderRadius: '8px', 
+                                        fontWeight: 'bold', 
+                                        fontSize: '10px',
+                                        cursor: 'pointer',
+                                        flexShrink: 0
+                                      }}
+                                    >
+                                      Buy
+                                    </button>
+                                  )}
+                                </div>
+                              );
+                            })}
+                          </motion.div>
+                        )}
+                      </div>
+                    </motion.div>
+                  );
+                })}
               </div>
             ) : (
               seriesList.map((series) => (
