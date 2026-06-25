@@ -1820,7 +1820,20 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
                             value={bio}
                             onChange={(e) => setBio(e.target.value)}
                             placeholder="Write a bio to tell your viewers what your channel is about..."
-                            style={{ width: '100%', minHeight: '100px', background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '16px', padding: '16px', color: 'var(--text-primary)', resize: 'vertical', fontSize: '15px', outline: 'none', backdropFilter: 'blur(10px)' }}
+                            style={{ 
+                              width: '100%', 
+                              minHeight: '105px', 
+                              background: 'rgba(0,0,0,0.5)', 
+                              border: '1px solid rgba(255,255,255,0.1)', 
+                              borderRadius: '16px', 
+                              padding: '16px 16px 64px 16px', 
+                              color: 'var(--text-primary)', 
+                              resize: 'vertical', 
+                              fontSize: '15px', 
+                              outline: 'none', 
+                              backdropFilter: 'blur(10px)',
+                              boxSizing: 'border-box'
+                            }}
                           />
                           <div style={{ position: 'absolute', right: '120px', bottom: '20px', display: 'flex', gap: '4px' }}>
                             <EmojiPickerButton onSelect={(emoji) => setBio(prev => prev + emoji)} />
@@ -1973,15 +1986,14 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
                   onChange={(e) => setPostTitle(e.target.value)}
                   style={{ 
                     width: '100%', 
-                    minHeight: '90px',
+                    minHeight: '95px',
                     background: 'rgba(0,0,0,0.3)', 
                     border: '1px solid rgba(255,255,255,0.08)', 
                     borderRadius: '16px',
                     color: 'var(--text-primary)', 
                     fontSize: '15px', 
                     outline: 'none', 
-                    padding: '16px',
-                    paddingRight: '120px',
+                    padding: '16px 16px 54px 16px',
                     resize: 'none',
                     lineHeight: 1.5,
                     fontFamily: 'inherit',
@@ -2548,7 +2560,20 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
                   placeholder="e.g. All digital download sales are final. For apparel refunds, returns are accepted within 14 days of delivery in unused condition."
                   value={refundPolicy}
                   onChange={e => setRefundPolicy(e.target.value)}
-                  style={{ width: '100%', minHeight: '120px', background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '16px', padding: '16px', color: 'var(--text-primary)', outline: 'none', fontSize: '15px', resize: 'vertical', paddingRight: '120px', backdropFilter: 'blur(10px)' }}
+                  style={{ 
+                    width: '100%', 
+                    minHeight: '120px', 
+                    background: 'rgba(0,0,0,0.5)', 
+                    border: '1px solid rgba(255,255,255,0.1)', 
+                    borderRadius: '16px', 
+                    padding: '16px 16px 64px 16px', 
+                    color: 'var(--text-primary)', 
+                    outline: 'none', 
+                    fontSize: '15px', 
+                    resize: 'vertical', 
+                    backdropFilter: 'blur(10px)',
+                    boxSizing: 'border-box'
+                  }}
                 />
                 <button 
                   type="button" 
