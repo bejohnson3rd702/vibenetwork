@@ -2,7 +2,7 @@ import React, { useEffect, useState, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { supabase } from '../supabaseClient';
 import { motion, AnimatePresence } from 'framer-motion';
-import { LogOut, Camera, Lock, Unlock, Image as ImageIcon, Star, ShieldCheck, Eye, Edit2, Trash2, Wand, Calendar, Edit3, Clock, CheckCircle, Heart, MessageCircle, Wallet, ArrowUpRight, ArrowDownLeft, Activity, Monitor, Settings, Video, DollarSign, Share2, Pin, ChevronLeft, ChevronRight, AlertCircle } from 'lucide-react';
+import { LogOut, Camera, Lock, Unlock, Image as ImageIcon, Star, ShieldCheck, Eye, Edit2, Trash2, Wand, Calendar, Edit3, Clock, CheckCircle, Heart, MessageCircle, Wallet, ArrowUpRight, ArrowDownLeft, Activity, Monitor, Settings, Video, DollarSign, Share2, Pin, ChevronLeft, ChevronRight, AlertCircle, Users } from 'lucide-react';
 import { DictationButton } from './DictationButton';
 import { EmojiPickerButton } from './EmojiPickerButton';
 import EndUserAuthModal from './EndUserAuthModal';
@@ -59,7 +59,7 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
   const [currentBannerIndex, setCurrentBannerIndex] = useState(0);
   const [currentBgIndex, setCurrentBgIndex] = useState(0);
   const [saving, setSaving] = useState(false);
-  const [activeTab, setActiveTab] = useState<'feed' | 'store' | 'live' | 'booking' | 'series' | 'courses' | 'wallet' | 'flipbook' | 'appearance' | 'my_bookings' | 'networks' | 'members' | 'community' | 'security'>('feed');
+  const [activeTab, setActiveTab] = useState<'feed' | 'store' | 'live' | 'booking' | 'series' | 'courses' | 'wallet' | 'flipbook' | 'appearance' | 'my_bookings' | 'networks' | 'members' | 'community' | 'security' | 'crm'>('feed');
   const [expandedComments, setExpandedComments] = useState<Record<string, boolean>>({});
   const [networkProfiles, setNetworkProfiles] = useState<any[]>([]);
   const [walletBalance, setWalletBalance] = useState(() => (typeof window !== 'undefined' ? Number(localStorage.getItem('vibe_host_wallet') || 0.00) : 0.00));
@@ -103,6 +103,287 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, []);
+  // CRM Integration States
+  const [crmSubTab, setCrmSubTab] = useState<'contacts' | 'pipelines' | 'integrations'>('contacts');
+  const [crmContacts, setCrmContacts] = useState<any[]>([]);
+  const [crmPipelines, setCrmPipelines] = useState<any[]>([]);
+  const [crmStages, setCrmStages] = useState<any[]>([]);
+  const [crmOpportunities, setCrmOpportunities] = useState<any[]>([]);
+  const [crmIntegrations, setCrmIntegrations] = useState<any[]>([]);
+  const [crmLoading, setCrmLoading] = useState(false);
+
+  // Forms for adding CRM records
+  const [newContact, setNewContact] = useState({ first_name: '', last_name: '', email: '', phone: '', source: 'manual', tagString: '' });
+  const [newOpportunity, setNewOpportunity] = useState({ title: '', value: '', contact_id: '', stage_id: '', status: 'open' });
+  const [selectedPipelineId, setSelectedPipelineId] = useState<string>('');
+
+  const loadCrmData = async () => {
+    if (!targetProfileId) return;
+    setCrmLoading(true);
+    try {
+      // 1. Fetch contacts
+      const { data: contacts, error: contactErr } = await supabase
+        .from('crm_contacts')
+        .select('*')
+        .eq('creator_id', targetProfileId)
+        .order('created_at', { ascending: false });
+
+      if (contactErr) {
+        console.error("Error fetching CRM contacts:", contactErr);
+      } else {
+        // Fetch tags for these contacts
+        const contactIds = (contacts || []).map(c => c.id);
+        let tagsMap = {};
+        if (contactIds.length > 0) {
+          const { data: tagsData } = await supabase
+            .from('crm_contact_tags')
+            .select('*')
+            .in('contact_id', contactIds);
+          (tagsData || []).forEach(t => {
+            if (!tagsMap[t.contact_id]) tagsMap[t.contact_id] = [];
+            tagsMap[t.contact_id].push(t.tag);
+          });
+        }
+        const enrichedContacts = (contacts || []).map(c => ({
+          ...c,
+          tags: tagsMap[c.id] || []
+        }));
+        setCrmContacts(enrichedContacts);
+      }
+
+      // 2. Fetch pipelines
+      const { data: pipelines, error: pipeErr } = await supabase
+        .from('crm_pipelines')
+        .select('*')
+        .eq('creator_id', targetProfileId);
+
+      if (pipeErr) {
+        console.error("Error fetching CRM pipelines:", pipeErr);
+      } else {
+        setCrmPipelines(pipelines || []);
+        if (pipelines && pipelines.length > 0 && !selectedPipelineId) {
+          setSelectedPipelineId(pipelines[0].id);
+        }
+      }
+
+      // 3. Fetch stages
+      const { data: stages, error: stageErr } = await supabase
+        .from('crm_pipeline_stages')
+        .select('*')
+        .order('sort_order', { ascending: true });
+
+      if (stageErr) {
+        console.error("Error fetching CRM pipeline stages:", stageErr);
+      } else {
+        setCrmStages(stages || []);
+      }
+
+      // 4. Fetch opportunities
+      const { data: opportunities, error: oppErr } = await supabase
+        .from('crm_opportunities')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (oppErr) {
+        console.error("Error fetching CRM opportunities:", oppErr);
+      } else {
+        setCrmOpportunities(opportunities || []);
+      }
+
+      // 5. Fetch integrations
+      const { data: integrations, error: intErr } = await supabase
+        .from('crm_integrations')
+        .select('*')
+        .eq('creator_id', targetProfileId);
+
+      if (intErr) {
+        console.error("Error fetching CRM integrations:", intErr);
+      } else {
+        setCrmIntegrations(integrations || []);
+      }
+
+      // Auto-initialize a default pipeline if none exists
+      if (!pipeErr && (!pipelines || pipelines.length === 0)) {
+        console.log("Initializing default pipeline...");
+        const { data: defaultPipe, error: defaultPipeErr } = await supabase
+          .from('crm_pipelines')
+          .insert({
+            whitelabel_id: wlConfig?.id || null,
+            creator_id: targetProfileId,
+            name: 'Standard Deal Pipeline'
+          })
+          .select()
+          .single();
+
+        if (!defaultPipeErr && defaultPipe) {
+          const defaultStages = [
+            { name: 'Lead Ingested', sort_order: 1 },
+            { name: 'Contacted', sort_order: 2 },
+            { name: 'Meeting Booked', sort_order: 3 },
+            { name: 'Won', sort_order: 4 },
+            { name: 'Lost', sort_order: 5 }
+          ];
+
+          await supabase.from('crm_pipeline_stages').insert(
+            defaultStages.map(s => ({
+              pipeline_id: defaultPipe.id,
+              name: s.name,
+              sort_order: s.sort_order
+            }))
+          );
+
+          // Refresh tables
+          const { data: repipelines } = await supabase
+            .from('crm_pipelines')
+            .select('*')
+            .eq('creator_id', targetProfileId);
+          setCrmPipelines(repipelines || []);
+          if (repipelines && repipelines.length > 0) {
+            setSelectedPipelineId(repipelines[0].id);
+          }
+          const { data: restages } = await supabase
+            .from('crm_pipeline_stages')
+            .select('*')
+            .order('sort_order', { ascending: true });
+          setCrmStages(restages || []);
+        }
+      }
+    } catch (err) {
+      console.error("CRM loading general error:", err);
+    } finally {
+      setCrmLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (activeTab === 'crm') {
+      loadCrmData();
+    }
+  }, [activeTab]);
+
+  const handleAddContact = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newContact.email) {
+      toast.error("Email is required.");
+      return;
+    }
+    try {
+      const { data: contact, error } = await supabase
+        .from('crm_contacts')
+        .insert({
+          whitelabel_id: wlConfig?.id || null,
+          creator_id: targetProfileId,
+          first_name: newContact.first_name,
+          last_name: newContact.last_name,
+          email: newContact.email,
+          phone: newContact.phone,
+          source: newContact.source
+        })
+        .select()
+        .single();
+
+      if (error) {
+        toast.error("Failed to add contact: " + error.message);
+        return;
+      }
+
+      if (newContact.tagString && contact) {
+        const tags = newContact.tagString.split(',').map(t => t.trim()).filter(Boolean);
+        if (tags.length > 0) {
+          await supabase.from('crm_contact_tags').insert(
+            tags.map(t => ({ contact_id: contact.id, tag: t }))
+          );
+        }
+      }
+
+      toast.success("Contact created successfully!");
+      setNewContact({ first_name: '', last_name: '', email: '', phone: '', source: 'manual', tagString: '' });
+      loadCrmData();
+    } catch (err: any) {
+      toast.error("Error creating contact: " + err.message);
+    }
+  };
+
+  const handleAddOpportunity = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newOpportunity.title || !newOpportunity.contact_id || !newOpportunity.stage_id) {
+      toast.error("Please fill out all required deal fields.");
+      return;
+    }
+    try {
+      const { error } = await supabase
+        .from('crm_opportunities')
+        .insert({
+          stage_id: newOpportunity.stage_id,
+          contact_id: newOpportunity.contact_id,
+          title: newOpportunity.title,
+          value: parseFloat(newOpportunity.value || '0'),
+          status: newOpportunity.status
+        });
+
+      if (error) {
+        toast.error("Failed to create opportunity: " + error.message);
+        return;
+      }
+
+      toast.success("Opportunity created!");
+      setNewOpportunity({ title: '', value: '', contact_id: '', stage_id: '', status: 'open' });
+      loadCrmData();
+    } catch (err: any) {
+      toast.error("Error: " + err.message);
+    }
+  };
+
+  const handleMoveOpportunity = async (oppId: string, targetStageId: string) => {
+    try {
+      const { error } = await supabase
+        .from('crm_opportunities')
+        .update({ stage_id: targetStageId })
+        .eq('id', oppId);
+
+      if (error) {
+        toast.error("Failed to move deal: " + error.message);
+        return;
+      }
+      loadCrmData();
+    } catch (err: any) {
+      console.error(err);
+    }
+  };
+
+  const handleSaveIntegration = async (provider: string, credentialsJson: any) => {
+    try {
+      const existing = crmIntegrations.find(i => i.provider_name === provider);
+      let error;
+      if (existing) {
+        ({ error } = await supabase
+          .from('crm_integrations')
+          .update({ credentials: credentialsJson })
+          .eq('id', existing.id));
+      } else {
+        ({ error } = await supabase
+          .from('crm_integrations')
+          .insert({
+            whitelabel_id: wlConfig?.id || null,
+            creator_id: targetProfileId,
+            provider_name: provider,
+            credentials: credentialsJson,
+            is_active: true
+          }));
+      }
+
+      if (error) {
+        toast.error(`Failed to update ${provider} integration: ` + error.message);
+        return;
+      }
+
+      toast.success(`${provider} integration credentials saved!`);
+      loadCrmData();
+    } catch (err: any) {
+      toast.error("Error: " + err.message);
+    }
+  };
+
   const [purchasedSeasons, setPurchasedSeasons] = useState<string[]>(() => {
     if (typeof window !== 'undefined') {
       const saved = localStorage.getItem('vibe_purchased_seasons');
@@ -2504,6 +2785,7 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
                   {[
                     { id: 'my_bookings', label: 'My Bookings', icon: <Calendar size={16} />, color: '#b380ff', bg: 'rgba(179,128,255,0.12)', border: 'rgba(179,128,255,0.4)', show: !!user },
                     { id: 'ai_report', label: 'AI Creator Report', icon: <Activity size={16} />, color: '#3399ff', bg: 'rgba(51,153,255,0.12)', border: 'rgba(51,153,255,0.4)', show: !!user },
+                    { id: 'crm', label: 'Vibe CRM', icon: <Users size={16} />, color: '#00ffcc', bg: 'rgba(0,255,204,0.12)', border: 'rgba(0,255,204,0.4)', show: !!user },
                     { id: 'appearance', label: 'Appearance', icon: <Wand size={16} />, color: '#ff9933', bg: 'rgba(255,153,51,0.12)', border: 'rgba(255,153,51,0.4)', show: !isNetworkLevel },
                     { 
                       id: 'wallet', 
@@ -5126,6 +5408,403 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
               <AiReportTab wlConfig={wlConfig} profile={profile} accentColor={wlConfig?.theme?.accent || wlConfig?.accent || '#ff4d85'} />
             </React.Suspense>
           </ErrorBoundary>
+        )}
+
+        {/* --- VIBE CRM TAB --- */}
+        {activeTab === 'crm' && isOwnProfile && viewMode === 'edit' && (
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+            
+            {/* Header / Navigation */}
+            <div style={{ borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '16px' }}>
+              <div>
+                <h2 style={{ fontSize: '28px', fontWeight: 900, margin: 0, display: 'flex', alignItems: 'center', gap: '10px' }}>
+                  <Users size={28} color={wlConfig?.accent || '#ff4d85'} /> Vibe CRM Dashboard
+                </h2>
+                <p style={{ margin: '4px 0 0 0', color: '#888', fontSize: '14px' }}>Manage your lead relationships, sales pipelines, and API integrations.</p>
+              </div>
+              
+              <div style={{ display: 'flex', gap: '10px', background: 'rgba(255,255,255,0.02)', padding: '6px', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.05)' }}>
+                {(['contacts', 'pipelines', 'integrations'] as const).map((sub) => {
+                  const isActive = crmSubTab === sub;
+                  const accentColor = wlConfig?.accent || '#ff4d85';
+                  return (
+                    <button
+                      key={sub}
+                      onClick={() => setCrmSubTab(sub)}
+                      style={{
+                        padding: '8px 16px',
+                        background: isActive ? accentColor : 'transparent',
+                        color: isActive ? '#000' : '#888',
+                        border: 'none',
+                        borderRadius: '8px',
+                        fontWeight: 'bold',
+                        fontSize: '13px',
+                        textTransform: 'uppercase',
+                        letterSpacing: '0.5px',
+                        cursor: 'pointer',
+                        transition: 'all 0.2s'
+                      }}
+                    >
+                      {sub}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            {crmLoading ? (
+              <div style={{ padding: '80px', textAlign: 'center', color: '#888' }}>
+                <div style={{ width: '40px', height: '40px', border: '4px solid rgba(255,255,255,0.1)', borderTopColor: wlConfig?.accent || '#ff4d85', borderRadius: '50%', animation: 'spin 1s linear infinite', margin: '0 auto 16px auto' }} />
+                Synchronizing CRM settings & data...
+              </div>
+            ) : (
+              <>
+                {/* 1. CONTACTS DIRECTORY */}
+                {crmSubTab === 'contacts' && (
+                  <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 320px', gap: '24px', alignItems: 'start' }}>
+                    
+                    {/* Contacts Table List */}
+                    <div style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '20px', padding: '24px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                      <h3 style={{ margin: 0, fontSize: '18px', fontWeight: 'bold' }}>Contact Leads Directory ({crmContacts.length})</h3>
+                      
+                      {crmContacts.length === 0 ? (
+                        <div style={{ padding: '60px 20px', textAlign: 'center', color: '#888' }}>
+                          No leads or contacts registered. Use the form on the right or sync via API.
+                        </div>
+                      ) : (
+                        <div style={{ overflowX: 'auto' }}>
+                          <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '14px', textAlign: 'left' }}>
+                            <thead>
+                              <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
+                                <th style={{ padding: '12px', color: '#888', fontWeight: 600 }}>Name</th>
+                                <th style={{ padding: '12px', color: '#888', fontWeight: 600 }}>Email</th>
+                                <th style={{ padding: '12px', color: '#888', fontWeight: 600 }}>Source</th>
+                                <th style={{ padding: '12px', color: '#888', fontWeight: 600 }}>Tags</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {crmContacts.map((c) => (
+                                <tr key={c.id} style={{ borderBottom: '1px solid rgba(255,255,255,0.04)', transition: 'background 0.2s' }} className="table-row-hover">
+                                  <td style={{ padding: '14px 12px', fontWeight: 'bold', color: '#fff' }}>
+                                    {c.first_name || c.last_name ? `${c.first_name || ''} ${c.last_name || ''}` : 'Unnamed Contact'}
+                                  </td>
+                                  <td style={{ padding: '14px 12px', color: '#ccc' }}>{c.email}</td>
+                                  <td style={{ padding: '14px 12px' }}>
+                                    <span style={{ fontSize: '11px', background: 'rgba(255,255,255,0.05)', color: '#aaa', padding: '3px 8px', borderRadius: '20px', fontWeight: 'bold', textTransform: 'uppercase' }}>
+                                      {c.source}
+                                    </span>
+                                  </td>
+                                  <td style={{ padding: '14px 12px' }}>
+                                    <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap' }}>
+                                      {(c.tags || []).map((t: string) => (
+                                        <span key={t} style={{ fontSize: '10px', background: 'rgba(0,255,204,0.12)', color: '#00ffcc', padding: '2px 6px', borderRadius: '4px', fontWeight: 'bold' }}>
+                                          {t}
+                                        </span>
+                                      ))}
+                                    </div>
+                                  </td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Add Contact Sidebar Panel */}
+                    <div style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '20px', padding: '24px' }}>
+                      <h3 style={{ margin: '0 0 16px 0', fontSize: '18px', fontWeight: 'bold' }}>Add Lead Manually</h3>
+                      <form onSubmit={handleAddContact} style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                        <div>
+                          <input
+                            type="text"
+                            placeholder="First Name"
+                            value={newContact.first_name}
+                            onChange={e => setNewContact({ ...newContact, first_name: e.target.value })}
+                            style={{ width: '100%', background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.1)', padding: '10px 14px', borderRadius: '10px', color: '#fff', outline: 'none' }}
+                          />
+                        </div>
+                        <div>
+                          <input
+                            type="text"
+                            placeholder="Last Name"
+                            value={newContact.last_name}
+                            onChange={e => setNewContact({ ...newContact, last_name: e.target.value })}
+                            style={{ width: '100%', background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.1)', padding: '10px 14px', borderRadius: '10px', color: '#fff', outline: 'none' }}
+                          />
+                        </div>
+                        <div>
+                          <input
+                            type="email"
+                            required
+                            placeholder="Email Address *"
+                            value={newContact.email}
+                            onChange={e => setNewContact({ ...newContact, email: e.target.value })}
+                            style={{ width: '100%', background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.1)', padding: '10px 14px', borderRadius: '10px', color: '#fff', outline: 'none' }}
+                          />
+                        </div>
+                        <div>
+                          <input
+                            type="text"
+                            placeholder="Phone Number"
+                            value={newContact.phone}
+                            onChange={e => setNewContact({ ...newContact, phone: e.target.value })}
+                            style={{ width: '100%', background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.1)', padding: '10px 14px', borderRadius: '10px', color: '#fff', outline: 'none' }}
+                          />
+                        </div>
+                        <div>
+                          <input
+                            type="text"
+                            placeholder="Tags (comma-separated, e.g. lead, vip)"
+                            value={newContact.tagString}
+                            onChange={e => setNewContact({ ...newContact, tagString: e.target.value })}
+                            style={{ width: '100%', background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.1)', padding: '10px 14px', borderRadius: '10px', color: '#fff', outline: 'none', fontSize: '13px' }}
+                          />
+                        </div>
+                        <button
+                          type="submit"
+                          style={{
+                            width: '100%',
+                            padding: '12px',
+                            background: wlConfig?.accent || '#ff4d85',
+                            color: '#000',
+                            border: 'none',
+                            borderRadius: '10px',
+                            fontWeight: 'bold',
+                            cursor: 'pointer',
+                            marginTop: '8px'
+                          }}
+                        >
+                          Save Contact Lead
+                        </button>
+                      </form>
+                    </div>
+
+                  </div>
+                )}
+
+                {/* 2. PIPELINES (KANBAN OPPORTUNITIES) BOARD */}
+                {crmSubTab === 'pipelines' && (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+                    
+                    {/* Pipeline Selector / Add Opportunity Controls */}
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '16px', background: 'rgba(255,255,255,0.01)', padding: '16px 20px', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.04)' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                        <span style={{ color: '#888', fontSize: '14px', fontWeight: 'bold' }}>Active Board:</span>
+                        <select
+                          value={selectedPipelineId}
+                          onChange={e => setSelectedPipelineId(e.target.value)}
+                          style={{ background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.1)', padding: '8px 16px', borderRadius: '8px', color: '#fff', outline: 'none', cursor: 'pointer', fontWeight: 'bold' }}
+                        >
+                          {crmPipelines.map(p => (
+                            <option key={p.id} value={p.id}>{p.name}</option>
+                          ))}
+                        </select>
+                      </div>
+
+                      {/* Simple Inline Quick Add Opportunity Form */}
+                      <form onSubmit={handleAddOpportunity} style={{ display: 'flex', gap: '10px', flexWrap: 'wrap', alignItems: 'center' }}>
+                        <input
+                          type="text"
+                          required
+                          placeholder="Deal Title (e.g. Agency Signup)"
+                          value={newOpportunity.title}
+                          onChange={e => setNewOpportunity({ ...newOpportunity, title: e.target.value })}
+                          style={{ background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.1)', padding: '8px 12px', borderRadius: '8px', color: '#fff', outline: 'none', fontSize: '13px' }}
+                        />
+                        <select
+                          required
+                          value={newOpportunity.contact_id}
+                          onChange={e => setNewOpportunity({ ...newOpportunity, contact_id: e.target.value })}
+                          style={{ background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.1)', padding: '8px 12px', borderRadius: '8px', color: '#fff', outline: 'none', fontSize: '13px', cursor: 'pointer' }}
+                        >
+                          <option value="">-- Select Contact --</option>
+                          {crmContacts.map(c => (
+                            <option key={c.id} value={c.id}>{c.first_name || c.last_name ? `${c.first_name || ''} ${c.last_name || ''}` : c.email}</option>
+                          ))}
+                        </select>
+                        <select
+                          required
+                          value={newOpportunity.stage_id}
+                          onChange={e => setNewOpportunity({ ...newOpportunity, stage_id: e.target.value })}
+                          style={{ background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.1)', padding: '8px 12px', borderRadius: '8px', color: '#fff', outline: 'none', fontSize: '13px', cursor: 'pointer' }}
+                        >
+                          <option value="">-- Select Stage --</option>
+                          {crmStages.filter(s => s.pipeline_id === selectedPipelineId).map(s => (
+                            <option key={s.id} value={s.id}>{s.name}</option>
+                          ))}
+                        </select>
+                        <input
+                          type="number"
+                          placeholder="Value $"
+                          value={newOpportunity.value}
+                          onChange={e => setNewOpportunity({ ...newOpportunity, value: e.target.value })}
+                          style={{ background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.1)', padding: '8px 12px', borderRadius: '8px', color: '#fff', outline: 'none', fontSize: '13px', width: '100px' }}
+                        />
+                        <button type="submit" style={{ padding: '8px 16px', background: wlConfig?.accent || '#ff4d85', color: '#000', border: 'none', borderRadius: '8px', fontWeight: 'bold', fontSize: '13px', cursor: 'pointer' }}>
+                          + Add Deal
+                        </button>
+                      </form>
+                    </div>
+
+                    {/* Kanban Board columns container */}
+                    <div style={{ display: 'flex', gap: '16px', overflowX: 'auto', paddingBottom: '16px', alignItems: 'stretch' }}>
+                      {crmStages.filter(stage => stage.pipeline_id === selectedPipelineId).map((stage) => {
+                        const stageOpps = crmOpportunities.filter(o => o.stage_id === stage.id);
+                        const columnTotal = stageOpps.reduce((sum, o) => sum + parseFloat(o.value || 0), 0);
+                        
+                        return (
+                          <div key={stage.id} style={{ flex: '0 0 280px', background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '16px', padding: '16px', display: 'flex', flexDirection: 'column', gap: '14px', minHeight: '400px' }}>
+                            
+                            {/* Column Header */}
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid rgba(255,255,255,0.08)', paddingBottom: '10px' }}>
+                              <div>
+                                <h4 style={{ margin: 0, fontSize: '14px', fontWeight: 'bold', color: '#fff' }}>{stage.name}</h4>
+                                <span style={{ fontSize: '11px', color: '#888' }}>{stageOpps.length} {stageOpps.length === 1 ? 'deal' : 'deals'}</span>
+                              </div>
+                              <span style={{ fontSize: '12px', color: '#00ffcc', fontWeight: 'bold' }}>
+                                ${columnTotal.toFixed(2)}
+                              </span>
+                            </div>
+
+                            {/* Column Opportunities Stack */}
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', flex: 1, overflowY: 'auto' }}>
+                              {stageOpps.length === 0 ? (
+                                <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#444', fontSize: '12px', border: '1px dashed rgba(255,255,255,0.02)', borderRadius: '10px', padding: '20px' }}>
+                                  Empty Stage
+                                </div>
+                              ) : (
+                                stageOpps.map((opp) => {
+                                  const contact = crmContacts.find(c => c.id === opp.contact_id);
+                                  const cName = contact ? (contact.first_name || contact.last_name ? `${contact.first_name || ''} ${contact.last_name || ''}` : contact.email) : 'Unknown Contact';
+                                  
+                                  // Get adjacent stages for navigation
+                                  const pipelineStages = crmStages.filter(s => s.pipeline_id === selectedPipelineId);
+                                  const currentIdx = pipelineStages.findIndex(s => s.id === stage.id);
+                                  const prevStage = currentIdx > 0 ? pipelineStages[currentIdx - 1] : null;
+                                  const nextStage = currentIdx < pipelineStages.length - 1 ? pipelineStages[currentIdx + 1] : null;
+
+                                  return (
+                                    <div key={opp.id} style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '10px', padding: '12px', display: 'flex', flexDirection: 'column', gap: '8px', transition: 'all 0.2s' }}>
+                                      <h5 style={{ margin: 0, fontSize: '14px', fontWeight: 'bold', color: '#fff' }}>{opp.title}</h5>
+                                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '11px', color: '#aaa' }}>
+                                        <span>👤 {cName}</span>
+                                        <span style={{ color: '#00ffcc', fontWeight: 'bold' }}>${parseFloat(opp.value || 0).toFixed(2)}</span>
+                                      </div>
+
+                                      {/* Move stages action buttons */}
+                                      <div style={{ display: 'flex', justifySelf: 'flex-end', justifyContent: 'space-between', alignItems: 'center', borderTop: '1px solid rgba(255,255,255,0.05)', paddingTop: '6px', marginTop: '4px' }}>
+                                        <button
+                                          disabled={!prevStage}
+                                          onClick={() => prevStage && handleMoveOpportunity(opp.id, prevStage.id)}
+                                          style={{ background: 'none', border: 'none', color: prevStage ? '#aaa' : '#444', cursor: prevStage ? 'pointer' : 'default', fontSize: '14px' }}
+                                        >
+                                          ◀
+                                        </button>
+                                        <span style={{ fontSize: '10px', textTransform: 'uppercase', fontWeight: 'bold', color: '#888' }}>
+                                          {opp.status}
+                                        </span>
+                                        <button
+                                          disabled={!nextStage}
+                                          onClick={() => nextStage && handleMoveOpportunity(opp.id, nextStage.id)}
+                                          style={{ background: 'none', border: 'none', color: nextStage ? '#aaa' : '#444', cursor: nextStage ? 'pointer' : 'default', fontSize: '14px' }}
+                                        >
+                                          ▶
+                                        </button>
+                                      </div>
+                                    </div>
+                                  );
+                                })
+                              )}
+                            </div>
+
+                          </div>
+                        );
+                      })}
+                    </div>
+
+                  </div>
+                )}
+
+                {/* 3. INTEGRATIONS (API CONNECTORS) VIEW */}
+                {crmSubTab === 'integrations' && (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+                    <div style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '20px', padding: '24px' }}>
+                      <h3 style={{ margin: '0 0 8px 0', fontSize: '18px', fontWeight: 'bold' }}>API Integration Gateways</h3>
+                      <p style={{ margin: '0 0 24px 0', color: '#888', fontSize: '14px' }}>Integrate third-party CRM systems to automatically sync contacts and leads captured on this network.</p>
+
+                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '20px' }}>
+                        {[
+                          { id: 'gohighlevel', name: 'GoHighLevel CRM', desc: 'Sync leads to GHL sub-accounts, trigger automations, and manage funnels.', keyPlaceholder: 'Paste GHL API v2 Access Token...' },
+                          { id: 'hubspot', name: 'HubSpot Integration', desc: 'Sync customer events, purchase details, and profile contacts with HubSpot.', keyPlaceholder: 'Paste HubSpot private app token...' },
+                          { id: 'zapier', name: 'Zapier / Webhooks', desc: 'Send real-time JSON webhooks to any custom integration or automation hook.', keyPlaceholder: 'Paste destination URL (https://...)' }
+                        ].map((provider) => {
+                          const config = crmIntegrations.find(i => i.provider_name === provider.id);
+                          const isConnected = !!config?.credentials?.apiKey;
+                          const currentKey = config?.credentials?.apiKey || '';
+                          
+                          return (
+                            <div key={provider.id} style={{ background: 'rgba(0,0,0,0.2)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '16px', padding: '20px', display: 'flex', flexDirection: 'column', gap: '14px' }}>
+                              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                <h4 style={{ margin: 0, fontSize: '16px', fontWeight: 'bold', color: '#fff' }}>{provider.name}</h4>
+                                <span style={{
+                                  fontSize: '11px',
+                                  padding: '2px 8px',
+                                  borderRadius: '20px',
+                                  fontWeight: 'bold',
+                                  background: isConnected ? 'rgba(0,255,136,0.1)' : 'rgba(255,255,255,0.05)',
+                                  color: isConnected ? '#00ff88' : '#888'
+                                }}>
+                                  {isConnected ? 'CONNECTED' : 'DISCONNECTED'}
+                                </span>
+                              </div>
+                              <p style={{ margin: 0, fontSize: '13px', color: '#888', lineHeight: 1.4 }}>{provider.desc}</p>
+                              
+                              {/* Form to update credentials */}
+                              <form onSubmit={(e) => {
+                                e.preventDefault();
+                                const inputVal = (e.currentTarget.elements.namedItem('apiKey') as HTMLInputElement).value;
+                                handleSaveIntegration(provider.id, { apiKey: inputVal });
+                              }} style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '10px' }}>
+                                <input
+                                  type="text"
+                                  name="apiKey"
+                                  placeholder={provider.keyPlaceholder}
+                                  defaultValue={currentKey}
+                                  style={{ width: '100%', background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.1)', padding: '8px 12px', borderRadius: '8px', color: '#fff', outline: 'none', fontSize: '12px' }}
+                                />
+                                <button
+                                  type="submit"
+                                  style={{
+                                    alignSelf: 'flex-end',
+                                    padding: '8px 16px',
+                                    background: 'rgba(255,255,255,0.05)',
+                                    border: '1px solid rgba(255,255,255,0.1)',
+                                    color: '#fff',
+                                    borderRadius: '8px',
+                                    fontSize: '12px',
+                                    fontWeight: 'bold',
+                                    cursor: 'pointer',
+                                    transition: 'background 0.2s'
+                                  }}
+                                  onMouseOver={e=>e.currentTarget.style.background='rgba(255,255,255,0.15)'}
+                                  onMouseOut={e=>e.currentTarget.style.background='rgba(255,255,255,0.05)'}
+                                >
+                                  Save Credentials
+                                </button>
+                              </form>
+                            </div>
+                          );
+                        })}
+                      </div>
+
+                    </div>
+                  </div>
+                )}
+              </>
+            )}
+
+          </motion.div>
         )}
 
       </div>
