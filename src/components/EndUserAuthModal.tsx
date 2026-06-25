@@ -2,7 +2,8 @@ import React, { useState } from 'react';
 import { supabase } from '../supabaseClient';
 import { useWhiteLabel } from '../context/WhiteLabelContext';
 import { useToast } from '../context/ToastContext';
-import { X, ShieldCheck, AtSign, Mail, Lock, Loader, ArrowRight } from 'lucide-react';
+import { X, ShieldCheck, AtSign, Mail, Lock, Loader, ArrowRight, Info } from 'lucide-react';
+
 
 
 interface EndUserAuthModalProps {
@@ -252,6 +253,14 @@ export default function EndUserAuthModal({ onClose }: EndUserAuthModalProps) {
                    Creator
                  </button>
                </div>
+               <div style={{ marginTop: '14px', display: 'flex', alignItems: 'flex-start', gap: '10px', background: 'rgba(255,255,255,0.02)', padding: '12px', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.05)' }}>
+                  <Info size={16} color={accentColor} style={{ flexShrink: 0, marginTop: '2px' }} />
+                  <p style={{ margin: 0, fontSize: '12px', color: '#aaa', lineHeight: 1.5 }}>
+                    {role === 'viewer' 
+                      ? 'Viewer Account: Watch live streams, follow your favorite channels, buy merch, and chat in real-time.' 
+                      : 'Creator Account: Host your own streams, upload videos, publish posts, sell products, and build your audience.'}
+                  </p>
+                </div>
              </div>
             )}
             </>
