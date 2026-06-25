@@ -66,18 +66,21 @@ export function normalizeWlConfig(
   const isOlympian = isOlympianConfig(raw) || isOlympianConfig(overrides);
   const isB2k = isB2kConfig(raw) || isB2kConfig(overrides);
 
+  const isKpleChild = (raw?.parent_network_id === '33742e2f-430b-4c2d-9cba-42507891ef02') || (overrides?.parent_network_id === '33742e2f-430b-4c2d-9cba-42507891ef02');
+  const isKpleParent = isKple && !isKpleChild;
+
   const defaultAccent = isKple ? '#004e98' : (isOlympian ? '#E31B23' : (isB2k ? '#FF2A54' : '#D35400'));
 
   const theme = {
     ...(raw?.theme || {}),
-    ...(isKple ? {
+    ...(isKpleParent ? {
       heroCopy: 'Christian Revival Network — Come All Revival. Class A Christian Broadcasting.',
       logoImage: 'https://ui-avatars.com/api/?name=Christian+Revival+Network&background=004e98&color=fff'
     } : {})
   };
   const base = {
     id: raw?.id || 'master',
-    name: isKple ? 'Christian Revival Network' : (raw?.name || DEFAULT_PLATFORM_NAME),
+    name: isKpleParent ? 'Christian Revival Network' : (raw?.name || DEFAULT_PLATFORM_NAME),
     domain: raw?.domain || MASTER_DOMAIN,
     accent: raw?.accent || theme.accent || defaultAccent,
     bg: theme.bg || raw?.bg || 'var(--bg-color)',
@@ -105,7 +108,7 @@ export function normalizeWlConfig(
     ...overrides,
   };
 
-  if (isKple) {
+  if (isKpleParent) {
     base.name = 'Christian Revival Network';
     base.logoImage = 'https://ui-avatars.com/api/?name=Christian+Revival+Network&background=004e98&color=fff';
     base.heroCopy = 'Christian Revival Network — Come All Revival. Class A Christian Broadcasting.';
