@@ -15,6 +15,7 @@ import { EnterpriseAiTab } from './admin/EnterpriseAiTab';
 import { getChildNetworks, deleteChildNetwork, createChildNetwork } from '../lib/n2n';
 import LiveTelemetry from './LiveTelemetry';
 import { HeroEditorTab } from './admin/HeroEditorTab';
+import { MASTER_DOMAIN } from '../constants';
 
 /** Inline component to list child networks in the Master Admin N2N panel */
 function N2NChildrenList({ parentId, parentAccent, showToast, onEditHero }: { parentId: string; parentAccent?: string; showToast: (msg: string, type: 'success' | 'error') => void; onEditHero?: (childWl: any) => void }) {
@@ -786,7 +787,7 @@ function MasterAdminDashboard() {
 
           {activeTab === 'branding' && (
              <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} style={{ display: 'flex', flexDirection: 'column', gap: '30px' }}>
-               <BrandingTab wlConfig={whitelabelsList.find(wl => wl.domain === 'vibenetwork.tv') || { id: 'master', domain: 'vibenetwork.tv', theme: {} }} />
+               <BrandingTab wlConfig={whitelabelsList.find(wl => wl.domain === MASTER_DOMAIN || wl.domain === 'vibenetwork.tv' || wl.domain === 'vibenetwork.com') || { id: 'master', domain: MASTER_DOMAIN || 'vibenetwork.tv', theme: {} }} />
              </motion.div>
           )}
 
@@ -798,7 +799,7 @@ function MasterAdminDashboard() {
                   <p style={{ color: 'var(--text-muted)', marginBottom: '20px' }}>Configure layouts, titles, marketing copy, and slider video banners for the main Vibe Network entry portal.</p>
                   <button 
                     onClick={() => {
-                      const masterWl = whitelabelsList.find(wl => wl.domain === 'vibenetwork.tv') || { id: 'master', domain: 'vibenetwork.tv', theme: {} };
+                      const masterWl = whitelabelsList.find(wl => wl.domain === MASTER_DOMAIN || wl.domain === 'vibenetwork.tv' || wl.domain === 'vibenetwork.com') || { id: 'master', domain: MASTER_DOMAIN || 'vibenetwork.tv', theme: {} };
                       setSelectedWlForHeroEdit(masterWl);
                     }} 
                     style={{ background: '#ff4d85', color: '#fff', border: 'none', padding: '16px 24px', borderRadius: '8px', fontWeight: 'bold', cursor: 'pointer', boxShadow: '0 4px 15px rgba(255,77,133,0.3)' }}
@@ -878,7 +879,7 @@ function MasterAdminDashboard() {
                       {loading ? (
                         <tr><td colSpan={5} style={{ padding: '20px', textAlign: 'center', color: 'var(--text-muted)' }}>Initializing network fetch pattern...</td></tr>
                       ) : usersList.map((user, i) => {
-                        const userWl = whitelabelsList.find(wl => wl.id === user.whitelabel_id) || whitelabelsList.find(wl => wl.domain === 'vibenetwork.tv');
+                        const userWl = whitelabelsList.find(wl => wl.id === user.whitelabel_id) || whitelabelsList.find(wl => wl.domain === MASTER_DOMAIN || wl.domain === 'vibenetwork.tv' || wl.domain === 'vibenetwork.com');
                         const isUserDeactivated = user.is_active === false || userWl?.theme?.deactivated_creators?.includes(user.id);
                         const currentActive = !isUserDeactivated;
                         return (
@@ -975,7 +976,7 @@ function MasterAdminDashboard() {
                                  const { error } = await supabase!.from('profiles').update({ is_active: newVal }).eq('id', user.id);
                                  if (error) {
                                     // Fallback: store in whitelabel theme JSONB deactivated_creators list
-                                    const targetWlId = user.whitelabel_id || whitelabelsList.find(wl => wl.domain === 'vibenetwork.tv')?.id;
+                                    const targetWlId = user.whitelabel_id || whitelabelsList.find(wl => wl.domain === MASTER_DOMAIN || wl.domain === 'vibenetwork.tv' || wl.domain === 'vibenetwork.com')?.id;
                                     if (targetWlId) {
                                        const targetWl = whitelabelsList.find(wl => wl.id === targetWlId);
                                        if (targetWl) {
@@ -1486,7 +1487,7 @@ function MasterAdminDashboard() {
             </button>
             <div style={{ paddingBottom: '20px' }}>
               <span style={{ textTransform: 'uppercase', color: selectedWlForHeroEdit.accent || '#ff4d85', fontWeight: 'bold', letterSpacing: '1px', fontSize: '12px' }}>
-                Editing Settings For: {selectedWlForHeroEdit.name}
+                Editing Settings For: {selectedWlForHeroEdit.name || 'Vibe Network Main'}
               </span>
             </div>
             <HeroEditorTab wlConfig={selectedWlForHeroEdit} />
