@@ -3629,7 +3629,6 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
 
               {/* Option 2: Upload from Computer */}
               <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                <label style={{ color: '#ccc', fontSize: '14px', fontWeight: 'bold' }}>Upload Direct File via Network</label>
                 <div style={{ display: 'flex', gap: '10px' }}>
                   <label 
                     onDragOver={(e) => { e.preventDefault(); setIsDraggingAvatar(true); }}
