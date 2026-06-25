@@ -36,10 +36,15 @@ export async function processAndEnhanceImage(
         maxHeight = 822;
         break;
       case 'hero':
-      case 'post':
-        targetAspect = 16 / 9; // 16:9 Landscape Video/Post Hero
+        targetAspect = 16 / 9; // 16:9 Landscape Video
         maxWidth = 1920;
         maxHeight = 1080;
+        break;
+      case 'post':
+        // For feed posts, do not force a crop (dynamic targetAspect). Enforce max bounds.
+        targetAspect = -1; 
+        maxWidth = 1200;
+        maxHeight = 1200;
         break;
       case 'product':
         targetAspect = 4 / 3; // 4:3 E-commerce product image
@@ -65,32 +70,38 @@ export async function processAndEnhanceImage(
           const originalWidth = img.width;
           const originalHeight = img.height;
           const originalAspect = originalWidth / originalHeight;
+          
+          // Use original aspect ratio for posts to prevent cropping
+          const finalTargetAspect = targetAspect === -1 ? originalAspect : targetAspect;
 
           let sx = 0;
           let sy = 0;
           let sw = originalWidth;
           let sh = originalHeight;
 
-          // Crop math
-          if (originalAspect > targetAspect) {
-            // Original is wider: Crop sides (center crop horizontally)
-            sw = originalHeight * targetAspect;
-            sx = (originalWidth - sw) / 2;
-          } else if (originalAspect < targetAspect) {
-            // Original is taller: Crop top/bottom
-            sh = originalWidth / targetAspect;
-            // CRITICAL USER FIX: Offset crop slightly upwards (0.15 instead of 0.5) to keep heads and top details from being cut off
-            sy = (originalHeight - sh) * 0.15;
-            if (sy < 0) sy = 0;
-            if (sy + sh > originalHeight) sy = originalHeight - sh;
+          // Crop math (skipped for posts since finalTargetAspect === originalAspect)
+          if (Math.abs(originalAspect - finalTargetAspect) > 0.001) {
+            if (originalAspect > finalTargetAspect) {
+              // Original is wider: Crop sides (center crop horizontally)
+              sw = originalHeight * finalTargetAspect;
+              sx = (originalWidth - sw) / 2;
+            } else if (originalAspect < finalTargetAspect) {
+              // Original is taller: Crop top/bottom
+              sh = originalWidth / finalTargetAspect;
+              // CRITICAL USER FIX: Offset crop slightly upwards (0.15 instead of 0.5) to keep heads and top details from being cut off
+              sy = (originalHeight - sh) * 0.15;
+              if (sy < 0) sy = 0;
+              if (sy + sh > originalHeight) sy = originalHeight - sh;
+            }
           }
 
-          // Output dimensions
+          // Output dimensions: Scale down proportionally if bounds are exceeded
           let outWidth = sw;
           let outHeight = sh;
-          if (outWidth > maxWidth) {
-            outWidth = maxWidth;
-            outHeight = maxWidth / targetAspect;
+          if (outWidth > maxWidth || outHeight > maxHeight) {
+            const scale = Math.min(maxWidth / outWidth, maxHeight / outHeight);
+            outWidth = Math.round(outWidth * scale);
+            outHeight = Math.round(outHeight * scale);
           }
 
           canvas.width = outWidth;

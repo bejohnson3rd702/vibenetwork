@@ -2232,12 +2232,12 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
                   {post.imgs && post.imgs.length > 0 && (
                     <div style={{ width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', background: 'rgba(0,0,0,0.3)', padding: '20px 0', borderTop: '1px solid rgba(255,255,255,0.02)', borderBottom: '1px solid rgba(255,255,255,0.02)', position: 'relative' }}>
                       {post.imgs.length === 1 ? (
-                        <img src={post.imgs[0]} alt="Post content" loading="lazy" style={{ maxWidth: '50%', maxHeight: '400px', objectFit: 'contain', borderRadius: '12px', boxShadow: '0 10px 30px rgba(0,0,0,0.4)' }} />
+                        <img src={post.imgs[0]} alt="Post content" loading="lazy" style={{ maxWidth: '100%', width: 'auto', height: 'auto', maxHeight: '550px', objectFit: 'contain', borderRadius: '12px', boxShadow: '0 10px 30px rgba(0,0,0,0.4)', padding: '0 16px' }} />
                       ) : (
-                        <div style={{ position: 'relative', width: '100%', maxWidth: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                        <div style={{ position: 'relative', width: '100%', maxWidth: '100%', padding: '0 16px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                           {/* Slide Container */}
-                          <div style={{ position: 'relative', width: '100%', height: '400px', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', borderRadius: '12px' }}>
-                            <img src={post.imgs[postImageIndexes[post.id] || 0]} alt={`Post content ${(postImageIndexes[post.id] || 0) + 1}`} loading="lazy" style={{ width: '100%', height: '100%', objectFit: 'contain', borderRadius: '12px', boxShadow: '0 10px 30px rgba(0,0,0,0.4)' }} />
+                          <div style={{ position: 'relative', width: '100%', height: '500px', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', borderRadius: '12px', background: 'rgba(0,0,0,0.2)' }}>
+                            <img src={post.imgs[postImageIndexes[post.id] || 0]} alt={`Post content ${(postImageIndexes[post.id] || 0) + 1}`} loading="lazy" style={{ maxWidth: '100%', maxHeight: '100%', width: 'auto', height: 'auto', objectFit: 'contain', borderRadius: '12px', boxShadow: '0 10px 30px rgba(0,0,0,0.4)' }} />
                           </div>
 
                           {/* Left Arrow Button */}
