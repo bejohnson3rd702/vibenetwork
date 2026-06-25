@@ -454,6 +454,23 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
   const [isDraggingEpisodeImg, setIsDraggingEpisodeImg] = useState(false);
   const [activeSeriesIdForEp, setActiveSeriesIdForEp] = useState<string | null>(null);
 
+  // Slow Upload Loader State & Effect
+  const [showUploadLoader, setShowUploadLoader] = useState(false);
+
+  useEffect(() => {
+    const isUploading = uploadingPostMedia || uploadingProductImg || uploadingVideo || uploadingSeriesImg || uploadingEpisodeImg || saving;
+    if (!isUploading) {
+      setShowUploadLoader(false);
+      return;
+    }
+
+    const timer = setTimeout(() => {
+      setShowUploadLoader(true);
+    }, 2000);
+
+    return () => clearTimeout(timer);
+  }, [uploadingPostMedia, uploadingProductImg, uploadingVideo, uploadingSeriesImg, uploadingEpisodeImg, saving]);
+
   useEffect(() => {
     if (!targetProfileId && !isNetworkLevel) {
       navigate({ pathname: '/', search: location.search });
@@ -5044,6 +5061,107 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
             </div>
           );
         })()}
+      </AnimatePresence>
+
+      {/* Uploading progress indicator overlay */}
+      <AnimatePresence>
+        {showUploadLoader && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            style={{
+              position: 'fixed',
+              inset: 0,
+              background: 'rgba(5, 5, 8, 0.85)',
+              backdropFilter: 'blur(16px)',
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              justifyContent: 'center',
+              zIndex: 99999
+            }}
+          >
+            {/* Concentric rotating loaders */}
+            <div style={{ position: 'relative', width: '120px', height: '120px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              
+              {/* Outer Halo ring */}
+              <motion.div
+                animate={{ rotate: 360 }}
+                transition={{ repeat: Infinity, duration: 1.5, ease: 'linear' }}
+                style={{
+                  position: 'absolute',
+                  width: '100%',
+                  height: '100%',
+                  borderRadius: '50%',
+                  border: '4px solid transparent',
+                  borderTopColor: '#ff4d85',
+                  borderBottomColor: '#8A2BE2'
+                }}
+              />
+
+              {/* Middle Inner ring */}
+              <motion.div
+                animate={{ rotate: -360 }}
+                transition={{ repeat: Infinity, duration: 2, ease: 'linear' }}
+                style={{
+                  position: 'absolute',
+                  width: '75%',
+                  height: '75%',
+                  borderRadius: '50%',
+                  border: '4px solid transparent',
+                  borderLeftColor: '#00ff88',
+                  borderRightColor: '#00bbff'
+                }}
+              />
+
+              {/* Center glowing core */}
+              <motion.div
+                animate={{ scale: [1, 1.2, 1] }}
+                transition={{ repeat: Infinity, duration: 1.5, ease: 'easeInOut' }}
+                style={{
+                  width: '24px',
+                  height: '24px',
+                  borderRadius: '50%',
+                  background: 'linear-gradient(135deg, #ff4d85, #8A2BE2)',
+                  boxShadow: '0 0 20px #ff4d85'
+                }}
+              />
+            </div>
+
+            {/* Message & Status */}
+            <motion.h3
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.2 }}
+              style={{
+                marginTop: '24px',
+                fontSize: '20px',
+                fontWeight: 'bold',
+                color: '#fff',
+                letterSpacing: '0.5px'
+              }}
+            >
+              Processing Upload...
+            </motion.h3>
+
+            <motion.p
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.4 }}
+              style={{
+                marginTop: '8px',
+                fontSize: '14px',
+                color: '#888',
+                maxWidth: '280px',
+                textAlign: 'center',
+                lineHeight: 1.5
+              }}
+            >
+              Encoding and storing your media files. Please keep this page open.
+            </motion.p>
+          </motion.div>
+        )}
       </AnimatePresence>
 
       </div>
