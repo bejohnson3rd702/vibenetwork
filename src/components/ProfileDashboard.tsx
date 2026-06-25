@@ -444,7 +444,9 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
   // Series Data
   const [seriesList, setSeriesList] = useState<any[]>([]);
   const [newSeries, setNewSeries] = useState({ title: '', description: '', price: '', img: '' });
-  const [newEpisode, setNewEpisode] = useState({ title: '', description: '', length: '', price: '' });
+  const [newEpisode, setNewEpisode] = useState({ title: '', description: '', length: '', price: '', video_url: '' });
+  const [uploadingVideo, setUploadingVideo] = useState(false);
+  const [isDraggingVideo, setIsDraggingVideo] = useState(false);
   const [activeSeriesIdForEp, setActiveSeriesIdForEp] = useState<string | null>(null);
 
   useEffect(() => {
@@ -901,6 +903,30 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
     setSaving(false);
   };
 
+  const handleVideoFileUpload = async (file: File) => {
+    if (!file) return;
+    setUploadingVideo(true);
+    const fileExt = file.name.split('.').pop();
+    const fileName = `episodes/video_${Date.now()}.${fileExt}`;
+    const filePath = `${fileName}`;
+
+    try {
+      const { error: uploadError } = await supabase!.storage.from('images').upload(filePath, file);
+      if (uploadError) throw uploadError;
+      
+      const { data } = supabase!.storage.from('images').getPublicUrl(filePath);
+      if (data && data.publicUrl) {
+        setNewEpisode(prev => ({ ...prev, video_url: data.publicUrl }));
+        toast.success('Video uploaded successfully!');
+      }
+    } catch (err: any) {
+      console.error(err);
+      toast.error('Video upload failed: ' + (err.message || 'Storage error'));
+    } finally {
+      setUploadingVideo(false);
+    }
+  };
+
   const handleAddEpisode = async (seriesId: string) => {
     if (!newEpisode.title) return;
     
@@ -909,7 +935,8 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
       title: newEpisode.title,
       description: newEpisode.description,
       length: newEpisode.length,
-      price: parseFloat(newEpisode.price || '0')
+      price: parseFloat(newEpisode.price || '0'),
+      video_url: newEpisode.video_url || ''
     };
 
     try {
@@ -926,7 +953,7 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
         return s;
       }));
     }
-    setNewEpisode({ title: '', description: '', length: '', price: '' });
+    setNewEpisode({ title: '', description: '', length: '', price: '', video_url: '' });
     setActiveSeriesIdForEp(null);
   };
 
@@ -3110,10 +3137,59 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
                           <div style={{ gridColumn: '1 / -1' }}>
                             <textarea placeholder="Description..." value={newEpisode.description} onChange={e=>setNewEpisode({...newEpisode, description: e.target.value})} style={{ width: '100%', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', padding: '10px', borderRadius: '8px', color: 'var(--text-primary)', outline: 'none', minHeight: '60px' }} />
                           </div>
-                          <div style={{ gridColumn: '1 / -1', display: 'flex', gap: '12px', alignItems: 'center' }}>
+
+                          {/* Video Link & File Upload */}
+                          <div style={{ gridColumn: '1 / -1', display: 'flex', flexWrap: 'wrap', gap: '12px', alignItems: 'center' }}>
+                            <input 
+                              type="text" 
+                              placeholder="Video Link (YouTube, Vimeo, MP4, etc.)" 
+                              value={newEpisode.video_url || ''} 
+                              onChange={e=>setNewEpisode({...newEpisode, video_url: e.target.value})} 
+                              style={{ flex: 1, minWidth: '240px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', padding: '12px', borderRadius: '8px', color: 'var(--text-primary)', outline: 'none', fontSize: '13px' }} 
+                            />
+                            
+                            <label 
+                              onDragOver={(e) => { e.preventDefault(); setIsDraggingVideo(true); }}
+                              onDragLeave={() => setIsDraggingVideo(false)}
+                              onDrop={async (e) => {
+                                e.preventDefault();
+                                setIsDraggingVideo(false);
+                                if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+                                  await handleVideoFileUpload(e.dataTransfer.files[0]);
+                                }
+                              }}
+                              style={{
+                                flex: '1 1 200px',
+                                background: isDraggingVideo ? 'rgba(255,77,133,0.05)' : 'rgba(255,255,255,0.05)',
+                                border: isDraggingVideo ? '2px dashed #ff4d85' : '1px solid rgba(255,255,255,0.1)',
+                                padding: '12px',
+                                borderRadius: '8px',
+                                color: isDraggingVideo ? '#ff4d85' : '#ccc',
+                                textAlign: 'center',
+                                cursor: 'pointer',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                gap: '8px',
+                                fontSize: '13px',
+                                fontWeight: 'bold',
+                                transition: 'all 0.2s ease'
+                              }}
+                            >
+                              <Video size={16} />
+                              {uploadingVideo ? 'Uploading Video...' : isDraggingVideo ? 'Drop here!' : 'Upload Video File'}
+                              <input type="file" accept="video/*" onChange={async (e) => {
+                                if (e.target.files && e.target.files[0]) {
+                                  await handleVideoFileUpload(e.target.files[0]);
+                                }
+                              }} style={{ display: 'none' }} disabled={uploadingVideo} />
+                            </label>
+                          </div>
+
+                          <div style={{ gridColumn: '1 / -1', display: 'flex', gap: '12px', alignItems: 'center', marginTop: '8px' }}>
                             <span style={{ color: 'var(--text-muted)' }}>Price $</span>
                             <input type="number" step="0.01" placeholder="9.99" value={newEpisode.price} onChange={e=>setNewEpisode({...newEpisode, price: e.target.value})} style={{ flex: 1, background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', padding: '10px', borderRadius: '8px', color: 'var(--text-primary)', outline: 'none' }} />
-                            <button onClick={() => handleAddEpisode(series.id)} disabled={!newEpisode.title} style={{ padding: '10px 20px', background: newEpisode.title ? '#00ff88' : 'rgba(255,255,255,0.1)', color: '#000', border: 'none', borderRadius: '8px', fontWeight: 'bold', cursor: newEpisode.title ? 'pointer' : 'not-allowed' }}>Save</button>
+                            <button onClick={() => handleAddEpisode(series.id)} disabled={!newEpisode.title || uploadingVideo} style={{ padding: '10px 20px', background: (newEpisode.title && !uploadingVideo) ? '#00ff88' : 'rgba(255,255,255,0.1)', color: '#000', border: 'none', borderRadius: '8px', fontWeight: 'bold', cursor: (newEpisode.title && !uploadingVideo) ? 'pointer' : 'not-allowed' }}>Save</button>
                           </div>
                         </div>
                       </div>
@@ -4264,6 +4340,87 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
       {/* TV SERIES CINEMA THEATER OVERLAY */}
       <AnimatePresence>
         {showCinemaModal && activeCinemaSeries && activeCinemaEpisode && (() => {
+          const renderCinemaPlayer = () => {
+            const url = activeCinemaEpisode.video_url || '';
+            if (!url) {
+              return (
+                <div style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', position: 'relative' }}>
+                  {/* Interactive sound visualizer or waves representation */}
+                  <div style={{ display: 'flex', gap: '6px', alignItems: 'center', height: '60px', marginBottom: '20px' }}>
+                    {Array.from({ length: 18 }).map((_, i) => (
+                      <motion.div 
+                        key={i} 
+                        animate={{ scaleY: [0.2, Math.random() * 1.5 + 0.2, 0.2] }} 
+                        transition={{ repeat: Infinity, duration: 0.8 + Math.random(), ease: 'easeInOut' }} 
+                        style={{ width: '3px', height: '40px', background: '#ff4d85', borderRadius: '2px', transformOrigin: 'center' }} 
+                      />
+                    ))}
+                  </div>
+
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', background: 'rgba(255,77,133,0.1)', color: '#ff4d85', padding: '6px 16px', borderRadius: '20px', border: '1px solid rgba(255,77,133,0.3)', fontSize: '13px', fontWeight: 'bold', marginBottom: '10px' }}>
+                    <span style={{ width: 8, height: 8, borderRadius: '50%', background: '#ff4d85', display: 'inline-block', animation: 'pulse 1s infinite' }} />
+                    CINEMA THEATER STREAMING ACTIVE
+                  </div>
+                  <span style={{ color: '#fff', fontSize: '16px', fontWeight: 'bold' }}>Playing: {activeCinemaEpisode.title}</span>
+                  
+                  {/* Player controls overlay */}
+                  <div style={{ position: 'absolute', bottom: 20, left: 20, right: 20, display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'rgba(0,0,0,0.7)', padding: '12px 20px', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.1)', backdropFilter: 'blur(10px)' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+                      <button style={{ background: 'none', border: 'none', color: '#ff4d85', cursor: 'pointer', fontSize: '20px' }}>▶</button>
+                      <div style={{ fontSize: '12px', color: '#fff' }}>08:45 / {activeCinemaEpisode.length || '45 min'}</div>
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+                      <span style={{ fontSize: '12px', color: 'rgba(255,77,133,0.8)', fontWeight: 'bold', letterSpacing: '1px' }}>PREVIEW ACTIVE</span>
+                      <button style={{ background: 'none', border: 'none', color: '#fff', cursor: 'pointer', fontSize: '14px' }}>🔊</button>
+                      <button style={{ background: 'none', border: 'none', color: '#fff', cursor: 'pointer', fontSize: '14px' }}>⛶</button>
+                    </div>
+                  </div>
+                </div>
+              );
+            }
+
+            // Check for YouTube
+            const ytMatch = url.match(/(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/i);
+            if (ytMatch && ytMatch[1]) {
+              const embedUrl = `https://www.youtube.com/embed/${ytMatch[1]}?autoplay=1&rel=0`;
+              return (
+                <iframe 
+                  title={activeCinemaEpisode.title}
+                  src={embedUrl}
+                  style={{ width: '100%', height: '100%', border: 'none' }}
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                  allowFullScreen
+                />
+              );
+            }
+
+            // Check for Vimeo
+            const vimeoMatch = url.match(/vimeo\.com\/(?:video\/)?([0-9]+)/i);
+            if (vimeoMatch && vimeoMatch[1]) {
+              const embedUrl = `https://player.vimeo.com/video/${vimeoMatch[1]}?autoplay=1`;
+              return (
+                <iframe 
+                  title={activeCinemaEpisode.title}
+                  src={embedUrl}
+                  style={{ width: '100%', height: '100%', border: 'none' }}
+                  allow="autoplay; fullscreen; picture-in-picture"
+                  allowFullScreen
+                />
+              );
+            }
+
+            // Native HTML5 video player
+            return (
+              <video 
+                src={url}
+                controls
+                autoPlay
+                playsInline
+                style={{ width: '100%', height: '100%', objectFit: 'contain', background: '#000' }}
+              />
+            );
+          };
+
           return (
             <div style={{ position: 'fixed', inset: 0, zIndex: 99999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }}>
               <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} style={{ position: 'absolute', inset: 0, background: 'rgba(5, 5, 7, 0.97)', backdropFilter: 'blur(30px)' }} onClick={() => { setShowCinemaModal(false); setActiveCinemaSeries(null); }} />
@@ -4287,37 +4444,7 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
                     
                     {/* Simulated High-Fidelity Video Screen */}
                     <div style={{ width: '100%', aspectRatio: '16/9', background: 'radial-gradient(circle, #250917 0%, #030103 100%)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', position: 'relative', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
-                      
-                      {/* Interactive sound visualizer or waves representation */}
-                      <div style={{ display: 'flex', gap: '6px', alignItems: 'center', height: '60px', marginBottom: '20px' }}>
-                        {Array.from({ length: 18 }).map((_, i) => (
-                          <motion.div 
-                            key={i} 
-                            animate={{ scaleY: [0.2, Math.random() * 1.5 + 0.2, 0.2] }} 
-                            transition={{ repeat: Infinity, duration: 0.8 + Math.random(), ease: 'easeInOut' }} 
-                            style={{ width: '3px', height: '40px', background: '#ff4d85', borderRadius: '2px', transformOrigin: 'center' }} 
-                          />
-                        ))}
-                      </div>
-
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', background: 'rgba(255,77,133,0.1)', color: '#ff4d85', padding: '6px 16px', borderRadius: '20px', border: '1px solid rgba(255,77,133,0.3)', fontSize: '13px', fontWeight: 'bold', marginBottom: '10px' }}>
-                        <span style={{ width: 8, height: 8, borderRadius: '50%', background: '#ff4d85', display: 'inline-block', animation: 'pulse 1s infinite' }} />
-                        CINEMA THEATER STREAMING ACTIVE
-                      </div>
-                      <span style={{ color: '#fff', fontSize: '16px', fontWeight: 'bold' }}>Playing: {activeCinemaEpisode.title}</span>
-                      
-                      {/* Player controls overlay */}
-                      <div style={{ position: 'absolute', bottom: 20, left: 20, right: 20, display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'rgba(0,0,0,0.7)', padding: '12px 20px', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.1)', backdropFilter: 'blur(10px)' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-                          <button style={{ background: 'none', border: 'none', color: '#ff4d85', cursor: 'pointer', fontSize: '20px' }}>▶</button>
-                          <div style={{ fontSize: '12px', color: '#fff' }}>08:45 / {activeCinemaEpisode.length || '45 min'}</div>
-                        </div>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-                          <span style={{ fontSize: '12px', color: 'rgba(255,77,133,0.8)', fontWeight: 'bold', letterSpacing: '1px' }}>PREVIEW ACTIVE</span>
-                          <button style={{ background: 'none', border: 'none', color: '#fff', cursor: 'pointer', fontSize: '14px' }}>🔊</button>
-                          <button style={{ background: 'none', border: 'none', color: '#fff', cursor: 'pointer', fontSize: '14px' }}>⛶</button>
-                        </div>
-                      </div>
+                      {renderCinemaPlayer()}
                     </div>
 
                     {/* Synopsis & Synopsis metadata */}
