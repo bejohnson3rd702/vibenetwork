@@ -218,6 +218,9 @@ CREATE TABLE IF NOT EXISTS public.series (
     price NUMERIC NOT NULL,
     img TEXT,
     creator_id UUID REFERENCES public.profiles(id) ON DELETE CASCADE,
+    subscriber_free BOOLEAN DEFAULT FALSE,
+    subscriber_price NUMERIC,
+    billing_level TEXT DEFAULT 'series',
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
@@ -229,6 +232,8 @@ CREATE TABLE IF NOT EXISTS public.episodes (
     description TEXT,
     length TEXT,
     price NUMERIC NOT NULL,
+    subscriber_free BOOLEAN DEFAULT FALSE,
+    subscriber_price NUMERIC,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 

@@ -451,8 +451,8 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
 
   // Series Data
   const [seriesList, setSeriesList] = useState<any[]>([]);
-  const [newSeries, setNewSeries] = useState({ title: '', description: '', price: '', img: '' });
-  const [newEpisode, setNewEpisode] = useState({ title: '', description: '', length: '', price: '', video_url: '', thumbnail_url: '', genre: '', rating: '' });
+  const [newSeries, setNewSeries] = useState({ title: '', description: '', price: '', img: '', billing_level: 'series', subscriber_free: false, subscriber_price: '' });
+  const [newEpisode, setNewEpisode] = useState({ title: '', description: '', length: '', price: '', video_url: '', thumbnail_url: '', genre: '', rating: '', subscriber_free: false, subscriber_price: '' });
   const [uploadingVideo, setUploadingVideo] = useState(false);
   const [isDraggingVideo, setIsDraggingVideo] = useState(false);
   const [uploadingSeriesImg, setUploadingSeriesImg] = useState(false);
@@ -907,15 +907,18 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
 
   const handleAddSeries = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newSeries.title || !newSeries.price) return;
+    if (!newSeries.title || (newSeries.billing_level === 'series' && !newSeries.price)) return;
     setSaving(true);
     
     const insertData = {
       creator_id: profile.id,
       title: newSeries.title,
       description: newSeries.description,
-      price: parseFloat(newSeries.price),
-      img: newSeries.img || ''
+      price: newSeries.billing_level === 'series' ? parseFloat(newSeries.price) : 0,
+      img: newSeries.img || '',
+      billing_level: newSeries.billing_level,
+      subscriber_free: newSeries.subscriber_free,
+      subscriber_price: (newSeries.billing_level === 'series' && newSeries.subscriber_price) ? parseFloat(newSeries.subscriber_price) : null
     };
 
     try {
@@ -928,7 +931,7 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
     } catch {
       setSeriesList([{ ...insertData, id: Date.now().toString(), episodes: [] }, ...seriesList]);
     }
-    setNewSeries({ title: '', description: '', price: '', img: '' });
+    setNewSeries({ title: '', description: '', price: '', img: '', billing_level: 'series', subscriber_free: false, subscriber_price: '' });
     setSaving(false);
   };
 
@@ -1011,7 +1014,10 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
   };
 
   const handleAddEpisode = async (seriesId: string) => {
-    if (!newEpisode.title) return;
+    if (!newEpisode.title || !newEpisode.video_url) {
+      toast.error('Episode Title and Video are required.');
+      return;
+    }
     
     const insertData = {
       series_id: seriesId,
@@ -1022,7 +1028,9 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
       video_url: newEpisode.video_url || '',
       thumbnail_url: newEpisode.thumbnail_url || '',
       genre: newEpisode.genre || '',
-      rating: newEpisode.rating || ''
+      rating: newEpisode.rating || '',
+      subscriber_free: newEpisode.subscriber_free,
+      subscriber_price: newEpisode.subscriber_price ? parseFloat(newEpisode.subscriber_price) : null
     };
 
     try {
@@ -1072,7 +1080,7 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
       console.error('Unexpected error inserting episode:', err);
       toast.error('An unexpected error occurred: ' + (err.message || 'Unknown error'));
     }
-    setNewEpisode({ title: '', description: '', length: '', price: '', video_url: '', thumbnail_url: '', genre: '', rating: '' });
+    setNewEpisode({ title: '', description: '', length: '', price: '', video_url: '', thumbnail_url: '', genre: '', rating: '', subscriber_free: false, subscriber_price: '' });
     setActiveSeriesIdForEp(null);
   };
 
@@ -1156,24 +1164,50 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
   };
 
   const handleBuySeasonSimulation = (series: any) => {
+    let finalPrice = parseFloat(series.price || '0');
+    let discountMsg = '';
+
+    if (isSubscribed) {
+      if (series.subscriber_free) {
+        finalPrice = 0;
+        discountMsg = ' (Free Subscriber Access!)';
+      } else if (series.subscriber_price !== null && series.subscriber_price !== undefined && series.subscriber_price !== '') {
+        finalPrice = parseFloat(series.subscriber_price);
+        discountMsg = ` (Subscriber Discount Applied! Saved $${(parseFloat(series.price || '0') - finalPrice).toFixed(2)})`;
+      }
+    }
+
     const updated = [...purchasedSeasons, series.id];
     setPurchasedSeasons(updated);
     if (typeof window !== 'undefined') {
       localStorage.setItem('vibe_purchased_seasons', JSON.stringify(updated));
     }
-    toast.success(`Purchased season pass for ${series.title}!`);
+    toast.success(`Successfully purchased Season Pass for ${series.title} for $${finalPrice.toFixed(2)}${discountMsg}! 🎉`);
     setActiveCinemaSeries(series);
     setActiveCinemaEpisode(series.episodes?.[0] || null);
     setShowCinemaModal(true);
   };
 
   const handleBuyEpisodeSimulation = (episode: any, series: any) => {
+    let finalPrice = parseFloat(episode.price || '0');
+    let discountMsg = '';
+
+    if (isSubscribed) {
+      if (episode.subscriber_free) {
+        finalPrice = 0;
+        discountMsg = ' (Free Subscriber Access!)';
+      } else if (episode.subscriber_price !== null && episode.subscriber_price !== undefined && episode.subscriber_price !== '') {
+        finalPrice = parseFloat(episode.subscriber_price);
+        discountMsg = ` (Subscriber Discount Applied! Saved $${(parseFloat(episode.price || '0') - finalPrice).toFixed(2)})`;
+      }
+    }
+
     const updated = [...purchasedEpisodes, episode.id];
     setPurchasedEpisodes(updated);
     if (typeof window !== 'undefined') {
       localStorage.setItem('vibe_purchased_episodes', JSON.stringify(updated));
     }
-    toast.success(`Purchased episode: ${episode.title}!`);
+    toast.success(`Successfully purchased Episode: ${episode.title} for $${finalPrice.toFixed(2)}${discountMsg}! 🎬`);
     setActiveCinemaSeries(series);
     setActiveCinemaEpisode(episode);
     setShowCinemaModal(true);
@@ -3241,10 +3275,62 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
                   <div style={{ gridColumn: '1 / -1' }}>
                     <textarea placeholder="Series Description..." value={newSeries.description} onChange={e => setNewSeries({...newSeries, description: e.target.value})} style={{ width: '100%', background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.1)', padding: '14px', borderRadius: '12px', color: 'var(--text-primary)', outline: 'none', fontSize: '15px', minHeight: '80px', resize: 'vertical' }} />
                   </div>
-                  <div style={{ display: 'flex', background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px', overflow: 'hidden' }}>
-                    <span style={{ padding: '14px', color: 'var(--text-muted)', background: 'rgba(255,255,255,0.02)', borderRight: '1px solid rgba(255,255,255,0.1)' }}>Full Season $</span>
-                    <input type="number" step="0.01" placeholder="Price" value={newSeries.price} onChange={e => setNewSeries({...newSeries, price: e.target.value})} style={{ flex: 1, background: 'transparent', border: 'none', padding: '14px', color: 'var(--text-primary)', outline: 'none', fontSize: '15px' }} />
+                  <div style={{ gridColumn: '1 / -1', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                    <label style={{ fontSize: '13px', color: '#ccc', fontWeight: 'bold' }}>Billing Model</label>
+                    <select 
+                      value={newSeries.billing_level} 
+                      onChange={e => setNewSeries({...newSeries, billing_level: e.target.value, price: e.target.value === 'episode' ? '' : newSeries.price })}
+                      style={{ width: '100%', background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.1)', padding: '14px', borderRadius: '12px', color: 'var(--text-primary)', outline: 'none', fontSize: '15px', cursor: 'pointer' }}
+                    >
+                      <option value="series">Charge Per Series (Season Pass)</option>
+                      <option value="episode">Charge Per Episode (Pay Per Episode)</option>
+                    </select>
                   </div>
+
+                  {newSeries.billing_level === 'series' && (
+                    <>
+                      <div style={{ display: 'flex', background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px', overflow: 'hidden' }}>
+                        <span style={{ padding: '14px', color: 'var(--text-muted)', background: 'rgba(255,255,255,0.02)', borderRight: '1px solid rgba(255,255,255,0.1)' }}>Full Season $</span>
+                        <input type="number" step="0.01" placeholder="Price" value={newSeries.price} onChange={e => setNewSeries({...newSeries, price: e.target.value})} style={{ flex: 1, background: 'transparent', border: 'none', padding: '14px', color: 'var(--text-primary)', outline: 'none', fontSize: '15px' }} />
+                      </div>
+
+                      {/* Subscriber Pricing Rules for Series */}
+                      <div style={{ gridColumn: '1 / -1', background: 'rgba(255,255,255,0.02)', padding: '20px', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.05)', display: 'flex', flexDirection: 'column', gap: '14px' }}>
+                        <span style={{ fontSize: '12px', color: 'var(--text-muted)', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '0.5px' }}>🔒 Subscriber Access Rules (Series)</span>
+                        
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                          <input 
+                            type="checkbox" 
+                            id="seriesSubFree" 
+                            checked={newSeries.subscriber_free} 
+                            onChange={e => setNewSeries({ ...newSeries, subscriber_free: e.target.checked, subscriber_price: e.target.checked ? '' : newSeries.subscriber_price })}
+                            style={{ width: '18px', height: '18px', cursor: 'pointer', accentColor: '#ff4d85' }}
+                          />
+                          <label htmlFor="seriesSubFree" style={{ color: 'var(--text-primary)', fontSize: '14px', fontWeight: 'bold', cursor: 'pointer' }}>
+                            🎁 Allow active subscribers to view this full series for free
+                          </label>
+                        </div>
+
+                        {!newSeries.subscriber_free && (
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                            <label style={{ color: '#ccc', fontSize: '13px' }}>Subscriber Discounted Price (Optional)</label>
+                            <div style={{ display: 'flex', background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px', overflow: 'hidden', width: '200px' }}>
+                              <span style={{ padding: '12px', color: 'var(--text-muted)', background: 'rgba(255,255,255,0.02)', borderRight: '1px solid rgba(255,255,255,0.1)', fontSize: '14px' }}>$</span>
+                              <input 
+                                type="number" 
+                                step="0.01" 
+                                placeholder="Discounted Price" 
+                                value={newSeries.subscriber_price} 
+                                onChange={e => setNewSeries({ ...newSeries, subscriber_price: e.target.value })} 
+                                style={{ flex: 1, background: 'transparent', border: 'none', padding: '12px', color: 'var(--text-primary)', outline: 'none', fontSize: '14px' }} 
+                              />
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    </>
+                  )}
+
                   <div style={{ display: 'flex', gap: '12px' }}>
                     {newSeries.img ? (
                       <div style={{ width: '100px', height: '56px', borderRadius: '8px', backgroundImage: `url("${newSeries.img}")`, backgroundSize: 'cover', backgroundPosition: 'center', border: '1px solid rgba(255,255,255,0.1)', flexShrink: 0 }} />
@@ -3283,7 +3369,7 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
                     </label>
                   </div>
                   <div style={{ gridColumn: '1 / -1', display: 'flex', justifyContent: 'flex-end' }}>
-                    <button type="submit" disabled={!newSeries.title || !newSeries.price || uploadingSeriesImg} style={{ padding: '12px 24px', background: (!newSeries.title || !newSeries.price || uploadingSeriesImg) ? 'rgba(255,255,255,0.1)' : '#ff4d85', color: 'var(--text-primary)', border: 'none', borderRadius: '12px', fontWeight: 'bold', cursor: (!newSeries.title || !newSeries.price || uploadingSeriesImg) ? 'not-allowed' : 'pointer' }}>Publish Series</button>
+                    <button type="submit" disabled={!newSeries.title || (newSeries.billing_level === 'series' && !newSeries.price) || uploadingSeriesImg} style={{ padding: '12px 24px', background: (!newSeries.title || (newSeries.billing_level === 'series' && !newSeries.price) || uploadingSeriesImg) ? 'rgba(255,255,255,0.1)' : '#ff4d85', color: 'var(--text-primary)', border: 'none', borderRadius: '12px', fontWeight: 'bold', cursor: (!newSeries.title || (newSeries.billing_level === 'series' && !newSeries.price) || uploadingSeriesImg) ? 'pointer' : 'not-allowed' }}>Publish Series</button>
                   </div>
                 </form>
               </motion.div>
@@ -3362,7 +3448,30 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
                       
                       <div style={{ display: 'flex', alignItems: 'center', gap: '20px', marginTop: '10px' }}>
                         {(() => {
-                          const isSeasonUnlocked = isOwnProfile || purchasedSeasons.includes(selectedSeriesForViewer.id);
+                          const isSeasonUnlocked = isOwnProfile || (
+                            selectedSeriesForViewer.billing_level !== 'episode' && (
+                              purchasedSeasons.includes(selectedSeriesForViewer.id) ||
+                              (isSubscribed && selectedSeriesForViewer.subscriber_free) ||
+                              parseFloat(selectedSeriesForViewer.price || '0') === 0
+                            )
+                          );
+                          
+                          if (selectedSeriesForViewer.billing_level === 'episode') {
+                            return (
+                              <span style={{ 
+                                background: 'rgba(255,255,255,0.05)', 
+                                color: '#ccc', 
+                                padding: '10px 20px', 
+                                borderRadius: '12px', 
+                                fontSize: '14px', 
+                                fontWeight: 'bold',
+                                border: '1px solid rgba(255,255,255,0.1)'
+                              }}>
+                                🎫 Pay-Per-Episode Series
+                              </span>
+                            );
+                          }
+
                           if (isSeasonUnlocked) {
                             return (
                               <button 
@@ -3390,6 +3499,15 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
                               </button>
                             );
                           } else {
+                            let displayPrice = parseFloat(selectedSeriesForViewer.price || '0');
+                            let priceText = `$${displayPrice.toFixed(2)}`;
+                            if (isSubscribed) {
+                              if (selectedSeriesForViewer.subscriber_free) {
+                                priceText = 'FREE for Subscribers';
+                              } else if (selectedSeriesForViewer.subscriber_price !== null && selectedSeriesForViewer.subscriber_price !== undefined && selectedSeriesForViewer.subscriber_price !== '') {
+                                priceText = `$${parseFloat(selectedSeriesForViewer.subscriber_price).toFixed(2)} (Subscriber Discount)`;
+                              }
+                            }
                             return (
                               <button 
                                 onClick={() => handleBuySeasonSimulation(selectedSeriesForViewer)}
@@ -3408,7 +3526,7 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
                                 onMouseOver={e=>e.currentTarget.style.transform='scale(1.03)'}
                                 onMouseOut={e=>e.currentTarget.style.transform='scale(1)'}
                               >
-                                Buy Full Season (${selectedSeriesForViewer.price})
+                                Buy Full Season ({priceText})
                               </button>
                             );
                           }
@@ -3430,8 +3548,18 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
                     ) : (
                       <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
                         {selectedSeriesForViewer.episodes.map((episode: any, idx: number) => {
-                          const isSeasonUnlocked = isOwnProfile || purchasedSeasons.includes(selectedSeriesForViewer.id);
-                          const isEpUnlocked = isSeasonUnlocked || purchasedEpisodes.includes(episode.id);
+                          const isSeasonUnlocked = isOwnProfile || (
+                            selectedSeriesForViewer.billing_level !== 'episode' && (
+                              purchasedSeasons.includes(selectedSeriesForViewer.id) ||
+                              (isSubscribed && selectedSeriesForViewer.subscriber_free) ||
+                              parseFloat(selectedSeriesForViewer.price || '0') === 0
+                            )
+                          );
+                          const isEpUnlocked = isOwnProfile || 
+                            isSeasonUnlocked || 
+                            purchasedEpisodes.includes(episode.id) || 
+                            (isSubscribed && episode.subscriber_free) ||
+                            parseFloat(episode.price || '0') === 0;
 
                           return (
                             <div 
@@ -3516,24 +3644,37 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
                                     Play Episode 🍿
                                   </button>
                                 ) : (
-                                  <button 
-                                    onClick={() => handleBuyEpisodeSimulation(episode, selectedSeriesForViewer)}
-                                    style={{ 
-                                      padding: '10px 24px', 
-                                      background: 'rgba(255,255,255,0.08)', 
-                                      border: '1px solid rgba(255,255,255,0.1)', 
-                                      color: 'var(--text-primary)', 
-                                      borderRadius: '12px', 
-                                      fontWeight: 'bold', 
-                                      fontSize: '13px', 
-                                      cursor: 'pointer',
-                                      transition: 'transform 0.1s'
-                                    }}
-                                    onMouseOver={e=>e.currentTarget.style.transform='scale(1.05)'}
-                                    onMouseOut={e=>e.currentTarget.style.transform='scale(1)'}
-                                  >
-                                    Unlock Ep (${episode.price || '1.99'})
-                                  </button>
+                                  (() => {
+                                    let displayPrice = parseFloat(episode.price || '0');
+                                    let priceText = `$${displayPrice.toFixed(2)}`;
+                                    if (isSubscribed) {
+                                      if (episode.subscriber_free) {
+                                        priceText = 'FREE';
+                                      } else if (episode.subscriber_price !== null && episode.subscriber_price !== undefined && episode.subscriber_price !== '') {
+                                        priceText = `$${parseFloat(episode.subscriber_price).toFixed(2)}`;
+                                      }
+                                    }
+                                    return (
+                                      <button 
+                                        onClick={() => handleBuyEpisodeSimulation(episode, selectedSeriesForViewer)}
+                                        style={{ 
+                                          padding: '10px 24px', 
+                                          background: 'rgba(255,255,255,0.08)', 
+                                          border: '1px solid rgba(255,255,255,0.1)', 
+                                          color: 'var(--text-primary)', 
+                                          borderRadius: '12px', 
+                                          fontWeight: 'bold', 
+                                          fontSize: '13px', 
+                                          cursor: 'pointer',
+                                          transition: 'transform 0.1s'
+                                        }}
+                                        onMouseOver={e=>e.currentTarget.style.transform='scale(1.05)'}
+                                        onMouseOut={e=>e.currentTarget.style.transform='scale(1)'}
+                                      >
+                                        Unlock Ep ({priceText})
+                                      </button>
+                                    );
+                                  })()
                                 )}
                               </div>
                             </div>
@@ -3547,7 +3688,13 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
                 /* ----------- STOREFRONT-STYLE SERIES GRID ----------- */
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))', gap: '20px' }}>
                   {seriesList.map((series) => {
-                    const isSeasonUnlocked = isOwnProfile || purchasedSeasons.includes(series.id);
+                    const isSeasonUnlocked = isOwnProfile || (
+                      series.billing_level !== 'episode' && (
+                        purchasedSeasons.includes(series.id) ||
+                        (isSubscribed && series.subscriber_free) ||
+                        parseFloat(series.price || '0') === 0
+                      )
+                    );
                     return (
                       <motion.div
                         onClick={() => setSelectedSeriesForViewer(series)}
@@ -3595,9 +3742,33 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
                           
                           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                             <span style={{ fontSize: '18px', fontWeight: 'bold', color: 'var(--text-primary)' }}>
-                              {parseFloat(series.price) > 0 ? `$${parseFloat(series.price).toFixed(2)}` : 'FREE'}
+                              {series.billing_level === 'episode' ? (
+                                'Pay Per Episode'
+                              ) : (
+                                isSubscribed && series.subscriber_free ? (
+                                  <span style={{ color: '#00ff88' }}>FREE for Sub</span>
+                                ) : isSubscribed && series.subscriber_price !== null && series.subscriber_price !== undefined && series.subscriber_price !== '' ? (
+                                  <span>
+                                    <span style={{ textDecoration: 'line-through', color: 'var(--text-muted)', marginRight: '8px', fontSize: '14px' }}>
+                                      ${parseFloat(series.price || '0').toFixed(2)}
+                                    </span>
+                                    <span style={{ color: '#00ff88' }}>
+                                      ${parseFloat(series.subscriber_price).toFixed(2)}
+                                    </span>
+                                  </span>
+                                ) : (
+                                  parseFloat(series.price || '0') > 0 ? `$${parseFloat(series.price).toFixed(2)}` : 'FREE'
+                                )
+                              )}
                             </span>
-                            {isSeasonUnlocked ? (
+                            {series.billing_level === 'episode' ? (
+                              <button 
+                                onClick={(e) => { e.stopPropagation(); setSelectedSeriesForViewer(series); }}
+                                style={{ padding: '8px 16px', background: '#fff', border: 'none', borderRadius: '20px', color: '#000', fontSize: '13px', fontWeight: 'bold', cursor: 'pointer' }}
+                              >
+                                View Series
+                              </button>
+                            ) : isSeasonUnlocked ? (
                               <button 
                                 onClick={(e) => { e.stopPropagation(); setSelectedSeriesForViewer(series); }}
                                 style={{ padding: '8px 16px', background: 'linear-gradient(135deg, #ff4d85, #8A2BE2)', border: 'none', borderRadius: '20px', color: '#fff', fontSize: '13px', fontWeight: 'bold', cursor: 'pointer' }}
@@ -3630,19 +3801,59 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
                       <div style={{ background: 'rgba(255,77,133,0.2)', color: '#ff4d85', padding: '4px 12px', borderRadius: '8px', fontSize: '12px', fontWeight: 'bold', display: 'inline-block', marginBottom: '12px', border: '1px solid #ff4d85' }}>ORIGINAL SERIES</div>
                       <h2 style={{ fontSize: '36px', margin: '0 0 10px 0', textShadow: '0 2px 10px rgba(0,0,0,0.5)' }}>{series.title}</h2>
                       <p style={{ color: '#ccc', margin: '0 0 20px 0', lineHeight: 1.5 }}>{series.description}</p>
-                      {isOwnProfile || purchasedSeasons.includes(series.id) ? (
-                        <button onClick={() => {
-                          setActiveCinemaSeries(series);
-                          setActiveCinemaEpisode(series.episodes?.[0] || null);
-                          setShowCinemaModal(true);
-                        }} style={{ padding: '14px 28px', background: 'linear-gradient(135deg, #ff4d85, #8A2BE2)', color: '#fff', border: 'none', borderRadius: '12px', fontWeight: 'bold', fontSize: '16px', cursor: 'pointer', transition: 'all 0.2s', boxShadow: '0 10px 20px rgba(138,43,226,0.3)' }}>
-                          Stream Season 🍿
-                        </button>
-                      ) : (
-                        <button onClick={() => handleBuySeasonSimulation(series)} style={{ padding: '14px 28px', background: '#fff', color: '#000', border: 'none', borderRadius: '12px', fontWeight: 'bold', fontSize: '16px', cursor: 'pointer', transition: 'all 0.2s', boxShadow: '0 10px 20px rgba(255,255,255,0.2)' }} onMouseOver={e=>e.currentTarget.style.transform='scale(1.05)'} onMouseOut={e=>e.currentTarget.style.transform='scale(1)'}>
-                          Buy Full Season (${series.price})
-                        </button>
-                      )}
+                      {(() => {
+                        const isSeasonUnlocked = isOwnProfile || (
+                          series.billing_level !== 'episode' && (
+                            purchasedSeasons.includes(series.id) ||
+                            (isSubscribed && series.subscriber_free) ||
+                            parseFloat(series.price || '0') === 0
+                          )
+                        );
+
+                        if (series.billing_level === 'episode') {
+                          return (
+                            <span style={{ 
+                              background: 'rgba(255,255,255,0.05)', 
+                              color: '#ccc', 
+                              padding: '10px 20px', 
+                              borderRadius: '12px', 
+                              fontSize: '14px', 
+                              fontWeight: 'bold',
+                              border: '1px solid rgba(255,255,255,0.1)',
+                              display: 'inline-block'
+                            }}>
+                              🎫 Pay-Per-Episode Series
+                            </span>
+                          );
+                        }
+
+                        if (isSeasonUnlocked) {
+                          return (
+                            <button onClick={() => {
+                              setActiveCinemaSeries(series);
+                              setActiveCinemaEpisode(series.episodes?.[0] || null);
+                              setShowCinemaModal(true);
+                            }} style={{ padding: '14px 28px', background: 'linear-gradient(135deg, #ff4d85, #8A2BE2)', color: '#fff', border: 'none', borderRadius: '12px', fontWeight: 'bold', fontSize: '16px', cursor: 'pointer', transition: 'all 0.2s', boxShadow: '0 10px 20px rgba(138,43,226,0.3)' }}>
+                              Stream Season 🍿
+                            </button>
+                          );
+                        } else {
+                          let displayPrice = parseFloat(series.price || '0');
+                          let priceText = `$${displayPrice.toFixed(2)}`;
+                          if (isSubscribed) {
+                            if (series.subscriber_free) {
+                              priceText = 'FREE';
+                            } else if (series.subscriber_price !== null && series.subscriber_price !== undefined && series.subscriber_price !== '') {
+                              priceText = `$${parseFloat(series.subscriber_price).toFixed(2)} (Subscriber Discount)`;
+                            }
+                          }
+                          return (
+                            <button onClick={() => handleBuySeasonSimulation(series)} style={{ padding: '14px 28px', background: '#fff', color: '#000', border: 'none', borderRadius: '12px', fontWeight: 'bold', fontSize: '16px', cursor: 'pointer', transition: 'all 0.2s', boxShadow: '0 10px 20px rgba(255,255,255,0.2)' }} onMouseOver={e=>e.currentTarget.style.transform='scale(1.05)'} onMouseOut={e=>e.currentTarget.style.transform='scale(1)'}>
+                              Buy Full Season ({priceText})
+                            </button>
+                          );
+                        }
+                      })()}
                     </div>
                   </div>
 
@@ -3771,7 +3982,7 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
 
                           {/* Video Content & Video Source Link section */}
                           <div style={{ gridColumn: '1 / -1', display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '4px' }}>
-                            <label style={{ fontSize: '13px', color: '#ccc', fontWeight: 'bold' }}>Episode Video Content</label>
+                            <label style={{ fontSize: '13px', color: '#ccc', fontWeight: 'bold' }}>Episode Video Content <span style={{ color: '#ff4d85' }}>*</span></label>
                             <div style={{ display: 'flex', flexWrap: 'wrap', gap: '12px', alignItems: 'stretch' }}>
                               
                               {/* Drag & drop video file upload */}
@@ -3830,10 +4041,45 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
                             </div>
                           </div>
 
+                          {/* Subscriber Pricing Rules for Episode */}
+                          <div style={{ gridColumn: '1 / -1', background: 'rgba(255,255,255,0.02)', padding: '20px', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.05)', display: 'flex', flexDirection: 'column', gap: '14px', marginTop: '10px' }}>
+                            <span style={{ fontSize: '12px', color: 'var(--text-muted)', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '0.5px' }}>🔒 Subscriber Access Rules (Episode)</span>
+                            
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                              <input 
+                                type="checkbox" 
+                                id="epSubFree" 
+                                checked={newEpisode.subscriber_free} 
+                                onChange={e => setNewEpisode({ ...newEpisode, subscriber_free: e.target.checked, subscriber_price: e.target.checked ? '' : newEpisode.subscriber_price })}
+                                style={{ width: '18px', height: '18px', cursor: 'pointer', accentColor: '#ff4d85' }}
+                              />
+                              <label htmlFor="epSubFree" style={{ color: 'var(--text-primary)', fontSize: '14px', fontWeight: 'bold', cursor: 'pointer' }}>
+                                🎁 Allow active subscribers to view this episode for free
+                              </label>
+                            </div>
+
+                            {!newEpisode.subscriber_free && (
+                              <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                                <label style={{ color: '#ccc', fontSize: '13px' }}>Subscriber Discounted Price (Optional)</label>
+                                <div style={{ display: 'flex', background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px', overflow: 'hidden', width: '200px' }}>
+                                  <span style={{ padding: '12px', color: 'var(--text-muted)', background: 'rgba(255,255,255,0.02)', borderRight: '1px solid rgba(255,255,255,0.1)', fontSize: '14px' }}>$</span>
+                                  <input 
+                                    type="number" 
+                                    step="0.01" 
+                                    placeholder="Discounted Price" 
+                                    value={newEpisode.subscriber_price} 
+                                    onChange={e => setNewEpisode({ ...newEpisode, subscriber_price: e.target.value })} 
+                                    style={{ flex: 1, background: 'transparent', border: 'none', padding: '12px', color: 'var(--text-primary)', outline: 'none', fontSize: '14px' }} 
+                                  />
+                                </div>
+                              </div>
+                            )}
+                          </div>
+
                           <div style={{ gridColumn: '1 / -1', display: 'flex', gap: '12px', alignItems: 'center', marginTop: '16px' }}>
                             <span style={{ color: 'var(--text-muted)' }}>Price $</span>
                             <input type="number" step="0.01" placeholder="9.99" value={newEpisode.price} onChange={e=>setNewEpisode({...newEpisode, price: e.target.value})} style={{ flex: 1, background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', padding: '10px', borderRadius: '8px', color: 'var(--text-primary)', outline: 'none' }} />
-                            <button onClick={() => handleAddEpisode(series.id)} disabled={!newEpisode.title || uploadingVideo || uploadingEpisodeImg} style={{ padding: '10px 20px', background: (newEpisode.title && !uploadingVideo && !uploadingEpisodeImg) ? '#00ff88' : 'rgba(255,255,255,0.1)', color: '#000', border: 'none', borderRadius: '8px', fontWeight: 'bold', cursor: (newEpisode.title && !uploadingVideo && !uploadingEpisodeImg) ? 'pointer' : 'not-allowed' }}>Save</button>
+                            <button onClick={() => handleAddEpisode(series.id)} disabled={!newEpisode.title || !newEpisode.video_url || uploadingVideo || uploadingEpisodeImg} style={{ padding: '10px 20px', background: (newEpisode.title && newEpisode.video_url && !uploadingVideo && !uploadingEpisodeImg) ? '#00ff88' : 'rgba(255,255,255,0.1)', color: '#000', border: 'none', borderRadius: '8px', fontWeight: 'bold', cursor: (newEpisode.title && newEpisode.video_url && !uploadingVideo && !uploadingEpisodeImg) ? 'pointer' : 'not-allowed' }}>Save</button>
                           </div>
                         </div>
                       </div>
@@ -3869,19 +4115,47 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
                               )}
                               <p style={{ margin: 0, color: 'var(--text-secondary)', fontSize: '14px', lineHeight: 1.4 }}>{episode.description}</p>
                             </div>
-                            {isOwnProfile || purchasedSeasons.includes(series.id) || purchasedEpisodes.includes(episode.id) ? (
-                              <button onClick={() => {
-                                setActiveCinemaSeries(series);
-                                setActiveCinemaEpisode(episode);
-                                setShowCinemaModal(true);
-                              }} style={{ padding: '10px 20px', background: 'linear-gradient(135deg, #00ff88, #00bbff)', border: 'none', color: '#000', borderRadius: '20px', fontWeight: 'bold', cursor: 'pointer' }}>
-                                Play Episode ▶️
-                              </button>
-                            ) : (
-                              <button onClick={()=>handleBuyEpisodeSimulation(episode, series)} style={{ padding: '10px 20px', background: 'rgba(255,255,255,0.1)', border: 'none', color: 'var(--text-primary)', borderRadius: '20px', fontWeight: 'bold', cursor: 'pointer', transition: 'background 0.2s' }} onMouseOver={e=>e.currentTarget.style.background='rgba(255,255,255,0.2)'} onMouseOut={e=>e.currentTarget.style.background='rgba(255,255,255,0.1)'}>
-                                Buy (${episode.price || '0.00'})
-                              </button>
-                            )}
+                            {(() => {
+                              const isSeasonUnlocked = isOwnProfile || (
+                                series.billing_level !== 'episode' && (
+                                  purchasedSeasons.includes(series.id) ||
+                                  (isSubscribed && series.subscriber_free) ||
+                                  parseFloat(series.price || '0') === 0
+                                )
+                              );
+                              const isEpUnlocked = isOwnProfile || 
+                                isSeasonUnlocked || 
+                                purchasedEpisodes.includes(episode.id) || 
+                                (isSubscribed && episode.subscriber_free) ||
+                                parseFloat(episode.price || '0') === 0;
+
+                              if (isEpUnlocked) {
+                                return (
+                                  <button onClick={() => {
+                                    setActiveCinemaSeries(series);
+                                    setActiveCinemaEpisode(episode);
+                                    setShowCinemaModal(true);
+                                  }} style={{ padding: '10px 20px', background: 'linear-gradient(135deg, #00ff88, #00bbff)', border: 'none', color: '#000', borderRadius: '20px', fontWeight: 'bold', cursor: 'pointer' }}>
+                                    Play Episode ▶️
+                                  </button>
+                                );
+                              } else {
+                                let displayPrice = parseFloat(episode.price || '0');
+                                let priceText = `$${displayPrice.toFixed(2)}`;
+                                if (isSubscribed) {
+                                  if (episode.subscriber_free) {
+                                    priceText = 'FREE';
+                                  } else if (episode.subscriber_price !== null && episode.subscriber_price !== undefined && episode.subscriber_price !== '') {
+                                    priceText = `$${parseFloat(episode.subscriber_price).toFixed(2)}`;
+                                  }
+                                }
+                                return (
+                                  <button onClick={()=>handleBuyEpisodeSimulation(episode, series)} style={{ padding: '10px 20px', background: 'rgba(255,255,255,0.1)', border: 'none', color: 'var(--text-primary)', borderRadius: '20px', fontWeight: 'bold', cursor: 'pointer', transition: 'background 0.2s' }} onMouseOver={e=>e.currentTarget.style.background='rgba(255,255,255,0.2)'} onMouseOut={e=>e.currentTarget.style.background='rgba(255,255,255,0.1)'}>
+                                    Buy ({priceText})
+                                  </button>
+                                );
+                              }
+                            })()}
                           </div>
                         ))
                       )}
@@ -5154,8 +5428,29 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
                     <div style={{ flex: 1, overflowY: 'auto', padding: '20px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
                       {(activeCinemaSeries.episodes || []).map((ep: any, idx: number) => {
                         const isActive = activeCinemaEpisode.id === ep.id;
-                        const isUnlocked = isOwnProfile || purchasedSeasons.includes(activeCinemaSeries.id) || purchasedEpisodes.includes(ep.id);
+                        const isSeasonUnlocked = isOwnProfile || (
+                          activeCinemaSeries.billing_level !== 'episode' && (
+                            purchasedSeasons.includes(activeCinemaSeries.id) ||
+                            (isSubscribed && activeCinemaSeries.subscriber_free) ||
+                            parseFloat(activeCinemaSeries.price || '0') === 0
+                          )
+                        );
+                        const isUnlocked = isOwnProfile || 
+                          isSeasonUnlocked || 
+                          purchasedEpisodes.includes(ep.id) || 
+                          (isSubscribed && ep.subscriber_free) ||
+                          parseFloat(ep.price || '0') === 0;
                         
+                        let displayPrice = parseFloat(ep.price || '0');
+                        let priceText = `$${displayPrice.toFixed(2)}`;
+                        if (isSubscribed) {
+                          if (ep.subscriber_free) {
+                            priceText = 'FREE';
+                          } else if (ep.subscriber_price !== null && ep.subscriber_price !== undefined && ep.subscriber_price !== '') {
+                            priceText = `$${parseFloat(ep.subscriber_price).toFixed(2)}`;
+                          }
+                        }
+
                         return (
                           <div 
                             key={ep.id} 
@@ -5181,7 +5476,7 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                               <span style={{ fontSize: '11px', color: isActive ? '#ff4d85' : 'var(--text-muted)', fontWeight: 'bold' }}>EPISODE {idx + 1}</span>
                               <span style={{ fontSize: '11px', background: isUnlocked ? 'rgba(0,255,136,0.1)' : 'rgba(255,255,255,0.05)', color: isUnlocked ? '#00ff88' : '#888', padding: '2px 8px', borderRadius: '20px', fontWeight: 'bold' }}>
-                                {isUnlocked ? 'UNLOCKED' : `$${ep.price || '0.00'}`}
+                                {isUnlocked ? 'UNLOCKED' : priceText}
                               </span>
                             </div>
                             <h4 style={{ margin: 0, fontSize: '15px', color: isActive ? '#fff' : '#ccc' }}>{ep.title}</h4>
