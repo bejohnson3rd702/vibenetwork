@@ -4,7 +4,7 @@ import {
   Globe, Users, Activity, Database, 
   ShieldAlert, Terminal, ChevronRight, BarChart3, 
   Network, Server, Play, StopCircle, CheckCircle, Wallet, AlertCircle, Mail, ShoppingBag,
-  Brain
+  Brain, Type
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../supabaseClient';
@@ -274,6 +274,7 @@ function MasterAdminDashboard() {
             { id: 'live-now', icon: <Play size={18} />, label: 'Live Now TV' },
             { id: 'app-builder', icon: <ShoppingBag size={18} />, label: 'App Builder' },
             { id: 'branding', icon: <Globe size={18} />, label: 'Platform Branding' },
+            { id: 'hero', icon: <Type size={18} />, label: 'Hero Display OS' },
             { id: 'networks', icon: <Network size={18} />, label: 'Whitelabel Fleet' },
             { id: 'users', icon: <Users size={18} />, label: 'Network Directory' },
             { id: 'database', icon: <Database size={18} />, label: 'Data Clusters' },
@@ -788,6 +789,12 @@ function MasterAdminDashboard() {
           {activeTab === 'branding' && (
              <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} style={{ display: 'flex', flexDirection: 'column', gap: '30px' }}>
                <BrandingTab wlConfig={whitelabelsList.find(wl => wl.domain === MASTER_DOMAIN || wl.domain === 'vibenetwork.tv' || wl.domain === 'vibenetwork.com') || { id: 'master', domain: MASTER_DOMAIN || 'vibenetwork.tv', theme: {} }} />
+             </motion.div>
+          )}
+
+          {activeTab === 'hero' && (
+             <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} style={{ display: 'flex', flexDirection: 'column', gap: '30px' }}>
+               <HeroEditorTab wlConfig={whitelabelsList.find(wl => wl.domain === MASTER_DOMAIN || wl.domain === 'vibenetwork.tv' || wl.domain === 'vibenetwork.com') || { id: 'master', domain: MASTER_DOMAIN || 'vibenetwork.tv', theme: {} }} />
              </motion.div>
           )}
 
