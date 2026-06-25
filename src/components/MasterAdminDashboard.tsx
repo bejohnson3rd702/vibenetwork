@@ -810,6 +810,7 @@ function MasterAdminDashboard() {
                       ) : usersList.map((user, i) => {
                         const userWl = whitelabelsList.find(wl => wl.id === user.whitelabel_id) || whitelabelsList.find(wl => wl.domain === 'vibenetwork.tv');
                         const isUserDeactivated = user.is_active === false || userWl?.theme?.deactivated_creators?.includes(user.id);
+                        const currentActive = !isUserDeactivated;
                         return (
                         <tr key={user.id} style={{ borderBottom: i !== usersList.length - 1 ? '1px solid rgba(255,255,255,0.05)' : 'none' }}>
                           <td style={{ padding: '16px 12px', fontFamily: 'monospace', color: '#0055ff', fontSize: '12px' }}>{user.id.split('-')[0]}</td>
@@ -897,7 +898,6 @@ function MasterAdminDashboard() {
 
                              <button onClick={async (e) => {
                                  const btn = e.currentTarget;
-                                 const currentActive = !isUserDeactivated;
                                  const newVal = !currentActive;
                                  if (!confirm(`${newVal ? 'Activate' : 'Deactivate'} channel "${user.username || user.full_name || user.id}"?`)) return;
                                  
