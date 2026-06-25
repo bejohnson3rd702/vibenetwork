@@ -1020,7 +1020,17 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
 
     try {
       const { data, error } = await supabase!.from('episodes').insert([insertData]).select();
-      const epToAdd = (!error && data) ? data[0] : { ...insertData, id: 'e_' + Date.now() };
+      if (error) {
+        console.error('Error inserting episode:', error);
+        toast.error('Failed to save episode to database: ' + error.message);
+        return;
+      }
+      if (!data || data.length === 0) {
+        toast.error('No data returned from database insert.');
+        return;
+      }
+      
+      const epToAdd = data[0];
       
       setSeriesList(prev => prev.map(s => {
         if (s.id === seriesId) return { ...s, episodes: [...(s.episodes || []), epToAdd] };
@@ -1051,11 +1061,9 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
           }
         });
       }
-    } catch {
-      setSeriesList(prev => prev.map(s => {
-        if (s.id === seriesId) return { ...s, episodes: [...(s.episodes || []), { ...insertData, id: 'e_' + Date.now() }] };
-        return s;
-      }));
+    } catch (err: any) {
+      console.error('Unexpected error inserting episode:', err);
+      toast.error('An unexpected error occurred: ' + (err.message || 'Unknown error'));
     }
     setNewEpisode({ title: '', description: '', length: '', price: '', video_url: '', thumbnail_url: '', genre: '', rating: '' });
     setActiveSeriesIdForEp(null);
