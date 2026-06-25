@@ -564,6 +564,45 @@ img, video {
   }
 }
 
+/* Responsive Profile Layout */
+.profile-header-layout {
+  display: flex;
+  gap: 40px;
+  align-items: flex-start;
+  flex-wrap: wrap;
+}
+
+.profile-badge-container {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+}
+
+.profile-save-container {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 24px;
+}
+
+@media (max-width: 768px) {
+  .profile-header-layout {
+    flex-direction: column !important;
+    align-items: center !important;
+    text-align: center !important;
+    gap: 24px !important;
+  }
+  
+  .profile-badge-container {
+    justify-content: center !important;
+  }
+  
+  .profile-save-container {
+    justify-content: center !important;
+  }
+}
+
+
 /* Side-by-side flex layout banners (stack on mobile) */
 .banner-flex-container {
   display: flex;

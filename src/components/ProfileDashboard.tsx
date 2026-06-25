@@ -468,8 +468,8 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
         setBio(data.bio !== null && data.bio !== undefined ? data.bio : (wlConfig?.theme?.defaultBio || 'Welcome to my official channel!'));
         setAvatarUrl(data.avatar_url || '');
         setHomepageImageUrl(data.homepage_image_url || '');
-        setFlipbookImages(data.flipbook_images || '');
-        setRefundPolicy(data.refund_policy || 'All sales are final. No refunds are provided for digital downloads or virtual bookings. For physical merchandise, please contact the creator directly.');
+        setFlipbookImages(data.flipbook_images || wlConfig?.theme?.flipbook_images || '');
+        setRefundPolicy(data.refund_policy || wlConfig?.theme?.refund_policy || 'All sales are final. No refunds are provided for digital downloads or virtual bookings. For physical merchandise, please contact the creator directly.');
         if (data.genre) setSelectedGenre(data.genre);
         if (data.sub_price != null) setSubPrice(String(data.sub_price));
         if (user) {
@@ -746,16 +746,65 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
 
   const saveProfile = async () => {
     setSaving(true);
-    await supabase!.from('profiles').update({
+    
+    const updatePayload = {
       bio,
-      genre: selectedGenre,
       avatar_url: avatarUrl,
       homepage_image_url: homepageImageUrl,
+    };
+
+    // Attempt to update all fields on profiles table (handles migrated DBs)
+    const { error: initialError } = await supabase!.from('profiles').update({
+      ...updatePayload,
       flipbook_images: flipbookImages,
       refund_policy: refundPolicy,
     }).eq('id', user.id);
+
+    let error = initialError;
+    let fallbackUsed = false;
+
+    // If it failed because columns don't exist, fallback to only existing columns
+    if (initialError && (initialError.message.includes('column') || initialError.message.includes('schema cache'))) {
+      console.warn("Retrying profile update without flipbook_images and refund_policy columns...");
+      const { error: retryError } = await supabase!.from('profiles').update(updatePayload).eq('id', user.id);
+      error = retryError;
+      fallbackUsed = !retryError;
+    }
+
+    // Sync flipbook_images and refund_policy to whitelabel_configs.theme if user is WL owner or network level
+    let wlError = null;
+    if (!error) {
+      const isWlOwner = wlConfig && (user.id === wlConfig.owner_id || isNetworkLevel);
+      if (isWlOwner && wlConfig.id) {
+        const updatedTheme = {
+          ...(wlConfig.theme || {}),
+          flipbook_images: flipbookImages,
+          refund_policy: refundPolicy,
+        };
+        const { error: themeError } = await supabase!.from('whitelabel_configs').update({
+          theme: updatedTheme
+        }).eq('id', wlConfig.id);
+        
+        if (themeError) {
+          console.warn("Failed to sync branding settings to whitelabel config:", themeError.message);
+          wlError = themeError;
+        } else {
+          wlConfig.theme = updatedTheme;
+        }
+      }
+    }
+
     setSaving(false);
-    toast.success('Profile successfully saved to network database!');
+    
+    if (error) {
+      console.error("Save profile error:", error);
+      toast.error(`Failed to save profile: ${error.message}`);
+    } else {
+      toast.success('Profile successfully saved to network database!');
+      if (wlError) {
+        toast.warning('Note: Custom branding and refund policy could not be synced.');
+      }
+    }
   };
 
   const handleProductImageUpload = async (eventOrFile: React.ChangeEvent<HTMLInputElement> | File) => {
@@ -1656,7 +1705,7 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
               </button>
             )}
 
-            <div style={{ display: 'flex', gap: '40px', alignItems: 'flex-start', flexWrap: 'wrap' }}>
+            <div className="profile-header-layout">
               
               {/* Profile Picture with Glow */}
               <div 
@@ -1744,7 +1793,7 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
                 
                 {isInfluencer ? (
                   <>
-                    <div style={{ display: 'flex', gap: '12px', marginBottom: '24px', flexWrap: 'wrap' }}>
+                    <div className="profile-badge-container">
                       <span style={{ padding: '8px 16px', background: 'rgba(0,85,255,0.15)', color: '#4da6ff', border: '1px solid rgba(0,85,255,0.3)', borderRadius: '24px', fontSize: '12px', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '1px' }}>Enterprise Profile</span>
                       
                       {/* {viewMode === 'edit' ? (
@@ -1784,7 +1833,7 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
 
                         {/* Flip Book editor moved to flipbook tab */}
 
-                        <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '24px' }}>
+                        <div className="profile-save-container">
                           <button onClick={saveProfile} disabled={saving} style={{ padding: '12px 32px', background: '#fff', color: '#000', borderRadius: '12px', border: 'none', fontWeight: 'bold', cursor: 'pointer', opacity: saving ? 0.7 : 1, fontSize: '15px', transition: 'transform 0.2s' }} onMouseOver={e=>e.currentTarget.style.transform='scale(1.05)'} onMouseOut={e=>e.currentTarget.style.transform='scale(1)'}>
                             {saving ? 'Saving...' : 'Save Profile'}
                           </button>
