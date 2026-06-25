@@ -1881,34 +1881,98 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
               }
             }}
             style={{ 
-              background: isDraggingPostForm ? 'rgba(0, 255, 136, 0.04)' : 'rgba(255,255,255,0.03)', 
-              padding: '24px', 
+              background: isDraggingPostForm ? 'rgba(0, 255, 136, 0.04)' : 'rgba(20,20,20,0.6)', 
+              padding: '28px', 
               borderRadius: '24px', 
-              border: isDraggingPostForm ? '1px dashed #00ff88' : '1px solid rgba(255,255,255,0.05)',
-              boxShadow: isDraggingPostForm ? '0 0 25px rgba(0,255,136,0.15)' : 'none',
-              transition: 'all 0.3s ease'
+              border: isDraggingPostForm ? '1px dashed #00ff88' : '1px solid rgba(255,255,255,0.08)',
+              boxShadow: '0 8px 32px rgba(0,0,0,0.3)',
+              backdropFilter: 'blur(10px)',
+              transition: 'all 0.3s ease',
+              marginBottom: '32px'
             }}
           >
-            <div style={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
-              <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: '#fff', flexShrink: 0 }} />
-              <div style={{ position: 'relative', width: '100%' }}>
-                <input 
-                  type="text" 
-                  placeholder="Drop a new link, upload a video, or announce an upcoming stream..." 
-                  value={postTitle} onChange={(e) => setPostTitle(e.target.value)}
-                  style={{ width: '100%', background: 'transparent', border: 'none', color: 'var(--text-primary)', fontSize: '16px', outline: 'none', paddingRight: '150px' }}
+            {/* Header */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '20px' }}>
+              <div style={{ background: `${wlConfig?.accent || '#ff4d85'}15`, padding: '10px', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <Edit3 size={20} color={wlConfig?.accent || '#ff4d85'} />
+              </div>
+              <div>
+                <h3 style={{ margin: 0, fontSize: '18px', fontWeight: 800, color: 'var(--text-primary)', letterSpacing: '-0.3px' }}>Create a New Post</h3>
+                <p style={{ margin: '2px 0 0 0', fontSize: '13px', color: 'var(--text-muted)' }}>Publish text, images, or videos directly to your feed.</p>
+              </div>
+            </div>
+
+            {/* Input Area */}
+            <div style={{ display: 'flex', gap: '16px', alignItems: 'flex-start' }}>
+              <div 
+                style={{ 
+                  width: '44px', 
+                  height: '44px', 
+                  borderRadius: '50%', 
+                  backgroundImage: avatarUrl ? `url(${avatarUrl})` : 'linear-gradient(135deg, #FF0055, #8A2BE2)',
+                  backgroundSize: 'cover',
+                  backgroundPosition: 'center',
+                  flexShrink: 0,
+                  border: '2px solid rgba(255,255,255,0.1)',
+                  boxShadow: '0 4px 10px rgba(0,0,0,0.3)'
+                }} 
+              />
+              <div style={{ position: 'relative', width: '100%', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                <textarea 
+                  placeholder="What would you like to share with your audience? Write updates, drop links, or describe new content..." 
+                  value={postTitle} 
+                  onChange={(e) => setPostTitle(e.target.value)}
+                  style={{ 
+                    width: '100%', 
+                    minHeight: '90px',
+                    background: 'rgba(0,0,0,0.3)', 
+                    border: '1px solid rgba(255,255,255,0.08)', 
+                    borderRadius: '16px',
+                    color: 'var(--text-primary)', 
+                    fontSize: '15px', 
+                    outline: 'none', 
+                    padding: '16px',
+                    paddingRight: '120px',
+                    resize: 'none',
+                    lineHeight: 1.5,
+                    fontFamily: 'inherit',
+                    boxSizing: 'border-box'
+                  }}
                 />
-                <div style={{ position: 'absolute', right: '0', top: '50%', transform: 'translateY(-50%)', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                
+                {/* Floating Tools in Textarea */}
+                <div style={{ position: 'absolute', right: '12px', top: '12px', display: 'flex', alignItems: 'center', gap: '6px' }}>
                   <EmojiPickerButton onSelect={(emoji) => setPostTitle(prev => prev + emoji)} />
                   <DictationButton onResult={(text) => setPostTitle(prev => prev ? `${prev} ${text}` : text)} />
-                  <button type="button" onClick={() => enhanceText('post')} disabled={saving} style={{ background: 'linear-gradient(135deg, #8A2BE2, #ff4d85)', color: 'var(--text-primary)', border: 'none', borderRadius: '12px', padding: '6px 12px', fontSize: '12px', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                    <Wand size={14} /> AI Boost
+                  <button 
+                    type="button" 
+                    onClick={() => enhanceText('post')} 
+                    disabled={saving} 
+                    style={{ 
+                      background: 'linear-gradient(135deg, #8A2BE2, #ff4d85)', 
+                      color: 'var(--text-primary)', 
+                      border: 'none', 
+                      borderRadius: '10px', 
+                      padding: '6px 12px', 
+                      fontSize: '12px', 
+                      fontWeight: 'bold', 
+                      cursor: 'pointer', 
+                      display: 'flex', 
+                      alignItems: 'center', 
+                      gap: '6px',
+                      boxShadow: '0 2px 8px rgba(138,43,226,0.3)'
+                    }}
+                  >
+                    <Wand size={12} /> AI Boost
                   </button>
                 </div>
               </div>
             </div>
             
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '20px', paddingTop: '20px', borderTop: '1px solid rgba(255,255,255,0.05)' }}>
+            {/* Footer Row */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '20px', paddingTop: '20px', borderTop: '1px solid rgba(255,255,255,0.05)', flexWrap: 'wrap', gap: '16px' }}>
+              
+              {/* Media Upload Area */}
               <div style={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
                 <label 
                   onDragOver={(e) => { e.preventDefault(); setIsDraggingPostMedia(true); }}
@@ -1924,34 +1988,52 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
                     display: 'flex', 
                     alignItems: 'center', 
                     gap: '8px', 
-                    background: isDraggingPostMedia ? 'rgba(0, 255, 136, 0.1)' : 'rgba(255,255,255,0.03)', 
+                    background: isDraggingPostMedia ? 'rgba(0, 255, 136, 0.1)' : 'rgba(255,255,255,0.04)', 
                     border: isDraggingPostMedia ? '1px dashed #00ff88' : '1px solid rgba(255,255,255,0.1)', 
-                    padding: '8px 16px',
+                    padding: '10px 20px',
                     borderRadius: '12px',
-                    color: isDraggingPostMedia ? '#00ff88' : 'var(--text-muted)', 
+                    color: isDraggingPostMedia ? '#00ff88' : 'var(--text-primary)', 
+                    fontSize: '14px',
+                    fontWeight: 'bold',
                     cursor: 'pointer',
                     transition: 'all 0.2s ease'
                   }}
+                  onMouseOver={e => { if(!isDraggingPostMedia) e.currentTarget.style.background = 'rgba(255,255,255,0.08)'; }}
+                  onMouseOut={e => { if(!isDraggingPostMedia) e.currentTarget.style.background = 'rgba(255,255,255,0.04)'; }}
                 >
                   <input type="file" accept="image/*" multiple onChange={handlePostMediaUpload} style={{ display: 'none' }} disabled={uploadingPostMedia} />
-                  <ImageIcon size={18} /> {uploadingPostMedia ? 'Uploading...' : isDraggingPostMedia ? 'Drop here!' : 'Media (Drag & Drop)'}
+                  <ImageIcon size={18} color={wlConfig?.accent || '#ff4d85'} /> {uploadingPostMedia ? 'Uploading...' : isDraggingPostMedia ? 'Drop Here!' : 'Attach Images/Video'}
                 </label>
                 
                 {postMediaUrls.length > 0 && (
                   <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
                     {postMediaUrls.map((url, index) => (
-                      <div key={`preview-${index}`} style={{ position: 'relative', width: '40px', height: '40px', borderRadius: '8px', overflow: 'hidden', border: '1px solid rgba(255,255,255,0.1)' }}>
+                      <div key={`preview-${index}`} style={{ position: 'relative', width: '44px', height: '44px', borderRadius: '10px', overflow: 'hidden', border: '1.5px solid rgba(255,255,255,0.2)' }}>
                         <img src={url} alt={`Preview ${index}`} loading="lazy" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                        <button type="button" onClick={() => setPostMediaUrls(prev => prev.filter((_, i) => i !== index))} style={{ position: 'absolute', top: 2, right: 2, background: 'rgba(0,0,0,0.6)', color: '#fff', border: 'none', borderRadius: '50%', width: '16px', height: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', fontSize: '9px', fontWeight: 'bold' }}>×</button>
+                        <button 
+                          type="button" 
+                          onClick={() => setPostMediaUrls(prev => prev.filter((_, i) => i !== index))} 
+                          style={{ 
+                            position: 'absolute', top: 2, right: 2, 
+                            background: 'rgba(0,0,0,0.8)', color: '#fff', 
+                            border: 'none', borderRadius: '50%', 
+                            width: '18px', height: '18px', 
+                            display: 'flex', alignItems: 'center', justifyContent: 'center', 
+                            cursor: 'pointer', fontSize: '10px', fontWeight: 'bold' 
+                          }}
+                        >
+                          ×
+                        </button>
                       </div>
                     ))}
                   </div>
                 )}
               </div>
               
+              {/* Privacy and Actions */}
               <div style={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
-                {/* Post Privacy/Type Selector Toggle */}
-                <div style={{ display: 'flex', background: 'rgba(0,0,0,0.3)', borderRadius: '24px', padding: '4px', border: '1px solid rgba(255,255,255,0.05)' }}>
+                {/* Post Privacy Selector */}
+                <div style={{ display: 'flex', background: 'rgba(0,0,0,0.4)', borderRadius: '24px', padding: '4px', border: '1px solid rgba(255,255,255,0.08)' }}>
                   <button 
                     type="button"
                     onClick={() => setIsLocked(false)}
@@ -1990,40 +2072,42 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
                       transition: 'all 0.2s ease'
                     }}
                   >
-                    <Lock size={14} /> Sub. Only
+                    <Lock size={14} /> Subs Only
                   </button>
                 </div>
 
-                {/* Single prominent submit button */}
+                {/* Submit button */}
                 <button 
                   type="submit"
-                  disabled={uploadingPostMedia} 
+                  disabled={uploadingPostMedia || !postTitle.trim()} 
                   style={{ 
                     display: 'flex', 
                     alignItems: 'center', 
                     gap: '8px', 
-                    padding: '10px 24px', 
-                    background: '#fff', 
-                    color: '#000', 
+                    padding: '12px 28px', 
+                    background: (uploadingPostMedia || !postTitle.trim()) ? 'rgba(255,255,255,0.1)' : (wlConfig?.accent || 'var(--accent-primary)'), 
+                    color: (uploadingPostMedia || !postTitle.trim()) ? 'rgba(255,255,255,0.3)' : '#fff', 
                     border: 'none', 
-                    borderRadius: '20px', 
-                    fontWeight: 'bold', 
-                    cursor: uploadingPostMedia ? 'not-allowed' : 'pointer',
+                    borderRadius: '24px', 
+                    fontWeight: 900, 
+                    cursor: (uploadingPostMedia || !postTitle.trim()) ? 'not-allowed' : 'pointer',
                     transition: 'all 0.2s ease',
-                    opacity: uploadingPostMedia ? 0.5 : 1
+                    boxShadow: (uploadingPostMedia || !postTitle.trim()) ? 'none' : `0 4px 15px ${(wlConfig?.accent || '#ff4d85')}44`
                   }}
                   onMouseOver={e => {
-                    if (!uploadingPostMedia) {
-                      e.currentTarget.style.background = 'rgba(255,255,255,0.9)';
+                    if (!uploadingPostMedia && postTitle.trim()) {
+                      e.currentTarget.style.filter = 'brightness(1.1)';
+                      e.currentTarget.style.transform = 'translateY(-1px)';
                     }
                   }}
                   onMouseOut={e => {
-                    if (!uploadingPostMedia) {
-                      e.currentTarget.style.background = '#fff';
+                    if (!uploadingPostMedia && postTitle.trim()) {
+                      e.currentTarget.style.filter = 'none';
+                      e.currentTarget.style.transform = 'none';
                     }
                   }}
                 >
-                  Upload Post
+                  Publish Post
                 </button>
               </div>
             </div>
