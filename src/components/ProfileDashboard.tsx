@@ -3420,7 +3420,7 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
                   {/* Episode Listing Section */}
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
                     <h3 style={{ fontSize: '22px', fontWeight: 'bold', margin: '10px 0 0 0', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                      🎥 Episodes List
+                      Episodes List
                     </h3>
 
                     {!selectedSeriesForViewer.episodes || selectedSeriesForViewer.episodes.length === 0 ? (
