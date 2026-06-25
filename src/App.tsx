@@ -454,6 +454,20 @@ function App() {
   if (isTenantMode) {
     if (!wlConfig) return <div style={{ height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--bg-gradient, var(--bg-color))', color: 'var(--text-muted)' }}>Initializing Network OS...</div>;
     
+    if (wlConfig.is_active === false) {
+      return (
+        <div style={{ height: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: '#0a0a0a', color: '#fff', textAlign: 'center', padding: '20px', fontFamily: 'system-ui, sans-serif' }}>
+          <div style={{ padding: '40px', background: 'rgba(255, 255, 255, 0.02)', border: '1px solid rgba(255, 255, 255, 0.05)', borderRadius: '24px', maxWidth: '500px', width: '100%', boxShadow: '0 20px 50px rgba(0,0,0,0.5)' }}>
+            <div style={{ width: '64px', height: '64px', borderRadius: '50%', background: 'rgba(255, 59, 48, 0.1)', color: '#FF3B30', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 24px auto' }}>
+              <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"></line></svg>
+            </div>
+            <h1 style={{ margin: '0 0 16px 0', fontSize: '24px', fontWeight: 800 }}>Network Suspended</h1>
+            <p style={{ color: '#aaa', fontSize: '15px', lineHeight: 1.6, margin: 0 }}>This whitelabel network portal has been deactivated by the platform administrator. Please contact support or the network administrator for further details.</p>
+          </div>
+        </div>
+      );
+    }
+
     return (
       <WhiteLabelContext.Provider value={{ wlConfig, setWlConfig }}>
           <div style={{ background: 'var(--content-bg)', minHeight: '100vh', color: 'var(--text-primary)', overflowX: 'hidden' }}>

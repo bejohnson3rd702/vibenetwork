@@ -410,7 +410,31 @@ function MasterAdminDashboard() {
                                Manage Children
                              </button>
                            )}
-                           <span style={{ padding: '10px 20px', background: 'rgba(0,255,136,0.1)', color: '#00ff88', borderRadius: '8px', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '6px', fontSize: '13px' }}><Play size={16}/> LIVE</span>
+                           <button onClick={async () => {
+                               const currentActive = brandConfig.is_active !== false && brandConfig.theme?.is_active !== false;
+                               const newVal = !currentActive;
+                               if (!confirm(`${newVal ? 'Activate' : 'Deactivate'} network "${brandConfig.name}"?`)) return;
+                               
+                               const { error } = await supabase!.from('whitelabel_configs').update({ is_active: newVal }).eq('id', brandConfig.id);
+                               if (error) {
+                                 // Fallback: store in theme JSONB
+                                 const currentTheme = brandConfig.theme || {};
+                                 const { error: err2 } = await supabase!.from('whitelabel_configs').update({ theme: { ...currentTheme, is_active: newVal } }).eq('id', brandConfig.id);
+                                 if (err2) { showToast('Deactivation toggle failed: ' + err2.message, 'error'); return; }
+                               }
+                               
+                               setWhitelabelsList(prev => prev.map(wl => wl.id === brandConfig.id ? { ...wl, is_active: newVal, theme: { ...wl.theme, is_active: newVal } } : wl));
+                               showToast(`Network "${brandConfig.name}" ${newVal ? 'Activated' : 'Deactivated'}`, 'success');
+                               logSystemEvent('ALERT', `Network ${brandConfig.name} ${newVal ? 'ACTIVATED' : 'DEACTIVATED'}`, { tenant_id: brandConfig.id });
+                            }} style={{ padding: '10px 20px', background: (brandConfig.is_active !== false && brandConfig.theme?.is_active !== false) ? 'rgba(255,59,48,0.1)' : 'rgba(0,255,136,0.1)', color: (brandConfig.is_active !== false && brandConfig.theme?.is_active !== false) ? '#FF3B30' : '#00ff88', border: `1px solid ${(brandConfig.is_active !== false && brandConfig.theme?.is_active !== false) ? 'rgba(255,59,48,0.3)' : 'rgba(0,255,136,0.3)'}`, borderRadius: '8px', fontWeight: 'bold', cursor: 'pointer', transition: '0.2s', fontSize: '12px', textTransform: 'uppercase', letterSpacing: '1px' }}>
+                               {(brandConfig.is_active !== false && brandConfig.theme?.is_active !== false) ? 'Deactivate' : 'Activate'}
+                            </button>
+
+                            {(brandConfig.is_active !== false && brandConfig.theme?.is_active !== false) ? (
+                              <span style={{ padding: '10px 20px', background: 'rgba(0,255,136,0.1)', color: '#00ff88', borderRadius: '8px', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '6px', fontSize: '13px' }}><Play size={16}/> ACTIVE</span>
+                            ) : (
+                              <span style={{ padding: '10px 20px', background: 'rgba(255,59,48,0.1)', color: '#FF3B30', borderRadius: '8px', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '6px', fontSize: '13px' }}><StopCircle size={16}/> INACTIVE</span>
+                            )}
                        </div>
                        </div>
 
@@ -783,14 +807,23 @@ function MasterAdminDashboard() {
                     <tbody>
                       {loading ? (
                         <tr><td colSpan={5} style={{ padding: '20px', textAlign: 'center', color: 'var(--text-muted)' }}>Initializing network fetch pattern...</td></tr>
-                      ) : usersList.map((user, i) => (
+                      ) : usersList.map((user, i) => {
+                        const userWl = whitelabelsList.find(wl => wl.id === user.whitelabel_id) || whitelabelsList.find(wl => wl.domain === 'vibenetwork.tv');
+                        const isUserDeactivated = user.is_active === false || userWl?.theme?.deactivated_creators?.includes(user.id);
+                        return (
                         <tr key={user.id} style={{ borderBottom: i !== usersList.length - 1 ? '1px solid rgba(255,255,255,0.05)' : 'none' }}>
                           <td style={{ padding: '16px 12px', fontFamily: 'monospace', color: '#0055ff', fontSize: '12px' }}>{user.id.split('-')[0]}</td>
                           <td style={{ padding: '16px 12px', fontWeight: 'bold' }}>{user.username || user.full_name || 'Unassigned Profile'}</td>
                           <td style={{ padding: '16px 12px' }}>
-                            <span style={{ background: user.is_admin ? 'rgba(255,215,0,0.1)' : 'rgba(0,255,136,0.1)', color: user.is_admin ? '#FFD700' : '#00ff88', padding: '4px 8px', borderRadius: '6px', fontSize: '11px', fontWeight: 'bold' }}>
-                               {user.is_admin ? 'ADMINISTRATOR' : 'ACTIVE'}
-                            </span>
+                            {isUserDeactivated ? (
+                              <span style={{ background: 'rgba(255,59,48,0.1)', color: '#FF3B30', padding: '4px 8px', borderRadius: '6px', fontSize: '11px', fontWeight: 'bold' }}>
+                                 DEACTIVATED
+                              </span>
+                            ) : (
+                              <span style={{ background: user.is_admin ? 'rgba(255,215,0,0.1)' : 'rgba(0,255,136,0.1)', color: user.is_admin ? '#FFD700' : '#00ff88', padding: '4px 8px', borderRadius: '6px', fontSize: '11px', fontWeight: 'bold' }}>
+                                 {user.is_admin ? 'ADMINISTRATOR' : 'ACTIVE'}
+                              </span>
+                            )}
                           </td>
                           <td style={{ padding: '16px 12px', color: user.whitelabel_id ? '#0055ff' : '#ccc', fontSize: '14px', fontWeight: 'bold' }}>{user.whitelabel_id ? 'Enterprise Tenant' : 'Platform Creator'}</td>
                           <td style={{ padding: '16px 12px' }}>
@@ -844,7 +877,7 @@ function MasterAdminDashboard() {
                                </button>
                              </div>
                           </td>
-                          <td style={{ padding: '16px 12px' }}>
+                          <td style={{ padding: '16px 12px', display: 'flex', gap: '8px', alignItems: 'center' }}>
                              <button onClick={async (e) => {
                                 const btn = e.currentTarget;
                                 const willBeAdmin = !user.is_admin;
@@ -861,9 +894,56 @@ function MasterAdminDashboard() {
                              }} style={{ padding: '6px 12px', background: user.is_admin ? 'rgba(255,0,0,0.1)' : 'rgba(0,255,136,0.1)', color: user.is_admin ? '#ff0000' : '#00ff88', border: 'none', borderRadius: '8px', fontWeight: 'bold', fontSize: '12px', cursor: 'pointer', transition: '0.2s' }}>
                                 {user.is_admin ? 'Revoke Admin' : 'Grant Admin'}
                              </button>
+
+                             <button onClick={async (e) => {
+                                 const btn = e.currentTarget;
+                                 const currentActive = !isUserDeactivated;
+                                 const newVal = !currentActive;
+                                 if (!confirm(`${newVal ? 'Activate' : 'Deactivate'} channel "${user.username || user.full_name || user.id}"?`)) return;
+                                 
+                                 btn.innerText = '...';
+                                 const { error } = await supabase!.from('profiles').update({ is_active: newVal }).eq('id', user.id);
+                                 if (error) {
+                                    // Fallback: store in whitelabel theme JSONB deactivated_creators list
+                                    const targetWlId = user.whitelabel_id || whitelabelsList.find(wl => wl.domain === 'vibenetwork.tv')?.id;
+                                    if (targetWlId) {
+                                       const targetWl = whitelabelsList.find(wl => wl.id === targetWlId);
+                                       if (targetWl) {
+                                          const currentTheme = targetWl.theme || {};
+                                          let deactivatedList = Array.isArray(currentTheme.deactivated_creators) ? [...currentTheme.deactivated_creators] : [];
+                                          if (newVal === false) {
+                                             if (!deactivatedList.includes(user.id)) deactivatedList.push(user.id);
+                                          } else {
+                                             deactivatedList = deactivatedList.filter(id => id !== user.id);
+                                          }
+                                          const { error: err2 } = await supabase!.from('whitelabel_configs').update({
+                                             theme: { ...currentTheme, deactivated_creators: deactivatedList }
+                                          }).eq('id', targetWlId);
+                                          if (err2) {
+                                             showToast('Failed to toggle status: ' + err2.message, 'error');
+                                             btn.innerText = currentActive ? 'Deactivate' : 'Activate';
+                                             return;
+                                          }
+                                          // Sync whitelabels local state
+                                          setWhitelabelsList(prev => prev.map(wl => wl.id === targetWlId ? { ...wl, theme: { ...wl.theme, deactivated_creators: deactivatedList } } : wl));
+                                       }
+                                    } else {
+                                       showToast('Failed to toggle status: ' + error.message, 'error');
+                                       btn.innerText = currentActive ? 'Deactivate' : 'Activate';
+                                       return;
+                                    }
+                                 }
+                                 
+                                 setUsersList(prev => prev.map(u => u.id === user.id ? { ...u, is_active: newVal } : u));
+                                 showToast(`Channel "${user.username || 'User'}" ${newVal ? 'Activated' : 'Deactivated'}.`, 'success');
+                                 logSystemEvent('ALERT', `Master Admin changed channel status for ${user.username || user.id} to is_active=${newVal}`);
+                              }} style={{ padding: '6px 12px', background: currentActive ? 'rgba(255,59,48,0.1)' : 'rgba(0,255,136,0.1)', color: currentActive ? '#FF3B30' : '#00ff88', border: 'none', borderRadius: '8px', fontWeight: 'bold', fontSize: '12px', cursor: 'pointer', transition: '0.2s' }}>
+                                 {currentActive ? 'Deactivate' : 'Activate'}
+                              </button>
                           </td>
                         </tr>
-                      ))}
+                        );
+                      })}
                     </tbody>
                   </table>
                </div>

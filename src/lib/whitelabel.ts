@@ -28,6 +28,7 @@ export interface WlConfig {
   n2n_enabled: boolean;
   parent_network_id: string | null;
   shopifyUrl?: string | null;
+  is_active?: boolean;
 }
 
 export function isOlympianConfig(config: any): boolean {
@@ -100,6 +101,7 @@ export function normalizeWlConfig(
     parent_network_id: raw?.parent_network_id ?? theme.parent_network_id ?? null,
     theme: theme,
     shopifyUrl: raw?.shopifyUrl || theme.shopifyUrl || null,
+    is_active: raw?.is_active !== false && theme.is_active !== false,
     ...overrides,
   };
 

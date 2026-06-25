@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { supabase } from '../supabaseClient';
 import { motion, AnimatePresence } from 'framer-motion';
-import { LogOut, Camera, Lock, Unlock, Image as ImageIcon, Star, ShieldCheck, Eye, Edit2, Trash2, Wand, Calendar, Edit3, Clock, CheckCircle, Heart, MessageCircle, Wallet, ArrowUpRight, ArrowDownLeft, Activity, Monitor, Settings, Video, DollarSign, Share2, Pin, ChevronLeft, ChevronRight } from 'lucide-react';
+import { LogOut, Camera, Lock, Unlock, Image as ImageIcon, Star, ShieldCheck, Eye, Edit2, Trash2, Wand, Calendar, Edit3, Clock, CheckCircle, Heart, MessageCircle, Wallet, ArrowUpRight, ArrowDownLeft, Activity, Monitor, Settings, Video, DollarSign, Share2, Pin, ChevronLeft, ChevronRight, AlertCircle } from 'lucide-react';
 import { DictationButton } from './DictationButton';
 import { EmojiPickerButton } from './EmojiPickerButton';
 import EndUserAuthModal from './EndUserAuthModal';
@@ -682,6 +682,21 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
       <button onClick={() => navigate({ pathname: '/', search: location.search })} style={{ padding: '12px 30px', background: '#ff4d85', color: 'var(--text-primary)', border: 'none', borderRadius: '24px', fontWeight: 'bold', cursor: 'pointer' }}>Return to Home</button>
     </div>
   );
+
+  const isProfileDeactivated = profile && (profile.is_active === false || wlConfig?.theme?.deactivated_creators?.includes(profile.id));
+
+  if (isProfileDeactivated && !isOwnProfile) {
+    return (
+      <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', color: 'var(--text-primary)', background: 'var(--bg-color)', textAlign: 'center', padding: '20px' }}>
+        <div style={{ width: '64px', height: '64px', borderRadius: '50%', background: 'rgba(255, 59, 48, 0.1)', color: '#FF3B30', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '24px' }}>
+          <AlertCircle size={32} />
+        </div>
+        <h2 style={{ fontSize: '32px', marginBottom: '10px', fontWeight: 800 }}>Channel Suspended</h2>
+        <p style={{ color: 'var(--text-muted)', marginBottom: '30px', maxWidth: '400px', lineHeight: 1.6 }}>This channel has been deactivated by the platform administrator.</p>
+        <button onClick={() => navigate({ pathname: '/', search: location.search })} style={{ padding: '12px 30px', background: 'rgba(255,255,255,0.05)', color: 'var(--text-primary)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px', fontWeight: 'bold', cursor: 'pointer' }}>Return to Home</button>
+      </div>
+    );
+  }
 
   const isInfluencer = profile?.role === 'influencer' || profile?.role === 'business';
 
@@ -1638,6 +1653,13 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
                 >
                   <span>← Back to {wlConfig.name}</span>
                 </button>
+              )}
+
+              {isProfileDeactivated && (
+                <div style={{ background: 'rgba(255, 59, 48, 0.15)', border: '1px solid rgba(255, 59, 48, 0.3)', borderRadius: '16px', padding: '16px', color: '#ff6b6b', fontSize: '14px', display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '20px', fontWeight: 'bold' }}>
+                  <AlertCircle size={18} />
+                  <span>Your channel has been suspended by the platform administrator and is not visible to the public.</span>
+                </div>
               )}
 
               {/* Glassmorphic Creator Header */}
