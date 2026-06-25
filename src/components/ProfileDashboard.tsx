@@ -1008,6 +1008,31 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
         if (s.id === seriesId) return { ...s, episodes: [...(s.episodes || []), epToAdd] };
         return s;
       }));
+
+      if (epToAdd && epToAdd.id && epToAdd.video_url) {
+        supabase!.functions.invoke('transcode-video', {
+          body: { episodeId: epToAdd.id, videoUrl: epToAdd.video_url }
+        }).then(({ data: tcData, error: tcErr }) => {
+          if (tcErr) {
+            console.error('Transcode trigger error:', tcErr);
+          } else if (tcData && tcData.video_url) {
+            setSeriesList(prev => prev.map(s => {
+              if (s.id === seriesId) {
+                return {
+                  ...s,
+                  episodes: (s.episodes || []).map((ep: any) => 
+                    ep.id === epToAdd.id ? { ...ep, video_url: tcData.video_url } : ep
+                  )
+                };
+              }
+              return s;
+            }));
+            if (tcData.message && tcData.message.includes('Mux')) {
+              toast.success('Video sent for MP4 transcoding successfully! 🎬');
+            }
+          }
+        });
+      }
     } catch {
       setSeriesList(prev => prev.map(s => {
         if (s.id === seriesId) return { ...s, episodes: [...(s.episodes || []), { ...insertData, id: 'e_' + Date.now() }] };
