@@ -5,6 +5,7 @@ import { X, Lock, Mail, AtSign, Info } from 'lucide-react';
 
 import { useWhiteLabel } from '../context/WhiteLabelContext';
 import { DictationButton } from './DictationButton';
+import { syncContactToExternalCrms } from '../lib/crmSync';
 
 interface AuthModalProps {
   onClose: () => void;
@@ -135,6 +136,29 @@ const AuthModal: React.FC<AuthModalProps> = ({ onClose, onSuccess, defaultIsLogi
         setLoading(false);
       }
       else if (data.user) {
+        // Auto-save registered user to CRM contact directory
+        try {
+          const wlId = (!activeTenantConfig?.id || activeTenantConfig?.id === 'master' || activeTenantConfig?.domain === 'vibenetwork.vercel.app' || activeTenantConfig?.domain === 'vibenetwork.tv') ? null : activeTenantConfig?.id;
+          const { data: contact } = await supabase!
+            .from('crm_contacts')
+            .insert({
+              whitelabel_id: wlId,
+              creator_id: activeTenantConfig?.owner_id || null,
+              first_name: username,
+              last_name: '',
+              email: email,
+              source: 'sign_up'
+            })
+            .select()
+            .single();
+
+          if (contact) {
+            syncContactToExternalCrms(contact);
+          }
+        } catch (crmErr) {
+          console.error("CRM Contact auto-save error on sign up:", crmErr);
+        }
+
         onSuccess(data.user);
         if (role === 'business') {
            /* Stripe setup commented out for now

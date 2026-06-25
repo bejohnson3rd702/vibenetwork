@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from '../supabaseClient';
 import { useWhiteLabel } from '../context/WhiteLabelContext';
 import { useToast } from '../context/ToastContext';
+import { syncContactToExternalCrms } from '../lib/crmSync';
 import { X, ShieldCheck, Mail, Lock, AtSign, Loader, ArrowRight, Network, Palette, Type, Check, Info } from 'lucide-react';
 
 
@@ -84,7 +85,7 @@ export default function N2NAuthModal({ onClose, initialRole }: N2NAuthModalProps
         onClose();
       } else {
         // Signup
-        const { error } = await supabase!.auth.signUp({
+        const { data: signUpData, error } = await supabase!.auth.signUp({
           email,
           password,
           options: {
@@ -96,6 +97,29 @@ export default function N2NAuthModal({ onClose, initialRole }: N2NAuthModalProps
           },
         });
         if (error) throw error;
+
+        // Auto-save registered user to CRM contact directory
+        try {
+          const wlId = (!wlConfig?.id || wlConfig?.id === 'master' || wlConfig?.domain === 'vibenetwork.vercel.app' || wlConfig?.domain === 'vibenetwork.tv') ? null : wlConfig?.id;
+          const { data: contact } = await supabase!
+            .from('crm_contacts')
+            .insert({
+              whitelabel_id: wlId,
+              creator_id: wlConfig?.owner_id || null,
+              first_name: username,
+              last_name: '',
+              email: email,
+              source: 'sign_up'
+            })
+            .select()
+            .single();
+
+          if (contact) {
+            syncContactToExternalCrms(contact);
+          }
+        } catch (crmErr) {
+          console.error("CRM Contact auto-save error on sign up:", crmErr);
+        }
 
         // If business role, go to wizard instead of closing
         if (role === 'business') {
