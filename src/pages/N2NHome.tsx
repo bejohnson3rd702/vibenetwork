@@ -132,6 +132,14 @@ export default function N2NHome({ wlConfig, categories, activeVideo, setActiveVi
           .order('created_at', { ascending: false });
 
         if (!cancelled && athletesData) {
+          const isKpleActive = isKpleConfig(config);
+          let filteredAthletes = athletesData;
+          if (isKpleActive) {
+            filteredAthletes = athletesData.filter((athlete: any) =>
+              ['rev bennie johnson', 'kple', 'pastor john'].includes(athlete.username?.toLowerCase())
+            );
+          }
+
           const getCollegeShortName = (wlId: string) => {
             if (wlId === config.id) return config.name || 'KPLE TV';
             const child = children.find(c => c.id === wlId);
@@ -145,7 +153,7 @@ export default function N2NHome({ wlConfig, categories, activeVideo, setActiveVi
           };
 
           setAthleteItems(
-            athletesData.map((athlete: any) => ({
+            filteredAthletes.map((athlete: any) => ({
               id: athlete.id,
               title: athlete.username ? athlete.username.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase()) : (isKpleActive ? 'Channel Host' : 'Student Athlete'),
               image: athlete.avatar_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(athlete.username || 'A')}&background=111&color=fff&size=400`,
