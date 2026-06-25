@@ -444,7 +444,7 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
   // Series Data
   const [seriesList, setSeriesList] = useState<any[]>([]);
   const [newSeries, setNewSeries] = useState({ title: '', description: '', price: '', img: '' });
-  const [newEpisode, setNewEpisode] = useState({ title: '', description: '', length: '', price: '', video_url: '', thumbnail_url: '' });
+  const [newEpisode, setNewEpisode] = useState({ title: '', description: '', length: '', price: '', video_url: '', thumbnail_url: '', genre: '', rating: '' });
   const [uploadingVideo, setUploadingVideo] = useState(false);
   const [isDraggingVideo, setIsDraggingVideo] = useState(false);
   const [uploadingSeriesImg, setUploadingSeriesImg] = useState(false);
@@ -995,7 +995,9 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
       length: newEpisode.length,
       price: parseFloat(newEpisode.price || '0'),
       video_url: newEpisode.video_url || '',
-      thumbnail_url: newEpisode.thumbnail_url || ''
+      thumbnail_url: newEpisode.thumbnail_url || '',
+      genre: newEpisode.genre || '',
+      rating: newEpisode.rating || ''
     };
 
     try {
@@ -1012,7 +1014,7 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
         return s;
       }));
     }
-    setNewEpisode({ title: '', description: '', length: '', price: '', video_url: '', thumbnail_url: '' });
+    setNewEpisode({ title: '', description: '', length: '', price: '', video_url: '', thumbnail_url: '', genre: '', rating: '' });
     setActiveSeriesIdForEp(null);
   };
 
@@ -3227,10 +3229,69 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
                       <div style={{ background: 'rgba(0,0,0,0.3)', padding: '20px', borderRadius: '16px', marginBottom: '20px', border: '1px solid rgba(255,255,255,0.05)' }}>
                         <h4 style={{ margin: '0 0 16px 0', fontSize: '16px', color: 'var(--text-secondary)' }}>New Episode for {series.title}</h4>
                         <div className="responsive-form-two-col" style={{ gap: '12px' }}>
-                          <input type="text" placeholder="Episode Title" value={newEpisode.title} onChange={e=>setNewEpisode({...newEpisode, title: e.target.value})} style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', padding: '10px', borderRadius: '8px', color: 'var(--text-primary)', outline: 'none' }} />
-                          <input type="text" placeholder="Length (e.g. 45 min)" value={newEpisode.length} onChange={e=>setNewEpisode({...newEpisode, length: e.target.value})} style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', padding: '10px', borderRadius: '8px', color: 'var(--text-primary)', outline: 'none' }} />
+                          <div style={{ gridColumn: '1 / -1' }}>
+                            <input type="text" placeholder="Episode Title" value={newEpisode.title} onChange={e=>setNewEpisode({...newEpisode, title: e.target.value})} style={{ width: '100%', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', padding: '10px', borderRadius: '8px', color: 'var(--text-primary)', outline: 'none' }} />
+                          </div>
+                          <input type="text" placeholder="Runtime (e.g. 45 min)" value={newEpisode.length} onChange={e=>setNewEpisode({...newEpisode, length: e.target.value})} style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', padding: '10px', borderRadius: '8px', color: 'var(--text-primary)', outline: 'none' }} />
+                          <select 
+                            value={newEpisode.rating} 
+                            onChange={e=>setNewEpisode({...newEpisode, rating: e.target.value})} 
+                            style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', padding: '10px', borderRadius: '8px', color: 'var(--text-primary)', outline: 'none', cursor: 'pointer' }}
+                          >
+                            <option value="" style={{ background: '#111', color: '#888' }}>Content Rating (Optional)</option>
+                            <option value="G" style={{ background: '#111' }}>G</option>
+                            <option value="PG" style={{ background: '#111' }}>PG</option>
+                            <option value="PG-13" style={{ background: '#111' }}>PG-13</option>
+                            <option value="R" style={{ background: '#111' }}>R</option>
+                            <option value="NC-17" style={{ background: '#111' }}>NC-17</option>
+                            <option value="TV-Y" style={{ background: '#111' }}>TV-Y (All Children)</option>
+                            <option value="TV-Y7" style={{ background: '#111' }}>TV-Y7 (Older Children)</option>
+                            <option value="TV-G" style={{ background: '#111' }}>TV-G (General Audience)</option>
+                            <option value="TV-PG" style={{ background: '#111' }}>TV-PG (Parental Guidance)</option>
+                            <option value="TV-14" style={{ background: '#111' }}>TV-14 (Parents Cautioned)</option>
+                            <option value="TV-MA" style={{ background: '#111' }}>TV-MA (Mature Audience Only)</option>
+                          </select>
                           <div style={{ gridColumn: '1 / -1' }}>
                             <textarea placeholder="Description..." value={newEpisode.description} onChange={e=>setNewEpisode({...newEpisode, description: e.target.value})} style={{ width: '100%', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', padding: '10px', borderRadius: '8px', color: 'var(--text-primary)', outline: 'none', minHeight: '60px' }} />
+                          </div>
+
+                          {/* Genre Tags Selector */}
+                          <div style={{ gridColumn: '1 / -1', display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '4px' }}>
+                            <label style={{ fontSize: '13px', color: '#ccc', fontWeight: 'bold' }}>Genre Tags</label>
+                            <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                              {['Action', 'Adventure', 'Podcast', 'Docuseries', 'Comedy', 'Drama', 'Thriller', 'Talk Show', 'Music', 'Sports'].map((g) => {
+                                const activeGenres = newEpisode.genre ? newEpisode.genre.split(',').map(s=>s.trim()) : [];
+                                const isSelected = activeGenres.includes(g);
+                                return (
+                                  <button
+                                    type="button"
+                                    key={g}
+                                    onClick={() => {
+                                      let updated;
+                                      if (isSelected) {
+                                        updated = activeGenres.filter(x => x !== g).join(', ');
+                                      } else {
+                                        updated = [...activeGenres, g].join(', ');
+                                      }
+                                      setNewEpisode({ ...newEpisode, genre: updated });
+                                    }}
+                                    style={{
+                                      padding: '6px 14px',
+                                      borderRadius: '20px',
+                                      border: isSelected ? '1px solid #ff4d85' : '1px solid rgba(255,255,255,0.1)',
+                                      background: isSelected ? 'rgba(255,77,133,0.2)' : 'rgba(255,255,255,0.02)',
+                                      color: isSelected ? '#ff4d85' : '#ccc',
+                                      fontSize: '12px',
+                                      fontWeight: 'bold',
+                                      cursor: 'pointer',
+                                      transition: 'all 0.2s ease'
+                                    }}
+                                  >
+                                    {g}
+                                  </button>
+                                );
+                              })}
+                            </div>
                           </div>
 
                           {/* Box Cover image upload section */}
@@ -3312,7 +3373,7 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
                               >
                                 <Video size={20} />
                                 <div>
-                                  {uploadingVideo ? 'Uploading Video...' : isDraggingVideo ? 'Drop here!' : (newEpisode.video_url && newEpisode.video_url.includes('/episodes/video_')) ? 'Video File Uploaded ✓' : 'Upload Video File (Drag & Drop)'}
+                                  {uploadingVideo ? 'Uploading Video...' : isDraggingVideo ? 'Drop here!' : (newEpisode.video_url && newEpisode.video_url.includes("episodes/video_")) ? 'Video File Uploaded ✓' : 'Upload Video File (Drag & Drop)'}
                                 </div>
                                 <input type="file" accept="video/*" onChange={async (e) => {
                                   if (e.target.files && e.target.files[0]) {
@@ -3327,7 +3388,7 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
                                 <input 
                                   type="text" 
                                   placeholder="Paste YouTube, Vimeo, or direct video URL" 
-                                  value={(newEpisode.video_url && !newEpisode.video_url.includes('/episodes/video_')) ? newEpisode.video_url : ''} 
+                                  value={(newEpisode.video_url && !newEpisode.video_url.includes("episodes/video_")) ? newEpisode.video_url : ''} 
                                   onChange={e=>setNewEpisode({...newEpisode, video_url: e.target.value})} 
                                   style={{ width: '100%', background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(255,255,255,0.1)', padding: '10px', borderRadius: '6px', color: 'var(--text-primary)', outline: 'none', fontSize: '13px' }} 
                                 />
@@ -3355,8 +3416,24 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
                               <div style={{ position: 'absolute', bottom: 6, right: 6, background: 'rgba(0,0,0,0.8)', padding: '2px 6px', borderRadius: '4px', fontSize: '11px', fontWeight: 'bold' }}>{episode.length || 'TBD'}</div>
                             </div>
                             <div style={{ flex: 1 }}>
-                              <div style={{ color: 'var(--text-muted)', fontSize: '12px', fontWeight: 'bold', marginBottom: '4px' }}>Episode {idx + 1}</div>
-                              <h4 style={{ margin: '0 0 8px 0', fontSize: '18px' }}>{episode.title}</h4>
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--text-muted)', fontSize: '12px', fontWeight: 'bold', marginBottom: '4px' }}>
+                                <span>Episode {idx + 1}</span>
+                                {episode.rating && (
+                                  <span style={{ padding: '1px 6px', background: 'rgba(255,255,255,0.08)', borderRadius: '4px', fontSize: '10px', color: '#fff', border: '1px solid rgba(255,255,255,0.1)' }}>
+                                    {episode.rating}
+                                  </span>
+                                )}
+                              </div>
+                              <h4 style={{ margin: '0 0 6px 0', fontSize: '18px' }}>{episode.title}</h4>
+                              {episode.genre && (
+                                <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', marginBottom: '8px' }}>
+                                  {episode.genre.split(',').map((tag: string) => (
+                                    <span key={tag} style={{ background: 'rgba(255, 77, 133, 0.08)', color: '#ff4d85', border: '1px solid rgba(255, 77, 133, 0.15)', padding: '1px 8px', borderRadius: '12px', fontSize: '10px', fontWeight: 'bold' }}>
+                                      {tag.trim()}
+                                    </span>
+                                  ))}
+                                </div>
+                              )}
                               <p style={{ margin: 0, color: 'var(--text-secondary)', fontSize: '14px', lineHeight: 1.4 }}>{episode.description}</p>
                             </div>
                             {isOwnProfile || purchasedSeasons.includes(series.id) || purchasedEpisodes.includes(episode.id) ? (
@@ -4612,7 +4689,23 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
                     {/* Synopsis & Synopsis metadata */}
                     <div style={{ padding: '32px' }}>
                       <span style={{ color: 'var(--text-muted)', fontSize: '12px', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '1px', display: 'block', marginBottom: '6px' }}>EPISODE PLAYING</span>
-                      <h3 style={{ margin: '0 0 12px 0', fontSize: '24px', fontWeight: '900', color: '#fff' }}>{activeCinemaEpisode.title}</h3>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '8px' }}>
+                        <h3 style={{ margin: 0, fontSize: '24px', fontWeight: '900', color: '#fff' }}>{activeCinemaEpisode.title}</h3>
+                        {activeCinemaEpisode.rating && (
+                          <span style={{ padding: '2px 8px', background: 'rgba(255,255,255,0.08)', borderRadius: '4px', fontSize: '11px', color: '#fff', border: '1px solid rgba(255,255,255,0.15)', fontWeight: 'bold' }}>
+                            {activeCinemaEpisode.rating}
+                          </span>
+                        )}
+                      </div>
+                      {activeCinemaEpisode.genre && (
+                        <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', marginBottom: '14px' }}>
+                          {activeCinemaEpisode.genre.split(',').map((tag: string) => (
+                            <span key={tag} style={{ background: 'rgba(255, 77, 133, 0.12)', color: '#ff4d85', border: '1px solid rgba(255, 77, 133, 0.2)', padding: '2px 10px', borderRadius: '12px', fontSize: '11px', fontWeight: 'bold' }}>
+                              {tag.trim()}
+                            </span>
+                          ))}
+                        </div>
+                      )}
                       <p style={{ margin: 0, color: 'var(--text-secondary)', lineHeight: 1.6, fontSize: '15px' }}>
                         {activeCinemaEpisode.description || 'Welcome to this premium cinema segment. Watch exclusive multi-angle episodes produced explicitly for White-Label networks.'}
                       </p>
