@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { supabase } from '../supabaseClient';
 import { motion, AnimatePresence } from 'framer-motion';
 import { LogOut, Camera, Lock, Unlock, Image as ImageIcon, Star, ShieldCheck, Eye, Edit2, Trash2, Wand, Calendar, Edit3, Clock, CheckCircle, Heart, MessageCircle, Wallet, ArrowUpRight, ArrowDownLeft, Activity, Monitor, Settings, Video, DollarSign, Share2, Pin, ChevronLeft, ChevronRight, AlertCircle } from 'lucide-react';
@@ -92,6 +93,16 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
   const [activeCinemaSeries, setActiveCinemaSeries] = useState<any | null>(null);
   const [activeCinemaEpisode, setActiveCinemaEpisode] = useState<any | null>(null);
   const [showCinemaModal, setShowCinemaModal] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const handleResize = () => {
+      setIsMobile(window.innerWidth <= 768);
+    };
+    handleResize();
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
   const [purchasedSeasons, setPurchasedSeasons] = useState<string[]>(() => {
     if (typeof window !== 'undefined') {
       const saved = localStorage.getItem('vibe_purchased_seasons');
@@ -5917,8 +5928,9 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
       </AnimatePresence>
 
       {/* TV SERIES CINEMA THEATER OVERLAY */}
-      <AnimatePresence>
-        {showCinemaModal && activeCinemaSeries && activeCinemaEpisode && (() => {
+      {typeof document !== 'undefined' && createPortal(
+        <AnimatePresence>
+          {showCinemaModal && activeCinemaSeries && activeCinemaEpisode && (() => {
           const renderCinemaPlayer = () => {
             const url = activeCinemaEpisode.video_url || '';
             if (!url) {
@@ -6026,25 +6038,25 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
           };
 
           return (
-            <div style={{ position: 'fixed', inset: 0, zIndex: 99999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }}>
+            <div style={{ position: 'fixed', inset: 0, zIndex: 99999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: isMobile ? '0' : '20px' }}>
               <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} style={{ position: 'absolute', inset: 0, background: 'rgba(5, 5, 7, 0.97)', backdropFilter: 'blur(30px)' }} onClick={() => { setShowCinemaModal(false); setActiveCinemaSeries(null); }} />
               
-              <motion.div initial={{ scale: 0.95, opacity: 0, y: 30 }} animate={{ scale: 1, opacity: 1, y: 0 }} exit={{ scale: 0.95, opacity: 0, y: 30 }} style={{ position: 'relative', background: 'rgba(10, 10, 14, 0.9)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '32px', width: '95vw', height: '90vh', display: 'flex', flexDirection: 'column', overflow: 'hidden', boxShadow: '0 25px 80px rgba(255,77,133,0.3)', backdropFilter: 'blur(40px)' }}>
+              <motion.div initial={{ scale: 0.95, opacity: 0, y: 30 }} animate={{ scale: 1, opacity: 1, y: 0 }} exit={{ scale: 0.95, opacity: 0, y: 30 }} style={{ position: 'relative', background: 'rgba(10, 10, 14, 0.9)', border: isMobile ? 'none' : '1px solid rgba(255,255,255,0.08)', borderRadius: isMobile ? '0' : '32px', width: isMobile ? '100vw' : '95vw', height: isMobile ? '100dvh' : '90vh', display: 'flex', flexDirection: 'column', overflow: 'hidden', boxShadow: '0 25px 80px rgba(255,77,133,0.3)', backdropFilter: 'blur(40px)' }}>
                 
                 {/* Cinema Header */}
-                <div style={{ padding: '20px 32px', borderBottom: '1px solid rgba(255,255,255,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0 }}>
+                <div style={{ padding: isMobile ? '16px 20px' : '20px 32px', borderBottom: '1px solid rgba(255,255,255,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0 }}>
                   <div>
                     <span style={{ background: 'rgba(255,77,133,0.2)', color: '#ff4d85', border: '1px solid rgba(255,77,133,0.4)', padding: '4px 12px', borderRadius: '30px', fontSize: '11px', fontWeight: 'bold', display: 'inline-block', marginBottom: '6px' }}>CINEMA MULTIPLEX ORIGINAL</span>
-                    <h2 style={{ margin: 0, fontSize: '22px', fontWeight: 900 }}>{activeCinemaSeries.title}</h2>
+                    <h2 style={{ margin: 0, fontSize: isMobile ? '18px' : '22px', fontWeight: 900 }}>{activeCinemaSeries.title}</h2>
                   </div>
                   <button onClick={() => { setShowCinemaModal(false); setActiveCinemaSeries(null); }} style={{ background: 'rgba(255,255,255,0.05)', border: 'none', borderRadius: '50%', width: 44, height: 44, color: '#fff', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '20px' }}>&times;</button>
                 </div>
 
                 {/* Cinema Main Workspace */}
-                <div style={{ display: 'flex', flex: 1, overflow: 'hidden' }}>
+                <div style={{ display: 'flex', flexDirection: isMobile ? 'column' : 'row', flex: 1, overflowY: isMobile ? 'auto' : 'hidden', overflowX: 'hidden' }}>
                   
                   {/* Streaming Theater (Left Side) */}
-                  <div style={{ flex: 1, display: 'flex', flexDirection: 'column', background: '#020204', position: 'relative', overflowY: 'auto' }}>
+                  <div style={{ flex: isMobile ? 'none' : 1, display: 'flex', flexDirection: 'column', background: '#020204', position: 'relative', overflowY: isMobile ? 'visible' : 'auto' }}>
                     
                     {/* Simulated High-Fidelity Video Screen */}
                     <div style={{ width: '100%', aspectRatio: '16/9', background: 'radial-gradient(circle, #250917 0%, #030103 100%)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', position: 'relative', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
@@ -6052,7 +6064,7 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
                     </div>
 
                     {/* Synopsis & Synopsis metadata */}
-                    <div style={{ padding: '32px' }}>
+                    <div style={{ padding: isMobile ? '20px' : '32px' }}>
                       <span style={{ color: 'var(--text-muted)', fontSize: '12px', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '1px', display: 'block', marginBottom: '6px' }}>EPISODE PLAYING</span>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '8px' }}>
                         <h3 style={{ margin: 0, fontSize: '24px', fontWeight: '900', color: '#fff' }}>{activeCinemaEpisode.title}</h3>
@@ -6079,11 +6091,11 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
                   </div>
 
                   {/* Episodes Sidebar Playlist Checklist (Right Side) */}
-                  <div style={{ width: '360px', borderLeft: '1px solid rgba(255,255,255,0.08)', background: '#0a0a0d', display: 'flex', flexDirection: 'column', flexShrink: 0 }}>
+                  <div style={{ width: isMobile ? '100%' : '360px', borderLeft: isMobile ? 'none' : '1px solid rgba(255,255,255,0.08)', borderTop: isMobile ? '1px solid rgba(255,255,255,0.08)' : 'none', background: '#0a0a0d', display: 'flex', flexDirection: 'column', flexShrink: 0, flex: isMobile ? 'none' : 1, overflowY: isMobile ? 'visible' : 'auto' }}>
                     <div style={{ padding: '20px 24px', borderBottom: '1px solid rgba(255,255,255,0.08)', flexShrink: 0 }}>
                       <h4 style={{ margin: 0, fontSize: '13px', color: 'var(--text-muted)', letterSpacing: '1px', textTransform: 'uppercase' }}>EPISODE SELECTION</h4>
                     </div>
-                    <div style={{ flex: 1, overflowY: 'auto', padding: '20px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                    <div style={{ flex: isMobile ? 'none' : 1, overflowY: isMobile ? 'visible' : 'auto', padding: isMobile ? '16px' : '20px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
                       {(activeCinemaSeries.episodes || []).map((ep: any, idx: number) => {
                         const isActive = activeCinemaEpisode.id === ep.id;
                         const isSeasonUnlocked = isOwnProfile || (
@@ -6151,7 +6163,9 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
             </div>
           );
         })()}
-      </AnimatePresence>
+      </AnimatePresence>,
+      document.body
+    )}
 
       {/* Uploading progress indicator overlay */}
       <AnimatePresence>
