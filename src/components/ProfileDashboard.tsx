@@ -5999,6 +5999,19 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
               );
             }
 
+            // Check for Lightcast/Embed players
+            if (url.includes('lightcast.com/embed') || url.includes('embed/player.php') || url.includes('/embed/')) {
+              return (
+                <iframe 
+                  title={activeCinemaEpisode.title}
+                  src={url}
+                  style={{ width: '100%', height: '100%', border: 'none' }}
+                  allow="autoplay; fullscreen; picture-in-picture; encrypted-media"
+                  allowFullScreen
+                />
+              );
+            }
+
             // Native HTML5 video player
             return (
               <video 

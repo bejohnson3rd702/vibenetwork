@@ -136,7 +136,7 @@ export default function N2NHome({ wlConfig, categories, activeVideo, setActiveVi
           let filteredAthletes = athletesData;
           if (isKpleActive) {
             filteredAthletes = athletesData.filter((athlete: any) =>
-              ['rev bennie johnson', 'kple', 'pastor john'].includes(athlete.username?.toLowerCase())
+              ['rev bennie johnson', 'kple', 'pastor john', 'doc wales diaries'].includes(athlete.username?.toLowerCase())
             );
           }
 
