@@ -279,20 +279,20 @@ export default function EndUserAuthModal({ onClose }: EndUserAuthModalProps) {
         </form>
 
         <div style={{ padding: '0 30px 30px 30px', textAlign: 'center' }}>
-           <p style={{ color: 'var(--text-muted)', fontSize: '14px', margin: 0 }}>
+           <p style={{ color: 'var(--text-muted)', fontSize: '17px', margin: 0 }}>
              {isForgotPassword ? (
                <button 
                   onClick={() => { setIsForgotPassword(false); setErrorMsg(''); }}
-                  style={{ background: 'none', border: 'none', color: accentColor, fontWeight: 'bold', cursor: 'pointer' }}>
+                  style={{ background: 'none', border: 'none', color: accentColor, fontWeight: 'bold', cursor: 'pointer', fontSize: '17px' }}>
                   Return to Login
                </button>
              ) : (
                <>
-                 {isLogin ? "Need remote access?" : "Already provisioned?"}
+                 {isLogin ? "Don't have an account? " : "Already have an account? "}
                  <button 
                     onClick={() => { setIsLogin(!isLogin); setErrorMsg(''); }}
-                    style={{ background: 'none', border: 'none', color: accentColor, fontWeight: 'bold', marginLeft: '6px', cursor: 'pointer' }}>
-                    {isLogin ? "Register Account" : "Login Here"}
+                    style={{ background: 'none', border: 'none', color: accentColor, fontWeight: 'bold', marginLeft: '6px', cursor: 'pointer', fontSize: '17px' }}>
+                    {isLogin ? "Sign Up" : "Sign In"}
                  </button>
                </>
              )}

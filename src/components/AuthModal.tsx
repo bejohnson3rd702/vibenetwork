@@ -354,7 +354,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ onClose, onSuccess, defaultIsLogi
           </button>
         </form>
 
-        <p style={{ textAlign: 'center', marginTop: '24px', color: 'var(--text-muted)', fontSize: '14px' }}>
+        <p style={{ textAlign: 'center', marginTop: '24px', color: 'var(--text-muted)', fontSize: '17px' }}>
           {isForgotPassword ? (
             <span 
               onClick={() => { setIsForgotPassword(false); setErrorMSG(''); }} 
@@ -374,6 +374,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ onClose, onSuccess, defaultIsLogi
             </>
           )}
         </p>
+
 
         {showBusinessWizard && (
           <div style={{ position: 'absolute', inset: 0, background: 'var(--bg-surface)', borderRadius: '24px', zIndex: 10, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>

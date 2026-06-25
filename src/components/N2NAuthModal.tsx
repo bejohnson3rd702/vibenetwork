@@ -576,13 +576,13 @@ export default function N2NAuthModal({ onClose, initialRole }: N2NAuthModalProps
           {/* ── Footer Toggle ────────────────────────────────── */}
           {!showWizard && (
             <div style={{ padding: '0 30px 30px 30px', textAlign: 'center' }}>
-              <p style={{ color: 'var(--text-muted)', fontSize: '14px', margin: 0 }}>
-                {isLogin ? 'Need an account?' : 'Already registered?'}
+              <p style={{ color: 'var(--text-muted)', fontSize: '17px', margin: 0 }}>
+                {isLogin ? "Don't have an account? " : "Already have an account? "}
                 <button
                   onClick={() => { setIsLogin(!isLogin); setErrorMsg(''); }}
-                  style={{ background: 'none', border: 'none', color: accentColor, fontWeight: 'bold', marginLeft: '6px', cursor: 'pointer' }}
+                  style={{ background: 'none', border: 'none', color: accentColor, fontWeight: 'bold', marginLeft: '6px', cursor: 'pointer', fontSize: '17px' }}
                 >
-                  {isLogin ? 'Sign Up' : 'Login Here'}
+                  {isLogin ? 'Sign Up' : 'Sign In'}
                 </button>
               </p>
             </div>
