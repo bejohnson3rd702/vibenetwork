@@ -19,6 +19,7 @@ import { useWhiteLabel } from '../context/WhiteLabelContext';
 import { Helmet } from 'react-helmet-async';
 import { useToast } from '../context/ToastContext';
 import { processAndEnhanceImage } from '../lib/imageProcessor';
+import { syncContactToExternalCrms } from '../lib/crmSync';
 
 let stripePromise: Promise<any> | null = null;
 const getStripe = () => {
@@ -294,6 +295,14 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
             tags.map(t => ({ contact_id: contact.id, tag: t }))
           );
         }
+      }
+
+      // Sync contact to external CRM services asynchronously
+      if (contact) {
+        syncContactToExternalCrms({
+          ...contact,
+          tags: newContact.tagString ? newContact.tagString.split(',').map(t => t.trim()).filter(Boolean) : []
+        });
       }
 
       toast.success("Contact created successfully!");

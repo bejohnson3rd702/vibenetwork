@@ -6,6 +6,7 @@ import { useWhiteLabel } from '../context/WhiteLabelContext';
 import { useToast } from '../context/ToastContext';
 import { supabase } from '../supabaseClient';
 import { isOlympianConfig } from '../lib/whitelabel';
+import { syncContactToExternalCrms } from '../lib/crmSync';
 
 const Contact: React.FC = () => {
   const { wlConfig } = useWhiteLabel();
@@ -38,6 +39,34 @@ const Contact: React.FC = () => {
           status: 'new'
        }
     ]);
+
+    if (!error) {
+      // Auto-save lead as a contact in Vibe CRM
+      try {
+        const nameParts = (formData.name || '').trim().split(/\s+/);
+        const firstName = nameParts[0] || '';
+        const lastName = nameParts.slice(1).join(' ') || '';
+
+        const { data: contact } = await supabase
+          .from('crm_contacts')
+          .insert({
+            whitelabel_id: wlConfig?.id || null,
+            creator_id: wlConfig?.owner_id || null,
+            first_name: firstName,
+            last_name: lastName,
+            email: formData.email,
+            source: 'contact_form'
+          })
+          .select()
+          .single();
+
+        if (contact) {
+          syncContactToExternalCrms(contact);
+        }
+      } catch (crmErr) {
+        console.error("Auto-save CRM contact failed:", crmErr);
+      }
+    }
 
     setIsSending(false);
     

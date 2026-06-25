@@ -3,6 +3,7 @@ import { supabase } from '../supabaseClient';
 import { useWhiteLabel } from '../context/WhiteLabelContext';
 import { useToast } from '../context/ToastContext';
 import { X, ShieldCheck, AtSign, Mail, Lock, Loader, ArrowRight, Info } from 'lucide-react';
+import { syncContactToExternalCrms } from '../lib/crmSync';
 
 
 
@@ -78,6 +79,30 @@ export default function EndUserAuthModal({ onClose }: EndUserAuthModalProps) {
           }
         });
         if (error) throw error;
+
+        // Auto-save registered user to CRM contact directory
+        try {
+          const wlId = (!wlConfig?.id || wlConfig?.id === 'master' || wlConfig?.domain === 'vibenetwork.vercel.app' || wlConfig?.domain === 'vibenetwork.tv') ? null : wlConfig?.id;
+          const { data: contact } = await supabase
+            .from('crm_contacts')
+            .insert({
+              whitelabel_id: wlId,
+              creator_id: wlConfig?.owner_id || null,
+              first_name: username,
+              last_name: '',
+              email: email,
+              source: 'sign_up'
+            })
+            .select()
+            .single();
+
+          if (contact) {
+            syncContactToExternalCrms(contact);
+          }
+        } catch (crmErr) {
+          console.error("CRM Contact auto-save error on sign up:", crmErr);
+        }
+
         toast.success('Check your email to verify your account!');
 
         onClose();

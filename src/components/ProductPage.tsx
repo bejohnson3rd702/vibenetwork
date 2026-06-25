@@ -5,6 +5,7 @@ import { useWhiteLabel } from '../context/WhiteLabelContext';
 import { useToast } from '../context/ToastContext';
 import { motion } from 'framer-motion';
 import { ShoppingBag, ArrowLeft, ShieldCheck, Download, Package, Music, CreditCard } from 'lucide-react';
+import { syncContactToExternalCrms } from '../lib/crmSync';
 
 const ProductPage: React.FC = () => {
   const { productId } = useParams();
@@ -68,6 +69,36 @@ const ProductPage: React.FC = () => {
     if (!session) {
       window.dispatchEvent(new CustomEvent('open_auth', { detail: { isLogin: true } }));
       return;
+    }
+
+    // Auto-save buyer as a contact in Vibe CRM
+    try {
+      const email = session.user?.email;
+      const username = session.user?.user_metadata?.username || '';
+      if (email && product) {
+        const nameParts = (username || '').trim().split(/\s+/);
+        const firstName = nameParts[0] || '';
+        const lastName = nameParts.slice(1).join(' ') || '';
+
+        const { data: contact } = await supabase
+          .from('crm_contacts')
+          .insert({
+            whitelabel_id: wlConfig?.id || null,
+            creator_id: product.creator?.id || wlConfig?.owner_id || null,
+            first_name: firstName,
+            last_name: lastName,
+            email: email,
+            source: 'checkout'
+          })
+          .select()
+          .single();
+
+        if (contact) {
+          syncContactToExternalCrms(contact);
+        }
+      }
+    } catch (crmErr) {
+      console.error("Auto-save CRM contact failed on purchase checkout:", crmErr);
     }
 
     setPurchasing(true);
