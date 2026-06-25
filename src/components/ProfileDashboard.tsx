@@ -460,6 +460,13 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
   const [uploadingEpisodeImg, setUploadingEpisodeImg] = useState(false);
   const [isDraggingEpisodeImg, setIsDraggingEpisodeImg] = useState(false);
   const [activeSeriesIdForEp, setActiveSeriesIdForEp] = useState<string | null>(null);
+  const [editingSeries, setEditingSeries] = useState<any | null>(null);
+  const [showEditSeriesModal, setShowEditSeriesModal] = useState(false);
+  const [editingEpisode, setEditingEpisode] = useState<any | null>(null);
+  const [showEditEpisodeModal, setShowEditEpisodeModal] = useState(false);
+  const [uploadingEditSeriesImg, setUploadingEditSeriesImg] = useState(false);
+  const [uploadingEditEpisodeImg, setUploadingEditEpisodeImg] = useState(false);
+  const [uploadingEditEpisodeVideo, setUploadingEditEpisodeVideo] = useState(false);
 
   // Slow Upload Loader State & Effect
   const [showUploadLoader, setShowUploadLoader] = useState(false);
@@ -1211,6 +1218,304 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
     setActiveCinemaSeries(series);
     setActiveCinemaEpisode(episode);
     setShowCinemaModal(true);
+  };
+
+  const handleUpdateSeries = async (updatedSeries: any) => {
+    setSaving(true);
+    try {
+      const { error } = await supabase!
+        .from('series')
+        .update({
+          title: updatedSeries.title,
+          description: updatedSeries.description,
+          price: updatedSeries.billing_level === 'series' ? parseFloat(updatedSeries.price || '0') : 0,
+          img: updatedSeries.img,
+          billing_level: updatedSeries.billing_level,
+          subscriber_free: updatedSeries.subscriber_free,
+          subscriber_price: (updatedSeries.billing_level === 'series' && updatedSeries.subscriber_price) ? parseFloat(updatedSeries.subscriber_price) : null
+        })
+        .eq('id', updatedSeries.id);
+
+      if (error) {
+        toast.error('Error updating series: ' + error.message);
+      } else {
+        toast.success('Series updated successfully!');
+        
+        setSeriesList(prev => prev.map(s => {
+          if (s.id === updatedSeries.id) {
+            return {
+              ...s,
+              title: updatedSeries.title,
+              description: updatedSeries.description,
+              price: updatedSeries.billing_level === 'series' ? parseFloat(updatedSeries.price || '0') : 0,
+              img: updatedSeries.img,
+              billing_level: updatedSeries.billing_level,
+              subscriber_free: updatedSeries.subscriber_free,
+              subscriber_price: (updatedSeries.billing_level === 'series' && updatedSeries.subscriber_price) ? parseFloat(updatedSeries.subscriber_price) : null
+            };
+          }
+          return s;
+        }));
+        
+        if (selectedSeriesForViewer && selectedSeriesForViewer.id === updatedSeries.id) {
+          setSelectedSeriesForViewer(prev => {
+            if (!prev) return null;
+            return {
+              ...prev,
+              title: updatedSeries.title,
+              description: updatedSeries.description,
+              price: updatedSeries.billing_level === 'series' ? parseFloat(updatedSeries.price || '0') : 0,
+              img: updatedSeries.img,
+              billing_level: updatedSeries.billing_level,
+              subscriber_free: updatedSeries.subscriber_free,
+              subscriber_price: (updatedSeries.billing_level === 'series' && updatedSeries.subscriber_price) ? parseFloat(updatedSeries.subscriber_price) : null
+            };
+          });
+        }
+
+        setShowEditSeriesModal(false);
+        setEditingSeries(null);
+      }
+    } catch (err: any) {
+      toast.error('Failed to update series: ' + err.message);
+    }
+    setSaving(false);
+  };
+
+  const handleDeleteSeries = async (seriesId: string) => {
+    if (!window.confirm('Are you sure you want to delete this series? All episodes inside it will also be deleted. This action cannot be undone.')) {
+      return;
+    }
+    setSaving(true);
+    try {
+      const { error } = await supabase!
+        .from('series')
+        .delete()
+        .eq('id', seriesId);
+
+      if (error) {
+        toast.error('Error deleting series: ' + error.message);
+      } else {
+        toast.success('Series deleted successfully!');
+        setSeriesList(prev => prev.filter(s => s.id !== seriesId));
+        if (selectedSeriesForViewer && selectedSeriesForViewer.id === seriesId) {
+          setSelectedSeriesForViewer(null);
+        }
+        setShowEditSeriesModal(false);
+        setEditingSeries(null);
+      }
+    } catch (err: any) {
+      toast.error('Failed to delete series: ' + err.message);
+    }
+    setSaving(false);
+  };
+
+  const handleUpdateEpisode = async (updatedEpisode: any) => {
+    setSaving(true);
+    try {
+      const { error } = await supabase!
+        .from('episodes')
+        .update({
+          title: updatedEpisode.title,
+          description: updatedEpisode.description,
+          length: updatedEpisode.length,
+          price: parseFloat(updatedEpisode.price || '0'),
+          video_url: updatedEpisode.video_url,
+          thumbnail_url: updatedEpisode.thumbnail_url,
+          genre: updatedEpisode.genre,
+          rating: updatedEpisode.rating,
+          subscriber_free: updatedEpisode.subscriber_free,
+          subscriber_price: updatedEpisode.subscriber_price ? parseFloat(updatedEpisode.subscriber_price) : null
+        })
+        .eq('id', updatedEpisode.id);
+
+      if (error) {
+        toast.error('Error updating episode: ' + error.message);
+      } else {
+        toast.success('Episode updated successfully!');
+        
+        const updater = (s: any) => {
+          if (s.id === updatedEpisode.series_id) {
+            return {
+              ...s,
+              episodes: (s.episodes || []).map((ep: any) => ep.id === updatedEpisode.id ? { 
+                ...ep, 
+                ...updatedEpisode, 
+                price: parseFloat(updatedEpisode.price || '0'), 
+                subscriber_price: updatedEpisode.subscriber_price ? parseFloat(updatedEpisode.subscriber_price) : null 
+              } : ep)
+            };
+          }
+          return s;
+        };
+
+        setSeriesList(prev => prev.map(updater));
+        if (selectedSeriesForViewer && selectedSeriesForViewer.id === updatedEpisode.series_id) {
+          setSelectedSeriesForViewer(prev => {
+            if (!prev) return null;
+            return updater(prev);
+          });
+        }
+
+        if (activeCinemaSeries && activeCinemaSeries.id === updatedEpisode.series_id) {
+          setActiveCinemaSeries(prev => {
+            if (!prev) return null;
+            return updater(prev);
+          });
+          if (activeCinemaEpisode && activeCinemaEpisode.id === updatedEpisode.id) {
+            setActiveCinemaEpisode({
+              ...activeCinemaEpisode,
+              ...updatedEpisode,
+              price: parseFloat(updatedEpisode.price || '0'),
+              subscriber_price: updatedEpisode.subscriber_price ? parseFloat(updatedEpisode.subscriber_price) : null
+            });
+          }
+        }
+
+        setShowEditEpisodeModal(false);
+        setEditingEpisode(null);
+      }
+    } catch (err: any) {
+      toast.error('Failed to update episode: ' + err.message);
+    }
+    setSaving(false);
+  };
+
+  const handleDeleteEpisode = async (episodeId: string, seriesId: string) => {
+    if (!window.confirm('Are you sure you want to delete this episode? This action cannot be undone.')) {
+      return;
+    }
+    setSaving(true);
+    try {
+      const { error } = await supabase!
+        .from('episodes')
+        .delete()
+        .eq('id', episodeId);
+
+      if (error) {
+        toast.error('Error deleting episode: ' + error.message);
+      } else {
+        toast.success('Episode deleted successfully!');
+        
+        const filterer = (s: any) => {
+          if (s.id === seriesId) {
+            return {
+              ...s,
+              episodes: (s.episodes || []).filter((ep: any) => ep.id !== episodeId)
+            };
+          }
+          return s;
+        };
+
+        setSeriesList(prev => prev.map(filterer));
+        if (selectedSeriesForViewer && selectedSeriesForViewer.id === seriesId) {
+          setSelectedSeriesForViewer(prev => {
+            if (!prev) return null;
+            return filterer(prev);
+          });
+        }
+
+        if (activeCinemaSeries && activeCinemaSeries.id === seriesId) {
+          setActiveCinemaSeries(prev => {
+            if (!prev) return null;
+            return filterer(prev);
+          });
+          if (activeCinemaEpisode && activeCinemaEpisode.id === episodeId) {
+            setActiveCinemaEpisode(null);
+          }
+        }
+
+        setShowEditEpisodeModal(false);
+        setEditingEpisode(null);
+      }
+    } catch (err: any) {
+      toast.error('Failed to delete episode: ' + err.message);
+    }
+    setSaving(false);
+  };
+
+  const handleEditSeriesCoverUpload = async (eventOrFile: React.ChangeEvent<HTMLInputElement> | File) => {
+    try {
+      let file: File | undefined;
+      if (eventOrFile instanceof File) {
+        file = eventOrFile;
+      } else if (eventOrFile.target?.files && eventOrFile.target.files.length > 0) {
+        file = eventOrFile.target.files[0];
+      }
+      if (!file) return;
+      setUploadingEditSeriesImg(true);
+      
+      toast.info("✨ Nalu AI is enhancing and auto-cropping your series cover...");
+      const enhancedFile = await processAndEnhanceImage(file, 'hero'); // 16:9 aspect ratio
+
+      const filePath = `${user?.id}/series_edit_${Math.random()}.${enhancedFile.name.split('.').pop()}`;
+      await supabase!.storage.from('images').upload(filePath, enhancedFile);
+      const { data } = supabase!.storage.from('images').getPublicUrl(filePath);
+      setEditingSeries((prev: any) => ({ ...prev, img: data.publicUrl }));
+      toast.success('Series cover uploaded successfully!');
+    } catch (err: any) {
+      console.error(err);
+      toast.error('Series cover upload failed: ' + (err.message || 'Storage error'));
+    } finally {
+      setUploadingEditSeriesImg(false);
+    }
+  };
+
+  const handleEditEpisodeCoverUpload = async (eventOrFile: React.ChangeEvent<HTMLInputElement> | File) => {
+    try {
+      let file: File | undefined;
+      if (eventOrFile instanceof File) {
+        file = eventOrFile;
+      } else if (eventOrFile.target?.files && eventOrFile.target.files.length > 0) {
+        file = eventOrFile.target.files[0];
+      }
+      if (!file) return;
+      setUploadingEditEpisodeImg(true);
+      
+      toast.info("✨ Nalu AI is enhancing and auto-cropping your episode cover...");
+      const enhancedFile = await processAndEnhanceImage(file, 'hero'); // 16:9 aspect ratio
+
+      const filePath = `${user?.id}/ep_edit_${Math.random()}.${enhancedFile.name.split('.').pop()}`;
+      await supabase!.storage.from('images').upload(filePath, enhancedFile);
+      const { data } = supabase!.storage.from('images').getPublicUrl(filePath);
+      setEditingEpisode((prev: any) => ({ ...prev, thumbnail_url: data.publicUrl }));
+      toast.success('Episode cover uploaded successfully!');
+    } catch (err: any) {
+      console.error(err);
+      toast.error('Episode cover upload failed: ' + (err.message || 'Storage error'));
+    } finally {
+      setUploadingEditEpisodeImg(false);
+    }
+  };
+
+  const handleEditEpisodeVideoUpload = async (eventOrFile: React.ChangeEvent<HTMLInputElement> | File) => {
+    try {
+      let file: File | undefined;
+      if (eventOrFile instanceof File) {
+        file = eventOrFile;
+      } else if (eventOrFile.target?.files && eventOrFile.target.files.length > 0) {
+        file = eventOrFile.target.files[0];
+      }
+      if (!file) return;
+      setUploadingEditEpisodeVideo(true);
+      toast.info('Uploading video file to videos storage bucket...');
+
+      const fileExt = file.name.split('.').pop();
+      const fileName = `video_${Math.random()}.${fileExt}`;
+      const filePath = `${user?.id}/${fileName}`;
+
+      const { error: uploadError } = await supabase!.storage.from('videos').upload(filePath, file);
+      if (uploadError) throw uploadError;
+
+      const { data } = supabase!.storage.from('videos').getPublicUrl(filePath);
+      setEditingEpisode((prev: any) => ({ ...prev, video_url: data.publicUrl }));
+      toast.success('Video uploaded successfully!');
+    } catch (err: any) {
+      console.error(err);
+      toast.error('Video upload failed: ' + (err.message || 'Storage error'));
+    } finally {
+      setUploadingEditEpisodeVideo(false);
+    }
   };
 
   const handleUpdateProduct = async (updatedProduct: any) => {
@@ -3812,30 +4117,50 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
 
                         if (series.billing_level === 'episode') {
                           return (
-                            <span style={{ 
-                              background: 'rgba(255,255,255,0.05)', 
-                              color: '#ccc', 
-                              padding: '10px 20px', 
-                              borderRadius: '12px', 
-                              fontSize: '14px', 
-                              fontWeight: 'bold',
-                              border: '1px solid rgba(255,255,255,0.1)',
-                              display: 'inline-block'
-                            }}>
-                              🎫 Pay-Per-Episode Series
-                            </span>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
+                              <span style={{ 
+                                background: 'rgba(255,255,255,0.05)', 
+                                color: '#ccc', 
+                                padding: '10px 20px', 
+                                borderRadius: '12px', 
+                                fontSize: '14px', 
+                                fontWeight: 'bold',
+                                border: '1px solid rgba(255,255,255,0.1)',
+                                display: 'inline-block'
+                              }}>
+                                🎫 Pay-Per-Episode Series
+                              </span>
+                              {isOwnProfile && viewMode === 'edit' && (
+                                <button onClick={() => {
+                                  setEditingSeries(series);
+                                  setShowEditSeriesModal(true);
+                                }} style={{ padding: '10px 20px', background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.2)', color: '#fff', borderRadius: '12px', fontWeight: 'bold', fontSize: '14px', cursor: 'pointer', transition: 'all 0.2s' }} onMouseOver={e=>e.currentTarget.style.background='rgba(255,255,255,0.2)'} onMouseOut={e=>e.currentTarget.style.background='rgba(255,255,255,0.1)'}>
+                                  Edit Series ⚙️
+                                </button>
+                              )}
+                            </div>
                           );
                         }
 
                         if (isSeasonUnlocked) {
                           return (
-                            <button onClick={() => {
-                              setActiveCinemaSeries(series);
-                              setActiveCinemaEpisode(series.episodes?.[0] || null);
-                              setShowCinemaModal(true);
-                            }} style={{ padding: '14px 28px', background: 'linear-gradient(135deg, #ff4d85, #8A2BE2)', color: '#fff', border: 'none', borderRadius: '12px', fontWeight: 'bold', fontSize: '16px', cursor: 'pointer', transition: 'all 0.2s', boxShadow: '0 10px 20px rgba(138,43,226,0.3)' }}>
-                              Stream Season 🍿
-                            </button>
+                            <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
+                              <button onClick={() => {
+                                setActiveCinemaSeries(series);
+                                setActiveCinemaEpisode(series.episodes?.[0] || null);
+                                setShowCinemaModal(true);
+                              }} style={{ padding: '14px 28px', background: 'linear-gradient(135deg, #ff4d85, #8A2BE2)', color: '#fff', border: 'none', borderRadius: '12px', fontWeight: 'bold', fontSize: '16px', cursor: 'pointer', transition: 'all 0.2s', boxShadow: '0 10px 20px rgba(138,43,226,0.3)' }}>
+                                Stream Season 🍿
+                              </button>
+                              {isOwnProfile && viewMode === 'edit' && (
+                                <button onClick={() => {
+                                  setEditingSeries(series);
+                                  setShowEditSeriesModal(true);
+                                }} style={{ padding: '14px 28px', background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.2)', color: '#fff', borderRadius: '12px', fontWeight: 'bold', fontSize: '16px', cursor: 'pointer', transition: 'all 0.2s' }} onMouseOver={e=>e.currentTarget.style.background='rgba(255,255,255,0.2)'} onMouseOut={e=>e.currentTarget.style.background='rgba(255,255,255,0.1)'}>
+                                  Edit Series ⚙️
+                                </button>
+                              )}
+                            </div>
                           );
                         } else {
                           let displayPrice = parseFloat(series.price || '0');
@@ -3848,9 +4173,19 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
                             }
                           }
                           return (
-                            <button onClick={() => handleBuySeasonSimulation(series)} style={{ padding: '14px 28px', background: '#fff', color: '#000', border: 'none', borderRadius: '12px', fontWeight: 'bold', fontSize: '16px', cursor: 'pointer', transition: 'all 0.2s', boxShadow: '0 10px 20px rgba(255,255,255,0.2)' }} onMouseOver={e=>e.currentTarget.style.transform='scale(1.05)'} onMouseOut={e=>e.currentTarget.style.transform='scale(1)'}>
-                              Buy Full Season ({priceText})
-                            </button>
+                            <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
+                              <button onClick={() => handleBuySeasonSimulation(series)} style={{ padding: '14px 28px', background: '#fff', color: '#000', border: 'none', borderRadius: '12px', fontWeight: 'bold', fontSize: '16px', cursor: 'pointer', transition: 'all 0.2s', boxShadow: '0 10px 20px rgba(255,255,255,0.2)' }} onMouseOver={e=>e.currentTarget.style.transform='scale(1.05)'} onMouseOut={e=>e.currentTarget.style.transform='scale(1)'}>
+                                Buy Full Season ({priceText})
+                              </button>
+                              {isOwnProfile && viewMode === 'edit' && (
+                                <button onClick={() => {
+                                  setEditingSeries(series);
+                                  setShowEditSeriesModal(true);
+                                }} style={{ padding: '14px 28px', background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.2)', color: '#fff', borderRadius: '12px', fontWeight: 'bold', fontSize: '16px', cursor: 'pointer', transition: 'all 0.2s' }} onMouseOver={e=>e.currentTarget.style.background='rgba(255,255,255,0.2)'} onMouseOut={e=>e.currentTarget.style.background='rgba(255,255,255,0.1)'}>
+                                  Edit Series ⚙️
+                                </button>
+                              )}
+                            </div>
                           );
                         }
                       })()}
@@ -4131,13 +4466,23 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
 
                               if (isEpUnlocked) {
                                 return (
-                                  <button onClick={() => {
-                                    setActiveCinemaSeries(series);
-                                    setActiveCinemaEpisode(episode);
-                                    setShowCinemaModal(true);
-                                  }} style={{ padding: '10px 20px', background: 'linear-gradient(135deg, #00ff88, #00bbff)', border: 'none', color: '#000', borderRadius: '20px', fontWeight: 'bold', cursor: 'pointer' }}>
-                                    Play Episode ▶️
-                                  </button>
+                                  <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                                    <button onClick={() => {
+                                      setActiveCinemaSeries(series);
+                                      setActiveCinemaEpisode(episode);
+                                      setShowCinemaModal(true);
+                                    }} style={{ padding: '10px 20px', background: 'linear-gradient(135deg, #00ff88, #00bbff)', border: 'none', color: '#000', borderRadius: '20px', fontWeight: 'bold', cursor: 'pointer' }}>
+                                      Play Episode ▶️
+                                    </button>
+                                    {isOwnProfile && viewMode === 'edit' && (
+                                      <button onClick={() => {
+                                        setEditingEpisode(episode);
+                                        setShowEditEpisodeModal(true);
+                                      }} style={{ padding: '10px 20px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: '#fff', borderRadius: '20px', fontWeight: 'bold', cursor: 'pointer', transition: 'background 0.2s' }} onMouseOver={e=>e.currentTarget.style.background='rgba(255,255,255,0.15)'} onMouseOut={e=>e.currentTarget.style.background='rgba(255,255,255,0.05)'}>
+                                        Edit Episode ⚙️
+                                      </button>
+                                    )}
+                                  </div>
                                 );
                               } else {
                                 let displayPrice = parseFloat(episode.price || '0');
@@ -5269,6 +5614,303 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
             </div>
           );
         })()}
+      </AnimatePresence>
+
+      {/* EDIT SERIES MODAL */}
+      <AnimatePresence>
+        {showEditSeriesModal && editingSeries && (
+          <div style={{ position: 'fixed', inset: 0, zIndex: 99999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }}>
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(15px)' }} onClick={() => { setShowEditSeriesModal(false); setEditingSeries(null); }} />
+            
+            <motion.div initial={{ scale: 0.9, opacity: 0, y: 20 }} animate={{ scale: 1, opacity: 1, y: 0 }} exit={{ scale: 0.9, opacity: 0, y: 20 }} style={{ position: 'relative', background: 'rgba(15, 15, 20, 0.95)', border: `1px solid rgba(255,255,255,0.1)`, padding: '32px', borderRadius: '28px', width: '100%', maxWidth: '520px', display: 'flex', flexDirection: 'column', gap: '20px', boxShadow: '0 20px 60px rgba(0,0,0,0.5)', backdropFilter: 'blur(20px)', maxHeight: '90vh', overflowY: 'auto' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid rgba(255,255,255,0.08)', paddingBottom: '16px' }}>
+                <h3 style={{ margin: 0, fontSize: '20px', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '8px' }}>⚙️ Edit TV Series</h3>
+                <button onClick={() => { setShowEditSeriesModal(false); setEditingSeries(null); }} style={{ background: 'none', border: 'none', color: '#888', cursor: 'pointer', fontSize: '22px' }}>&times;</button>
+              </div>
+
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                <div>
+                  <label style={{ display: 'block', marginBottom: '6px', fontSize: '13px', color: '#ccc' }}>Series Title</label>
+                  <input type="text" value={editingSeries.title} onChange={e => setEditingSeries({ ...editingSeries, title: e.target.value })} style={{ width: '100%', background: 'rgba(0,0,0,0.4)', border: '1px solid rgba(255,255,255,0.1)', padding: '12px', borderRadius: '10px', color: 'var(--text-primary)', outline: 'none' }} />
+                </div>
+
+                <div>
+                  <label style={{ display: 'block', marginBottom: '6px', fontSize: '13px', color: '#ccc' }}>Description</label>
+                  <textarea value={editingSeries.description || ''} onChange={e => setEditingSeries({ ...editingSeries, description: e.target.value })} style={{ width: '100%', background: 'rgba(0,0,0,0.4)', border: '1px solid rgba(255,255,255,0.1)', padding: '12px', borderRadius: '10px', color: 'var(--text-primary)', outline: 'none', minHeight: '80px', resize: 'vertical' }} />
+                </div>
+
+                <div>
+                  <label style={{ display: 'block', marginBottom: '6px', fontSize: '13px', color: '#ccc' }}>Billing Model</label>
+                  <select 
+                    value={editingSeries.billing_level} 
+                    onChange={e => setEditingSeries({ ...editingSeries, billing_level: e.target.value, price: e.target.value === 'episode' ? '' : editingSeries.price })}
+                    style={{ width: '100%', background: 'rgba(0,0,0,0.4)', border: '1px solid rgba(255,255,255,0.1)', padding: '12px', borderRadius: '10px', color: 'var(--text-primary)', outline: 'none', cursor: 'pointer' }}
+                  >
+                    <option value="series">Charge Per Series (Season Pass)</option>
+                    <option value="episode">Charge Per Episode (Pay Per Episode)</option>
+                  </select>
+                </div>
+
+                {editingSeries.billing_level === 'series' && (
+                  <>
+                    <div>
+                      <label style={{ display: 'block', marginBottom: '6px', fontSize: '13px', color: '#ccc' }}>Full Season Price ($)</label>
+                      <input type="number" step="0.01" value={editingSeries.price} onChange={e => setEditingSeries({ ...editingSeries, price: e.target.value })} style={{ width: '100%', background: 'rgba(0,0,0,0.4)', border: '1px solid rgba(255,255,255,0.1)', padding: '12px', borderRadius: '10px', color: 'var(--text-primary)', outline: 'none' }} />
+                    </div>
+
+                    <div style={{ background: 'rgba(255,255,255,0.02)', padding: '16px', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.05)', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                      <span style={{ fontSize: '12px', color: 'var(--text-muted)', fontWeight: 'bold' }}>🔒 Subscriber Access Rules</span>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <input 
+                          type="checkbox" 
+                          id="editSeriesSubFree" 
+                          checked={editingSeries.subscriber_free} 
+                          onChange={e => setEditingSeries({ ...editingSeries, subscriber_free: e.target.checked, subscriber_price: e.target.checked ? '' : editingSeries.subscriber_price })}
+                          style={{ width: '16px', height: '16px', cursor: 'pointer' }}
+                        />
+                        <label htmlFor="editSeriesSubFree" style={{ color: '#fff', fontSize: '13px', cursor: 'pointer' }}>Allow active subscribers to view this full series for free</label>
+                      </div>
+
+                      {!editingSeries.subscriber_free && (
+                        <div>
+                          <label style={{ display: 'block', marginBottom: '6px', fontSize: '12px', color: 'var(--text-muted)' }}>Subscriber Discounted Price (Optional)</label>
+                          <input 
+                            type="number" 
+                            step="0.01" 
+                            placeholder="Discount Price" 
+                            value={editingSeries.subscriber_price || ''} 
+                            onChange={e => setEditingSeries({ ...editingSeries, subscriber_price: e.target.value })}
+                            style={{ width: '100%', background: 'rgba(0,0,0,0.4)', border: '1px solid rgba(255,255,255,0.1)', padding: '10px', borderRadius: '8px', color: 'var(--text-primary)', outline: 'none', fontSize: '13px' }} 
+                          />
+                        </div>
+                      )}
+                    </div>
+                  </>
+                )}
+
+                <div>
+                  <label style={{ display: 'block', marginBottom: '6px', fontSize: '13px', color: '#ccc' }}>Series Cover Image</label>
+                  <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+                    {editingSeries.img && (
+                      <img src={editingSeries.img} alt="Series Cover" style={{ width: '120px', aspectRatio: '16/9', borderRadius: '8px', objectFit: 'cover', border: '1px solid rgba(255,255,255,0.1)' }} />
+                    )}
+                    <label style={{ flex: 1, background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', padding: '12px', borderRadius: '10px', color: '#ccc', textAlign: 'center', cursor: 'pointer', fontWeight: 'bold', fontSize: '13px' }}>
+                      {uploadingEditSeriesImg ? 'Uploading Cover...' : 'Change Cover Photo'}
+                      <input type="file" accept="image/*" onChange={handleEditSeriesCoverUpload} style={{ display: 'none' }} disabled={uploadingEditSeriesImg} />
+                    </label>
+                  </div>
+                </div>
+              </div>
+
+              <div style={{ display: 'flex', gap: '12px', marginTop: '16px', borderTop: '1px solid rgba(255,255,255,0.08)', paddingTop: '20px' }}>
+                <button 
+                  onClick={() => handleDeleteSeries(editingSeries.id)}
+                  style={{ padding: '12px 20px', background: 'rgba(255,0,0,0.15)', border: '1px solid rgba(255,0,0,0.4)', color: '#ff4444', borderRadius: '12px', fontWeight: 'bold', cursor: 'pointer' }}
+                >
+                  🗑️ Delete Series
+                </button>
+                <div style={{ flex: 1 }} />
+                <button 
+                  onClick={() => { setShowEditSeriesModal(false); setEditingSeries(null); }}
+                  style={{ padding: '12px 20px', background: 'rgba(255,255,255,0.05)', color: '#fff', border: 'none', borderRadius: '12px', fontWeight: 'bold', cursor: 'pointer' }}
+                >
+                  Cancel
+                </button>
+                <button 
+                  onClick={() => handleUpdateSeries(editingSeries)}
+                  disabled={!editingSeries.title || (editingSeries.billing_level === 'series' && !editingSeries.price) || uploadingEditSeriesImg}
+                  style={{ padding: '12px 28px', background: 'linear-gradient(135deg, #ff4d85, #8A2BE2)', color: '#fff', border: 'none', borderRadius: '12px', fontWeight: 'bold', cursor: 'pointer' }}
+                >
+                  Save Changes
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* EDIT EPISODE MODAL */}
+      <AnimatePresence>
+        {showEditEpisodeModal && editingEpisode && (
+          <div style={{ position: 'fixed', inset: 0, zIndex: 99999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }}>
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(15px)' }} onClick={() => { setShowEditEpisodeModal(false); setEditingEpisode(null); }} />
+            
+            <motion.div initial={{ scale: 0.9, opacity: 0, y: 20 }} animate={{ scale: 1, opacity: 1, y: 0 }} exit={{ scale: 0.9, opacity: 0, y: 20 }} style={{ position: 'relative', background: 'rgba(15, 15, 20, 0.95)', border: `1px solid rgba(255,255,255,0.1)`, padding: '32px', borderRadius: '28px', width: '100%', maxWidth: '560px', display: 'flex', flexDirection: 'column', gap: '20px', boxShadow: '0 20px 60px rgba(0,0,0,0.5)', backdropFilter: 'blur(20px)', maxHeight: '90vh', overflowY: 'auto' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid rgba(255,255,255,0.08)', paddingBottom: '16px' }}>
+                <h3 style={{ margin: 0, fontSize: '20px', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '8px' }}>⚙️ Edit Episode</h3>
+                <button onClick={() => { setShowEditEpisodeModal(false); setEditingEpisode(null); }} style={{ background: 'none', border: 'none', color: '#888', cursor: 'pointer', fontSize: '22px' }}>&times;</button>
+              </div>
+
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                <div>
+                  <label style={{ display: 'block', marginBottom: '6px', fontSize: '13px', color: '#ccc' }}>Episode Title</label>
+                  <input type="text" value={editingEpisode.title} onChange={e => setEditingEpisode({ ...editingEpisode, title: e.target.value })} style={{ width: '100%', background: 'rgba(0,0,0,0.4)', border: '1px solid rgba(255,255,255,0.1)', padding: '12px', borderRadius: '10px', color: 'var(--text-primary)', outline: 'none' }} />
+                </div>
+
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                  <div>
+                    <label style={{ display: 'block', marginBottom: '6px', fontSize: '13px', color: '#ccc' }}>Runtime (e.g. 45 min)</label>
+                    <input type="text" value={editingEpisode.length || ''} onChange={e => setEditingEpisode({ ...editingEpisode, length: e.target.value })} style={{ width: '100%', background: 'rgba(0,0,0,0.4)', border: '1px solid rgba(255,255,255,0.1)', padding: '12px', borderRadius: '10px', color: 'var(--text-primary)', outline: 'none' }} />
+                  </div>
+                  <div>
+                    <label style={{ display: 'block', marginBottom: '6px', fontSize: '13px', color: '#ccc' }}>Content Rating</label>
+                    <select 
+                      value={editingEpisode.rating || ''} 
+                      onChange={e=>setEditingEpisode({...editingEpisode, rating: e.target.value})} 
+                      style={{ width: '100%', background: 'rgba(0,0,0,0.4)', border: '1px solid rgba(255,255,255,0.1)', padding: '12px', borderRadius: '10px', color: 'var(--text-primary)', outline: 'none', cursor: 'pointer' }}
+                    >
+                      <option value="" style={{ background: '#111', color: '#888' }}>Content Rating (Optional)</option>
+                      <option value="G" style={{ background: '#111' }}>G</option>
+                      <option value="PG" style={{ background: '#111' }}>PG</option>
+                      <option value="PG-13" style={{ background: '#111' }}>PG-13</option>
+                      <option value="R" style={{ background: '#111' }}>R</option>
+                      <option value="NC-17" style={{ background: '#111' }}>NC-17</option>
+                      <option value="TV-Y" style={{ background: '#111' }}>TV-Y</option>
+                      <option value="TV-Y7" style={{ background: '#111' }}>TV-Y7</option>
+                      <option value="TV-G" style={{ background: '#111' }}>TV-G</option>
+                      <option value="TV-PG" style={{ background: '#111' }}>TV-PG</option>
+                      <option value="TV-14" style={{ background: '#111' }}>TV-14</option>
+                      <option value="TV-MA" style={{ background: '#111' }}>TV-MA</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div>
+                  <label style={{ display: 'block', marginBottom: '6px', fontSize: '13px', color: '#ccc' }}>Description</label>
+                  <textarea value={editingEpisode.description || ''} onChange={e => setEditingEpisode({ ...editingEpisode, description: e.target.value })} style={{ width: '100%', background: 'rgba(0,0,0,0.4)', border: '1px solid rgba(255,255,255,0.1)', padding: '12px', borderRadius: '10px', color: 'var(--text-primary)', outline: 'none', minHeight: '60px', resize: 'vertical' }} />
+                </div>
+
+                {/* Genre Tags */}
+                <div>
+                  <label style={{ display: 'block', marginBottom: '6px', fontSize: '13px', color: '#ccc' }}>Genre Tags</label>
+                  <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginBottom: '6px' }}>
+                    {['Action', 'Adventure', 'Podcast', 'Docuseries', 'Comedy', 'Drama', 'Thriller', 'Talk Show', 'Music', 'Sports'].map((g) => {
+                      const activeGenres = editingEpisode.genre ? editingEpisode.genre.split(',').map((s: string)=>s.trim()) : [];
+                      const isSelected = activeGenres.includes(g);
+                      return (
+                        <button
+                          key={g}
+                          type="button"
+                          onClick={() => {
+                            let updatedGenres;
+                            if (isSelected) {
+                              updatedGenres = activeGenres.filter((x: string) => x !== g).join(', ');
+                            } else {
+                              updatedGenres = [...activeGenres, g].join(', ');
+                            }
+                            setEditingEpisode({ ...editingEpisode, genre: updatedGenres });
+                          }}
+                          style={{
+                            padding: '6px 12px',
+                            background: isSelected ? 'rgba(255,77,133,0.2)' : 'rgba(255,255,255,0.05)',
+                            border: `1px solid ${isSelected ? '#ff4d85' : 'rgba(255,255,255,0.1)'}`,
+                            color: isSelected ? '#ff4d85' : '#ccc',
+                            borderRadius: '8px',
+                            fontSize: '12px',
+                            fontWeight: 'bold',
+                            cursor: 'pointer'
+                          }}
+                        >
+                          {g}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* Video Content */}
+                <div>
+                  <label style={{ display: 'block', marginBottom: '6px', fontSize: '13px', color: '#ccc' }}>Episode Video Content <span style={{ color: '#ff4d85' }}>*</span></label>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                    <label style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', padding: '12px', borderRadius: '10px', color: '#ccc', textAlign: 'center', cursor: 'pointer', fontWeight: 'bold', fontSize: '13px' }}>
+                      {uploadingEditEpisodeVideo ? 'Uploading Video...' : (editingEpisode.video_url && editingEpisode.video_url.includes('videos/')) ? 'Video File Uploaded ✓' : 'Upload Video File'}
+                      <input type="file" accept="video/*" onChange={handleEditEpisodeVideoUpload} style={{ display: 'none' }} disabled={uploadingEditEpisodeVideo} />
+                    </label>
+                    <input 
+                      type="text" 
+                      placeholder="Or paste external YouTube, Vimeo or video URL" 
+                      value={editingEpisode.video_url || ''} 
+                      onChange={e => setEditingEpisode({ ...editingEpisode, video_url: e.target.value })}
+                      style={{ width: '100%', background: 'rgba(0,0,0,0.4)', border: '1px solid rgba(255,255,255,0.1)', padding: '12px', borderRadius: '10px', color: 'var(--text-primary)', outline: 'none', fontSize: '13px' }} 
+                    />
+                  </div>
+                </div>
+
+                {/* Cover Image */}
+                <div>
+                  <label style={{ display: 'block', marginBottom: '6px', fontSize: '13px', color: '#ccc' }}>Episode Cover Image</label>
+                  <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+                    {editingEpisode.thumbnail_url && (
+                      <img src={editingEpisode.thumbnail_url} alt="Episode Cover" style={{ width: '120px', aspectRatio: '16/9', borderRadius: '8px', objectFit: 'cover', border: '1px solid rgba(255,255,255,0.1)' }} />
+                    )}
+                    <label style={{ flex: 1, background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', padding: '12px', borderRadius: '10px', color: '#ccc', textAlign: 'center', cursor: 'pointer', fontWeight: 'bold', fontSize: '13px' }}>
+                      {uploadingEditEpisodeImg ? 'Uploading Cover...' : 'Change Cover Photo'}
+                      <input type="file" accept="image/*" onChange={handleEditEpisodeCoverUpload} style={{ display: 'none' }} disabled={uploadingEditEpisodeImg} />
+                    </label>
+                  </div>
+                </div>
+
+                {/* Standard Price */}
+                <div>
+                  <label style={{ display: 'block', marginBottom: '6px', fontSize: '13px', color: '#ccc' }}>Standard Price ($)</label>
+                  <input type="number" step="0.01" value={editingEpisode.price} onChange={e => setEditingEpisode({ ...editingEpisode, price: e.target.value })} style={{ width: '100%', background: 'rgba(0,0,0,0.4)', border: '1px solid rgba(255,255,255,0.1)', padding: '12px', borderRadius: '10px', color: 'var(--text-primary)', outline: 'none' }} />
+                </div>
+
+                {/* Subscriber Access Rules */}
+                <div style={{ background: 'rgba(255,255,255,0.02)', padding: '16px', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.05)', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                  <span style={{ fontSize: '12px', color: 'var(--text-muted)', fontWeight: 'bold' }}>🔒 Subscriber Access Rules</span>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <input 
+                      type="checkbox" 
+                      id="editEpSubFree" 
+                      checked={editingEpisode.subscriber_free} 
+                      onChange={e => setEditingEpisode({ ...editingEpisode, subscriber_free: e.target.checked, subscriber_price: e.target.checked ? '' : editingEpisode.subscriber_price })}
+                      style={{ width: '16px', height: '16px', cursor: 'pointer' }}
+                    />
+                    <label htmlFor="editEpSubFree" style={{ color: '#fff', fontSize: '13px', cursor: 'pointer' }}>Allow active subscribers to view this episode for free</label>
+                  </div>
+
+                  {!editingEpisode.subscriber_free && (
+                    <div>
+                      <label style={{ display: 'block', marginBottom: '6px', fontSize: '12px', color: 'var(--text-muted)' }}>Subscriber Discounted Price (Optional)</label>
+                      <input 
+                        type="number" 
+                        step="0.01" 
+                        placeholder="Discount Price" 
+                        value={editingEpisode.subscriber_price || ''} 
+                        onChange={e => setEditingEpisode({ ...editingEpisode, subscriber_price: e.target.value })}
+                        style={{ width: '100%', background: 'rgba(0,0,0,0.4)', border: '1px solid rgba(255,255,255,0.1)', padding: '10px', borderRadius: '8px', color: 'var(--text-primary)', outline: 'none', fontSize: '13px' }} 
+                      />
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              <div style={{ display: 'flex', gap: '12px', marginTop: '16px', borderTop: '1px solid rgba(255,255,255,0.08)', paddingTop: '20px' }}>
+                <button 
+                  onClick={() => handleDeleteEpisode(editingEpisode.id, editingEpisode.series_id)}
+                  style={{ padding: '12px 20px', background: 'rgba(255,0,0,0.15)', border: '1px solid rgba(255,0,0,0.4)', color: '#ff4444', borderRadius: '12px', fontWeight: 'bold', cursor: 'pointer' }}
+                >
+                  🗑️ Delete Episode
+                </button>
+                <div style={{ flex: 1 }} />
+                <button 
+                  onClick={() => { setShowEditEpisodeModal(false); setEditingEpisode(null); }}
+                  style={{ padding: '12px 20px', background: 'rgba(255,255,255,0.05)', color: '#fff', border: 'none', borderRadius: '12px', fontWeight: 'bold', cursor: 'pointer' }}
+                >
+                  Cancel
+                </button>
+                <button 
+                  onClick={() => handleUpdateEpisode(editingEpisode)}
+                  disabled={!editingEpisode.title || !editingEpisode.video_url || uploadingEditEpisodeVideo || uploadingEditEpisodeImg}
+                  style={{ padding: '12px 28px', background: 'linear-gradient(135deg, #00ff88, #00bbff)', color: '#000', border: 'none', borderRadius: '12px', fontWeight: 'bold', cursor: 'pointer' }}
+                >
+                  Save Changes
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
       </AnimatePresence>
 
       {/* TV SERIES CINEMA THEATER OVERLAY */}
