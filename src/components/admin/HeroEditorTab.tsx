@@ -6,6 +6,7 @@ import { AiTextArea, AiInput } from './AiComponents';
 import { DictationButton } from '../DictationButton';
 import { moderateVideoContent } from '../../lib/videoModerator';
 import { VideoModerationScanner } from './VideoModerationScanner';
+import { isOlympianConfig, isB2kConfig, isKpleConfig } from '../../lib/whitelabel';
 
 export const HeroEditorTab = ({ wlConfig }: { wlConfig: any }) => {
   const toast = useToast();
@@ -19,9 +20,61 @@ export const HeroEditorTab = ({ wlConfig }: { wlConfig: any }) => {
   const [uploadingHeroImage, setUploadingHeroImage] = useState(false);
   const [uploadStatus, setUploadStatus] = useState<string | null>(null);
 
+  const getInitialSlider = () => {
+    if (wlConfig?.theme?.heroSlider && wlConfig.theme.heroSlider.length > 0) {
+      return wlConfig.theme.heroSlider;
+    }
+    
+    const isOlympian = isOlympianConfig(wlConfig);
+    const isB2k = isB2kConfig(wlConfig);
+    const isKple = isKpleConfig(wlConfig);
+    const isVibe100 = wlConfig?.name?.toLowerCase().includes('vibe 100') || wlConfig?.domain?.toLowerCase().includes('vibe100');
+
+    if (isOlympian) {
+      return [
+        { id: 'olympia-1', title: 'Mr. Olympia Finals', imageUrl: '/n2n/mr_olympia_hero.png', videoUrl: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ' }
+      ];
+    }
+    if (isB2k) {
+      return [
+        { id: 'b2k-1', title: 'B2K Members Tour', imageUrl: 'https://www.vibe.com/wp-content/uploads/2019/05/B2K-vibe-magazine-digital-cover-1557942120.jpg', videoUrl: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ' }
+      ];
+    }
+    if (isKple) {
+      return [
+        { id: 'kple-1', title: 'TCT Network', imageUrl: '/n2n/kple_hero_tct.png', videoUrl: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ' },
+        { id: 'kple-2', title: 'Smile of a Child', imageUrl: '/n2n/kple_hero_smile.png', videoUrl: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ' },
+        { id: 'kple-3', title: 'Positiv Family Movies', imageUrl: '/n2n/kple_hero_positiv.png', videoUrl: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ' },
+        { id: 'kple-4', title: 'The Walk TV', imageUrl: '/n2n/kple_hero_thewalk.png', videoUrl: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ' },
+        { id: 'kple-5', title: 'Enlace USA', imageUrl: '/n2n/kple_hero_enlace.png', videoUrl: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ' },
+        { id: 'kple-6', title: 'Attention Central Texas', imageUrl: '/n2n/kple_hero_act.png', videoUrl: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ' }
+      ];
+    }
+    if (isVibe100) {
+      return [
+        { id: 'vibe100-1', title: 'AVO Channel', imageUrl: '/n2n/baylor.png', videoUrl: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ' },
+        { id: 'vibe100-2', title: 'Muscle & Fitness Channel', imageUrl: 'https://images.unsplash.com/photo-1517838277536-f5f99be501cd?auto=format&fit=crop&q=80&w=1200', videoUrl: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ' },
+        { id: 'vibe100-3', title: 'B2K Channel', imageUrl: 'https://www.vibe.com/wp-content/uploads/2019/05/VIBE-B2K-5-1557518926.jpg', videoUrl: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ' },
+        { id: 'vibe100-4', title: 'Christian Revival Channel', imageUrl: '/kple_network_thumbnail.png', videoUrl: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ' }
+      ];
+    }
+    const isAvo = wlConfig?.name?.toLowerCase().includes('avo') || wlConfig?.domain?.toLowerCase().includes('avo');
+    if (isAvo) {
+      return [
+        { id: 'avo-1', title: 'Baylor Collection', imageUrl: 'https://shopavo.la/cdn/shop/files/msu-hp-hero_1500x.jpg?v=1775144388', videoUrl: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ' }
+      ];
+    }
+
+    return [
+      { id: 'default-1', title: 'Featured Content 1', imageUrl: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=800', videoUrl: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ' },
+      { id: 'default-2', title: 'Featured Content 2', imageUrl: 'https://images.unsplash.com/photo-1579783900882-c0d3dad7b119?w=800', videoUrl: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ' },
+      { id: 'default-3', title: 'Featured Content 3', imageUrl: 'https://images.unsplash.com/photo-1611162617213-7d7a39e9b1d7?w=800', videoUrl: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ' }
+    ];
+  };
+
   // Slider State
   const [heroSlider, setHeroSlider] = useState<Array<{ id: string, title: string, imageUrl: string, videoUrl: string }>>(
-    wlConfig?.theme?.heroSlider || []
+    getInitialSlider()
   );
   const [editingSlideId, setEditingSlideId] = useState<string | null>(null);
   const [slideTitle, setSlideTitle] = useState('');
