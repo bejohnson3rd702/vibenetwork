@@ -176,12 +176,39 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
 
   useEffect(() => {
     if (isNetworkLevel && wlConfig?.id) {
-      supabase.from('profiles')
-        .select('id, username, avatar_url, role')
-        .eq('whitelabel_id', wlConfig.id)
-        .then(({ data }) => {
-          if (data) setNetworkProfiles(data);
+      const isMasterVibe = wlConfig.id === 'master' || wlConfig.domain === 'vibenetwork.tv' || wlConfig.domain === 'vibenetwork.com' || wlConfig.domain?.includes('vercel.app');
+      
+      const fetchProfiles = async () => {
+        let currentWlProfiles: any[] = [];
+        if (!isMasterVibe) {
+          const { data } = await supabase.from('profiles')
+            .select('id, username, avatar_url, role, created_at, whitelabel_id')
+            .eq('whitelabel_id', wlConfig.id)
+            .in('role', ['influencer', 'business']);
+          if (data) currentWlProfiles = data;
+        }
+
+        const { data: vibeChannels } = await supabase.from('profiles')
+          .select('id, username, avatar_url, role, created_at, whitelabel_id')
+          .is('whitelabel_id', null)
+          .in('role', ['influencer', 'business'])
+          .order('created_at', { ascending: false })
+          .limit(20);
+
+        const vibeList = vibeChannels || [];
+
+        // Combine them, making sure there are no duplicates by id
+        const combined = [...currentWlProfiles];
+        vibeList.forEach(p => {
+          if (!combined.some(c => c.id === p.id)) {
+            combined.push(p);
+          }
         });
+
+        setNetworkProfiles(combined);
+      };
+
+      fetchProfiles();
     }
   }, [isNetworkLevel, wlConfig?.id]);
 
@@ -3529,7 +3556,9 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
                        
                        <div style={{ position: 'absolute', bottom: 0, left: 0, width: '100%', padding: '16px', textAlign: 'left', zIndex: 2 }}>
                          <div style={{ color: '#fff', fontWeight: 'bold', fontSize: '15px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', textShadow: '0 2px 4px rgba(0,0,0,0.8)' }}>{p.username || 'Anonymous'}</div>
-                         <div style={{ color: wlConfig?.accent || '#00ff88', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '1px', marginTop: '4px', fontWeight: 800, textShadow: '0 2px 4px rgba(0,0,0,0.8)' }}>{p.role}</div>
+                         <div style={{ color: (p.whitelabel_id === null || p.whitelabel_id === 'master') ? '#ff4d85' : (wlConfig?.accent || '#00ff88'), fontSize: '11px', textTransform: 'uppercase', letterSpacing: '1px', marginTop: '4px', fontWeight: 800, textShadow: '0 2px 4px rgba(0,0,0,0.8)' }}>
+                           {(p.whitelabel_id === null || p.whitelabel_id === 'master') ? 'Vibe Creator' : p.role}
+                         </div>
                        </div>
                     </div>
                  )) : (
