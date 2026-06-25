@@ -1990,31 +1990,34 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
                 />
                 
                 {/* Floating Tools in Textarea */}
-                <div style={{ position: 'absolute', right: '12px', top: '12px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <div style={{ position: 'absolute', right: '120px', bottom: '12px', display: 'flex', alignItems: 'center', gap: '4px' }}>
                   <EmojiPickerButton onSelect={(emoji) => setPostTitle(prev => prev + emoji)} />
                   <DictationButton onResult={(text) => setPostTitle(prev => prev ? `${prev} ${text}` : text)} />
-                  <button 
-                    type="button" 
-                    onClick={() => enhanceText('post')} 
-                    disabled={saving} 
-                    style={{ 
-                      background: 'linear-gradient(135deg, #8A2BE2, #ff4d85)', 
-                      color: 'var(--text-primary)', 
-                      border: 'none', 
-                      borderRadius: '10px', 
-                      padding: '6px 12px', 
-                      fontSize: '12px', 
-                      fontWeight: 'bold', 
-                      cursor: 'pointer', 
-                      display: 'flex', 
-                      alignItems: 'center', 
-                      gap: '6px',
-                      boxShadow: '0 2px 8px rgba(138,43,226,0.3)'
-                    }}
-                  >
-                    <Wand size={12} /> AI Boost
-                  </button>
                 </div>
+                <button 
+                  type="button" 
+                  onClick={() => enhanceText('post')} 
+                  disabled={saving} 
+                  style={{ 
+                    position: 'absolute',
+                    right: '12px', 
+                    bottom: '12px',
+                    background: 'linear-gradient(135deg, #8A2BE2, #ff4d85)', 
+                    color: 'var(--text-primary)', 
+                    border: 'none', 
+                    borderRadius: '10px', 
+                    padding: '6px 12px', 
+                    fontSize: '12px', 
+                    fontWeight: 'bold', 
+                    cursor: 'pointer', 
+                    display: 'flex', 
+                    alignItems: 'center', 
+                    gap: '6px',
+                    boxShadow: '0 2px 8px rgba(138,43,226,0.3)'
+                  }}
+                >
+                  <Wand size={12} /> AI Boost
+                </button>
               </div>
             </div>
             
