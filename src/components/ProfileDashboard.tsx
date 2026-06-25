@@ -987,10 +987,10 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
     const filePath = `${fileName}`;
 
     try {
-      const { error: uploadError } = await supabase!.storage.from('images').upload(filePath, file);
+      const { error: uploadError } = await supabase!.storage.from('videos').upload(filePath, file);
       if (uploadError) throw uploadError;
       
-      const { data } = supabase!.storage.from('images').getPublicUrl(filePath);
+      const { data } = supabase!.storage.from('videos').getPublicUrl(filePath);
       if (data && data.publicUrl) {
         setNewEpisode(prev => ({ ...prev, video_url: data.publicUrl }));
         toast.success('Video uploaded successfully!');
