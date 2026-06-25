@@ -914,17 +914,18 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
 
   const handleAddSeries = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newSeries.title || (newSeries.billing_level === 'series' && !newSeries.price)) return;
+    if (!newSeries.title) return;
     setSaving(true);
     
+    const priceVal = (newSeries.billing_level === 'series' && newSeries.price) ? parseFloat(newSeries.price) : 0;
     const insertData = {
       creator_id: profile.id,
       title: newSeries.title,
       description: newSeries.description,
-      price: newSeries.billing_level === 'series' ? parseFloat(newSeries.price) : 0,
+      price: priceVal,
       img: newSeries.img || '',
       billing_level: newSeries.billing_level,
-      subscriber_free: newSeries.subscriber_free,
+      subscriber_free: priceVal === 0 ? true : newSeries.subscriber_free,
       subscriber_price: (newSeries.billing_level === 'series' && newSeries.subscriber_price) ? parseFloat(newSeries.subscriber_price) : null
     };
 
@@ -3676,7 +3677,7 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
                     </label>
                   </div>
                   <div style={{ gridColumn: '1 / -1', display: 'flex', justifyContent: 'flex-end' }}>
-                    <button type="submit" disabled={!newSeries.title || (newSeries.billing_level === 'series' && !newSeries.price) || uploadingSeriesImg} style={{ padding: '12px 24px', background: (!newSeries.title || (newSeries.billing_level === 'series' && !newSeries.price) || uploadingSeriesImg) ? 'rgba(255,255,255,0.1)' : '#ff4d85', color: 'var(--text-primary)', border: 'none', borderRadius: '12px', fontWeight: 'bold', cursor: (!newSeries.title || (newSeries.billing_level === 'series' && !newSeries.price) || uploadingSeriesImg) ? 'pointer' : 'not-allowed' }}>Publish Series</button>
+                    <button type="submit" disabled={!newSeries.title || uploadingSeriesImg} style={{ padding: '12px 24px', background: (!newSeries.title || uploadingSeriesImg) ? 'rgba(255,255,255,0.1)' : '#ff4d85', color: 'var(--text-primary)', border: 'none', borderRadius: '12px', fontWeight: 'bold', cursor: (!newSeries.title || uploadingSeriesImg) ? 'not-allowed' : 'pointer' }}>Publish Series</button>
                   </div>
                 </form>
               </motion.div>
