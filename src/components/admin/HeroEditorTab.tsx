@@ -19,6 +19,17 @@ export const HeroEditorTab = ({ wlConfig }: { wlConfig: any }) => {
   const [uploadingHeroImage, setUploadingHeroImage] = useState(false);
   const [uploadStatus, setUploadStatus] = useState<string | null>(null);
 
+  // Slider State
+  const [heroSlider, setHeroSlider] = useState<Array<{ id: string, title: string, imageUrl: string, videoUrl: string }>>(
+    wlConfig?.theme?.heroSlider || []
+  );
+  const [editingSlideId, setEditingSlideId] = useState<string | null>(null);
+  const [slideTitle, setSlideTitle] = useState('');
+  const [slideImageUrl, setSlideImageUrl] = useState('');
+  const [slideVideoUrl, setSlideVideoUrl] = useState('');
+  const [uploadingSlideImage, setUploadingSlideImage] = useState(false);
+  const [uploadingSlideVideo, setUploadingSlideVideo] = useState(false);
+
   // AI Video Shield States
   const [showScanner, setShowScanner] = useState(false);
   const [scannerLogs, setScannerLogs] = useState<string[]>([]);
@@ -161,18 +172,35 @@ export const HeroEditorTab = ({ wlConfig }: { wlConfig: any }) => {
         heroLayoutMode,
         heroVideoUrl,
         heroVideoTitle,
-        heroImage
+        heroImage,
+        heroSlider
       };
 
-      const { error } = await supabase.from('whitelabel_configs').update({
-        theme: updatedTheme
-      }).eq('id', wlConfig.id);
-      
-      if (error) throw error;
+      if (wlConfig.id === 'master') {
+        const { data: existing } = await supabase.from('whitelabel_configs').select('id, theme').eq('domain', 'vibenetwork.tv').limit(1);
+        if (existing && existing.length > 0) {
+          const { error } = await supabase.from('whitelabel_configs').update({
+            theme: { ...(existing[0].theme || {}), ...updatedTheme }
+          }).eq('id', existing[0].id);
+          if (error) throw error;
+        } else {
+          const { error } = await supabase.from('whitelabel_configs').insert([{
+            name: 'Vibe Network',
+            domain: 'vibenetwork.tv',
+            theme: updatedTheme
+          }]);
+          if (error) throw error;
+        }
+      } else {
+        const { error } = await supabase.from('whitelabel_configs').update({
+          theme: updatedTheme
+        }).eq('id', wlConfig.id);
+        if (error) throw error;
+      }
 
       // Sync local storage
       const localNetworks = JSON.parse(localStorage.getItem('vibe_local_networks') || '[]');
-      const index = localNetworks.findIndex((n: any) => n.id === wlConfig.id);
+      const index = localNetworks.findIndex((n: any) => n.id === wlConfig.id || (wlConfig.id === 'master' && n.domain === 'vibenetwork.tv'));
       if (index >= 0) {
         localNetworks[index].theme = updatedTheme;
         localNetworks[index].heroCopy = heroCopy;
@@ -291,6 +319,240 @@ export const HeroEditorTab = ({ wlConfig }: { wlConfig: any }) => {
               </label>
            </div>
            <input type="text" value={heroVideoTitle} onChange={(e) => setHeroVideoTitle(e.target.value)} placeholder="e.g. Welcome to the Vibe Network" style={{ width: '100%', padding: '14px', background: 'rgba(0,0,0,0.5)', color: 'var(--text-primary)', border: '1px solid rgba(255,255,255,0.2)', borderRadius: '12px', fontSize: '16px', outline: 'none', marginTop: '10px' }} />
+        </div>
+      )}
+
+
+      {heroLayoutMode === 'slider' && (
+        <div style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)', padding: '24px 30px', borderRadius: '20px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <div>
+              <h3 style={{ margin: 0, fontSize: '20px' }}>Hero Video Slider Management</h3>
+              <p style={{ margin: '4px 0 0 0', color: 'var(--text-muted)', fontSize: '15px' }}>Configure custom slider video banners shown on the home page.</p>
+            </div>
+            {editingSlideId === null && (
+              <button 
+                onClick={() => {
+                  setEditingSlideId('new');
+                  setSlideTitle('');
+                  setSlideImageUrl('');
+                  setSlideVideoUrl('');
+                }}
+                style={{ padding: '10px 20px', background: wlConfig.accent, border: 'none', borderRadius: '8px', color: '#fff', fontWeight: 'bold', cursor: 'pointer' }}
+              >
+                + Add Slide Banner
+              </button>
+            )}
+          </div>
+
+          {editingSlideId !== null && (
+            <div style={{ border: '1px solid rgba(255,255,255,0.1)', padding: '20px', borderRadius: '16px', background: 'rgba(0,0,0,0.3)', display: 'flex', flexDirection: 'column', gap: '16px' }}>
+              <h4 style={{ margin: 0 }}>{editingSlideId === 'new' ? 'Add New Slider Banner' : 'Edit Slider Banner'}</h4>
+              
+              <div>
+                <label style={{ display: 'block', fontSize: '14px', marginBottom: '8px', color: 'var(--text-muted)' }}>Slide Title</label>
+                <input 
+                  type="text" 
+                  value={slideTitle} 
+                  onChange={(e) => setSlideTitle(e.target.value)} 
+                  placeholder="e.g. Action Packed Trailer" 
+                  style={{ width: '100%', padding: '12px', background: 'rgba(0,0,0,0.5)', color: 'var(--text-primary)', border: '1px solid rgba(255,255,255,0.2)', borderRadius: '10px', fontSize: '15px', outline: 'none' }} 
+                />
+              </div>
+
+              <div>
+                <label style={{ display: 'block', fontSize: '14px', marginBottom: '8px', color: 'var(--text-muted)' }}>Slide Preview Image (16:9 Banner)</label>
+                <div style={{ display: 'flex', gap: '10px' }}>
+                  <input 
+                    type="text" 
+                    value={slideImageUrl} 
+                    onChange={(e) => setSlideImageUrl(e.target.value)} 
+                    placeholder="e.g. https://images.unsplash.com/..." 
+                    style={{ flex: 1, padding: '12px', background: 'rgba(0,0,0,0.5)', color: 'var(--text-primary)', border: '1px solid rgba(255,255,255,0.2)', borderRadius: '10px', fontSize: '15px', outline: 'none' }} 
+                  />
+                  <label style={{ padding: '12px 20px', background: 'rgba(255,255,255,0.1)', borderRadius: '10px', cursor: uploadingSlideImage ? 'not-allowed' : 'pointer', fontWeight: 'bold' }}>
+                    {uploadingSlideImage ? 'Uploading...' : 'Upload'}
+                    <input 
+                      type="file" 
+                      accept="image/*" 
+                      onChange={async (e) => {
+                        if (e.target.files && e.target.files[0]) {
+                          try {
+                            setUploadingSlideImage(true);
+                            const enhancedFile = await processAndEnhanceImage(e.target.files[0], 'hero');
+                            const fileExt = enhancedFile.name.split('.').pop();
+                            const fileName = `${Date.now()}_slide_${Math.random()}.${fileExt}`;
+                            const filePath = `hero/${fileName}`;
+                            const { error: uploadError } = await supabase.storage.from('images').upload(filePath, enhancedFile);
+                            if (uploadError) throw uploadError;
+                            const { data } = supabase.storage.from('images').getPublicUrl(filePath);
+                            if (data?.publicUrl) {
+                              setSlideImageUrl(data.publicUrl);
+                              toast.success('Slide preview image uploaded!');
+                            }
+                          } catch (err: any) {
+                            toast.error('Image upload failed: ' + err.message);
+                          } finally {
+                            setUploadingSlideImage(false);
+                          }
+                        }
+                      }} 
+                      style={{ display: 'none' }} 
+                      disabled={uploadingSlideImage} 
+                    />
+                  </label>
+                </div>
+              </div>
+
+              <div>
+                <label style={{ display: 'block', fontSize: '14px', marginBottom: '8px', color: 'var(--text-muted)' }}>Slide Video Link (YouTube or Direct File)</label>
+                <div style={{ display: 'flex', gap: '10px' }}>
+                  <input 
+                    type="text" 
+                    value={slideVideoUrl} 
+                    onChange={(e) => setSlideVideoUrl(e.target.value)} 
+                    placeholder="e.g. https://youtube.com/watch?v=..." 
+                    style={{ flex: 1, padding: '12px', background: 'rgba(0,0,0,0.5)', color: 'var(--text-primary)', border: '1px solid rgba(255,255,255,0.2)', borderRadius: '10px', fontSize: '15px', outline: 'none' }} 
+                  />
+                  <label style={{ padding: '12px 20px', background: 'rgba(255,255,255,0.1)', borderRadius: '10px', cursor: uploadingSlideVideo ? 'not-allowed' : 'pointer', fontWeight: 'bold' }}>
+                    {uploadingSlideVideo ? 'Uploading...' : 'Upload'}
+                    <input 
+                      type="file" 
+                      accept="video/*" 
+                      onChange={async (e) => {
+                        if (e.target.files && e.target.files[0]) {
+                          const file = e.target.files[0];
+                          if (file.size > 50 * 1024 * 1024) {
+                            toast.error('Video file size exceeds the 50MB limit.');
+                            return;
+                          }
+                          try {
+                            setUploadingSlideVideo(true);
+                            const fileExt = file.name.split('.').pop();
+                            const fileName = `${Date.now()}_slide_${Math.random()}.${fileExt}`;
+                            const filePath = `hero/${fileName}`;
+                            const { error: uploadError } = await supabase.storage.from('videos').upload(filePath, file);
+                            if (uploadError) throw uploadError;
+                            const { data } = supabase.storage.from('videos').getPublicUrl(filePath);
+                            if (data?.publicUrl) {
+                              setSlideVideoUrl(data.publicUrl);
+                              toast.success('Slide video uploaded!');
+                            }
+                          } catch (err: any) {
+                            toast.error('Video upload failed: ' + err.message);
+                          } finally {
+                            setUploadingSlideVideo(false);
+                          }
+                        }
+                      }} 
+                      style={{ display: 'none' }} 
+                      disabled={uploadingSlideVideo} 
+                    />
+                  </label>
+                </div>
+              </div>
+
+              <div style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end', marginTop: '10px' }}>
+                <button 
+                  onClick={() => setEditingSlideId(null)}
+                  style={{ padding: '8px 16px', background: 'rgba(255,255,255,0.1)', border: 'none', borderRadius: '8px', color: '#fff', cursor: 'pointer' }}
+                >
+                  Cancel
+                </button>
+                <button 
+                  onClick={() => {
+                    if (!slideTitle || !slideImageUrl || !slideVideoUrl) {
+                      toast.error('Please enter all fields (Title, Image, and Video URL).');
+                      return;
+                    }
+                    if (editingSlideId === 'new') {
+                      const newSlide = { id: Date.now().toString(), title: slideTitle, imageUrl: slideImageUrl, videoUrl: slideVideoUrl };
+                      setHeroSlider([...heroSlider, newSlide]);
+                    } else {
+                      setHeroSlider(heroSlider.map(s => s.id === editingSlideId ? { ...s, title: slideTitle, imageUrl: slideImageUrl, videoUrl: slideVideoUrl } : s));
+                    }
+                    setEditingSlideId(null);
+                    toast.success('Slide temporarily saved! Save configurations to publish.');
+                  }}
+                  style={{ padding: '8px 16px', background: wlConfig.accent, border: 'none', borderRadius: '8px', color: '#fff', fontWeight: 'bold', cursor: 'pointer' }}
+                >
+                  Save Slide Settings
+                </button>
+              </div>
+            </div>
+          )}
+
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+            {heroSlider.length === 0 ? (
+              <div style={{ textAlign: 'center', padding: '30px', border: '1px dashed rgba(255,255,255,0.1)', borderRadius: '12px', color: 'var(--text-muted)' }}>
+                No custom slides configured yet. The site will display standard fallback slides.
+              </div>
+            ) : (
+              heroSlider.map((slide, idx) => (
+                <div key={slide.id} style={{ display: 'flex', alignItems: 'center', gap: '16px', padding: '16px', background: 'rgba(255,255,255,0.01)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '14px' }}>
+                  <img src={slide.imageUrl} style={{ width: '100px', aspectRatio: '16/9', objectFit: 'cover', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.1)' }} alt="" />
+                  <div style={{ flex: 1 }}>
+                    <h4 style={{ margin: 0, fontSize: '16px' }}>{slide.title}</h4>
+                    <span style={{ fontSize: '13px', color: 'var(--text-muted)', wordBreak: 'break-all' }}>{slide.videoUrl}</span>
+                  </div>
+                  
+                  <div style={{ display: 'flex', gap: '8px' }}>
+                    <button 
+                      onClick={() => {
+                        if (idx > 0) {
+                          const copy = [...heroSlider];
+                          const temp = copy[idx - 1];
+                          copy[idx - 1] = copy[idx];
+                          copy[idx] = temp;
+                          setHeroSlider(copy);
+                        }
+                      }}
+                      disabled={idx === 0}
+                      style={{ padding: '6px', background: 'rgba(255,255,255,0.05)', border: 'none', borderRadius: '6px', color: '#fff', cursor: idx === 0 ? 'not-allowed' : 'pointer', opacity: idx === 0 ? 0.3 : 1 }}
+                    >
+                      ▲
+                    </button>
+                    <button 
+                      onClick={() => {
+                        if (idx < heroSlider.length - 1) {
+                          const copy = [...heroSlider];
+                          const temp = copy[idx + 1];
+                          copy[idx + 1] = copy[idx];
+                          copy[idx] = temp;
+                          setHeroSlider(copy);
+                        }
+                      }}
+                      disabled={idx === heroSlider.length - 1}
+                      style={{ padding: '6px', background: 'rgba(255,255,255,0.05)', border: 'none', borderRadius: '6px', color: '#fff', cursor: idx === heroSlider.length - 1 ? 'not-allowed' : 'pointer', opacity: idx === heroSlider.length - 1 ? 0.3 : 1 }}
+                    >
+                      ▼
+                    </button>
+                    <button 
+                      onClick={() => {
+                        setEditingSlideId(slide.id);
+                        setSlideTitle(slide.title);
+                        setSlideImageUrl(slide.imageUrl);
+                        setSlideVideoUrl(slide.videoUrl);
+                      }}
+                      style={{ padding: '6px 12px', background: 'rgba(255,255,255,0.05)', border: 'none', borderRadius: '6px', color: '#fff', cursor: 'pointer' }}
+                    >
+                      ✏️ Edit
+                    </button>
+                    <button 
+                      onClick={() => {
+                        if (confirm('Delete this slide?')) {
+                          setHeroSlider(heroSlider.filter(s => s.id !== slide.id));
+                        }
+                      }}
+                      style={{ padding: '6px 12px', background: 'rgba(255,77,133,0.1)', border: 'none', borderRadius: '6px', color: '#ff4d85', cursor: 'pointer' }}
+                    >
+                      🗑️ Delete
+                    </button>
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
         </div>
       )}
 

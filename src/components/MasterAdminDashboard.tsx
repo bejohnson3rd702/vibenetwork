@@ -14,9 +14,10 @@ import { AnalyticsTab } from './admin/AnalyticsTab';
 import { EnterpriseAiTab } from './admin/EnterpriseAiTab';
 import { getChildNetworks, deleteChildNetwork, createChildNetwork } from '../lib/n2n';
 import LiveTelemetry from './LiveTelemetry';
+import { HeroEditorTab } from './admin/HeroEditorTab';
 
 /** Inline component to list child networks in the Master Admin N2N panel */
-function N2NChildrenList({ parentId, parentAccent, showToast }: { parentId: string; parentAccent?: string; showToast: (msg: string, type: 'success' | 'error') => void }) {
+function N2NChildrenList({ parentId, parentAccent, showToast, onEditHero }: { parentId: string; parentAccent?: string; showToast: (msg: string, type: 'success' | 'error') => void; onEditHero?: (childWl: any) => void }) {
   const [children, setChildren] = React.useState<any[]>([]);
   const [loading, setLoading] = React.useState(true);
 
@@ -43,6 +44,11 @@ function N2NChildrenList({ parentId, parentAccent, showToast }: { parentId: stri
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
             <span style={{ fontSize: '12px', color: '#ff4d85', fontWeight: '600' }}>{child.platform_fee_percentage ?? 30}% fee</span>
+            {onEditHero && (
+              <button onClick={() => onEditHero(child)} style={{ padding: '4px 10px', background: 'rgba(255,255,255,0.05)', color: '#fff', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '6px', cursor: 'pointer', fontWeight: '700', fontSize: '11px' }}>
+                Edit Hero
+              </button>
+            )}
             <button onClick={async () => {
               if (!confirm(`Delete ${child.name}?`)) return;
               const ok = await deleteChildNetwork(child.id);
@@ -82,6 +88,7 @@ function MasterAdminDashboard() {
   const [globalLeads, setGlobalLeads] = useState<any[]>([]);
   const [globalProducts, setGlobalProducts] = useState<any[]>([]);
   const [isRestarting, setIsRestarting] = useState(false);
+  const [selectedWlForHeroEdit, setSelectedWlForHeroEdit] = useState<any | null>(null);
 
   async function fetchCategories() {
      const { data } = await supabase!.from('categories').select('*');
@@ -483,6 +490,9 @@ function MasterAdminDashboard() {
                            }} style={{ padding: '10px 20px', background: 'rgba(0,85,255,0.1)', color: '#0055ff', border: '1px solid rgba(0,85,255,0.2)', borderRadius: '8px', fontWeight: 'bold', cursor: 'pointer', transition: '0.2s' }}>
                               Visit Tenant Portal
                            </button>
+                           <button onClick={() => setSelectedWlForHeroEdit(brandConfig)} style={{ padding: '10px 20px', background: 'rgba(255,255,255,0.05)', color: '#fff', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '8px', fontWeight: 'bold', cursor: 'pointer', transition: '0.2s' }}>
+                              Edit Hero
+                           </button>
                            <button onClick={async () => {
                               const newVal = !brandConfig.n2n_enabled;
                               const { error } = await supabase!.from('whitelabel_configs').update({ n2n_enabled: newVal }).eq('id', brandConfig.id);
@@ -634,7 +644,7 @@ function MasterAdminDashboard() {
                              </div>
 
                              {/* Existing Children List */}
-                             <N2NChildrenList parentId={brandConfig.id} parentAccent={brandConfig.accent} showToast={showToast} />
+                             <N2NChildrenList parentId={brandConfig.id} parentAccent={brandConfig.accent} showToast={showToast} onEditHero={(childWl) => setSelectedWlForHeroEdit(childWl)} />
                            </div>
                          </div>
                        )}
@@ -784,54 +794,18 @@ function MasterAdminDashboard() {
              <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} style={{ display: 'flex', flexDirection: 'column', gap: '30px' }}>
                
                <div style={{ background: 'var(--bg-surface)', padding: '30px', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.05)' }}>
-                 <h4 style={{ margin: '0 0 20px 0', fontSize: '18px', color: '#ff4d85' }}>Global Brand & Hero Settings</h4>
-                 <p style={{ color: 'var(--text-muted)', marginBottom: '20px' }}>Update the master platform brand name and the cinematic hero banner seen by all logged-out visitors.</p>
-                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
-                    <input type="text" placeholder="Platform Name (e.g. Vibe Network)" style={{ background: 'var(--bg-color)', border: '1px solid var(--bg-surface-hover)', padding: '16px', borderRadius: '8px', color: 'var(--text-primary)', fontSize: '15px' }} id="global-name" />
-                    <input type="text" placeholder="Hero Image URL (e.g. https://...)" style={{ background: 'var(--bg-color)', border: '1px solid var(--bg-surface-hover)', padding: '16px', borderRadius: '8px', color: 'var(--text-primary)', fontSize: '15px' }} id="global-hero-img" />
-                    <textarea placeholder="Hero Copy (e.g. Welcome to the ultimate network...)" style={{ background: 'var(--bg-color)', border: '1px solid var(--bg-surface-hover)', padding: '16px', borderRadius: '8px', color: 'var(--text-primary)', fontSize: '15px', gridColumn: 'span 2', height: '100px' }} id="global-hero-copy" />
-                 </div>
-                 <button onClick={async () => {
-                    const nameInput = document.getElementById('global-name') as HTMLInputElement;
-                    const heroImageInput = document.getElementById('global-hero-img') as HTMLInputElement;
-                    const heroCopyInput = document.getElementById('global-hero-copy') as HTMLTextAreaElement;
-                    
-                    try {
-                      const { data: existing, error: fetchErr } = await supabase!.from('whitelabel_configs').select('*').eq('domain', 'vibenetwork.tv').limit(1);
-                      if (fetchErr) throw fetchErr;
-                      
-                      const finalName = nameInput.value || (existing && existing.length > 0 ? existing[0].name : 'Vibe Network');
-                      let finalConfig;
-
-                      if (existing && existing.length > 0) {
-                        const currentTheme = existing[0].theme || {};
-                        const themeObj = { ...currentTheme, heroImage: heroImageInput.value || currentTheme.heroImage, heroCopy: heroCopyInput.value || currentTheme.heroCopy };
-                        const { data, error } = await supabase!.from('whitelabel_configs').update({ name: finalName, theme: themeObj }).eq('id', existing[0].id).select();
-                        if (error) throw error;
-                        finalConfig = data[0];
-                      } else {
-                        const fallbackTheme = { heroImage: heroImageInput.value || '', heroCopy: heroCopyInput.value || '' };
-                        const { data, error } = await supabase!.from('whitelabel_configs').insert([{ name: finalName, domain: 'vibenetwork.tv', theme: fallbackTheme }]).select();
-                        if (error) throw error;
-                        finalConfig = data[0];
-                      }
-                      
-                      const localNetworks = JSON.parse(localStorage.getItem('vibe_local_networks') || '[]');
-                      const index = localNetworks.findIndex((n: any) => n.domain === 'vibenetwork.tv');
-                      if (index >= 0) {
-                        localNetworks[index] = finalConfig;
-                      } else {
-                        localNetworks.push(finalConfig);
-                      }
-                      localStorage.setItem('vibe_local_networks', JSON.stringify(localNetworks));
-                      
-                      showToast('Global Hero Settings Updated!', 'success');
-                      setTimeout(() => window.location.reload(), 1000);
-                    } catch (err: any) {
-                      showToast('Save failed: ' + err.message, 'error');
-                    }
-                 }} style={{ marginTop: '20px', background: '#0055ff', color: 'var(--text-primary)', border: 'none', padding: '16px 24px', borderRadius: '8px', fontWeight: 'bold', cursor: 'pointer' }}>Save Hero Settings</button>
-               </div>
+                  <h4 style={{ margin: '0 0 20px 0', fontSize: '18px', color: '#ff4d85' }}>Global Brand & Hero Settings</h4>
+                  <p style={{ color: 'var(--text-muted)', marginBottom: '20px' }}>Configure layouts, titles, marketing copy, and slider video banners for the main Vibe Network entry portal.</p>
+                  <button 
+                    onClick={() => {
+                      const masterWl = whitelabelsList.find(wl => wl.domain === 'vibenetwork.tv') || { id: 'master', domain: 'vibenetwork.tv', theme: {} };
+                      setSelectedWlForHeroEdit(masterWl);
+                    }} 
+                    style={{ background: '#ff4d85', color: '#fff', border: 'none', padding: '16px 24px', borderRadius: '8px', fontWeight: 'bold', cursor: 'pointer', boxShadow: '0 4px 15px rgba(255,77,133,0.3)' }}
+                  >
+                    Launch Vibe Main Hero Editor
+                  </button>
+                </div>
                <div style={{ background: 'var(--bg-surface)', padding: '30px', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.05)' }}>
                  <h4 style={{ margin: '0 0 20px 0', fontSize: '18px', color: '#00ff88' }}>2. Create Content Slider (Category)</h4>
                  <p style={{ color: 'var(--text-muted)', marginBottom: '20px' }}>Every category creates a new horizontal scrolling slider row on the homepage.</p>
@@ -1499,6 +1473,26 @@ function MasterAdminDashboard() {
           
         </div>
       </div>
+
+      {/* Modal for editing a whitelabel's Hero & Slider configurations */}
+      {selectedWlForHeroEdit && (
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(10px)', zIndex: 1000000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '40px' }}>
+          <div style={{ background: 'var(--bg-surface)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '24px', padding: '40px', width: '100%', maxWidth: '1000px', maxHeight: '90vh', overflowY: 'auto', position: 'relative' }}>
+            <button 
+              onClick={() => setSelectedWlForHeroEdit(null)}
+              style={{ position: 'absolute', top: '24px', right: '24px', background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', fontSize: '24px' }}
+            >
+              ✕
+            </button>
+            <div style={{ paddingBottom: '20px' }}>
+              <span style={{ textTransform: 'uppercase', color: selectedWlForHeroEdit.accent || '#ff4d85', fontWeight: 'bold', letterSpacing: '1px', fontSize: '12px' }}>
+                Editing Settings For: {selectedWlForHeroEdit.name}
+              </span>
+            </div>
+            <HeroEditorTab wlConfig={selectedWlForHeroEdit} />
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -143,25 +143,51 @@ export default function WhiteLabelHome({ wlConfig, categories, user, activeVideo
             </motion.div>
           )}
 
-          {wlConfig.heroLayoutMode === 'slider' && (
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8, delay: 0.6 }}
-              style={{ width: '100%', maxWidth: '1000px', margin: '0 auto 50px', display: 'flex', gap: '20px', overflowX: 'auto', paddingBottom: '20px', scrollbarWidth: 'none' }}
-            >
-               {[1, 2, 3].map(i => (
-                  <div key={i} style={{ minWidth: '300px', flex: 1, aspectRatio: '16/9', borderRadius: '20px', background: `linear-gradient(45deg, #111, #222)`, border: `1px solid ${wlConfig.accent || '#fff'}22`, position: 'relative', overflow: 'hidden', boxShadow: '0 10px 30px rgba(0,0,0,0.5)' }}>
-                     <div style={{ position: 'absolute', inset: 0, backgroundSize: 'cover', opacity: 0.5 }} />
-                     <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                        <div style={{ width: 50, height: 50, borderRadius: '50%', background: 'rgba(255,255,255,0.2)', backdropFilter: 'blur(10px)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                           <Play fill="white" size={24} />
-                        </div>
-                     </div>
-                  </div>
-               ))}
-            </motion.div>
-          )}
+          {wlConfig.heroLayoutMode === 'slider' && (() => {
+            const sliderItems = wlConfig.theme?.heroSlider || [
+              { id: '1', title: 'Featured Content 1', imageUrl: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=800', videoUrl: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ' },
+              { id: '2', title: 'Featured Content 2', imageUrl: 'https://images.unsplash.com/photo-1579783900882-c0d3dad7b119?w=800', videoUrl: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ' },
+              { id: '3', title: 'Featured Content 3', imageUrl: 'https://images.unsplash.com/photo-1611162617213-7d7a39e9b1d7?w=800', videoUrl: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ' }
+            ];
+            return (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.8, delay: 0.6 }}
+                style={{ width: '100%', maxWidth: '1000px', margin: '0 auto 50px', display: 'flex', gap: '20px', overflowX: 'auto', paddingBottom: '20px', scrollbarWidth: 'none' }}
+              >
+                 {sliderItems.map(item => (
+                    <div 
+                      key={item.id} 
+                      onClick={() => setActiveVideo({ id: item.id, title: item.title, videoUrl: item.videoUrl, image: item.imageUrl })}
+                      style={{ 
+                        minWidth: '300px', 
+                        flex: 1, 
+                        aspectRatio: '16/9', 
+                        borderRadius: '20px', 
+                        background: `linear-gradient(45deg, #111, #222)`, 
+                        border: `1px solid ${wlConfig.accent || '#fff'}22`, 
+                        position: 'relative', 
+                        overflow: 'hidden', 
+                        boxShadow: '0 10px 30px rgba(0,0,0,0.5)',
+                        cursor: 'pointer'
+                      }}
+                    >
+                       <div style={{ position: 'absolute', inset: 0, backgroundImage: `url(${item.imageUrl})`, backgroundSize: 'cover', backgroundPosition: 'center', opacity: 0.6 }} />
+                       <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(180deg, rgba(0,0,0,0) 50%, rgba(0,0,0,0.8) 100%)' }} />
+                       <div style={{ position: 'absolute', bottom: '16px', left: '16px', right: '16px', zIndex: 2 }}>
+                          <h4 style={{ margin: 0, color: '#fff', fontSize: '16px', fontWeight: 'bold', textShadow: '0 2px 4px rgba(0,0,0,0.5)' }}>{item.title}</h4>
+                       </div>
+                       <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                          <div style={{ width: 50, height: 50, borderRadius: '50%', background: 'rgba(255,255,255,0.2)', backdropFilter: 'blur(10px)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                             <Play fill="white" size={24} />
+                          </div>
+                       </div>
+                    </div>
+                 ))}
+              </motion.div>
+            );
+          })()}
        </div>
        
        {/* Full Profile Dashboard Integrated at Network Level */}

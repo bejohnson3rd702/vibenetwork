@@ -234,15 +234,26 @@ export default function N2NHome({ wlConfig, categories, activeVideo, setActiveVi
     // { school: 'FINFIRE Channel', short: 'FINFIRE', subtitle: 'VIBE 100', copy: 'Empowering financial freedom, investment guides, and real estate strategy.', image: 'https://images.unsplash.com/photo-1559526324-4b87b5e36e44?auto=format&fit=crop&q=80&w=1200', link: '/?tenant=100e0000-c08f-4260-8540-a0cc8bed4e11' }
   ];
 
-  const HERO_SLIDES = isOlympian 
-    ? OLYMPIAN_HERO_SLIDES 
-    : (isB2K 
-      ? B2K_HERO_SLIDES 
-      : (isKple 
-        ? KPLE_HERO_SLIDES 
-        : (isVibe100 
-          ? VIBE_100_HERO_SLIDES 
-          : AVO_HERO_SLIDES)));
+  const HERO_SLIDES = (config?.theme?.heroSlider && config.theme.heroSlider.length > 0)
+    ? config.theme.heroSlider.map((s: any) => ({
+        id: s.id,
+        school: s.title,
+        short: s.title,
+        subtitle: 'Featured Slide',
+        copy: 'Explore custom content dynamically managed by admin.',
+        image: s.imageUrl,
+        videoUrl: s.videoUrl,
+        link: s.videoUrl
+      }))
+    : (isOlympian 
+      ? OLYMPIAN_HERO_SLIDES 
+      : (isB2K 
+        ? B2K_HERO_SLIDES 
+        : (isKple 
+          ? KPLE_HERO_SLIDES 
+          : (isVibe100 
+            ? VIBE_100_HERO_SLIDES 
+            : AVO_HERO_SLIDES))));
 
   const [heroSlide, setHeroSlide] = useState(0);
 
@@ -300,13 +311,21 @@ export default function N2NHome({ wlConfig, categories, activeVideo, setActiveVi
             </p>
             <button
               onClick={() => {
-                if (isKple) return; // Go nowhere for now
-                const targetLink = HERO_SLIDES[heroSlide % HERO_SLIDES.length]?.link;
-                if (targetLink) {
-                  if (targetLink.startsWith('http')) {
-                    window.open(targetLink, '_blank');
+                const currentSlide = HERO_SLIDES[heroSlide % HERO_SLIDES.length];
+                const hasCustomSlides = config?.theme?.heroSlider && config.theme.heroSlider.length > 0;
+                if (isKple && !hasCustomSlides) return; // Go nowhere for now
+                if (currentSlide.videoUrl) {
+                  setActiveVideo({
+                    id: currentSlide.id || heroSlide.toString(),
+                    title: currentSlide.school || currentSlide.title || '',
+                    videoUrl: currentSlide.videoUrl,
+                    image: currentSlide.image || currentSlide.imageUrl || ''
+                  });
+                } else if (currentSlide.link) {
+                  if (currentSlide.link.startsWith('http')) {
+                    window.open(currentSlide.link, '_blank');
                   } else {
-                    window.location.href = mergeQueryParams(targetLink, window.location.search);
+                    window.location.href = mergeQueryParams(currentSlide.link, window.location.search);
                   }
                 } else {
                   window.location.href = mergeQueryParams('/shop', window.location.search);
@@ -316,21 +335,25 @@ export default function N2NHome({ wlConfig, categories, activeVideo, setActiveVi
                 display: 'inline-block', padding: '13px 40px', fontSize: '11px', fontWeight: 800,
                 textTransform: 'uppercase', letterSpacing: '2.5px',
                 background: 'transparent', color: '#fff',
-                border: '1.5px solid #fff', cursor: isKple ? 'default' : 'pointer',
+                border: '1.5px solid #fff', cursor: (isKple && !(config?.theme?.heroSlider && config.theme.heroSlider.length > 0)) ? 'default' : 'pointer',
                 transition: 'all 0.25s',
               }}
               onMouseOver={e => {
-                if (isKple) return;
+                if (isKple && !(config?.theme?.heroSlider && config.theme.heroSlider.length > 0)) return;
                 e.currentTarget.style.background = '#fff';
                 e.currentTarget.style.color = '#000';
               }}
               onMouseOut={e => {
-                if (isKple) return;
+                if (isKple && !(config?.theme?.heroSlider && config.theme.heroSlider.length > 0)) return;
                 e.currentTarget.style.background = 'transparent';
                 e.currentTarget.style.color = '#fff';
               }}
             >
-              {isOlympian ? "View Schedule" : (isB2K ? "Learn More" : (isKple ? "Watch Network" : (isVibe100 ? "Enter Channel" : "Shop Now")))}
+              {(() => {
+                const currentSlide = HERO_SLIDES[heroSlide % HERO_SLIDES.length];
+                if (currentSlide.videoUrl) return "Play Video";
+                return isOlympian ? "View Schedule" : (isB2K ? "Learn More" : (isKple ? "Watch Network" : (isVibe100 ? "Enter Channel" : "Shop Now")));
+              })()}
             </button>
 
             {/* Fundraising / Legacy stat */}
