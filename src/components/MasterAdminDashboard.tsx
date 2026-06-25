@@ -69,6 +69,11 @@ function MasterAdminDashboard() {
       activeStreams: 0,
       load: '42%'
   });
+  const [recentStats, setRecentStats] = useState({
+      newViewers: 0,
+      newCreators: 0,
+      newNetworks: 0
+  });
   
   const [whitelabelsList, setWhitelabelsList] = useState<any[]>([]);
   const [usersList, setUsersList] = useState<any[]>([]);
@@ -159,6 +164,39 @@ function MasterAdminDashboard() {
         const { count: usersCount } = await supabase!.from('profiles').select('*', { count: 'exact', head: true });
         const { data: configs } = await supabase!.from('whitelabel_configs').select('*');
         setWhitelabelsList(configs || []);
+
+        const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+        const oneDayAgoMs = Date.now() - 24 * 60 * 60 * 1000;
+
+        let newViewersCount = 0;
+        let newCreatorsCount = 0;
+        try {
+           const { data: recentProfiles } = await supabase!.from('profiles')
+              .select('role, created_at')
+              .gt('created_at', oneDayAgo);
+           
+           if (recentProfiles) {
+              recentProfiles.forEach(p => {
+                 const isCreator = p.role === 'influencer' || p.role === 'business';
+                 if (isCreator) {
+                    newCreatorsCount++;
+                 } else {
+                    newViewersCount++;
+                 }
+              });
+           }
+        } catch (err) {
+           console.error("Failed to fetch 24h profiles:", err);
+        }
+
+        const newNetworksCount = configs ? configs.filter(c => c.created_at && new Date(c.created_at).getTime() > oneDayAgoMs).length : 0;
+
+        setRecentStats({
+           newViewers: newViewersCount,
+           newCreators: newCreatorsCount,
+           newNetworks: newNetworksCount
+        });
+
         
         const { data: logsData } = await supabase!.from('system_logs').select('*').order('created_at', { ascending: false }).limit(50);
         if (logsData) setSystemLogs(logsData);
@@ -280,6 +318,64 @@ function MasterAdminDashboard() {
           {activeTab === 'overview' && (
             <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} style={{ display: 'flex', flexDirection: 'column', gap: '40px' }}>
                
+               {/* 24-Hour Activity Recap Banner */}
+               <div style={{ 
+                 background: 'linear-gradient(135deg, rgba(0, 85, 255, 0.08) 0%, rgba(255, 77, 133, 0.08) 100%)', 
+                 border: '1px solid rgba(255, 255, 255, 0.08)',
+                 borderRadius: '24px', 
+                 padding: '24px 30px', 
+                 display: 'flex', 
+                 flexDirection: 'column',
+                 gap: '16px',
+                 position: 'relative',
+                 overflow: 'hidden'
+               }}>
+                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                   <div>
+                     <h4 style={{ margin: 0, fontSize: '18px', fontWeight: 'bold', color: '#fff' }}>24-Hour Activity Recap</h4>
+                     <p style={{ margin: '4px 0 0 0', fontSize: '13px', color: 'var(--text-secondary)' }}>Real-time telemetry of new registrations and child network provisioning.</p>
+                   </div>
+                   <span style={{ fontSize: '11px', background: 'rgba(0, 255, 136, 0.15)', color: '#00ff88', padding: '6px 12px', borderRadius: '20px', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '1px' }}>
+                     Live Tracking
+                   </span>
+                 </div>
+                 
+                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '20px', marginTop: '8px' }}>
+                   {/* Viewers Card */}
+                   <div style={{ background: 'rgba(255, 255, 255, 0.02)', border: '1px solid rgba(255, 255, 255, 0.05)', borderRadius: '16px', padding: '20px', display: 'flex', alignItems: 'center', gap: '16px' }}>
+                     <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: 'rgba(0, 85, 255, 0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#0055ff' }}>
+                       <Users size={22} />
+                     </div>
+                     <div>
+                       <div style={{ fontSize: '24px', fontWeight: '900', color: '#fff' }}>{recentStats.newViewers}</div>
+                       <div style={{ fontSize: '12px', color: 'var(--text-muted)', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '0.5px' }}>New Viewers</div>
+                     </div>
+                   </div>
+
+                   {/* Creators Card */}
+                   <div style={{ background: 'rgba(255, 255, 255, 0.02)', border: '1px solid rgba(255, 255, 255, 0.05)', borderRadius: '16px', padding: '20px', display: 'flex', alignItems: 'center', gap: '16px' }}>
+                     <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: 'rgba(255, 77, 133, 0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#ff4d85' }}>
+                       <Activity size={22} />
+                     </div>
+                     <div>
+                       <div style={{ fontSize: '24px', fontWeight: '900', color: '#fff' }}>{recentStats.newCreators}</div>
+                       <div style={{ fontSize: '12px', color: 'var(--text-muted)', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '0.5px' }}>New Creators</div>
+                     </div>
+                   </div>
+
+                   {/* N2N Networks Card */}
+                   <div style={{ background: 'rgba(255, 255, 255, 0.02)', border: '1px solid rgba(255, 255, 255, 0.05)', borderRadius: '16px', padding: '20px', display: 'flex', alignItems: 'center', gap: '16px' }}>
+                     <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: 'rgba(0, 255, 136, 0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#00ff88' }}>
+                       <Network size={22} />
+                     </div>
+                     <div>
+                       <div style={{ fontSize: '24px', fontWeight: '900', color: '#fff' }}>{recentStats.newNetworks}</div>
+                       <div style={{ fontSize: '12px', color: 'var(--text-muted)', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '0.5px' }}>New N2N Networks</div>
+                     </div>
+                   </div>
+                 </div>
+               </div>
+
                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '20px' }}>
                  {stats.map(s => (
                    <div key={s.label} style={{ background: 'var(--bg-surface)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '20px', padding: '24px', position: 'relative', overflow: 'hidden' }}>
