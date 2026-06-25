@@ -444,9 +444,13 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
   // Series Data
   const [seriesList, setSeriesList] = useState<any[]>([]);
   const [newSeries, setNewSeries] = useState({ title: '', description: '', price: '', img: '' });
-  const [newEpisode, setNewEpisode] = useState({ title: '', description: '', length: '', price: '', video_url: '' });
+  const [newEpisode, setNewEpisode] = useState({ title: '', description: '', length: '', price: '', video_url: '', thumbnail_url: '' });
   const [uploadingVideo, setUploadingVideo] = useState(false);
   const [isDraggingVideo, setIsDraggingVideo] = useState(false);
+  const [uploadingSeriesImg, setUploadingSeriesImg] = useState(false);
+  const [isDraggingSeriesImg, setIsDraggingSeriesImg] = useState(false);
+  const [uploadingEpisodeImg, setUploadingEpisodeImg] = useState(false);
+  const [isDraggingEpisodeImg, setIsDraggingEpisodeImg] = useState(false);
   const [activeSeriesIdForEp, setActiveSeriesIdForEp] = useState<string | null>(null);
 
   useEffect(() => {
@@ -903,6 +907,60 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
     setSaving(false);
   };
 
+  const handleSeriesCoverUpload = async (eventOrFile: React.ChangeEvent<HTMLInputElement> | File) => {
+    try {
+      let file: File | undefined;
+      if (eventOrFile instanceof File) {
+        file = eventOrFile;
+      } else if (eventOrFile.target?.files && eventOrFile.target.files.length > 0) {
+        file = eventOrFile.target.files[0];
+      }
+      if (!file) return;
+      setUploadingSeriesImg(true);
+      
+      toast.info("✨ Nalu AI is enhancing and auto-cropping your series cover...");
+      const enhancedFile = await processAndEnhanceImage(file, 'hero'); // 16:9 aspect ratio
+
+      const filePath = `${user?.id}/series_${Math.random()}.${enhancedFile.name.split('.').pop()}`;
+      await supabase!.storage.from('images').upload(filePath, enhancedFile);
+      const { data } = supabase!.storage.from('images').getPublicUrl(filePath);
+      setNewSeries(prev => ({ ...prev, img: data.publicUrl }));
+      toast.success('Series cover uploaded successfully!');
+    } catch (err: any) {
+      console.error(err);
+      toast.error('Series cover upload failed: ' + (err.message || 'Storage error'));
+    } finally {
+      setUploadingSeriesImg(false);
+    }
+  };
+
+  const handleEpisodeCoverUpload = async (eventOrFile: React.ChangeEvent<HTMLInputElement> | File) => {
+    try {
+      let file: File | undefined;
+      if (eventOrFile instanceof File) {
+        file = eventOrFile;
+      } else if (eventOrFile.target?.files && eventOrFile.target.files.length > 0) {
+        file = eventOrFile.target.files[0];
+      }
+      if (!file) return;
+      setUploadingEpisodeImg(true);
+      
+      toast.info("✨ Nalu AI is enhancing and auto-cropping your episode cover...");
+      const enhancedFile = await processAndEnhanceImage(file, 'hero'); // 16:9 aspect ratio
+
+      const filePath = `${user?.id}/ep_cover_${Math.random()}.${enhancedFile.name.split('.').pop()}`;
+      await supabase!.storage.from('images').upload(filePath, enhancedFile);
+      const { data } = supabase!.storage.from('images').getPublicUrl(filePath);
+      setNewEpisode(prev => ({ ...prev, thumbnail_url: data.publicUrl }));
+      toast.success('Episode cover uploaded successfully!');
+    } catch (err: any) {
+      console.error(err);
+      toast.error('Episode cover upload failed: ' + (err.message || 'Storage error'));
+    } finally {
+      setUploadingEpisodeImg(false);
+    }
+  };
+
   const handleVideoFileUpload = async (file: File) => {
     if (!file) return;
     setUploadingVideo(true);
@@ -936,7 +994,8 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
       description: newEpisode.description,
       length: newEpisode.length,
       price: parseFloat(newEpisode.price || '0'),
-      video_url: newEpisode.video_url || ''
+      video_url: newEpisode.video_url || '',
+      thumbnail_url: newEpisode.thumbnail_url || ''
     };
 
     try {
@@ -953,7 +1012,7 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
         return s;
       }));
     }
-    setNewEpisode({ title: '', description: '', length: '', price: '', video_url: '' });
+    setNewEpisode({ title: '', description: '', length: '', price: '', video_url: '', thumbnail_url: '' });
     setActiveSeriesIdForEp(null);
   };
 
@@ -3077,9 +3136,45 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
                     <span style={{ padding: '14px', color: 'var(--text-muted)', background: 'rgba(255,255,255,0.02)', borderRight: '1px solid rgba(255,255,255,0.1)' }}>Full Season $</span>
                     <input type="number" step="0.01" placeholder="Price" value={newSeries.price} onChange={e => setNewSeries({...newSeries, price: e.target.value})} style={{ flex: 1, background: 'transparent', border: 'none', padding: '14px', color: 'var(--text-primary)', outline: 'none', fontSize: '15px' }} />
                   </div>
-                  <input type="text" placeholder="Cover Image URL (optional)" value={newSeries.img} onChange={e => setNewSeries({...newSeries, img: e.target.value})} style={{ background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.1)', padding: '14px', borderRadius: '12px', color: 'var(--text-primary)', outline: 'none', fontSize: '15px' }} />
+                  <div style={{ display: 'flex', gap: '12px' }}>
+                    {newSeries.img ? (
+                      <div style={{ width: '100px', height: '56px', borderRadius: '8px', backgroundImage: `url("${newSeries.img}")`, backgroundSize: 'cover', backgroundPosition: 'center', border: '1px solid rgba(255,255,255,0.1)', flexShrink: 0 }} />
+                    ) : null}
+                    <label 
+                      onDragOver={(e) => { e.preventDefault(); setIsDraggingSeriesImg(true); }}
+                      onDragLeave={() => setIsDraggingSeriesImg(false)}
+                      onDrop={async (e) => {
+                        e.preventDefault();
+                        setIsDraggingSeriesImg(false);
+                        if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+                          await handleSeriesCoverUpload(e.dataTransfer.files[0]);
+                        }
+                      }}
+                      style={{
+                        flex: 1,
+                        background: isDraggingSeriesImg ? 'rgba(255,77,133,0.05)' : 'rgba(0,0,0,0.5)',
+                        border: isDraggingSeriesImg ? '2px dashed #ff4d85' : '1px solid rgba(255,255,255,0.1)',
+                        padding: '14px',
+                        borderRadius: '12px',
+                        color: isDraggingSeriesImg ? '#ff4d85' : '#ccc',
+                        textAlign: 'center',
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: '8px',
+                        fontSize: '15px',
+                        transition: 'all 0.2s ease',
+                        fontWeight: 'bold'
+                      }}
+                    >
+                      <ImageIcon size={16} />
+                      {uploadingSeriesImg ? 'Uploading Cover...' : isDraggingSeriesImg ? 'Drop here!' : newSeries.img ? 'Cover Uploaded ✓' : 'Upload Series Cover (Drag & Drop)'}
+                      <input type="file" accept="image/*" onChange={handleSeriesCoverUpload} style={{ display: 'none' }} disabled={uploadingSeriesImg} />
+                    </label>
+                  </div>
                   <div style={{ gridColumn: '1 / -1', display: 'flex', justifyContent: 'flex-end' }}>
-                    <button type="submit" disabled={!newSeries.title || !newSeries.price} style={{ padding: '12px 24px', background: (!newSeries.title || !newSeries.price) ? 'rgba(255,255,255,0.1)' : '#ff4d85', color: 'var(--text-primary)', border: 'none', borderRadius: '12px', fontWeight: 'bold', cursor: (!newSeries.title || !newSeries.price) ? 'not-allowed' : 'pointer' }}>Publish Series</button>
+                    <button type="submit" disabled={!newSeries.title || !newSeries.price || uploadingSeriesImg} style={{ padding: '12px 24px', background: (!newSeries.title || !newSeries.price || uploadingSeriesImg) ? 'rgba(255,255,255,0.1)' : '#ff4d85', color: 'var(--text-primary)', border: 'none', borderRadius: '12px', fontWeight: 'bold', cursor: (!newSeries.title || !newSeries.price || uploadingSeriesImg) ? 'not-allowed' : 'pointer' }}>Publish Series</button>
                   </div>
                 </form>
               </motion.div>
@@ -3138,58 +3233,113 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
                             <textarea placeholder="Description..." value={newEpisode.description} onChange={e=>setNewEpisode({...newEpisode, description: e.target.value})} style={{ width: '100%', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', padding: '10px', borderRadius: '8px', color: 'var(--text-primary)', outline: 'none', minHeight: '60px' }} />
                           </div>
 
-                          {/* Video Link & File Upload */}
-                          <div style={{ gridColumn: '1 / -1', display: 'flex', flexWrap: 'wrap', gap: '12px', alignItems: 'center' }}>
-                            <input 
-                              type="text" 
-                              placeholder="Video Link (YouTube, Vimeo, MP4, etc.)" 
-                              value={newEpisode.video_url || ''} 
-                              onChange={e=>setNewEpisode({...newEpisode, video_url: e.target.value})} 
-                              style={{ flex: 1, minWidth: '240px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', padding: '12px', borderRadius: '8px', color: 'var(--text-primary)', outline: 'none', fontSize: '13px' }} 
-                            />
-                            
-                            <label 
-                              onDragOver={(e) => { e.preventDefault(); setIsDraggingVideo(true); }}
-                              onDragLeave={() => setIsDraggingVideo(false)}
-                              onDrop={async (e) => {
-                                e.preventDefault();
-                                setIsDraggingVideo(false);
-                                if (e.dataTransfer.files && e.dataTransfer.files[0]) {
-                                  await handleVideoFileUpload(e.dataTransfer.files[0]);
-                                }
-                              }}
-                              style={{
-                                flex: '1 1 200px',
-                                background: isDraggingVideo ? 'rgba(255,77,133,0.05)' : 'rgba(255,255,255,0.05)',
-                                border: isDraggingVideo ? '2px dashed #ff4d85' : '1px solid rgba(255,255,255,0.1)',
-                                padding: '12px',
-                                borderRadius: '8px',
-                                color: isDraggingVideo ? '#ff4d85' : '#ccc',
-                                textAlign: 'center',
-                                cursor: 'pointer',
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                gap: '8px',
-                                fontSize: '13px',
-                                fontWeight: 'bold',
-                                transition: 'all 0.2s ease'
-                              }}
-                            >
-                              <Video size={16} />
-                              {uploadingVideo ? 'Uploading Video...' : isDraggingVideo ? 'Drop here!' : 'Upload Video File'}
-                              <input type="file" accept="video/*" onChange={async (e) => {
-                                if (e.target.files && e.target.files[0]) {
-                                  await handleVideoFileUpload(e.target.files[0]);
-                                }
-                              }} style={{ display: 'none' }} disabled={uploadingVideo} />
-                            </label>
+                          {/* Box Cover image upload section */}
+                          <div style={{ gridColumn: '1 / -1', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                            <label style={{ fontSize: '13px', color: '#ccc', fontWeight: 'bold' }}>Episode Box Cover</label>
+                            <div style={{ display: 'flex', gap: '12px' }}>
+                              {newEpisode.thumbnail_url ? (
+                                <div style={{ width: '96px', height: '54px', borderRadius: '8px', backgroundImage: `url("${newEpisode.thumbnail_url}")`, backgroundSize: 'cover', backgroundPosition: 'center', border: '1px solid rgba(255,255,255,0.1)', flexShrink: 0 }} />
+                              ) : null}
+                              <label 
+                                onDragOver={(e) => { e.preventDefault(); setIsDraggingEpisodeImg(true); }}
+                                onDragLeave={() => setIsDraggingEpisodeImg(false)}
+                                onDrop={async (e) => {
+                                  e.preventDefault();
+                                  setIsDraggingEpisodeImg(false);
+                                  if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+                                    await handleEpisodeCoverUpload(e.dataTransfer.files[0]);
+                                  }
+                                }}
+                                style={{
+                                  flex: 1,
+                                  background: isDraggingEpisodeImg ? 'rgba(255,77,133,0.05)' : 'rgba(255,255,255,0.05)',
+                                  border: isDraggingEpisodeImg ? '2px dashed #ff4d85' : '1px solid rgba(255,255,255,0.1)',
+                                  padding: '12px',
+                                  borderRadius: '8px',
+                                  color: isDraggingEpisodeImg ? '#ff4d85' : '#ccc',
+                                  textAlign: 'center',
+                                  cursor: 'pointer',
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  justifyContent: 'center',
+                                  gap: '8px',
+                                  fontSize: '13px',
+                                  fontWeight: 'bold',
+                                  transition: 'all 0.2s ease'
+                                }}
+                              >
+                                <ImageIcon size={16} />
+                                {uploadingEpisodeImg ? 'Uploading Cover...' : isDraggingEpisodeImg ? 'Drop here!' : newEpisode.thumbnail_url ? 'Cover Uploaded ✓' : 'Upload Episode Box Cover (Drag & Drop)'}
+                                <input type="file" accept="image/*" onChange={handleEpisodeCoverUpload} style={{ display: 'none' }} disabled={uploadingEpisodeImg} />
+                              </label>
+                            </div>
                           </div>
 
-                          <div style={{ gridColumn: '1 / -1', display: 'flex', gap: '12px', alignItems: 'center', marginTop: '8px' }}>
+                          {/* Video Content & Video Source Link section */}
+                          <div style={{ gridColumn: '1 / -1', display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '4px' }}>
+                            <label style={{ fontSize: '13px', color: '#ccc', fontWeight: 'bold' }}>Episode Video Content</label>
+                            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '12px', alignItems: 'stretch' }}>
+                              
+                              {/* Drag & drop video file upload */}
+                              <label 
+                                onDragOver={(e) => { e.preventDefault(); setIsDraggingVideo(true); }}
+                                onDragLeave={() => setIsDraggingVideo(false)}
+                                onDrop={async (e) => {
+                                  e.preventDefault();
+                                  setIsDraggingVideo(false);
+                                  if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+                                    await handleVideoFileUpload(e.dataTransfer.files[0]);
+                                  }
+                                }}
+                                style={{
+                                  flex: '1 1 240px',
+                                  background: isDraggingVideo ? 'rgba(255,77,133,0.05)' : 'rgba(255,255,255,0.05)',
+                                  border: isDraggingVideo ? '2px dashed #ff4d85' : '1px solid rgba(255,255,255,0.1)',
+                                  padding: '16px 12px',
+                                  borderRadius: '8px',
+                                  color: isDraggingVideo ? '#ff4d85' : '#ccc',
+                                  textAlign: 'center',
+                                  cursor: 'pointer',
+                                  display: 'flex',
+                                  flexDirection: 'column',
+                                  alignItems: 'center',
+                                  justifyContent: 'center',
+                                  gap: '6px',
+                                  fontSize: '13px',
+                                  fontWeight: 'bold',
+                                  transition: 'all 0.2s ease'
+                                }}
+                              >
+                                <Video size={20} />
+                                <div>
+                                  {uploadingVideo ? 'Uploading Video...' : isDraggingVideo ? 'Drop here!' : (newEpisode.video_url && newEpisode.video_url.includes('/episodes/video_')) ? 'Video File Uploaded ✓' : 'Upload Video File (Drag & Drop)'}
+                                </div>
+                                <input type="file" accept="video/*" onChange={async (e) => {
+                                  if (e.target.files && e.target.files[0]) {
+                                    await handleVideoFileUpload(e.target.files[0]);
+                                  }
+                                }} style={{ display: 'none' }} disabled={uploadingVideo} />
+                              </label>
+
+                              {/* Input for other video sources */}
+                              <div style={{ flex: '1 1 240px', display: 'flex', flexDirection: 'column', justifyContent: 'center', background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '8px', padding: '12px' }}>
+                                <span style={{ fontSize: '11px', color: 'var(--text-muted)', fontWeight: 'bold', marginBottom: '8px', textTransform: 'uppercase' }}>Other Video Sources (External)</span>
+                                <input 
+                                  type="text" 
+                                  placeholder="Paste YouTube, Vimeo, or direct video URL" 
+                                  value={(newEpisode.video_url && !newEpisode.video_url.includes('/episodes/video_')) ? newEpisode.video_url : ''} 
+                                  onChange={e=>setNewEpisode({...newEpisode, video_url: e.target.value})} 
+                                  style={{ width: '100%', background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(255,255,255,0.1)', padding: '10px', borderRadius: '6px', color: 'var(--text-primary)', outline: 'none', fontSize: '13px' }} 
+                                />
+                              </div>
+
+                            </div>
+                          </div>
+
+                          <div style={{ gridColumn: '1 / -1', display: 'flex', gap: '12px', alignItems: 'center', marginTop: '16px' }}>
                             <span style={{ color: 'var(--text-muted)' }}>Price $</span>
                             <input type="number" step="0.01" placeholder="9.99" value={newEpisode.price} onChange={e=>setNewEpisode({...newEpisode, price: e.target.value})} style={{ flex: 1, background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', padding: '10px', borderRadius: '8px', color: 'var(--text-primary)', outline: 'none' }} />
-                            <button onClick={() => handleAddEpisode(series.id)} disabled={!newEpisode.title || uploadingVideo} style={{ padding: '10px 20px', background: (newEpisode.title && !uploadingVideo) ? '#00ff88' : 'rgba(255,255,255,0.1)', color: '#000', border: 'none', borderRadius: '8px', fontWeight: 'bold', cursor: (newEpisode.title && !uploadingVideo) ? 'pointer' : 'not-allowed' }}>Save</button>
+                            <button onClick={() => handleAddEpisode(series.id)} disabled={!newEpisode.title || uploadingVideo || uploadingEpisodeImg} style={{ padding: '10px 20px', background: (newEpisode.title && !uploadingVideo && !uploadingEpisodeImg) ? '#00ff88' : 'rgba(255,255,255,0.1)', color: '#000', border: 'none', borderRadius: '8px', fontWeight: 'bold', cursor: (newEpisode.title && !uploadingVideo && !uploadingEpisodeImg) ? 'pointer' : 'not-allowed' }}>Save</button>
                           </div>
                         </div>
                       </div>
@@ -3201,7 +3351,7 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
                       ) : (
                         series.episodes.map((episode: any, idx: number) => (
                           <div key={episode.id} style={{ display: 'flex', gap: '20px', alignItems: 'center', background: 'rgba(255,255,255,0.02)', padding: '16px', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.05)', transition: 'background 0.2s' }}>
-                            <div style={{ width: '160px', height: '90px', borderRadius: '8px', background: `url(https://picsum.photos/seed/ep${idx+1}/300/150) center/cover`, position: 'relative', flexShrink: 0 }}>
+                            <div style={{ width: '160px', height: '90px', borderRadius: '8px', background: `url(${episode.thumbnail_url || `https://picsum.photos/seed/ep${idx+1}/300/150`}) center/cover`, position: 'relative', flexShrink: 0 }}>
                               <div style={{ position: 'absolute', bottom: 6, right: 6, background: 'rgba(0,0,0,0.8)', padding: '2px 6px', borderRadius: '4px', fontSize: '11px', fontWeight: 'bold' }}>{episode.length || 'TBD'}</div>
                             </div>
                             <div style={{ flex: 1 }}>
@@ -4343,8 +4493,20 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
           const renderCinemaPlayer = () => {
             const url = activeCinemaEpisode.video_url || '';
             if (!url) {
+              const bgImg = activeCinemaEpisode.thumbnail_url || activeCinemaSeries.img || '';
               return (
-                <div style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', position: 'relative' }}>
+                <div style={{ 
+                  width: '100%', 
+                  height: '100%', 
+                  display: 'flex', 
+                  flexDirection: 'column', 
+                  alignItems: 'center', 
+                  justifyContent: 'center', 
+                  position: 'relative',
+                  backgroundImage: bgImg ? `linear-gradient(to bottom, rgba(0,0,0,0.85), rgba(0,0,0,0.92)), url("${bgImg}")` : 'none',
+                  backgroundSize: 'cover',
+                  backgroundPosition: 'center'
+                }}>
                   {/* Interactive sound visualizer or waves representation */}
                   <div style={{ display: 'flex', gap: '6px', alignItems: 'center', height: '60px', marginBottom: '20px' }}>
                     {Array.from({ length: 18 }).map((_, i) => (
