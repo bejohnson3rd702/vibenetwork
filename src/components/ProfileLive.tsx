@@ -498,7 +498,7 @@ export const ProfileLive: React.FC<ProfileLiveProps> = ({
                     )}
                   </div>
                   
-                  {isPlayingLive ? (
+                  {isPlayingLive || (isOwnProfile && cameraStatus !== 'idle') ? (
                      <>
                        {!isOwnProfile && isPlayingLive && !effectiveIsSubscribed && !hasPaidForLive ? (
                          isPreviewExpired ? (
