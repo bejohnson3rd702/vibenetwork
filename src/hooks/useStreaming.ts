@@ -73,14 +73,23 @@ export function useStreaming({ profileId, isOwnProfile, user, supabase, channelR
   }, [localStream]);
 
   // ── Derived Values ──
-  const isCameraActive = isPlayingLive || liveCountdown !== null;
+  const [isCameraRequested, setIsCameraRequested] = useState(false);
+  const isCameraActive = isPlayingLive || liveCountdown !== null || isCameraRequested;
   const isPreviewExpired = !isOwnProfile && isPlayingLive && !hasPaidForLive && previewTimeLeft === 0;
+
+  // Auto-reset camera request when live streaming is turned off
+  useEffect(() => {
+    if (!isPlayingLive && liveCountdown === null) {
+      setIsCameraRequested(false);
+    }
+  }, [isPlayingLive, liveCountdown]);
 
   // ── Countdown Timer (guarded against double-start) ──
   const startLiveStream = useCallback(() => {
     // Prevent double-start
     if (countdownRef.current !== null || liveCountdown !== null) return;
 
+    setIsCameraRequested(true);
     setLiveCountdown(3);
     let ticker = 3;
     const interval = setInterval(() => {

@@ -252,7 +252,9 @@ export const ProfileLive: React.FC<ProfileLiveProps> = ({
   React.useEffect(() => {
     if (isOwnProfile && localStream && videoRef.current) {
       console.log("WebRTC: Attaching localStream to host video element.");
-      videoRef.current.srcObject = localStream;
+      if (videoRef.current.srcObject !== localStream) {
+        videoRef.current.srcObject = localStream;
+      }
       videoRef.current.defaultMuted = true;
       videoRef.current.muted = true;
       videoRef.current.play().catch(e => console.warn("Local video play warning:", e));
