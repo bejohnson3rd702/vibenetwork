@@ -13,7 +13,7 @@ import { normalizeWlConfig } from './whitelabel';
 // ─── Child Network Queries ───────────────────────────────────────
 
 /** Fetch all child networks under a parent */
-export async function getChildNetworks(parentId: string): Promise<WlConfig[]> {
+export async function getChildNetworks(parentId: string, includeInactive: boolean = false): Promise<WlConfig[]> {
   let data;
   const { data: initialData, error } = await supabase
     .from('whitelabel_configs')
@@ -38,6 +38,9 @@ export async function getChildNetworks(parentId: string): Promise<WlConfig[]> {
   
   // Filter out test networks (Noelani, Bennie, Leilani, Leiloe, etc.)
   const filtered = data.filter((row: any) => {
+    if (!includeInactive && row.is_active === false) {
+      return false;
+    }
     const domainLower = (row.domain || '').toLowerCase();
     const nameLower = (row.name || '').toLowerCase();
     if (
@@ -71,6 +74,7 @@ export async function getN2NProfiles(parentId: string): Promise<any[]> {
     .from('profiles')
     .select('*')
     .in('whitelabel_id', networkIds)
+    .neq('is_active', false)
     .order('created_at', { ascending: false })
     .limit(100);
 

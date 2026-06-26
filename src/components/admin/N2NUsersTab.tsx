@@ -19,7 +19,7 @@ export const N2NUsersTab = ({ wlConfig }: { wlConfig: any }) => {
     const load = async () => {
       setLoading(true);
       const [nets, profs] = await Promise.all([
-        getChildNetworks(wlConfig.id),
+        getChildNetworks(wlConfig.id, true),
         getN2NProfiles(wlConfig.id),
       ]);
       setChildren(nets);

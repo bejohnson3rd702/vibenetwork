@@ -71,7 +71,7 @@ export const N2NFleetTab = ({ wlConfig }: { wlConfig: any }) => {
       setLoading(true);
       try {
         const [nets, profiles, allConfigs, allProfiles] = await Promise.all([
-          getChildNetworks(wlConfig.id),
+          getChildNetworks(wlConfig.id, true),
           getN2NProfiles(wlConfig.id),
           supabase.from('whitelabel_configs').select('*'),
           supabase.from('profiles').select('*').limit(50)

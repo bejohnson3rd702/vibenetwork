@@ -24,7 +24,7 @@ function N2NChildrenList({ parentId, parentAccent, showToast, onEditHero }: { pa
 
   const load = async () => {
     setLoading(true);
-    const nets = await getChildNetworks(parentId);
+    const nets = await getChildNetworks(parentId, true);
     setChildren(nets);
     setLoading(false);
   };

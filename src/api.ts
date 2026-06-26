@@ -40,6 +40,8 @@ export async function getCategoriesWithVideos(tenantId?: string) {
   ];
 
   const mappedNetworks = (whitelabels || []).filter((wl: any) => {
+    if (wl.is_active === false || wl.theme?.is_active === false) return false;
+
     const domainLower = (wl.domain || '').toLowerCase();
     const nameLower = (wl.name || '').toLowerCase();
     

@@ -2,7 +2,7 @@ import React, { useEffect, useState, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { supabase } from '../supabaseClient';
 import { motion, AnimatePresence } from 'framer-motion';
-import { LogOut, Camera, Lock, Unlock, Image as ImageIcon, Star, ShieldCheck, Eye, Edit2, Trash2, Wand, Calendar, Edit3, Clock, CheckCircle, Heart, MessageCircle, Wallet, ArrowUpRight, ArrowDownLeft, Activity, Monitor, Settings, Video, DollarSign, Share2, Pin, ChevronLeft, ChevronRight, AlertCircle, Users } from 'lucide-react';
+import { LogOut, Camera, Lock, Unlock, Image as ImageIcon, Star, ShieldCheck, Eye, Edit2, Trash2, Wand, Calendar, Edit3, Clock, CheckCircle, Heart, MessageCircle, Wallet, ArrowUpRight, ArrowDownLeft, Activity, Monitor, Settings, Video, DollarSign, Share2, Pin, ChevronLeft, ChevronRight, AlertCircle, Users, Folder, File, FileText, Download, UploadCloud, Search, Plus, X, Globe, EyeOff, Copy } from 'lucide-react';
 import { DictationButton } from './DictationButton';
 import { EmojiPickerButton } from './EmojiPickerButton';
 import EndUserAuthModal from './EndUserAuthModal';
@@ -29,6 +29,103 @@ const getStripe = () => {
     );
   }
   return stripePromise;
+};
+
+interface BookingFormInputProps {
+  label: string;
+  value: string;
+  onChange: (val: string) => void;
+  placeholder?: string;
+  type?: string;
+  icon?: any;
+  accent?: string;
+}
+
+const BookingFormInput: React.FC<BookingFormInputProps> = ({ label, value, onChange, placeholder, type = 'text', icon: Icon, accent = '#00ff88' }) => {
+  const [isFocused, setIsFocused] = React.useState(false);
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+      <label style={{ fontSize: '13px', fontWeight: 'bold', color: '#ccc' }}>{label}</label>
+      <div style={{
+        display: 'flex',
+        alignItems: 'center',
+        background: 'rgba(0,0,0,0.4)',
+        border: '1.5px solid',
+        borderColor: isFocused ? accent : 'rgba(255,255,255,0.08)',
+        borderRadius: '12px',
+        padding: '2px 14px',
+        transition: 'all 0.2s ease',
+        boxShadow: isFocused ? `0 0 12px ${accent}25` : 'none'
+      }}>
+        {Icon && <Icon size={16} style={{ color: isFocused ? accent : '#888', marginRight: '8px', transition: 'color 0.2s' }} />}
+        <input
+          type={type}
+          value={value}
+          onChange={e => onChange(e.target.value)}
+          placeholder={placeholder}
+          onFocus={() => setIsFocused(true)}
+          onBlur={() => setIsFocused(false)}
+          style={{
+            background: 'transparent',
+            border: 'none',
+            padding: '12px 0',
+            color: 'var(--text-primary)',
+            outline: 'none',
+            fontSize: '14px',
+            width: '100%'
+          }}
+        />
+      </div>
+    </div>
+  );
+};
+
+const BookingRateInput: React.FC<{ value: string; onChange: (val: string) => void; accent?: string }> = ({ value, onChange, accent = '#00ff88' }) => {
+  const [isFocused, setIsFocused] = React.useState(false);
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+      <span style={{ fontSize: '13px', fontWeight: 'bold', color: '#ccc' }}>Hourly Rate ($ USD)</span>
+      <div style={{
+        display: 'flex',
+        alignItems: 'center',
+        background: 'rgba(0,0,0,0.4)',
+        border: '1.5px solid',
+        borderColor: isFocused ? accent : 'rgba(255,255,255,0.08)',
+        borderRadius: '12px',
+        overflow: 'hidden',
+        transition: 'all 0.2s ease',
+        boxShadow: isFocused ? `0 0 12px ${accent}25` : 'none'
+      }}>
+        <span style={{
+          padding: '12px 16px',
+          color: isFocused ? accent : 'var(--text-muted)',
+          background: 'rgba(255,255,255,0.02)',
+          borderRight: '1.5px solid',
+          borderColor: isFocused ? accent : 'rgba(255,255,255,0.08)',
+          fontSize: '15px',
+          fontWeight: 'bold',
+          transition: 'all 0.2s ease'
+        }}>$</span>
+        <input
+          type="number"
+          step="0.01"
+          value={value}
+          onChange={e => onChange(e.target.value)}
+          onFocus={() => setIsFocused(true)}
+          onBlur={() => setIsFocused(false)}
+          style={{
+            background: 'transparent',
+            border: 'none',
+            padding: '12px 16px',
+            color: 'var(--text-primary)',
+            outline: 'none',
+            fontSize: '15px',
+            width: '100%'
+          }}
+        />
+      </div>
+    </div>
+  );
 };
 
 const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetworkLevel?: boolean }> = ({ user, creatorIdOverride, isNetworkLevel }) => {
@@ -58,6 +155,16 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
   const [homepageImageUrl, setHomepageImageUrl] = useState('');
   const [flipbookImages, setFlipbookImages] = useState('');
   const [currentBannerIndex, setCurrentBannerIndex] = useState(0);
+  
+  // Vibe Drive States
+  const [driveFiles, setDriveFiles] = useState<any[]>([]);
+  const [driveSearchQuery, setDriveSearchQuery] = useState('');
+  const [driveViewMode, setDriveViewMode] = useState<'grid' | 'list'>('grid');
+  const [showDriveUploadModal, setShowDriveUploadModal] = useState(false);
+  const [uploadingDriveFile, setUploadingDriveFile] = useState(false);
+  const [driveUploadAccessLevel, setDriveUploadAccessLevel] = useState<'public' | 'subscribers'>('public');
+  const [driveUploadFile, setDriveUploadFile] = useState<File | null>(null);
+  const [driveUploadName, setDriveUploadName] = useState('');
   const [currentBgIndex, setCurrentBgIndex] = useState(0);
   const [saving, setSaving] = useState(false);
   const [activeTab, setActiveTab] = useState<'feed' | 'store' | 'live' | 'booking' | 'series' | 'courses' | 'wallet' | 'flipbook' | 'appearance' | 'my_bookings' | 'networks' | 'members' | 'community' | 'security' | 'crm' | 'subscriptions'>('feed');
@@ -576,8 +683,26 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
   const [bookingType, setBookingType] = useState('virtual');
   const [virtualCallType, setVirtualCallType] = useState('video');
   const [availableSlots, setAvailableSlots] = useState<Record<number, string[]>>({});
+  const [calendarMonthOffset, setCalendarMonthOffset] = useState(0); // 0: current, 1: next
+  const [selectedMonthOffset, setSelectedMonthOffset] = useState<number | null>(null);
   const [newTimeInput, setNewTimeInput] = useState('');
   const [refundPolicy, setRefundPolicy] = useState('');
+  const [bookingAvailability, setBookingAvailability] = useState<any>({
+    Mon: { start: '09:00', end: '17:00', active: true },
+    Tue: { start: '09:00', end: '17:00', active: true },
+    Wed: { start: '09:00', end: '17:00', active: true },
+    Thu: { start: '09:00', end: '17:00', active: true },
+    Fri: { start: '09:00', end: '17:00', active: true },
+    Sat: { start: '09:00', end: '17:00', active: false },
+    Sun: { start: '09:00', end: '17:00', active: false },
+    duration: 60
+  });
+  const [smsEnabled, setSmsEnabled] = useState(false);
+  const [smsPhone, setSmsPhone] = useState('');
+  const [guestName, setGuestName] = useState('');
+  const [guestPhone, setGuestPhone] = useState('');
+  const [meetingPurpose, setMeetingPurpose] = useState('');
+  const [recordCall, setRecordCall] = useState(false);
   
   const [deletePostId, setDeletePostId] = useState<string | number | null>(null);
   const [editPostData, setEditPostData] = useState<{ id: string | number, content: string } | null>(null);
@@ -1035,6 +1160,10 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
         setRefundPolicy(data.refund_policy || wlConfig?.theme?.refund_policy || 'All sales are final. No refunds are provided for digital downloads or virtual bookings. For physical merchandise, please contact the creator directly.');
         if (data.genre) setSelectedGenre(data.genre);
         if (data.sub_price != null) setSubPrice(String(data.sub_price));
+        if (data.booking_price !== undefined && data.booking_price !== null) setBookingPrice(String(data.booking_price));
+        if (data.booking_availability) setBookingAvailability(data.booking_availability);
+        if (data.sms_enabled !== undefined && data.sms_enabled !== null) setSmsEnabled(data.sms_enabled);
+        if (data.sms_phone !== undefined && data.sms_phone !== null) setSmsPhone(data.sms_phone);
         if (user) {
           // Check Supabase first (survives cache clears), localStorage as fallback
           const localSub = localStorage.getItem(`vibe_sub_${user.id}_${loadedProfileId}`) === 'true';
@@ -1121,6 +1250,18 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
 
         // Phase 2: Lazy Loaded Background Data
         const loadSecondaryData = async () => {
+          let userProfileWlId = null;
+          if (user) {
+            try {
+              const { data: userProf } = await supabase!.from('profiles').select('whitelabel_id').eq('id', user.id).maybeSingle();
+              if (userProf?.whitelabel_id) {
+                userProfileWlId = userProf.whitelabel_id;
+              }
+            } catch (err) {
+              console.warn('Failed to load user whitelabel_id for networks filter', err);
+            }
+          }
+
           let prodQuery = supabase!.from('products').select(isNetworkLevel ? '*, creator:profiles!inner(username, avatar_url, whitelabel_id)' : '*');
           if (isNetworkLevel) {
             const isMasterPlatform = !wlConfig || wlConfig.id === 'master' || wlConfig.domain === 'vibenetwork.tv' || wlConfig.domain === 'vibenetwork.com' || wlConfig.domain?.includes('vercel.app');
@@ -1135,7 +1276,20 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
           const slotsPromise = supabase!.from('available_slots').select('*').eq('creator_id', loadedProfileId).eq('is_booked', false);
 
           const pBookingsPromise = user ? supabase!.from('bookings').select('*, creator:profiles!creator_id(username, full_name, avatar_url)').eq('buyer_id', user.id) : Promise.resolve({ data: null });
-          const networksPromise = user ? supabase!.from('whitelabel_configs').select('*').eq('owner_id', user.id) : Promise.resolve({ data: null });
+          
+          let networksPromise;
+          if (user) {
+            let q = supabase!.from('whitelabel_configs').select('*');
+            if (userProfileWlId) {
+              q = q.or(`owner_id.eq.${user.id},id.eq.${userProfileWlId}`);
+            } else {
+              q = q.eq('owner_id', user.id);
+            }
+            networksPromise = q;
+          } else {
+            networksPromise = Promise.resolve({ data: null });
+          }
+
           const rBookingsPromise = (isOwn && user) ? supabase!.from('bookings').select('*, buyer:profiles!buyer_id(username, full_name, avatar_url)').eq('creator_id', user.id) : Promise.resolve({ data: null });
           const progressPromise = user ? supabase!.from('user_course_progress').select('*').eq('user_id', user.id) : Promise.resolve({ data: null });
 
@@ -1195,7 +1349,8 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
              myLocal.forEach((ln: any) => {
                 if (!combined.find(n => n.id === ln.id)) combined.push(ln);
              });
-             setMyNetworks(combined);
+             const activeOnly = combined.filter((n: any) => n.is_active !== false && n.theme?.is_active !== false);
+             setMyNetworks(activeOnly);
           }
 
           if (isOwn && user) {
@@ -1235,6 +1390,172 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
     }
     loadProfile();
   }, [user, creatorId, navigate]);
+
+  // Vibe Drive Helpers
+  const formatBytes = (bytes: number, decimals = 2) => {
+    if (!bytes) return '0 Bytes';
+    const k = 1024;
+    const dm = decimals < 0 ? 0 : decimals;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB', 'PB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
+  };
+
+  const fetchDriveFiles = async () => {
+    if (!profile?.id) return;
+    const { data, error } = await supabase!
+      .from('drive_files')
+      .select('*')
+      .eq('creator_id', profile.id)
+      .order('created_at', { ascending: false });
+    if (!error && data) {
+      setDriveFiles(data);
+    }
+  };
+
+  const handleDownloadDriveFile = async (file: any) => {
+    try {
+      const { data, error } = await supabase!
+        .storage
+        .from('vibe-drive')
+        .createSignedUrl(file.file_path, 3600);
+      
+      if (error || !data?.signedUrl) {
+        throw error || new Error("Failed to generate download URL");
+      }
+      
+      const a = document.createElement('a');
+      a.href = data.signedUrl;
+      a.download = file.name;
+      a.target = '_blank';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      toast.success(`Downloading ${file.name}...`);
+    } catch (err: any) {
+      console.error("Download error:", err);
+      toast.error(`Download failed: ${err.message || "Unauthorized"}`);
+    }
+  };
+
+  const handleDeleteDriveFile = async (file: any) => {
+    if (!window.confirm(`Are you sure you want to delete ${file.name}?`)) return;
+    
+    try {
+      const { error: storageError } = await supabase!
+        .storage
+        .from('vibe-drive')
+        .remove([file.file_path]);
+      
+      if (storageError) {
+        console.warn("Storage deletion warning:", storageError.message);
+      }
+      
+      const { error: dbError } = await supabase!
+        .from('drive_files')
+        .delete()
+        .eq('id', file.id);
+      
+      if (dbError) throw dbError;
+      
+      const newUsed = Math.max(0, (profile?.storage_used_bytes || 0) - file.size_bytes);
+      await supabase!
+        .from('profiles')
+        .update({ storage_used_bytes: newUsed })
+        .eq('id', profile.id);
+      
+      setProfile((prev: any) => prev ? { ...prev, storage_used_bytes: newUsed } : null);
+      
+      toast.success("File deleted successfully");
+      fetchDriveFiles();
+    } catch (err: any) {
+      console.error("Delete error:", err);
+      toast.error(`Failed to delete file: ${err.message}`);
+    }
+  };
+
+  const handleUploadDriveFile = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!driveUploadFile || !profile?.id) return;
+    
+    const fileSize = driveUploadFile.size;
+    const currentUsed = profile.storage_used_bytes || 0;
+    const limit = profile.storage_limit_bytes || 10737418240; // 10 GB
+    
+    if (currentUsed + fileSize > limit) {
+      toast.error("Upload blocked: This file exceeds your storage limit. Please upgrade your plan!");
+      return;
+    }
+    
+    setUploadingDriveFile(true);
+    
+    try {
+      const fileExt = driveUploadFile.name.split('.').pop() || 'bin';
+      const fileId = crypto.randomUUID();
+      const sanitizedName = driveUploadName.trim() || driveUploadFile.name;
+      const dbFileName = sanitizedName.endsWith('.' + fileExt) ? sanitizedName : `${sanitizedName}.${fileExt}`;
+      const filePath = `${profile.id}/${fileId}.${fileExt}`;
+      
+      const { error: uploadError } = await supabase!
+        .storage
+        .from('vibe-drive')
+        .upload(filePath, driveUploadFile, {
+          cacheControl: '3600',
+          upsert: false
+        });
+      
+      if (uploadError) throw uploadError;
+      
+      let catType = 'other';
+      const mime = driveUploadFile.type.toLowerCase();
+      if (mime.startsWith('image/')) catType = 'image';
+      else if (mime.startsWith('video/')) catType = 'video';
+      else if (mime.startsWith('audio/')) catType = 'audio';
+      else if (mime.includes('pdf')) catType = 'pdf';
+      else if (mime.includes('zip') || mime.includes('tar') || mime.includes('rar')) catType = 'archive';
+      else if (mime.includes('text') || mime.includes('word') || mime.includes('excel') || mime.includes('powerpoint')) catType = 'document';
+      
+      const { error: dbError } = await supabase!
+        .from('drive_files')
+        .insert({
+          id: fileId,
+          name: dbFileName,
+          file_path: filePath,
+          file_type: catType,
+          size_bytes: fileSize,
+          creator_id: profile.id,
+          whitelabel_id: (!wlConfig || wlConfig.id === 'master') ? null : wlConfig.id,
+          access_level: driveUploadAccessLevel
+        });
+      
+      if (dbError) throw dbError;
+      
+      const newUsed = currentUsed + fileSize;
+      await supabase!
+        .from('profiles')
+        .update({ storage_used_bytes: newUsed })
+        .eq('id', profile.id);
+      
+      setProfile((prev: any) => prev ? { ...prev, storage_used_bytes: newUsed } : null);
+      
+      toast.success("File uploaded successfully!");
+      setShowDriveUploadModal(false);
+      setDriveUploadFile(null);
+      setDriveUploadName('');
+      fetchDriveFiles();
+    } catch (err: any) {
+      console.error("Upload error:", err);
+      toast.error(`Upload failed: ${err.message}`);
+    } finally {
+      setUploadingDriveFile(false);
+    }
+  };
+
+  useEffect(() => {
+    if (activeTab === 'flipbook' && profile?.id) {
+      fetchDriveFiles();
+    }
+  }, [activeTab, profile?.id]);
 
   if (loading) return <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-primary)' }}>Loading Profile...</div>;
   const isGuestInvite = new URLSearchParams(location.search).get('guest_invite') === 'true';
@@ -1383,6 +1704,52 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
         toast.warning('Note: Custom branding and refund policy could not be synced.');
       }
     }
+  };
+
+  const saveBookingSettings = async () => {
+    setSaving(true);
+    try {
+      const { error } = await supabase!.from('profiles').update({
+        booking_price: Number(bookingPrice),
+        booking_availability: bookingAvailability,
+        sms_enabled: smsEnabled,
+        sms_phone: smsPhone
+      }).eq('id', user.id);
+
+      if (error) {
+        toast.error(`Failed to save booking settings: ${error.message}`);
+      } else {
+        toast.success("Booking settings saved successfully!");
+      }
+    } catch (err: any) {
+      toast.error(err.message || "Failed to save booking settings");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const getScheduledAtISO = (slotDate: number, slotTime: string): string => {
+    const now = new Date();
+    let year = now.getFullYear();
+    let month = now.getMonth(); // 0-indexed
+    
+    // If the slot date is less than today's date, it must be for next month!
+    if (slotDate < now.getDate()) {
+      month += 1;
+      if (month > 11) {
+        month = 0;
+        year += 1;
+      }
+    }
+
+    // Parse time: "10:00 AM" or "2:30 PM"
+    const [timePart, ampm] = slotTime.split(' ');
+    let [hours, minutes] = timePart.split(':').map(Number);
+    if (ampm === 'PM' && hours < 12) hours += 12;
+    if (ampm === 'AM' && hours === 12) hours = 0;
+
+    const scheduledDate = new Date(year, month, slotDate, hours, minutes, 0);
+    return scheduledDate.toISOString();
   };
 
   const handleProductImageUpload = async (eventOrFile: React.ChangeEvent<HTMLInputElement> | File) => {
@@ -2927,7 +3294,7 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
                   ...(wlConfig?.enableBooking !== false ? [{ id: 'booking', label: 'Booking', icon: <Calendar size={16} /> }] : []),
                   { id: 'series', label: 'Episodes', icon: <Video size={16} /> },
                   { id: 'courses', label: 'Sessions', icon: <CheckCircle size={16} /> },
-                  { id: 'flipbook', label: 'Flip Book', icon: <ImageIcon size={16} /> }
+                  ...(isOwnProfile && viewMode === 'edit' ? [{ id: 'flipbook', label: 'Vibe Drive', icon: <Folder size={16} /> }] : [])
                 ]
                   .concat(isNetworkLevel ? [
                     { id: 'members', label: 'Network Profiles', icon: <Monitor size={16} /> },
@@ -3827,260 +4194,976 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
           />
         )}
 
-        {activeTab === 'booking' && (
-        /* ----------- BOOKING TAB ----------- */
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-            <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} style={{ background: 'rgba(255,255,255,0.02)', borderRadius: '24px', padding: '40px', border: '1px solid rgba(255,255,255,0.05)' }}>
-              <h3 style={{ margin: '0 0 10px 0', fontSize: '28px' }}>Book {profile?.username || 'this Creator'}</h3>
-              <p style={{ color: 'var(--text-secondary)', margin: '0 0 40px 0', fontSize: '16px' }}>Schedule a 1-on-1 session, studio consultation, or collaboration meeting.</p>
-              
-              {isOwnProfile && viewMode === 'edit' && (
-                <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} style={{ background: 'rgba(255,255,255,0.03)', padding: '24px', borderRadius: '24px', border: '1px dashed rgba(255,255,255,0.15)', marginBottom: '30px' }}>
-                  <h3 style={{ margin: '0 0 16px 0', fontSize: '18px', display: 'flex', alignItems: 'center', gap: '8px' }}>Creator Booking Settings</h3>
-                  <div style={{ display: 'flex', gap: '16px', alignItems: 'center', flexWrap: 'wrap' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px', overflow: 'hidden' }}>
-                      <span style={{ padding: '14px', color: 'var(--text-muted)', background: 'rgba(255,255,255,0.02)', borderRight: '1px solid rgba(255,255,255,0.1)' }}>Hourly Rate ($)</span>
-                      <input type="number" step="0.01" value={bookingPrice} onChange={e => setBookingPrice(e.target.value)} style={{ background: 'transparent', border: 'none', padding: '14px', color: 'var(--text-primary)', outline: 'none', fontSize: '15px', width: '120px' }} />
-                    </div>
-                    <p style={{ color: 'var(--text-secondary)', marginBottom: '24px', fontSize: '14px', lineHeight: 1.6 }}>Host secure, high-definition virtual calls directly from your enterprise dashboard.</p>
-                    <button onClick={() => window.location.href = `/call/room_${profile?.id || 'demo'}${window.location.search}`} style={{ padding: '12px 24px', background: 'rgba(138,43,226,0.2)', color: 'var(--text-primary)', border: '1px solid #8A2BE2', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold' }}>Enter Virtual Room</button>
-                  </div>
-                </motion.div>
-              )}
+        {activeTab === 'booking' && (() => {
+          // Dynamic calendar calculations
+          const now = new Date();
+          const todayDate = now.getDate();
+          const currentMonth = now.getMonth();
+          const currentYear = now.getFullYear();
 
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '40px' }}>
-                {/* Calendar View */}
-                <div>
-                  <h4 style={{ margin: '0 0 20px 0', color: 'var(--text-primary)', fontSize: '18px' }}>1. Select a Date ({new Date().toLocaleString('default', { month: 'long' })})</h4>
-                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: '10px', textAlign: 'center' }}>
-                    {['Sun','Mon','Tue','Wed','Thu','Fri','Sat'].map((day, i) => (
-                      <div key={i} style={{ color: 'var(--text-muted)', fontSize: '12px', fontWeight: 'bold', padding: '10px 0', textTransform: 'uppercase' }}>{day}</div>
-                    ))}
-                    {/* Add blank spaces for offset */}
-                    <div /> <div /> <div /> 
-                    {Array.from({length: 30}).map((_, i) => {
-                      const date = i + 1;
-                      const isPast = date < 15;
-                      const isAvailable = availableSlots[date] && availableSlots[date].length > 0;
-                      const isSelected = selectedDate === date;
-                      
-                      // If standard user, disable if no slots or past
-                      // If creator editing, they can select any future date to add slots
-                      const disabled = (viewMode !== 'edit' && (!isAvailable || isPast)) || (viewMode === 'edit' && isPast);
+          const displayYear = calendarMonthOffset === 0 ? currentYear : (currentMonth === 11 ? currentYear + 1 : currentYear);
+          const displayMonth = calendarMonthOffset === 0 ? currentMonth : (currentMonth === 11 ? 0 : currentMonth + 1);
+          
+          const displayMonthDateObj = new Date(displayYear, displayMonth, 1);
+          const displayMonthName = displayMonthDateObj.toLocaleString('default', { month: 'long' });
+          const displayYearName = displayMonthDateObj.getFullYear();
+          const firstDayIndex = displayMonthDateObj.getDay(); // 0 = Sun, 1 = Mon ...
+          const totalDaysInDisplayMonth = new Date(displayYear, displayMonth + 1, 0).getDate();
+          const totalDaysInCurrentMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
 
-                      return (
-                        <button 
-                          key={i} 
-                          disabled={disabled}
-                          onClick={() => { setSelectedDate(date); setSelectedTime(null); }}
-                          style={{ 
-                            aspectRatio: '1', borderRadius: '12px', border: '1px solid',
-                            borderColor: isSelected ? '#ff4d85' : (isAvailable && !isPast) ? 'rgba(0, 255, 136, 0.3)' : 'rgba(255,255,255,0.05)',
-                            background: isSelected ? 'rgba(255,77,133,0.1)' : (isAvailable && !isPast) ? 'rgba(0, 255, 136, 0.05)' : 'rgba(0,0,0,0.3)',
-                            color: disabled ? '#444' : '#fff',
-                            cursor: disabled ? 'not-allowed' : 'pointer',
-                            fontSize: '15px', fontWeight: 'bold', transition: 'all 0.2s',
-                          }}
-                        >
-                          {date}
-                        </button>
-                      )
-                    })}
-                  </div>
+          const maxDaysInNextMonth = 30 - (totalDaysInCurrentMonth - todayDate + 1);
+
+          const isDayDisabled = (day: number) => {
+            if (viewMode === 'edit') {
+              if (calendarMonthOffset === 0) {
+                return day < todayDate;
+              } else {
+                return day > maxDaysInNextMonth;
+              }
+            } else {
+              if (calendarMonthOffset === 0) {
+                if (day < todayDate) return true;
+              } else {
+                if (day > maxDaysInNextMonth) return true;
+              }
+              const isAvailable = availableSlots[day] && availableSlots[day].length > 0;
+              return !isAvailable;
+            }
+          };
+
+          const isDaySelected = (day: number) => {
+            return selectedDate === day && selectedMonthOffset === calendarMonthOffset;
+          };
+
+          const isDayAvailable = (day: number) => {
+            return availableSlots[day] && availableSlots[day].length > 0;
+          };
+
+          const weekdays = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+          
+          const daysGrid = [];
+          for (let s = 0; s < firstDayIndex; s++) {
+            daysGrid.push(<div key={`empty-${s}`} />);
+          }
+          
+          for (let d = 1; d <= totalDaysInDisplayMonth; d++) {
+            const disabled = isDayDisabled(d);
+            const selected = isDaySelected(d);
+            const available = isDayAvailable(d);
+            
+            daysGrid.push(
+              <button
+                key={`day-${d}`}
+                disabled={disabled}
+                onClick={() => {
+                  setSelectedDate(d);
+                  setSelectedMonthOffset(calendarMonthOffset);
+                  setSelectedTime(null);
+                }}
+                style={{
+                  aspectRatio: '1',
+                  borderRadius: '50%',
+                  border: selected
+                    ? `2.5px solid ${wlConfig?.accent || '#00ff88'}`
+                    : available && !disabled
+                    ? `1px solid ${(wlConfig?.accent || '#00ff88')}66`
+                    : '1px solid rgba(255,255,255,0.05)',
+                  background: selected
+                    ? `${wlConfig?.accent || '#00ff88'}22`
+                    : available && !disabled
+                    ? `${wlConfig?.accent || '#00ff88'}0c`
+                    : 'rgba(255,255,255,0.01)',
+                  color: selected
+                    ? '#fff'
+                    : disabled
+                    ? 'rgba(255,255,255,0.15)'
+                    : available
+                    ? (wlConfig?.accent || '#00ff88')
+                    : '#fff',
+                  cursor: disabled ? 'not-allowed' : 'pointer',
+                  fontSize: '14px',
+                  fontWeight: selected || available ? 'bold' : 'normal',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  position: 'relative',
+                  transition: 'all 0.2s ease',
+                  boxShadow: selected ? `0 0 12px ${wlConfig?.accent || '#00ff88'}33` : 'none',
+                }}
+                onMouseOver={(e) => {
+                  if (!disabled && !selected) {
+                    e.currentTarget.style.borderColor = wlConfig?.accent || '#00ff88';
+                    e.currentTarget.style.background = 'rgba(255, 255, 255, 0.05)';
+                  }
+                }}
+                onMouseOut={(e) => {
+                  if (!disabled && !selected) {
+                    e.currentTarget.style.borderColor = available ? `${wlConfig?.accent || '#00ff88'}66` : 'rgba(255, 255, 255, 0.05)';
+                    e.currentTarget.style.background = available ? `${wlConfig?.accent || '#00ff88'}0c` : 'rgba(255, 255, 255, 0.01)';
+                  }
+                }}
+              >
+                {d}
+                {available && !disabled && (
+                  <span style={{
+                    position: 'absolute',
+                    bottom: '4px',
+                    width: '4px',
+                    height: '4px',
+                    borderRadius: '50%',
+                    background: wlConfig?.accent || '#00ff88',
+                    boxShadow: `0 0 4px ${wlConfig?.accent || '#00ff88'}`
+                  }} />
+                )}
+              </button>
+            );
+          }
+
+          const directMeetingLink = `${window.location.origin}/call/room_${profile?.id || 'demo'}${window.location.search}`;
+
+          return (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '30px' }}>
+              <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} style={{ background: 'rgba(255,255,255,0.01)', borderRadius: '24px', padding: '30px', border: '1px solid rgba(255,255,255,0.04)', backdropFilter: 'blur(20px)' }}>
+                
+                {/* Dashboard Header */}
+                <div style={{ borderBottom: '1px solid rgba(255,255,255,0.06)', paddingBottom: '24px', marginBottom: '30px' }}>
+                  <h3 style={{ margin: '0 0 8px 0', fontSize: '32px', fontWeight: 800, background: 'linear-gradient(90deg, #fff, var(--text-muted))', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', display: 'flex', alignItems: 'center', gap: '12px' }}>
+                    <Calendar size={32} color={wlConfig?.accent || '#00ff88'} /> Book {profile?.username || 'this Creator'}
+                  </h3>
+                  <p style={{ color: 'var(--text-secondary)', margin: 0, fontSize: '15px' }}>Schedule a 1-on-1 session, studio consultation, or collaboration meeting.</p>
                 </div>
 
-                {/* Time Selection & Editing */}
-                <div style={{ opacity: selectedDate ? 1 : 0.4, pointerEvents: selectedDate ? 'auto' : 'none', transition: 'all 0.3s' }}>
-                  <h4 style={{ margin: '0 0 20px 0', color: 'var(--text-primary)', fontSize: '18px' }}>2. Available Times</h4>
-                  
-                  {isOwnProfile && viewMode === 'edit' && selectedDate ? (
-                    <div style={{ marginBottom: '24px', padding: '16px', background: 'rgba(255,255,255,0.02)', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.05)' }}>
-                      <h5 style={{ margin: '0 0 12px 0', fontSize: '14px', color: 'var(--text-secondary)' }}>Add Timeslot for {new Date().toLocaleString('default', { month: 'long' })} {selectedDate}</h5>
-                      <div style={{ display: 'flex', gap: '8px' }}>
-                        <input type="time" value={newTimeInput} onChange={e => setNewTimeInput(e.target.value)} style={{ flex: 1, background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.1)', padding: '10px', borderRadius: '8px', color: 'var(--text-primary)', outline: 'none' }} />
-                        <button 
-                          onClick={async () => {
-                            if (!newTimeInput) return;
-                            // Convert 24h to 12h AM/PM
-                            const [h, m] = newTimeInput.split(':');
-                            let hour = parseInt(h);
-                            const ampm = hour >= 12 ? 'PM' : 'AM';
-                            hour = hour % 12 || 12;
-                            const timeString = `${hour}:${m} ${ampm}`;
-                            
-                            try {
-                              const { error } = await supabase!.from('available_slots').insert({
-                                creator_id: targetProfileId,
-                                date: selectedDate,
-                                time: timeString
-                              });
-                              
-                              if (error) {
-                                if (error.code === '23505') {
-                                  toast.error('This timeslot is already added.');
-                                } else {
-                                  toast.error(`Error adding timeslot: ${error.message}`);
-                                }
-                                return;
-                              }
-                              
-                              setAvailableSlots(prev => {
-                                const current = prev[selectedDate] || [];
-                                if (!current.includes(timeString)) return { ...prev, [selectedDate]: [...current, timeString].sort() };
-                                return prev;
-                              });
-                              toast.success('Timeslot added successfully!');
-                            } catch (err: any) {
-                              toast.error(err.message || 'Failed to add timeslot');
-                            }
-                            setNewTimeInput('');
-                          }}
-                          style={{ padding: '10px 20px', background: 'rgba(255,255,255,0.1)', color: 'var(--text-primary)', border: 'none', borderRadius: '8px', fontWeight: 'bold', cursor: 'pointer' }}
-                        >
-                          Add
-                        </button>
+                {/* Creator Booking Settings Panel */}
+                {isOwnProfile && viewMode === 'edit' && (
+                  <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} style={{ background: 'rgba(255,255,255,0.01)', padding: '28px', borderRadius: '24px', border: '1px solid rgba(255,255,255,0.08)', marginBottom: '30px', backdropFilter: 'blur(20px)' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '16px', borderBottom: '1px solid rgba(255,255,255,0.06)', paddingBottom: '20px', marginBottom: '24px' }}>
+                      <div>
+                        <h4 style={{ margin: '0 0 4px 0', fontSize: '18px', display: 'flex', alignItems: 'center', gap: '8px', color: wlConfig?.accent || '#00ff88', fontWeight: 'bold' }}>
+                          <Settings size={20} /> Creator Booking Settings
+                        </h4>
+                        <p style={{ color: 'var(--text-muted)', margin: 0, fontSize: '13px' }}>Configure template weekly hours, pricing rates, and SMS notification alerts.</p>
                       </div>
                     </div>
-                  ) : null}
 
-                  {selectedDate && availableSlots[selectedDate]?.length > 0 ? (
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
-                      {availableSlots[selectedDate].map(time => (
-                        <div key={time} style={{ display: 'flex', gap: '4px' }}>
-                          <button 
-                            onClick={() => setSelectedTime(time)}
-                            style={{ flex: 1, padding: '16px', borderRadius: '12px', border: '1px solid', borderColor: selectedTime === time ? '#8A2BE2' : 'rgba(255,255,255,0.05)', background: selectedTime === time ? 'rgba(138,43,226,0.1)' : 'rgba(0,0,0,0.4)', color: 'var(--text-primary)', fontSize: '15px', fontWeight: 'bold', cursor: 'pointer', transition: 'all 0.2s' }}
-                          >
-                            {time}
-                          </button>
-                          {isOwnProfile && viewMode === 'edit' && (
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '24px', marginBottom: '24px' }}>
+                      {/* Left Block: Price & Call Link */}
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                        <BookingRateInput 
+                          value={bookingPrice} 
+                          onChange={setBookingPrice} 
+                          accent={wlConfig?.accent} 
+                        />
+
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                          <span style={{ fontSize: '13px', fontWeight: 'bold', color: '#ccc' }}>Virtual Meeting Room Link</span>
+                          <div style={{ display: 'flex', background: 'rgba(0,0,0,0.4)', border: '1.5px solid rgba(255,255,255,0.08)', borderRadius: '12px', overflow: 'hidden', alignItems: 'center' }}>
+                            <input type="text" readOnly value={directMeetingLink} style={{ background: 'transparent', border: 'none', padding: '12px 14px', color: 'var(--text-muted)', outline: 'none', fontSize: '13px', flex: 1 }} />
                             <button 
-                              onClick={async () => {
-                                try {
-                                  const { error } = await supabase!
-                                    .from('available_slots')
-                                    .delete()
-                                    .match({
-                                      creator_id: targetProfileId,
-                                      date: selectedDate,
-                                      time: time
-                                    });
-
-                                  if (error) {
-                                    toast.error(`Error removing timeslot: ${error.message}`);
-                                    return;
-                                  }
-
-                                  setAvailableSlots(prev => ({
-                                    ...prev,
-                                    [selectedDate!]: prev[selectedDate!].filter(t => t !== time)
-                                  }));
-                                  if (selectedTime === time) setSelectedTime(null);
-                                  toast.success('Timeslot removed successfully!');
-                                } catch (err: any) {
-                                  toast.error(err.message || 'Failed to remove timeslot');
-                                }
+                              onClick={() => {
+                                navigator.clipboard.writeText(directMeetingLink);
+                                toast.success("Meeting link copied to clipboard!");
+                              }} 
+                              style={{
+                                padding: '12px 16px',
+                                background: 'rgba(255,255,255,0.04)',
+                                color: '#fff',
+                                border: 'none',
+                                borderLeft: '1px solid rgba(255,255,255,0.08)',
+                                cursor: 'pointer',
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '6px',
+                                fontSize: '13px',
+                                fontWeight: 'bold',
+                                transition: 'all 0.2s ease'
                               }}
-                              style={{ background: 'rgba(255,0,0,0.1)', color: '#ff4d4d', border: '1px solid rgba(255,0,0,0.2)', borderRadius: '12px', padding: '0 12px', cursor: 'pointer' }}
+                              onMouseOver={e => e.currentTarget.style.background = 'rgba(255,255,255,0.1)'}
+                              onMouseOut={e => e.currentTarget.style.background = 'rgba(255,255,255,0.04)'}
                             >
-                              X
+                              <Copy size={14} /> Copy
                             </button>
-                          )}
-                        </div>
-                      ))}
-                    </div>
-                  ) : (
-                    <p style={{ color: 'var(--text-muted)', fontStyle: 'italic' }}>No times available on this date.</p>
-                  )}
-
-                  {/* Payment/Confirmation section (Only for Guests) */}
-                  {selectedTime && (!isOwnProfile || viewMode !== 'edit') && (
-                    <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} style={{ marginTop: '30px', background: 'rgba(0,0,0,0.4)', padding: '24px', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.05)' }}>
-                      <h4 style={{ margin: '0 0 16px 0', color: 'var(--text-primary)', fontSize: '18px' }}>3. Confirm Booking</h4>
-                      
-                      <div style={{ display: 'flex', gap: '10px', marginBottom: '20px' }}>
-                         <button onClick={() => setBookingType('virtual')} style={{ flex: 1, padding: '12px', background: bookingType === 'virtual' ? 'rgba(138,43,226,0.2)' : 'rgba(255,255,255,0.05)', border: '1px solid', borderColor: bookingType === 'virtual' ? '#8A2BE2' : 'transparent', color: bookingType === 'virtual' ? '#fff' : '#aaa', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold', transition: 'all 0.2s' }}>
-                            💻 Virtual Call (Vibe)
-                         </button>
-                         <button onClick={() => setBookingType('physical')} style={{ flex: 1, padding: '12px', background: bookingType === 'physical' ? 'rgba(0,255,136,0.1)' : 'rgba(255,255,255,0.05)', border: '1px solid', borderColor: bookingType === 'physical' ? '#00ff88' : 'transparent', color: bookingType === 'physical' ? '#fff' : '#aaa', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold', transition: 'all 0.2s' }}>
-                            🤝 Physical Meeting
-                         </button>
-                      </div>
-
-                      {bookingType === 'virtual' && (
-                          <div style={{ display: 'flex', gap: '10px', marginBottom: '20px' }}>
-                             <button onClick={() => setVirtualCallType('video')} style={{ flex: 1, padding: '10px', background: virtualCallType === 'video' ? 'rgba(255,77,133,0.2)' : 'rgba(255,255,255,0.05)', border: '1px solid', borderColor: virtualCallType === 'video' ? '#ff4d85' : 'transparent', color: virtualCallType === 'video' ? '#fff' : '#aaa', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold', transition: 'all 0.2s', fontSize: '14px' }}>
-                                📹 Video Call
-                             </button>
-                             <button onClick={() => setVirtualCallType('audio')} style={{ flex: 1, padding: '10px', background: virtualCallType === 'audio' ? 'rgba(0,170,255,0.2)' : 'rgba(255,255,255,0.05)', border: '1px solid', borderColor: virtualCallType === 'audio' ? '#00aaff' : 'transparent', color: virtualCallType === 'audio' ? '#fff' : '#aaa', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold', transition: 'all 0.2s', fontSize: '14px' }}>
-                                🎙️ Audio Only
-                             </button>
                           </div>
-                      )}
-
-                      <div style={{ display: 'flex', gap: '10px', marginBottom: '12px' }}>
-                        <div style={{ flex: 1, position: 'relative' }}>
-                          <select value={bookingDuration} onChange={e => setBookingDuration(Number(e.target.value))} style={{ width: '100%', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', padding: '14px', borderRadius: '8px', color: 'var(--text-primary)', outline: 'none', appearance: 'none', fontSize: '15px' }}>
-                            <option value={1}>1 Hour Duration</option>
-                            <option value={2}>2 Hours Duration</option>
-                            <option value={3}>3 Hours Duration</option>
-                            <option value={4}>4 Hours Duration</option>
-                            <option value={8}>8 Hours (Full Day)</option>
-                          </select>
-                          <div style={{ position: 'absolute', right: '14px', top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none', color: 'var(--text-muted)' }}>▼</div>
                         </div>
                       </div>
-                      <input type="text" placeholder="Your Name" style={{ width: '100%', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', padding: '14px', borderRadius: '8px', color: 'var(--text-primary)', marginBottom: '12px', outline: 'none' }} />
-                      <input type="text" placeholder="Purpose of Meeting (e.g. Mixing Advice)" style={{ width: '100%', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', padding: '14px', borderRadius: '8px', color: 'var(--text-primary)', marginBottom: '20px', outline: 'none' }} />
-                      <button onClick={async () => { 
-                        const monthName = new Date().toLocaleString('default', { month: 'long' });
-                        const slotDate = selectedDate;
-                        const slotTime = selectedTime;
-                        if (!slotDate || !slotTime) return;
 
-                        try {
-                          const { error } = await supabase!
-                            .from('available_slots')
-                            .update({ is_booked: true })
-                            .match({
-                              creator_id: targetProfileId,
-                              date: slotDate,
-                              time: slotTime
-                            });
+                      {/* Right Block: SMS Notifications */}
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', background: 'rgba(255,255,255,0.01)', padding: '24px', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.05)', justifyContent: 'center' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                          <h5 style={{ margin: 0, fontSize: '14px', color: wlConfig?.accent || '#00ff88', display: 'flex', alignItems: 'center', gap: '8px', fontWeight: 'bold' }}>
+                            💬 SMS Alerts & Notifications
+                          </h5>
+                          <input type="checkbox" checked={smsEnabled} onChange={e => setSmsEnabled(e.target.checked)} style={{ width: '36px', height: '18px', cursor: 'pointer', accentColor: wlConfig?.accent || '#00ff88' }} />
+                        </div>
+                        <p style={{ color: 'var(--text-muted)', margin: 0, fontSize: '12px', lineHeight: 1.4 }}>Receive automated reminders and booking confirmations straight to your phone.</p>
+                        
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                          <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>Mobile Phone Number (e.g. +11234567890)</span>
+                          <input type="tel" placeholder="+11234567890" value={smsPhone} onChange={e => setSmsPhone(e.target.value)} disabled={!smsEnabled} style={{ background: 'rgba(0,0,0,0.4)', border: '1px solid rgba(255,255,255,0.08)', padding: '12px', borderRadius: '10px', color: 'var(--text-primary)', outline: 'none', fontSize: '13px', opacity: smsEnabled ? 1 : 0.5, transition: 'all 0.2s' }} />
+                        </div>
+                      </div>
+                    </div>
 
-                          if (error) {
-                            console.error("Error setting slot is_booked:", error);
-                          } else {
-                            // Update local state to remove the booked slot
-                            setAvailableSlots(prev => ({
-                              ...prev,
-                              [slotDate]: (prev[slotDate] || []).filter(t => t !== slotTime)
-                            }));
+                    {/* Weekly availability template */}
+                    <div style={{ marginBottom: '28px' }}>
+                      <h5 style={{ margin: '0 0 16px 0', fontSize: '14px', color: '#ccc', fontWeight: 'bold' }}>Weekly Working Hours (Template)</h5>
+                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '14px' }}>
+                        {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map(day => {
+                          const dayConfig = bookingAvailability[day] || { start: '09:00', end: '17:00', active: false };
+                          const isActive = !!dayConfig.active;
+                          return (
+                            <div key={day} style={{ background: isActive ? `${wlConfig?.accent || '#00ff88'}08` : 'rgba(0,0,0,0.3)', padding: '14px 18px', borderRadius: '14px', border: '1.5px solid', borderColor: isActive ? (wlConfig?.accent || '#00ff88') : 'rgba(255,255,255,0.05)', display: 'flex', flexDirection: 'column', gap: '10px', transition: 'all 0.25s ease', boxShadow: isActive ? `0 4px 15px ${wlConfig?.accent || '#00ff88'}0c` : 'none' }}>
+                              <label style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer', fontWeight: 'bold', fontSize: '14px', color: isActive ? '#fff' : '#aaa' }}>
+                                <input type="checkbox" checked={isActive} onChange={e => {
+                                  setBookingAvailability(prev => ({
+                                    ...prev,
+                                    [day]: { ...dayConfig, active: e.target.checked }
+                                  }));
+                                }} style={{ width: '18px', height: '18px', accentColor: wlConfig?.accent || '#00ff88', cursor: 'pointer' }} />
+                                {day}
+                              </label>
+                              
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '6px', opacity: isActive ? 1 : 0.3, pointerEvents: isActive ? 'auto' : 'none', transition: 'opacity 0.2s' }}>
+                                <input type="time" value={dayConfig.start || '09:00'} onChange={e => {
+                                  setBookingAvailability(prev => ({
+                                    ...prev,
+                                    [day]: { ...dayConfig, start: e.target.value }
+                                  }));
+                                }} style={{ flex: 1, background: 'rgba(0,0,0,0.4)', border: '1px solid rgba(255,255,255,0.08)', padding: '6px 8px', borderRadius: '8px', color: '#fff', fontSize: '12px', outline: 'none', textAlign: 'center' }} />
+                                <span style={{ color: 'var(--text-muted)', fontSize: '12px' }}>to</span>
+                                <input type="time" value={dayConfig.end || '17:00'} onChange={e => {
+                                  setBookingAvailability(prev => ({
+                                    ...prev,
+                                    [day]: { ...dayConfig, end: e.target.value }
+                                  }));
+                                }} style={{ flex: 1, background: 'rgba(0,0,0,0.4)', border: '1px solid rgba(255,255,255,0.08)', padding: '6px 8px', borderRadius: '8px', color: '#fff', fontSize: '12px', outline: 'none', textAlign: 'center' }} />
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+
+                    {/* Settings Action Buttons */}
+                    <div style={{ display: 'flex', gap: '14px', justifyContent: 'flex-end', flexWrap: 'wrap' }}>
+                      <button 
+                        onClick={async () => {
+                          setSaving(true);
+                          try {
+                            const today = new Date();
+                            const slotsToInsert = [];
+                            
+                            const { error: deleteError } = await supabase!
+                              .from('available_slots')
+                              .delete()
+                              .eq('creator_id', user.id)
+                              .eq('is_booked', false);
+                              
+                            if (deleteError) {
+                              throw new Error(`Failed to clear old slots: ${deleteError.message}`);
+                            }
+
+                            for (let offset = 0; offset < 30; offset++) {
+                              const currentTarget = new Date();
+                              currentTarget.setDate(today.getDate() + offset);
+                              const dayName = currentTarget.toLocaleString('default', { weekday: 'short' });
+                              const dayConfig = bookingAvailability[dayName];
+                              
+                              if (dayConfig && dayConfig.active) {
+                                const dateVal = currentTarget.getDate();
+                                const [startH, startM] = dayConfig.start.split(':').map(Number);
+                                const [endH, endM] = dayConfig.end.split(':').map(Number);
+                                
+                                let currentHour = startH;
+                                while (currentHour < endH) {
+                                  const ampm = currentHour >= 12 ? 'PM' : 'AM';
+                                  const displayHour = currentHour % 12 || 12;
+                                  const timeStr = `${displayHour}:00 ${ampm}`;
+                                  
+                                  slotsToInsert.push({
+                                    creator_id: user.id,
+                                    date: dateVal,
+                                    time: timeStr,
+                                    is_booked: false
+                                  });
+                                  currentHour += 1;
+                                }
+                              }
+                            }
+                            
+                            if (slotsToInsert.length === 0) {
+                              toast.info("No active days configured in availability template. No slots generated.");
+                              return;
+                            }
+
+                            const { error: insertError } = await supabase!
+                              .from('available_slots')
+                              .insert(slotsToInsert);
+
+                            if (insertError) {
+                              throw new Error(`Bulk insert failed: ${insertError.message}`);
+                            }
+
+                            const { data: refreshedSlots } = await supabase!
+                              .from('available_slots')
+                              .select('*')
+                              .eq('creator_id', user.id)
+                              .eq('is_booked', false);
+                              
+                            const refreshedMap: Record<number, string[]> = {};
+                            if (refreshedSlots) {
+                              refreshedSlots.forEach((slot: any) => {
+                                const day = slot.date;
+                                refreshedMap[day] = refreshedMap[day] || [];
+                                refreshedMap[day].push(slot.time);
+                              });
+                              Object.keys(refreshedMap).forEach((day: any) => {
+                                refreshedMap[day].sort();
+                              });
+                            }
+                            setAvailableSlots(refreshedMap);
+                            toast.success(`Successfully generated ${slotsToInsert.length} availability slots for the next 30 days!`);
+                          } catch (err: any) {
+                            console.error("Slot generation error:", err);
+                            toast.error(err.message || "Failed to generate slots");
+                          } finally {
+                            setSaving(false);
                           }
-                        } catch (err) {
-                          console.error("Booking db error:", err);
-                        }
-
-                        handleStripeCheckout(`${bookingType === 'virtual' ? `1-on-1 Virtual Call (${virtualCallType === 'video' ? 'Video' : 'Audio'})` : 'Physical Meeting'} (${monthName} ${slotDate} at ${slotTime}) - ${bookingDuration} Hour(s)`, Number(bookingPrice) * bookingDuration, { is_booking: true, date: `${monthName} ${slotDate}`, time: slotTime, duration: bookingDuration, meeting_type: bookingType === 'virtual' ? `virtual_${virtualCallType}` : 'physical' }); 
-                        setSelectedTime(null); 
-                        setSelectedDate(null); 
-                      }} style={{ width: '100%', padding: '16px', background: 'linear-gradient(135deg, #ff4d85, #8A2BE2)', color: 'var(--text-primary)', border: 'none', borderRadius: '12px', fontWeight: 'bold', fontSize: '16px', cursor: 'pointer', boxShadow: '0 10px 20px rgba(138,43,226,0.3)', transition: 'transform 0.2s' }} onMouseOver={e=>e.currentTarget.style.transform='scale(1.02)'} onMouseOut={e=>e.currentTarget.style.transform='scale(1)'}>
-                        Book Now (${(Number(bookingPrice) * bookingDuration).toFixed(2)})
+                        }}
+                        style={{ padding: '12px 20px', background: 'rgba(255,255,255,0.04)', color: '#fff', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '12px', cursor: 'pointer', fontWeight: 'bold', fontSize: '13px', transition: 'all 0.2s' }}
+                        onMouseOver={e=>e.currentTarget.style.background='rgba(255,255,255,0.08)'}
+                        onMouseOut={e=>e.currentTarget.style.background='rgba(255,255,255,0.04)'}
+                      >
+                        🔄 Generate Slots (Next 30 Days)
                       </button>
                       
-                      {/* Booking Refund Policy Disclaimer */}
-                      <div style={{ marginTop: '20px', padding: '12px', background: 'rgba(255,255,255,0.02)', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.05)' }}>
-                        <p style={{ margin: 0, fontSize: '12px', color: 'var(--text-muted)', fontStyle: 'italic', textAlign: 'center' }}>
-                          🛡️ Refund Policy: {refundPolicy || 'All bookings are final. Rescheduling must be requested at least 24 hours in advance.'}
-                        </p>
+                      <button 
+                        onClick={saveBookingSettings}
+                        style={{ padding: '12px 24px', background: `linear-gradient(135deg, ${wlConfig?.accent || '#00ff88'}, #8A2BE2)`, color: '#fff', border: 'none', borderRadius: '12px', cursor: 'pointer', fontWeight: 'bold', fontSize: '13px', boxShadow: '0 4px 15px rgba(138,43,226,0.25)', transition: 'all 0.2s' }}
+                        onMouseOver={e=>e.currentTarget.style.opacity='0.9'}
+                        onMouseOut={e=>e.currentTarget.style.opacity='1'}
+                      >
+                        💾 Save Booking Settings
+                      </button>
+                    </div>
+                  </motion.div>
+                )}
+
+                {/* Main Client/Guest Booking Layout */}
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '30px', alignItems: 'start' }}>
+                  
+                  {/* Left Column: Calendar & Time Slots */}
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+                    
+                    {/* Calendar Card */}
+                    <div style={{ background: 'rgba(255,255,255,0.015)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '24px', padding: '28px', backdropFilter: 'blur(20px)' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+                        <h4 style={{ margin: 0, fontSize: '15px', fontWeight: 'bold', color: '#fff', textTransform: 'uppercase', letterSpacing: '1px' }}>
+                          1. Select a Date
+                        </h4>
+                        
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                          <span style={{ fontSize: '13px', fontWeight: 'bold', color: '#fff', marginRight: '6px' }}>
+                            {displayMonthName} {displayYearName}
+                          </span>
+                          <div style={{ display: 'flex', gap: '4px' }}>
+                            <button 
+                              disabled={calendarMonthOffset === 0} 
+                              onClick={() => setCalendarMonthOffset(0)}
+                              style={{
+                                background: calendarMonthOffset === 0 ? 'rgba(255,255,255,0.02)' : 'rgba(255,255,255,0.06)',
+                                border: 'none',
+                                color: calendarMonthOffset === 0 ? 'rgba(255,255,255,0.15)' : '#fff',
+                                cursor: calendarMonthOffset === 0 ? 'not-allowed' : 'pointer',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                width: '32px',
+                                height: '32px',
+                                borderRadius: '50%',
+                                transition: 'all 0.2s ease'
+                              }}
+                              onMouseOver={e => {
+                                if (calendarMonthOffset !== 0) e.currentTarget.style.background = 'rgba(255,255,255,0.12)';
+                              }}
+                              onMouseOut={e => {
+                                if (calendarMonthOffset !== 0) e.currentTarget.style.background = 'rgba(255,255,255,0.06)';
+                              }}
+                            >
+                              <ChevronLeft size={16} />
+                            </button>
+                            <button 
+                              disabled={calendarMonthOffset === 1} 
+                              onClick={() => setCalendarMonthOffset(1)}
+                              style={{
+                                background: calendarMonthOffset === 1 ? 'rgba(255,255,255,0.02)' : 'rgba(255,255,255,0.06)',
+                                border: 'none',
+                                color: calendarMonthOffset === 1 ? 'rgba(255,255,255,0.15)' : '#fff',
+                                cursor: calendarMonthOffset === 1 ? 'not-allowed' : 'pointer',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                width: '32px',
+                                height: '32px',
+                                borderRadius: '50%',
+                                transition: 'all 0.2s ease'
+                              }}
+                              onMouseOver={e => {
+                                if (calendarMonthOffset !== 1) e.currentTarget.style.background = 'rgba(255,255,255,0.12)';
+                              }}
+                              onMouseOut={e => {
+                                if (calendarMonthOffset !== 1) e.currentTarget.style.background = 'rgba(255,255,255,0.06)';
+                              }}
+                            >
+                              <ChevronRight size={16} />
+                            </button>
+                          </div>
+                        </div>
                       </div>
-                    </motion.div>
-                  )}
+
+                      {/* Day Grid */}
+                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: '8px', textAlign: 'center' }}>
+                        {weekdays.map((day, i) => (
+                          <div key={i} style={{ color: 'var(--text-muted)', fontSize: '11px', fontWeight: 'bold', padding: '6px 0', textTransform: 'uppercase', letterSpacing: '1px' }}>{day}</div>
+                        ))}
+                        {daysGrid}
+                      </div>
+                    </div>
+
+                    {/* Time Selection Card */}
+                    <div style={{ background: 'rgba(255,255,255,0.015)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '24px', padding: '28px', minHeight: '180px', backdropFilter: 'blur(20px)' }}>
+                      <h4 style={{ margin: '0 0 20px 0', fontSize: '15px', fontWeight: 'bold', color: '#fff', textTransform: 'uppercase', letterSpacing: '1px' }}>
+                        2. Available Slots
+                      </h4>
+
+                      {/* Add Slot Block for Creator Edit View */}
+                      {isOwnProfile && viewMode === 'edit' && selectedDate ? (
+                        <div style={{ marginBottom: '20px', padding: '16px', background: 'rgba(0,0,0,0.3)', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.05)' }}>
+                          <span style={{ fontSize: '12px', color: 'var(--text-secondary)', display: 'block', marginBottom: '10px', fontWeight: 'bold' }}>Add manual slot for {displayMonthName} {selectedDate}:</span>
+                          <div style={{ display: 'flex', gap: '8px' }}>
+                            <input type="time" value={newTimeInput} onChange={e => setNewTimeInput(e.target.value)} style={{ flex: 1, background: 'rgba(0,0,0,0.4)', border: '1px solid rgba(255,255,255,0.08)', padding: '10px 14px', borderRadius: '10px', color: 'var(--text-primary)', outline: 'none', fontSize: '14px' }} />
+                            <button 
+                              onClick={async () => {
+                                if (!newTimeInput) return;
+                                const [h, m] = newTimeInput.split(':');
+                                let hour = parseInt(h);
+                                const ampm = hour >= 12 ? 'PM' : 'AM';
+                                hour = hour % 12 || 12;
+                                const timeString = `${hour}:${m} ${ampm}`;
+                                
+                                try {
+                                  const { error } = await supabase!.from('available_slots').insert({
+                                    creator_id: targetProfileId,
+                                    date: selectedDate,
+                                    time: timeString
+                                  });
+                                  
+                                  if (error) {
+                                    if (error.code === '23505') {
+                                      toast.error('This timeslot is already added.');
+                                    } else {
+                                      toast.error(`Error adding slot: ${error.message}`);
+                                    }
+                                    return;
+                                  }
+                                  
+                                  setAvailableSlots(prev => {
+                                    const current = prev[selectedDate] || [];
+                                    if (!current.includes(timeString)) return { ...prev, [selectedDate]: [...current, timeString].sort() };
+                                    return prev;
+                                  });
+                                  toast.success('Timeslot added successfully!');
+                                } catch (err: any) {
+                                  toast.error(err.message || 'Failed to add timeslot');
+                                }
+                                setNewTimeInput('');
+                              }}
+                              style={{ padding: '10px 20px', background: wlConfig?.accent || '#00ff88', color: '#000', border: 'none', borderRadius: '10px', fontWeight: 'bold', cursor: 'pointer', fontSize: '13px', transition: 'opacity 0.2s' }}
+                              onMouseOver={e => e.currentTarget.style.opacity = '0.9'}
+                              onMouseOut={e => e.currentTarget.style.opacity = '1'}
+                            >
+                              Add
+                            </button>
+                          </div>
+                        </div>
+                      ) : null}
+
+                      {selectedDate ? (
+                        availableSlots[selectedDate]?.length > 0 ? (
+                          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(110px, 1fr))', gap: '10px' }}>
+                            {availableSlots[selectedDate].map(time => {
+                              const isTimeSelected = selectedTime === time;
+                              return (
+                                <div key={time} style={{ display: 'flex', gap: '6px' }}>
+                                  <button 
+                                    onClick={() => setSelectedTime(time)}
+                                    style={{ 
+                                      flex: 1, 
+                                      padding: '14px 10px', 
+                                      borderRadius: '12px', 
+                                      border: '1.5px solid', 
+                                      borderColor: isTimeSelected ? (wlConfig?.accent || '#00ff88') : 'transparent', 
+                                      background: isTimeSelected 
+                                        ? `${wlConfig?.accent || '#00ff88'}1c` 
+                                        : 'rgba(255,255,255,0.02)', 
+                                      color: isTimeSelected ? (wlConfig?.accent || '#00ff88') : '#fff', 
+                                      fontSize: '13px', 
+                                      fontWeight: 'bold', 
+                                      cursor: 'pointer', 
+                                      transition: 'all 0.2s ease',
+                                      textAlign: 'center',
+                                      boxShadow: isTimeSelected ? `0 0 12px ${wlConfig?.accent || '#00ff88'}1c` : 'none'
+                                    }}
+                                    onMouseOver={e => {
+                                      if (!isTimeSelected) {
+                                        e.currentTarget.style.background = 'rgba(255,255,255,0.06)';
+                                      }
+                                    }}
+                                    onMouseOut={e => {
+                                      if (!isTimeSelected) {
+                                        e.currentTarget.style.background = 'rgba(255,255,255,0.02)';
+                                      }
+                                    }}
+                                  >
+                                    {time}
+                                  </button>
+                                  {isOwnProfile && viewMode === 'edit' && (
+                                    <button 
+                                      onClick={async () => {
+                                        try {
+                                          const { error } = await supabase!
+                                            .from('available_slots')
+                                            .delete()
+                                            .match({
+                                              creator_id: targetProfileId,
+                                              date: selectedDate,
+                                              time: time
+                                            });
+
+                                          if (error) {
+                                            toast.error(`Failed to delete timeslot: ${error.message}`);
+                                            return;
+                                          }
+
+                                          setAvailableSlots(prev => ({
+                                            ...prev,
+                                            [selectedDate!]: prev[selectedDate!].filter(t => t !== time)
+                                          }));
+                                          if (selectedTime === time) setSelectedTime(null);
+                                          toast.success('Slot removed.');
+                                        } catch (err: any) {
+                                          toast.error(err.message || 'Failed to remove slot');
+                                        }
+                                      }}
+                                      style={{ 
+                                        background: 'rgba(255,0,0,0.08)', 
+                                        color: '#ff4d4d', 
+                                        border: '1px solid rgba(255,0,0,0.15)', 
+                                        borderRadius: '12px', 
+                                        padding: '0 12px', 
+                                        cursor: 'pointer', 
+                                        display: 'flex', 
+                                        alignItems: 'center', 
+                                        justifyContent: 'center',
+                                        fontSize: '14px',
+                                        fontWeight: 'bold',
+                                        transition: 'all 0.2s'
+                                      }}
+                                      onMouseOver={e => e.currentTarget.style.background = 'rgba(255,0,0,0.15)'}
+                                      onMouseOut={e => e.currentTarget.style.background = 'rgba(255,0,0,0.08)'}
+                                    >
+                                      ✕
+                                    </button>
+                                  )}
+                                </div>
+                              );
+                            })}
+                          </div>
+                        ) : (
+                          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '40px 0', gap: '10px', color: 'var(--text-muted)' }}>
+                            <Clock size={32} style={{ opacity: 0.5, color: wlConfig?.accent || '#00ff88' }} />
+                            <span style={{ fontSize: '13px', fontStyle: 'italic' }}>No times available on this date.</span>
+                          </div>
+                        )
+                      ) : (
+                        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '40px 0', gap: '10px', color: 'var(--text-muted)' }}>
+                          <Calendar size={32} style={{ opacity: 0.5, color: wlConfig?.accent || '#00ff88' }} />
+                          <span style={{ fontSize: '13px', fontStyle: 'italic' }}>Please select a date on the calendar.</span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Right Column: Confirmation Form & Checkout */}
+                  <div>
+                    {!selectedTime ? (
+                      <div style={{ background: 'rgba(255,255,255,0.01)', border: '1px dashed rgba(255,255,255,0.12)', borderRadius: '24px', padding: '50px 30px', textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '16px', minHeight: '320px', justifyContent: 'center', backdropFilter: 'blur(20px)' }}>
+                        <div style={{ width: '64px', height: '64px', borderRadius: '50%', background: 'rgba(255,255,255,0.02)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-muted)', border: '1px solid rgba(255,255,255,0.05)' }}>
+                          <Clock size={28} style={{ color: wlConfig?.accent || '#00ff88', opacity: 0.8 }} />
+                        </div>
+                        <div style={{ maxWidth: '280px' }}>
+                          <h4 style={{ margin: '0 0 8px 0', fontSize: '18px', fontWeight: 'bold', color: '#fff' }}>Configure Your Session</h4>
+                          <p style={{ margin: 0, fontSize: '13px', color: 'var(--text-muted)', lineHeight: 1.5 }}>Choose an available date and timeslot from the scheduler on the left to configure your meeting details.</p>
+                        </div>
+                      </div>
+                    ) : (
+                      <motion.div initial={{ opacity: 0, scale: 0.98 }} animate={{ opacity: 1, scale: 1 }} style={{ background: 'rgba(255,255,255,0.015)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '24px', padding: '28px', backdropFilter: 'blur(20px)' }}>
+                        <h4 style={{ margin: '0 0 20px 0', fontSize: '15px', fontWeight: 'bold', color: '#fff', textTransform: 'uppercase', letterSpacing: '1px' }}>
+                          3. Meeting Details
+                        </h4>
+
+                        {/* Selected Slot Receipt Header */}
+                        <div style={{ background: `${wlConfig?.accent || '#00ff88'}08`, border: `1.5px solid ${wlConfig?.accent || '#00ff88'}2a`, borderRadius: '16px', padding: '16px 20px', marginBottom: '24px', display: 'flex', alignItems: 'center', gap: '12px', boxShadow: `0 4px 15px ${wlConfig?.accent || '#00ff88'}08` }}>
+                          <CheckCircle size={22} color={wlConfig?.accent || '#00ff88'} style={{ flexShrink: 0 }} />
+                          <div>
+                            <span style={{ fontSize: '11px', color: '#aaa', textTransform: 'uppercase', letterSpacing: '0.5px', display: 'block', fontWeight: 'bold' }}>Selected Appointment</span>
+                            <strong style={{ fontSize: '14px', color: '#fff' }}>
+                              {displayMonthName} {selectedDate}, {displayYearName} at {selectedTime}
+                            </strong>
+                          </div>
+                        </div>
+
+                        {/* Meeting Type Selection */}
+                        <div style={{ marginBottom: '20px' }}>
+                          <label style={{ display: 'block', fontSize: '13px', fontWeight: 'bold', color: '#ccc', marginBottom: '8px' }}>Location/Meeting Type</label>
+                          <div style={{ display: 'flex', gap: '12px' }}>
+                            <button 
+                              onClick={() => setBookingType('virtual')} 
+                              style={{ 
+                                flex: 1, 
+                                padding: '16px 12px', 
+                                background: bookingType === 'virtual' ? `${wlConfig?.accent || '#00ff88'}12` : 'rgba(255,255,255,0.01)', 
+                                border: '1.5px solid', 
+                                borderColor: bookingType === 'virtual' ? (wlConfig?.accent || '#00ff88') : 'rgba(255,255,255,0.05)', 
+                                color: bookingType === 'virtual' ? '#fff' : '#aaa', 
+                                borderRadius: '14px', 
+                                cursor: 'pointer', 
+                                fontWeight: 'bold', 
+                                fontSize: '14px',
+                                display: 'flex',
+                                flexDirection: 'column',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                gap: '8px',
+                                transition: 'all 0.2s ease',
+                                boxShadow: bookingType === 'virtual' ? `0 4px 15px ${wlConfig?.accent || '#00ff88'}0c` : 'none'
+                              }}
+                              onMouseOver={e => {
+                                if (bookingType !== 'virtual') e.currentTarget.style.borderColor = 'rgba(255,255,255,0.15)';
+                              }}
+                              onMouseOut={e => {
+                                if (bookingType !== 'virtual') e.currentTarget.style.borderColor = 'rgba(255,255,255,0.05)';
+                              }}
+                            >
+                              <Monitor size={18} style={{ color: bookingType === 'virtual' ? (wlConfig?.accent || '#00ff88') : '#888' }} />
+                              <span>Virtual Call</span>
+                            </button>
+                            <button 
+                              onClick={() => setBookingType('physical')} 
+                              style={{ 
+                                flex: 1, 
+                                padding: '16px 12px', 
+                                background: bookingType === 'physical' ? `${wlConfig?.accent || '#00ff88'}12` : 'rgba(255,255,255,0.01)', 
+                                border: '1.5px solid', 
+                                borderColor: bookingType === 'physical' ? (wlConfig?.accent || '#00ff88') : 'rgba(255,255,255,0.05)', 
+                                color: bookingType === 'physical' ? '#fff' : '#aaa', 
+                                borderRadius: '14px', 
+                                cursor: 'pointer', 
+                                fontWeight: 'bold', 
+                                fontSize: '14px',
+                                display: 'flex',
+                                flexDirection: 'column',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                gap: '8px',
+                                transition: 'all 0.2s ease',
+                                boxShadow: bookingType === 'physical' ? `0 4px 15px ${wlConfig?.accent || '#00ff88'}0c` : 'none'
+                              }}
+                              onMouseOver={e => {
+                                if (bookingType !== 'physical') e.currentTarget.style.borderColor = 'rgba(255,255,255,0.15)';
+                              }}
+                              onMouseOut={e => {
+                                if (bookingType !== 'physical') e.currentTarget.style.borderColor = 'rgba(255,255,255,0.05)';
+                              }}
+                            >
+                              <Users size={18} style={{ color: bookingType === 'physical' ? (wlConfig?.accent || '#00ff88') : '#888' }} />
+                              <span>Physical Meet</span>
+                            </button>
+                          </div>
+                        </div>
+
+                        {/* Call Mode Selection (Only if virtual) */}
+                        {bookingType === 'virtual' && (
+                          <div style={{ marginBottom: '20px' }}>
+                            <label style={{ display: 'block', fontSize: '13px', fontWeight: 'bold', color: '#ccc', marginBottom: '8px' }}>Call Modality</label>
+                            <div style={{ display: 'flex', gap: '10px' }}>
+                              <button 
+                                onClick={() => setVirtualCallType('video')} 
+                                style={{ 
+                                  flex: 1, 
+                                  padding: '12px', 
+                                  background: virtualCallType === 'video' ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.3)', 
+                                  border: '1.5px solid', 
+                                  borderColor: virtualCallType === 'video' ? 'rgba(255,255,255,0.15)' : 'rgba(255,255,255,0.04)', 
+                                  color: virtualCallType === 'video' ? '#fff' : '#888', 
+                                  borderRadius: '10px', 
+                                  cursor: 'pointer', 
+                                  fontWeight: 'bold', 
+                                  fontSize: '13px',
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  justifyContent: 'center',
+                                  gap: '8px',
+                                  transition: 'all 0.2s' 
+                                }}
+                              >
+                                <Video size={14} style={{ color: virtualCallType === 'video' ? (wlConfig?.accent || '#00ff88') : '#888' }} />
+                                <span>Video WebRTC</span>
+                              </button>
+                              <button 
+                                onClick={() => setVirtualCallType('audio')} 
+                                style={{ 
+                                  flex: 1, 
+                                  padding: '12px', 
+                                  background: virtualCallType === 'audio' ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.3)', 
+                                  border: '1.5px solid', 
+                                  borderColor: virtualCallType === 'audio' ? 'rgba(255,255,255,0.15)' : 'rgba(255,255,255,0.04)', 
+                                  color: virtualCallType === 'audio' ? '#fff' : '#888', 
+                                  borderRadius: '10px', 
+                                  cursor: 'pointer', 
+                                  fontWeight: 'bold', 
+                                  fontSize: '13px',
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  justifyContent: 'center',
+                                  gap: '8px',
+                                  transition: 'all 0.2s' 
+                                }}
+                              >
+                                🎙️ Audio Only
+                              </button>
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Duration dropdown */}
+                        <div style={{ marginBottom: '20px' }}>
+                          <label style={{ display: 'block', fontSize: '13px', fontWeight: 'bold', color: '#ccc', marginBottom: '8px' }}>Duration</label>
+                          <div style={{ position: 'relative' }}>
+                            <select 
+                              value={bookingDuration} 
+                              onChange={e => setBookingDuration(Number(e.target.value))} 
+                              style={{ 
+                                width: '100%', 
+                                background: 'rgba(0,0,0,0.4)', 
+                                border: '1.5px solid rgba(255,255,255,0.08)', 
+                                padding: '14px', 
+                                borderRadius: '12px', 
+                                color: '#fff', 
+                                outline: 'none', 
+                                appearance: 'none', 
+                                fontSize: '14px',
+                                cursor: 'pointer' 
+                              }}
+                            >
+                              <option value={1} style={{ background: '#111' }}>1 Hour Session</option>
+                              <option value={2} style={{ background: '#111' }}>2 Hours Session</option>
+                              <option value={3} style={{ background: '#111' }}>3 Hours Session</option>
+                              <option value={4} style={{ background: '#111' }}>4 Hours Session</option>
+                              <option value={8} style={{ background: '#111' }}>8 Hours (Full Day)</option>
+                            </select>
+                            <div style={{ position: 'absolute', right: '16px', top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none', color: '#888', fontSize: '12px' }}>▼</div>
+                          </div>
+                        </div>
+
+                        {/* Contact details */}
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '14px', marginBottom: '24px' }}>
+                          <BookingFormInput 
+                            label="Your Full Name" 
+                            value={guestName} 
+                            onChange={setGuestName} 
+                            placeholder="e.g. John Doe" 
+                            icon={Users} 
+                            accent={wlConfig?.accent} 
+                          />
+                          <BookingFormInput 
+                            label="Mobile Phone Number (SMS Updates)" 
+                            value={guestPhone} 
+                            onChange={setGuestPhone} 
+                            placeholder="e.g. +11234567890" 
+                            icon={Clock} 
+                            accent={wlConfig?.accent} 
+                          />
+                          <BookingFormInput 
+                            label="Topic / Purpose of Meeting" 
+                            value={meetingPurpose} 
+                            onChange={setMeetingPurpose} 
+                            placeholder="e.g. Brand design consultation" 
+                            icon={Edit3} 
+                            accent={wlConfig?.accent} 
+                          />
+                        </div>
+
+                        {/* Recording Addon toggle card */}
+                        {bookingType === 'virtual' && (
+                          <div 
+                            onClick={() => setRecordCall(!recordCall)}
+                            style={{ 
+                              marginBottom: '24px', 
+                              padding: '16px', 
+                              background: recordCall ? `${wlConfig?.accent || '#00ff88'}0a` : 'rgba(255,255,255,0.01)', 
+                              borderRadius: '14px', 
+                              border: '1.5px solid',
+                              borderColor: recordCall ? (wlConfig?.accent || '#00ff88') : 'rgba(255,255,255,0.05)', 
+                              display: 'flex', 
+                              alignItems: 'center', 
+                              justifyContent: 'space-between',
+                              cursor: 'pointer',
+                              userSelect: 'none',
+                              transition: 'all 0.2s ease',
+                              boxShadow: recordCall ? `0 4px 15px ${wlConfig?.accent || '#00ff88'}0c` : 'none'
+                            }}
+                          >
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                              <input type="checkbox" checked={recordCall} onChange={() => {}} style={{ width: '18px', height: '18px', accentColor: wlConfig?.accent || '#00ff88', cursor: 'pointer' }} />
+                              <div>
+                                <span style={{ fontWeight: 'bold', fontSize: '13px', color: '#fff', display: 'block' }}>📹 Record Session & Archive</span>
+                                <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>Delivers full copy to your User Library.</span>
+                              </div>
+                            </div>
+                            <span style={{ fontWeight: 'bold', color: wlConfig?.accent || '#00ff88', fontSize: '14px', padding: '4px 10px', background: 'rgba(0,0,0,0.2)', borderRadius: '8px' }}>
+                              {virtualCallType === 'audio' ? '+$10.00' : '+$15.00'}
+                            </span>
+                          </div>
+                        )}
+
+                        {/* Cost Receipt Breakdown */}
+                        <div style={{
+                          background: 'rgba(0,0,0,0.4)',
+                          borderRadius: '16px',
+                          padding: '20px',
+                          border: '1px solid rgba(255,255,255,0.06)',
+                          marginBottom: '24px',
+                          position: 'relative',
+                          overflow: 'hidden'
+                        }}>
+                          {/* A decorative ticket-cut on the sides */}
+                          <div style={{ position: 'absolute', left: '-8px', top: '50%', transform: 'translateY(-50%)', width: '16px', height: '16px', borderRadius: '50%', background: '#09090b', borderRight: '1px solid rgba(255,255,255,0.06)' }} />
+                          <div style={{ position: 'absolute', right: '-8px', top: '50%', transform: 'translateY(-50%)', width: '16px', height: '16px', borderRadius: '50%', background: '#09090b', borderLeft: '1px solid rgba(255,255,255,0.06)' }} />
+                          
+                          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px', color: 'var(--text-secondary)', marginBottom: '10px' }}>
+                            <span>Consultation Fee ({bookingDuration}hr x ${Number(bookingPrice).toFixed(2)}/hr)</span>
+                            <span style={{ color: '#fff', fontWeight: '500' }}>${(Number(bookingPrice) * bookingDuration).toFixed(2)}</span>
+                          </div>
+                          
+                          {recordCall && bookingType === 'virtual' && (
+                            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px', color: 'var(--text-secondary)', marginBottom: '10px' }}>
+                              <span>Add-on: Session Recording</span>
+                              <span style={{ color: '#fff', fontWeight: '500' }}>${(virtualCallType === 'audio' ? 10 : 15).toFixed(2)}</span>
+                            </div>
+                          )}
+
+                          <div style={{ height: '1px', borderTop: '1px dashed rgba(255,255,255,0.15)', margin: '16px 0' }} />
+
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                            <span style={{ fontSize: '14px', color: '#fff', fontWeight: 'bold' }}>Total Amount</span>
+                            <strong style={{ fontSize: '22px', color: wlConfig?.accent || '#00ff88', textShadow: `0 0 15px ${(wlConfig?.accent || '#00ff88')}33`, fontFamily: 'monospace' }}>
+                              ${((Number(bookingPrice) * bookingDuration) + (recordCall && bookingType === 'virtual' ? (virtualCallType === 'audio' ? 10 : 15) : 0)).toFixed(2)}
+                            </strong>
+                          </div>
+                        </div>
+
+                        {/* Book CTA Button */}
+                        <button 
+                          onClick={async () => { 
+                            if (!guestName) {
+                              toast.error('Please enter your name.');
+                              return;
+                            }
+                            const monthName = displayMonthName;
+                            const slotDate = selectedDate;
+                            const slotTime = selectedTime;
+                            if (!slotDate || !slotTime) return;
+
+                            try {
+                              const { error } = await supabase!
+                                .from('available_slots')
+                                .update({ is_booked: true })
+                                .match({
+                                  creator_id: targetProfileId,
+                                  date: slotDate,
+                                  time: slotTime
+                                });
+
+                              if (error) {
+                                console.error("Error setting slot is_booked:", error);
+                              } else {
+                                setAvailableSlots(prev => ({
+                                  ...prev,
+                                  [slotDate]: (prev[slotDate] || []).filter(t => t !== slotTime)
+                                }));
+                              }
+                            } catch (err) {
+                              console.error("Booking db error:", err);
+                            }
+
+                            const recordingFee = recordCall && bookingType === 'virtual' ? (virtualCallType === 'audio' ? 10 : 15) : 0;
+                            const finalPrice = (Number(bookingPrice) * bookingDuration) + recordingFee;
+                            const scheduledAtISO = getScheduledAtISO(slotDate, slotTime);
+
+                            handleStripeCheckout(
+                              `${bookingType === 'virtual' ? `1-on-1 Virtual ${virtualCallType === 'audio' ? 'Audio' : 'Video'} Call` : 'Physical Meeting'} (${monthName} ${slotDate} at ${slotTime}) - ${bookingDuration} Hour(s)`,
+                              finalPrice,
+                              { 
+                                is_booking: true, 
+                                date: `${monthName} ${slotDate}`, 
+                                time: slotTime, 
+                                duration: bookingDuration, 
+                                meeting_type: bookingType === 'virtual' ? `virtual_${virtualCallType}` : 'physical',
+                                guest_name: guestName,
+                                guest_phone: guestPhone,
+                                meeting_purpose: meetingPurpose,
+                                scheduled_at: scheduledAtISO,
+                                record_call: recordCall && bookingType === 'virtual',
+                                recording_price: recordingFee
+                              }
+                            ); 
+                            
+                            setSelectedTime(null); 
+                            setSelectedDate(null); 
+                            setSelectedMonthOffset(null);
+                            setGuestName('');
+                            setGuestPhone('');
+                            setMeetingPurpose('');
+                            setRecordCall(false);
+                          }} 
+                          style={{ width: '100%', padding: '18px', background: `linear-gradient(135deg, ${wlConfig?.accent || '#00ff88'}, #8A2BE2)`, color: '#fff', border: 'none', borderRadius: '14px', fontWeight: 'bold', fontSize: '15px', cursor: 'pointer', boxShadow: `0 8px 25px ${(wlConfig?.accent || '#00ff88')}33`, transition: 'all 0.2s ease', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}
+                          onMouseOver={e=>{
+                            e.currentTarget.style.transform='translateY(-1px)';
+                            e.currentTarget.style.boxShadow=`0 10px 30px ${(wlConfig?.accent || '#00ff88')}44`;
+                          }} 
+                          onMouseOut={e=>{
+                            e.currentTarget.style.transform='none';
+                            e.currentTarget.style.boxShadow=`0 8px 25px ${(wlConfig?.accent || '#00ff88')}33`;
+                          }}
+                        >
+                          💳 Confirm & Pay Session
+                        </button>
+                        
+                        {/* Booking Refund Policy Disclaimer */}
+                        <div style={{ marginTop: '16px', padding: '10px 14px', background: 'rgba(255,255,255,0.01)', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.03)' }}>
+                          <p style={{ margin: 0, fontSize: '11px', color: 'var(--text-muted)', fontStyle: 'italic', textAlign: 'center', lineHeight: 1.4 }}>
+                            🛡️ Booking Terms: {refundPolicy || 'All bookings are final. Rescheduling requests must be received at least 24 hours prior to the session start.'}
+                          </p>
+                        </div>
+                      </motion.div>
+                    )}
+                  </div>
+
                 </div>
-              </div>
-            </motion.div>
-          </div>
-        )}
+              </motion.div>
+            </div>
+          );
+        })()}
 
         {activeTab === 'series' && (
         /* ----------- TV SERIES TAB ----------- */
@@ -5146,68 +6229,358 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
         )}
 
         {/* --- FLIP BOOK TAB --- */}
-        {activeTab === 'flipbook' && (
+        {/* --- VIBE DRIVE TAB (EDIT MODE ONLY) --- */}
+        {activeTab === 'flipbook' && isOwnProfile && viewMode === 'edit' && (
           <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
-            <h2 style={{ fontSize: '24px', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '16px', margin: 0 }}>Media & Backgrounds</h2>
-            
-            {isOwnProfile && viewMode === 'edit' && (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-                
-                {/* Flip Book Images Upload */}
-                <div style={{ background: 'rgba(0,0,0,0.4)', padding: '24px', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.08)' }}>
-                  <h4 style={{ margin: '0 0 12px 0', fontSize: '15px', color: '#ff4d85', display: 'flex', alignItems: 'center', gap: '10px' }}>
-                    <ImageIcon size={18} /> Manage Flip Book Images
-                  </h4>
-                  <p style={{ color: 'var(--text-secondary)', fontSize: '13px', marginBottom: '16px', lineHeight: 1.5 }}>Upload custom images from your computer or use our AI Generator to explicitly build your Flip Book.</p>
-                  
-                  {flipbookImages ? (
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                      <div style={{ position: 'relative', width: '100%', aspectRatio: '21/9', borderRadius: '12px', overflow: 'hidden', backgroundImage: `url("${flipbookImages.split(',')[currentBannerIndex]}")`, backgroundSize: 'cover', backgroundPosition: 'center', border: '1px solid rgba(255,255,255,0.1)', transition: 'background-image 0.5s' }}>
-                        <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(0,0,0,0.8), transparent)' }} />
-                        <button onClick={() => { setImageTarget('flipbook'); setShowImageModal(true); }} style={{ position: 'absolute', bottom: 16, right: 16, padding: '10px 20px', background: 'rgba(255,255,255,0.15)', backdropFilter: 'blur(8px)', color: 'white', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.2)', cursor: 'pointer', fontSize: '13px', fontWeight: 'bold', transition: 'background 0.2s' }} onMouseOver={e=>e.currentTarget.style.background='rgba(255,255,255,0.25)'} onMouseOut={e=>e.currentTarget.style.background='rgba(255,255,255,0.15)'}>
-                          + Add Image to Flip Book
-                        </button>
-                        <button onClick={() => {
-                          const arr = flipbookImages.split(',').filter(Boolean);
-                          arr.splice(currentBannerIndex, 1);
-                          setFlipbookImages(arr.join(','));
-                          setCurrentBannerIndex(0);
-                        }} style={{ position: 'absolute', top: 16, right: 16, padding: '8px 16px', background: 'rgba(255,0,0,0.5)', backdropFilter: 'blur(8px)', color: 'white', borderRadius: '12px', border: 'none', cursor: 'pointer', fontSize: '12px', fontWeight: 'bold' }}>
-                          Remove This Image
-                        </button>
-                      </div>
-                      <div style={{ display: 'flex', gap: '10px', overflowX: 'auto', paddingBottom: '8px' }}>
-                        {flipbookImages.split(',').filter(Boolean).map((imgUrl, idx) => (
-                          <div key={idx} onClick={() => setCurrentBannerIndex(idx)} style={{ width: '100px', height: '56px', borderRadius: '8px', backgroundImage: `url("${imgUrl}")`, backgroundSize: 'cover', backgroundPosition: 'center', cursor: 'pointer', border: currentBannerIndex === idx ? '2px solid #ff4d85' : '2px solid transparent', flexShrink: 0, opacity: currentBannerIndex === idx ? 1 : 0.5, transition: '0.2s' }} />
-                        ))}
-                      </div>
-                    </div>
-                  ) : (
-                    <button onClick={() => { setImageTarget('flipbook'); setShowImageModal(true); }} style={{ width: '100%', padding: '40px', background: 'rgba(255,255,255,0.03)', border: '2px dashed rgba(255,255,255,0.15)', color: 'var(--text-primary)', fontSize: '15px', borderRadius: '16px', cursor: 'pointer', transition: 'all 0.3s', fontWeight: 'bold' }} onMouseOver={e=>e.currentTarget.style.background='rgba(255,255,255,0.08)'} onMouseOut={e=>e.currentTarget.style.background='rgba(255,255,255,0.03)'}>
-                      + Select or Generate Flip Book Image
-                    </button>
-                  )}
-                </div>
-
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '16px', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '16px' }}>
+              <div>
+                <h2 style={{ fontSize: '24px', margin: 0, display: 'flex', alignItems: 'center', gap: '10px' }}><Folder size={24} color={wlConfig?.accent || '#ff4d85'} /> Vibe Drive</h2>
+                <p style={{ margin: '4px 0 0 0', color: 'var(--text-muted)', fontSize: '13px' }}>A secure digital vault to upload and share your documents, media, and files.</p>
               </div>
-            )}
+              <button 
+                onClick={() => setShowDriveUploadModal(true)} 
+                style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '12px 24px', background: 'linear-gradient(135deg, #00ff88, #00b0ff)', color: '#000', border: 'none', borderRadius: '14px', fontWeight: 'bold', fontSize: '14px', cursor: 'pointer', transition: 'transform 0.2s', boxShadow: '0 4px 15px rgba(0,255,136,0.2)' }}
+                onMouseOver={e=>e.currentTarget.style.transform='scale(1.03)'}
+                onMouseOut={e=>e.currentTarget.style.transform='scale(1)'}
+              >
+                <Plus size={16} /> Upload New File
+              </button>
+            </div>
 
-            {(!isOwnProfile || viewMode === 'public') && (
-              flipbookImages ? (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                  <div style={{ position: 'relative', width: '100%', aspectRatio: '21/9', borderRadius: '24px', overflow: 'hidden', backgroundImage: `url("${flipbookImages.split(',')[currentBannerIndex]}")`, backgroundSize: 'cover', backgroundPosition: 'center', border: '1px solid rgba(255,255,255,0.1)', transition: 'background-image 0.5s' }} />
-                  <div style={{ display: 'flex', gap: '12px', overflowX: 'auto', paddingBottom: '12px', justifyContent: 'center' }}>
-                    {flipbookImages.split(',').filter(Boolean).map((imgUrl, idx) => (
-                      <div key={idx} onClick={() => setCurrentBannerIndex(idx)} style={{ width: '120px', height: '68px', borderRadius: '12px', backgroundImage: `url("${imgUrl}")`, backgroundSize: 'cover', backgroundPosition: 'center', cursor: 'pointer', border: currentBannerIndex === idx ? '2px solid #ff4d85' : '2px solid transparent', flexShrink: 0, opacity: currentBannerIndex === idx ? 1 : 0.5, transition: '0.2s' }} />
-                    ))}
+            {/* Storage Progress Bar */}
+            <div style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)', padding: '20px', borderRadius: '16px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px' }}>
+                <span style={{ fontSize: '14px', fontWeight: 'bold', color: 'var(--text-primary)' }}>
+                  Storage Space Usage
+                </span>
+                <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>
+                  {formatBytes(profile?.storage_used_bytes || 0)} used of {formatBytes(profile?.storage_limit_bytes || 10737418240)}
+                </span>
+              </div>
+              
+              <div style={{ width: '100%', height: '10px', background: 'rgba(255,255,255,0.05)', borderRadius: '5px', overflow: 'hidden', display: 'flex' }}>
+                <div style={{ 
+                  width: `${Math.min(100, (((profile?.storage_used_bytes || 0) / (profile?.storage_limit_bytes || 10737418240)) * 100))}%`, 
+                  height: '100%', 
+                  background: ((profile?.storage_used_bytes || 0) / (profile?.storage_limit_bytes || 10737418240)) > 0.9 ? 'linear-gradient(90deg, #ff4d85, #ff0055)' : 'linear-gradient(90deg, #00ff88, #00b0ff)',
+                  borderRadius: '5px',
+                  transition: 'width 0.5s ease-out'
+                }} />
+              </div>
+              
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '16px', marginTop: '4px' }}>
+                <p style={{ margin: 0, fontSize: '12px', color: 'var(--text-secondary)' }}>
+                  Need more space? Upgrade your storage plan to upload larger files and video catalogs.
+                </p>
+                <div style={{ display: 'flex', gap: '10px' }}>
+                  <button 
+                    onClick={() => {
+                      if (confirm("Would you like to upgrade to the Vibe Drive Pro Plan (+100 GB for $9.99/mo)?")) {
+                        handleStripeCheckout('Vibe Drive Pro Plan (100 GB)', 9.99, { storage_tier: 'pro_100gb' });
+                      }
+                    }}
+                    style={{ padding: '8px 16px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: 'var(--text-primary)', borderRadius: '8px', fontSize: '12px', fontWeight: 'bold', cursor: 'pointer', transition: 'background 0.2s' }}
+                    onMouseOver={e=>e.currentTarget.style.background='rgba(255,255,255,0.1)'}
+                    onMouseOut={e=>e.currentTarget.style.background='rgba(255,255,255,0.05)'}
+                  >
+                    +100 GB ($9.99/mo)
+                  </button>
+                  <button 
+                    onClick={() => {
+                      if (confirm("Would you like to upgrade to the Vibe Drive Studio Plan (+500 GB for $29.99/mo)?")) {
+                        handleStripeCheckout('Vibe Drive Studio Plan (500 GB)', 29.99, { storage_tier: 'studio_500gb' });
+                      }
+                    }}
+                    style={{ padding: '8px 16px', background: 'linear-gradient(135deg, rgba(138,43,226,0.2), rgba(0,176,255,0.2))', border: '1px solid rgba(0,176,255,0.3)', color: 'var(--text-primary)', borderRadius: '8px', fontSize: '12px', fontWeight: 'bold', cursor: 'pointer', transition: 'opacity 0.2s' }}
+                    onMouseOver={e=>e.currentTarget.style.opacity='0.9'}
+                    onMouseOut={e=>e.currentTarget.style.opacity='1'}
+                  >
+                    +500 GB ($29.99/mo)
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            {/* Toolbar: Search & Views */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '16px', flexWrap: 'wrap' }}>
+              <div style={{ position: 'relative', flex: 1, maxWidth: '400px' }}>
+                <Search size={16} style={{ position: 'absolute', left: '16px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
+                <input 
+                  type="text" 
+                  placeholder="Search files by name..." 
+                  value={driveSearchQuery} 
+                  onChange={e => setDriveSearchQuery(e.target.value)} 
+                  style={{ width: '100%', padding: '12px 16px 12px 44px', background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '12px', color: 'var(--text-primary)', fontSize: '14px', outline: 'none' }}
+                />
+              </div>
+              
+              <div style={{ display: 'flex', gap: '8px', background: 'rgba(255,255,255,0.02)', padding: '4px', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.06)' }}>
+                <button 
+                  onClick={() => setDriveViewMode('grid')}
+                  style={{ padding: '6px 12px', background: driveViewMode === 'grid' ? 'rgba(255,255,255,0.08)' : 'transparent', border: 'none', color: driveViewMode === 'grid' ? '#fff' : 'var(--text-muted)', borderRadius: '6px', fontSize: '12px', fontWeight: 'bold', cursor: 'pointer' }}
+                >
+                  Grid
+                </button>
+                <button 
+                  onClick={() => setDriveViewMode('list')}
+                  style={{ padding: '6px 12px', background: driveViewMode === 'list' ? 'rgba(255,255,255,0.08)' : 'transparent', border: 'none', color: driveViewMode === 'list' ? '#fff' : 'var(--text-muted)', borderRadius: '6px', fontSize: '12px', fontWeight: 'bold', cursor: 'pointer' }}
+                >
+                  List
+                </button>
+              </div>
+            </div>
+
+            {/* Files List / Grid Explorer */}
+            {(() => {
+              const filtered = driveFiles.filter(f => f.name.toLowerCase().includes(driveSearchQuery.toLowerCase()));
+              if (filtered.length === 0) {
+                return (
+                  <div style={{ padding: '80px 20px', textAlign: 'center', background: 'rgba(255,255,255,0.01)', borderRadius: '24px', border: '1px dashed rgba(255,255,255,0.08)', color: 'var(--text-muted)' }}>
+                    <Folder size={40} style={{ opacity: 0.2, marginBottom: '16px' }} />
+                    <p style={{ margin: 0, fontSize: '15px' }}>{driveSearchQuery ? "No files match your search" : "Your Vibe Drive is empty"}</p>
+                    <p style={{ margin: '4px 0 0 0', fontSize: '12px' }}>{driveSearchQuery ? "Try a different search query" : "Click 'Upload New File' to get started"}</p>
                   </div>
+                );
+              }
+
+              return driveViewMode === 'grid' ? (
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: '20px' }}>
+                  {filtered.map(file => {
+                    const iconColor = file.file_type === 'image' ? '#ffb300' : file.file_type === 'video' ? '#00b0ff' : file.file_type === 'pdf' ? '#ff5252' : '#90a4ae';
+                    return (
+                      <div key={file.id} style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '16px', padding: '16px', display: 'flex', flexDirection: 'column', gap: '12px', position: 'relative', transition: 'border-color 0.2s' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                          <div style={{ padding: '12px', borderRadius: '12px', background: `${iconColor}15`, display: 'flex', alignItems: 'center', justifycontent: 'center' }}>
+                            {file.file_type === 'image' && <ImageIcon size={24} style={{ color: iconColor }} />}
+                            {file.file_type === 'video' && <Video size={24} style={{ color: iconColor }} />}
+                            {file.file_type === 'pdf' && <FileText size={24} style={{ color: iconColor }} />}
+                            {file.file_type !== 'image' && file.file_type !== 'video' && file.file_type !== 'pdf' && <File size={24} style={{ color: iconColor }} />}
+                          </div>
+                          
+                          <span style={{ fontSize: '10px', textTransform: 'uppercase', padding: '4px 8px', borderRadius: '20px', fontWeight: 'bold', background: file.access_level === 'public' ? 'rgba(0,255,136,0.1)' : 'rgba(179,128,255,0.1)', color: file.access_level === 'public' ? '#00ff88' : '#b380ff', border: file.access_level === 'public' ? '1px solid rgba(0,255,136,0.2)' : '1px solid rgba(179,128,255,0.2)' }}>
+                            {file.access_level}
+                          </span>
+                        </div>
+                        
+                        <div style={{ minWidth: 0 }}>
+                          <h4 style={{ margin: 0, fontSize: '14px', fontWeight: 'bold', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', color: 'var(--text-primary)' }} title={file.name}>
+                            {file.name}
+                          </h4>
+                          <span style={{ fontSize: '12px', color: 'var(--text-muted)', marginTop: '4px', display: 'block' }}>
+                            {formatBytes(file.size_bytes)}
+                          </span>
+                        </div>
+                        
+                        <div style={{ display: 'flex', gap: '8px', borderTop: '1px solid rgba(255,255,255,0.05)', paddingTop: '12px', marginTop: '4px' }}>
+                          <button 
+                            onClick={() => handleDownloadDriveFile(file)}
+                            style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', padding: '8px', background: 'rgba(255,255,255,0.05)', border: 'none', borderRadius: '8px', color: '#fff', fontSize: '12px', fontWeight: 'bold', cursor: 'pointer', transition: 'background 0.2s' }}
+                            onMouseOver={e=>e.currentTarget.style.background='rgba(255,255,255,0.1)'}
+                            onMouseOut={e=>e.currentTarget.style.background='rgba(255,255,255,0.05)'}
+                          >
+                            <Download size={13} /> Get File
+                          </button>
+                          
+                          <button 
+                            onClick={async () => {
+                              try {
+                                const { data } = await supabase!.storage.from('vibe-drive').createSignedUrl(file.file_path, 86400 * 7); // 7 days link
+                                if (data?.signedUrl) {
+                                  await navigator.clipboard.writeText(data.signedUrl);
+                                  toast.success("Share link copied to clipboard! (Valid for 7 days)");
+                                }
+                              } catch (err) {
+                                toast.error("Failed to copy link");
+                              }
+                            }}
+                            style={{ padding: '8px', background: 'rgba(255,255,255,0.05)', border: 'none', borderRadius: '8px', color: 'var(--text-muted)', cursor: 'pointer', transition: 'all 0.2s' }}
+                            onMouseOver={e=>{e.currentTarget.style.background='rgba(255,255,255,0.1)';e.currentTarget.style.color='#fff';}}
+                            onMouseOut={e=>{e.currentTarget.style.background='rgba(255,255,255,0.05)';e.currentTarget.style.color='var(--text-muted)';}}
+                            title="Copy Sharing Link"
+                          >
+                            <Share2 size={13} />
+                          </button>
+                          
+                          <button 
+                            onClick={() => handleDeleteDriveFile(file)}
+                            style={{ padding: '8px', background: 'rgba(255,0,0,0.1)', border: 'none', borderRadius: '8px', color: '#ff4d4d', cursor: 'pointer', transition: 'background 0.2s' }}
+                            onMouseOver={e=>e.currentTarget.style.background='rgba(255,0,0,0.2)'}
+                            onMouseOut={e=>e.currentTarget.style.background='rgba(255,0,0,0.1)'}
+                            title="Delete File"
+                          >
+                            <Trash2 size={13} />
+                          </button>
+                        </div>
+                      </div>
+                    );
+                  })}
                 </div>
               ) : (
-                <div style={{ padding: '60px', textAlign: 'center', color: 'var(--text-muted)', background: 'rgba(255,255,255,0.02)', borderRadius: '24px', border: '1px dashed rgba(255,255,255,0.05)' }}>
-                  This creator hasn't added any photos to their Flip Book yet.
+                <div style={{ overflowX: 'auto', background: 'rgba(255,255,255,0.01)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '16px' }}>
+                  <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', minWidth: '600px' }}>
+                    <thead>
+                      <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.08)', background: 'rgba(255,255,255,0.02)' }}>
+                        <th style={{ padding: '14px 20px', fontSize: '13px', color: 'var(--text-muted)', fontWeight: 'bold' }}>Name</th>
+                        <th style={{ padding: '14px 20px', fontSize: '13px', color: 'var(--text-muted)', fontWeight: 'bold' }}>Size</th>
+                        <th style={{ padding: '14px 20px', fontSize: '13px', color: 'var(--text-muted)', fontWeight: 'bold' }}>Type</th>
+                        <th style={{ padding: '14px 20px', fontSize: '13px', color: 'var(--text-muted)', fontWeight: 'bold' }}>Access</th>
+                        <th style={{ padding: '14px 20px', fontSize: '13px', color: 'var(--text-muted)', fontWeight: 'bold' }}>Date Added</th>
+                        <th style={{ padding: '14px 20px', fontSize: '13px', color: 'var(--text-muted)', fontWeight: 'bold', textAlign: 'right' }}>Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {filtered.map(file => {
+                        const iconColor = file.file_type === 'image' ? '#ffb300' : file.file_type === 'video' ? '#00b0ff' : file.file_type === 'pdf' ? '#ff5252' : '#90a4ae';
+                        return (
+                          <tr key={file.id} style={{ borderBottom: '1px solid rgba(255,255,255,0.04)', transition: 'background 0.2s' }} onMouseOver={e=>e.currentTarget.style.background='rgba(255,255,255,0.01)'} onMouseOut={e=>e.currentTarget.style.background='transparent'}>
+                            <td style={{ padding: '14px 20px', display: 'flex', alignItems: 'center', gap: '12px', minWidth: '200px' }}>
+                              <span style={{ padding: '6px', borderRadius: '6px', background: `${iconColor}15`, display: 'inline-flex' }}>
+                                {file.file_type === 'image' && <ImageIcon size={16} style={{ color: iconColor }} />}
+                                {file.file_type === 'video' && <Video size={16} style={{ color: iconColor }} />}
+                                {file.file_type === 'pdf' && <FileText size={16} style={{ color: iconColor }} />}
+                                {file.file_type !== 'image' && file.file_type !== 'video' && file.file_type !== 'pdf' && <File size={16} style={{ color: iconColor }} />}
+                              </span>
+                              <span style={{ fontWeight: '600', fontSize: '14px', color: 'var(--text-primary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={file.name}>
+                                {file.name}
+                              </span>
+                            </td>
+                            <td style={{ padding: '14px 20px', fontSize: '13px', color: 'var(--text-secondary)' }}>{formatBytes(file.size_bytes)}</td>
+                            <td style={{ padding: '14px 20px', fontSize: '13px', color: 'var(--text-muted)', textTransform: 'capitalize' }}>{file.file_type}</td>
+                            <td style={{ padding: '14px 20px' }}>
+                              <span style={{ fontSize: '10px', textTransform: 'uppercase', padding: '3px 8px', borderRadius: '10px', fontWeight: 'bold', background: file.access_level === 'public' ? 'rgba(0,255,136,0.1)' : 'rgba(179,128,255,0.1)', color: file.access_level === 'public' ? '#00ff88' : '#b380ff', border: file.access_level === 'public' ? '1px solid rgba(0,255,136,0.2)' : '1px solid rgba(179,128,255,0.2)' }}>
+                                {file.access_level}
+                              </span>
+                            </td>
+                            <td style={{ padding: '14px 20px', fontSize: '13px', color: 'var(--text-muted)' }}>{new Date(file.created_at).toLocaleDateString()}</td>
+                            <td style={{ padding: '14px 20px', textAlign: 'right' }}>
+                              <div style={{ display: 'inline-flex', gap: '6px' }}>
+                                <button onClick={() => handleDownloadDriveFile(file)} style={{ padding: '6px 12px', background: 'rgba(255,255,255,0.05)', border: 'none', borderRadius: '6px', color: '#fff', fontSize: '11px', fontWeight: 'bold', cursor: 'pointer' }}>
+                                  Get
+                                </button>
+                                <button 
+                                  onClick={async () => {
+                                    try {
+                                      const { data } = await supabase!.storage.from('vibe-drive').createSignedUrl(file.file_path, 86400 * 7);
+                                      if (data?.signedUrl) {
+                                        await navigator.clipboard.writeText(data.signedUrl);
+                                        toast.success("Share link copied!");
+                                      }
+                                    } catch (err) {}
+                                  }}
+                                  style={{ padding: '6px', background: 'rgba(255,255,255,0.05)', border: 'none', borderRadius: '6px', color: 'var(--text-muted)', cursor: 'pointer' }}
+                                  title="Copy Sharing Link"
+                                >
+                                  <Share2 size={13} />
+                                </button>
+                                <button onClick={() => handleDeleteDriveFile(file)} style={{ padding: '6px', background: 'rgba(255,0,0,0.1)', border: 'none', borderRadius: '6px', color: '#ff4d4d', cursor: 'pointer' }} title="Delete">
+                                  <Trash2 size={13} />
+                                </button>
+                              </div>
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
                 </div>
-              )
-            )}
+              );
+            })()}
+
+            {/* Custom Upload Modal */}
+            <AnimatePresence>
+              {showDriveUploadModal && (
+                <div style={{ position: 'fixed', inset: 0, zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }}>
+                  <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setShowDriveUploadModal(false)} style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(8px)' }} />
+                  
+                  <motion.div initial={{ opacity: 0, scale: 0.95, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.95, y: 20 }} style={{ position: 'relative', width: '100%', maxWidth: '450px', background: 'rgba(15,15,15,0.95)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '24px', padding: '24px', boxShadow: '0 20px 50px rgba(0,0,0,0.5)', zIndex: 10 }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+                      <h3 style={{ margin: 0, fontSize: '18px', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '8px' }}><UploadCloud size={20} color="#00ff88" /> Upload to Vibe Drive</h3>
+                      <button onClick={() => setShowDriveUploadModal(false)} style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer' }}><X size={18} /></button>
+                    </div>
+                    
+                    <form onSubmit={handleUploadDriveFile} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                      <div style={{ border: '2px dashed rgba(255,255,255,0.1)', borderRadius: '12px', padding: '24px', textAlign: 'center', position: 'relative', background: 'rgba(255,255,255,0.01)' }}>
+                        <input 
+                          type="file" 
+                          required
+                          onChange={e => {
+                            const file = e.target.files?.[0] || null;
+                            setDriveUploadFile(file);
+                            if (file) {
+                              setDriveUploadName(file.name.split('.').slice(0, -1).join('.'));
+                            }
+                          }}
+                          style={{ position: 'absolute', inset: 0, opacity: 0, cursor: 'pointer', width: '100%', height: '100%' }}
+                        />
+                        <UploadCloud size={32} style={{ opacity: 0.5, margin: '0 auto 10px', color: '#00ff88' }} />
+                        <p style={{ margin: 0, fontSize: '14px', fontWeight: 'bold' }}>
+                          {driveUploadFile ? driveUploadFile.name : "Click or Drag File to Upload"}
+                        </p>
+                        <p style={{ margin: '4px 0 0 0', fontSize: '12px', color: 'var(--text-muted)' }}>
+                          {driveUploadFile ? formatBytes(driveUploadFile.size) : "Supports PDFs, Audio, Video, Archives up to limit"}
+                        </p>
+                      </div>
+                      
+                      {driveUploadFile && (
+                        <>
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                            <label style={{ fontSize: '12px', fontWeight: 'bold', color: 'var(--text-secondary)' }}>File Display Name</label>
+                            <input 
+                              type="text" 
+                              required
+                              placeholder="Enter customized file name..." 
+                              value={driveUploadName}
+                              onChange={e => setDriveUploadName(e.target.value)}
+                              style={{ width: '100%', padding: '12px', background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '8px', color: 'var(--text-primary)', outline: 'none' }}
+                            />
+                          </div>
+                          
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                            <label style={{ fontSize: '12px', fontWeight: 'bold', color: 'var(--text-secondary)' }}>Access Permission</label>
+                            <select 
+                              value={driveUploadAccessLevel}
+                              onChange={e => setDriveUploadAccessLevel(e.target.value as any)}
+                              style={{ width: '100%', padding: '12px', background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '8px', color: 'var(--text-primary)', outline: 'none', cursor: 'pointer' }}
+                            >
+                              <option value="public">🔓 Public (Anyone can download)</option>
+                              <option value="subscribers">⭐️ Subscriber-Only (Free for active subs)</option>
+                            </select>
+                          </div>
+                        </>
+                      )}
+
+                      {/* Upgrade Banner in Modal if Limit is Exceeded */}
+                      {driveUploadFile && (profile.storage_used_bytes + driveUploadFile.size) > (profile.storage_limit_bytes || 10737418240) && (
+                        <div style={{ background: 'rgba(255,0,85,0.1)', border: '1px solid rgba(255,0,85,0.2)', padding: '16px', borderRadius: '12px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                          <p style={{ margin: 0, fontSize: '12px', color: '#ff4d85', fontWeight: 'bold' }}>
+                            ⚠️ Insufficient space: Uploading this file ({formatBytes(driveUploadFile.size)}) will exceed your {formatBytes(profile.storage_limit_bytes || 10737418240)} limit.
+                          </p>
+                          <div style={{ display: 'flex', gap: '8px' }}>
+                            <button 
+                              type="button"
+                              onClick={() => {
+                                handleStripeCheckout('Vibe Drive Pro Plan (100 GB)', 9.99, { storage_tier: 'pro_100gb' });
+                              }}
+                              style={{ flex: 1, padding: '8px', background: '#ff4d85', color: 'white', border: 'none', borderRadius: '6px', fontSize: '11px', fontWeight: 'bold', cursor: 'pointer' }}
+                            >
+                              Upgrade to Pro (100 GB)
+                            </button>
+                          </div>
+                        </div>
+                      )}
+                      
+                      <button 
+                        type="submit" 
+                        disabled={uploadingDriveFile || !driveUploadFile || (profile.storage_used_bytes + driveUploadFile.size) > (profile.storage_limit_bytes || 10737418240)}
+                        style={{ width: '100%', padding: '14px', background: 'linear-gradient(135deg, #00ff88, #00b0ff)', color: '#000', fontWeight: 'bold', border: 'none', borderRadius: '12px', cursor: 'pointer', transition: 'opacity 0.2s', opacity: (uploadingDriveFile || !driveUploadFile || (profile.storage_used_bytes + driveUploadFile.size) > (profile.storage_limit_bytes || 10737418240)) ? 0.5 : 1 }}
+                      >
+                        {uploadingDriveFile ? "Uploading..." : "Start Upload"}
+                      </button>
+                    </form>
+                  </motion.div>
+                </div>
+              )}
+            </AnimatePresence>
           </motion.div>
         )}
 
@@ -5349,9 +6722,35 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
                         <div style={{ color: 'var(--text-primary)', fontSize: '14px', display: 'flex', alignItems: 'center', gap: '8px' }}><Clock size={14} color="#aaa" /> {b.time}</div>
                         <div style={{ color: '#ff4d85', fontSize: '14px', display: 'flex', alignItems: 'center', gap: '8px', fontWeight: 'bold' }}><Video size={14} /> {b.meeting_type?.replace('_', ' ')}</div>
                       </div>
-                      <button onClick={() => window.open(b.meeting_link || `https://meet.jit.si/vibe_${b.id}`, '_blank')} style={{ width: '100%', padding: '12px', background: '#00ff88', color: '#000', border: 'none', borderRadius: '12px', fontWeight: 'bold', cursor: 'pointer', transition: '0.2s' }} onMouseOver={e=>e.currentTarget.style.transform='scale(1.02)'} onMouseOut={e=>e.currentTarget.style.transform='scale(1)'}>
-                        Join Video Room
-                      </button>
+                      {b.meeting_type?.includes('virtual') && (
+                        <button 
+                          onClick={() => {
+                            window.open(`/call/${b.id}?type=${b.meeting_type?.includes('audio') ? 'audio' : 'video'}`, '_blank');
+                          }} 
+                          style={{ width: '100%', padding: '12px', background: '#00ff88', color: '#000', border: 'none', borderRadius: '12px', fontWeight: 'bold', cursor: 'pointer', transition: '0.2s', marginBottom: b.record_call ? '12px' : '0' }}
+                          onMouseOver={e=>e.currentTarget.style.transform='scale(1.02)'} onMouseOut={e=>e.currentTarget.style.transform='scale(1)'}
+                        >
+                          Join {b.meeting_type?.includes('audio') ? 'Audio' : 'Video'} Call
+                        </button>
+                      )}
+                      
+                      {b.record_call && (
+                        <div style={{ marginTop: '10px' }}>
+                          {b.recording_url ? (
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                              <span style={{ fontSize: '12px', color: '#00ff88', fontWeight: 'bold', display: 'block' }}>✅ Recording Available:</span>
+                              <video src={b.recording_url} controls style={{ width: '100%', borderRadius: '8px', background: '#000', height: b.meeting_type?.includes('audio') ? '50px' : 'auto' }} />
+                              <a href={b.recording_url} download target="_blank" rel="noopener noreferrer" style={{ display: 'block', textDecoration: 'none', background: 'rgba(255,255,255,0.05)', color: '#fff', border: '1px solid rgba(255,255,255,0.1)', padding: '8px', borderRadius: '8px', fontSize: '13px', fontWeight: 'bold', textAlign: 'center' }}>
+                                📥 Download Recording
+                              </a>
+                            </div>
+                          ) : (
+                            <div style={{ padding: '8px 12px', background: 'rgba(255,255,255,0.02)', border: '1px dashed rgba(255,255,255,0.1)', borderRadius: '8px', fontSize: '12px', color: 'var(--text-muted)', textAlign: 'center' }}>
+                              ⏳ Call recording will be delivered here after the session.
+                            </div>
+                          )}
+                        </div>
+                      )}
                     </div>
                   ))}
                 </div>
@@ -5383,10 +6782,34 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
                           <div style={{ color: 'var(--text-primary)', fontSize: '14px', display: 'flex', alignItems: 'center', gap: '8px' }}><Clock size={14} color="#aaa" /> {b.time}</div>
                           <div style={{ color: '#00ff88', fontSize: '14px', display: 'flex', alignItems: 'center', gap: '8px', fontWeight: 'bold' }}><Video size={14} /> {b.meeting_type?.replace('_', ' ')}</div>
                         </div>
-                        <button onClick={() => window.open(b.meeting_link || `https://meet.jit.si/vibe_${b.id}`, '_blank')} style={{ width: '100%', padding: '12px', background: 'transparent', border: '1px solid #00ff88', color: '#00ff88', borderRadius: '12px', fontWeight: 'bold', cursor: 'pointer', transition: '0.2s' }} onMouseOver={e=>{e.currentTarget.style.background='#00ff88'; e.currentTarget.style.color='#000'}} onMouseOut={e=>{e.currentTarget.style.background='transparent'; e.currentTarget.style.color='#00ff88'}}>
-                          Host Video Room
+                      {b.meeting_type?.includes('virtual') && (
+                        <button 
+                          onClick={() => {
+                            window.open(`/call/${b.id}?type=${b.meeting_type?.includes('audio') ? 'audio' : 'video'}`, '_blank');
+                          }} 
+                          style={{ width: '100%', padding: '12px', background: 'transparent', border: '1px solid #00ff88', color: '#00ff88', borderRadius: '12px', fontWeight: 'bold', cursor: 'pointer', transition: '0.2s', marginBottom: b.record_call ? '12px' : '0' }}
+                          onMouseOver={e=>{e.currentTarget.style.background='#00ff88'; e.currentTarget.style.color='#000'}} 
+                          onMouseOut={e=>{e.currentTarget.style.background='transparent'; e.currentTarget.style.color='#00ff88'}}
+                        >
+                          Host {b.meeting_type?.includes('audio') ? 'Audio' : 'Video'} Call
                         </button>
-                      </div>
+                      )}
+                      
+                      {b.record_call && (
+                        <div style={{ marginTop: '10px' }}>
+                          {b.recording_url ? (
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                              <span style={{ fontSize: '12px', color: '#00ff88', fontWeight: 'bold', display: 'block' }}>✅ Call Recording:</span>
+                              <video src={b.recording_url} controls style={{ width: '100%', borderRadius: '8px', background: '#000', height: b.meeting_type?.includes('audio') ? '50px' : 'auto' }} />
+                            </div>
+                          ) : (
+                            <div style={{ padding: '8px 12px', background: 'rgba(255,68,68,0.1)', border: '1px solid rgba(255,68,68,0.2)', borderRadius: '8px', fontSize: '12px', color: '#ff4d4d', fontWeight: 'bold', textAlign: 'center', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}>
+                              <span>🔴 Recording requested by customer</span>
+                            </div>
+                          )}
+                        </div>
+                      )}
+                    </div>
                     ))}
                   </div>
                 )}

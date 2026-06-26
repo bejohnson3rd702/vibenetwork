@@ -129,6 +129,7 @@ export default function N2NHome({ wlConfig, categories, activeVideo, setActiveVi
           .select('id, username, avatar_url, bio, whitelabel_id, created_at')
           .in('whitelabel_id', fetchIds)
           .eq('role', 'influencer')
+          .neq('is_active', false)
           .order('created_at', { ascending: false });
 
         if (!cancelled && athletesData) {

@@ -61,7 +61,7 @@ export function AnalyticsTab({ wlConfig }: { wlConfig: any }) {
 
         } else if (wlConfig?.n2n_enabled) {
           // N2N Parent Network: Parent + Child networks + channels
-          const children = await getChildNetworks(wlConfig.id);
+          const children = await getChildNetworks(wlConfig.id, true);
           childConfigsCount = children.length;
           const networkIds = [wlConfig.id, ...children.map(c => c.id)];
 

@@ -79,7 +79,7 @@ export const N2NBrandingTab = ({ wlConfig }: { wlConfig: any }) => {
     if (!wlConfig?.id) return;
     const load = async () => {
       setLoading(true);
-      const nets = await getChildNetworks(wlConfig.id);
+      const nets = await getChildNetworks(wlConfig.id, true);
       setChildren(nets);
       if (nets.length > 0) {
         setSelectedId(nets[0].id);
