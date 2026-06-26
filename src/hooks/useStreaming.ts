@@ -323,6 +323,7 @@ export function useStreaming({ profileId, isOwnProfile, user, supabase, channelR
 
     // Listen for live stream status announcements
     channel.on('broadcast', { event: 'stream_status' }, (payload: any) => {
+      if (isOwnProfile) return;
       console.log("[useStreaming broadcast receive] payload:", payload.payload);
       const { 
         isPlayingLive: hostIsPlaying, 
@@ -346,6 +347,7 @@ export function useStreaming({ profileId, isOwnProfile, user, supabase, channelR
 
     // Listen for guest list sync from host
     channel.on('broadcast', { event: 'host_sync_guests' }, (payload: any) => {
+      if (isOwnProfile) return;
       const guestList = payload.payload;
       setGuests(guestList);
 
