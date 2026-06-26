@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
-import { Play, Tv, X, ChevronLeft, ChevronRight, Clock, ExternalLink, Video, VideoOff, Mic, MicOff, Copy, Check, Send, Globe, Lock, Sparkles, Languages, Volume2, VolumeX, FileText } from 'lucide-react';
+import { Play, Tv, X, ChevronLeft, ChevronRight, Clock, ExternalLink, Video, VideoOff, Mic, MicOff, Copy, Check, Send, Globe, Lock, Sparkles, Languages, Volume2, VolumeX } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from '../supabaseClient';
 import { isOlympianConfig, isB2kConfig, isKpleConfig } from '../lib/whitelabel';
@@ -592,47 +592,6 @@ const getAiThumbnail = (
   return `https://image.pollinations.ai/prompt/${encodeURIComponent(prompt)}?width=960&height=540&nologo=true&seed=${seed}`;
 };
 
-const generateFallbackTranscript = (title: string, description: string) => {
-  const speakers = ["Host", "Presenter", "Special Guest", "Analyst"];
-  const cleanTitle = title || "this broadcast";
-  const descSnippet = description 
-    ? (description.length > 120 ? description.slice(0, 120) + "..." : description)
-    : "we have a great session planned for you today.";
-  
-  return [
-    {
-      time: "00:00",
-      seconds: 0,
-      speaker: speakers[0],
-      text: `Hello and welcome back to the channel. Today, we are tuning in to watch ${cleanTitle}.`
-    },
-    {
-      time: "00:15",
-      seconds: 15,
-      speaker: speakers[1],
-      text: `Thanks for having me. Looking at the agenda and details: "${descSnippet}", there is really a lot of depth to discuss here.`
-    },
-    {
-      time: "00:35",
-      seconds: 35,
-      speaker: speakers[0],
-      text: `Indeed. Bodybuilding, sports, and live entertainment are evolving fast. This video highlights some of the most critical elements.`
-    },
-    {
-      time: "00:58",
-      seconds: 58,
-      speaker: speakers[2],
-      text: `For everyone listening, we highly encourage joining our Live Chat or watch party inside the Fan Zone. Leave your thoughts in real time!`
-    },
-    {
-      time: "01:25",
-      seconds: 85,
-      speaker: speakers[0],
-      text: `We will be taking questions and comments as we continue. Thank you all for watching and don't forget to follow our channel for updates.`
-    }
-  ];
-};
-
 export default function WatchLive({ accent = '#D35400', isOlympian = false, isB2K = false, isVibe = false, isKple = false, isVibe100 = false }: { accent?: string; isOlympian?: boolean; isB2K?: boolean; isVibe?: boolean; isKple?: boolean; isVibe100?: boolean }) {
   const [clips, setClips] = useState<VideoClip[]>([]);
   const [loading, setLoading] = useState(true);
@@ -643,23 +602,6 @@ export default function WatchLive({ accent = '#D35400', isOlympian = false, isB2
   const videoRef = useRef<HTMLVideoElement>(null);
   const chatScrollRef = useRef<HTMLDivElement>(null);
   const modalRef = useRef<HTMLDivElement>(null);
-
-  // Video Transcript States
-  const [activeVideoTab, setActiveVideoTab] = useState<'about' | 'transcript'>('about');
-  const [transcript, setTranscript] = useState<any[] | null>(null);
-  const [loadingTranscript, setLoadingTranscript] = useState<boolean>(false);
-  const [ytStartOffset, setYtStartOffset] = useState<number | null>(null);
-
-  const handleTimestampClick = (seconds: number) => {
-    const isYouTube = activeVideo?.videoUrl?.includes('youtube.com') || activeVideo?.videoUrl?.includes('youtu.be') || activeVideo?.source === 'YouTube';
-    const isDailymotion = activeVideo?.videoUrl?.includes('dailymotion.com') || activeVideo?.videoUrl?.includes('dai.ly') || activeVideo?.source === 'Dailymotion';
-    if (isYouTube || isDailymotion) {
-      setYtStartOffset(seconds);
-    } else if (videoRef.current) {
-      videoRef.current.currentTime = seconds;
-      videoRef.current.play().catch(() => {});
-    }
-  };
 
   // WWTC Translation Center state
   const [wwtcLanguages, setWwtcLanguages] = useState<any[]>([]);
@@ -695,7 +637,7 @@ export default function WatchLive({ accent = '#D35400', isOlympian = false, isB2
     };
   }, []);
 
-  // Reset translated video info and load transcript when active video changes
+  // Reset translated video info when active video changes
   useEffect(() => {
     setTranslatedInfo(null);
     setInfoAudioBase64(null);
@@ -704,47 +646,6 @@ export default function WatchLive({ accent = '#D35400', isOlympian = false, isB2
     if (infoAudioRef.current) {
       infoAudioRef.current.pause();
     }
-
-    if (!activeVideo) {
-      setTranscript(null);
-      setActiveVideoTab('about');
-      setYtStartOffset(null);
-      return;
-    }
-
-    setYtStartOffset(null);
-    setActiveVideoTab('about');
-
-    const fetchTranscript = async () => {
-      try {
-        setLoadingTranscript(true);
-        const { data, error } = await supabase
-          .from('video_transcripts')
-          .select('transcript')
-          .eq('video_id', activeVideo.id)
-          .maybeSingle();
-
-        if (error) {
-          console.warn("Error loading transcript from DB:", error.message);
-        }
-
-        if (data && data.transcript) {
-          setTranscript(data.transcript);
-        } else {
-          const generated = generateFallbackTranscript(
-            activeVideo.headline || activeVideo.title || 'the video',
-            activeVideo.description || ''
-          );
-          setTranscript(generated);
-        }
-      } catch (err) {
-        console.error("Failed to load transcript:", err);
-      } finally {
-        setLoadingTranscript(false);
-      }
-    };
-
-    fetchTranscript();
   }, [activeVideo]);
 
   // Translate active video title & description
@@ -1862,8 +1763,7 @@ export default function WatchLive({ accent = '#D35400', isOlympian = false, isB2
                           
                           return (
                             <iframe
-                              key={`${ytId}-${ytStartOffset}`}
-                              src={`https://www.youtube.com/embed/${ytId}?autoplay=1&controls=1&rel=0${ytStartOffset !== null ? `&start=${ytStartOffset}` : ''}`}
+                              src={`https://www.youtube.com/embed/${ytId}?autoplay=1&controls=1&rel=0`}
                               title={activeVideo.headline}
                               frameBorder="0"
                               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
@@ -1876,8 +1776,7 @@ export default function WatchLive({ accent = '#D35400', isOlympian = false, isB2
                           const dmId = match ? match[1] : activeVideo.id;
                           return (
                             <iframe
-                              key={`${dmId}-${ytStartOffset}`}
-                              src={`https://www.dailymotion.com/embed/video/${dmId}?autoplay=1${ytStartOffset !== null ? `&start=${ytStartOffset}` : ''}`}
+                              src={`https://www.dailymotion.com/embed/video/${dmId}?autoplay=1`}
                               title={activeVideo.headline}
                               frameBorder="0"
                               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
@@ -2082,110 +1981,9 @@ export default function WatchLive({ accent = '#D35400', isOlympian = false, isB2
                             </span>
                           )}
                         </h3>
-
-                        {/* Tabs Selector */}
-                        <div style={{ display: 'flex', gap: '8px', borderBottom: '1px solid rgba(255,255,255,0.08)', paddingBottom: '8px', marginBottom: '16px', marginTop: '16px' }}>
-                          <button
-                            onClick={() => setActiveVideoTab('about')}
-                            style={{
-                              background: 'none',
-                              border: 'none',
-                              color: activeVideoTab === 'about' ? '#fff' : '#888',
-                              fontSize: '13px',
-                              fontWeight: 'bold',
-                              padding: '6px 12px',
-                              borderBottom: activeVideoTab === 'about' ? `2px solid ${accent}` : '2px solid transparent',
-                              cursor: 'pointer',
-                              transition: 'all 0.2s',
-                              outline: 'none',
-                            }}
-                          >
-                            About
-                          </button>
-                          <button
-                            onClick={() => setActiveVideoTab('transcript')}
-                            style={{
-                              background: 'none',
-                              border: 'none',
-                              color: activeVideoTab === 'transcript' ? '#fff' : '#888',
-                              fontSize: '13px',
-                              fontWeight: 'bold',
-                              padding: '6px 12px',
-                              borderBottom: activeVideoTab === 'transcript' ? `2px solid ${accent}` : '2px solid transparent',
-                              cursor: 'pointer',
-                              transition: 'all 0.2s',
-                              display: 'flex',
-                              alignItems: 'center',
-                              gap: '6px',
-                              outline: 'none',
-                            }}
-                          >
-                            <FileText size={13} /> Transcript
-                          </button>
-                        </div>
-
-                        {/* Tab Contents */}
-                        {activeVideoTab === 'about' ? (
-                          <p style={{ margin: '0 0 12px 0', fontSize: '13px', color: '#ccc', lineHeight: 1.5 }}>
-                            {translatedInfo ? translatedInfo.description : activeVideo.description}
-                          </p>
-                        ) : (
-                          <div style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '12px', padding: '16px', minHeight: '160px', maxHeight: '300px', overflowY: 'auto' }}>
-                            {loadingTranscript ? (
-                              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100px', color: '#888', fontSize: '13px' }}>
-                                Loading transcript...
-                              </div>
-                            ) : transcript && transcript.length > 0 ? (
-                              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                                {transcript.map((seg, idx) => (
-                                  <div 
-                                    key={`seg-${idx}`} 
-                                    style={{ 
-                                      display: 'flex', 
-                                      gap: '12px', 
-                                      alignItems: 'flex-start',
-                                      padding: '6px 8px',
-                                      borderRadius: '6px',
-                                      transition: 'background 0.2s',
-                                    }}
-                                    onMouseOver={e => e.currentTarget.style.background = 'rgba(255,255,255,0.03)'}
-                                    onMouseOut={e => e.currentTarget.style.background = 'transparent'}
-                                  >
-                                    <button
-                                      onClick={() => handleTimestampClick(seg.seconds)}
-                                      style={{
-                                        background: `${accent}15`,
-                                        border: `1px solid ${accent}33`,
-                                        color: accent,
-                                        fontSize: '11px',
-                                        fontWeight: 'bold',
-                                        padding: '2px 8px',
-                                        borderRadius: '4px',
-                                        cursor: 'pointer',
-                                        flexShrink: 0,
-                                        marginTop: '1px',
-                                        transition: 'all 0.2s',
-                                        outline: 'none',
-                                      }}
-                                      onMouseOver={e => { e.currentTarget.style.background = accent; e.currentTarget.style.color = '#000'; }}
-                                      onMouseOut={e => { e.currentTarget.style.background = `${accent}15`; e.currentTarget.style.color = accent; }}
-                                    >
-                                      {seg.time}
-                                    </button>
-                                    <div style={{ fontSize: '13px', lineHeight: 1.5 }}>
-                                      <strong style={{ color: '#fff', marginRight: '6px' }}>{seg.speaker}:</strong>
-                                      <span style={{ color: '#ddd' }}>{seg.text}</span>
-                                    </div>
-                                  </div>
-                                ))}
-                              </div>
-                            ) : (
-                              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100px', color: '#888', fontSize: '13px' }}>
-                                No transcript available.
-                              </div>
-                            )}
-                          </div>
-                        )}
+                        <p style={{ margin: '0 0 12px 0', fontSize: '13px', color: '#ccc', lineHeight: 1.5 }}>
+                          {translatedInfo ? translatedInfo.description : activeVideo.description}
+                        </p>
                       </div>
 
                       <div className="watch-live-actions-container" style={{ display: 'flex', gap: '10px', alignItems: 'center', flexShrink: 0 }}>
