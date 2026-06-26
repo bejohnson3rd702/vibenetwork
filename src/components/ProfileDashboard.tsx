@@ -4407,12 +4407,12 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
                     {/* Weekly availability template */}
                     <div style={{ marginBottom: '28px' }}>
                       <h5 style={{ margin: '0 0 16px 0', fontSize: '14px', color: '#ccc', fontWeight: 'bold' }}>Weekly Working Hours (Template)</h5>
-                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '14px' }}>
+                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '14px' }}>
                         {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map(day => {
                           const dayConfig = bookingAvailability[day] || { start: '09:00', end: '17:00', active: false };
                           const isActive = !!dayConfig.active;
                           return (
-                            <div key={day} style={{ background: isActive ? `${wlConfig?.accent || '#00ff88'}08` : 'rgba(0,0,0,0.3)', padding: '14px 18px', borderRadius: '14px', border: '1.5px solid', borderColor: isActive ? (wlConfig?.accent || '#00ff88') : 'rgba(255,255,255,0.05)', display: 'flex', flexDirection: 'column', gap: '10px', transition: 'all 0.25s ease', boxShadow: isActive ? `0 4px 15px ${wlConfig?.accent || '#00ff88'}0c` : 'none' }}>
+                            <div key={day} style={{ background: isActive ? `${wlConfig?.accent || '#00ff88'}08` : 'rgba(0,0,0,0.3)', padding: '14px 12px', borderRadius: '14px', border: '1.5px solid', borderColor: isActive ? (wlConfig?.accent || '#00ff88') : 'rgba(255,255,255,0.05)', display: 'flex', flexDirection: 'column', gap: '10px', transition: 'all 0.25s ease', boxShadow: isActive ? `0 4px 15px ${wlConfig?.accent || '#00ff88'}0c` : 'none' }}>
                               <label style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer', fontWeight: 'bold', fontSize: '14px', color: isActive ? '#fff' : '#aaa' }}>
                                 <input type="checkbox" checked={isActive} onChange={e => {
                                   setBookingAvailability(prev => ({
@@ -4429,14 +4429,14 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
                                     ...prev,
                                     [day]: { ...dayConfig, start: e.target.value }
                                   }));
-                                }} style={{ flex: 1, background: 'rgba(0,0,0,0.4)', border: '1px solid rgba(255,255,255,0.08)', padding: '6px 8px', borderRadius: '8px', color: '#fff', fontSize: '12px', outline: 'none', textAlign: 'center' }} />
+                                }} style={{ flex: 1, minWidth: '0', background: 'rgba(0,0,0,0.4)', border: '1px solid rgba(255,255,255,0.08)', padding: '6px 4px', borderRadius: '8px', color: '#fff', fontSize: '12px', outline: 'none', textAlign: 'center' }} />
                                 <span style={{ color: 'var(--text-muted)', fontSize: '12px' }}>to</span>
                                 <input type="time" value={dayConfig.end || '17:00'} onChange={e => {
                                   setBookingAvailability(prev => ({
                                     ...prev,
                                     [day]: { ...dayConfig, end: e.target.value }
                                   }));
-                                }} style={{ flex: 1, background: 'rgba(0,0,0,0.4)', border: '1px solid rgba(255,255,255,0.08)', padding: '6px 8px', borderRadius: '8px', color: '#fff', fontSize: '12px', outline: 'none', textAlign: 'center' }} />
+                                }} style={{ flex: 1, minWidth: '0', background: 'rgba(0,0,0,0.4)', border: '1px solid rgba(255,255,255,0.08)', padding: '6px 4px', borderRadius: '8px', color: '#fff', fontSize: '12px', outline: 'none', textAlign: 'center' }} />
                               </div>
                             </div>
                           );
