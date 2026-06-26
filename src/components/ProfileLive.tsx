@@ -446,8 +446,8 @@ export const ProfileLive: React.FC<ProfileLiveProps> = ({
               }
             `}</style>
             {effectiveIsSubscribed || isOwnProfile || localGuestData !== null ? (
-              <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} style={{ background: 'var(--bg-surface)', borderRadius: '24px', overflow: 'hidden', border: '1px solid rgba(255,255,255,0.05)' }}>
-                <div className="live-stream-container">
+               <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} style={{ background: 'var(--bg-surface)', borderRadius: '24px', overflow: 'hidden', border: `1px solid ${accent}22` }}>
+                 <div className="live-stream-container">
                    <div className="live-video-slot">
                   {liveCountdown !== null && liveCountdown !== undefined && (
                      <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(12px)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', zIndex: 40 }}>
@@ -477,12 +477,12 @@ export const ProfileLive: React.FC<ProfileLiveProps> = ({
                   {isPlayingLive && (
                      <>
                         {isPubliclyLive ? (
-                           <div className="live-video-status" style={{ position: 'absolute', top: 20, left: 20, background: '#ff0055', color: 'var(--text-primary)', padding: '6px 14px', borderRadius: '12px', fontWeight: 'bold', fontSize: '14px', display: 'flex', alignItems: 'center', gap: '8px', zIndex: 10, textTransform: 'uppercase', boxShadow: '0 4px 15px rgba(255,0,85,0.4)' }}>
+                           <div className="live-video-status" style={{ position: 'absolute', top: 20, left: 20, background: 'rgba(255, 0, 85, 0.25)', border: '1px solid rgba(255, 0, 85, 0.4)', backdropFilter: 'blur(12px)', color: '#fff', padding: '6px 14px', borderRadius: '12px', fontWeight: 'bold', fontSize: '12px', display: 'flex', alignItems: 'center', gap: '8px', zIndex: 10, textTransform: 'uppercase', letterSpacing: '1px', boxShadow: '0 4px 15px rgba(255,0,85,0.25)' }}>
                              <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#fff', animation: 'pulse 1.5s infinite' }}/> LIVE
                            </div>
                         ) : (
-                           <div className="live-video-status" style={{ position: 'absolute', top: 20, left: 20, background: '#0055ff', color: 'var(--text-primary)', padding: '6px 14px', borderRadius: '12px', fontWeight: 'bold', fontSize: '14px', display: 'flex', alignItems: 'center', gap: '8px', zIndex: 10, textTransform: 'uppercase', boxShadow: '0 4px 15px rgba(0,85,255,0.4)' }}>
-                             <Settings size={18} /> STUDIO PREVIEW
+                           <div className="live-video-status" style={{ position: 'absolute', top: 20, left: 20, background: 'rgba(0, 85, 255, 0.25)', border: '1px solid rgba(0, 85, 255, 0.4)', backdropFilter: 'blur(12px)', color: '#fff', padding: '6px 14px', borderRadius: '12px', fontWeight: 'bold', fontSize: '12px', display: 'flex', alignItems: 'center', gap: '8px', zIndex: 10, textTransform: 'uppercase', letterSpacing: '1px', boxShadow: '0 4px 15px rgba(0,85,255,0.25)' }}>
+                             <Settings size={16} /> STUDIO PREVIEW
                            </div>
                         )}
                      </>
@@ -490,7 +490,7 @@ export const ProfileLive: React.FC<ProfileLiveProps> = ({
                   
                   <div className="live-video-actions" style={{ position: 'absolute', top: 20, right: 20, zIndex: 10, display: 'flex', gap: '10px' }}>
                     {!localGuestData && (
-                      <button onClick={() => setShowTipModal(true)} style={{ padding: '8px 16px', background: 'linear-gradient(45deg, #00ff88, #00bbff)', color: '#000', border: 'none', borderRadius: '20px', fontWeight: '900', display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', boxShadow: '0 4px 15px rgba(0,255,136,0.3)', textTransform: 'uppercase', fontSize: '13px', letterSpacing: '1px' }}>
+                      <button onClick={() => setShowTipModal(true)} style={{ padding: '8px 18px', background: 'rgba(255, 255, 255, 0.08)', border: `1px solid ${accent}44`, backdropFilter: 'blur(12px)', color: '#fff', borderRadius: '20px', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', boxShadow: '0 8px 32px rgba(0,0,0,0.3)', textTransform: 'uppercase', fontSize: '12px', letterSpacing: '1px', transition: 'all 0.2s' }} onMouseOver={e=>{e.currentTarget.style.transform='scale(1.05)'; e.currentTarget.style.borderColor=accent;}} onMouseOut={e=>{e.currentTarget.style.transform='none'; e.currentTarget.style.borderColor=`${accent}44`;}}>
                          💰 Support Stream
                       </button>
                     )}
@@ -498,64 +498,21 @@ export const ProfileLive: React.FC<ProfileLiveProps> = ({
                   
                   {isPlayingLive ? (
                      <>
-                        {/* OBS and External URL streaming modes are disabled
-                        {streamSource === 'url' && !isPreviewExpired && (
-                           liveEmbedUrl ? (
-                             <iframe 
-                               src={liveEmbedUrl} 
-                               title="Live Stream Broadcast"
-                               frameBorder="0" 
-                               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
-                               referrerPolicy="strict-origin-when-cross-origin" 
-                               allowFullScreen
-                               style={{ width: '100%', height: '100%', position: 'absolute', inset: 0, zIndex: 5 }}
-                             />
-                           ) : (
-                             <video
-                               src="/videos/tiesto.mp4"
-                               autoPlay
-                               loop
-                               muted
-                               playsInline
-                               style={{ width: '100%', height: '100%', objectFit: 'cover', position: 'absolute', inset: 0, zIndex: 5 }}
-                             />
-                           )
-                         )}
-                         {streamSource === 'obs' && !isPreviewExpired && (
-                           profile?.mux_playback_id ? (
-                             <iframe 
-                               src={`https://stream.mux.com/${profile.mux_playback_id}/embed?autoplay=true&muted=false`} 
-                               title="Live Stream Broadcast"
-                               frameBorder="0" 
-                               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
-                               allowFullScreen
-                               style={{ width: '100%', height: '100%', position: 'absolute', inset: 0, border: 'none', zIndex: 5 }}
-                             />
-                           ) : (
-                             <video
-                               src="/videos/tiesto.mp4"
-                               autoPlay
-                               loop
-                               muted
-                               playsInline
-                               style={{ width: '100%', height: '100%', objectFit: 'cover', position: 'absolute', inset: 0, zIndex: 5 }}
-                             />
-                           )
-                         )}
-                         */}
                        {!isOwnProfile && isPlayingLive && !effectiveIsSubscribed && !hasPaidForLive ? (
                          isPreviewExpired ? (
-                           <div style={{ position: 'absolute', inset: 0, zIndex: 30, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: 'var(--bg-surface)', padding: '40px', textAlign: 'center' }}>
-                             <Lock size={48} color="#ff4d85" style={{ marginBottom: '16px' }} />
-                             <h2 style={{ margin: '0 0 12px 0', fontSize: '28px', color: 'var(--text-primary)' }}>Preview Ended</h2>
-                             <p style={{ color: 'var(--text-secondary)', fontSize: '16px', maxWidth: '400px', marginBottom: '24px', lineHeight: 1.5 }}>
+                           <div style={{ position: 'absolute', inset: 0, zIndex: 30, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: 'rgba(10, 10, 12, 0.45)', backdropFilter: 'blur(30px)', padding: '40px', textAlign: 'center', border: `1px solid ${accent}22`, boxShadow: '0 20px 50px rgba(0,0,0,0.6)' }}>
+                             <div style={{ display: 'inline-flex', padding: '16px', borderRadius: '50%', background: 'rgba(255, 77, 133, 0.05)', border: '1px solid rgba(255, 77, 133, 0.15)', marginBottom: '16px', filter: 'drop-shadow(0 0 12px rgba(255,77,133,0.3))' }}>
+                                <Lock size={40} color="#ff4d85" />
+                             </div>
+                             <h2 style={{ margin: '0 0 12px 0', fontSize: '28px', color: 'var(--text-primary)', fontWeight: '900', letterSpacing: '-0.5px' }}>Preview Ended</h2>
+                             <p style={{ color: 'var(--text-secondary)', fontSize: '15px', maxWidth: '380px', marginBottom: '32px', lineHeight: 1.6 }}>
                                Your free 90-second preview has expired. Subscribe to {profile?.username} for full access, or purchase a one-time pass to continue watching.
                              </p>
                              <div style={{ display: 'flex', gap: '16px' }}>
-                               <button onClick={handleUnlockLive} style={{ padding: '14px 28px', background: 'linear-gradient(135deg, #0055ff, #00ff88)', color: 'var(--text-primary)', border: 'none', borderRadius: '12px', fontWeight: 'bold', fontSize: '16px', cursor: 'pointer', boxShadow: '0 10px 20px rgba(0,85,255,0.3)' }}>
+                               <button onClick={handleUnlockLive} style={{ padding: '14px 28px', background: `linear-gradient(135deg, ${accent}, ${accent}dd)`, color: 'var(--text-primary)', border: 'none', borderRadius: '12px', fontWeight: 'bold', fontSize: '16px', cursor: 'pointer', boxShadow: `0 8px 24px ${accent}44`, transition: 'all 0.2s' }} onMouseOver={e=>{e.currentTarget.style.transform='scale(1.05)';}} onMouseOut={e=>{e.currentTarget.style.transform='none';}}>
                                  Unlock for ${livePrice}
                                </button>
-                               <button onClick={handleSubscribe} style={{ padding: '14px 28px', background: 'rgba(255,255,255,0.1)', color: 'var(--text-primary)', border: '1px solid rgba(255,255,255,0.2)', borderRadius: '12px', fontWeight: 'bold', fontSize: '16px', cursor: 'pointer' }}>
+                               <button onClick={handleSubscribe} style={{ padding: '14px 28px', background: 'rgba(255,255,255,0.06)', color: 'var(--text-primary)', border: '1px solid rgba(255,255,255,0.15)', borderRadius: '12px', fontWeight: 'bold', fontSize: '16px', cursor: 'pointer', backdropFilter: 'blur(10px)', transition: 'all 0.2s' }} onMouseOver={e=>{e.currentTarget.style.background='rgba(255,255,255,0.1)';}} onMouseOut={e=>{e.currentTarget.style.background='rgba(255,255,255,0.06)';}}>
                                  Subscribe Now
                                </button>
                              </div>
@@ -566,7 +523,6 @@ export const ProfileLive: React.FC<ProfileLiveProps> = ({
                            </div>
                          )
                        ) : null}
-                       {/* Host AND Guest PIP/Grid Layer */}
                        {!isPreviewExpired && (streamSource === 'camera' || presenterMode || activeGuests.length > 0) && (
                          <div style={{
                            position: 'absolute', zIndex: 15,
@@ -578,10 +534,8 @@ export const ProfileLive: React.FC<ProfileLiveProps> = ({
                              gridTemplateRows: (totalSlots <= 2) ? '1fr' : '1fr 1fr'
                            })
                          }}>
-                           {/* Main Host Webcam Slot */}
                            {showHost && (
                              <div style={{ position: 'relative', background: 'var(--bg-surface)', flexShrink: 0, pointerEvents: 'auto', ...(streamSource === 'url' ? { width: 'min(20%, 200px)', aspectRatio: '16/9', borderRadius: '12px', border: '2px solid rgba(255,255,255,0.2)', overflow: 'hidden', boxShadow: '0 4px 20px rgba(0,0,0,0.5)' } : { width: '100%', height: '100%' }) }}>
-                               
                                {cameraStatus === 'loading' && (
                                  <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: 'var(--bg-surface)', zIndex: 5 }}>
                                     <div style={{ width: 40, height: 40, border: '3px solid rgba(255,255,255,0.1)', borderTopColor: '#00ff88', borderRadius: '50%', animation: 'spin 1s linear infinite', marginBottom: 15 }} />
@@ -599,12 +553,9 @@ export const ProfileLive: React.FC<ProfileLiveProps> = ({
                                     <button onClick={() => setIsPlayingLive(false)} style={{ marginTop: '15px', padding: '8px 20px', background: 'transparent', border: '1px solid var(--bg-surface-hover)', color: 'var(--text-primary)', borderRadius: '20px', cursor: 'pointer' }}>Close Mode</button>
                                  </div>
                                )}
-
-
                                 {!isOwnProfile ? (
                                   streamSource === 'camera' ? (
                                     <div style={{ width: '100%', height: '100%', position: 'relative' }}>
-                                      {/* WebRTC Host Camera Stream */}
                                       <video
                                         ref={viewerVideoRef}
                                         autoPlay
@@ -612,7 +563,6 @@ export const ProfileLive: React.FC<ProfileLiveProps> = ({
                                         controls
                                         style={{ width: '100%', height: '100%', objectFit: 'cover', border: 'none', display: isRemoteConnected ? 'block' : 'none' }}
                                       />
-                                      {/* Connection Status Overlay */}
                                       {!isRemoteConnected && (connectionStatus === 'connecting' || connectionStatus === 'reconnecting') && (
                                         <div style={{ position: 'absolute', top: 12, left: 12, display: 'flex', alignItems: 'center', gap: '8px', background: 'rgba(0,0,0,0.7)', padding: '6px 14px', borderRadius: '20px', backdropFilter: 'blur(10px)', zIndex: 10, border: '1px solid rgba(255,255,255,0.1)' }}>
                                           <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: connectionStatus === 'reconnecting' ? '#ff9900' : '#00ff88', animation: 'pulse 1.5s ease-in-out infinite' }} />
@@ -621,7 +571,6 @@ export const ProfileLive: React.FC<ProfileLiveProps> = ({
                                           </span>
                                         </div>
                                       )}
-                                      {/* Direct Fallback Loop while connecting/blocked */}
                                       {!isRemoteConnected && (
                                         <video
                                           src="/videos/tiesto.mp4"
@@ -658,24 +607,8 @@ export const ProfileLive: React.FC<ProfileLiveProps> = ({
                                </div>
                              </div>
                            )}
-                           
-                           {/* Simulated Guests Webcams Slot (Disabled)
-                           {visibleGuests.map((g, i) => (
-                             <div key={i} style={{ position: 'relative', background: 'var(--bg-surface-hover)', flexShrink: 0, pointerEvents: 'auto', ...(streamSource === 'url' ? { width: 'min(20%, 200px)', aspectRatio: '16/9', borderRadius: '12px', border: '2px solid rgba(255,255,255,0.2)', overflow: 'hidden', boxShadow: '0 4px 20px rgba(0,0,0,0.5)' } : { width: '100%', height: '100%' }) }}>
-                               <img loading="lazy" src={`https://images.unsplash.com/photo-${1550000000000 + (i * 1000)}?auto=format&fit=crop&w=800&q=80`} style={{ width: '100%', height: '100%', objectFit: 'cover', filter: 'grayscale(0.5)' }} alt="Guest Feed" />
-                               <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                                 <span style={{ background: 'rgba(0,0,0,0.5)', padding: '4px 10px', borderRadius: '20px', fontSize: '10px' }}>Guest Feed</span>
-                               </div>
-                               <div style={{ position: 'absolute', bottom: streamSource==='url'?4:10, right: streamSource==='url'?4:10, background: 'rgba(0,0,0,0.7)', padding: streamSource==='url'?'4px 8px':'6px 12px', borderRadius: '8px', textAlign: 'right', border: '1px solid rgba(255,255,255,0.1)', backdropFilter: 'blur(10px)' }}>
-                                 <div style={{ fontWeight: 'bold', fontSize: streamSource==='url'?'11px':'14px', color: 'var(--text-primary)' }}>{g.name}</div>
-                                 <div style={{ fontSize: streamSource==='url'?'9px':'11px', color: '#00ff88', textTransform: 'uppercase', letterSpacing: '1px', marginTop: '2px' }}>{g.title}</div>
-                               </div>
-                             </div>
-                           ))}
-                           */}
                          </div>
                        )}
-                                    {/* Floating Reactions overlay */}
                       <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', overflow: 'hidden', zIndex: 20 }}>
                         <AnimatePresence>
                           {reactions.map(r => (
@@ -730,7 +663,6 @@ export const ProfileLive: React.FC<ProfileLiveProps> = ({
                     </>
                   )}
 
-                  {/* Floating Pinned Product Overlay for Viewers */}
                   {!(isOwnProfile && viewMode === 'edit') && isPlayingLive && safePinnedProducts.length > 0 && (
                     <AnimatePresence>
                       {!isDrawerOpen ? (
@@ -802,7 +734,6 @@ export const ProfileLive: React.FC<ProfileLiveProps> = ({
                             pointerEvents: 'auto'
                           }}
                         >
-                          {/* Drawer Header */}
                           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                             <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
                               <span style={{ fontSize: '14px' }}>🛍️</span>
@@ -829,7 +760,6 @@ export const ProfileLive: React.FC<ProfileLiveProps> = ({
                             </button>
                           </div>
 
-                          {/* Drawer List */}
                           <div style={{
                             display: 'flex',
                             flexDirection: 'column',
@@ -915,7 +845,6 @@ export const ProfileLive: React.FC<ProfileLiveProps> = ({
                         overflow: 'hidden',
                       }}
                     >
-                      {/* Header */}
                       <div style={{ padding: '16px', borderBottom: '1px solid rgba(255,255,255,0.06)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0 }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                           <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#ff3b30', animation: 'pulse 1.5s infinite' }} />
@@ -924,7 +853,6 @@ export const ProfileLive: React.FC<ProfileLiveProps> = ({
                         <span style={{ fontSize: '11px', color: '#ff3b30', fontWeight: 700, background: 'rgba(255, 59, 48, 0.1)', padding: '2px 8px', borderRadius: '10px' }}>LIVE</span>
                       </div>
 
-                      {/* Co-Watchers Grid */}
                       <div style={{ padding: '16px', borderBottom: '1px solid rgba(255,255,255,0.06)', display: 'flex', flexDirection: 'column', gap: '10px', flexShrink: 0 }}>
                         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                           <span style={{ fontSize: '10px', fontWeight: 800, color: '#666', textTransform: 'uppercase', letterSpacing: '1px' }}>Watch Party</span>
@@ -957,7 +885,6 @@ export const ProfileLive: React.FC<ProfileLiveProps> = ({
                         </div>
 
                         <div style={{ display: 'flex', gap: '12px', alignItems: 'center', overflowX: 'auto', padding: '4px 0', scrollbarWidth: 'none' }}>
-                          {/* Local User */}
                           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px' }}>
                             <div style={{ position: 'relative' }}>
                               <motion.div
@@ -1001,7 +928,6 @@ export const ProfileLive: React.FC<ProfileLiveProps> = ({
                               <span style={{ fontSize: '9px', color: '#fff', fontWeight: 600 }}>{currentUser.name.split(' ')[0]}</span>
                             </div>
 
-                            {/* Co-watchers */}
                             {coWatchers.map(w => (
                               <div key={w.id} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px' }}>
                                 <div style={{ position: 'relative' }}>
@@ -1034,7 +960,6 @@ export const ProfileLive: React.FC<ProfileLiveProps> = ({
                           </div>
                         </div>
 
-                        {/* Room Link */}
                         <div style={{ padding: '10px 16px', borderBottom: '1px solid rgba(255,255,255,0.06)', display: 'flex', gap: '12px', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0 }}>
                           <button
                             onClick={() => setIsPrivate(!isPrivate)}
@@ -1076,7 +1001,6 @@ export const ProfileLive: React.FC<ProfileLiveProps> = ({
                           </div>
                         </div>
 
-                        {/* Chat Messages scroll area */}
                         <div ref={chatScrollRef} style={{ flex: 1, overflowY: 'auto', padding: '16px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
                           {chatMessages.length === 0 ? (
                             <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', color: '#555', fontSize: '12px' }}>
@@ -1099,9 +1023,7 @@ export const ProfileLive: React.FC<ProfileLiveProps> = ({
                           )}
                         </div>
 
-                        {/* Reaction Bar & Message Input */}
                         <div style={{ padding: '12px 16px', borderTop: '1px solid rgba(255,255,255,0.06)', background: 'rgba(0,0,0,0.2)', flexShrink: 0 }}>
-                          {/* Emoji Reactions */}
                           <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px', background: 'rgba(255,255,255,0.02)', padding: '6px 12px', borderRadius: '20px', border: '1px solid rgba(255,255,255,0.05)' }}>
                             {['🔥', '😮', '😂', '👏', '💯'].map(emoji => (
                               <button
@@ -1119,7 +1041,6 @@ export const ProfileLive: React.FC<ProfileLiveProps> = ({
                             ))}
                           </div>
 
-                          {/* Message Input */}
                           <form
                             onSubmit={e => {
                               e.preventDefault();
@@ -1228,101 +1149,98 @@ export const ProfileLive: React.FC<ProfileLiveProps> = ({
                   </p>
                   
                   {isOwnProfile && viewMode === 'edit' && (
-                    <div style={{ marginTop: '24px', background: 'rgba(255,255,255,0.03)', padding: '20px', borderRadius: '16px', border: '1px dashed rgba(255,255,255,0.2)' }}>
-                      <div style={{ display: 'flex', gap: '16px', alignItems: 'center', marginBottom: '24px', background: 'rgba(0,0,0,0.4)', padding: '12px 16px', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.05)' }}>
-                        <label style={{ color: 'var(--text-primary)', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '8px', flexShrink: 0 }}>
-                          Pay-Per-View Price: $
-                        </label>
-                        <input type="number" value={livePrice} onChange={e => setLivePrice(e.target.value)} style={{ background: 'transparent', border: '1px solid rgba(255,255,255,0.2)', color: 'var(--text-primary)', padding: '6px 12px', borderRadius: '6px', width: '80px', fontSize: '15px' }} />
-                        <span style={{ color: 'var(--text-muted)', fontSize: '13px' }}>(Free for subscribers)</span>
-                      </div>
+                     <div style={{ marginTop: '24px', background: 'rgba(15, 15, 15, 0.45)', backdropFilter: 'blur(20px)', padding: '24px', borderRadius: '24px', border: `1px solid ${accent}22`, boxShadow: '0 12px 40px rgba(0,0,0,0.4)' }}>
+                       <div style={{ display: 'flex', gap: '16px', alignItems: 'center', marginBottom: '24px', background: 'rgba(255, 255, 255, 0.02)', padding: '16px 20px', borderRadius: '16px', border: `1px solid ${accent}15` }}>
+                         <label style={{ color: 'var(--text-primary)', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '8px', flexShrink: 0 }}>
+                           Pay-Per-View Price: $
+                         </label>
+                         <input type="number" value={livePrice} onChange={e => setLivePrice(e.target.value)} onFocus={e => { e.target.style.borderColor = accent; e.target.style.boxShadow = `0 0 10px ${accent}44`; }} onBlur={e => { e.target.style.borderColor = 'rgba(255,255,255,0.2)'; e.target.style.boxShadow = 'none'; }} style={{ background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(255,255,255,0.2)', color: 'var(--text-primary)', padding: '8px 14px', borderRadius: '8px', width: '90px', fontSize: '15px', outline: 'none', transition: 'all 0.2s' }} />
+                         <span style={{ color: 'var(--text-muted)', fontSize: '13px' }}>(Free for subscribers)</span>
+                       </div>
 
-                      {/* Live Product Pinning (Broadcaster Panel) */}
-                      <div style={{ marginBottom: '24px', background: 'rgba(0,0,0,0.2)', padding: '20px', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.05)' }}>
-                        <label style={{ display: 'block', marginBottom: '12px', color: '#00ff88', fontWeight: 'bold', fontSize: '15px', textTransform: 'uppercase', letterSpacing: '1px' }}>
-                          🛍️ Feature Product Live
-                        </label>
-                        <p style={{ color: 'var(--text-secondary)', fontSize: '12px', marginBottom: '16px', marginTop: '-4px' }}>
-                          Select a product from your store to feature as a floating overlay card to all active viewers in real-time.
-                        </p>
+                       <div style={{ marginBottom: '24px', background: 'rgba(255, 255, 255, 0.02)', padding: '20px', borderRadius: '16px', border: `1px solid ${accent}15` }}>
+                         <label style={{ display: 'block', marginBottom: '12px', color: accent, fontWeight: 'bold', fontSize: '15px', textTransform: 'uppercase', letterSpacing: '1px' }}>
+                           🛍️ Feature Product Live
+                         </label>
+                         <p style={{ color: 'var(--text-secondary)', fontSize: '12px', marginBottom: '16px', marginTop: '-4px' }}>
+                           Select a product from your store to feature as a floating overlay card to all active viewers in real-time.
+                         </p>
 
-                          <div>
-                            {products.length === 0 ? (
-                              <div style={{ color: 'var(--text-secondary)', fontSize: '13px', fontStyle: 'italic', padding: '10px', textAlign: 'center', background: 'rgba(0,0,0,0.1)', borderRadius: '8px' }}>
-                                No products found in your store. Add products in the Store tab to feature them here.
-                              </div>
-                            ) : (
-                              <div style={{ display: 'flex', gap: '12px', overflowX: 'auto', paddingBottom: '8px', scrollbarWidth: 'thin' }}>
-                                {products.map((prod: any) => {
-                                  const isPinned = safePinnedProducts.some((p: any) => p.id === prod.id);
-                                  return (
-                                    <div key={prod.id} style={{ minWidth: '220px', width: '220px', background: isPinned ? 'rgba(255, 0, 85, 0.05)' : 'rgba(255,255,255,0.02)', border: isPinned ? '1px solid rgba(255, 0, 85, 0.3)' : '1px solid rgba(255,255,255,0.05)', borderRadius: '8px', padding: '12px', display: 'flex', flexDirection: 'column', gap: '8px', transition: 'all 0.2s' }} onMouseOver={e=>e.currentTarget.style.borderColor=isPinned ? 'rgba(255, 0, 85, 0.5)' : 'rgba(255,255,255,0.15)'} onMouseOut={e=>e.currentTarget.style.borderColor=isPinned ? 'rgba(255, 0, 85, 0.3)' : 'rgba(255,255,255,0.05)'}>
-                                      <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
-                                        {prod.image_url ? (
-                                          <img src={prod.image_url} alt={prod.title} style={{ width: '40px', height: '40px', objectFit: 'cover', borderRadius: '6px' }} />
-                                        ) : (
-                                          <div style={{ width: '40px', height: '40px', background: 'rgba(255,255,255,0.05)', borderRadius: '6px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '18px' }}>🛍️</div>
-                                        )}
-                                        <div style={{ overflow: 'hidden', flex: 1 }}>
-                                          <div style={{ display: 'flex', alignItems: 'center', gap: '4px', flexWrap: 'wrap' }}>
-                                            {isPinned && (
-                                              <span style={{ background: '#ff0055', color: '#fff', fontSize: '8px', fontWeight: 'bold', padding: '1px 4px', borderRadius: '3px', textTransform: 'uppercase' }}>Live</span>
-                                            )}
-                                            <div style={{ color: 'var(--text-primary)', fontWeight: 'bold', fontSize: '12px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', flex: 1 }}>{prod.title}</div>
-                                          </div>
-                                          <div style={{ color: '#00ff88', fontWeight: 'bold', fontSize: '11px', marginTop: '2px' }}>${Number(prod.price).toFixed(2)}</div>
-                                        </div>
-                                      </div>
-                                      <button
-                                        onClick={() => {
-                                          if (isPinned) {
-                                            setPinnedProducts(safePinnedProducts.filter((p: any) => p.id !== prod.id));
-                                            toast.info(`Unpinned "${prod.title}" from stream.`);
-                                          } else {
-                                            setPinnedProducts([...safePinnedProducts, prod]);
-                                            toast.success(`Pinned "${prod.title}" live!`);
-                                          }
-                                        }}
-                                        style={{
-                                          width: '100%',
-                                          padding: '6px',
-                                          background: isPinned ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 255, 136, 0.1)',
-                                          color: isPinned ? '#fff' : '#00ff88',
-                                          border: isPinned ? '1px solid rgba(255, 255, 255, 0.2)' : '1px solid rgba(0, 255, 136, 0.2)',
-                                          borderRadius: '6px',
-                                          fontSize: '11px',
-                                          fontWeight: 'bold',
-                                          cursor: 'pointer',
-                                          transition: '0.2s'
-                                        }}
-                                        onMouseOver={e => {
-                                          if (isPinned) {
-                                            e.currentTarget.style.background = 'rgba(255, 255, 255, 0.15)';
-                                          } else {
-                                            e.currentTarget.style.background = '#00ff88';
-                                            e.currentTarget.style.color = '#000';
-                                          }
-                                        }}
-                                        onMouseOut={e => {
-                                          if (isPinned) {
-                                            e.currentTarget.style.background = 'rgba(255, 255, 255, 0.1)';
-                                            e.currentTarget.style.color = '#fff';
-                                          } else {
-                                            e.currentTarget.style.background = 'rgba(0, 255, 136, 0.1)';
-                                            e.currentTarget.style.color = '#00ff88';
-                                          }
-                                        }}
-                                      >
-                                        {isPinned ? 'Unpin Product' : 'Pin to Stream'}
-                                      </button>
-                                    </div>
-                                  );
-                                })}
-                              </div>
-                            )}
-                          </div>
-                      </div>
-
+                           <div>
+                             {products.length === 0 ? (
+                               <div style={{ color: 'var(--text-secondary)', fontSize: '13px', fontStyle: 'italic', padding: '10px', textAlign: 'center', background: 'rgba(0,0,0,0.1)', borderRadius: '8px' }}>
+                                 No products found in your store. Add products in the Store tab to feature them here.
+                               </div>
+                             ) : (
+                               <div style={{ display: 'flex', gap: '12px', overflowX: 'auto', paddingBottom: '8px', scrollbarWidth: 'thin' }}>
+                                 {products.map((prod: any) => {
+                                   const isPinned = safePinnedProducts.some((p: any) => p.id === prod.id);
+                                   return (
+                                     <div key={prod.id} style={{ minWidth: '220px', width: '220px', background: isPinned ? 'rgba(255, 0, 85, 0.08)' : 'rgba(15,15,15,0.3)', border: isPinned ? '1px solid #ff0055' : `1px solid ${accent}22`, borderRadius: '12px', padding: '14px', display: 'flex', flexDirection: 'column', gap: '10px', transition: 'all 0.3s ease', cursor: 'pointer', boxShadow: isPinned ? '0 8px 24px rgba(255,0,85,0.15)' : 'none' }} onMouseOver={e=>{e.currentTarget.style.borderColor=isPinned ? '#ff0055' : accent; e.currentTarget.style.transform='translateY(-4px)';}} onMouseOut={e=>{e.currentTarget.style.borderColor=isPinned ? '#ff0055' : `${accent}22`; e.currentTarget.style.transform='none';}}>
+                                       <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+                                         {prod.image_url ? (
+                                           <img src={prod.image_url} alt={prod.title} style={{ width: '40px', height: '40px', objectFit: 'cover', borderRadius: '6px' }} />
+                                         ) : (
+                                           <div style={{ width: '40px', height: '40px', background: 'rgba(255,255,255,0.05)', borderRadius: '6px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '18px' }}>🛍️</div>
+                                         )}
+                                         <div style={{ overflow: 'hidden', flex: 1 }}>
+                                           <div style={{ display: 'flex', alignItems: 'center', gap: '4px', flexWrap: 'wrap' }}>
+                                             {isPinned && (
+                                               <span style={{ background: '#ff0055', color: '#fff', fontSize: '8px', fontWeight: 'bold', padding: '1px 4px', borderRadius: '3px', textTransform: 'uppercase' }}>Live</span>
+                                             )}
+                                             <div style={{ color: 'var(--text-primary)', fontWeight: 'bold', fontSize: '12px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', flex: 1 }}>{prod.title}</div>
+                                           </div>
+                                           <div style={{ color: accent, fontWeight: 'bold', fontSize: '11px', marginTop: '2px' }}>${Number(prod.price).toFixed(2)}</div>
+                                         </div>
+                                       </div>
+                                       <button
+                                         onClick={() => {
+                                           if (isPinned) {
+                                             setPinnedProducts(safePinnedProducts.filter((p: any) => p.id !== prod.id));
+                                             toast.info(`Unpinned "${prod.title}" from stream.`);
+                                           } else {
+                                             setPinnedProducts([...safePinnedProducts, prod]);
+                                             toast.success(`Pinned "${prod.title}" live!`);
+                                           }
+                                         }}
+                                         style={{
+                                           width: '100%',
+                                           padding: '8px',
+                                           background: isPinned ? 'rgba(255, 255, 255, 0.08)' : 'rgba(255, 255, 255, 0.04)',
+                                           color: isPinned ? 'var(--text-primary)' : accent,
+                                           border: isPinned ? '1px solid rgba(255, 255, 255, 0.15)' : `1px solid ${accent}44`,
+                                           borderRadius: '8px',
+                                           fontSize: '12px',
+                                           fontWeight: 'bold',
+                                           cursor: 'pointer',
+                                           transition: 'all 0.2s'
+                                         }}
+                                         onMouseOver={e => {
+                                           if (isPinned) {
+                                             e.currentTarget.style.background = 'rgba(255, 255, 255, 0.12)';
+                                           } else {
+                                             e.currentTarget.style.background = accent;
+                                             e.currentTarget.style.color = '#000';
+                                           }
+                                         }}
+                                         onMouseOut={e => {
+                                           if (isPinned) {
+                                             e.currentTarget.style.background = 'rgba(255, 255, 255, 0.08)';
+                                           } else {
+                                             e.currentTarget.style.background = 'rgba(255, 255, 255, 0.04)';
+                                             e.currentTarget.style.color = accent;
+                                           }
+                                         }}
+                                       >
+                                         {isPinned ? 'Unpin Product' : 'Pin to Stream'}
+                                       </button>
+                                     </div>
+                                   );
+                                 })}
+                               </div>
+                             )}
+                           </div>
+                       </div>
                       <label style={{ display: 'block', marginBottom: '12px', color: '#ff4d85', fontWeight: 'bold', fontSize: '15px' }}>Configure Live Stream Origin</label>
                       <div style={{ display: 'flex', gap: '12px', marginBottom: '16px', flexWrap: 'wrap' }}>
                          <button onClick={() => { setStreamSource('camera'); setIsPlayingLive(false); }} style={{ padding: '10px 20px', background: streamSource === 'camera' ? '#0055ff' : 'rgba(255,255,255,0.05)', color: streamSource === 'camera' ? '#fff' : '#888', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '8px' }}><Camera size={16}/> Direct Webcam</button>
@@ -1368,14 +1286,17 @@ export const ProfileLive: React.FC<ProfileLiveProps> = ({
                         */}
                         
                         {streamSource === 'camera' && (
-                          <div style={{ display: 'flex', gap: '12px', alignItems: 'center', flexWrap: 'wrap' }}>
-                             <p style={{ margin: 0, color: 'var(--text-secondary)', flex: 1, minWidth: '200px' }}>Using your local hardware as the broadcast origin server. Press "Start Streaming" to ignite the feed.</p>
+                          <div style={{ display: 'flex', gap: '16px', alignItems: 'center', flexWrap: 'wrap', background: 'rgba(255, 255, 255, 0.02)', padding: '20px', borderRadius: '16px', border: `1px solid ${accent}15` }}>
+                             <div style={{ flex: 1, minWidth: '200px' }}>
+                                <p style={{ margin: 0, color: 'var(--text-primary)', fontWeight: 'bold', fontSize: '15px' }}>Direct Broadcast Server</p>
+                                <p style={{ margin: '4px 0 0 0', color: 'var(--text-muted)', fontSize: '13px', lineHeight: '1.4' }}>Using your local hardware camera and microphone as the live stream origin. Press "Start Streaming" to ignite the feed.</p>
+                             </div>
                              {isPlayingLive ? (
-                               <button onClick={() => { setIsPlayingLive(false); }} style={{ padding: '14px 24px', background: 'rgba(229, 9, 20, 0.1)', color: '#e50914', border: '1px solid #e50914', borderRadius: '10px', fontWeight: 'bold', fontSize: '15px', cursor: 'pointer', transition: '0.2s', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                  Stop Streaming
+                               <button onClick={() => { setIsPlayingLive(false); }} style={{ padding: '14px 28px', background: 'rgba(229, 9, 20, 0.12)', color: '#ff3b30', border: '1px solid rgba(229, 9, 20, 0.3)', borderRadius: '12px', fontWeight: 'bold', fontSize: '15px', cursor: 'pointer', transition: 'all 0.2s', display: 'flex', alignItems: 'center', gap: '8px', boxShadow: '0 4px 15px rgba(229,9,20,0.1)' }} onMouseOver={e=>e.currentTarget.style.background='rgba(229, 9, 20, 0.2)'} onMouseOut={e=>e.currentTarget.style.background='rgba(229, 9, 20, 0.12)'}>
+                                  🛑 Stop Streaming
                                </button>
                              ) : (
-                               <button onClick={startLiveStream} style={{ padding: '14px 24px', background: '#e50914', color: 'var(--text-primary)', border: 'none', borderRadius: '10px', fontWeight: 'bold', fontSize: '15px', cursor: 'pointer', transition: '0.2s', display: 'flex', alignItems: 'center', gap: '8px' }}><Camera size={18}/> Start Streaming</button>
+                               <button onClick={startLiveStream} style={{ padding: '14px 28px', background: `linear-gradient(135deg, ${accent}, #8A2BE2)`, color: 'var(--text-primary)', border: 'none', borderRadius: '12px', fontWeight: 'bold', fontSize: '15px', cursor: 'pointer', transition: 'all 0.2s', display: 'flex', alignItems: 'center', gap: '8px', boxShadow: `0 8px 24px rgba(138,43,226,0.3)` }} onMouseOver={e=>e.currentTarget.style.transform='translateY(-2px)'} onMouseOut={e=>e.currentTarget.style.transform='none'}><Camera size={18}/> Start Streaming</button>
                              )}
                           </div>
                         )}
@@ -1448,15 +1369,48 @@ export const ProfileLive: React.FC<ProfileLiveProps> = ({
                 </div>
               </motion.div>
             ) : (
-              <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} style={{ background: 'linear-gradient(135deg, rgba(255,0,85,0.1), rgba(138,43,226,0.1))', borderRadius: '24px', border: '1px solid rgba(255,255,255,0.05)', overflow: 'hidden', textAlign: 'center', padding: '80px 20px', position: 'relative' }}>
-                <Lock size={56} color="#FFD700" style={{ marginBottom: '24px' }} />
-                <h3 style={{ fontSize: '28px', margin: '0 0 16px 0', color: 'var(--text-primary)' }}>Exclusive Live Broadcast</h3>
-                <p style={{ color: 'var(--text-secondary)', fontSize: '18px', maxWidth: '450px', margin: '0 auto 40px', lineHeight: 1.5 }}>Subscribe to {profile.username || 'this creator'} to instantly unlock their live streams and premium restricted vault content.</p>
+              <motion.div 
+                initial={{ opacity: 0, scale: 0.95 }} 
+                animate={{ opacity: 1, scale: 1 }} 
+                style={{ 
+                  background: 'rgba(15, 15, 20, 0.45)', 
+                  backdropFilter: 'blur(40px)', 
+                  borderRadius: '32px', 
+                  border: `1px solid ${accent}22`, 
+                  overflow: 'hidden', 
+                  textAlign: 'center', 
+                  padding: '80px 40px', 
+                  position: 'relative',
+                  boxShadow: '0 24px 80px rgba(0,0,0,0.5)'
+                }}
+              >
+                <div style={{ display: 'inline-flex', padding: '20px', borderRadius: '50%', background: 'rgba(255, 215, 0, 0.05)', border: '1px solid rgba(255, 215, 0, 0.15)', marginBottom: '24px', filter: 'drop-shadow(0 0 15px rgba(255, 215, 0, 0.25))' }}>
+                  <Lock size={52} color="#FFD700" />
+                </div>
+                <h3 style={{ fontSize: '32px', fontWeight: '900', letterSpacing: '-1px', margin: '0 0 16px 0', color: 'var(--text-primary)' }}>Exclusive Live Broadcast</h3>
+                <p style={{ color: 'var(--text-secondary)', fontSize: '16px', maxWidth: '420px', margin: '0 auto 40px', lineHeight: 1.6 }}>Subscribe to {profile.username || 'this creator'} to instantly unlock their live streams and premium restricted vault content.</p>
                 <button 
                   onClick={handleSubscribe} 
-                  style={{ padding: '16px 40px', background: 'linear-gradient(135deg, #ff4d85, #8A2BE2)', color: 'var(--text-primary)', border: 'none', borderRadius: '30px', fontWeight: 'bold', fontSize: '18px', cursor: 'pointer', boxShadow: '0 10px 20px rgba(255,77,133,0.3)', transition: 'transform 0.2s' }} 
-                  onMouseOver={e=>e.currentTarget.style.transform='scale(1.05)'} 
-                  onMouseOut={e=>e.currentTarget.style.transform='scale(1)'}
+                  style={{ 
+                    padding: '16px 48px', 
+                    background: `linear-gradient(135deg, ${accent}, #8A2BE2)`, 
+                    color: 'var(--text-primary)', 
+                    border: 'none', 
+                    borderRadius: '30px', 
+                    fontWeight: 'bold', 
+                    fontSize: '17px', 
+                    cursor: 'pointer', 
+                    boxShadow: `0 10px 25px rgba(138,43,226,0.35)`, 
+                    transition: 'all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1)' 
+                  }} 
+                  onMouseOver={e => {
+                    e.currentTarget.style.transform = 'scale(1.04) translateY(-2px)';
+                    e.currentTarget.style.boxShadow = `0 15px 35px rgba(138,43,226,0.5)`;
+                  }} 
+                  onMouseOut={e => {
+                    e.currentTarget.style.transform = 'none';
+                    e.currentTarget.style.boxShadow = `0 10px 25px rgba(138,43,226,0.35)`;
+                  }}
                 >
                   Subscribe for ${subPrice}/mo
                 </button>
