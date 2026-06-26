@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Lock, Settings, Camera, Video, Globe, X, Mic, MicOff, VideoOff, Send, Check, Copy, Play, Trash2 } from 'lucide-react';
+import { Lock, Settings, Camera, Video, Globe, X, Mic, MicOff, VideoOff, Send, Check, Copy, Play, Trash2, Plus } from 'lucide-react';
 import { useToast } from '../context/ToastContext';
 import Peer from 'peerjs';
 import { supabase } from '../supabaseClient';
@@ -162,6 +162,163 @@ export const ProfileLive: React.FC<ProfileLiveProps> = ({
       localStorage.setItem('vibe_purchased_videos', JSON.stringify(updated));
     }
     toast.success(`Successfully purchased Past Stream: ${video.title} ($${priceVal.toFixed(2)})! 🎥`);
+  };
+
+  // ── CRUD States for Replay Vault ──
+  const [isCrudModalOpen, setIsCrudModalOpen] = React.useState(false);
+  const [editingVideo, setEditingVideo] = React.useState<any | null>(null);
+  const [crudTitle, setCrudTitle] = React.useState('');
+  const [crudPrice, setCrudPrice] = React.useState('5.00');
+  const [crudPreviewDuration, setCrudPreviewDuration] = React.useState('30');
+  const [crudVideoSourceType, setCrudVideoSourceType] = React.useState<'upload' | 'url'>('upload');
+  const [crudVideoUrl, setCrudVideoUrl] = React.useState('');
+  const [crudImageUrl, setCrudImageUrl] = React.useState('');
+  const [crudVideoFile, setCrudVideoFile] = React.useState<File | null>(null);
+  const [crudImageFile, setCrudImageFile] = React.useState<File | null>(null);
+  const [crudUploading, setCrudUploading] = React.useState(false);
+  const [crudUploadProgress, setCrudUploadProgress] = React.useState('');
+
+  const handleOpenAddModal = () => {
+    setEditingVideo(null);
+    setCrudTitle('');
+    setCrudPrice('5.00');
+    setCrudPreviewDuration('30');
+    setCrudVideoSourceType('upload');
+    setCrudVideoUrl('');
+    setCrudImageUrl('');
+    setCrudVideoFile(null);
+    setCrudImageFile(null);
+    setCrudUploadProgress('');
+    setIsCrudModalOpen(true);
+  };
+
+  const handleOpenEditModal = (video: any) => {
+    setEditingVideo(video);
+    setCrudTitle(video.title || '');
+    setCrudPrice(String(video.price || '0.00'));
+    setCrudPreviewDuration(String(video.preview_duration || '30'));
+    setCrudVideoSourceType(video.video_url?.includes('supabase') ? 'upload' : 'url');
+    setCrudVideoUrl(video.video_url || '');
+    setCrudImageUrl(video.image_url || '');
+    setCrudVideoFile(null);
+    setCrudImageFile(null);
+    setCrudUploadProgress('');
+    setIsCrudModalOpen(true);
+  };
+
+  const handleSaveCrud = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!creatorId) return;
+
+    setCrudUploading(true);
+    setCrudUploadProgress('Initializing upload details...');
+
+    try {
+      let finalVideoUrl = crudVideoUrl;
+      let finalImageUrl = crudImageUrl || 'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?auto=format&fit=crop&q=80&w=800';
+
+      // 1. Upload Video File if selected
+      if (crudVideoSourceType === 'upload' && crudVideoFile) {
+        setCrudUploadProgress(`Uploading Video: ${crudVideoFile.name} (Please wait)...`);
+        const videoPath = `past-streams-manual/${creatorId}/${Date.now()}_${crudVideoFile.name}`;
+        const { error: videoErr } = await supabase.storage
+          .from('videos')
+          .upload(videoPath, crudVideoFile, { cacheControl: '3600' });
+        
+        if (videoErr) {
+          toast.error("Failed to upload video: " + videoErr.message);
+          setCrudUploading(false);
+          setCrudUploadProgress('');
+          return;
+        }
+
+        const { data: { publicUrl: vUrl } } = supabase.storage
+          .from('videos')
+          .getPublicUrl(videoPath);
+        finalVideoUrl = vUrl;
+      }
+
+      // 2. Upload Image File if selected
+      if (crudImageFile) {
+        setCrudUploadProgress(`Uploading Cover Image: ${crudImageFile.name}...`);
+        const imagePath = `past-streams-manual/${creatorId}/${Date.now()}_${crudImageFile.name}`;
+        const { error: imageErr } = await supabase.storage
+          .from('videos')
+          .upload(imagePath, crudImageFile, { cacheControl: '3600' });
+
+        if (imageErr) {
+          toast.error("Failed to upload image: " + imageErr.message);
+          setCrudUploading(false);
+          setCrudUploadProgress('');
+          return;
+        }
+
+        const { data: { publicUrl: iUrl } } = supabase.storage
+          .from('videos')
+          .getPublicUrl(imagePath);
+        finalImageUrl = iUrl;
+      }
+
+      if (!finalVideoUrl) {
+        toast.error("Please provide a video file or direct video URL.");
+        setCrudUploading(false);
+        setCrudUploadProgress('');
+        return;
+      }
+
+      // 3. Insert or Update row in public.videos table
+      const priceVal = parseFloat(crudPrice) || 0;
+      const previewDur = parseInt(crudPreviewDuration) || 30;
+
+      if (editingVideo) {
+        setCrudUploadProgress('Updating replay details...');
+        const { error: updateErr } = await supabase
+          .from('videos')
+          .update({
+            title: crudTitle.trim(),
+            video_url: finalVideoUrl,
+            image_url: finalImageUrl,
+            price: priceVal,
+            preview_duration: previewDur
+          })
+          .eq('id', editingVideo.id);
+
+        if (updateErr) {
+          toast.error("Failed to update video: " + updateErr.message);
+        } else {
+          toast.success(`Successfully updated replay details!`);
+          setIsCrudModalOpen(false);
+          fetchPastStreams();
+        }
+      } else {
+        setCrudUploadProgress('Publishing replay...');
+        const { error: insertErr } = await supabase
+          .from('videos')
+          .insert({
+            title: crudTitle.trim(),
+            video_url: finalVideoUrl,
+            image_url: finalImageUrl,
+            creator_id: creatorId,
+            tags: ['Past Stream', 'Recorded'],
+            price: priceVal,
+            preview_duration: previewDur
+          });
+
+        if (insertErr) {
+          toast.error("Failed to add past stream replay: " + insertErr.message);
+        } else {
+          toast.success(`Successfully published new replay!`);
+          setIsCrudModalOpen(false);
+          fetchPastStreams();
+        }
+      }
+    } catch (err: any) {
+      console.error(err);
+      toast.error("An unexpected error occurred: " + err.message);
+    } finally {
+      setCrudUploading(false);
+      setCrudUploadProgress('');
+    }
   };
 
   const safePinnedProducts = Array.isArray(pinnedProducts) ? pinnedProducts : [];
@@ -1447,6 +1604,128 @@ export const ProfileLive: React.FC<ProfileLiveProps> = ({
                         */}
 
                       </div>
+
+                      {/* Replay Vault Manager (Past Streams CRUD) */}
+                      <div style={{ marginTop: '24px', padding: '20px', borderRadius: '16px', background: 'rgba(255, 255, 255, 0.02)', border: `1px solid ${accent}15` }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', flexWrap: 'wrap', gap: '12px' }}>
+                          <div>
+                            <label style={{ display: 'block', color: accent, fontWeight: 'bold', fontSize: '15px', textTransform: 'uppercase', letterSpacing: '1px' }}>
+                              🎬 Replay Vault Manager
+                            </label>
+                            <p style={{ color: 'var(--text-secondary)', fontSize: '12px', margin: '4px 0 0 0' }}>
+                              Manually add, edit details, or remove recorded live stream replays in your archive.
+                            </p>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={handleOpenAddModal}
+                            style={{
+                              padding: '8px 16px',
+                              background: `linear-gradient(135deg, ${accent}, #8A2BE2)`,
+                              color: '#fff',
+                              border: 'none',
+                              borderRadius: '8px',
+                              fontWeight: 'bold',
+                              fontSize: '12px',
+                              cursor: 'pointer',
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: '6px',
+                              boxShadow: `0 4px 12px ${accent}25`,
+                              transition: 'transform 0.2s'
+                            }}
+                            onMouseOver={e => e.currentTarget.style.transform = 'translateY(-1px)'}
+                            onMouseOut={e => e.currentTarget.style.transform = 'none'}
+                          >
+                            <Plus size={14} /> Add Replay
+                          </button>
+                        </div>
+
+                        {/* Table/List of Past Streams */}
+                        {pastStreams.length === 0 ? (
+                          <div style={{ color: 'var(--text-secondary)', fontSize: '13px', fontStyle: 'italic', padding: '16px', textAlign: 'center', background: 'rgba(0,0,0,0.1)', borderRadius: '8px' }}>
+                            No past streams in your replay archive yet. Click "Add Replay" to upload one manually.
+                          </div>
+                        ) : (
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', maxHeight: '300px', overflowY: 'auto', paddingRight: '2px', scrollbarWidth: 'thin' }}>
+                            {pastStreams.map((vid) => (
+                              <div key={vid.id} style={{ display: 'flex', alignItems: 'center', gap: '12px', background: 'rgba(0,0,0,0.2)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '10px', padding: '8px 12px', flexWrap: 'wrap' }}>
+                                <img
+                                  src={vid.image_url || 'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?auto=format&fit=crop&q=80&w=800'}
+                                  alt={vid.title}
+                                  style={{ width: '48px', height: '27px', objectFit: 'cover', borderRadius: '4px', background: 'rgba(255,255,255,0.05)' }}
+                                />
+                                <div style={{ flex: 1, minWidth: '150px' }}>
+                                  <div style={{ color: 'var(--text-primary)', fontWeight: 'bold', fontSize: '13px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                                    {vid.title}
+                                  </div>
+                                  <div style={{ display: 'flex', gap: '12px', fontSize: '11px', color: 'var(--text-muted)', marginTop: '2px', flexWrap: 'wrap' }}>
+                                    <span>Price: <strong style={{ color: accent }}>{vid.price > 0 ? `$${Number(vid.price).toFixed(2)}` : 'Free'}</strong></span>
+                                    <span>Preview: <strong>{vid.preview_duration}s</strong></span>
+                                    <span>Date: <strong>{new Date(vid.created_at).toLocaleDateString()}</strong></span>
+                                  </div>
+                                </div>
+                                <div style={{ display: 'flex', gap: '6px' }}>
+                                  <button
+                                    type="button"
+                                    onClick={() => handleOpenEditModal(vid)}
+                                    style={{
+                                      padding: '6px 12px',
+                                      background: 'rgba(255,255,255,0.05)',
+                                      border: '1px solid rgba(255,255,255,0.1)',
+                                      color: '#fff',
+                                      borderRadius: '6px',
+                                      fontSize: '11px',
+                                      fontWeight: 'bold',
+                                      cursor: 'pointer',
+                                      transition: 'all 0.2s'
+                                    }}
+                                    onMouseOver={e => e.currentTarget.style.background = 'rgba(255,255,255,0.1)'}
+                                    onMouseOut={e => e.currentTarget.style.background = 'rgba(255,255,255,0.05)'}
+                                  >
+                                    Edit
+                                  </button>
+                                  <button
+                                    type="button"
+                                    onClick={async () => {
+                                      if (!confirm(`Are you sure you want to delete "${vid.title}"?`)) return;
+                                      try {
+                                        const { error } = await supabase
+                                          .from('videos')
+                                          .delete()
+                                          .eq('id', vid.id);
+                                        if (error) {
+                                          toast.error("Failed to delete recording: " + error.message);
+                                        } else {
+                                          toast.success("Recording deleted from replay archives.");
+                                          fetchPastStreams();
+                                        }
+                                      } catch (err) {
+                                        console.warn("Delete error:", err);
+                                      }
+                                    }}
+                                    style={{
+                                      padding: '6px 10px',
+                                      background: 'rgba(229,9,20,0.1)',
+                                      border: '1px solid rgba(229,9,20,0.2)',
+                                      color: '#ff3b30',
+                                      borderRadius: '6px',
+                                      fontSize: '11px',
+                                      fontWeight: 'bold',
+                                      cursor: 'pointer',
+                                      transition: 'all 0.2s'
+                                    }}
+                                    onMouseOver={e => { e.currentTarget.style.background = 'rgba(229,9,20,0.2)'; }}
+                                    onMouseOut={e => { e.currentTarget.style.background = 'rgba(229,9,20,0.1)'; }}
+                                  >
+                                    Delete
+                                  </button>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
                       
                       <p style={{ margin: '15px 0 0 0', color: 'var(--text-muted)', fontSize: '12px' }}>This feed dictates what your active subscribers consume during live events in real-time.</p>
                     </div>
@@ -1979,6 +2258,329 @@ export const ProfileLive: React.FC<ProfileLiveProps> = ({
                        )}
                     </div>
                   </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+
+            {/* ── Add/Edit Replay CRUD Modal ── */}
+            <AnimatePresence>
+              {isCrudModalOpen && (
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  style={{
+                    position: 'fixed',
+                    inset: 0,
+                    zIndex: 99999,
+                    background: 'rgba(5, 5, 8, 0.85)',
+                    backdropFilter: 'blur(20px)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    padding: '20px'
+                  }}
+                >
+                  <motion.div
+                    initial={{ scale: 0.95, y: 20 }}
+                    animate={{ scale: 1, y: 0 }}
+                    exit={{ scale: 0.95, y: 20 }}
+                    style={{
+                      width: '100%',
+                      maxWidth: '520px',
+                      background: '#0c0c0e',
+                      borderRadius: '24px',
+                      border: `1px solid ${accent}33`,
+                      boxShadow: `0 24px 60px rgba(0,0,0,0.7), 0 0 40px ${accent}0b`,
+                      overflow: 'hidden'
+                    }}
+                  >
+                    <form onSubmit={handleSaveCrud} style={{ display: 'flex', flexDirection: 'column' }}>
+                      {/* Modal Header */}
+                      <div style={{
+                        padding: '18px 24px',
+                        borderBottom: '1px solid rgba(255,255,255,0.06)',
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'center',
+                        background: 'rgba(0,0,0,0.2)'
+                      }}>
+                        <h3 style={{ margin: 0, fontSize: '18px', fontWeight: 'bold', color: '#fff' }}>
+                          {editingVideo ? 'Edit Replay Details' : 'Add Past Stream Replay'}
+                        </h3>
+                        <button
+                          type="button"
+                          onClick={() => setIsCrudModalOpen(false)}
+                          style={{
+                            background: 'none', border: 'none', color: '#888', cursor: 'pointer', padding: '4px'
+                          }}
+                          onMouseOver={e => e.currentTarget.style.color = '#fff'}
+                          onMouseOut={e => e.currentTarget.style.color = '#888'}
+                        >
+                          <X size={20} />
+                        </button>
+                      </div>
+
+                      {/* Modal Body */}
+                      <div style={{ padding: '24px', display: 'flex', flexDirection: 'column', gap: '16px', maxHeight: '70vh', overflowY: 'auto' }}>
+                        
+                        {/* Title */}
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                          <label style={{ fontSize: '12px', fontWeight: 'bold', color: 'var(--text-secondary)' }}>Replay Title</label>
+                          <input
+                            type="text"
+                            required
+                            value={crudTitle}
+                            onChange={e => setCrudTitle(e.target.value)}
+                            placeholder="e.g. Live Stream Replay - DJ Set #12"
+                            style={{
+                              padding: '12px 14px',
+                              background: 'rgba(0,0,0,0.4)',
+                              border: '1px solid rgba(255,255,255,0.1)',
+                              borderRadius: '10px',
+                              color: '#fff',
+                              fontSize: '14px',
+                              outline: 'none'
+                            }}
+                          />
+                        </div>
+
+                        {/* Price & Preview Duration Grid */}
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                            <label style={{ fontSize: '12px', fontWeight: 'bold', color: 'var(--text-secondary)' }}>PPV Price ($)</label>
+                            <input
+                              type="number"
+                              step="0.01"
+                              required
+                              value={crudPrice}
+                              onChange={e => setCrudPrice(e.target.value)}
+                              placeholder="5.00"
+                              style={{
+                                padding: '12px 14px',
+                                background: 'rgba(0,0,0,0.4)',
+                                border: '1px solid rgba(255,255,255,0.1)',
+                                borderRadius: '10px',
+                                color: '#fff',
+                                fontSize: '14px',
+                                outline: 'none'
+                              }}
+                            />
+                          </div>
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                            <label style={{ fontSize: '12px', fontWeight: 'bold', color: 'var(--text-secondary)' }}>Free Preview Limit (s)</label>
+                            <input
+                              type="number"
+                              required
+                              value={crudPreviewDuration}
+                              onChange={e => setCrudPreviewDuration(e.target.value)}
+                              placeholder="30"
+                              style={{
+                                padding: '12px 14px',
+                                background: 'rgba(0,0,0,0.4)',
+                                border: '1px solid rgba(255,255,255,0.1)',
+                                borderRadius: '10px',
+                                color: '#fff',
+                                fontSize: '14px',
+                                outline: 'none'
+                              }}
+                            />
+                          </div>
+                        </div>
+
+                        {/* Video Source Type Selector */}
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                          <label style={{ fontSize: '12px', fontWeight: 'bold', color: 'var(--text-secondary)' }}>Video Source Type</label>
+                          <div style={{ display: 'flex', gap: '10px' }}>
+                            <button
+                              type="button"
+                              onClick={() => setCrudVideoSourceType('upload')}
+                              style={{
+                                flex: 1,
+                                padding: '10px',
+                                background: crudVideoSourceType === 'upload' ? `${accent}22` : 'rgba(0,0,0,0.3)',
+                                border: `1px solid ${crudVideoSourceType === 'upload' ? accent : 'rgba(255,255,255,0.1)'}`,
+                                color: crudVideoSourceType === 'upload' ? '#fff' : 'var(--text-secondary)',
+                                borderRadius: '8px',
+                                fontSize: '13px',
+                                fontWeight: 'bold',
+                                cursor: 'pointer'
+                              }}
+                            >
+                              Upload File
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => setCrudVideoSourceType('url')}
+                              style={{
+                                flex: 1,
+                                padding: '10px',
+                                background: crudVideoSourceType === 'url' ? `${accent}22` : 'rgba(0,0,0,0.3)',
+                                border: `1px solid ${crudVideoSourceType === 'url' ? accent : 'rgba(255,255,255,0.1)'}`,
+                                color: crudVideoSourceType === 'url' ? '#fff' : 'var(--text-secondary)',
+                                borderRadius: '8px',
+                                fontSize: '13px',
+                                fontWeight: 'bold',
+                                cursor: 'pointer'
+                              }}
+                            >
+                              URL Link
+                            </button>
+                          </div>
+                        </div>
+
+                        {/* Video Input depending on source type */}
+                        {crudVideoSourceType === 'upload' ? (
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                            <label style={{ fontSize: '12px', fontWeight: 'bold', color: 'var(--text-secondary)' }}>
+                              {editingVideo && !crudVideoFile ? 'Replace Video File (Optional)' : 'Select Video File'}
+                            </label>
+                            <input
+                              type="file"
+                              accept="video/*"
+                              required={!editingVideo}
+                              onChange={e => setCrudVideoFile(e.target.files?.[0] || null)}
+                              style={{
+                                padding: '10px',
+                                background: 'rgba(0,0,0,0.3)',
+                                border: '1px dashed rgba(255,255,255,0.15)',
+                                borderRadius: '10px',
+                                color: 'var(--text-secondary)',
+                                fontSize: '13px',
+                                cursor: 'pointer'
+                              }}
+                            />
+                            {editingVideo && !crudVideoFile && (
+                              <span style={{ fontSize: '11px', color: 'var(--text-muted)', fontStyle: 'italic' }}>
+                                Currently: {editingVideo.video_url?.split('/').pop()}
+                              </span>
+                            )}
+                          </div>
+                        ) : (
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                            <label style={{ fontSize: '12px', fontWeight: 'bold', color: 'var(--text-secondary)' }}>Video Stream / Embed URL</label>
+                            <input
+                              type="url"
+                              required
+                              value={crudVideoUrl}
+                              onChange={e => setCrudVideoUrl(e.target.value)}
+                              placeholder="https://cdn.example.com/stream.mp4 or YouTube link"
+                              style={{
+                                padding: '12px 14px',
+                                background: 'rgba(0,0,0,0.4)',
+                                border: '1px solid rgba(255,255,255,0.1)',
+                                borderRadius: '10px',
+                                color: '#fff',
+                                fontSize: '14px',
+                                outline: 'none'
+                              }}
+                            />
+                          </div>
+                        )}
+
+                        {/* Cover Thumbnail Input */}
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '16px' }}>
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                            <label style={{ fontSize: '12px', fontWeight: 'bold', color: 'var(--text-secondary)' }}>Replay Cover Image (File Upload)</label>
+                            <input
+                              type="file"
+                              accept="image/*"
+                              onChange={e => setCrudImageFile(e.target.files?.[0] || null)}
+                              style={{
+                                padding: '10px',
+                                background: 'rgba(0,0,0,0.3)',
+                                border: '1px dashed rgba(255,255,255,0.15)',
+                                borderRadius: '10px',
+                                color: 'var(--text-secondary)',
+                                fontSize: '13px',
+                                cursor: 'pointer'
+                              }}
+                            />
+                          </div>
+                          
+                          {/* Fallback URL for Cover Image */}
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                            <label style={{ fontSize: '12px', fontWeight: 'bold', color: 'var(--text-secondary)' }}>Cover Image URL (Optional Fallback)</label>
+                            <input
+                              type="url"
+                              value={crudImageUrl}
+                              onChange={e => setCrudImageUrl(e.target.value)}
+                              placeholder="https://images.unsplash.com/... or keep blank for default"
+                              style={{
+                                padding: '12px 14px',
+                                background: 'rgba(0,0,0,0.4)',
+                                border: '1px solid rgba(255,255,255,0.1)',
+                                borderRadius: '10px',
+                                color: '#fff',
+                                fontSize: '14px',
+                                outline: 'none'
+                              }}
+                            />
+                          </div>
+                        </div>
+
+                        {/* Upload Progress Indicator */}
+                        {crudUploadProgress && (
+                          <div style={{
+                            background: 'rgba(255,255,255,0.03)',
+                            border: '1px solid rgba(255,255,255,0.06)',
+                            borderRadius: '8px',
+                            padding: '12px',
+                            fontSize: '13px',
+                            color: accent,
+                            fontWeight: 'bold',
+                            textAlign: 'center'
+                          }}>
+                            {crudUploadProgress}
+                          </div>
+                        )}
+
+                      </div>
+
+                      {/* Modal Footer */}
+                      <div style={{
+                        padding: '18px 24px',
+                        borderTop: '1px solid rgba(255,255,255,0.06)',
+                        display: 'flex',
+                        justifyContent: 'flex-end',
+                        gap: '12px',
+                        background: 'rgba(0,0,0,0.2)'
+                      }}>
+                        <button
+                          type="button"
+                          onClick={() => setIsCrudModalOpen(false)}
+                          disabled={crudUploading}
+                          style={{
+                            padding: '10px 20px',
+                            background: 'transparent',
+                            border: '1px solid rgba(255,255,255,0.15)',
+                            borderRadius: '10px',
+                            color: 'var(--text-secondary)',
+                            fontWeight: 'bold',
+                            cursor: 'pointer'
+                          }}
+                        >
+                          Cancel
+                        </button>
+                        <button
+                          type="submit"
+                          disabled={crudUploading}
+                          style={{
+                            padding: '10px 24px',
+                            background: crudUploading ? 'rgba(255,255,255,0.1)' : `linear-gradient(135deg, ${accent}, #8A2BE2)`,
+                            color: '#fff',
+                            border: 'none',
+                            borderRadius: '10px',
+                            fontWeight: 'bold',
+                            cursor: crudUploading ? 'not-allowed' : 'pointer',
+                            boxShadow: crudUploading ? 'none' : `0 4px 15px rgba(138,43,226,0.3)`
+                          }}
+                        >
+                          {crudUploading ? 'Processing...' : editingVideo ? 'Save Changes' : 'Publish Replay'}
+                        </button>
+                      </div>
+                    </form>
+                  </motion.div>
                 </motion.div>
               )}
             </AnimatePresence>
