@@ -16,10 +16,11 @@ CREATE POLICY "Allow public read access to video_transcripts"
   TO public
   USING (true);
 
--- Allow authenticated users to manage transcripts
+-- Allow public/anonymous users to manage transcripts (necessary for seeding with the anon key)
 DROP POLICY IF EXISTS "Allow write access to video_transcripts for authenticated users" ON public.video_transcripts;
-CREATE POLICY "Allow write access to video_transcripts for authenticated users"
+DROP POLICY IF EXISTS "Allow write access to video_transcripts for public users" ON public.video_transcripts;
+CREATE POLICY "Allow write access to video_transcripts for public users"
   ON public.video_transcripts FOR ALL
-  TO authenticated
+  TO public
   USING (true)
   WITH CHECK (true);
