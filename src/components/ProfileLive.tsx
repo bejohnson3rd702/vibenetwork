@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Lock, Settings, Camera, Video, Globe, X, Mic, MicOff, VideoOff, Send, Check, Copy } from 'lucide-react';
+import { Lock, Settings, Camera, Video, Globe, X, Mic, MicOff, VideoOff, Send, Check, Copy, Play, Trash2 } from 'lucide-react';
 import { useToast } from '../context/ToastContext';
 import Peer from 'peerjs';
 import { supabase } from '../supabaseClient';
@@ -81,6 +81,88 @@ export const ProfileLive: React.FC<ProfileLiveProps> = ({
   const [isRemoteConnected, setIsRemoteConnected] = React.useState(false);
   const [isDrawerOpen, setIsDrawerOpen] = React.useState(false);
   const [lastPinnedCount, setLastPinnedCount] = React.useState(0);
+
+  // ── Past Streams States & Actions ──
+  const [pastStreams, setPastStreams] = React.useState<any[]>([]);
+  const [loadingPastStreams, setLoadingPastStreams] = React.useState(true);
+  const [activePastStream, setActivePastStream] = React.useState<any | null>(null);
+  const [currentTime, setCurrentTime] = React.useState<number>(0);
+  const [isPastStreamPreviewExpired, setIsPastStreamPreviewExpired] = React.useState<boolean>(false);
+  const pastStreamVideoRef = React.useRef<HTMLVideoElement>(null);
+  const [purchasedVideoIds, setPurchasedVideoIds] = React.useState<string[]>(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('vibe_purchased_videos');
+      if (saved) {
+        try {
+          return JSON.parse(saved);
+        } catch (_) {
+          return [];
+        }
+      }
+    }
+    return [];
+  });
+
+  const fetchPastStreams = React.useCallback(async () => {
+    if (!creatorId) return;
+    try {
+      setLoadingPastStreams(true);
+      const { data, error } = await supabase
+        .from('videos')
+        .select('*')
+        .eq('creator_id', creatorId)
+        .contains('tags', ['Past Stream'])
+        .order('created_at', { ascending: false });
+
+      if (!error && data) {
+        setPastStreams(data);
+      }
+    } catch (err) {
+      console.warn("Error fetching past streams:", err);
+    } finally {
+      setLoadingPastStreams(false);
+    }
+  }, [creatorId]);
+
+  React.useEffect(() => {
+    fetchPastStreams();
+  }, [fetchPastStreams]);
+
+  React.useEffect(() => {
+    window.addEventListener('vibe_past_streams_updated', fetchPastStreams);
+    return () => {
+      window.removeEventListener('vibe_past_streams_updated', fetchPastStreams);
+    };
+  }, [fetchPastStreams]);
+
+  const handleBuyVideo = async (video: any) => {
+    const priceVal = Number(video.price) || 0;
+    if (priceVal <= 0 || effectiveIsSubscribed) {
+      // Free or subscribed
+      const updated = [...purchasedVideoIds, video.id];
+      setPurchasedVideoIds(updated);
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('vibe_purchased_videos', JSON.stringify(updated));
+      }
+      toast.success(`Successfully unlocked "${video.title}"!`);
+      return;
+    }
+
+    toast.info(`Opening checkout for "${video.title}" ($${priceVal.toFixed(2)})...`);
+    try {
+      await handleStripeCheckout('Past Stream: ' + video.title, priceVal, { video_id: video.id });
+    } catch (err) {
+      console.warn("Stripe checkout error:", err);
+    }
+
+    // Mock immediate purchase simulation for instant gratification and easy testing
+    const updated = [...purchasedVideoIds, video.id];
+    setPurchasedVideoIds(updated);
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('vibe_purchased_videos', JSON.stringify(updated));
+    }
+    toast.success(`Successfully purchased Past Stream: ${video.title} ($${priceVal.toFixed(2)})! 🎥`);
+  };
 
   const safePinnedProducts = Array.isArray(pinnedProducts) ? pinnedProducts : [];
 
@@ -1419,6 +1501,487 @@ export const ProfileLive: React.FC<ProfileLiveProps> = ({
                 </button>
               </motion.div>
             )}
+
+            {/* ── Past Streams Section ── */}
+            <div style={{ marginTop: '48px', padding: '0 4px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
+                <div>
+                  <h2 style={{ fontSize: '24px', fontWeight: '900', letterSpacing: '-0.5px', margin: 0, color: 'var(--text-primary)' }}>Past Streams</h2>
+                  <p style={{ margin: '4px 0 0 0', color: 'var(--text-muted)', fontSize: '14px' }}>
+                    Replay and watch previous live streams and broadcasts.
+                  </p>
+                </div>
+                {isOwnProfile && viewMode === 'edit' && (
+                  <span style={{ fontSize: '11px', color: accent, background: `${accent}15`, padding: '6px 12px', borderRadius: '20px', fontWeight: 'bold', border: `1px solid ${accent}33`, textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                    Broadcaster Dashboard
+                  </span>
+                )}
+              </div>
+
+              {loadingPastStreams ? (
+                <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '60px 0', color: 'var(--text-muted)', gap: '12px' }}>
+                  <div style={{ width: 20, height: 20, border: '2px solid rgba(255,255,255,0.1)', borderTopColor: accent, borderRadius: '50%', animation: 'spin 1s linear infinite' }} />
+                  <span>Loading recorded streams...</span>
+                </div>
+              ) : pastStreams.length === 0 ? (
+                <div style={{
+                  background: 'rgba(255,255,255,0.01)',
+                  border: '1px dashed rgba(255,255,255,0.08)',
+                  borderRadius: '24px',
+                  padding: '56px 24px',
+                  textAlign: 'center',
+                  color: 'var(--text-secondary)'
+                }}>
+                  <div style={{ fontSize: '36px', marginBottom: '16px', filter: 'drop-shadow(0 0 8px rgba(255,255,255,0.1))' }}>🎬</div>
+                  <p style={{ margin: 0, fontWeight: 'bold', fontSize: '16px', color: 'var(--text-primary)' }}>No Past Streams Available</p>
+                  <p style={{ margin: '6px 0 0 0', fontSize: '13px', color: 'var(--text-muted)', maxWidth: '400px', marginLeft: 'auto', marginRight: 'auto', lineHeight: '1.5' }}>
+                    {isOwnProfile && viewMode === 'edit' 
+                      ? 'Replays of your direct webcam broadcasts will automatically be saved and displayed here for subscribers and viewers.' 
+                      : 'No recorded broadcasts found for this creator.'}
+                  </p>
+                </div>
+              ) : (
+                <div style={{
+                  display: 'grid',
+                  gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
+                  gap: '28px'
+                }}>
+                  {pastStreams.map((video) => {
+                    const isLocked = !isOwnProfile && !effectiveIsSubscribed && !purchasedVideoIds.includes(video.id) && video.price > 0;
+                    
+                    return (
+                      <motion.div
+                        key={video.id}
+                        whileHover={{ y: -6 }}
+                        style={{
+                          background: 'rgba(15, 15, 20, 0.45)',
+                          backdropFilter: 'blur(10px)',
+                          borderRadius: '20px',
+                          border: `1px solid ${isLocked ? 'rgba(255, 255, 255, 0.05)' : `${accent}22`}`,
+                          overflow: 'hidden',
+                          display: 'flex',
+                          flexDirection: 'column',
+                          boxShadow: '0 8px 30px rgba(0,0,0,0.3)',
+                          position: 'relative',
+                          transition: 'border-color 0.2s ease'
+                        }}
+                      >
+                        {/* Thumbnail Wrapper */}
+                        <div style={{ position: 'relative', width: '100%', aspectRatio: '16/9', background: '#000', overflow: 'hidden' }}>
+                          <img
+                            src={video.image_url || 'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?auto=format&fit=crop&q=80&w=800'}
+                            alt={video.title}
+                            style={{ width: '100%', height: '100%', objectFit: 'cover', opacity: isLocked ? 0.35 : 0.8 }}
+                          />
+                          
+                          {/* Play / Lock Overlay */}
+                          <div style={{
+                            position: 'absolute',
+                            inset: 0,
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            background: isLocked ? 'rgba(0,0,0,0.3)' : 'rgba(0,0,0,0.1)'
+                          }}>
+                            {isLocked ? (
+                              <button
+                                onClick={() => handleBuyVideo(video)}
+                                style={{
+                                  background: 'rgba(10, 10, 15, 0.85)',
+                                  border: '1px solid rgba(255,255,255,0.15)',
+                                  borderRadius: '50%',
+                                  width: '52px',
+                                  height: '52px',
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  justifyContent: 'center',
+                                  color: '#FFD700',
+                                  cursor: 'pointer',
+                                  boxShadow: '0 8px 24px rgba(0,0,0,0.6)',
+                                  transition: 'all 0.2s'
+                                }}
+                                onMouseOver={e => { e.currentTarget.style.transform = 'scale(1.08)'; e.currentTarget.style.borderColor = '#FFD700'; }}
+                                onMouseOut={e => { e.currentTarget.style.transform = 'none'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.15)'; }}
+                              >
+                                <Lock size={22} />
+                              </button>
+                            ) : (
+                              <button
+                                onClick={() => {
+                                  setActivePastStream(video);
+                                  setIsPastStreamPreviewExpired(false);
+                                  setPastStreamPreviewTimeLeft(30);
+                                  setCurrentTime(0);
+                                }}
+                                style={{
+                                  background: accent,
+                                  border: 'none',
+                                  borderRadius: '50%',
+                                  width: '52px',
+                                  height: '52px',
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  justifyContent: 'center',
+                                  color: '#000',
+                                  cursor: 'pointer',
+                                  boxShadow: `0 8px 24px ${accent}66`,
+                                  transition: 'all 0.2s'
+                                }}
+                                onMouseOver={e => e.currentTarget.style.transform = 'scale(1.08)'}
+                                onMouseOut={e => e.currentTarget.style.transform = 'none'}
+                              >
+                                <Play size={22} fill="currentColor" style={{ marginLeft: '4px' }} />
+                              </button>
+                            )}
+                          </div>
+
+                          {/* Price Tag Badge */}
+                          <div style={{
+                            position: 'absolute',
+                            bottom: 12,
+                            left: 12,
+                            background: video.price > 0 ? 'rgba(10, 10, 15, 0.85)' : 'rgba(76, 217, 100, 0.85)',
+                            border: video.price > 0 ? '1px solid rgba(255,255,255,0.15)' : '1px solid rgba(76, 217, 100, 0.3)',
+                            padding: '4px 10px',
+                            borderRadius: '8px',
+                            color: '#fff',
+                            fontSize: '11px',
+                            fontWeight: 'bold',
+                            backdropFilter: 'blur(8px)',
+                            textTransform: 'uppercase',
+                            letterSpacing: '0.5px'
+                          }}>
+                            {video.price > 0 ? `$${Number(video.price).toFixed(2)}` : 'FREE'}
+                          </div>
+
+                          {/* Preview Badge Indicator */}
+                          {isLocked && (
+                            <div style={{
+                              position: 'absolute',
+                              top: 12,
+                              left: 12,
+                              background: 'rgba(255, 0, 85, 0.85)',
+                              padding: '4px 10px',
+                              borderRadius: '8px',
+                              color: '#fff',
+                              fontSize: '10px',
+                              fontWeight: 'bold',
+                              letterSpacing: '0.5px',
+                              textTransform: 'uppercase',
+                              border: '1px solid rgba(255,255,255,0.15)',
+                              backdropFilter: 'blur(8px)'
+                            }}>
+                              30s Free Preview
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Video Info Content */}
+                        <div style={{ padding: '18px', display: 'flex', flexDirection: 'column', flex: 1, gap: '10px' }}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '10px' }}>
+                            <h4 style={{ margin: 0, fontSize: '15px', fontWeight: 'bold', color: 'var(--text-primary)', lineHeight: '1.4', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden', height: '42px' }}>
+                              {video.title}
+                            </h4>
+                            {isOwnProfile && viewMode === 'edit' && (
+                              <button
+                                onClick={async () => {
+                                  if (!confirm(`Are you sure you want to delete the past stream recording "${video.title}"?`)) return;
+                                  try {
+                                    const { error } = await supabase
+                                      .from('videos')
+                                      .delete()
+                                      .eq('id', video.id);
+                                    if (error) {
+                                      toast.error("Failed to delete recording: " + error.message);
+                                    } else {
+                                      toast.success("Recording deleted successfully.");
+                                      fetchPastStreams();
+                                    }
+                                  } catch (err) {
+                                    console.warn("Delete error:", err);
+                                  }
+                                }}
+                                style={{
+                                  background: 'none',
+                                  border: 'none',
+                                  color: 'rgba(255,255,255,0.3)',
+                                  cursor: 'pointer',
+                                  padding: '4px',
+                                  borderRadius: '6px',
+                                  transition: 'all 0.2s',
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  justifyContent: 'center'
+                                }}
+                                onMouseOver={e => { e.currentTarget.style.color = '#ff3b30'; e.currentTarget.style.background = 'rgba(255,59,48,0.1)'; }}
+                                onMouseOut={e => { e.currentTarget.style.color = 'rgba(255,255,255,0.3)'; e.currentTarget.style.background = 'none'; }}
+                              >
+                                <Trash2 size={14} />
+                              </button>
+                            )}
+                          </div>
+
+                          <p style={{ margin: 0, color: 'var(--text-muted)', fontSize: '12px' }}>
+                            Recorded {new Date(video.created_at).toLocaleDateString()}
+                          </p>
+
+                          {/* Action CTA Button */}
+                          <div style={{ marginTop: 'auto', paddingTop: '8px' }}>
+                            {isLocked ? (
+                              <button
+                                onClick={() => handleBuyVideo(video)}
+                                style={{
+                                  width: '100%',
+                                  padding: '10px',
+                                  background: `linear-gradient(45deg, ${accent}, #8A2BE2)`,
+                                  color: 'var(--text-primary)',
+                                  border: 'none',
+                                  borderRadius: '10px',
+                                  fontSize: '13px',
+                                  fontWeight: 'bold',
+                                  cursor: 'pointer',
+                                  transition: 'all 0.2s',
+                                  boxShadow: `0 4px 15px ${accent}25`
+                                }}
+                                onMouseOver={e => e.currentTarget.style.opacity = '0.9'}
+                                onMouseOut={e => e.currentTarget.style.opacity = '1'}
+                              >
+                                Unlock Replay
+                              </button>
+                            ) : (
+                              <button
+                                onClick={() => {
+                                  setActivePastStream(video);
+                                  setIsPastStreamPreviewExpired(false);
+                                  setPastStreamPreviewTimeLeft(30);
+                                  setCurrentTime(0);
+                                }}
+                                style={{
+                                  width: '100%',
+                                  padding: '10px',
+                                  background: 'rgba(255,255,255,0.05)',
+                                  border: '1px solid rgba(255,255,255,0.1)',
+                                  color: 'var(--text-primary)',
+                                  borderRadius: '10px',
+                                  fontSize: '13px',
+                                  fontWeight: 'bold',
+                                  cursor: 'pointer',
+                                  transition: 'all 0.2s',
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  justifyContent: 'center',
+                                  gap: '6px'
+                                }}
+                                onMouseOver={e => e.currentTarget.style.background = 'rgba(255,255,255,0.1)'}
+                                onMouseOut={e => e.currentTarget.style.background = 'rgba(255,255,255,0.05)'}
+                              >
+                                <Play size={14} fill="currentColor" /> Play Replay
+                              </button>
+                            )}
+                          </div>
+                        </div>
+                      </motion.div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+
+            {/* Immersive Cinema Modal for Replay Playback */}
+            <AnimatePresence>
+              {activePastStream && (
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  style={{
+                    position: 'fixed',
+                    inset: 0,
+                    zIndex: 9999,
+                    background: 'rgba(5, 5, 8, 0.95)',
+                    backdropFilter: 'blur(30px)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    padding: '20px'
+                  }}
+                >
+                  <div style={{
+                    position: 'relative',
+                    width: '100%',
+                    maxWidth: '960px',
+                    background: '#0a0a0c',
+                    borderRadius: '24px',
+                    border: `1px solid ${accent}33`,
+                    boxShadow: `0 30px 100px rgba(0,0,0,0.8), 0 0 50px ${accent}11`,
+                    overflow: 'hidden',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    aspectRatio: '16/10'
+                  }}>
+                    {/* Header */}
+                    <div style={{
+                      padding: '16px 24px',
+                      borderBottom: '1px solid rgba(255,255,255,0.06)',
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'center',
+                      background: 'rgba(0,0,0,0.3)'
+                    }}>
+                      <div>
+                        <h4 style={{ margin: 0, fontSize: '18px', fontWeight: 'bold', color: '#fff' }}>{activePastStream.title}</h4>
+                        <p style={{ margin: '4px 0 0 0', fontSize: '12px', color: 'var(--text-muted)' }}>
+                          Recorded on {new Date(activePastStream.created_at).toLocaleDateString()}
+                        </p>
+                      </div>
+                      <button
+                        onClick={() => {
+                          setActivePastStream(null);
+                          setIsPastStreamPreviewExpired(false);
+                          setPastStreamPreviewTimeLeft(30);
+                        }}
+                        style={{
+                          background: 'rgba(255,255,255,0.05)',
+                          border: '1px solid rgba(255,255,255,0.1)',
+                          borderRadius: '50%',
+                          width: '36px',
+                          height: '36px',
+                          color: '#fff',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          cursor: 'pointer',
+                          transition: 'all 0.2s'
+                        }}
+                        onMouseOver={e => e.currentTarget.style.background = 'rgba(255,255,255,0.12)'}
+                        onMouseOut={e => e.currentTarget.style.background = 'rgba(255,255,255,0.05)'}
+                      >
+                        <X size={20} />
+                      </button>
+                    </div>
+
+                    {/* Replay Player Window */}
+                    <div style={{ flex: 1, position: 'relative', background: '#000', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      {isPastStreamPreviewExpired ? (
+                        <div style={{
+                          position: 'absolute',
+                          inset: 0,
+                          zIndex: 10,
+                          display: 'flex',
+                          flexDirection: 'column',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          background: 'rgba(10, 10, 12, 0.85)',
+                          backdropFilter: 'blur(20px)',
+                          padding: '40px',
+                          textAlign: 'center'
+                        }}>
+                          <div style={{
+                            display: 'inline-flex',
+                            padding: '16px',
+                            borderRadius: '50%',
+                            background: 'rgba(255, 77, 133, 0.05)',
+                            border: '1px solid rgba(255, 77, 133, 0.15)',
+                            marginBottom: '16px',
+                            filter: 'drop-shadow(0 0 12px rgba(255,77,133,0.3))'
+                          }}>
+                            <Lock size={40} color="#ff4d85" />
+                          </div>
+                          <h3 style={{ margin: '0 0 12px 0', fontSize: '26px', color: 'var(--text-primary)', fontWeight: '900' }}>Replay Preview Ended</h3>
+                          <p style={{ color: 'var(--text-secondary)', fontSize: '15px', maxWidth: '420px', marginBottom: '32px', lineHeight: 1.6 }}>
+                            Unlock this past stream replay for lifetime access, or subscribe to {profile?.username || 'this creator'} to get access to all archives.
+                          </p>
+                          <div style={{ display: 'flex', gap: '16px' }}>
+                            <button
+                              onClick={() => {
+                                handleBuyVideo(activePastStream);
+                                setIsPastStreamPreviewExpired(false);
+                                setPastStreamPreviewTimeLeft(30);
+                              }}
+                              style={{
+                                padding: '14px 28px',
+                                background: `linear-gradient(135deg, ${accent}, ${accent}dd)`,
+                                color: 'var(--text-primary)',
+                                border: 'none',
+                                borderRadius: '12px',
+                                fontWeight: 'bold',
+                                fontSize: '16px',
+                                cursor: 'pointer',
+                                boxShadow: `0 8px 24px ${accent}44`
+                              }}
+                            >
+                              Unlock Replay for ${Number(activePastStream.price).toFixed(2)}
+                            </button>
+                            <button
+                              onClick={handleSubscribe}
+                              style={{
+                                padding: '14px 28px',
+                                background: 'rgba(255,255,255,0.06)',
+                                color: 'var(--text-primary)',
+                                border: '1px solid rgba(255,255,255,0.15)',
+                                borderRadius: '12px',
+                                fontWeight: 'bold',
+                                fontSize: '16px',
+                                cursor: 'pointer'
+                              }}
+                            >
+                              Subscribe
+                            </button>
+                          </div>
+                        </div>
+                      ) : (
+                        <video
+                          ref={pastStreamVideoRef}
+                          src={activePastStream.video_url}
+                          controls
+                          autoPlay
+                          playsInline
+                          style={{ width: '100%', height: '100%', objectFit: 'contain' }}
+                          onTimeUpdate={(e) => {
+                            const videoEl = e.currentTarget;
+                            setCurrentTime(videoEl.currentTime);
+                            if (
+                              !isOwnProfile &&
+                              !effectiveIsSubscribed &&
+                              !purchasedVideoIds.includes(activePastStream.id) &&
+                              activePastStream.price > 0 &&
+                              videoEl.currentTime >= 30
+                            ) {
+                              videoEl.pause();
+                              setIsPastStreamPreviewExpired(true);
+                            }
+                          }}
+                        />
+                      )}
+
+                      {/* Preview Overlay Indicator */}
+                      {!isOwnProfile &&
+                       !effectiveIsSubscribed &&
+                       !purchasedVideoIds.includes(activePastStream.id) &&
+                       activePastStream.price > 0 &&
+                       !isPastStreamPreviewExpired && (
+                         <div style={{
+                           position: 'absolute',
+                           top: 20,
+                           left: 20,
+                           background: 'rgba(255, 0, 85, 0.85)',
+                           padding: '6px 14px',
+                           borderRadius: '8px',
+                           color: '#fff',
+                           fontWeight: 'bold',
+                           fontSize: '12px',
+                           zIndex: 5,
+                           border: '1px solid rgba(255,255,255,0.2)',
+                           backdropFilter: 'blur(10px)'
+                         }}>
+                           PREVIEW PLAYING: {Math.max(0, 30 - Math.floor(currentTime))}s REMAINING
+                         </div>
+                       )}
+                    </div>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
   );
 };

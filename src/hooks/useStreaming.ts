@@ -449,6 +449,126 @@ export function useStreaming({ profileId, isOwnProfile, user, supabase, channelR
     return () => clearInterval(interval);
   }, [isOwnProfile, isPlayingLive, isPubliclyLive, streamSource, liveEmbedUrl, pinnedProducts]);
 
+  // ── Stream Recording Effect (Host Only) ──
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  const recordedChunksRef = useRef<Blob[]>([]);
+
+  useEffect(() => {
+    if (!isOwnProfile || typeof window === 'undefined') return;
+
+    if (isPlayingLive) {
+      const stream = localStreamRef.current;
+      if (!stream) {
+        console.warn("[Recording] Cannot start recording: local stream not available.");
+        return;
+      }
+
+      console.log("[Recording] Live stream started. Initializing MediaRecorder...");
+      recordedChunksRef.current = [];
+
+      let options: any = {};
+      const mimeTypes = [
+        'video/webm;codecs=vp9,opus',
+        'video/webm;codecs=vp8,opus',
+        'video/webm',
+        'video/mp4'
+      ];
+      
+      for (const mime of mimeTypes) {
+        if (typeof MediaRecorder !== 'undefined' && MediaRecorder.isTypeSupported(mime)) {
+          options = { mimeType: mime };
+          console.log(`[Recording] Selected MIME type: ${mime}`);
+          break;
+        }
+      }
+
+      try {
+        const recorder = new MediaRecorder(stream, options);
+        recorder.ondataavailable = (event) => {
+          if (event.data && event.data.size > 0) {
+            recordedChunksRef.current.push(event.data);
+          }
+        };
+
+        recorder.onstop = async () => {
+          console.log("[Recording] Recorder stopped. Compiling file...");
+          const blob = new Blob(recordedChunksRef.current, { type: options.mimeType || 'video/webm' });
+          if (blob.size === 0) {
+            console.warn("[Recording] Recorded file is empty, aborting upload.");
+            return;
+          }
+
+          const fileExt = (options.mimeType && options.mimeType.includes('mp4')) ? 'mp4' : 'webm';
+          const fileName = `past-streams/${profileId || user?.id}/${Date.now()}.${fileExt}`;
+          console.log(`[Recording] Uploading ${blob.size} bytes to videos bucket at ${fileName}...`);
+
+          try {
+            const { data: uploadData, error: uploadErr } = await supabase.storage
+              .from('videos')
+              .upload(fileName, blob, {
+                contentType: options.mimeType || 'video/webm',
+                cacheControl: '3600',
+              });
+
+            if (uploadErr) {
+              console.error("[Recording] Upload failed:", uploadErr.message);
+              return;
+            }
+
+            const { data: { publicUrl } } = supabase.storage
+              .from('videos')
+              .getPublicUrl(fileName);
+
+            console.log("[Recording] Upload complete. Public URL:", publicUrl);
+
+            // Add record to videos database table
+            const streamPrice = parseFloat(livePrice || '5.00') || 5.00;
+            const { data: insertedVideo, error: insertErr } = await supabase
+              .from('videos')
+              .insert({
+                title: `Live Stream - ${new Date().toLocaleDateString()} ${new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`,
+                video_url: publicUrl,
+                image_url: 'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?auto=format&fit=crop&q=80&w=800',
+                creator_id: profileId || user?.id,
+                tags: ['Past Stream', 'Recorded'],
+                price: streamPrice,
+                preview_duration: 30
+              })
+              .select()
+              .single();
+
+            if (insertErr) {
+              console.error("[Recording] Failed to insert video record:", insertErr.message);
+            } else {
+              console.log("[Recording] Video record inserted successfully:", insertedVideo);
+              window.dispatchEvent(new CustomEvent('vibe_past_streams_updated'));
+            }
+          } catch (uploadCatchErr) {
+            console.error("[Recording] Upload process error:", uploadCatchErr);
+          }
+        };
+
+        recorder.start(1000); // chunk every 1s
+        mediaRecorderRef.current = recorder;
+      } catch (err) {
+        console.error("[Recording] Failed to create MediaRecorder:", err);
+      }
+    } else {
+      if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
+        console.log("[Recording] Stopping MediaRecorder because stream ended...");
+        mediaRecorderRef.current.stop();
+        mediaRecorderRef.current = null;
+      }
+    }
+
+    return () => {
+      if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
+        mediaRecorderRef.current.stop();
+        mediaRecorderRef.current = null;
+      }
+    };
+  }, [isPlayingLive, isOwnProfile, profileId, user?.id, livePrice]);
+
   return {
     // Core live state
     isPlayingLive, setIsPlayingLive,
