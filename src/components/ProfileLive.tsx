@@ -88,6 +88,7 @@ export const ProfileLive: React.FC<ProfileLiveProps> = ({
   const [activePastStream, setActivePastStream] = React.useState<any | null>(null);
   const [currentTime, setCurrentTime] = React.useState<number>(0);
   const [isPastStreamPreviewExpired, setIsPastStreamPreviewExpired] = React.useState<boolean>(false);
+  const [pastStreamPreviewTimeLeft, setPastStreamPreviewTimeLeft] = React.useState<number>(30);
   const pastStreamVideoRef = React.useRef<HTMLVideoElement>(null);
   const [purchasedVideoIds, setPurchasedVideoIds] = React.useState<string[]>(() => {
     if (typeof window !== 'undefined') {
@@ -134,6 +135,38 @@ export const ProfileLive: React.FC<ProfileLiveProps> = ({
       window.removeEventListener('vibe_past_streams_updated', fetchPastStreams);
     };
   }, [fetchPastStreams]);
+
+  // Countdown timer for YouTube/Dailymotion past stream previews
+  React.useEffect(() => {
+    let interval: any = null;
+    const isYouTube = activePastStream?.video_url?.includes('youtube.com') || activePastStream?.video_url?.includes('youtu.be');
+    const isDailymotion = activePastStream?.video_url?.includes('dailymotion.com') || activePastStream?.video_url?.includes('dai.ly');
+    
+    if (
+      activePastStream &&
+      (isYouTube || isDailymotion) &&
+      !isOwnProfile &&
+      !effectiveIsSubscribed &&
+      !purchasedVideoIds.includes(activePastStream.id) &&
+      activePastStream.price > 0 &&
+      !isPastStreamPreviewExpired
+    ) {
+      interval = setInterval(() => {
+        setPastStreamPreviewTimeLeft((prev) => {
+          if (prev <= 1) {
+            setIsPastStreamPreviewExpired(true);
+            clearInterval(interval);
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+    }
+    
+    return () => {
+      if (interval) clearInterval(interval);
+    };
+  }, [activePastStream, isOwnProfile, effectiveIsSubscribed, purchasedVideoIds, isPastStreamPreviewExpired]);
 
   const handleBuyVideo = async (video: any) => {
     const priceVal = Number(video.price) || 0;
@@ -1889,7 +1922,7 @@ export const ProfileLive: React.FC<ProfileLiveProps> = ({
                                 onClick={() => {
                                   setActivePastStream(video);
                                   setIsPastStreamPreviewExpired(false);
-                                  setPastStreamPreviewTimeLeft(30);
+                                  setPastStreamPreviewTimeLeft(video.preview_duration ? Number(video.preview_duration) : 30);
                                   setCurrentTime(0);
                                 }}
                                 style={{
@@ -2032,7 +2065,7 @@ export const ProfileLive: React.FC<ProfileLiveProps> = ({
                                 onClick={() => {
                                   setActivePastStream(video);
                                   setIsPastStreamPreviewExpired(false);
-                                  setPastStreamPreviewTimeLeft(30);
+                                  setPastStreamPreviewTimeLeft(video.preview_duration ? Number(video.preview_duration) : 30);
                                   setCurrentTime(0);
                                 }}
                                 style={{
@@ -2175,7 +2208,7 @@ export const ProfileLive: React.FC<ProfileLiveProps> = ({
                               onClick={() => {
                                 handleBuyVideo(activePastStream);
                                 setIsPastStreamPreviewExpired(false);
-                                setPastStreamPreviewTimeLeft(30);
+                                setPastStreamPreviewTimeLeft(activePastStream.preview_duration ? Number(activePastStream.preview_duration) : 30);
                               }}
                               style={{
                                 padding: '14px 28px',
@@ -2209,28 +2242,65 @@ export const ProfileLive: React.FC<ProfileLiveProps> = ({
                           </div>
                         </div>
                       ) : (
-                        <video
-                          ref={pastStreamVideoRef}
-                          src={activePastStream.video_url}
-                          controls
-                          autoPlay
-                          playsInline
-                          style={{ width: '100%', height: '100%', objectFit: 'contain' }}
-                          onTimeUpdate={(e) => {
-                            const videoEl = e.currentTarget;
-                            setCurrentTime(videoEl.currentTime);
-                            if (
-                              !isOwnProfile &&
-                              !effectiveIsSubscribed &&
-                              !purchasedVideoIds.includes(activePastStream.id) &&
-                              activePastStream.price > 0 &&
-                              videoEl.currentTime >= 30
-                            ) {
-                              videoEl.pause();
-                              setIsPastStreamPreviewExpired(true);
-                            }
-                          }}
-                        />
+                        (() => {
+                          const videoUrl = activePastStream.video_url || '';
+                          const isYouTube = videoUrl.includes('youtube.com') || videoUrl.includes('youtu.be');
+                          const isDailymotion = videoUrl.includes('dailymotion.com') || videoUrl.includes('dai.ly');
+
+                          if (isYouTube) {
+                            const match = videoUrl.match(/^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/);
+                            const ytId = (match && match[2].length === 11) ? match[2] : '';
+                            return (
+                              <iframe
+                                src={`https://www.youtube.com/embed/${ytId}?autoplay=1&controls=1&rel=0`}
+                                title={activePastStream.title}
+                                frameBorder="0"
+                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                allowFullScreen
+                                style={{ width: '100%', height: '100%', border: 'none' }}
+                              />
+                            );
+                          } else if (isDailymotion) {
+                            const match = videoUrl.match(/\/video\/([a-zA-Z0-9]+)/);
+                            const dmId = match ? match[1] : '';
+                            return (
+                              <iframe
+                                src={`https://www.dailymotion.com/embed/video/${dmId}?autoplay=1`}
+                                title={activePastStream.title}
+                                frameBorder="0"
+                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                allowFullScreen
+                                style={{ width: '100%', height: '100%', border: 'none' }}
+                              />
+                            );
+                          } else {
+                            return (
+                              <video
+                                ref={pastStreamVideoRef}
+                                src={activePastStream.video_url}
+                                controls
+                                autoPlay
+                                playsInline
+                                style={{ width: '100%', height: '100%', objectFit: 'contain' }}
+                                onTimeUpdate={(e) => {
+                                  const videoEl = e.currentTarget;
+                                  setCurrentTime(videoEl.currentTime);
+                                  const limit = activePastStream.preview_duration ? Number(activePastStream.preview_duration) : 30;
+                                  if (
+                                    !isOwnProfile &&
+                                    !effectiveIsSubscribed &&
+                                    !purchasedVideoIds.includes(activePastStream.id) &&
+                                    activePastStream.price > 0 &&
+                                    videoEl.currentTime >= limit
+                                  ) {
+                                    videoEl.pause();
+                                    setIsPastStreamPreviewExpired(true);
+                                  }
+                                }}
+                              />
+                            );
+                          }
+                        })()
                       )}
 
                       {/* Preview Overlay Indicator */}
@@ -2253,7 +2323,17 @@ export const ProfileLive: React.FC<ProfileLiveProps> = ({
                            border: '1px solid rgba(255,255,255,0.2)',
                            backdropFilter: 'blur(10px)'
                          }}>
-                           PREVIEW PLAYING: {Math.max(0, 30 - Math.floor(currentTime))}s REMAINING
+                           {(() => {
+                             const videoUrl = activePastStream.video_url || '';
+                             const isYouTube = videoUrl.includes('youtube.com') || videoUrl.includes('youtu.be');
+                             const isDailymotion = videoUrl.includes('dailymotion.com') || videoUrl.includes('dai.ly');
+                             const isIframe = isYouTube || isDailymotion;
+                             const limit = activePastStream.preview_duration ? Number(activePastStream.preview_duration) : 30;
+                             const displayTime = isIframe
+                               ? pastStreamPreviewTimeLeft
+                               : Math.max(0, limit - Math.floor(currentTime));
+                             return `PREVIEW PLAYING: ${displayTime}s REMAINING`;
+                           })()}
                          </div>
                        )}
                     </div>
