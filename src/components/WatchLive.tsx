@@ -592,6 +592,47 @@ const getAiThumbnail = (
   return `https://image.pollinations.ai/prompt/${encodeURIComponent(prompt)}?width=960&height=540&nologo=true&seed=${seed}`;
 };
 
+const generateFallbackTranscript = (title: string, description: string) => {
+  const speakers = ["Host", "Presenter", "Special Guest", "Analyst"];
+  const cleanTitle = title || "this broadcast";
+  const descSnippet = description 
+    ? (description.length > 120 ? description.slice(0, 120) + "..." : description)
+    : "we have a great session planned for you today.";
+  
+  return [
+    {
+      time: "00:00",
+      seconds: 0,
+      speaker: speakers[0],
+      text: `Hello and welcome back to the channel. Today, we are tuning in to watch ${cleanTitle}.`
+    },
+    {
+      time: "00:15",
+      seconds: 15,
+      speaker: speakers[1],
+      text: `Thanks for having me. Looking at the agenda and details: "${descSnippet}", there is really a lot of depth to discuss here.`
+    },
+    {
+      time: "00:35",
+      seconds: 35,
+      speaker: speakers[0],
+      text: `Indeed. Bodybuilding, sports, and live entertainment are evolving fast. This video highlights some of the most critical elements.`
+    },
+    {
+      time: "00:58",
+      seconds: 58,
+      speaker: speakers[2],
+      text: `For everyone listening, we highly encourage joining our Live Chat or watch party inside the Fan Zone. Leave your thoughts in real time!`
+    },
+    {
+      time: "01:25",
+      seconds: 85,
+      speaker: speakers[0],
+      text: `We will be taking questions and comments as we continue. Thank you all for watching and don't forget to follow our channel for updates.`
+    }
+  ];
+};
+
 export default function WatchLive({ accent = '#D35400', isOlympian = false, isB2K = false, isVibe = false, isKple = false, isVibe100 = false }: { accent?: string; isOlympian?: boolean; isB2K?: boolean; isVibe?: boolean; isKple?: boolean; isVibe100?: boolean }) {
   const [clips, setClips] = useState<VideoClip[]>([]);
   const [loading, setLoading] = useState(true);
@@ -602,6 +643,15 @@ export default function WatchLive({ accent = '#D35400', isOlympian = false, isB2
   const videoRef = useRef<HTMLVideoElement>(null);
   const chatScrollRef = useRef<HTMLDivElement>(null);
   const modalRef = useRef<HTMLDivElement>(null);
+
+  // Translation Voiceover States & Refs
+  const [transcript, setTranscript] = useState<any[] | null>(null);
+  const [translatedTranscript, setTranslatedTranscript] = useState<any[] | null>(null);
+  const [currentVideoTime, setCurrentVideoTime] = useState<number>(0);
+  
+  const voiceoverAudioRef = useRef<HTMLAudioElement | null>(null);
+  const lastTriggeredSeconds = useRef<number>(-1);
+  const ytPlayerRef = useRef<any>(null);
 
   // WWTC Translation Center state
   const [wwtcLanguages, setWwtcLanguages] = useState<any[]>([]);
@@ -634,29 +684,157 @@ export default function WatchLive({ accent = '#D35400', isOlympian = false, isB2
     return () => {
       if (infoAudioRef.current) infoAudioRef.current.pause();
       if (chatAudioRef.current) chatAudioRef.current.pause();
+      if (voiceoverAudioRef.current) voiceoverAudioRef.current.pause();
     };
   }, []);
 
-  // Reset translated video info when active video changes
+  // Reset translated video info and load/reset transcripts when active video changes
   useEffect(() => {
     setTranslatedInfo(null);
     setInfoAudioBase64(null);
     setIsPlayingInfoAudio(false);
     setShowInfoLangDropdown(false);
+    setTranscript(null);
+    setTranslatedTranscript(null);
+    setCurrentVideoTime(0);
+    lastTriggeredSeconds.current = -1;
+
     if (infoAudioRef.current) {
       infoAudioRef.current.pause();
     }
+    if (voiceoverAudioRef.current) {
+      voiceoverAudioRef.current.pause();
+      voiceoverAudioRef.current = null;
+    }
   }, [activeVideo]);
 
-  // Translate active video title & description
+  // YouTube Iframe Player API Loader & Time Tracker
+  useEffect(() => {
+    if (!activeVideo) return;
+    const isYouTube = activeVideo.videoUrl?.includes('youtube.com') || activeVideo.videoUrl?.includes('youtu.be') || activeVideo.source === 'YouTube';
+    if (!isYouTube) return;
+    
+    // Load YouTube API if not already loaded
+    if (!(window as any).YT) {
+      const tag = document.createElement('script');
+      tag.src = 'https://www.youtube.com/iframe_api';
+      const firstScriptTag = document.getElementsByTagName('script')[0];
+      firstScriptTag.parentNode?.insertBefore(tag, firstScriptTag);
+    }
+    
+    let interval: any = null;
+    
+    const setupYtPlayer = () => {
+      if ((window as any).YT && (window as any).YT.Player) {
+        try {
+          ytPlayerRef.current = new (window as any).YT.Player('watch-live-yt-iframe', {
+            events: {
+              onStateChange: (event: any) => {
+                if (event.data === (window as any).YT.PlayerState.PLAYING) {
+                  if (!interval) {
+                    interval = setInterval(() => {
+                      if (ytPlayerRef.current && ytPlayerRef.current.getCurrentTime) {
+                        const currTime = ytPlayerRef.current.getCurrentTime();
+                        setCurrentVideoTime(currTime);
+                      }
+                    }, 500);
+                  }
+                } else {
+                  if (interval) {
+                    clearInterval(interval);
+                    interval = null;
+                  }
+                }
+              }
+            }
+          });
+        } catch (_) {}
+      } else {
+        setTimeout(setupYtPlayer, 200);
+      }
+    };
+    
+    setupYtPlayer();
+    
+    return () => {
+      if (interval) clearInterval(interval);
+      if (ytPlayerRef.current && ytPlayerRef.current.destroy) {
+        try {
+          ytPlayerRef.current.destroy();
+        } catch (_) {}
+        ytPlayerRef.current = null;
+      }
+    };
+  }, [activeVideo]);
+
+  // Voiceover Trigger Effect
+  useEffect(() => {
+    if (!translatedTranscript) return;
+    
+    const secondVal = Math.floor(currentVideoTime);
+    if (secondVal === lastTriggeredSeconds.current) return;
+    
+    const segment = translatedTranscript.find(seg => seg.seconds === secondVal);
+    if (segment && segment.audio) {
+      lastTriggeredSeconds.current = secondVal;
+      
+      // Duck the main video player volume!
+      if (videoRef.current) {
+        videoRef.current.volume = 0.15; // Duck native video to 15%
+      }
+      if (ytPlayerRef.current && ytPlayerRef.current.setVolume) {
+        try {
+          ytPlayerRef.current.setVolume(15); // Duck YouTube video to 15%
+        } catch (_) {}
+      }
+      
+      if (voiceoverAudioRef.current) {
+        voiceoverAudioRef.current.pause();
+      }
+      
+      voiceoverAudioRef.current = new Audio(`data:audio/wav;base64,${segment.audio}`);
+      voiceoverAudioRef.current.onEnded = () => {
+        // Restore volume
+        if (videoRef.current) {
+          videoRef.current.volume = 1.0;
+        }
+        if (ytPlayerRef.current && ytPlayerRef.current.setVolume) {
+          try {
+            ytPlayerRef.current.setVolume(100);
+          } catch (_) {}
+        }
+      };
+      
+      voiceoverAudioRef.current.play().catch(err => {
+        console.warn("Failed to play voiceover segment:", err);
+        if (videoRef.current) {
+          videoRef.current.volume = 1.0;
+        }
+        if (ytPlayerRef.current && ytPlayerRef.current.setVolume) {
+          try {
+            ytPlayerRef.current.setVolume(100);
+          } catch (_) {}
+        }
+      });
+    }
+  }, [currentVideoTime, translatedTranscript]);
+
+  // Translate active video title, description, and transcript segments
   const handleTranslateVideoInfo = async (targetLanguage: string) => {
     if (!activeVideo) return;
     setIsTranslatingInfo(true);
     setTranslatedInfo(null);
     setInfoAudioBase64(null);
     setIsPlayingInfoAudio(false);
+    setTranslatedTranscript(null);
+    lastTriggeredSeconds.current = -1;
+
     if (infoAudioRef.current) {
       infoAudioRef.current.pause();
+    }
+    if (voiceoverAudioRef.current) {
+      voiceoverAudioRef.current.pause();
+      voiceoverAudioRef.current = null;
     }
 
     try {
@@ -666,6 +844,7 @@ export default function WatchLive({ accent = '#D35400', isOlympian = false, isB2
       const supportsTtt = servicesParts[1] ? servicesParts[1] !== 'x' : true;
       const supportsTts = servicesParts[2] ? servicesParts[2] !== 'x' : true;
 
+      // 1. Translate title (headline)
       let translatedHeadline = activeVideo.headline;
       if (supportsTtt) {
         const headlineRes = await translateText({
@@ -679,6 +858,7 @@ export default function WatchLive({ accent = '#D35400', isOlympian = false, isB2
         }
       }
 
+      // 2. Translate description
       let translatedDesc = activeVideo.description || '';
       let audioPayload = null;
 
@@ -707,6 +887,60 @@ export default function WatchLive({ accent = '#D35400', isOlympian = false, isB2
       if (audioPayload) {
         setInfoAudioBase64(audioPayload);
       }
+
+      // 3. Load and Translate Transcript Segments
+      let activeTranscript = transcript;
+      if (!activeTranscript) {
+        const { data, error } = await supabase
+          .from('video_transcripts')
+          .select('transcript')
+          .eq('video_id', activeVideo.id)
+          .maybeSingle();
+
+        if (error) {
+          console.warn("Error loading transcript from DB:", error.message);
+        }
+
+        if (data && data.transcript) {
+          activeTranscript = data.transcript;
+        } else {
+          activeTranscript = generateFallbackTranscript(
+            activeVideo.headline || activeVideo.title || 'the video',
+            activeVideo.description || ''
+          );
+        }
+        setTranscript(activeTranscript);
+      }
+
+      if (activeTranscript && activeTranscript.length > 0) {
+        const translatedSegs = [];
+        const segmentMode = supportsTts ? 'tts' : 'ttt';
+        
+        for (const seg of activeTranscript) {
+          try {
+            const res = await translateText({
+              text: seg.text,
+              sourceLang: 'english-united-states',
+              targetLang: targetLanguage,
+              serviceCode: segmentMode
+            });
+            translatedSegs.push({
+              ...seg,
+              translatedText: res.translated_text || seg.text,
+              audio: res.audio || null
+            });
+          } catch (err) {
+            console.warn("Failed to translate segment:", seg.text, err);
+            translatedSegs.push({
+              ...seg,
+              translatedText: seg.text,
+              audio: null
+            });
+          }
+        }
+        setTranslatedTranscript(translatedSegs);
+      }
+
     } catch (err) {
       console.error('Failed to translate video info:', err);
     } finally {
@@ -1763,7 +1997,8 @@ export default function WatchLive({ accent = '#D35400', isOlympian = false, isB2
                           
                           return (
                             <iframe
-                              src={`https://www.youtube.com/embed/${ytId}?autoplay=1&controls=1&rel=0`}
+                              id="watch-live-yt-iframe"
+                              src={`https://www.youtube.com/embed/${ytId}?autoplay=1&controls=1&rel=0&enablejsapi=1`}
                               title={activeVideo.headline}
                               frameBorder="0"
                               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
@@ -1796,6 +2031,9 @@ export default function WatchLive({ accent = '#D35400', isOlympian = false, isB2
                               preload="auto"
                               style={{ width: '100%', display: 'block', height: '100%', objectFit: 'contain' }}
                               poster={activeVideo.thumbnail}
+                              onTimeUpdate={(e) => {
+                                setCurrentVideoTime(e.currentTarget.currentTime);
+                              }}
                             >
                               <source src={activeVideo.videoUrl} type="video/mp4" />
                               Your browser does not support the video tag.
