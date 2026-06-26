@@ -27,7 +27,7 @@ export function useStreaming({ profileId, isOwnProfile, user, supabase, channelR
   const [isPlayingLive, setIsPlayingLive] = useState(false);
   const [isPubliclyLive, setIsPubliclyLive] = useState(false);
   const [liveCountdown, setLiveCountdown] = useState<number | null>(null);
-  const [streamSource, setStreamSource] = useState<StreamSource>('url');
+  const [streamSource, setStreamSource] = useState<StreamSource>('camera');
   const [liveEmbedUrl, setLiveEmbedUrl] = useState('');
 
   // ── Camera State ──
