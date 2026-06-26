@@ -706,6 +706,42 @@ export default function WatchLive({ accent = '#D35400', isOlympian = false, isB2
       voiceoverAudioRef.current.pause();
       voiceoverAudioRef.current = null;
     }
+
+    if (!activeVideo) return;
+
+    // Load transcript immediately on video load so it's in the DOM for translation software
+    const fetchTranscript = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('video_transcripts')
+          .select('transcript')
+          .eq('video_id', activeVideo.id)
+          .maybeSingle();
+
+        if (error) {
+          console.warn("Error loading transcript from DB on load:", error.message);
+        }
+
+        if (data && data.transcript) {
+          setTranscript(data.transcript);
+        } else {
+          const fallback = generateFallbackTranscript(
+            activeVideo.headline || activeVideo.title || 'the video',
+            activeVideo.description || ''
+          );
+          setTranscript(fallback);
+        }
+      } catch (err) {
+        console.error("Failed to fetch transcript on video selection:", err);
+        const fallback = generateFallbackTranscript(
+          activeVideo.headline || activeVideo.title || 'the video',
+          activeVideo.description || ''
+        );
+        setTranscript(fallback);
+      }
+    };
+
+    fetchTranscript();
   }, [activeVideo]);
 
   // YouTube Iframe Player API Loader & Time Tracker
@@ -2222,6 +2258,48 @@ export default function WatchLive({ accent = '#D35400', isOlympian = false, isB2
                         <p style={{ margin: '0 0 12px 0', fontSize: '13px', color: '#ccc', lineHeight: 1.5 }}>
                           {translatedInfo ? translatedInfo.description : activeVideo.description}
                         </p>
+
+                        {/* Hidden transcript container for external translation software */}
+                        {transcript && transcript.length > 0 && (
+                          <div 
+                            id="video-transcript" 
+                            style={{ display: 'none' }}
+                            data-video-id={activeVideo.id}
+                          >
+                            {transcript.map((seg: any, idx: number) => (
+                              <div 
+                                key={`hidden-seg-${idx}`} 
+                                className="transcript-segment"
+                                data-seconds={seg.seconds}
+                                data-time={seg.time}
+                                data-speaker={seg.speaker}
+                              >
+                                {seg.text}
+                              </div>
+                            ))}
+                          </div>
+                        )}
+
+                        {/* Hidden translated transcript container for external translation software */}
+                        {translatedTranscript && translatedTranscript.length > 0 && (
+                          <div 
+                            id="video-translated-transcript" 
+                            style={{ display: 'none' }}
+                            data-video-id={activeVideo.id}
+                          >
+                            {translatedTranscript.map((seg: any, idx: number) => (
+                              <div 
+                                key={`hidden-trans-seg-${idx}`} 
+                                className="translated-transcript-segment"
+                                data-seconds={seg.seconds}
+                                data-time={seg.time}
+                                data-speaker={seg.speaker}
+                              >
+                                {seg.translatedText || seg.text}
+                              </div>
+                            ))}
+                          </div>
+                        )}
                       </div>
 
                       <div className="watch-live-actions-container" style={{ display: 'flex', gap: '10px', alignItems: 'center', flexShrink: 0 }}>
