@@ -498,49 +498,51 @@ export const ProfileLive: React.FC<ProfileLiveProps> = ({
                   
                   {isPlayingLive ? (
                      <>
-                       {streamSource === 'url' && !isPreviewExpired && (
-                          liveEmbedUrl ? (
-                            <iframe 
-                              src={liveEmbedUrl} 
-                              title="Live Stream Broadcast"
-                              frameBorder="0" 
-                              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
-                              referrerPolicy="strict-origin-when-cross-origin" 
-                              allowFullScreen
-                              style={{ width: '100%', height: '100%', position: 'absolute', inset: 0, zIndex: 5 }}
-                            />
-                          ) : (
-                            <video
-                              src="/videos/tiesto.mp4"
-                              autoPlay
-                              loop
-                              muted
-                              playsInline
-                              style={{ width: '100%', height: '100%', objectFit: 'cover', position: 'absolute', inset: 0, zIndex: 5 }}
-                            />
-                          )
-                        )}
-                        {streamSource === 'obs' && !isPreviewExpired && (
-                          profile?.mux_playback_id ? (
-                            <iframe 
-                              src={`https://stream.mux.com/${profile.mux_playback_id}/embed?autoplay=true&muted=false`} 
-                              title="Live Stream Broadcast"
-                              frameBorder="0" 
-                              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
-                              allowFullScreen
-                              style={{ width: '100%', height: '100%', position: 'absolute', inset: 0, border: 'none', zIndex: 5 }}
-                            />
-                          ) : (
-                            <video
-                              src="/videos/tiesto.mp4"
-                              autoPlay
-                              loop
-                              muted
-                              playsInline
-                              style={{ width: '100%', height: '100%', objectFit: 'cover', position: 'absolute', inset: 0, zIndex: 5 }}
-                            />
-                          )
-                        )}
+                        {/* OBS and External URL streaming modes are disabled
+                        {streamSource === 'url' && !isPreviewExpired && (
+                           liveEmbedUrl ? (
+                             <iframe 
+                               src={liveEmbedUrl} 
+                               title="Live Stream Broadcast"
+                               frameBorder="0" 
+                               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
+                               referrerPolicy="strict-origin-when-cross-origin" 
+                               allowFullScreen
+                               style={{ width: '100%', height: '100%', position: 'absolute', inset: 0, zIndex: 5 }}
+                             />
+                           ) : (
+                             <video
+                               src="/videos/tiesto.mp4"
+                               autoPlay
+                               loop
+                               muted
+                               playsInline
+                               style={{ width: '100%', height: '100%', objectFit: 'cover', position: 'absolute', inset: 0, zIndex: 5 }}
+                             />
+                           )
+                         )}
+                         {streamSource === 'obs' && !isPreviewExpired && (
+                           profile?.mux_playback_id ? (
+                             <iframe 
+                               src={`https://stream.mux.com/${profile.mux_playback_id}/embed?autoplay=true&muted=false`} 
+                               title="Live Stream Broadcast"
+                               frameBorder="0" 
+                               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
+                               allowFullScreen
+                               style={{ width: '100%', height: '100%', position: 'absolute', inset: 0, border: 'none', zIndex: 5 }}
+                             />
+                           ) : (
+                             <video
+                               src="/videos/tiesto.mp4"
+                               autoPlay
+                               loop
+                               muted
+                               playsInline
+                               style={{ width: '100%', height: '100%', objectFit: 'cover', position: 'absolute', inset: 0, zIndex: 5 }}
+                             />
+                           )
+                         )}
+                         */}
                        {!isOwnProfile && isPlayingLive && !effectiveIsSubscribed && !hasPaidForLive ? (
                          isPreviewExpired ? (
                            <div style={{ position: 'absolute', inset: 0, zIndex: 30, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: 'var(--bg-surface)', padding: '40px', textAlign: 'center' }}>
@@ -657,7 +659,7 @@ export const ProfileLive: React.FC<ProfileLiveProps> = ({
                              </div>
                            )}
                            
-                           {/* Simulated Guests Webcams Slot */}
+                           {/* Simulated Guests Webcams Slot (Disabled)
                            {visibleGuests.map((g, i) => (
                              <div key={i} style={{ position: 'relative', background: 'var(--bg-surface-hover)', flexShrink: 0, pointerEvents: 'auto', ...(streamSource === 'url' ? { width: 'min(20%, 200px)', aspectRatio: '16/9', borderRadius: '12px', border: '2px solid rgba(255,255,255,0.2)', overflow: 'hidden', boxShadow: '0 4px 20px rgba(0,0,0,0.5)' } : { width: '100%', height: '100%' }) }}>
                                <img loading="lazy" src={`https://images.unsplash.com/photo-${1550000000000 + (i * 1000)}?auto=format&fit=crop&w=800&q=80`} style={{ width: '100%', height: '100%', objectFit: 'cover', filter: 'grayscale(0.5)' }} alt="Guest Feed" />
@@ -670,6 +672,7 @@ export const ProfileLive: React.FC<ProfileLiveProps> = ({
                                </div>
                              </div>
                            ))}
+                           */}
                          </div>
                        )}
                                     {/* Floating Reactions overlay */}
@@ -1323,11 +1326,14 @@ export const ProfileLive: React.FC<ProfileLiveProps> = ({
                       <label style={{ display: 'block', marginBottom: '12px', color: '#ff4d85', fontWeight: 'bold', fontSize: '15px' }}>Configure Live Stream Origin</label>
                       <div style={{ display: 'flex', gap: '12px', marginBottom: '16px', flexWrap: 'wrap' }}>
                          <button onClick={() => { setStreamSource('camera'); setIsPlayingLive(false); }} style={{ padding: '10px 20px', background: streamSource === 'camera' ? '#0055ff' : 'rgba(255,255,255,0.05)', color: streamSource === 'camera' ? '#fff' : '#888', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '8px' }}><Camera size={16}/> Direct Webcam</button>
+                         {/* OBS and External URL stream sources are disabled
                          <button onClick={() => { setStreamSource('obs'); setIsPlayingLive(false); }} style={{ padding: '10px 20px', background: streamSource === 'obs' ? '#0055ff' : 'rgba(255,255,255,0.05)', color: streamSource === 'obs' ? '#fff' : '#888', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold' }}>🎙️ OBS / Streamlabs</button>
                          <button onClick={() => { setStreamSource('url'); setIsPlayingLive(false); }} style={{ padding: '10px 20px', background: streamSource === 'url' ? '#0055ff' : 'rgba(255,255,255,0.05)', color: streamSource === 'url' ? '#fff' : '#888', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold' }}>External URL / RTMP</button>
+                         */}
                       </div>
                       
                       <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                        {/* Setup panels for External URL and OBS are disabled
                         {streamSource === 'url' && (
                           <div style={{ display: 'flex', gap: '12px' }}>
                             <input type="text" value={liveEmbedUrl} onChange={e => setLiveEmbedUrl(e.target.value)} placeholder="Direct Stream URL (e.g. RTMP, HLS, .m3u8, .mp4)" style={{ flex: 1, padding: '14px', borderRadius: '10px', background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.1)', color: 'var(--text-primary)', fontSize: '15px', outline: 'none' }}/>
@@ -1359,6 +1365,7 @@ export const ProfileLive: React.FC<ProfileLiveProps> = ({
                             </p>
                           </div>
                         )}
+                        */}
                         
                         {streamSource === 'camera' && (
                           <div style={{ display: 'flex', gap: '12px', alignItems: 'center', flexWrap: 'wrap' }}>
@@ -1373,6 +1380,7 @@ export const ProfileLive: React.FC<ProfileLiveProps> = ({
                           </div>
                         )}
 
+                        {/* WebRTC Overlays & Guests configuration block is disabled
                         <div style={{ background: 'rgba(0,0,0,0.3)', padding: '16px', borderRadius: '12px', border: '1px dashed rgba(255,255,255,0.1)' }}>
                           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px' }}>
                             <div>
@@ -1430,6 +1438,7 @@ export const ProfileLive: React.FC<ProfileLiveProps> = ({
                             )}
                           </div>
                         </div>
+                        */}
 
                       </div>
                       

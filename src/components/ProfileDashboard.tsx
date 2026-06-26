@@ -3043,7 +3043,7 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
               )}
 
               {/* Glassmorphic Creator Header */}
-              <div className="profile-header-card" style={{ background: isNetworkLevel ? 'transparent' : 'rgba(15, 15, 15, 0.4)', backdropFilter: isNetworkLevel ? 'none' : 'blur(24px)', padding: isNetworkLevel ? '0 40px 40px' : '40px', borderRadius: '32px', border: isNetworkLevel ? 'none' : '1px solid rgba(255,255,255,0.08)', position: 'relative', boxShadow: isNetworkLevel ? 'none' : '0 20px 40px rgba(0,0,0,0.4)' }}>
+              <div className="profile-header-card" style={{ background: isNetworkLevel ? 'transparent' : 'rgba(15, 15, 15, 0.4)', backdropFilter: isNetworkLevel ? 'none' : 'blur(24px)', padding: isNetworkLevel ? '0 40px 40px' : '40px', borderRadius: '32px', border: isNetworkLevel ? 'none' : `1px solid ${wlConfig?.accent || '#00ff88'}22`, position: 'relative', boxShadow: isNetworkLevel ? 'none' : '0 20px 40px rgba(0,0,0,0.4)' }}>
             
             {!isOwnProfile && (
               <div style={{ position: 'absolute', top: '30px', right: '30px', display: 'flex', gap: '12px', zIndex: 20 }}>
@@ -3446,10 +3446,10 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
               }
             }}
             style={{ 
-              background: isDraggingPostForm ? 'rgba(0, 255, 136, 0.04)' : 'rgba(20,20,20,0.6)', 
+              background: isDraggingPostForm ? `${wlConfig?.accent || '#00ff88'}0c` : 'rgba(20,20,20,0.6)', 
               padding: '28px', 
               borderRadius: '24px', 
-              border: isDraggingPostForm ? '1px dashed #00ff88' : '1px solid rgba(255,255,255,0.08)',
+              border: isDraggingPostForm ? `1px dashed ${wlConfig?.accent || '#00ff88'}` : `1px solid ${wlConfig?.accent || '#00ff88'}22`,
               boxShadow: '0 8px 32px rgba(0,0,0,0.3)',
               backdropFilter: 'blur(10px)',
               transition: 'all 0.3s ease',
@@ -3687,7 +3687,7 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
           <h2 style={{ fontSize: '20px', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '16px', marginTop: '10px' }}>Content Feed</h2>
 
           {feed.map((post) => (
-            <motion.div id={`post-${post.id}`} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} key={post.id} style={{ background: 'rgba(15,15,15,0.8)', borderRadius: '20px', border: '1px solid rgba(255,255,255,0.05)', overflow: 'hidden' }}>
+            <motion.div id={`post-${post.id}`} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} key={post.id} style={{ background: 'rgba(15,15,15,0.8)', borderRadius: '20px', border: `1px solid ${wlConfig?.accent || '#00ff88'}22`, overflow: 'hidden' }}>
               {post.is_pinned && (
                 <div style={{
                   background: 'rgba(255, 215, 0, 0.1)',
@@ -4102,7 +4102,7 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
             const visibleProducts = products.filter(p => (isNetworkLevel && isOwnProfile && viewMode === 'edit') ? true : !p.hidden_from_network);
             if (visibleProducts.length === 0) {
               return (
-                 <div style={{ textAlign: 'center', padding: '60px 20px', background: 'rgba(0,0,0,0.2)', borderRadius: '24px', border: '1px solid rgba(255,255,255,0.05)' }}>
+                 <div style={{ textAlign: 'center', padding: '60px 20px', background: 'rgba(0,0,0,0.2)', borderRadius: '24px', border: `1px solid ${wlConfig?.accent || '#00ff88'}22` }}>
                    <h3 style={{ fontSize: '20px', marginTop: 0, color: 'var(--text-muted)' }}>Store is Empty</h3>
                    <p style={{ color: '#555', marginBottom: 0 }}>There are no visible products available.</p>
                  </div>
@@ -4111,7 +4111,7 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
             return (
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))', gap: '20px' }}>
                 {visibleProducts.map(product => (
-                  <motion.div onClick={() => navigate(`/product/${product.id}${window.location.search}`)} initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} key={product.id} className="store-card" style={{ background: 'var(--bg-surface)', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.05)', overflow: 'hidden', display: 'flex', flexDirection: 'column', transition: 'all 0.3s ease', cursor: 'pointer', position: 'relative' }}>
+                  <motion.div onClick={() => navigate(`/product/${product.id}${window.location.search}`)} initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} key={product.id} className="store-card" style={{ background: 'var(--bg-surface)', borderRadius: '16px', border: `1px solid ${wlConfig?.accent || '#00ff88'}22`, overflow: 'hidden', display: 'flex', flexDirection: 'column', transition: 'all 0.3s ease', cursor: 'pointer', position: 'relative' }}>
                     {isNetworkLevel && isOwnProfile && viewMode === 'edit' && (
                       <button 
                         onClick={(e) => handleToggleProductVisibility(e, product.id, product.hidden_from_network)}
