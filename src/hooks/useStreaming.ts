@@ -87,26 +87,30 @@ export function useStreaming({ profileId, isOwnProfile, user, supabase, channelR
 
   // ── Countdown Timer (guarded against double-start) ──
   const startLiveStream = useCallback(() => {
-    // Prevent double-start
-    if (countdownRef.current !== null || liveCountdown !== null) return;
-
+    if (countdownRef.current !== null || liveCountdown !== null || isPlayingLive) return;
     setIsCameraRequested(true);
-    setLiveCountdown(3);
-    let ticker = 3;
-    const interval = setInterval(() => {
-      ticker -= 1;
-      if (ticker <= 0) {
-        clearInterval(interval);
-        countdownRef.current = null;
-        setLiveCountdown(null);
-        setIsPlayingLive(true);
-        setIsPubliclyLive(true);
-      } else {
-        setLiveCountdown(ticker);
-      }
-    }, 1000);
-    countdownRef.current = interval;
-  }, [liveCountdown]);
+  }, [liveCountdown, isPlayingLive]);
+
+  // ── Auto-start countdown once camera is active ──
+  useEffect(() => {
+    if (isOwnProfile && isCameraRequested && cameraStatus === 'active' && liveCountdown === null && !isPlayingLive && countdownRef.current === null) {
+      setLiveCountdown(3);
+      let ticker = 3;
+      const interval = setInterval(() => {
+        ticker -= 1;
+        if (ticker <= 0) {
+          clearInterval(interval);
+          countdownRef.current = null;
+          setLiveCountdown(null);
+          setIsPlayingLive(true);
+          setIsPubliclyLive(true);
+        } else {
+          setLiveCountdown(ticker);
+        }
+      }, 1000);
+      countdownRef.current = interval;
+    }
+  }, [isOwnProfile, isCameraRequested, cameraStatus, liveCountdown, isPlayingLive]);
 
   // Cleanup countdown on unmount
   useEffect(() => {
