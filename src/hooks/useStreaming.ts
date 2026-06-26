@@ -91,6 +91,17 @@ export function useStreaming({ profileId, isOwnProfile, user, supabase, channelR
     setIsCameraRequested(true);
   }, [liveCountdown, isPlayingLive]);
 
+  const stopLiveStream = useCallback(() => {
+    setIsPlayingLive(false);
+    setIsPubliclyLive(false);
+    setIsCameraRequested(false);
+    if (countdownRef.current) {
+      clearInterval(countdownRef.current);
+      countdownRef.current = null;
+    }
+    setLiveCountdown(null);
+  }, []);
+
   // ── Auto-start countdown once camera is active ──
   useEffect(() => {
     if (isOwnProfile && isCameraRequested && cameraStatus === 'active' && liveCountdown === null && !isPlayingLive && countdownRef.current === null) {
@@ -476,5 +487,6 @@ export function useStreaming({ profileId, isOwnProfile, user, supabase, channelR
 
     // Actions
     startLiveStream,
+    stopLiveStream,
   };
 }

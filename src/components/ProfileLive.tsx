@@ -51,6 +51,7 @@ export interface ProfileLiveProps {
   handleUnlockLive: () => void;
   handleSubscribe: () => void;
   startLiveStream: () => void;
+  stopLiveStream?: () => void;
   setShowTipModal: (b: boolean) => void;
   localStream?: MediaStream | null;
   liveCountdown?: number | null;
@@ -70,7 +71,7 @@ export const ProfileLive: React.FC<ProfileLiveProps> = ({
   user, guests, subPrice, setLivePrice, setStreamSource, setLiveEmbedUrl,
   setIsPlayingLive, setIsPubliclyLive, setPresenterMode, setGuests,
   setLocalGuestData, handleStripeCheckout, handleUnlockLive, handleSubscribe,
-  startLiveStream, setShowTipModal, localStream, liveCountdown,
+  startLiveStream, stopLiveStream, setShowTipModal, localStream, liveCountdown,
   products = [], pinnedProducts = [], setPinnedProducts = () => {}
 }) => {
   const toast = useToast();
@@ -1294,7 +1295,7 @@ export const ProfileLive: React.FC<ProfileLiveProps> = ({
                                 <p style={{ margin: '4px 0 0 0', color: 'var(--text-muted)', fontSize: '13px', lineHeight: '1.4' }}>Using your local hardware camera and microphone as the live stream origin. Press "Start Streaming" to ignite the feed.</p>
                              </div>
                              {isPlayingLive ? (
-                               <button onClick={() => { setIsPlayingLive(false); }} style={{ padding: '14px 28px', background: 'rgba(229, 9, 20, 0.12)', color: '#ff3b30', border: '1px solid rgba(229, 9, 20, 0.3)', borderRadius: '12px', fontWeight: 'bold', fontSize: '15px', cursor: 'pointer', transition: 'all 0.2s', display: 'flex', alignItems: 'center', gap: '8px', boxShadow: '0 4px 15px rgba(229,9,20,0.1)' }} onMouseOver={e=>e.currentTarget.style.background='rgba(229, 9, 20, 0.2)'} onMouseOut={e=>e.currentTarget.style.background='rgba(229, 9, 20, 0.12)'}>
+                               <button onClick={() => { if (stopLiveStream) { stopLiveStream(); } else { setIsPlayingLive(false); } }} style={{ padding: '14px 28px', background: 'rgba(229, 9, 20, 0.12)', color: '#ff3b30', border: '1px solid rgba(229, 9, 20, 0.3)', borderRadius: '12px', fontWeight: 'bold', fontSize: '15px', cursor: 'pointer', transition: 'all 0.2s', display: 'flex', alignItems: 'center', gap: '8px', boxShadow: '0 4px 15px rgba(229,9,20,0.1)' }} onMouseOver={e=>e.currentTarget.style.background='rgba(229, 9, 20, 0.2)'} onMouseOut={e=>e.currentTarget.style.background='rgba(229, 9, 20, 0.12)'}>
                                   🛑 Stop Streaming
                                </button>
                              ) : (

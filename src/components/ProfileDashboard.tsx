@@ -740,6 +740,7 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
     showExitScreen, setShowExitScreen,
     isPreviewExpired,
     startLiveStream,
+    stopLiveStream,
   } = streaming;
 
   useEffect(() => {
@@ -4185,7 +4186,7 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
             setLiveEmbedUrl={setLiveEmbedUrl} setIsPlayingLive={setIsPlayingLive} setIsPubliclyLive={setIsPubliclyLive}
             setPresenterMode={setPresenterMode} setGuests={setGuests} setLocalGuestData={setLocalGuestData}
             handleStripeCheckout={handleStripeCheckout} handleUnlockLive={handleUnlockLive}
-            handleSubscribe={handleSubscribe} startLiveStream={startLiveStream} setShowTipModal={setShowTipModal}
+            handleSubscribe={handleSubscribe} startLiveStream={startLiveStream} stopLiveStream={stopLiveStream} setShowTipModal={setShowTipModal}
             localStream={localStream}
             liveCountdown={liveCountdown}
             products={products}
