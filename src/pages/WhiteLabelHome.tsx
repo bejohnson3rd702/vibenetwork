@@ -8,9 +8,12 @@ import { ASSETS } from '../data';
 import type { WhiteLabelConfig, Category, VideoItem, User } from '../types';
 import { isOlympianConfig, isMuscleFitnessConfig, isB2kConfig, isKpleConfig } from '../lib/whitelabel';
 
+import { OLYMPIA_CHAMPIONS } from './N2NHome';
+
 const ProfileDashboard = lazy(() => import('../components/ProfileDashboard'));
 const ShopifyStore = lazy(() => import('../components/ShopifyStore'));
 const WatchLive = lazy(() => import('../components/WatchLive'));
+const CollegeTicker = lazy(() => import('../components/CollegeTicker'));
 
 interface WhiteLabelHomeProps {
   wlConfig: WhiteLabelConfig;
@@ -22,6 +25,7 @@ interface WhiteLabelHomeProps {
 
 export default function WhiteLabelHome({ wlConfig, categories, user, activeVideo, setActiveVideo }: WhiteLabelHomeProps) {
   const navigate = useNavigate();
+  const isOlympian = isOlympianConfig(wlConfig);
   const [showVideoTitle, setShowVideoTitle] = useState(true);
   const videoRef = useRef<HTMLVideoElement>(null);
 
@@ -192,6 +196,15 @@ export default function WhiteLabelHome({ wlConfig, categories, user, activeVideo
           })()}
        </div>
 
+        {/* Mr. Olympia Ticker if it is the Mr. Olympia network */}
+        {isOlympian && (
+          <div style={{ width: '100%', position: 'relative', zIndex: 10, marginBottom: '20px' }}>
+            <Suspense fallback={null}>
+              <CollegeTicker accent={wlConfig.accent} isOlympian={true} />
+            </Suspense>
+          </div>
+        )}
+
         {/* Live Section if enabled */}
         {wlConfig.enableWatchLive && (
           <div id="whats-on-now" style={{ position: 'relative', zIndex: 10, marginTop: '40px' }}>
@@ -204,6 +217,19 @@ export default function WhiteLabelHome({ wlConfig, categories, user, activeVideo
                 isKple={isKpleConfig(wlConfig)} 
               />
             </Suspense>
+          </div>
+        )}
+
+        {/* Mr. & Mrs. Olympia Slider if it's the Mr. Olympia network */}
+        {isOlympian && (
+          <div id="olympia-champions-slider" style={{ width: '100%', position: 'relative', zIndex: 10, marginTop: '40px', marginBottom: '20px' }}>
+            <SliderSection
+              title="MR. & MRS. OLYMPIA"
+              items={OLYMPIA_CHAMPIONS}
+              delay={0}
+              aspectRatio="1/1"
+              onItemClick={(item) => navigate('/profile/' + item.id + window.location.search)}
+            />
           </div>
         )}
        
