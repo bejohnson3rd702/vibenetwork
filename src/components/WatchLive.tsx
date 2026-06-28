@@ -643,6 +643,22 @@ const getAiThumbnail = (
   return `https://image.pollinations.ai/prompt/${encodeURIComponent(prompt)}?width=960&height=540&nologo=true&seed=${seed}`;
 };
 
+const getQueryVideoId = (video: any) => {
+  if (!video) return '';
+  if (video.videoUrl) {
+    const match = video.videoUrl.match(/^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/);
+    if (match && match[2].length === 11) {
+      return match[2];
+    }
+    // Dailymotion
+    const dMatch = video.videoUrl.match(/\/video\/([a-zA-Z0-9]+)/);
+    if (dMatch) {
+      return dMatch[1];
+    }
+  }
+  return video.id;
+};
+
 const generateFallbackTranscript = (title: string, description: string) => {
   const speakers = ["Host", "Presenter", "Special Guest", "Analyst"];
   const cleanTitle = title || "this broadcast";
@@ -702,6 +718,8 @@ export default function WatchLive({ accent = '#D35400', isOlympian = false, isMf
   
   const voiceoverAudioRef = useRef<HTMLAudioElement | null>(null);
   const lastTriggeredSeconds = useRef<number>(-1);
+  const playedSegmentsRef = useRef<Set<number>>(new Set());
+  const prevVideoTimeRef = useRef<number>(0);
   const ytPlayerRef = useRef<any>(null);
 
   // WWTC Translation Center state
@@ -749,6 +767,8 @@ export default function WatchLive({ accent = '#D35400', isOlympian = false, isMf
     setTranslatedTranscript(null);
     setCurrentVideoTime(0);
     lastTriggeredSeconds.current = -1;
+    playedSegmentsRef.current.clear();
+    prevVideoTimeRef.current = 0;
 
     if (infoAudioRef.current) {
       infoAudioRef.current.pause();
@@ -763,10 +783,11 @@ export default function WatchLive({ accent = '#D35400', isOlympian = false, isMf
     // Load transcript immediately on video load so it's in the DOM for translation software
     const fetchTranscript = async () => {
       try {
+        const queryId = getQueryVideoId(activeVideo);
         const { data, error } = await supabase
           .from('video_transcripts')
           .select('transcript')
-          .eq('video_id', activeVideo.id)
+          .eq('video_id', queryId)
           .maybeSingle();
 
         if (error) {
@@ -854,56 +875,73 @@ export default function WatchLive({ accent = '#D35400', isOlympian = false, isMf
     };
   }, [activeVideo]);
 
+  const restorePlayerVolume = () => {
+    if (videoRef.current) {
+      videoRef.current.volume = 1.0;
+    }
+    if (ytPlayerRef.current && ytPlayerRef.current.setVolume) {
+      try {
+        ytPlayerRef.current.setVolume(100);
+      } catch (_) {}
+    }
+  };
+
   // Voiceover Trigger Effect
   useEffect(() => {
     if (!translatedTranscript) return;
     
-    const secondVal = Math.floor(currentVideoTime);
-    if (secondVal === lastTriggeredSeconds.current) return;
-    
-    const segment = translatedTranscript.find(seg => seg.seconds === secondVal);
-    if (segment && segment.audio) {
-      lastTriggeredSeconds.current = secondVal;
-      
-      // Duck the main video player volume!
-      if (videoRef.current) {
-        videoRef.current.volume = 0.15; // Duck native video to 15%
+    const time = currentVideoTime;
+    const prevTime = prevVideoTimeRef.current;
+    prevVideoTimeRef.current = time;
+
+    // Handle user seeks/rewinds
+    if (time < prevTime || Math.abs(time - prevTime) > 3) {
+      // Clear played flags for segments starting after the seek time
+      for (const segIdx of Array.from(playedSegmentsRef.current)) {
+        const seg = translatedTranscript[segIdx];
+        if (seg && seg.seconds >= time) {
+          playedSegmentsRef.current.delete(segIdx);
+        }
       }
-      if (ytPlayerRef.current && ytPlayerRef.current.setVolume) {
-        try {
-          ytPlayerRef.current.setVolume(15); // Duck YouTube video to 15%
-        } catch (_) {}
-      }
-      
-      if (voiceoverAudioRef.current) {
+      // If seeking backward, stop any currently playing voiceover
+      if (voiceoverAudioRef.current && time < prevTime) {
         voiceoverAudioRef.current.pause();
+        restorePlayerVolume();
       }
-      
-      voiceoverAudioRef.current = new Audio(`data:audio/wav;base64,${segment.audio}`);
-      voiceoverAudioRef.current.onEnded = () => {
-        // Restore volume
-        if (videoRef.current) {
-          videoRef.current.volume = 1.0;
-        }
-        if (ytPlayerRef.current && ytPlayerRef.current.setVolume) {
-          try {
-            ytPlayerRef.current.setVolume(100);
-          } catch (_) {}
-        }
-      };
-      
-      voiceoverAudioRef.current.play().catch(err => {
-        console.warn("Failed to play voiceover segment:", err);
-        if (videoRef.current) {
-          videoRef.current.volume = 1.0;
-        }
-        if (ytPlayerRef.current && ytPlayerRef.current.setVolume) {
-          try {
-            ytPlayerRef.current.setVolume(100);
-          } catch (_) {}
-        }
-      });
     }
+
+    // Check all segments to see if any should be triggered (range check to prevent skipping frames/lag)
+    translatedTranscript.forEach((seg, index) => {
+      if (time >= seg.seconds && time - seg.seconds <= 3 && !playedSegmentsRef.current.has(index)) {
+        if (seg.audio) {
+          playedSegmentsRef.current.add(index);
+          
+          // Duck the main video player volume
+          if (videoRef.current) {
+            videoRef.current.volume = 0.15;
+          }
+          if (ytPlayerRef.current && ytPlayerRef.current.setVolume) {
+            try {
+              ytPlayerRef.current.setVolume(15);
+            } catch (_) {}
+          }
+          
+          if (voiceoverAudioRef.current) {
+            voiceoverAudioRef.current.pause();
+          }
+          
+          voiceoverAudioRef.current = new Audio(`data:audio/wav;base64,${seg.audio}`);
+          voiceoverAudioRef.current.onended = () => {
+            restorePlayerVolume();
+          };
+          
+          voiceoverAudioRef.current.play().catch(err => {
+            console.warn("Failed to play voiceover segment:", err);
+            restorePlayerVolume();
+          });
+        }
+      }
+    });
   }, [currentVideoTime, translatedTranscript]);
 
   // Translate active video title, description, and transcript segments
@@ -934,10 +972,11 @@ export default function WatchLive({ accent = '#D35400', isOlympian = false, isMf
       // 1. Load Transcript first (so we can compile text for TTS)
       let activeTranscript = transcript;
       if (!activeTranscript) {
+        const queryId = getQueryVideoId(activeVideo);
         const { data, error } = await supabase
           .from('video_transcripts')
           .select('transcript')
-          .eq('video_id', activeVideo.id)
+          .eq('video_id', queryId)
           .maybeSingle();
 
         if (error) {
