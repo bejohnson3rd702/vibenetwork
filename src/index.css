@@ -629,6 +629,20 @@ img, video {
   flex-wrap: wrap;
 }
 
+.profile-info-col {
+  box-sizing: border-box;
+}
+
+@media (min-width: 769px) {
+  /* Give space so text wraps and doesn't overlap top-right buttons */
+  .profile-header-card:not(.own-profile) .profile-info-col {
+    padding-right: 320px;
+  }
+  .profile-header-card.own-profile .profile-info-col {
+    padding-right: 150px;
+  }
+}
+
 .profile-badge-container {
   display: flex;
   gap: 12px;
