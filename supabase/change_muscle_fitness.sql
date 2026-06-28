@@ -2,12 +2,12 @@
 UPDATE public.whitelabel_configs
 SET 
   domain = 'muscleandfitness.com',
-  logo = '/n2n/muscle_fitness_logo.svg',
+  logo = '/n2n/muscle_fitness_logo.png',
   theme = '{
     "accent": "#E31B23",
     "heroCopy": "Muscle & Fitness — Your Ultimate Guide to Workouts, Nutrition, Gear, and Athlete Interviews.",
     "heroImage": "https://images.unsplash.com/photo-1541534741688-6078c6bfb5c5?auto=format&fit=crop&q=80&w=1600",
-    "logoImage": "/n2n/muscle_fitness_logo.svg",
+    "logoImage": "/n2n/muscle_fitness_logo.png",
     "shopifyUrl": "https://www.muscleandfitness.com/",
     "sliderCount": 4,
     "enableBooking": false,
