@@ -1472,7 +1472,7 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
       const { data, error } = await supabase!
         .storage
         .from('vibe-drive')
-        .createSignedUrl(file.file_path, 3600);
+        .createSignedUrl(file.file_path, 3600, { download: file.name });
       
       if (error || !data?.signedUrl) {
         throw error || new Error("Failed to generate download URL");
