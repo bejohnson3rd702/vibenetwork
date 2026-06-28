@@ -84,6 +84,7 @@ export const ProfileLive: React.FC<ProfileLiveProps> = ({
 
   // ── Past Streams States & Actions ──
   const [pastStreams, setPastStreams] = React.useState<any[]>([]);
+  const [activeUploads, setActiveUploads] = React.useState<any[]>([]);
   const [loadingPastStreams, setLoadingPastStreams] = React.useState(false);
   const [activePastStream, setActivePastStream] = React.useState<any | null>(null);
   const [currentTime, setCurrentTime] = React.useState<number>(0);
@@ -243,29 +244,32 @@ export const ProfileLive: React.FC<ProfileLiveProps> = ({
     setIsCrudModalOpen(true);
   };
 
-  const handleSaveCrud = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!creatorId) return;
-
-    setCrudUploading(true);
-    setCrudUploadProgress('Initializing upload details...');
-
+  const runBackgroundUpload = async (task: {
+    id: string;
+    title: string;
+    videoSourceType: 'upload' | 'url';
+    videoFile: File | null;
+    imageFile: File | null;
+    videoUrl: string;
+    imageUrl: string;
+    price: string;
+    previewDuration: string;
+    editingVideo: any;
+  }) => {
     try {
-      let finalVideoUrl = crudVideoUrl;
-      let finalImageUrl = crudImageUrl || 'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?auto=format&fit=crop&q=80&w=800';
+      let finalVideoUrl = task.videoUrl;
+      let finalImageUrl = task.imageUrl || 'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?auto=format&fit=crop&q=80&w=800';
 
       // 1. Upload Video File if selected
-      if (crudVideoSourceType === 'upload' && crudVideoFile) {
-        setCrudUploadProgress(`Uploading Video: ${crudVideoFile.name} (Please wait)...`);
-        const videoPath = `past-streams-manual/${creatorId}/${Date.now()}_${crudVideoFile.name}`;
+      if (task.videoSourceType === 'upload' && task.videoFile) {
+        setActiveUploads(prev => prev.map(u => u.id === task.id ? { ...u, progress: `Uploading Video: ${task.videoFile!.name} (Please wait)...` } : u));
+        const videoPath = `past-streams-manual/${creatorId}/${Date.now()}_${task.videoFile.name}`;
         const { error: videoErr } = await supabase.storage
           .from('videos')
-          .upload(videoPath, crudVideoFile, { cacheControl: '3600' });
+          .upload(videoPath, task.videoFile, { cacheControl: '3600' });
         
         if (videoErr) {
           toast.error("Failed to upload video: " + videoErr.message);
-          setCrudUploading(false);
-          setCrudUploadProgress('');
           return;
         }
 
@@ -276,17 +280,15 @@ export const ProfileLive: React.FC<ProfileLiveProps> = ({
       }
 
       // 2. Upload Image File if selected
-      if (crudImageFile) {
-        setCrudUploadProgress(`Uploading Cover Image: ${crudImageFile.name}...`);
-        const imagePath = `past-streams-manual/${creatorId}/${Date.now()}_${crudImageFile.name}`;
+      if (task.imageFile) {
+        setActiveUploads(prev => prev.map(u => u.id === task.id ? { ...u, progress: `Uploading Cover Image: ${task.imageFile!.name}...` } : u));
+        const imagePath = `past-streams-manual/${creatorId}/${Date.now()}_${task.imageFile.name}`;
         const { error: imageErr } = await supabase.storage
           .from('videos')
-          .upload(imagePath, crudImageFile, { cacheControl: '3600' });
+          .upload(imagePath, task.imageFile, { cacheControl: '3600' });
 
         if (imageErr) {
           toast.error("Failed to upload image: " + imageErr.message);
-          setCrudUploading(false);
-          setCrudUploadProgress('');
           return;
         }
 
@@ -298,41 +300,38 @@ export const ProfileLive: React.FC<ProfileLiveProps> = ({
 
       if (!finalVideoUrl) {
         toast.error("Please provide a video file or direct video URL.");
-        setCrudUploading(false);
-        setCrudUploadProgress('');
         return;
       }
 
       // 3. Insert or Update row in public.videos table
-      const priceVal = parseFloat(crudPrice) || 0;
-      const previewDur = parseInt(crudPreviewDuration) || 30;
+      const priceVal = parseFloat(task.price) || 0;
+      const previewDur = parseInt(task.previewDuration) || 30;
 
-      if (editingVideo) {
-        setCrudUploadProgress('Updating replay details...');
+      if (task.editingVideo) {
+        setActiveUploads(prev => prev.map(u => u.id === task.id ? { ...u, progress: 'Updating replay details...' } : u));
         const { error: updateErr } = await supabase
           .from('videos')
           .update({
-            title: crudTitle.trim(),
+            title: task.title,
             video_url: finalVideoUrl,
             image_url: finalImageUrl,
             price: priceVal,
             preview_duration: previewDur
           })
-          .eq('id', editingVideo.id);
+          .eq('id', task.editingVideo.id);
 
         if (updateErr) {
           toast.error("Failed to update video: " + updateErr.message);
         } else {
           toast.success(`Successfully updated replay details!`);
-          setIsCrudModalOpen(false);
           fetchPastStreams();
         }
       } else {
-        setCrudUploadProgress('Publishing replay...');
+        setActiveUploads(prev => prev.map(u => u.id === task.id ? { ...u, progress: 'Publishing replay...' } : u));
         const { error: insertErr } = await supabase
           .from('videos')
           .insert({
-            title: crudTitle.trim(),
+            title: task.title,
             video_url: finalVideoUrl,
             image_url: finalImageUrl,
             creator_id: creatorId,
@@ -345,7 +344,6 @@ export const ProfileLive: React.FC<ProfileLiveProps> = ({
           toast.error("Failed to add past stream replay: " + insertErr.message);
         } else {
           toast.success(`Successfully published new replay!`);
-          setIsCrudModalOpen(false);
           fetchPastStreams();
         }
       }
@@ -353,9 +351,43 @@ export const ProfileLive: React.FC<ProfileLiveProps> = ({
       console.error(err);
       toast.error("An unexpected error occurred: " + err.message);
     } finally {
-      setCrudUploading(false);
-      setCrudUploadProgress('');
+      setActiveUploads(prev => prev.filter(u => u.id !== task.id));
     }
+  };
+
+  const handleSaveCrud = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!creatorId) return;
+
+    const uploadId = crypto.randomUUID();
+    const task = {
+      id: uploadId,
+      title: crudTitle.trim(),
+      videoSourceType: crudVideoSourceType,
+      videoFile: crudVideoFile,
+      imageFile: crudImageFile,
+      videoUrl: crudVideoUrl,
+      imageUrl: crudImageUrl,
+      price: crudPrice,
+      previewDuration: crudPreviewDuration,
+      editingVideo: editingVideo,
+      progress: 'Initializing...'
+    };
+
+    setIsCrudModalOpen(false);
+    
+    // Reset modal form state
+    setCrudTitle('');
+    setCrudVideoUrl('');
+    setCrudImageUrl('');
+    setCrudPrice('');
+    setCrudPreviewDuration('30');
+    setCrudVideoFile(null);
+    setCrudImageFile(null);
+
+    // Add to active uploads & trigger background execution
+    setActiveUploads(prev => [...prev, task]);
+    runBackgroundUpload(task);
   };
 
   const safePinnedProducts = Array.isArray(pinnedProducts) ? pinnedProducts : [];
