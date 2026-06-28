@@ -8,7 +8,7 @@ import { getChildNetworks, mergeQueryParams } from '../lib/n2n';
 import { getN2NCategories } from '../api';
 import type { Category, VideoItem, User } from '../types';
 import { supabase } from '../supabaseClient';
-import { isOlympianConfig, isB2kConfig, isKpleConfig } from '../lib/whitelabel';
+import { isOlympianConfig, isMuscleFitnessConfig, isB2kConfig, isKpleConfig } from '../lib/whitelabel';
 const CollegeTicker = lazy(() => import('../components/CollegeTicker'));
 const CollegeNewsFeed = lazy(() => import('../components/CollegeNewsFeed'));
 const WatchLive = lazy(() => import('../components/WatchLive'));
@@ -179,6 +179,7 @@ export default function N2NHome({ wlConfig, categories, activeVideo, setActiveVi
   }, [activeVideo]);
 
   const isOlympian = isOlympianConfig(config);
+  const isMf = isMuscleFitnessConfig(config);
   const isB2K = isB2kConfig(config);
   const isKple = isKpleConfig(config);
 
@@ -210,6 +211,12 @@ export default function N2NHome({ wlConfig, categories, activeVideo, setActiveVi
     { school: 'Olympia Finals', short: 'Finals', subtitle: 'The Sandow Trophy', copy: 'Watch the historic battle of the titans live from Las Vegas. Witness bodybuilding history.', image: '/n2n/mr_olympia_hero.png', link: 'https://mrolympia.com/weekend-schedule' },
     { school: 'Meet the Olympians', short: 'Expo & Fan Experience', subtitle: 'Expo Weekend', copy: 'Connect with legendary fitness icons, explore world-class brands, and discover new supplements.', image: 'https://images.unsplash.com/photo-1517838277536-f5f99be501cd?auto=format&fit=crop&q=80&w=1500', link: 'https://mrolympia.com/weekend-schedule' },
     { school: 'Press Conference', short: 'Press Conf.', subtitle: 'Face‑offs & Predictions', copy: 'Hear from the world\'s best athletes as they face off before taking the stage.', image: 'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?auto=format&fit=crop&q=80&w=1500', link: 'https://mrolympia.com/weekend-schedule' }
+  ];
+
+  const MUSCLE_FITNESS_HERO_SLIDES = [
+    { school: 'Workout Blueprints', short: 'Workouts', subtitle: 'Training splits', copy: 'Build your dream physique with our science-based training splits and guides.', image: 'https://images.unsplash.com/photo-1541534741688-6078c6bfb5c5?auto=format&fit=crop&q=80&w=1500', link: 'https://www.muscleandfitness.com/workouts' },
+    { school: 'Nutrition & Meal Prep', short: 'Nutrition', subtitle: 'Fuel Your Body', copy: 'High-protein recipes, macro calculators, and supplement guides for recovery.', image: 'https://images.unsplash.com/photo-1490645935967-10de6ba17061?auto=format&fit=crop&q=80&w=1500', link: 'https://www.muscleandfitness.com/nutrition' },
+    { school: 'Athlete Interviews', short: 'Interviews', subtitle: 'Learn From Pros', copy: 'Read exclusive routines and lifestyle tips from leading fitness professionals and celebrities.', image: 'https://images.unsplash.com/photo-1517838277536-f5f99be501cd?auto=format&fit=crop&q=80&w=1500', link: 'https://www.muscleandfitness.com/athletes-celebrities' }
   ];
 
   const B2K_HERO_SLIDES = [
@@ -248,13 +255,15 @@ export default function N2NHome({ wlConfig, categories, activeVideo, setActiveVi
       }))
     : (isOlympian 
       ? OLYMPIAN_HERO_SLIDES 
-      : (isB2K 
-        ? B2K_HERO_SLIDES 
-        : (isKple 
-          ? KPLE_HERO_SLIDES 
-          : (isVibe100 
-            ? VIBE_100_HERO_SLIDES 
-            : AVO_HERO_SLIDES))));
+      : (isMf 
+        ? MUSCLE_FITNESS_HERO_SLIDES
+        : (isB2K 
+          ? B2K_HERO_SLIDES 
+          : (isKple 
+            ? KPLE_HERO_SLIDES 
+            : (isVibe100 
+              ? VIBE_100_HERO_SLIDES 
+              : AVO_HERO_SLIDES)))));
 
   const [heroSlide, setHeroSlide] = useState(0);
 
@@ -353,7 +362,7 @@ export default function N2NHome({ wlConfig, categories, activeVideo, setActiveVi
               {(() => {
                 const currentSlide = HERO_SLIDES[heroSlide % HERO_SLIDES.length];
                 if (currentSlide.videoUrl) return "Play Video";
-                return isOlympian ? "View Schedule" : (isB2K ? "Learn More" : (isKple ? "Watch Network" : (isVibe100 ? "Enter Channel" : "Shop Now")));
+                return isOlympian ? "View Schedule" : (isMf ? "Read Workouts" : (isB2K ? "Learn More" : (isKple ? "Watch Network" : (isVibe100 ? "Enter Channel" : "Shop Now"))));
               })()}
             </button>
 
@@ -364,10 +373,10 @@ export default function N2NHome({ wlConfig, categories, activeVideo, setActiveVi
               background: 'rgba(255,255,255,0.05)', backdropFilter: 'blur(10px)',
             }}>
               <p style={{ margin: 0, fontSize: '32px', fontWeight: 900, color: '#fff', letterSpacing: '-1px', lineHeight: 1.2 }}>
-                {isOlympian ? '50+ Years' : (isB2K ? '25 Years' : (isKple ? '30+ Years' : (isVibe100 ? 'Top 100' : '$17,480,130')))}<span style={{ color: accent }}>{isVibe100 ? '' : '+'}</span>
+                {isOlympian ? '50+ Years' : (isMf ? '85+ Years' : (isB2K ? '25 Years' : (isKple ? '30+ Years' : (isVibe100 ? 'Top 100' : '$17,480,130'))))}<span style={{ color: accent }}>{isVibe100 ? '' : '+'}</span>
               </p>
               <p style={{ margin: '4px 0 0', fontSize: '13px', fontWeight: 600, color: 'rgba(255,255,255,0.6)', textTransform: 'uppercase', letterSpacing: '2px' }}>
-                {isOlympian ? 'Of Championing Legendary Athletes & Fitness Excellence' : (isB2K ? 'Of R&B Harmonies, Multi-Platinum Hits & Tour Legacies' : (isKple ? 'Serving Central Texas with Inspirational Programming' : (isVibe100 ? 'Ecosystem Networks Displaying Posts and Content' : 'Raised to empower student‑athletes nationwide')))}
+                {isOlympian ? 'Of Championing Legendary Athletes & Fitness Excellence' : (isMf ? 'Of Providing World-Class Fitness Advice, Training & Nutrition Blueprints' : (isB2K ? 'Of R&B Harmonies, Multi-Platinum Hits & Tour Legacies' : (isKple ? 'Serving Central Texas with Inspirational Programming' : (isVibe100 ? 'Ecosystem Networks Displaying Posts and Content' : 'Raised to empower student‑athletes nationwide'))))}
               </p>
             </div>
           </motion.div>
@@ -434,7 +443,7 @@ export default function N2NHome({ wlConfig, categories, activeVideo, setActiveVi
         {/* ── Watch Live ──────────────────────────────────────── */}
         <div id="whats-on-now">
           <Suspense fallback={null}>
-            <WatchLive accent={config.accent} isOlympian={isOlympian} isB2K={isB2K} isVibe={isVibe} isKple={isKple} isVibe100={isVibe100} />
+            <WatchLive accent={config.accent} isOlympian={isOlympian} isMf={isMf} isB2K={isB2K} isVibe={isVibe} isKple={isKple} isVibe100={isVibe100} />
           </Suspense>
         </div>
 
@@ -451,8 +460,8 @@ export default function N2NHome({ wlConfig, categories, activeVideo, setActiveVi
               flex: '0 0 45%', position: 'relative', overflow: 'hidden',
             }}>
               <img
-                src={isOlympian ? "https://images.unsplash.com/photo-1583454110551-21f2fa2afe61?auto=format&fit=crop&q=80&w=800" : (isB2K ? "https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?auto=format&fit=crop&q=80&w=800" : (isKple ? "https://images.unsplash.com/photo-1593113598332-cd288d649433?auto=format&fit=crop&q=80&w=800" : (isVibe100 ? "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?auto=format&fit=crop&q=80&w=800" : "https://shopavo.la/cdn/shop/files/bama-desk-hp-1_1500x.jpg?v=1774210820")))}
-                alt={isOlympian ? "Official Gear" : (isB2K ? "Official Tour Merch" : (isKple ? "Support CRN" : (isVibe100 ? "Official Merch" : "New Drop")))}
+                src={isOlympian ? "https://images.unsplash.com/photo-1583454110551-21f2fa2afe61?auto=format&fit=crop&q=80&w=800" : isMf ? "https://images.unsplash.com/photo-1541534741688-6078c6bfb5c5?auto=format&fit=crop&q=80&w=800" : (isB2K ? "https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?auto=format&fit=crop&q=80&w=800" : (isKple ? "https://images.unsplash.com/photo-1593113598332-cd288d649433?auto=format&fit=crop&q=80&w=800" : (isVibe100 ? "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?auto=format&fit=crop&q=80&w=800" : "https://shopavo.la/cdn/shop/files/bama-desk-hp-1_1500x.jpg?v=1774210820")))}
+                alt={isOlympian ? "Official Gear" : isMf ? "Workout Gear" : (isB2K ? "Official Tour Merch" : (isKple ? "Support CRN" : (isVibe100 ? "Official Merch" : "New Drop")))}
                 style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
               />
               <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to right, transparent 60%, #000 100%)' }} />
@@ -462,7 +471,7 @@ export default function N2NHome({ wlConfig, categories, activeVideo, setActiveVi
                 padding: '6px 14px', background: accent, color: '#000',
                 fontSize: '10px', fontWeight: 900, letterSpacing: '2px', textTransform: 'uppercase',
               }}>
-                {isOlympian ? "Official Gear" : (isB2K ? "Official Merch" : (isKple ? "Media Mission" : (isVibe100 ? "Exclusive Gear" : "New Drop")))}
+                {isOlympian ? "Official Gear" : isMf ? "Workout Gear" : (isB2K ? "Official Merch" : (isKple ? "Media Mission" : (isVibe100 ? "Exclusive Gear" : "New Drop")))}
               </div>
             </div>
 
@@ -482,7 +491,7 @@ export default function N2NHome({ wlConfig, categories, activeVideo, setActiveVi
                 fontSize: '11px', fontWeight: 800, textTransform: 'uppercase',
                 letterSpacing: '3px', color: accent, margin: '0 0 12px 0',
               }}>
-                {isOlympian ? "Olympia Collection" : (isB2K ? "Official Tour Merch" : (isKple ? "Support Our Mission" : (isVibe100 ? "VIBE 100 Store" : "Summer 2026 Collection")))}
+                {isOlympian ? "Olympia Collection" : isMf ? "Fitness Collection" : (isB2K ? "Official Tour Merch" : (isKple ? "Support Our Mission" : (isVibe100 ? "VIBE 100 Store" : "Summer 2026 Collection")))}
               </p>
               <h2 style={{
                 fontSize: '34px', fontWeight: 900, color: '#fff', margin: '0 0 14px 0',
@@ -490,6 +499,8 @@ export default function N2NHome({ wlConfig, categories, activeVideo, setActiveVi
               }}>
                 {isOlympian ? (
                   <>Official Weekend<br />Gear & Wear</>
+                ) : isMf ? (
+                  <>Muscle & Fitness<br />Training Guides</>
                 ) : (
                   isB2K ? (
                     <>Millennium Tour<br />Official Merch</>
@@ -510,7 +521,7 @@ export default function N2NHome({ wlConfig, categories, activeVideo, setActiveVi
                 fontSize: '14px', color: 'rgba(255,255,255,0.5)', lineHeight: 1.7,
                 margin: '0 0 28px 0', maxWidth: '380px',
               }}>
-                {isOlympian ? `Premium bodybuilding and lifestyle apparel engineered for champions. Rep the legacy with official ${config?.name || 'Muscle & Fitness'} hoodies, workout shirts, and accessories.` : (isB2K ? "Pre-order exclusive Boys 4 Life tour hoodies, vintage graphic tees, and autographed vinyl. Rep the legendary boy band reunion in style." : (isKple ? "The Christian Revival Network is a 501(c)3 non-profit media mission. Your donations help us broadcast the Gospel 24/7 to Central Texas and the world. Support our ministry today." : (isVibe100 ? "Explore premium merchandise, albums, and exclusive releases from all Top 100 networks. Shop official gear and support your favorite channels." : "Premium collegiate apparel for every school in the AVO family. Rep your team with style — new colorways and exclusive designs just dropped.")))}
+                {isOlympian ? `Premium bodybuilding and lifestyle apparel engineered for champions. Rep the legacy with official ${config?.name || 'Muscle & Fitness'} hoodies, workout shirts, and accessories.` : isMf ? "Explore premium workouts, digital training guides, and high-performance activewear designed to take your fitness to the next level." : (isB2K ? "Pre-order exclusive Boys 4 Life tour hoodies, vintage graphic tees, and autographed vinyl. Rep the legendary boy band reunion in style." : (isKple ? "The Christian Revival Network is a 501(c)3 non-profit media mission. Your donations help us broadcast the Gospel 24/7 to Central Texas and the world. Support our ministry today." : (isVibe100 ? "Explore premium merchandise, albums, and exclusive releases from all Top 100 networks. Shop official gear and support your favorite channels." : "Premium collegiate apparel for every school in the AVO family. Rep your team with style — new colorways and exclusive designs just dropped.")))}
               </p>
               <a
                 href={isKple ? "https://www.paypal.com/donate/?hosted_button_id=A7WXAKZEAGBPA" : ('/shop' + (typeof window !== 'undefined' ? window.location.search : ''))}
@@ -525,7 +536,7 @@ export default function N2NHome({ wlConfig, categories, activeVideo, setActiveVi
                 onMouseOver={e => { e.currentTarget.style.background = '#fff'; e.currentTarget.style.color = '#000'; }}
                 onMouseOut={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = '#fff'; }}
               >
-                {isOlympian ? "Shop The Collection" : (isB2K ? "Shop The Merch" : (isKple ? "Support Our Station" : (isVibe100 ? "Shop The Collection" : "Shop The Drop")))}
+                {isOlympian ? "Shop The Collection" : isMf ? "Shop Store" : (isB2K ? "Shop The Merch" : (isKple ? "Support Our Station" : (isVibe100 ? "Shop The Collection" : "Shop The Drop")))}
               </a>
             </div>
           </div>
@@ -548,9 +559,9 @@ export default function N2NHome({ wlConfig, categories, activeVideo, setActiveVi
         {childItems.length > 0 && (
           <div id="child-networks-slider">
             <SliderSection
-              title={isOlympian ? "OLYMPIA PARTNERS" : (isB2K ? "B2K MEMBERS" : (isKple ? "CHRISTIAN REVIVAL NETWORKS" : (isVibe100 ? "VIBE 100 NETWORKS" : "AVO NETWORKS")))}
+              title={isOlympian ? "OLYMPIA PARTNERS" : (isMf ? "MUSCLE & FITNESS PARTNERS" : (isB2K ? "B2K MEMBERS" : (isKple ? "CHRISTIAN REVIVAL NETWORKS" : (isVibe100 ? "VIBE 100 NETWORKS" : "AVO NETWORKS"))))}
               items={childItems}
-              delay={isOlympian ? 0.1 : 0}
+              delay={isOlympian || isMf ? 0.1 : 0}
               aspectRatio="16/9"
               onItemClick={(item) => {
                 if (item.linkUrl) {
@@ -581,12 +592,12 @@ export default function N2NHome({ wlConfig, categories, activeVideo, setActiveVi
         {/* ── Child Network Feeds (Trending Moments) ────────────── */}
         {childItems.length > 0 && (
           <Suspense fallback={null}>
-            <ChildNetworkFeeds parentId={config.id} accent={accent} isOlympian={isOlympian} isB2K={isB2K} />
+            <ChildNetworkFeeds parentId={config.id} accent={accent} isOlympian={isOlympian} isMf={isMf} isB2K={isB2K} />
           </Suspense>
         )}
 
         {/* ── Hoodie Competition Banner / Prayer Request Banner ── */}
-        {!isOlympian && !isB2K && !isVibe100 && (
+        {!isOlympian && !isMf && !isB2K && !isVibe100 && (
           <section style={{ maxWidth: '1400px', margin: '40px auto', padding: '0 40px' }}>
             <div style={{
               position: 'relative', overflow: 'hidden',
@@ -785,14 +796,14 @@ export default function N2NHome({ wlConfig, categories, activeVideo, setActiveVi
         )}
 
         {/* ── College Sports News Feed ──────────────────────── */}
-        {!isOlympian && !isB2K && !isKple && (
+        {!isOlympian && !isMf && !isB2K && !isKple && (
           <Suspense fallback={null}>
             <CollegeNewsFeed accent={config.accent} />
           </Suspense>
         )}
 
         {/* ── M&F Sister Publications Banners ────────────────── */}
-        {isOlympian && (
+        {(isOlympian || isMf) && (
           <section style={{ maxWidth: '1400px', margin: '40px auto 20px', padding: '0 40px' }}>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '32px' }}>
               
@@ -919,7 +930,7 @@ export default function N2NHome({ wlConfig, categories, activeVideo, setActiveVi
               {/* Background image */}
               <div style={{
                 position: 'absolute', inset: 0,
-                backgroundImage: `url(${isOlympian ? "https://images.unsplash.com/photo-1517838277536-f5f99be501cd?auto=format&fit=crop&q=80&w=1200" : (isB2K ? "https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?auto=format&fit=crop&q=80&w=1200" : (isKple ? "https://images.unsplash.com/photo-1510915228340-29c85a43dcfe?auto=format&fit=crop&q=80&w=1200" : "https://shopavo.la/cdn/shop/files/Homepage_Vanderbilt_Desktop2_c7f572ef-cd7e-4de4-bb9c-160b99884e08_1500x.jpg?v=1776284877"))})`,
+                backgroundImage: `url(${isOlympian || isMf ? "https://images.unsplash.com/photo-1517838277536-f5f99be501cd?auto=format&fit=crop&q=80&w=1200" : (isB2K ? "https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?auto=format&fit=crop&q=80&w=1200" : (isKple ? "https://images.unsplash.com/photo-1510915228340-29c85a43dcfe?auto=format&fit=crop&q=80&w=1200" : "https://shopavo.la/cdn/shop/files/Homepage_Vanderbilt_Desktop2_c7f572ef-cd7e-4de4-bb9c-160b99884e08_1500x.jpg?v=1776284877"))})`,
                 backgroundSize: 'cover', backgroundPosition: 'center',
                 filter: 'brightness(0.3)',
               }} />
@@ -931,13 +942,13 @@ export default function N2NHome({ wlConfig, categories, activeVideo, setActiveVi
                     fontSize: '11px', fontWeight: 800, textTransform: 'uppercase',
                     letterSpacing: '3px', color: accent, marginBottom: '12px',
                   }}>
-                    {isOlympian ? "Olympia Ambassadors" : (isB2K ? "Street Team" : (isKple ? "Media Partner" : "Campus Ambassadors"))}
+                    {isOlympian ? "Olympia Ambassadors" : isMf ? "Fitness Ambassadors" : (isB2K ? "Street Team" : (isKple ? "Media Partner" : "Campus Ambassadors"))}
                   </p>
                   <h2 style={{
                     fontSize: '36px', fontWeight: 900, color: '#fff', margin: '0 0 16px 0',
                     lineHeight: 1.15, letterSpacing: '-1px', textTransform: 'uppercase',
                   }}>
-                    {isOlympian ? (
+                    {isOlympian || isMf ? (
                       <>Represent {config?.name || 'Muscle & Fitness'}<br />In Your Community</>
                     ) : (
                       isB2K ? (
@@ -954,7 +965,7 @@ export default function N2NHome({ wlConfig, categories, activeVideo, setActiveVi
                   <p style={{
                     fontSize: '15px', color: 'rgba(255,255,255,0.55)', lineHeight: 1.7, margin: 0,
                   }}>
-                    {isOlympian 
+                    {isOlympian || isMf 
                       ? `Join the official ${config?.name || 'Muscle & Fitness'} Ambassador Program. Share fitness tips, review premium workout apparel, and earn exclusive event credentials, early access, and commissions.`
                       : (isB2K 
                         ? "Join the official B2K Millennium Street Team. Promote the Boys 4 Life Tour, share new music updates, and earn exclusive backstage passes, VIP meet-and-greets, and limited edition merch."

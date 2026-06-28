@@ -31,7 +31,7 @@ import { WhiteLabelContext } from './context/WhiteLabelContext';
 import { supabase, storageKey } from './supabaseClient';
 import { MASTER_DOMAIN, DEFAULT_PLATFORM_NAME } from './constants';
 const Home = lazy(() => import('./pages/Home'));
-import { normalizeWlConfig, isOlympianConfig, isKpleConfig } from './lib/whitelabel';
+import { normalizeWlConfig, isOlympianConfig, isMuscleFitnessConfig, isKpleConfig } from './lib/whitelabel';
 const WhiteLabelHome = lazy(() => import('./pages/WhiteLabelHome'));
 const N2NHome = lazy(() => import('./pages/N2NHome'));
 const AvoMarketplace = lazy(() => import('./components/AvoMarketplace'));
@@ -423,7 +423,8 @@ function App() {
       
       // Dynamic High-Impact Typography for Muscle & Fitness / Olympia
       const isOlympian = isOlympianConfig(wlConfig);
-      if (isOlympian) {
+      const isMf = isMuscleFitnessConfig(wlConfig);
+      if (isOlympian || isMf) {
         document.documentElement.style.setProperty('--font-heading', "'Barlow Condensed', 'Outfit', sans-serif");
       } else {
         document.documentElement.style.setProperty('--font-heading', "'Outfit', sans-serif");

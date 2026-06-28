@@ -3,7 +3,7 @@ import { createPortal } from 'react-dom';
 import { Play, Tv, X, ChevronLeft, ChevronRight, Clock, ExternalLink, Video, VideoOff, Mic, MicOff, Copy, Check, Send, Globe, Lock, Sparkles, Languages, Volume2, VolumeX } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from '../supabaseClient';
-import { isOlympianConfig, isB2kConfig, isKpleConfig } from '../lib/whitelabel';
+import { isOlympianConfig, isMuscleFitnessConfig, isB2kConfig, isKpleConfig } from '../lib/whitelabel';
 import { getWwtcLanguages, translateText } from '../lib/wwtc';
 
 interface VideoClip {
@@ -29,6 +29,12 @@ const OLYMPIAN_FEEDS = [
   { key: 'olympiatv', label: '🏆 OlympiaTV', channelId: 'UCYukge4AuskD8xPjfrSoiBg' },
   { key: 'nicksnp', label: '💪 Nick\'s Strength & Power', channelId: 'UClfyDMfX-RhmExpVm-nCl4Q' },
   { key: 'jaycutler', label: '👑 Jay Cutler', channelId: 'UCiq2MIlqqeOcEvj9cP9f1bA' },
+];
+
+const MUSCLE_FITNESS_FEEDS = [
+  { key: 'muscleandfitness', label: '💪 Muscle & Fitness', channelId: 'UCd14ZJ94n6J8tC0VnK1d1Sg' },
+  { key: 'athleanx', label: '🏋️ Athlean-X', channelId: 'UCqpOf_Nl5F4j_gXS2fB_58g' },
+  { key: 'jeffnippard', label: '🔬 Jeff Nippard', channelId: 'UC68TLK0mAEzUyZd5Y55ky6A' },
 ];
 
 const B2K_FEEDS = [
@@ -497,6 +503,49 @@ const STATIC_OLYMPIAN_CLIPS: VideoClip[] = [
   }
 ];
 
+const STATIC_MUSCLE_FITNESS_CLIPS: VideoClip[] = [
+  {
+    id: 'vyqy7PcDGLM',
+    headline: 'The Ultimate Chest Workout for Mass',
+    description: 'Build a thicker, stronger chest with this high-volume training routine featured on Muscle & Fitness.',
+    thumbnail: 'https://images.unsplash.com/photo-1583454110551-21f2fa2afe61?auto=format&fit=crop&q=80&w=600',
+    videoUrl: 'https://www.youtube.com/watch?v=vyqy7PcDGLM',
+    duration: 620,
+    source: 'YouTube',
+    sport: 'muscleandfitness'
+  },
+  {
+    id: 'MzWgJtFIxg8',
+    headline: "Arnold Schwarzenegger's Golden Era Blueprint",
+    description: 'Learn the classic training split, chest-back supersets, and bodybuilding secrets that built the greatest physique of all time.',
+    thumbnail: 'https://i.ytimg.com/vi/MzWgJtFIxg8/hqdefault.jpg',
+    videoUrl: 'https://www.youtube.com/watch?v=MzWgJtFIxg8',
+    duration: 780,
+    source: 'YouTube',
+    sport: 'muscleandfitness'
+  },
+  {
+    id: 'dTqpdNacxYM',
+    headline: '10-Minute Meal Prep for Muscle Growth',
+    description: 'Quick, high-protein recipes and meal prep strategies to fuel your workouts and recover faster without spending hours in the kitchen.',
+    thumbnail: 'https://i.ytimg.com/vi/dTqpdNacxYM/hqdefault.jpg',
+    videoUrl: 'https://www.youtube.com/watch?v=dTqpdNacxYM',
+    duration: 540,
+    source: 'YouTube',
+    sport: 'muscleandfitness'
+  },
+  {
+    id: 'SV7JP7y80UM',
+    headline: "Dwayne 'The Rock' Johnson's Iron Paradise Routine",
+    description: 'A deep dive into the intense weekly training split and massive nutrition plan of the Hollywood action star.',
+    thumbnail: 'https://images.unsplash.com/photo-1517838277536-f5f99be501cd?auto=format&fit=crop&q=80&w=600',
+    videoUrl: 'https://www.youtube.com/watch?v=SV7JP7y80UM',
+    duration: 915,
+    source: 'YouTube',
+    sport: 'muscleandfitness'
+  }
+];
+
 const STATIC_VIBE_CLIPS: VideoClip[] = [
   {
     id: '4cqcl3Jy_hw',
@@ -562,7 +611,7 @@ const STATIC_VIBE_CLIPS: VideoClip[] = [
 
 const getAiThumbnail = (
   headline: string,
-  ctx: { isOlympian?: boolean; isB2K?: boolean; isVibe?: boolean; isKple?: boolean; isVibe100?: boolean }
+  ctx: { isOlympian?: boolean; isMf?: boolean; isB2K?: boolean; isVibe?: boolean; isKple?: boolean; isVibe100?: boolean }
 ) => {
   const cleanHeadline = (headline || '').replace(/[#]/g, '').trim().substring(0, 150);
   let hash = 0;
@@ -575,6 +624,8 @@ const getAiThumbnail = (
   let genrePrompt = 'breaking news broadcast style coverage';
   if (ctx.isOlympian) {
     genrePrompt = 'Mr. Olympia bodybuilding competition coverage, professional bodybuilding stage photography, dramatic spotlighting, muscular bodybuilders';
+  } else if (ctx.isMf) {
+    genrePrompt = 'Muscle and Fitness style training workout in a premium gym, athletic modeling, weightlifting and nutrition tips, high-end commercial gym lighting';
   } else if (ctx.isB2K) {
     genrePrompt = 'B2K R&B music group style, music video scene, 90s/2000s boyband aesthetic, stage lighting, cinematic music broadcast';
   } else if (ctx.isKple) {
@@ -633,7 +684,7 @@ const generateFallbackTranscript = (title: string, description: string) => {
   ];
 };
 
-export default function WatchLive({ accent = '#D35400', isOlympian = false, isB2K = false, isVibe = false, isKple = false, isVibe100 = false }: { accent?: string; isOlympian?: boolean; isB2K?: boolean; isVibe?: boolean; isKple?: boolean; isVibe100?: boolean }) {
+export default function WatchLive({ accent = '#D35400', isOlympian = false, isMf = false, isB2K = false, isVibe = false, isKple = false, isVibe100 = false }: { accent?: string; isOlympian?: boolean; isMf?: boolean; isB2K?: boolean; isVibe?: boolean; isKple?: boolean; isVibe100?: boolean }) {
   const [clips, setClips] = useState<VideoClip[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeVideo, setActiveVideo] = useState<VideoClip | null>(null);
@@ -1233,8 +1284,8 @@ export default function WatchLive({ accent = '#D35400', isOlympian = false, isB2
 
     // Load initial messages
     const initialMsgs = [
-      { id: 'm1', user: 'Alex', text: isOlympian ? 'This physique is absolutely stacked!' : isB2K ? 'B2K Uh Huh is an all-time classic.' : isKple ? 'Such a powerful word this evening.' : 'So hyped for this stream!', avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100&h=100&fit=crop', time: '10:04 PM' },
-      { id: 'm2', user: 'Sarah', text: isOlympian ? 'Check out the vascularity on stage. Wow.' : isB2K ? 'I remember trying to learn this dance in my living room 😂' : isKple ? 'Inspirational. Amen.' : 'This layout looks amazing.', avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&h=100&fit=crop', time: '10:05 PM' }
+      { id: 'm1', user: 'Alex', text: isOlympian ? 'This physique is absolutely stacked!' : isMf ? 'Time to crush this workout! 💪' : isB2K ? 'B2K Uh Huh is an all-time classic.' : isKple ? 'Such a powerful word this evening.' : 'So hyped for this stream!', avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100&h=100&fit=crop', time: '10:04 PM' },
+      { id: 'm2', user: 'Sarah', text: isOlympian ? 'Check out the vascularity on stage. Wow.' : isMf ? 'Great form tips in this video.' : isB2K ? 'I remember trying to learn this dance in my living room 😂' : isKple ? 'Inspirational. Amen.' : 'This layout looks amazing.', avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&h=100&fit=crop', time: '10:05 PM' }
     ];
     setChatMessages(initialMsgs);
 
@@ -1245,6 +1296,14 @@ export default function WatchLive({ accent = '#D35400', isOlympian = false, isB2
           { user: 'Alex', text: 'Who do you guys think takes the Sandow?', avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100&h=100&fit=crop' },
           { user: 'Mike', text: 'Back double biceps is unreal.', avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=100&h=100&fit=crop' },
           { user: 'Emma', text: 'Jay Cutler looking massive here!', avatar: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=100&h=100&fit=crop' },
+        ]
+      : isMf
+      ? [
+          { user: 'Sarah', text: 'This training split is exactly what I needed!', avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&h=100&fit=crop' },
+          { user: 'Jordan', text: 'The Rock\'s cheat meals are absolutely legendary 😂', avatar: 'https://images.unsplash.com/photo-1570295999919-56ceb5ecca61?w=100&h=100&fit=crop' },
+          { user: 'Alex', text: 'Science-based workouts are the best. Jeff Nippard is great.', avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100&h=100&fit=crop' },
+          { user: 'Mike', text: 'Perfect form tips right here.', avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=100&h=100&fit=crop' },
+          { user: 'Emma', text: 'Just prepped these meals. High protein and delicious!', avatar: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=100&h=100&fit=crop' },
         ]
       : isB2K
       ? [
@@ -1287,7 +1346,7 @@ export default function WatchLive({ accent = '#D35400', isOlympian = false, isB2
     }, 4500);
 
     return () => clearInterval(chatTimer);
-  }, [activeVideo, showFanZone, isOlympian, isB2K, isKple]);
+  }, [activeVideo, showFanZone, isOlympian, isMf, isB2K, isKple]);
 
   // Scroll chat bottom
   useEffect(() => {
@@ -1311,7 +1370,7 @@ export default function WatchLive({ accent = '#D35400', isOlympian = false, isB2
     }
   }, [showFanZone]);
 
-  const feedsToUse = isOlympian ? OLYMPIAN_FEEDS : (isB2K ? B2K_FEEDS : (isVibe100 ? VIBE_100_FEEDS : (isVibe ? VIBE_FEEDS : (isKple ? KPLE_FEEDS : FEEDS))));
+  const feedsToUse = isOlympian ? OLYMPIAN_FEEDS : (isMf ? MUSCLE_FITNESS_FEEDS : (isB2K ? B2K_FEEDS : (isVibe100 ? VIBE_100_FEEDS : (isVibe ? VIBE_FEEDS : (isKple ? KPLE_FEEDS : FEEDS)))));
 
   const handleClipClick = (clip: VideoClip) => {
     const isYouTube = clip.videoUrl.includes('youtube.com') || clip.videoUrl.includes('youtu.be');
@@ -1387,6 +1446,68 @@ export default function WatchLive({ accent = '#D35400', isOlympian = false, isB2
         
         // Append static fallbacks
         for (const item of STATIC_OLYMPIAN_CLIPS) {
+          if (!seen.has(item.id)) {
+            seen.add(item.id);
+            allClips.push(item);
+          }
+        }
+      } else if (isMf) {
+        const dynamicClips: VideoClip[] = [];
+        for (const feed of MUSCLE_FITNESS_FEEDS) {
+          try {
+            const res = await fetch(`/api/yt-rss/${feed.channelId}`);
+            if (!res.ok) continue;
+            const xmlText = await res.text();
+            
+            const parser = new DOMParser();
+            const xml = parser.parseFromString(xmlText, 'text/xml');
+            const entries = xml.getElementsByTagName('entry');
+            
+            for (let i = 0; i < entries.length; i++) {
+              const entry = entries[i];
+              const id = entry.getElementsByTagName('yt:videoId')[0]?.textContent 
+                || entry.getElementsByTagName('id')[0]?.textContent?.split(':').pop() 
+                || '';
+              const headline = entry.getElementsByTagName('title')[0]?.textContent || '';
+              
+              const mediaGroup = entry.getElementsByTagName('media:group')[0];
+              const description = mediaGroup?.getElementsByTagName('media:description')[0]?.textContent 
+                || entry.getElementsByTagName('summary')[0]?.textContent 
+                || '';
+              
+              const thumbnail = mediaGroup?.getElementsByTagName('media:thumbnail')[0]?.getAttribute('url')
+                || `https://i.ytimg.com/vi/${id}/hqdefault.jpg`;
+              
+              const videoUrl = `https://www.youtube.com/watch?v=${id}`;
+              const publishedText = entry.getElementsByTagName('published')[0]?.textContent || '';
+              const published = publishedText ? new Date(publishedText) : new Date(0);
+              
+              if (id && !seen.has(id)) {
+                seen.add(id);
+                dynamicClips.push({
+                  id,
+                  headline,
+                  description,
+                  thumbnail,
+                  videoUrl,
+                  duration: 0,
+                  source: 'YouTube',
+                  sport: feed.key,
+                  published,
+                });
+              }
+            }
+          } catch (err) {
+            console.warn(`WatchLive: failed to fetch YouTube RSS for ${feed.label}`, err);
+          }
+        }
+        
+        // Sort dynamic clips by date descending
+        dynamicClips.sort((a, b) => (b.published?.getTime() || 0) - (a.published?.getTime() || 0));
+        allClips.push(...dynamicClips);
+        
+        // Append static fallbacks
+        for (const item of STATIC_MUSCLE_FITNESS_CLIPS) {
           if (!seen.has(item.id)) {
             seen.add(item.id);
             allClips.push(item);
@@ -1720,7 +1841,7 @@ export default function WatchLive({ accent = '#D35400', isOlympian = false, isB2
     fetchClips(false);
     const interval = setInterval(() => fetchClips(true), 3600000); // refresh silently every hour
     return () => clearInterval(interval);
-  }, [isOlympian, isB2K, isVibe, isKple, isVibe100]);
+  }, [isOlympian, isMf, isB2K, isVibe, isKple, isVibe100]);
 
   useEffect(() => {
     if (activeVideo) {
@@ -1845,15 +1966,15 @@ export default function WatchLive({ accent = '#D35400', isOlympian = false, isB2
           >
             <div className="watch-featured-container" style={{ position: 'relative', width: '100%', overflow: 'hidden' }}>
               <img 
-                src={featured.thumbnail || getAiThumbnail(featured.headline, { isOlympian, isB2K, isVibe, isKple, isVibe100 })} 
+                src={featured.thumbnail || getAiThumbnail(featured.headline, { isOlympian, isMf, isB2K, isVibe, isKple, isVibe100 })} 
                 alt={featured.headline} 
                 onError={(e) => {
-                  e.currentTarget.src = getAiThumbnail(featured.headline, { isOlympian, isB2K, isVibe, isKple, isVibe100 });
+                  e.currentTarget.src = getAiThumbnail(featured.headline, { isOlympian, isMf, isB2K, isVibe, isKple, isVibe100 });
                 }}
                 onLoad={(e) => {
                   const img = e.currentTarget;
                   if (!img.src.includes('image.pollinations.ai') && img.naturalWidth < 480) {
-                    img.src = getAiThumbnail(featured.headline, { isOlympian, isB2K, isVibe, isKple, isVibe100 });
+                    img.src = getAiThumbnail(featured.headline, { isOlympian, isMf, isB2K, isVibe, isKple, isVibe100 });
                   }
                 }}
                 style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
@@ -1877,8 +1998,8 @@ export default function WatchLive({ accent = '#D35400', isOlympian = false, isB2
                 <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '10px' }}>
                   <span style={{ padding: '4px 10px', borderRadius: '6px', background: accent, color: '#000', fontSize: '10px', fontWeight: 900, textTransform: 'uppercase', letterSpacing: '1px' }}>
                     {isOlympian 
-                      ? '💪 Fitness' 
-                      : (isB2K ? '🎤 R&B Music' : (isKple ? (featured.sport === 'tct_network' ? '📺 TCT Network' : featured.sport === 'act_local' ? '🎥 ACT Local' : featured.sport === 'the_walk' ? '🚶 The Walk TV' : featured.sport === 'enlace_usa' ? '🌎 Enlace USA' : featured.sport === 'positiv_movies' ? '🎬 Positiv Family' : '👶 Smile of a Child') : (isVibe ? (featured.sport === 'news' ? '📰 News' : featured.sport === 'foxnews' ? '🦊 Fox News' : featured.sport === 'politics' ? '⚖️ Politics' : featured.sport === 'entertainment' ? '🎭 Entertainment' : featured.sport === 'money' ? '💵 Money' : '🏈 Sports') : (isVibe100 ? (featured.sport === 'avo' ? '🎒 AVO Channel' : featured.sport === 'olympia' ? '🏆 Muscle & Fitness' : featured.sport === 'b2k' ? '🎤 B2K Channel' : featured.sport === 'kple' ? '📺 Christian Revival' : '📺 VIBE 100') : (featured.sport === 'cfb' ? '🏈 Football' : featured.sport === 'cbb' ? '🏀 Basketball' : '⚾ Baseball')))))}
+                      ? '🏆 Mr. Olympia' 
+                      : (isMf ? '💪 Muscle & Fitness' : (isB2K ? '🎤 R&B Music' : (isKple ? (featured.sport === 'tct_network' ? '📺 TCT Network' : featured.sport === 'act_local' ? '🎥 ACT Local' : featured.sport === 'the_walk' ? '🚶 The Walk TV' : featured.sport === 'enlace_usa' ? '🌎 Enlace USA' : featured.sport === 'positiv_movies' ? '🎬 Positiv Family' : '👶 Smile of a Child') : (isVibe ? (featured.sport === 'news' ? '📰 News' : featured.sport === 'foxnews' ? '🦊 Fox News' : featured.sport === 'politics' ? '⚖️ Politics' : featured.sport === 'entertainment' ? '🎭 Entertainment' : featured.sport === 'money' ? '💵 Money' : '🏈 Sports') : (isVibe100 ? (featured.sport === 'avo' ? '🎒 AVO Channel' : featured.sport === 'olympia' ? '🏆 Muscle & Fitness' : featured.sport === 'b2k' ? '🎤 B2K Channel' : featured.sport === 'kple' ? '📺 Christian Revival' : '📺 VIBE 100') : (featured.sport === 'cfb' ? '🏈 Football' : featured.sport === 'cbb' ? '🏀 Basketball' : '⚾ Baseball'))))))}
                   </span>
                   {featured.duration > 0 && (
                     <span style={{ fontSize: '11px', color: '#888', display: 'flex', alignItems: 'center', gap: '4px' }}>
@@ -1919,15 +2040,15 @@ export default function WatchLive({ accent = '#D35400', isOlympian = false, isB2
                 >
                   <div style={{ position: 'relative', aspectRatio: '16/9' }}>
                     <img 
-                      src={clip.thumbnail || getAiThumbnail(clip.headline, { isOlympian, isB2K, isVibe, isKple, isVibe100 })} 
+                      src={clip.thumbnail || getAiThumbnail(clip.headline, { isOlympian, isMf, isB2K, isVibe, isKple, isVibe100 })} 
                       alt={clip.headline} 
                       onError={(e) => {
-                        e.currentTarget.src = getAiThumbnail(clip.headline, { isOlympian, isB2K, isVibe, isKple, isVibe100 });
+                        e.currentTarget.src = getAiThumbnail(clip.headline, { isOlympian, isMf, isB2K, isVibe, isKple, isVibe100 });
                       }}
                       onLoad={(e) => {
                         const img = e.currentTarget;
                         if (!img.src.includes('image.pollinations.ai') && img.naturalWidth < 480) {
-                          img.src = getAiThumbnail(clip.headline, { isOlympian, isB2K, isVibe, isKple, isVibe100 });
+                          img.src = getAiThumbnail(clip.headline, { isOlympian, isMf, isB2K, isVibe, isKple, isVibe100 });
                         }
                       }}
                       style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
@@ -1951,7 +2072,7 @@ export default function WatchLive({ accent = '#D35400', isOlympian = false, isB2
                     <div style={{ fontSize: '9px', fontWeight: 700, color: accent, textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '4px' }}>
                       {isOlympian 
                         ? 'Bodybuilding' 
-                        : (isB2K ? 'Music' : (isKple ? (clip.sport === 'tct_network' ? 'TCT Network' : clip.sport === 'act_local' ? 'ACT Local' : clip.sport === 'the_walk' ? 'The Walk TV' : clip.sport === 'enlace_usa' ? 'Enlace USA' : clip.sport === 'positiv_movies' ? 'Positiv' : 'Smile of a Child') : (isVibe ? (clip.sport === 'news' ? 'News' : clip.sport === 'foxnews' ? 'Fox News' : clip.sport === 'politics' ? 'Politics' : clip.sport === 'entertainment' ? 'Entertainment' : clip.sport === 'money' ? 'Money' : 'Sports') : (isVibe100 ? (clip.sport === 'avo' ? 'AVO Channel' : clip.sport === 'olympia' ? 'Muscle & Fitness' : clip.sport === 'b2k' ? 'B2K Channel' : clip.sport === 'kple' ? 'Christian Revival' : 'VIBE 100') : (clip.sport === 'cfb' ? 'Football' : clip.sport === 'cbb' ? 'Basketball' : 'Baseball')))))} · {clip.source}
+                        : (isMf ? 'Fitness' : (isB2K ? 'Music' : (isKple ? (clip.sport === 'tct_network' ? 'TCT Network' : clip.sport === 'act_local' ? 'ACT Local' : clip.sport === 'the_walk' ? 'The Walk TV' : clip.sport === 'enlace_usa' ? 'Enlace USA' : clip.sport === 'positiv_movies' ? 'Positiv' : 'Smile of a Child') : (isVibe ? (clip.sport === 'news' ? 'News' : clip.sport === 'foxnews' ? 'Fox News' : clip.sport === 'politics' ? 'Politics' : clip.sport === 'entertainment' ? 'Entertainment' : clip.sport === 'money' ? 'Money' : 'Sports') : (isVibe100 ? (clip.sport === 'avo' ? 'AVO Channel' : clip.sport === 'olympia' ? 'Muscle & Fitness' : clip.sport === 'b2k' ? 'B2K Channel' : clip.sport === 'kple' ? 'Christian Revival' : 'VIBE 100') : (clip.sport === 'cfb' ? 'Football' : clip.sport === 'cbb' ? 'Basketball' : 'Baseball'))))))} · {clip.source}
                     </div>
                     <div style={{ fontSize: '13px', fontWeight: 600, lineHeight: 1.4, color: '#ccc', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
                       {clip.headline}

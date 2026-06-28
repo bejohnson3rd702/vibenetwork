@@ -35,7 +35,14 @@ export function isOlympianConfig(config: any): boolean {
   if (!config) return false;
   const name = config.name?.toLowerCase() || '';
   const domain = config.domain?.toLowerCase() || '';
-  return name.includes('olympia') || domain.includes('mrolympia.com') || name.includes('muscle') || name.includes('fitness');
+  return name.includes('olympia') || domain.includes('mrolympia.com');
+}
+
+export function isMuscleFitnessConfig(config: any): boolean {
+  if (!config) return false;
+  const name = config.name?.toLowerCase() || '';
+  const domain = config.domain?.toLowerCase() || '';
+  return (name.includes('muscle') || name.includes('fitness')) && !name.includes('olympia') && !domain.includes('mrolympia.com');
 }
 
 export function isB2kConfig(config: any): boolean {
@@ -64,12 +71,13 @@ export function normalizeWlConfig(
 ): WlConfig {
   const isKple = isKpleConfig(raw) || isKpleConfig(overrides);
   const isOlympian = isOlympianConfig(raw) || isOlympianConfig(overrides);
+  const isMf = isMuscleFitnessConfig(raw) || isMuscleFitnessConfig(overrides);
   const isB2k = isB2kConfig(raw) || isB2kConfig(overrides);
 
   const isKpleChild = (raw?.parent_network_id === '33742e2f-430b-4c2d-9cba-42507891ef02') || (overrides?.parent_network_id === '33742e2f-430b-4c2d-9cba-42507891ef02');
   const isKpleParent = isKple && !isKpleChild;
 
-  const defaultAccent = isKple ? '#004e98' : (isOlympian ? '#E31B23' : (isB2k ? '#FF2A54' : '#D35400'));
+  const defaultAccent = isKple ? '#004e98' : (isOlympian ? '#D4AF37' : (isMf ? '#E31B23' : (isB2k ? '#FF2A54' : '#D35400')));
 
   const theme = {
     ...(raw?.theme || {}),

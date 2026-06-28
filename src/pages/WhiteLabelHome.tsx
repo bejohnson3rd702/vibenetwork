@@ -6,9 +6,11 @@ import SliderSection from '../components/SliderSection';
 import { supabase } from '../supabaseClient';
 import { ASSETS } from '../data';
 import type { WhiteLabelConfig, Category, VideoItem, User } from '../types';
+import { isOlympianConfig, isMuscleFitnessConfig, isB2kConfig, isKpleConfig } from '../lib/whitelabel';
 
 const ProfileDashboard = lazy(() => import('../components/ProfileDashboard'));
 const ShopifyStore = lazy(() => import('../components/ShopifyStore'));
+const WatchLive = lazy(() => import('../components/WatchLive'));
 
 interface WhiteLabelHomeProps {
   wlConfig: WhiteLabelConfig;
@@ -189,6 +191,21 @@ export default function WhiteLabelHome({ wlConfig, categories, user, activeVideo
             );
           })()}
        </div>
+
+        {/* Live Section if enabled */}
+        {wlConfig.enableWatchLive && (
+          <div id="whats-on-now" style={{ position: 'relative', zIndex: 10, marginTop: '40px' }}>
+            <Suspense fallback={null}>
+              <WatchLive 
+                accent={wlConfig.accent} 
+                isOlympian={isOlympianConfig(wlConfig)} 
+                isMf={isMuscleFitnessConfig(wlConfig)}
+                isB2K={isB2kConfig(wlConfig)} 
+                isKple={isKpleConfig(wlConfig)} 
+              />
+            </Suspense>
+          </div>
+        )}
        
        {/* Full Profile Dashboard Integrated at Network Level */}
        <div style={{ width: '100%', position: 'relative', zIndex: 10 }}>
