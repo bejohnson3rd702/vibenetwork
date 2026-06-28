@@ -52,150 +52,150 @@ const AuthModal: React.FC<AuthModalProps> = ({ onClose, onSuccess, defaultIsLogi
     setLoading(true);
     setErrorMSG('');
 
-    if (isForgotPassword) {
-      if (!email) {
-        setErrorMSG('Please enter your email address.');
-        setLoading(false);
+    try {
+      if (isForgotPassword) {
+        if (!email) {
+          setErrorMSG('Please enter your email address.');
+          setLoading(false);
+          return;
+        }
+        const { error } = await supabase!.auth.resetPasswordForEmail(email, {
+          redirectTo: window.location.origin + '/reset-password',
+        });
+        if (error) {
+          setErrorMSG(error.message);
+        } else {
+          setResetSent(true);
+        }
         return;
       }
-      const { error } = await supabase!.auth.resetPasswordForEmail(email, {
-        redirectTo: window.location.origin + '/reset-password',
-      });
-      if (error) {
-        setErrorMSG(error.message);
-      } else {
-        setResetSent(true);
-      }
-      setLoading(false);
-      return;
-    }
 
-    if (isLogin) {
-      // Login flow
-      const { data, error } = await supabase!.auth.signInWithPassword({
-        email,
-        password,
-      });
-      if (error) {
-        setErrorMSG(error.message);
-      } else if (data.user) {
-         // Strict Tenancy Isolation Check
-         const { data: profile } = await supabase!.from('profiles').select('whitelabel_id, is_admin').eq('id', data.user.id).single();
-         const isMaster = !activeTenantConfig?.id || activeTenantConfig?.id === 'master' || activeTenantConfig?.domain === 'vibenetwork.tv' || activeTenantConfig?.domain === 'vibenetwork.vercel.app';
-         
-         let allowed = false;
-         
-         if (!profile) {
-            allowed = true; // New account, profile not initialized yet.
-         } else if (profile.is_admin) {
-            allowed = true; // Global Admins can log in anywhere.
-         } else {
-             // 1. Are they the explicit owner of this Tenant?
-             if (activeTenantConfig?.id && activeTenantConfig?.id !== 'master') {
-                 const { data: tenantConfig } = await supabase!.from('whitelabel_configs').select('owner_id').eq('id', activeTenantConfig.id).single();
-                 if (tenantConfig && tenantConfig.owner_id === data.user.id) {
-                     allowed = true;
-                 }
-             }
-             
-             // 2. If not the owner, does their profile strictly bind to this Tenant?
-             if (!allowed) {
-                 if (isMaster && !profile.whitelabel_id) {
-                     allowed = true;
-                 } else if (!isMaster && profile.whitelabel_id === activeTenantConfig?.id) {
-                     allowed = true;
-                 }
-             }
-         }
-
-         if (!allowed) {
-             await supabase!.auth.signOut();
-             setErrorMSG('Access Denied: Your account is restricted to a different network domain.');
-             setLoading(false);
-             return;
-         }
-
-         onSuccess(data.user);
-         onClose();
-      }
-    } else {
-      const { data, error } = await supabase!.auth.signUp({
-        email,
-        password,
-        options: {
-          data: {
-            username,
-            role,
-            whitelabel_id: (!activeTenantConfig?.id || activeTenantConfig?.id === 'master' || activeTenantConfig?.domain === 'vibenetwork.vercel.app' || activeTenantConfig?.domain === 'vibenetwork.tv') ? null : activeTenantConfig?.id,
-            referred_by: referredBy || undefined
-          }
-        }
-      });
-      if (error) {
-        setErrorMSG(error.message);
-        setLoading(false);
-      }
-      else if (data.user) {
-        // Auto-save registered user to CRM contact directory
-        try {
-          const wlId = (!activeTenantConfig?.id || activeTenantConfig?.id === 'master' || activeTenantConfig?.domain === 'vibenetwork.vercel.app' || activeTenantConfig?.domain === 'vibenetwork.tv') ? null : activeTenantConfig?.id;
-          const { data: contact } = await supabase!
-            .from('crm_contacts')
-            .insert({
-              whitelabel_id: wlId,
-              creator_id: activeTenantConfig?.owner_id || null,
-              first_name: username,
-              last_name: '',
-              email: email,
-              source: 'sign_up'
-            })
-            .select()
-            .single();
-
-          if (contact) {
-            syncContactToExternalCrms(contact);
-          }
-        } catch (crmErr) {
-          console.error("CRM Contact auto-save error on sign up:", crmErr);
-        }
-
-        onSuccess(data.user);
-        if (role === 'business') {
-           /* Stripe setup commented out for now
-           // Redirect to Stripe Paywall before creating the network
-           try {
-             const { data: checkoutData, error: checkoutError } = await supabase!.functions.invoke('create-checkout', {
-               body: {
-                 itemName: 'Vibe Enterprise Network Setup',
-                 amount: 9900, // $99.00
-                 creatorId: data.user.id // Used internally to identify buyer in this context
+      if (isLogin) {
+        // Login flow
+        const { data, error } = await supabase!.auth.signInWithPassword({
+          email,
+          password,
+        });
+        if (error) {
+          setErrorMSG(error.message);
+        } else if (data.user) {
+           // Strict Tenancy Isolation Check
+           const { data: profile } = await supabase!.from('profiles').select('whitelabel_id, is_admin').eq('id', data.user.id).single();
+           const isMaster = !activeTenantConfig?.id || activeTenantConfig?.id === 'master' || activeTenantConfig?.domain === 'vibenetwork.tv' || activeTenantConfig?.domain === 'vibenetwork.vercel.app';
+           
+           let allowed = false;
+           
+           if (!profile) {
+              allowed = true; // New account, profile not initialized yet.
+           } else if (profile.is_admin) {
+              allowed = true; // Global Admins can log in anywhere.
+           } else {
+               // 1. Are they the explicit owner of this Tenant?
+               if (activeTenantConfig?.id && activeTenantConfig?.id !== 'master') {
+                   const { data: tenantConfig } = await supabase!.from('whitelabel_configs').select('owner_id').eq('id', activeTenantConfig.id).single();
+                   if (tenantConfig && tenantConfig.owner_id === data.user.id) {
+                       allowed = true;
+                   }
                }
-             });
-             
-             if (checkoutError) throw checkoutError;
-             
-             if (checkoutData?.url) {
-                window.location.href = checkoutData.url;
-             } else {
-                // Fallback to wizard if edge function responds improperly
-                setShowBusinessWizard(true);
-                setLoading(false);
-             }
-           } catch (e: any) {
-             console.error("Stripe checkout error:", e);
-             // Fallback to wizard if edge function fails or isn't deployed yet
-             setShowBusinessWizard(true);
-             setLoading(false);
+               
+               // 2. If not the owner, does their profile strictly bind to this Tenant?
+               if (!allowed) {
+                   if (isMaster && !profile.whitelabel_id) {
+                       allowed = true;
+                   } else if (!isMaster && profile.whitelabel_id === activeTenantConfig?.id) {
+                       allowed = true;
+                   }
+               }
            }
-           */
-           // Bypass straight to wizard
-           setShowBusinessWizard(true);
-           setLoading(false);
-        } else {
+
+           if (!allowed) {
+               await supabase!.auth.signOut();
+               setErrorMSG('Access Denied: Your account is restricted to a different network domain.');
+               return;
+           }
+
+           onSuccess(data.user);
            onClose();
-           setLoading(false);
+        }
+      } else {
+        const { data, error } = await supabase!.auth.signUp({
+          email,
+          password,
+          options: {
+            data: {
+              username,
+              role,
+              whitelabel_id: (!activeTenantConfig?.id || activeTenantConfig?.id === 'master' || activeTenantConfig?.domain === 'vibenetwork.vercel.app' || activeTenantConfig?.domain === 'vibenetwork.tv') ? null : activeTenantConfig?.id,
+              referred_by: referredBy || undefined
+            }
+          }
+        });
+        if (error) {
+          setErrorMSG(error.message);
+        }
+        else if (data.user) {
+          // Auto-save registered user to CRM contact directory
+          try {
+            const wlId = (!activeTenantConfig?.id || activeTenantConfig?.id === 'master' || activeTenantConfig?.domain === 'vibenetwork.vercel.app' || activeTenantConfig?.domain === 'vibenetwork.tv') ? null : activeTenantConfig?.id;
+            const { data: contact } = await supabase!
+              .from('crm_contacts')
+              .insert({
+                whitelabel_id: wlId,
+                creator_id: activeTenantConfig?.owner_id || null,
+                first_name: username,
+                last_name: '',
+                email: email,
+                source: 'sign_up'
+              })
+              .select()
+              .single();
+
+            if (contact) {
+              syncContactToExternalCrms(contact);
+            }
+          } catch (crmErr) {
+            console.error("CRM Contact auto-save error on sign up:", crmErr);
+          }
+
+          onSuccess(data.user);
+          if (role === 'business') {
+             /* Stripe setup commented out for now
+             // Redirect to Stripe Paywall before creating the network
+             try {
+               const { data: checkoutData, error: checkoutError } = await supabase!.functions.invoke('create-checkout', {
+                 body: {
+                   itemName: 'Vibe Enterprise Network Setup',
+                   amount: 9900, // $99.00
+                   creatorId: data.user.id // Used internally to identify buyer in this context
+                 }
+               });
+               
+               if (checkoutError) throw checkoutError;
+               
+               if (checkoutData?.url) {
+                  window.location.href = checkoutData.url;
+               } else {
+                  // Fallback to wizard if edge function responds improperly
+                  setShowBusinessWizard(true);
+               }
+             } catch (e: any) {
+               console.error("Stripe checkout error:", e);
+               // Fallback to wizard if edge function fails or isn't deployed yet
+               setShowBusinessWizard(true);
+             }
+             */
+             // Bypass straight to wizard
+             setShowBusinessWizard(true);
+          } else {
+             onClose();
+          }
         }
       }
+    } catch (err: any) {
+      console.error("Auth submission error:", err);
+      setErrorMSG(err.message || 'Authentication error occurred');
+    } finally {
+      setLoading(false);
     }
   };
 
