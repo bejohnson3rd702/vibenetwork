@@ -1643,10 +1643,10 @@ export const ProfileLive: React.FC<ProfileLiveProps> = ({
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', flexWrap: 'wrap', gap: '12px' }}>
                           <div>
                             <label style={{ display: 'block', color: accent, fontWeight: 'bold', fontSize: '15px', textTransform: 'uppercase', letterSpacing: '1px' }}>
-                              🎬 Replay Vault Manager
+                              🎬 Upload content to Live vault
                             </label>
                             <p style={{ color: 'var(--text-secondary)', fontSize: '12px', margin: '4px 0 0 0' }}>
-                              Manually add, edit details, or remove recorded live stream replays in your archive.
+                              Manually add, edit details, or remove recorded live stream replays in your Live vault.
                             </p>
                           </div>
                           <button
@@ -1677,7 +1677,7 @@ export const ProfileLive: React.FC<ProfileLiveProps> = ({
                         {/* Table/List of Past Streams */}
                         {pastStreams.length === 0 ? (
                           <div style={{ color: 'var(--text-secondary)', fontSize: '13px', fontStyle: 'italic', padding: '16px', textAlign: 'center', background: 'rgba(0,0,0,0.1)', borderRadius: '8px' }}>
-                            No past streams in your replay archive yet. Click "Add Replay" to upload one manually.
+                            No past streams in your Live vault yet. Click "Add Replay" to upload one manually.
                           </div>
                         ) : (
                           <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', maxHeight: '300px', overflowY: 'auto', paddingRight: '2px', scrollbarWidth: 'thin' }}>
