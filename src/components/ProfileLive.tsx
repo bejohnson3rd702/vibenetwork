@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Lock, Settings, Camera, Video, Globe, X, Mic, MicOff, VideoOff, Send, Check, Copy, Play, Trash2, Plus } from 'lucide-react';
+import { Lock, Settings, Camera, Video, Globe, X, Mic, MicOff, VideoOff, Send, Check, Copy, Play, Trash2, Plus, Edit3 } from 'lucide-react';
 import { useToast } from '../context/ToastContext';
 import Peer from 'peerjs';
 import { supabase } from '../supabaseClient';
