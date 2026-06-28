@@ -165,7 +165,6 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
   const [driveUrls, setDriveUrls] = useState<Record<string, string>>({});
   const [previewFile, setPreviewFile] = useState<any>(null);
   const [previewUrl, setPreviewUrl] = useState<string>('');
-  const [driveUploadAccessLevel, setDriveUploadAccessLevel] = useState<'public' | 'subscribers'>('public');
   const [driveUploadFile, setDriveUploadFile] = useState<File | null>(null);
   const [driveUploadName, setDriveUploadName] = useState('');
   const [currentBgIndex, setCurrentBgIndex] = useState(0);
@@ -1580,7 +1579,7 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
           size_bytes: fileSize,
           creator_id: profile.id,
           whitelabel_id: (!wlConfig || wlConfig.id === 'master') ? null : wlConfig.id,
-          access_level: driveUploadAccessLevel
+          access_level: 'private'
         });
       
       if (dbError) throw dbError;
@@ -6509,31 +6508,17 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
                       </div>
                       
                       {driveUploadFile && (
-                        <>
-                          <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                            <label style={{ fontSize: '12px', fontWeight: 'bold', color: 'var(--text-secondary)' }}>File Display Name</label>
-                            <input 
-                              type="text" 
-                              required
-                              placeholder="Enter customized file name..." 
-                              value={driveUploadName}
-                              onChange={e => setDriveUploadName(e.target.value)}
-                              style={{ width: '100%', padding: '12px', background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '8px', color: 'var(--text-primary)', outline: 'none' }}
-                            />
-                          </div>
-                          
-                          <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                            <label style={{ fontSize: '12px', fontWeight: 'bold', color: 'var(--text-secondary)' }}>Access Permission</label>
-                            <select 
-                              value={driveUploadAccessLevel}
-                              onChange={e => setDriveUploadAccessLevel(e.target.value as any)}
-                              style={{ width: '100%', padding: '12px', background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '8px', color: 'var(--text-primary)', outline: 'none', cursor: 'pointer' }}
-                            >
-                              <option value="public">🔓 Public (Anyone can download)</option>
-                              <option value="subscribers">⭐️ Subscriber-Only (Free for active subs)</option>
-                            </select>
-                          </div>
-                        </>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                          <label style={{ fontSize: '12px', fontWeight: 'bold', color: 'var(--text-secondary)' }}>File Display Name</label>
+                          <input 
+                            type="text" 
+                            required
+                            placeholder="Enter customized file name..." 
+                            value={driveUploadName}
+                            onChange={e => setDriveUploadName(e.target.value)}
+                            style={{ width: '100%', padding: '12px', background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '8px', color: 'var(--text-primary)', outline: 'none' }}
+                          />
+                        </div>
                       )}
 
                       {/* Upgrade Banner in Modal if Limit is Exceeded */}
