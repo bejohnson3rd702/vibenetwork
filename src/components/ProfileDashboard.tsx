@@ -4392,9 +4392,13 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
                 {/* Dashboard Header */}
                 <div style={{ borderBottom: '1px solid rgba(255,255,255,0.06)', paddingBottom: '24px', marginBottom: '30px' }}>
                   <h3 style={{ margin: '0 0 8px 0', fontSize: '32px', fontWeight: 800, background: 'linear-gradient(90deg, #fff, var(--text-muted))', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', display: 'flex', alignItems: 'center', gap: '12px' }}>
-                    <Calendar size={32} color={wlConfig?.accent || '#00ff88'} /> Book {profile?.username || 'this Creator'}
+                    <Calendar size={32} color={wlConfig?.accent || '#00ff88'} /> {isOwnProfile && viewMode === 'edit' ? 'Booking Settings' : `Book ${profile?.username || 'this Creator'}`}
                   </h3>
-                  <p style={{ color: 'var(--text-secondary)', margin: 0, fontSize: '15px' }}>Schedule a 1-on-1 session, studio consultation, or collaboration meeting.</p>
+                  <p style={{ color: 'var(--text-secondary)', margin: 0, fontSize: '15px' }}>
+                    {isOwnProfile && viewMode === 'edit' 
+                      ? 'Manage your session price, template hours, notification alerts, and generate availability slots.'
+                      : 'Schedule a 1-on-1 session, studio consultation, or collaboration meeting.'}
+                  </p>
                 </div>
 
                 {/* Creator Booking Settings Panel */}
@@ -4613,7 +4617,8 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
                 )}
 
                 {/* Main Client/Guest Booking Layout */}
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '30px', alignItems: 'start' }}>
+                {!(isOwnProfile && viewMode === 'edit') && (
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '30px', alignItems: 'start' }}>
                   
                   {/* Left Column: Calendar & Time Slots */}
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
@@ -5157,6 +5162,7 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
                   </div>
 
                 </div>
+                )}
               </motion.div>
             </div>
           );
