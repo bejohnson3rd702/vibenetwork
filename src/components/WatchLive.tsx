@@ -1030,29 +1030,10 @@ export default function WatchLive({ accent = '#D35400', isOlympian = false, isMf
         }
       }
 
-      // Generate TTS audio from the combined video transcript instead of the description!
-      const ttsSourceText = fullTranscriptText || activeVideo.description || '';
-      if (ttsSourceText.trim()) {
-        const descMode = supportsTts ? 'tts' : 'ttt';
-        const ttsRes = await translateText({
-          text: ttsSourceText,
-          sourceLang: 'english-united-states',
-          targetLang: targetLanguage,
-          serviceCode: descMode
-        });
-        if (ttsRes.audio) {
-          audioPayload = ttsRes.audio;
-        }
-      }
-
       setTranslatedInfo({
         headline: translatedHeadline,
         description: translatedDesc
       });
-
-      if (audioPayload) {
-        setInfoAudioBase64(audioPayload);
-      }
 
       // 4. Translate Transcript Segments
       if (activeTranscript && activeTranscript.length > 0) {
