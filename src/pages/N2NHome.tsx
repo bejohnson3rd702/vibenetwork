@@ -100,8 +100,20 @@ export default function N2NHome({ wlConfig, categories, activeVideo, setActiveVi
     if (!config?.id) return;
     let cancelled = false;
     (async () => {
-      const children = await getChildNetworks(config.id);
+      let children = await getChildNetworks(config.id);
       if (cancelled) return;
+
+      // Sort Mr. Olympia first if parent is Muscle & Fitness
+      const isMf = isMuscleFitnessConfig(config);
+      if (isMf) {
+        children = [...children].sort((a: any, b: any) => {
+          const isOlympiaA = a.id === '7a017c4d-c08f-4260-8540-a0cc8bed4e12' || (a.name || '').toLowerCase().includes('olympia');
+          const isOlympiaB = b.id === '7a017c4d-c08f-4260-8540-a0cc8bed4e12' || (b.name || '').toLowerCase().includes('olympia');
+          if (isOlympiaA && !isOlympiaB) return -1;
+          if (!isOlympiaA && isOlympiaB) return 1;
+          return 0;
+        });
+      }
 
       const childIds = children.map((c: any) => c.id);
 
@@ -559,7 +571,7 @@ export default function N2NHome({ wlConfig, categories, activeVideo, setActiveVi
         {childItems.length > 0 && (
           <div id="child-networks-slider">
             <SliderSection
-              title={isOlympian ? "OLYMPIA PARTNERS" : (isMf ? "MUSCLE & FITNESS PARTNERS" : (isB2K ? "B2K MEMBERS" : (isKple ? "CHRISTIAN REVIVAL NETWORKS" : (isVibe100 ? "VIBE 100 NETWORKS" : "AVO NETWORKS"))))}
+              title={isOlympian ? "OLYMPIA PARTNERS" : (isMf ? "MUSCLE & FITNESS NETWORKS" : (isB2K ? "B2K MEMBERS" : (isKple ? "CHRISTIAN REVIVAL NETWORKS" : (isVibe100 ? "VIBE 100 NETWORKS" : "AVO NETWORKS"))))}
               items={childItems}
               delay={isOlympian || isMf ? 0.1 : 0}
               aspectRatio="16/9"
