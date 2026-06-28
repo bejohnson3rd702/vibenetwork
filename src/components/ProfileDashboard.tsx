@@ -162,6 +162,9 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
   const [driveViewMode, setDriveViewMode] = useState<'grid' | 'list'>('grid');
   const [showDriveUploadModal, setShowDriveUploadModal] = useState(false);
   const [uploadingDriveFile, setUploadingDriveFile] = useState(false);
+  const [driveUrls, setDriveUrls] = useState<Record<string, string>>({});
+  const [previewFile, setPreviewFile] = useState<any>(null);
+  const [previewUrl, setPreviewUrl] = useState<string>('');
   const [driveUploadAccessLevel, setDriveUploadAccessLevel] = useState<'public' | 'subscribers'>('public');
   const [driveUploadFile, setDriveUploadFile] = useState<File | null>(null);
   const [driveUploadName, setDriveUploadName] = useState('');
@@ -1411,6 +1414,51 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
       .order('created_at', { ascending: false });
     if (!error && data) {
       setDriveFiles(data);
+      try {
+        const filePaths = data.map((f: any) => f.file_path);
+        if (filePaths.length > 0) {
+          const { data: signedData, error: signedError } = await supabase!
+            .storage
+            .from('vibe-drive')
+            .createSignedUrls(filePaths, 3600);
+          if (!signedError && signedData) {
+            const urlMap: Record<string, string> = {};
+            signedData.forEach((item: any) => {
+              if (item.signedUrl) {
+                urlMap[item.path] = item.signedUrl;
+              }
+            });
+            setDriveUrls(urlMap);
+          }
+        }
+      } catch (err) {
+        console.warn("Failed to batch fetch signed URLs:", err);
+      }
+    }
+  };
+
+  const handleViewDriveFile = async (file: any) => {
+    try {
+      if (driveUrls[file.file_path]) {
+        setPreviewUrl(driveUrls[file.file_path]);
+        setPreviewFile(file);
+        return;
+      }
+      
+      const { data, error } = await supabase!
+        .storage
+        .from('vibe-drive')
+        .createSignedUrl(file.file_path, 3600);
+      
+      if (error || !data?.signedUrl) {
+        throw error || new Error("Failed to generate preview URL");
+      }
+      
+      setPreviewUrl(data.signedUrl);
+      setPreviewFile(file);
+    } catch (err: any) {
+      console.error("Preview error:", err);
+      toast.error(`Preview failed: ${err.message || "Unauthorized"}`);
     }
   };
 
@@ -6351,17 +6399,23 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
                     return (
                       <div key={file.id} style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '16px', padding: '16px', display: 'flex', flexDirection: 'column', gap: '12px', position: 'relative', transition: 'border-color 0.2s' }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                          <div style={{ padding: '12px', borderRadius: '12px', background: `${iconColor}15`, display: 'flex', alignItems: 'center', justifycontent: 'center' }}>
-                            {file.file_type === 'image' && <ImageIcon size={24} style={{ color: iconColor }} />}
-                            {file.file_type === 'video' && <Video size={24} style={{ color: iconColor }} />}
-                            {file.file_type === 'pdf' && <FileText size={24} style={{ color: iconColor }} />}
-                            {file.file_type !== 'image' && file.file_type !== 'video' && file.file_type !== 'pdf' && <File size={24} style={{ color: iconColor }} />}
-                          </div>
-                          
                           <span style={{ fontSize: '10px', textTransform: 'uppercase', padding: '4px 8px', borderRadius: '20px', fontWeight: 'bold', background: file.access_level === 'public' ? 'rgba(0,255,136,0.1)' : 'rgba(179,128,255,0.1)', color: file.access_level === 'public' ? '#00ff88' : '#b380ff', border: file.access_level === 'public' ? '1px solid rgba(0,255,136,0.2)' : '1px solid rgba(179,128,255,0.2)' }}>
                             {file.access_level}
                           </span>
                         </div>
+
+                        {file.file_type === 'image' && driveUrls[file.file_path] ? (
+                          <div style={{ width: '100%', height: '140px', borderRadius: '12px', overflow: 'hidden', background: '#000', border: '1px solid rgba(255,255,255,0.08)', cursor: 'pointer' }} onClick={() => handleViewDriveFile(file)}>
+                            <img src={driveUrls[file.file_path]} alt={file.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                          </div>
+                        ) : (
+                          <div onClick={() => handleViewDriveFile(file)} style={{ width: '100%', height: '140px', borderRadius: '12px', background: `${iconColor}15`, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', border: '1px dashed rgba(255,255,255,0.05)' }}>
+                            {file.file_type === 'video' && <Video size={36} style={{ color: iconColor }} />}
+                            {file.file_type === 'pdf' && <FileText size={36} style={{ color: iconColor }} />}
+                            {file.file_type !== 'image' && file.file_type !== 'video' && file.file_type !== 'pdf' && <File size={36} style={{ color: iconColor }} />}
+                            {file.file_type === 'image' && <ImageIcon size={36} style={{ color: iconColor }} />}
+                          </div>
+                        )}
                         
                         <div style={{ minWidth: 0 }}>
                           <h4 style={{ margin: 0, fontSize: '14px', fontWeight: 'bold', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', color: 'var(--text-primary)' }} title={file.name}>
@@ -6374,32 +6428,22 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
                         
                         <div style={{ display: 'flex', gap: '8px', borderTop: '1px solid rgba(255,255,255,0.05)', paddingTop: '12px', marginTop: '4px' }}>
                           <button 
+                            onClick={() => handleViewDriveFile(file)}
+                            style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', padding: '8px 12px', background: 'linear-gradient(135deg, #00ff88, #00b0ff)', border: 'none', borderRadius: '8px', color: '#000', fontSize: '12px', fontWeight: 'bold', cursor: 'pointer', transition: 'opacity 0.2s' }}
+                            onMouseOver={e=>e.currentTarget.style.opacity='0.9'}
+                            onMouseOut={e=>e.currentTarget.style.opacity='1'}
+                          >
+                            <Play size={13} fill="#000" /> View
+                          </button>
+
+                          <button 
                             onClick={() => handleDownloadDriveFile(file)}
-                            style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', padding: '8px', background: 'rgba(255,255,255,0.05)', border: 'none', borderRadius: '8px', color: '#fff', fontSize: '12px', fontWeight: 'bold', cursor: 'pointer', transition: 'background 0.2s' }}
+                            style={{ padding: '8px 12px', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(255,255,255,0.05)', border: 'none', borderRadius: '8px', color: '#fff', fontSize: '12px', fontWeight: 'bold', cursor: 'pointer', transition: 'background 0.2s' }}
                             onMouseOver={e=>e.currentTarget.style.background='rgba(255,255,255,0.1)'}
                             onMouseOut={e=>e.currentTarget.style.background='rgba(255,255,255,0.05)'}
+                            title="Download File"
                           >
-                            <Download size={13} /> Get File
-                          </button>
-                          
-                          <button 
-                            onClick={async () => {
-                              try {
-                                const { data } = await supabase!.storage.from('vibe-drive').createSignedUrl(file.file_path, 86400 * 7); // 7 days link
-                                if (data?.signedUrl) {
-                                  await navigator.clipboard.writeText(data.signedUrl);
-                                  toast.success("Share link copied to clipboard! (Valid for 7 days)");
-                                }
-                              } catch (err) {
-                                toast.error("Failed to copy link");
-                              }
-                            }}
-                            style={{ padding: '8px', background: 'rgba(255,255,255,0.05)', border: 'none', borderRadius: '8px', color: 'var(--text-muted)', cursor: 'pointer', transition: 'all 0.2s' }}
-                            onMouseOver={e=>{e.currentTarget.style.background='rgba(255,255,255,0.1)';e.currentTarget.style.color='#fff';}}
-                            onMouseOut={e=>{e.currentTarget.style.background='rgba(255,255,255,0.05)';e.currentTarget.style.color='var(--text-muted)';}}
-                            title="Copy Sharing Link"
-                          >
-                            <Share2 size={13} />
+                            <Download size={13} />
                           </button>
                           
                           <button 
@@ -6455,23 +6499,11 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
                             <td style={{ padding: '14px 20px', fontSize: '13px', color: 'var(--text-muted)' }}>{new Date(file.created_at).toLocaleDateString()}</td>
                             <td style={{ padding: '14px 20px', textAlign: 'right' }}>
                               <div style={{ display: 'inline-flex', gap: '6px' }}>
+                                <button onClick={() => handleViewDriveFile(file)} style={{ padding: '6px 12px', background: 'linear-gradient(135deg, #00ff88, #00b0ff)', border: 'none', borderRadius: '6px', color: '#000', fontSize: '11px', fontWeight: 'bold', cursor: 'pointer' }}>
+                                  View
+                                </button>
                                 <button onClick={() => handleDownloadDriveFile(file)} style={{ padding: '6px 12px', background: 'rgba(255,255,255,0.05)', border: 'none', borderRadius: '6px', color: '#fff', fontSize: '11px', fontWeight: 'bold', cursor: 'pointer' }}>
                                   Get
-                                </button>
-                                <button 
-                                  onClick={async () => {
-                                    try {
-                                      const { data } = await supabase!.storage.from('vibe-drive').createSignedUrl(file.file_path, 86400 * 7);
-                                      if (data?.signedUrl) {
-                                        await navigator.clipboard.writeText(data.signedUrl);
-                                        toast.success("Share link copied!");
-                                      }
-                                    } catch (err) {}
-                                  }}
-                                  style={{ padding: '6px', background: 'rgba(255,255,255,0.05)', border: 'none', borderRadius: '6px', color: 'var(--text-muted)', cursor: 'pointer' }}
-                                  title="Copy Sharing Link"
-                                >
-                                  <Share2 size={13} />
                                 </button>
                                 <button onClick={() => handleDeleteDriveFile(file)} style={{ padding: '6px', background: 'rgba(255,0,0,0.1)', border: 'none', borderRadius: '6px', color: '#ff4d4d', cursor: 'pointer' }} title="Delete">
                                   <Trash2 size={13} />
@@ -6578,6 +6610,84 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
                         {uploadingDriveFile ? "Uploading..." : "Start Upload"}
                       </button>
                     </form>
+                  </motion.div>
+                </div>
+              )}
+            </AnimatePresence>
+
+            {/* Custom File Preview Modal */}
+            <AnimatePresence>
+              {previewFile && (
+                <div style={{ position: 'fixed', inset: 0, zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }}>
+                  <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => { setPreviewFile(null); setPreviewUrl(''); }} style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(10px)' }} />
+                  
+                  <motion.div initial={{ opacity: 0, scale: 0.95, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.95, y: 20 }} style={{ position: 'relative', width: '100%', maxWidth: '800px', background: 'rgba(15,15,15,0.98)', border: '1px solid rgba(255,255,255,0.12)', borderRadius: '24px', padding: '24px', boxShadow: '0 20px 60px rgba(0,0,0,0.7)', zIndex: 10, display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid rgba(255,255,255,0.08)', paddingBottom: '12px' }}>
+                      <h3 style={{ margin: 0, fontSize: '18px', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--text-primary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={previewFile.name}>
+                        {previewFile.file_type === 'image' && <ImageIcon size={20} color="#ffb300" />}
+                        {previewFile.file_type === 'video' && <Video size={20} color="#00b0ff" />}
+                        {previewFile.file_type === 'pdf' && <FileText size={20} color="#ff5252" />}
+                        {previewFile.file_type !== 'image' && previewFile.file_type !== 'video' && previewFile.file_type !== 'pdf' && <File size={20} color="#90a4ae" />}
+                        {previewFile.name}
+                      </h3>
+                      <button onClick={() => { setPreviewFile(null); setPreviewUrl(''); }} style={{ background: 'rgba(255,255,255,0.05)', border: 'none', borderRadius: '50%', width: '32px', height: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-muted)', cursor: 'pointer', transition: 'background 0.2s' }} onMouseOver={e=>e.currentTarget.style.background='rgba(255,255,255,0.1)'} onMouseOut={e=>e.currentTarget.style.background='rgba(255,255,255,0.05)'}><X size={16} /></button>
+                    </div>
+
+                    <div style={{ width: '100%', background: '#000', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.05)', overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '300px', maxHeight: '60vh', position: 'relative' }}>
+                      {previewUrl ? (
+                        <>
+                          {previewFile.file_type === 'image' && (
+                            <img src={previewUrl} alt={previewFile.name} style={{ maxWidth: '100%', maxHeight: '60vh', objectFit: 'contain' }} />
+                          )}
+                          
+                          {previewFile.file_type === 'video' && (
+                            <video src={previewUrl} controls autoPlay style={{ width: '100%', maxHeight: '60vh', background: '#000' }} />
+                          )}
+
+                          {previewFile.file_type === 'pdf' && (
+                            <iframe src={`${previewUrl}#toolbar=0`} title={previewFile.name} style={{ width: '100%', height: '50vh', border: 'none' }} />
+                          )}
+
+                          {previewFile.file_type !== 'image' && previewFile.file_type !== 'video' && previewFile.file_type !== 'pdf' && (
+                            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '16px', padding: '40px', textAlign: 'center' }}>
+                              <File size={64} style={{ color: 'var(--text-muted)', opacity: 0.5 }} />
+                              <div>
+                                <p style={{ margin: 0, fontSize: '15px', fontWeight: 'bold' }}>No direct viewer available for this file type</p>
+                                <p style={{ margin: '4px 0 0 0', fontSize: '13px', color: 'var(--text-muted)' }}>Click 'Download File' below to download and view on your device.</p>
+                              </div>
+                            </div>
+                          )}
+                        </>
+                      ) : (
+                        <div style={{ color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '10px' }}>
+                          <span className="animate-pulse">Loading preview...</span>
+                        </div>
+                      )}
+                    </div>
+
+                    <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px', borderTop: '1px solid rgba(255,255,255,0.08)', paddingTop: '16px', marginTop: '4px' }}>
+                      <span style={{ marginRight: 'auto', alignSelf: 'center', fontSize: '12px', color: 'var(--text-muted)' }}>
+                        Size: {formatBytes(previewFile.size_bytes)} | Uploaded: {new Date(previewFile.created_at).toLocaleDateString()}
+                      </span>
+                      
+                      <button 
+                        onClick={() => { setPreviewFile(null); setPreviewUrl(''); }}
+                        style={{ padding: '10px 20px', background: 'rgba(255,255,255,0.05)', border: 'none', borderRadius: '10px', color: 'var(--text-primary)', fontWeight: 'bold', fontSize: '14px', cursor: 'pointer', transition: 'background 0.2s' }}
+                        onMouseOver={e=>e.currentTarget.style.background='rgba(255,255,255,0.1)'}
+                        onMouseOut={e=>e.currentTarget.style.background='rgba(255,255,255,0.05)'}
+                      >
+                        Close
+                      </button>
+
+                      <button 
+                        onClick={() => handleDownloadDriveFile(previewFile)}
+                        style={{ padding: '10px 20px', background: 'linear-gradient(135deg, #00ff88, #00b0ff)', color: '#000', border: 'none', borderRadius: '10px', fontWeight: 'bold', fontSize: '14px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px', transition: 'opacity 0.2s' }}
+                        onMouseOver={e=>e.currentTarget.style.opacity='0.9'}
+                        onMouseOut={e=>e.currentTarget.style.opacity='1'}
+                      >
+                        <Download size={15} /> Download File
+                      </button>
+                    </div>
                   </motion.div>
                 </div>
               )}
