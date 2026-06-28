@@ -84,7 +84,7 @@ export const ProfileLive: React.FC<ProfileLiveProps> = ({
 
   // ── Past Streams States & Actions ──
   const [pastStreams, setPastStreams] = React.useState<any[]>([]);
-  const [loadingPastStreams, setLoadingPastStreams] = React.useState(true);
+  const [loadingPastStreams, setLoadingPastStreams] = React.useState(false);
   const [activePastStream, setActivePastStream] = React.useState<any | null>(null);
   const [currentTime, setCurrentTime] = React.useState<number>(0);
   const [isPastStreamPreviewExpired, setIsPastStreamPreviewExpired] = React.useState<boolean>(false);
@@ -105,13 +105,17 @@ export const ProfileLive: React.FC<ProfileLiveProps> = ({
   });
 
   const fetchPastStreams = React.useCallback(async () => {
-    if (!creatorId) return;
+    const targetId = creatorId || profile?.id || user?.id;
+    if (!targetId) {
+      setLoadingPastStreams(false);
+      return;
+    }
     try {
       setLoadingPastStreams(true);
       const { data, error } = await supabase
         .from('videos')
         .select('*')
-        .eq('creator_id', creatorId)
+        .eq('creator_id', targetId)
         .contains('tags', ['Past Stream'])
         .order('created_at', { ascending: false });
 
@@ -123,7 +127,7 @@ export const ProfileLive: React.FC<ProfileLiveProps> = ({
     } finally {
       setLoadingPastStreams(false);
     }
-  }, [creatorId]);
+  }, [creatorId, profile?.id, user?.id]);
 
   React.useEffect(() => {
     fetchPastStreams();
