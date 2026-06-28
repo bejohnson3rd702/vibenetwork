@@ -1642,127 +1642,37 @@ export const ProfileLive: React.FC<ProfileLiveProps> = ({
 
                       </div>
 
-                      {/* Replay Vault Manager (Past Streams CRUD) */}
-                      <div style={{ marginTop: '24px', padding: '20px', borderRadius: '16px', background: 'rgba(255, 255, 255, 0.02)', border: `1px solid ${accent}15` }}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', flexWrap: 'wrap', gap: '12px' }}>
-                          <div>
-                            <label style={{ display: 'block', color: accent, fontWeight: 'bold', fontSize: '15px', textTransform: 'uppercase', letterSpacing: '1px' }}>
-                              🎬 Upload content to Live vault
-                            </label>
-                            <p style={{ color: 'var(--text-secondary)', fontSize: '12px', margin: '4px 0 0 0' }}>
-                              Manually add, edit details, or remove recorded live stream replays in your Live vault.
-                            </p>
+                      {/* Uploads in Progress / Live Vault Uploads Card */}
+                      {isOwnProfile && viewMode === 'edit' && activeUploads.length > 0 && (
+                        <div style={{ marginTop: '24px', padding: '20px', borderRadius: '16px', background: 'rgba(255, 255, 255, 0.02)', border: `1px solid ${accent}15` }}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+                            <div>
+                              <label style={{ display: 'block', color: accent, fontWeight: 'bold', fontSize: '15px', textTransform: 'uppercase', letterSpacing: '1px' }}>
+                                🎬 Upload content to Live vault
+                              </label>
+                              <p style={{ color: 'var(--text-secondary)', fontSize: '12px', margin: '4px 0 0 0' }}>
+                                Active uploads in progress. These will automatically save to your Live vault once complete.
+                              </p>
+                            </div>
                           </div>
-                          <button
-                            type="button"
-                            onClick={handleOpenAddModal}
-                            style={{
-                              padding: '8px 16px',
-                              background: `linear-gradient(135deg, ${accent}, #8A2BE2)`,
-                              color: '#fff',
-                              border: 'none',
-                              borderRadius: '8px',
-                              fontWeight: 'bold',
-                              fontSize: '12px',
-                              cursor: 'pointer',
-                              display: 'flex',
-                              alignItems: 'center',
-                              gap: '6px',
-                              boxShadow: `0 4px 12px ${accent}25`,
-                              transition: 'transform 0.2s'
-                            }}
-                            onMouseOver={e => e.currentTarget.style.transform = 'translateY(-1px)'}
-                            onMouseOut={e => e.currentTarget.style.transform = 'none'}
-                          >
-                            <Plus size={14} /> Add Replay
-                          </button>
-                        </div>
 
-                        {/* Table/List of Past Streams */}
-                        {pastStreams.length === 0 ? (
-                          <div style={{ color: 'var(--text-secondary)', fontSize: '13px', fontStyle: 'italic', padding: '16px', textAlign: 'center', background: 'rgba(0,0,0,0.1)', borderRadius: '8px' }}>
-                            No past streams in your Live vault yet. Click "Add Replay" to upload one manually.
-                          </div>
-                        ) : (
-                          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', maxHeight: '300px', overflowY: 'auto', paddingRight: '2px', scrollbarWidth: 'thin' }}>
-                            {pastStreams.map((vid) => (
-                              <div key={vid.id} style={{ display: 'flex', alignItems: 'center', gap: '12px', background: 'rgba(0,0,0,0.2)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '10px', padding: '8px 12px', flexWrap: 'wrap' }}>
-                                <img
-                                  src={vid.image_url || 'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?auto=format&fit=crop&q=80&w=800'}
-                                  alt={vid.title}
-                                  style={{ width: '48px', height: '27px', objectFit: 'cover', borderRadius: '4px', background: 'rgba(255,255,255,0.05)' }}
-                                />
-                                <div style={{ flex: 1, minWidth: '150px' }}>
-                                  <div style={{ color: 'var(--text-primary)', fontWeight: 'bold', fontSize: '13px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                                    {vid.title}
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                            {activeUploads.map((task) => (
+                              <div key={task.id} style={{ display: 'flex', alignItems: 'center', gap: '16px', background: 'rgba(0,0,0,0.2)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '12px', padding: '16px' }}>
+                                <div style={{ width: '20px', height: '20px', border: '2px solid rgba(255,255,255,0.1)', borderTopColor: accent, borderRadius: '50%', animation: 'spin 1s linear infinite' }} />
+                                <div style={{ flex: 1 }}>
+                                  <div style={{ color: 'var(--text-primary)', fontWeight: 'bold', fontSize: '14px' }}>
+                                    {task.title}
                                   </div>
-                                  <div style={{ display: 'flex', gap: '12px', fontSize: '11px', color: 'var(--text-muted)', marginTop: '2px', flexWrap: 'wrap' }}>
-                                    <span>Price: <strong style={{ color: accent }}>{vid.price > 0 ? `$${Number(vid.price).toFixed(2)}` : 'Free'}</strong></span>
-                                    <span>Preview: <strong>{vid.preview_duration}s</strong></span>
-                                    <span>Date: <strong>{new Date(vid.created_at).toLocaleDateString()}</strong></span>
+                                  <div style={{ color: 'var(--text-muted)', fontSize: '12px', marginTop: '2px' }}>
+                                    {task.progress}
                                   </div>
-                                </div>
-                                <div style={{ display: 'flex', gap: '6px' }}>
-                                  <button
-                                    type="button"
-                                    onClick={() => handleOpenEditModal(vid)}
-                                    style={{
-                                      padding: '6px 12px',
-                                      background: 'rgba(255,255,255,0.05)',
-                                      border: '1px solid rgba(255,255,255,0.1)',
-                                      color: '#fff',
-                                      borderRadius: '6px',
-                                      fontSize: '11px',
-                                      fontWeight: 'bold',
-                                      cursor: 'pointer',
-                                      transition: 'all 0.2s'
-                                    }}
-                                    onMouseOver={e => e.currentTarget.style.background = 'rgba(255,255,255,0.1)'}
-                                    onMouseOut={e => e.currentTarget.style.background = 'rgba(255,255,255,0.05)'}
-                                  >
-                                    Edit
-                                  </button>
-                                  <button
-                                    type="button"
-                                    onClick={async () => {
-                                      if (!confirm(`Are you sure you want to delete "${vid.title}"?`)) return;
-                                      try {
-                                        const { error } = await supabase
-                                          .from('videos')
-                                          .delete()
-                                          .eq('id', vid.id);
-                                        if (error) {
-                                          toast.error("Failed to delete recording: " + error.message);
-                                        } else {
-                                          toast.success("Recording deleted from replay archives.");
-                                          fetchPastStreams();
-                                        }
-                                      } catch (err) {
-                                        console.warn("Delete error:", err);
-                                      }
-                                    }}
-                                    style={{
-                                      padding: '6px 10px',
-                                      background: 'rgba(229,9,20,0.1)',
-                                      border: '1px solid rgba(229,9,20,0.2)',
-                                      color: '#ff3b30',
-                                      borderRadius: '6px',
-                                      fontSize: '11px',
-                                      fontWeight: 'bold',
-                                      cursor: 'pointer',
-                                      transition: 'all 0.2s'
-                                    }}
-                                    onMouseOver={e => { e.currentTarget.style.background = 'rgba(229,9,20,0.2)'; }}
-                                    onMouseOut={e => { e.currentTarget.style.background = 'rgba(229,9,20,0.1)'; }}
-                                  >
-                                    Delete
-                                  </button>
                                 </div>
                               </div>
                             ))}
                           </div>
-                        )}
-                      </div>
+                        </div>
+                      )}
                       
                       <p style={{ margin: '15px 0 0 0', color: 'var(--text-muted)', fontSize: '12px' }}>This feed dictates what your active subscribers consume during live events in real-time.</p>
                     </div>
@@ -1828,9 +1738,34 @@ export const ProfileLive: React.FC<ProfileLiveProps> = ({
                   </p>
                 </div>
                 {isOwnProfile && viewMode === 'edit' && (
-                  <span style={{ fontSize: '11px', color: accent, background: `${accent}15`, padding: '6px 12px', borderRadius: '20px', fontWeight: 'bold', border: `1px solid ${accent}33`, textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-                    Broadcaster Dashboard
-                  </span>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                    <button
+                      type="button"
+                      onClick={handleOpenAddModal}
+                      style={{
+                        padding: '6px 12px',
+                        background: `linear-gradient(135deg, ${accent}, #8A2BE2)`,
+                        color: '#fff',
+                        border: 'none',
+                        borderRadius: '8px',
+                        fontWeight: 'bold',
+                        fontSize: '12px',
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '6px',
+                        boxShadow: `0 4px 12px ${accent}25`,
+                        transition: 'transform 0.2s'
+                      }}
+                      onMouseOver={e => e.currentTarget.style.transform = 'translateY(-1px)'}
+                      onMouseOut={e => e.currentTarget.style.transform = 'none'}
+                    >
+                      <Plus size={12} /> Add Replay
+                    </button>
+                    <span style={{ fontSize: '11px', color: accent, background: `${accent}15`, padding: '6px 12px', borderRadius: '20px', fontWeight: 'bold', border: `1px solid ${accent}33`, textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                      Broadcaster Dashboard
+                    </span>
+                  </div>
                 )}
               </div>
 
@@ -1999,41 +1934,56 @@ export const ProfileLive: React.FC<ProfileLiveProps> = ({
                               {video.title}
                             </h4>
                             {isOwnProfile && viewMode === 'edit' && (
-                              <button
-                                onClick={async () => {
-                                  if (!confirm(`Are you sure you want to delete the past stream recording "${video.title}"?`)) return;
-                                  try {
-                                    const { error } = await supabase
-                                      .from('videos')
-                                      .delete()
-                                      .eq('id', video.id);
-                                    if (error) {
-                                      toast.error("Failed to delete recording: " + error.message);
-                                    } else {
-                                      toast.success("Recording deleted successfully.");
-                                      fetchPastStreams();
-                                    }
-                                  } catch (err) {
-                                    console.warn("Delete error:", err);
-                                  }
-                                }}
-                                style={{
-                                  background: 'none',
-                                  border: 'none',
-                                  color: 'rgba(255,255,255,0.3)',
-                                  cursor: 'pointer',
-                                  padding: '4px',
-                                  borderRadius: '6px',
-                                  transition: 'all 0.2s',
-                                  display: 'flex',
-                                  alignItems: 'center',
-                                  justifyContent: 'center'
-                                }}
-                                onMouseOver={e => { e.currentTarget.style.color = '#ff3b30'; e.currentTarget.style.background = 'rgba(255,59,48,0.1)'; }}
-                                onMouseOut={e => { e.currentTarget.style.color = 'rgba(255,255,255,0.3)'; e.currentTarget.style.background = 'none'; }}
-                              >
-                                <Trash2 size={14} />
-                              </button>
+                              <div style={{ display: 'flex', gap: '4px', alignItems: 'center' }}>
+                                <button
+                                  type="button"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleOpenEditModal(video);
+                                  }}
+                                  style={{
+                                    background: 'none',
+                                    border: 'none',
+                                    color: 'rgba(255,255,255,0.4)',
+                                    cursor: 'pointer',
+                                    padding: '6px',
+                                    borderRadius: '6px',
+                                    transition: 'all 0.2s',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center'
+                                  }}
+                                  title="Edit Replay Details"
+                                  onMouseOver={e => { e.currentTarget.style.color = '#fff'; e.currentTarget.style.background = 'rgba(255,255,255,0.1)'; }}
+                                  onMouseOut={e => { e.currentTarget.style.color = 'rgba(255,255,255,0.4)'; e.currentTarget.style.background = 'none'; }}
+                                >
+                                  <Edit3 size={14} />
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleDeleteVideo(video);
+                                  }}
+                                  style={{
+                                    background: 'none',
+                                    border: 'none',
+                                    color: 'rgba(255,255,255,0.3)',
+                                    cursor: 'pointer',
+                                    padding: '6px',
+                                    borderRadius: '6px',
+                                    transition: 'all 0.2s',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center'
+                                  }}
+                                  title="Delete Replay"
+                                  onMouseOver={e => { e.currentTarget.style.color = '#ff3b30'; e.currentTarget.style.background = 'rgba(255,59,48,0.1)'; }}
+                                  onMouseOut={e => { e.currentTarget.style.color = 'rgba(255,255,255,0.3)'; e.currentTarget.style.background = 'none'; }}
+                                >
+                                  <Trash2 size={14} />
+                                </button>
+                              </div>
                             )}
                           </div>
 
