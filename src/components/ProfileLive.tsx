@@ -399,6 +399,25 @@ export const ProfileLive: React.FC<ProfileLiveProps> = ({
     runBackgroundUpload(task);
   };
 
+  const handleDeleteVideo = async (video: any) => {
+    if (typeof window === 'undefined') return;
+    if (!window.confirm(`Are you sure you want to delete the past stream recording "${video.title}"?`)) return;
+    try {
+      const { error } = await supabase
+        .from('videos')
+        .delete()
+        .eq('id', video.id);
+      if (error) {
+        toast.error("Failed to delete recording: " + error.message);
+      } else {
+        toast.success("Recording deleted successfully.");
+        fetchPastStreams();
+      }
+    } catch (err) {
+      console.warn("Delete error:", err);
+    }
+  };
+
   const safePinnedProducts = Array.isArray(pinnedProducts) ? pinnedProducts : [];
 
   React.useEffect(() => {
