@@ -4871,74 +4871,7 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
                           </div>
                         </div>
 
-                        {/* Meeting Type Selection */}
-                        <div style={{ marginBottom: '20px' }}>
-                          <label style={{ display: 'block', fontSize: '13px', fontWeight: 'bold', color: '#ccc', marginBottom: '8px' }}>Location/Meeting Type</label>
-                          <div style={{ display: 'flex', gap: '12px' }}>
-                            <button 
-                              onClick={() => setBookingType('virtual')} 
-                              style={{ 
-                                flex: 1, 
-                                padding: '16px 12px', 
-                                background: bookingType === 'virtual' ? `${wlConfig?.accent || '#00ff88'}12` : 'rgba(255,255,255,0.01)', 
-                                border: '1.5px solid', 
-                                borderColor: bookingType === 'virtual' ? (wlConfig?.accent || '#00ff88') : 'rgba(255,255,255,0.05)', 
-                                color: bookingType === 'virtual' ? '#fff' : '#aaa', 
-                                borderRadius: '14px', 
-                                cursor: 'pointer', 
-                                fontWeight: 'bold', 
-                                fontSize: '14px',
-                                display: 'flex',
-                                flexDirection: 'column',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                gap: '8px',
-                                transition: 'all 0.2s ease',
-                                boxShadow: bookingType === 'virtual' ? `0 4px 15px ${wlConfig?.accent || '#00ff88'}0c` : 'none'
-                              }}
-                              onMouseOver={e => {
-                                if (bookingType !== 'virtual') e.currentTarget.style.borderColor = 'rgba(255,255,255,0.15)';
-                              }}
-                              onMouseOut={e => {
-                                if (bookingType !== 'virtual') e.currentTarget.style.borderColor = 'rgba(255,255,255,0.05)';
-                              }}
-                            >
-                              <Monitor size={18} style={{ color: bookingType === 'virtual' ? (wlConfig?.accent || '#00ff88') : '#888' }} />
-                              <span>Virtual Call</span>
-                            </button>
-                            <button 
-                              onClick={() => setBookingType('physical')} 
-                              style={{ 
-                                flex: 1, 
-                                padding: '16px 12px', 
-                                background: bookingType === 'physical' ? `${wlConfig?.accent || '#00ff88'}12` : 'rgba(255,255,255,0.01)', 
-                                border: '1.5px solid', 
-                                borderColor: bookingType === 'physical' ? (wlConfig?.accent || '#00ff88') : 'rgba(255,255,255,0.05)', 
-                                color: bookingType === 'physical' ? '#fff' : '#aaa', 
-                                borderRadius: '14px', 
-                                cursor: 'pointer', 
-                                fontWeight: 'bold', 
-                                fontSize: '14px',
-                                display: 'flex',
-                                flexDirection: 'column',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                gap: '8px',
-                                transition: 'all 0.2s ease',
-                                boxShadow: bookingType === 'physical' ? `0 4px 15px ${wlConfig?.accent || '#00ff88'}0c` : 'none'
-                              }}
-                              onMouseOver={e => {
-                                if (bookingType !== 'physical') e.currentTarget.style.borderColor = 'rgba(255,255,255,0.15)';
-                              }}
-                              onMouseOut={e => {
-                                if (bookingType !== 'physical') e.currentTarget.style.borderColor = 'rgba(255,255,255,0.05)';
-                              }}
-                            >
-                              <Users size={18} style={{ color: bookingType === 'physical' ? (wlConfig?.accent || '#00ff88') : '#888' }} />
-                              <span>Physical Meet</span>
-                            </button>
-                          </div>
-                        </div>
+
 
                         {/* Call Mode Selection (Only if virtual) */}
                         {bookingType === 'virtual' && (
