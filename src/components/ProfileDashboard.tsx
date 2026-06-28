@@ -3100,7 +3100,7 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
               <div className={`profile-header-card ${isOwnProfile ? 'own-profile' : ''}`} style={{ background: isNetworkLevel ? 'transparent' : 'rgba(15, 15, 15, 0.4)', backdropFilter: isNetworkLevel ? 'none' : 'blur(24px)', padding: isNetworkLevel ? '0 40px 40px' : '40px', borderRadius: '32px', border: isNetworkLevel ? 'none' : `1px solid ${wlConfig?.accent || '#00ff88'}22`, position: 'relative', boxShadow: isNetworkLevel ? 'none' : '0 20px 40px rgba(0,0,0,0.4)' }}>
             
             {!isOwnProfile && (
-              <div style={{ position: 'absolute', top: '30px', right: '30px', display: 'flex', gap: '12px', zIndex: 20 }}>
+              <div className="profile-action-buttons">
                 {/* Follow Button */}
                 <button
                   onClick={handleToggleFollow}
