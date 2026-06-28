@@ -931,51 +931,7 @@ export default function WatchLive({ accent = '#D35400', isOlympian = false, isMf
       const supportsTtt = servicesParts[1] ? servicesParts[1] !== 'x' : true;
       const supportsTts = servicesParts[2] ? servicesParts[2] !== 'x' : true;
 
-      // 1. Translate title (headline)
-      let translatedHeadline = activeVideo.headline;
-      if (supportsTtt) {
-        const headlineRes = await translateText({
-          text: activeVideo.headline,
-          sourceLang: 'english-united-states',
-          targetLang: targetLanguage,
-          serviceCode: 'ttt'
-        });
-        if (headlineRes.translated_text) {
-          translatedHeadline = headlineRes.translated_text;
-        }
-      }
-
-      // 2. Translate description
-      let translatedDesc = activeVideo.description || '';
-      let audioPayload = null;
-
-      if (activeVideo.description && activeVideo.description.trim()) {
-        const descMode = supportsTts ? 'tts' : 'ttt';
-        const descRes = await translateText({
-          text: activeVideo.description,
-          sourceLang: 'english-united-states',
-          targetLang: targetLanguage,
-          serviceCode: descMode
-        });
-        
-        if (descRes.translated_text) {
-          translatedDesc = descRes.translated_text;
-        }
-        if (descRes.audio) {
-          audioPayload = descRes.audio;
-        }
-      }
-
-      setTranslatedInfo({
-        headline: translatedHeadline,
-        description: translatedDesc
-      });
-
-      if (audioPayload) {
-        setInfoAudioBase64(audioPayload);
-      }
-
-      // 3. Load and Translate Transcript Segments
+      // 1. Load Transcript first (so we can compile text for TTS)
       let activeTranscript = transcript;
       if (!activeTranscript) {
         const { data, error } = await supabase
@@ -999,6 +955,67 @@ export default function WatchLive({ accent = '#D35400', isOlympian = false, isMf
         setTranscript(activeTranscript);
       }
 
+      const fullTranscriptText = (activeTranscript && activeTranscript.length > 0)
+        ? activeTranscript.map(seg => seg.text).join(' ')
+        : '';
+
+      // 2. Translate title (headline)
+      let translatedHeadline = activeVideo.headline;
+      if (supportsTtt) {
+        const headlineRes = await translateText({
+          text: activeVideo.headline,
+          sourceLang: 'english-united-states',
+          targetLang: targetLanguage,
+          serviceCode: 'ttt'
+        });
+        if (headlineRes.translated_text) {
+          translatedHeadline = headlineRes.translated_text;
+        }
+      }
+
+      // 3. Translate description text & generate TTS audio representation from the transcript
+      let translatedDesc = activeVideo.description || '';
+      let audioPayload = null;
+
+      // Translate description text for screen display
+      if (activeVideo.description && activeVideo.description.trim()) {
+        const descRes = await translateText({
+          text: activeVideo.description,
+          sourceLang: 'english-united-states',
+          targetLang: targetLanguage,
+          serviceCode: 'ttt' // text-only for screen layout
+        });
+        
+        if (descRes.translated_text) {
+          translatedDesc = descRes.translated_text;
+        }
+      }
+
+      // Generate TTS audio from the combined video transcript instead of the description!
+      const ttsSourceText = fullTranscriptText || activeVideo.description || '';
+      if (ttsSourceText.trim()) {
+        const descMode = supportsTts ? 'tts' : 'ttt';
+        const ttsRes = await translateText({
+          text: ttsSourceText,
+          sourceLang: 'english-united-states',
+          targetLang: targetLanguage,
+          serviceCode: descMode
+        });
+        if (ttsRes.audio) {
+          audioPayload = ttsRes.audio;
+        }
+      }
+
+      setTranslatedInfo({
+        headline: translatedHeadline,
+        description: translatedDesc
+      });
+
+      if (audioPayload) {
+        setInfoAudioBase64(audioPayload);
+      }
+
+      // 4. Translate Transcript Segments
       if (activeTranscript && activeTranscript.length > 0) {
         const translatedSegs = [];
         const segmentMode = supportsTts ? 'tts' : 'ttt';
