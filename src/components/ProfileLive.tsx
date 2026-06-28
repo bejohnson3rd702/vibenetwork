@@ -256,6 +256,11 @@ export const ProfileLive: React.FC<ProfileLiveProps> = ({
     previewDuration: string;
     editingVideo: any;
   }) => {
+    const targetId = creatorId || profile?.id || user?.id;
+    if (!targetId) {
+      toast.error("Unable to identify creator context for upload.");
+      return;
+    }
     try {
       let finalVideoUrl = task.videoUrl;
       let finalImageUrl = task.imageUrl || 'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?auto=format&fit=crop&q=80&w=800';
@@ -263,7 +268,7 @@ export const ProfileLive: React.FC<ProfileLiveProps> = ({
       // 1. Upload Video File if selected
       if (task.videoSourceType === 'upload' && task.videoFile) {
         setActiveUploads(prev => prev.map(u => u.id === task.id ? { ...u, progress: `Uploading Video: ${task.videoFile!.name} (Please wait)...` } : u));
-        const videoPath = `past-streams-manual/${creatorId}/${Date.now()}_${task.videoFile.name}`;
+        const videoPath = `past-streams-manual/${targetId}/${Date.now()}_${task.videoFile.name}`;
         const { error: videoErr } = await supabase.storage
           .from('videos')
           .upload(videoPath, task.videoFile, { cacheControl: '3600' });
@@ -282,7 +287,7 @@ export const ProfileLive: React.FC<ProfileLiveProps> = ({
       // 2. Upload Image File if selected
       if (task.imageFile) {
         setActiveUploads(prev => prev.map(u => u.id === task.id ? { ...u, progress: `Uploading Cover Image: ${task.imageFile!.name}...` } : u));
-        const imagePath = `past-streams-manual/${creatorId}/${Date.now()}_${task.imageFile.name}`;
+        const imagePath = `past-streams-manual/${targetId}/${Date.now()}_${task.imageFile.name}`;
         const { error: imageErr } = await supabase.storage
           .from('videos')
           .upload(imagePath, task.imageFile, { cacheControl: '3600' });
@@ -334,7 +339,7 @@ export const ProfileLive: React.FC<ProfileLiveProps> = ({
             title: task.title,
             video_url: finalVideoUrl,
             image_url: finalImageUrl,
-            creator_id: creatorId,
+            creator_id: targetId,
             tags: ['Past Stream', 'Recorded'],
             price: priceVal,
             preview_duration: previewDur
@@ -357,7 +362,11 @@ export const ProfileLive: React.FC<ProfileLiveProps> = ({
 
   const handleSaveCrud = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!creatorId) return;
+    const targetId = creatorId || profile?.id || user?.id;
+    if (!targetId) {
+      toast.error("Unable to identify creator ID. Please log in again.");
+      return;
+    }
 
     const uploadId = crypto.randomUUID();
     const task = {
