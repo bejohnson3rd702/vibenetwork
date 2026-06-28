@@ -171,6 +171,12 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
   const [currentBgIndex, setCurrentBgIndex] = useState(0);
   const [saving, setSaving] = useState(false);
   const [activeTab, setActiveTab] = useState<'feed' | 'store' | 'live' | 'booking' | 'series' | 'courses' | 'wallet' | 'flipbook' | 'appearance' | 'my_bookings' | 'networks' | 'members' | 'community' | 'security' | 'crm' | 'subscriptions'>('feed');
+  const [showCreatorPanel, setShowCreatorPanel] = useState(() => {
+    if (typeof window === 'undefined') return false;
+    const hashParams = new URLSearchParams(window.location.search);
+    const tab = hashParams.get('tab') || 'feed';
+    return ['my_bookings', 'subscriptions', 'ai_report', 'crm', 'appearance', 'wallet', 'security'].includes(tab);
+  });
   const [expandedComments, setExpandedComments] = useState<Record<string, boolean>>({});
   const [networkProfiles, setNetworkProfiles] = useState<any[]>([]);
   const [walletBalance, setWalletBalance] = useState(() => (typeof window !== 'undefined' ? Number(localStorage.getItem('vibe_host_wallet') || 0.00) : 0.00));
@@ -3343,7 +3349,10 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
                   ...(wlConfig?.enableBooking !== false ? [{ id: 'booking', label: 'Booking', icon: <Calendar size={16} /> }] : []),
                   { id: 'series', label: 'Episodes', icon: <Video size={16} /> },
                   { id: 'courses', label: 'Sessions', icon: <CheckCircle size={16} /> },
-                  ...(isOwnProfile && viewMode === 'edit' ? [{ id: 'flipbook', label: 'Vibe Drive', icon: <Folder size={16} /> }] : [])
+                  ...(isOwnProfile && viewMode === 'edit' ? [
+                    { id: 'flipbook', label: 'Vibe Drive', icon: <Folder size={16} /> },
+                    { id: 'creator_control_panel', label: 'Creator Control Panel', icon: <Settings size={16} />, isToggle: true }
+                  ] : [])
                 ]
                   .concat(isNetworkLevel ? [
                     { id: 'members', label: 'Network Profiles', icon: <Monitor size={16} /> },
@@ -3351,12 +3360,18 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
                   ] : [])
                   .concat((myNetworks.length > 0 && !isNetworkLevel) ? [{ id: 'networks', label: 'My Networks', icon: <Monitor size={16} /> }] : [])
                   .map(tab => {
-                    const isActive = activeTab === tab.id;
+                    const isActive = tab.isToggle ? showCreatorPanel : activeTab === tab.id;
                     const accentColor = wlConfig?.accent || '#ff4d85';
                     return (
                       <button 
                         key={tab.id}
-                        onClick={() => setActiveTab(tab.id as any)}
+                        onClick={() => {
+                          if (tab.isToggle) {
+                            setShowCreatorPanel(!showCreatorPanel);
+                          } else {
+                            setActiveTab(tab.id as any);
+                          }
+                        }}
                         style={{ 
                           position: 'relative', 
                           background: 'none',
@@ -3408,7 +3423,7 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
           </div>
 
           {/* Creator Control Panel */}
-          {isOwnProfile && viewMode === 'edit' && (
+          {isOwnProfile && viewMode === 'edit' && showCreatorPanel && (
             <div className="creator-tools-panel">
               <div className="creator-tools-card">
                 <div className="creator-tools-header">
