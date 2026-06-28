@@ -619,29 +619,33 @@ img, video {
     justify-content: center !important;
     align-items: center !important;
   }
-  .profile-action-buttons {
-    position: static !important;
-    order: 100 !important;
-    margin-top: 24px !important;
-    width: 100% !important;
+  .profile-header-actions {
     display: flex !important;
+    flex-direction: row !important;
     justify-content: center !important;
     align-items: center !important;
     gap: 12px !important;
+    width: 100% !important;
+    margin-top: 16px !important;
+    order: 100 !important;
   }
-  .profile-action-buttons .profile-subscribe-btn {
+  .profile-header-actions button {
     width: auto !important;
     margin-top: 0 !important;
   }
 }
 
-.profile-action-buttons {
-  position: absolute;
-  bottom: 30px;
-  right: 30px;
+.profile-header-actions {
   display: flex;
+  flex-direction: column;
   gap: 12px;
-  z-index: 20;
+  align-self: center;
+  min-width: 180px;
+}
+
+.profile-header-actions button {
+  width: 100%;
+  justify-content: center;
 }
 
 /* Responsive Profile Layout */
@@ -654,16 +658,6 @@ img, video {
 
 .profile-info-col {
   box-sizing: border-box;
-}
-
-@media (min-width: 769px) {
-  /* Give space so text wraps and doesn't overlap bottom-right buttons */
-  .profile-header-card:not(.own-profile) .profile-info-col {
-    padding-right: 320px;
-  }
-  .profile-header-card.own-profile .profile-info-col {
-    padding-right: 150px;
-  }
 }
 
 .profile-badge-container {

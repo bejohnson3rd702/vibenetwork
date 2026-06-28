@@ -3099,73 +3099,7 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
               {/* Glassmorphic Creator Header */}
               <div className={`profile-header-card ${isOwnProfile ? 'own-profile' : ''}`} style={{ background: isNetworkLevel ? 'transparent' : 'rgba(15, 15, 15, 0.4)', backdropFilter: isNetworkLevel ? 'none' : 'blur(24px)', padding: isNetworkLevel ? '0 40px 40px' : '40px', borderRadius: '32px', border: isNetworkLevel ? 'none' : `1px solid ${wlConfig?.accent || '#00ff88'}22`, position: 'relative', boxShadow: isNetworkLevel ? 'none' : '0 20px 40px rgba(0,0,0,0.4)' }}>
             
-            {!isOwnProfile && (
-              <div className="profile-action-buttons">
-                {/* Follow Button */}
-                <button
-                  onClick={handleToggleFollow}
-                  disabled={followLoading}
-                  style={{
-                    padding: '10px 24px',
-                    background: isFollowing ? 'rgba(255,255,255,0.08)' : 'rgba(255, 204, 0, 0.15)',
-                    color: isFollowing ? '#aaa' : '#ffcc00',
-                    border: '1px solid',
-                    borderColor: isFollowing ? 'rgba(255,255,255,0.15)' : 'rgba(255, 204, 0, 0.4)',
-                    borderRadius: '100px',
-                    fontWeight: 'bold',
-                    fontSize: '14px',
-                    cursor: 'pointer',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '6px',
-                    transition: 'all 0.3s ease',
-                    backdropFilter: 'blur(10px)'
-                  }}
-                  onMouseOver={e => e.currentTarget.style.transform = 'scale(1.05)'}
-                  onMouseOut={e => e.currentTarget.style.transform = 'scale(1)'}
-                >
-                  <Star size={14} fill={isFollowing ? '#aaa' : 'transparent'} />
-                  {isFollowing ? 'Following' : 'Follow'}
-                </button>
 
-                {/* Subscribe Button */}
-                <button
-                  className="profile-subscribe-btn"
-                  onClick={handleSubscribe}
-                  style={{
-                    padding: '10px 24px',
-                    background: isSubscribed
-                      ? 'rgba(255,255,255,0.08)'
-                      : 'linear-gradient(135deg, #FF0055, #8A2BE2)',
-                    color: '#fff',
-                    border: isSubscribed ? '1px solid rgba(255,255,255,0.15)' : 'none',
-                    borderRadius: '100px',
-                    fontWeight: 'bold',
-                    fontSize: '14px',
-                    cursor: 'pointer',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '6px',
-                    boxShadow: isSubscribed ? 'none' : '0 8px 20px rgba(255,0,85,0.3)',
-                    transition: 'all 0.3s ease',
-                    backdropFilter: 'blur(10px)'
-                  }}
-                  onMouseOver={e => e.currentTarget.style.transform = 'scale(1.05)'}
-                  onMouseOut={e => e.currentTarget.style.transform = 'scale(1)'}
-                >
-                  {isSubscribed ? (
-                    <>
-                      <CheckCircle size={14} color="#00ff88" />
-                      <span style={{ color: '#00ff88' }}>Subscribed</span>
-                    </>
-                  ) : (
-                    <span>
-                      {Number(subPrice) > 0 ? `Subscribe $${Number(subPrice).toFixed(2)}/mo` : 'Subscribe Free'}
-                    </span>
-                  )}
-                </button>
-              </div>
-            )}
 
             {isOwnProfile && (
               <button className="profile-logout-btn" onClick={async () => { await supabase!.auth.signOut(); window.location.href = '/' + window.location.search; }} style={{ position: 'absolute', top: 30, right: 30, background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: 'var(--text-primary)', padding: '8px 16px', borderRadius: '20px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px', backdropFilter: 'blur(10px)', transition: 'background 0.2s' }} onMouseOver={e => e.currentTarget.style.background = 'rgba(255,255,255,0.1)'} onMouseOut={e => e.currentTarget.style.background = 'rgba(255,255,255,0.05)'}>
@@ -3328,6 +3262,75 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
                   <p style={{ color: 'var(--text-secondary)', fontSize: '16px' }}>Standard Viewer Account</p>
                 )}
               </div>
+
+              {/* Action Buttons Column */}
+              {!isOwnProfile && (
+                <div className="profile-header-actions">
+                  {/* Follow Button */}
+                  <button
+                    onClick={handleToggleFollow}
+                    disabled={followLoading}
+                    style={{
+                      padding: '10px 24px',
+                      background: isFollowing ? 'rgba(255,255,255,0.08)' : 'rgba(255, 204, 0, 0.15)',
+                      color: isFollowing ? '#aaa' : '#ffcc00',
+                      border: '1px solid',
+                      borderColor: isFollowing ? 'rgba(255,255,255,0.15)' : 'rgba(255, 204, 0, 0.4)',
+                      borderRadius: '100px',
+                      fontWeight: 'bold',
+                      fontSize: '14px',
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '6px',
+                      transition: 'all 0.3s ease',
+                      backdropFilter: 'blur(10px)'
+                    }}
+                    onMouseOver={e => e.currentTarget.style.transform = 'scale(1.05)'}
+                    onMouseOut={e => e.currentTarget.style.transform = 'scale(1)'}
+                  >
+                    <Star size={14} fill={isFollowing ? '#aaa' : 'transparent'} />
+                    {isFollowing ? 'Following' : 'Follow'}
+                  </button>
+
+                  {/* Subscribe Button */}
+                  <button
+                    className="profile-subscribe-btn"
+                    onClick={handleSubscribe}
+                    style={{
+                      padding: '10px 24px',
+                      background: isSubscribed
+                        ? 'rgba(255,255,255,0.08)'
+                        : 'linear-gradient(135deg, #FF0055, #8A2BE2)',
+                      color: '#fff',
+                      border: isSubscribed ? '1px solid rgba(255,255,255,0.15)' : 'none',
+                      borderRadius: '100px',
+                      fontWeight: 'bold',
+                      fontSize: '14px',
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '6px',
+                      boxShadow: isSubscribed ? 'none' : '0 8px 20px rgba(255,0,85,0.3)',
+                      transition: 'all 0.3s ease',
+                      backdropFilter: 'blur(10px)'
+                    }}
+                    onMouseOver={e => e.currentTarget.style.transform = 'scale(1.05)'}
+                    onMouseOut={e => e.currentTarget.style.transform = 'scale(1)'}
+                  >
+                    {isSubscribed ? (
+                      <>
+                        <CheckCircle size={14} color="#00ff88" />
+                        <span style={{ color: '#00ff88' }}>Subscribed</span>
+                      </>
+                    ) : (
+                      <span>
+                        {Number(subPrice) > 0 ? `Subscribe $${Number(subPrice).toFixed(2)}/mo` : 'Subscribe Free'}
+                      </span>
+                    )}
+                  </button>
+                </div>
+              )}
             </div>
           </div>
           </>
