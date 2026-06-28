@@ -720,6 +720,7 @@ export default function WatchLive({ accent = '#D35400', isOlympian = false, isMf
   const lastTriggeredSeconds = useRef<number>(-1);
   const playedSegmentsRef = useRef<Set<number>>(new Set());
   const prevVideoTimeRef = useRef<number>(0);
+  const audioElementsRef = useRef<Record<number, HTMLAudioElement>>({});
   const ytPlayerRef = useRef<any>(null);
 
   // WWTC Translation Center state
@@ -845,7 +846,7 @@ export default function WatchLive({ accent = '#D35400', isOlympian = false, isMf
                         const currTime = ytPlayerRef.current.getCurrentTime();
                         setCurrentVideoTime(currTime);
                       }
-                    }, 500);
+                    }, 100);
                   }
                 } else {
                   if (interval) {
@@ -866,6 +867,10 @@ export default function WatchLive({ accent = '#D35400', isOlympian = false, isMf
     
     return () => {
       if (interval) clearInterval(interval);
+      if (videoRef.current && (videoRef.current as any)._timeInt) {
+        clearInterval((videoRef.current as any)._timeInt);
+        (videoRef.current as any)._timeInt = null;
+      }
       if (ytPlayerRef.current && ytPlayerRef.current.destroy) {
         try {
           ytPlayerRef.current.destroy();
@@ -885,6 +890,51 @@ export default function WatchLive({ accent = '#D35400', isOlympian = false, isMf
       } catch (_) {}
     }
   };
+
+  // Preload translation audio elements
+  useEffect(() => {
+    // Stop and clean up any previously playing voiceovers
+    if (voiceoverAudioRef.current) {
+      voiceoverAudioRef.current.pause();
+      voiceoverAudioRef.current = null;
+      restorePlayerVolume();
+    }
+    
+    // Clean up old preloaded audio elements
+    Object.values(audioElementsRef.current).forEach(audio => {
+      try {
+        audio.pause();
+        audio.src = '';
+      } catch (_) {}
+    });
+    audioElementsRef.current = {};
+
+    if (!translatedTranscript) return;
+
+    // Prepreload and buffer each segment's audio payload
+    translatedTranscript.forEach((seg, index) => {
+      if (seg.audio) {
+        try {
+          const audio = new Audio(`data:audio/wav;base64,${seg.audio}`);
+          audio.preload = 'auto';
+          // Call load() to tell the browser to download and decode the media stream immediately
+          audio.load();
+          audioElementsRef.current[index] = audio;
+        } catch (e) {
+          console.warn("Failed to preload audio for segment:", index, e);
+        }
+      }
+    });
+
+    return () => {
+      Object.values(audioElementsRef.current).forEach(audio => {
+        try {
+          audio.pause();
+          audio.src = '';
+        } catch (_) {}
+      });
+    };
+  }, [translatedTranscript]);
 
   // Voiceover Trigger Effect
   useEffect(() => {
@@ -913,7 +963,8 @@ export default function WatchLive({ accent = '#D35400', isOlympian = false, isMf
     // Check all segments to see if any should be triggered (range check to prevent skipping frames/lag)
     translatedTranscript.forEach((seg, index) => {
       if (time >= seg.seconds && time - seg.seconds <= 3 && !playedSegmentsRef.current.has(index)) {
-        if (seg.audio) {
+        const preloadedAudio = audioElementsRef.current[index];
+        if (preloadedAudio) {
           playedSegmentsRef.current.add(index);
           
           // Duck the main video player volume
@@ -930,7 +981,8 @@ export default function WatchLive({ accent = '#D35400', isOlympian = false, isMf
             voiceoverAudioRef.current.pause();
           }
           
-          voiceoverAudioRef.current = new Audio(`data:audio/wav;base64,${seg.audio}`);
+          voiceoverAudioRef.current = preloadedAudio;
+          voiceoverAudioRef.current.currentTime = 0; // Reset playback position to start
           voiceoverAudioRef.current.onended = () => {
             restorePlayerVolume();
           };
@@ -2228,10 +2280,24 @@ export default function WatchLive({ accent = '#D35400', isOlympian = false, isMf
                               onTimeUpdate={(e) => {
                                 setCurrentVideoTime(e.currentTarget.currentTime);
                               }}
+                              onPlay={(e) => {
+                                const el = e.currentTarget;
+                                if ((el as any)._timeInt) clearInterval((el as any)._timeInt);
+                                (el as any)._timeInt = setInterval(() => {
+                                  setCurrentVideoTime(el.currentTime);
+                                }, 100);
+                              }}
+                              onPause={(e) => {
+                                const el = e.currentTarget;
+                                if ((el as any)._timeInt) {
+                                  clearInterval((el as any)._timeInt);
+                                  (el as any)._timeInt = null;
+                                }
+                              }}
                             >
                               <source src={activeVideo.videoUrl} type="video/mp4" />
                               Your browser does not support the video tag.
-                            </video>
+                              </video>
                           );
                         }
                       })()}
