@@ -3396,84 +3396,18 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
               </div>
 
               {/* Action Buttons Column */}
-              {(viewMode === 'public' || !isOwnProfile) && (
-                <div className="profile-header-actions" style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
-                  {!isOwnProfile && (
-                    <>
-                      {/* Follow Button */}
-                      <button
-                        onClick={handleToggleFollow}
-                        disabled={followLoading}
-                        style={{
-                          padding: '10px 24px',
-                          background: isFollowing ? 'rgba(255,255,255,0.08)' : 'rgba(255, 204, 0, 0.15)',
-                          color: isFollowing ? '#aaa' : '#ffcc00',
-                          border: '1px solid',
-                          borderColor: isFollowing ? 'rgba(255,255,255,0.15)' : 'rgba(255, 204, 0, 0.4)',
-                          borderRadius: '100px',
-                          fontWeight: 'bold',
-                          fontSize: '14px',
-                          cursor: 'pointer',
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: '6px',
-                          transition: 'all 0.3s ease',
-                          backdropFilter: 'blur(10px)'
-                        }}
-                        onMouseOver={e => e.currentTarget.style.transform = 'scale(1.05)'}
-                        onMouseOut={e => e.currentTarget.style.transform = 'scale(1)'}
-                      >
-                        <Star size={14} fill={isFollowing ? '#aaa' : 'transparent'} />
-                        {isFollowing ? 'Following' : 'Follow'}
-                      </button>
-
-                      {/* Subscribe Button */}
-                      <button
-                        className="profile-subscribe-btn"
-                        onClick={handleSubscribe}
-                        style={{
-                          padding: '10px 24px',
-                          background: isSubscribed
-                            ? 'rgba(255,255,255,0.08)'
-                            : 'linear-gradient(135deg, #FF0055, #8A2BE2)',
-                          color: '#fff',
-                          border: isSubscribed ? '1px solid rgba(255,255,255,0.15)' : 'none',
-                          borderRadius: '100px',
-                          fontWeight: 'bold',
-                          fontSize: '14px',
-                          cursor: 'pointer',
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: '6px',
-                          boxShadow: isSubscribed ? 'none' : '0 8px 20px rgba(255,0,85,0.3)',
-                          transition: 'all 0.3s ease',
-                          backdropFilter: 'blur(10px)'
-                        }}
-                        onMouseOver={e => e.currentTarget.style.transform = 'scale(1.05)'}
-                        onMouseOut={e => e.currentTarget.style.transform = 'scale(1)'}
-                      >
-                        {isSubscribed ? (
-                          <>
-                            <CheckCircle size={14} color="#00ff88" />
-                            <span style={{ color: '#00ff88' }}>Subscribed</span>
-                          </>
-                        ) : (
-                          <span>
-                            {Number(subPrice) > 0 ? `Subscribe $${Number(subPrice).toFixed(2)}/mo` : 'Subscribe Free'}
-                          </span>
-                        )}
-                      </button>
-                    </>
-                  )}
-
-                  {/* Share Button (Visible to everyone in public view, including owner) */}
+              {!isOwnProfile && (
+                <div className="profile-header-actions">
+                  {/* Follow Button */}
                   <button
-                    onClick={handleShareChannel}
+                    onClick={handleToggleFollow}
+                    disabled={followLoading}
                     style={{
                       padding: '10px 24px',
-                      background: 'rgba(255,255,255,0.08)',
-                      color: '#fff',
-                      border: '1px solid rgba(255,255,255,0.15)',
+                      background: isFollowing ? 'rgba(255,255,255,0.08)' : 'rgba(255, 204, 0, 0.15)',
+                      color: isFollowing ? '#aaa' : '#ffcc00',
+                      border: '1px solid',
+                      borderColor: isFollowing ? 'rgba(255,255,255,0.15)' : 'rgba(255, 204, 0, 0.4)',
                       borderRadius: '100px',
                       fontWeight: 'bold',
                       fontSize: '14px',
@@ -3486,13 +3420,86 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
                     }}
                     onMouseOver={e => e.currentTarget.style.transform = 'scale(1.05)'}
                     onMouseOut={e => e.currentTarget.style.transform = 'scale(1)'}
-                    title="Share Channel"
                   >
-                    <Share2 size={14} />
-                    <span>Share</span>
+                    <Star size={14} fill={isFollowing ? '#aaa' : 'transparent'} />
+                    {isFollowing ? 'Following' : 'Follow'}
+                  </button>
+
+                  {/* Subscribe Button */}
+                  <button
+                    className="profile-subscribe-btn"
+                    onClick={handleSubscribe}
+                    style={{
+                      padding: '10px 24px',
+                      background: isSubscribed
+                        ? 'rgba(255,255,255,0.08)'
+                        : 'linear-gradient(135deg, #FF0055, #8A2BE2)',
+                      color: '#fff',
+                      border: isSubscribed ? '1px solid rgba(255,255,255,0.15)' : 'none',
+                      borderRadius: '100px',
+                      fontWeight: 'bold',
+                      fontSize: '14px',
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '6px',
+                      boxShadow: isSubscribed ? 'none' : '0 8px 20px rgba(255,0,85,0.3)',
+                      transition: 'all 0.3s ease',
+                      backdropFilter: 'blur(10px)'
+                    }}
+                    onMouseOver={e => e.currentTarget.style.transform = 'scale(1.05)'}
+                    onMouseOut={e => e.currentTarget.style.transform = 'scale(1)'}
+                  >
+                    {isSubscribed ? (
+                      <>
+                        <CheckCircle size={14} color="#00ff88" />
+                        <span style={{ color: '#00ff88' }}>Subscribed</span>
+                      </>
+                    ) : (
+                      <span>
+                        {Number(subPrice) > 0 ? `Subscribe $${Number(subPrice).toFixed(2)}/mo` : 'Subscribe Free'}
+                      </span>
+                    )}
                   </button>
                 </div>
               )}
+
+              {/* Floating Share Icon Button in the Lower Right Corner of the Card */}
+              <button 
+                type="button"
+                onClick={handleShareChannel}
+                style={{
+                  position: 'absolute',
+                  bottom: '24px',
+                  right: '24px',
+                  background: 'rgba(255,255,255,0.05)',
+                  border: '1px solid rgba(255,255,255,0.1)',
+                  color: 'var(--text-secondary)',
+                  width: '38px',
+                  height: '38px',
+                  borderRadius: '50%',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  cursor: 'pointer',
+                  backdropFilter: 'blur(10px)',
+                  transition: 'all 0.2s ease-in-out',
+                  zIndex: 5
+                }}
+                onMouseOver={e => {
+                  e.currentTarget.style.background = 'rgba(255,255,255,0.12)';
+                  e.currentTarget.style.color = '#fff';
+                  e.currentTarget.style.transform = 'scale(1.08)';
+                }}
+                onMouseOut={e => {
+                  e.currentTarget.style.background = 'rgba(255,255,255,0.05)';
+                  e.currentTarget.style.color = 'var(--text-secondary)';
+                  e.currentTarget.style.transform = 'scale(1)';
+                }}
+                title="Share Channel"
+              >
+                <Share2 size={16} />
+              </button>
             </div>
           </div>
           </>
