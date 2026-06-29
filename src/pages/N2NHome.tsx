@@ -1,10 +1,10 @@
 import { useState, useEffect, useRef, lazy, Suspense } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Play, X, Network, Volume1, Volume2, VolumeX } from 'lucide-react';
+import { Play, X, Network, Volume1, Volume2, VolumeX, Heart, MessageCircle } from 'lucide-react';
 import SliderSection from '../components/SliderSection';
 import { useWhiteLabel } from '../context/WhiteLabelContext';
-import { getChildNetworks, mergeQueryParams, OLYMPIA_CHAMPIONS, WINGS_ATHLETES, WINGS_LEGENDS } from '../lib/n2n';
+import { getChildNetworks, mergeQueryParams, OLYMPIA_CHAMPIONS, WINGS_ATHLETES, WINGS_LEGENDS, WINGS_IG_POSTS } from '../lib/n2n';
 import { getN2NCategories } from '../api';
 import type { Category, VideoItem, User } from '../types';
 import { supabase } from '../supabaseClient';
@@ -1375,6 +1375,137 @@ export default function N2NHome({ wlConfig, categories, activeVideo, setActiveVi
               </div>
 
             </div>
+          </section>
+        )}
+
+        {/* ── Wings of Strength Instagram Feed ────────────────── */}
+        {isWings && (
+          <section style={{ maxWidth: '1400px', margin: '60px auto 0', padding: '0 40px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '30px' }}>
+              <h2 style={{ fontSize: '28px', margin: 0, fontWeight: 900, display: 'flex', alignItems: 'center', gap: '16px', letterSpacing: '-0.5px' }}>
+                <span style={{ width: '4px', height: '24px', borderRadius: '4px', background: 'var(--accent-primary)', boxShadow: '0 0 10px var(--accent-primary)' }} />
+                <span style={{ color: 'var(--text-primary)' }}>INSTAGRAM FEED</span>
+              </h2>
+              <a 
+                href="https://www.instagram.com/wingsofstrength/"
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  background: 'rgba(255, 255, 255, 0.05)',
+                  border: '1px solid rgba(255, 255, 255, 0.1)',
+                  padding: '10px 20px',
+                  borderRadius: '30px',
+                  color: '#fff',
+                  textDecoration: 'none',
+                  fontSize: '13px',
+                  fontWeight: 800,
+                  textTransform: 'uppercase',
+                  letterSpacing: '1px',
+                  transition: 'all 0.3s ease',
+                }}
+                onMouseOver={e => {
+                  e.currentTarget.style.background = 'var(--accent-primary)';
+                  e.currentTarget.style.borderColor = 'var(--accent-primary)';
+                }}
+                onMouseOut={e => {
+                  e.currentTarget.style.background = 'rgba(255, 255, 255, 0.05)';
+                  e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.1)';
+                }}
+              >
+                <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round"><rect width="20" height="20" x="2" y="2" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" x2="17.51" y1="6.5" y2="6.5"/></svg>
+                <span>@wingsofstrength</span>
+              </a>
+            </div>
+
+            <div style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
+              gap: '20px',
+              width: '100%',
+            }}>
+              {WINGS_IG_POSTS.map(post => (
+                <div 
+                  key={post.id}
+                  onClick={() => window.open('https://www.instagram.com/wingsofstrength/', '_blank')}
+                  style={{
+                    position: 'relative',
+                    aspectRatio: '1/1',
+                    borderRadius: '20px',
+                    overflow: 'hidden',
+                    cursor: 'pointer',
+                    background: '#111',
+                    border: '1px solid rgba(255,255,255,0.06)',
+                  }}
+                  className="group"
+                >
+                  <img 
+                    src={post.image} 
+                    alt="Instagram Post"
+                    style={{
+                      width: '100%',
+                      height: '100%',
+                      objectFit: 'cover',
+                      objectPosition: 'center top',
+                      transition: 'transform 0.5s ease',
+                    }}
+                    className="group-hover:scale-105"
+                  />
+                  {/* Glassmorphic hover overlay */}
+                  <div 
+                    style={{
+                      position: 'absolute',
+                      inset: 0,
+                      background: 'rgba(0, 0, 0, 0.75)',
+                      backdropFilter: 'blur(4px)',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      justifyContent: 'center',
+                      alignItems: 'center',
+                      padding: '20px',
+                      opacity: 0,
+                      transition: 'opacity 0.3s ease',
+                      textAlign: 'center',
+                    }}
+                    className="hover-overlay"
+                  >
+                    <div style={{ display: 'flex', gap: '20px', marginBottom: '15px' }}>
+                      <span style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#fff', fontSize: '14px', fontWeight: 800 }}>
+                        <Heart size={16} fill="#fff" />
+                        {post.likes}
+                      </span>
+                      <span style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#fff', fontSize: '14px', fontWeight: 800 }}>
+                        <MessageCircle size={16} fill="#fff" />
+                        {post.comments}
+                      </span>
+                    </div>
+                    <p style={{
+                      color: 'rgba(255,255,255,0.8)',
+                      fontSize: '12px',
+                      lineHeight: '1.4',
+                      margin: 0,
+                      display: '-webkit-box',
+                      WebkitLineClamp: 3,
+                      WebkitBoxOrient: 'vertical',
+                      overflow: 'hidden',
+                    }}>
+                      {post.caption}
+                    </p>
+                  </div>
+                </div>
+              ))}
+            </div>
+            
+            <style>{`
+              .group:hover .group-hover\\:scale-105 {
+                transform: scale(1.05);
+              }
+              .group:hover .hover-overlay {
+                opacity: 1 !important;
+              }
+            `}</style>
           </section>
         )}
 
