@@ -3416,6 +3416,7 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
                             setShowCreatorPanel(!showCreatorPanel);
                           } else {
                             setActiveTab(tab.id as any);
+                            setShowCreatorPanel(false);
                           }
                         }}
                         style={{ 
