@@ -562,7 +562,14 @@ function App() {
           <Suspense fallback={<div style={{ height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-secondary)' }}>Loading interface...</div>}>
             <Routes>
               <Route path="/" element={
-                 wlConfig?.n2n_enabled
+                 (wlConfig?.n2n_enabled || 
+                   wlConfig?.parent_network_id === '7a017c4d-c08f-4260-8540-a0cc8bed4e11' ||
+                   wlConfig?.theme?.parent_network_id === '7a017c4d-c08f-4260-8540-a0cc8bed4e11' ||
+                   wlConfig?.id === 'wings-of-strength-tenant-id' ||
+                   wlConfig?.id === 'mf-hers-tenant-id' ||
+                   wlConfig?.id === 'flex-online-tenant-id' ||
+                   wlConfig?.id === '7a017c4d-c08f-4260-8540-a0cc8bed4e12' ||
+                   (wlConfig?.name || '').toLowerCase().includes('olympia'))
                    ? <N2NHome wlConfig={wlConfig} categories={categories} user={user} activeVideo={activeVideo} setActiveVideo={setActiveVideo} />
                    : <WhiteLabelHome wlConfig={wlConfig} categories={categories} user={user} activeVideo={activeVideo} setActiveVideo={setActiveVideo} />
               } />
