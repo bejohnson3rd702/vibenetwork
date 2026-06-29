@@ -647,50 +647,6 @@ export const WINGS_LEGENDS = [
   },
 ];
 
-export const WINGS_IG_POSTS = [
-  {
-    id: 1,
-    image: '/n2n/wos_ath_1.jpg',
-    likes: '1,420',
-    comments: '88',
-    caption: 'Rising Phoenix champion Aisling Hickey bringing peak conditioning to the stage! 🔥🏆 #wingsofstrength #femalebodybuilding #ifbbpro',
-  },
-  {
-    id: 2,
-    image: '/n2n/wos_leg_6.jpg',
-    likes: '4,510',
-    comments: '245',
-    caption: 'TBT to the legendary 10x Ms. Olympia Iris Kyle dominating the competition. A true icon of strength! 👑💪 #legend #mskyle #champion',
-  },
-  {
-    id: 3,
-    image: '/n2n/wos_ath_3.jpg',
-    likes: '1,840',
-    comments: '104',
-    caption: 'Rising star Amanda Aivaliotis showcasing incredible symmetry and thickness in her recent guest posing. 🌟⚡ #ifbb #bodybuilding',
-  },
-  {
-    id: 4,
-    image: '/n2n/wos_leg_8.jpg',
-    likes: '3,210',
-    comments: '172',
-    caption: 'The incomparable 8x Ms. Olympia Lenda Murray! Classic posing, unmatched elegance, and pure dominance. 🕊️✨ #msolympia #legend',
-  },
-  {
-    id: 5,
-    image: '/n2n/wos_ath_5.jpg',
-    likes: '1,280',
-    comments: '63',
-    caption: 'Focused and driven. Amanda Machado putting in the work for the upcoming Rising Phoenix Pro. 🏋️‍♀️🔥 #workhard #determined #flex',
-  },
-  {
-    id: 6,
-    image: '/n2n/wos_leg_9.jpg',
-    likes: '2,900',
-    comments: '150',
-    caption: 'Margie Martin showing world-class muscularity and energy on stage! Always a crowd favorite. 🙌💥 #risingphoenix #energy',
-  },
-];
 
 
 
