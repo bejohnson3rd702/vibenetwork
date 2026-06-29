@@ -577,7 +577,7 @@ export default function N2NHome({ wlConfig, categories, activeVideo, setActiveVi
                     mfNetworkItems.push({
                       id: 'wings-of-strength-tenant-id',
                       title: 'Wings of Strength',
-                      image: 'https://wingsofstrength.net/wp-content/uploads/2025/02/27/inner-page-logo-min-1.png',
+                      image: 'https://images.unsplash.com/photo-1541534741688-6078c6bfb5c5?auto=format&fit=crop&q=80&w=800',
                       tags: ['Network', 'FullBleed'],
                       videoUrl: '',
                       linkUrl: '/?tenant=wings-of-strength-tenant-id',
