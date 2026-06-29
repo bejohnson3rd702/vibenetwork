@@ -33,7 +33,6 @@ const OLYMPIAN_FEEDS = [
 
 const WINGS_OF_STRENGTH_FEEDS = [
   { key: 'wingsofstrength', label: '🦋 Wings of Strength', channelId: 'UCspRwoIexbDNIeEbUrncCtA' },
-  { key: 'olympiatv', label: '🏆 OlympiaTV', channelId: 'UCYukge4AuskD8xPjfrSoiBg' },
 ];
 
 const MUSCLE_FITNESS_FEEDS = [
