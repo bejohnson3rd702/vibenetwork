@@ -150,12 +150,12 @@ export default function N2NHome({ wlConfig, categories, activeVideo, setActiveVi
     let cancelled = false;
     (async () => {
       const parentId = config.parent_network_id || config.theme?.parent_network_id || '';
-      const isMfFamily = isMf || isOlympian;
+      const shouldLoadParentChildren = isMf || isOlympian;
 
       let targetId = config.id;
-      if (isMfFamily && parentId) {
+      if (shouldLoadParentChildren && parentId) {
         targetId = parentId;
-      } else if (isMfFamily && !isMf) {
+      } else if (shouldLoadParentChildren && !isMf) {
         targetId = '7a017c4d-c08f-4260-8540-a0cc8bed4e11';
       }
 
@@ -163,7 +163,7 @@ export default function N2NHome({ wlConfig, categories, activeVideo, setActiveVi
       if (cancelled) return;
 
       // Sort Mr. Olympia first if parent is Muscle & Fitness
-      if (isMfFamily) {
+      if (shouldLoadParentChildren) {
         children = [...children].sort((a: any, b: any) => {
           const isOlympiaA = a.id === '7a017c4d-c08f-4260-8540-a0cc8bed4e12' || (a.name || '').toLowerCase().includes('olympia');
           const isOlympiaB = b.id === '7a017c4d-c08f-4260-8540-a0cc8bed4e12' || (b.name || '').toLowerCase().includes('olympia');
@@ -250,7 +250,10 @@ export default function N2NHome({ wlConfig, categories, activeVideo, setActiveVi
 
   const isOlympian = isOlympianConfig(config);
   const isMf = isMuscleFitnessConfig(config);
-  const isMfFamily = isMf || isOlympian;
+  const isMfFamily = isMf || isOlympian || 
+                     config?.id === 'wings-of-strength-tenant-id' ||
+                     config?.id === 'mf-hers-tenant-id' ||
+                     config?.id === 'flex-online-tenant-id';
   const isB2K = isB2kConfig(config);
   const isKple = isKpleConfig(config);
 
@@ -791,7 +794,7 @@ export default function N2NHome({ wlConfig, categories, activeVideo, setActiveVi
         )}
 
         {/* ── Hoodie Competition Banner / Prayer Request Banner ── */}
-        {!isOlympian && !isMf && !isB2K && !isVibe100 && (
+        {!isMfFamily && !isB2K && !isVibe100 && (
           <section style={{ maxWidth: '1400px', margin: '40px auto', padding: '0 40px' }}>
             <div style={{
               position: 'relative', overflow: 'hidden',
@@ -1007,7 +1010,7 @@ export default function N2NHome({ wlConfig, categories, activeVideo, setActiveVi
         )}
 
         {/* ── College Sports News Feed ──────────────────────── */}
-        {!isOlympian && !isMf && !isB2K && !isKple && (
+        {!isMfFamily && !isB2K && !isKple && (
           <Suspense fallback={null}>
             <CollegeNewsFeed accent={config.accent} />
           </Suspense>
