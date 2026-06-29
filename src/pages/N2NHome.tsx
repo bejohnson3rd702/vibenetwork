@@ -538,40 +538,78 @@ export default function N2NHome({ wlConfig, categories, activeVideo, setActiveVi
             <SliderSection
               title={isOlympian ? "OLYMPIA PARTNERS" : (isMf ? "MUSCLE & FITNESS NETWORKS" : (isB2K ? "B2K MEMBERS" : (isKple ? "CHRISTIAN REVIVAL NETWORKS" : (isVibe100 ? "VIBE 100 NETWORKS" : "AVO NETWORKS"))))}
               items={(() => {
-                if (isMf) {
-                  const mrO = childItems.find(item => (item.title || '').toLowerCase().includes('olympia'));
+                if (isMfFamily) {
                   const mfNetworkItems = [];
-                  if (mrO) mfNetworkItems.push(mrO);
                   
-                  mfNetworkItems.push({
-                    id: 'wings-of-strength-tenant-id',
-                    title: 'Wings of Strength',
-                    image: 'https://wingsofstrength.net/wp-content/uploads/2025/02/27/inner-page-logo-min-1.png',
-                    tags: ['Network', 'FullBleed'],
-                    videoUrl: '',
-                    linkUrl: '/?tenant=wings-of-strength-tenant-id',
-                    accent: '#E31B23'
-                  });
+                  // 1. Add parent network (Muscle & Fitness) if not current
+                  if (!isMf) {
+                    mfNetworkItems.push({
+                      id: '7a017c4d-c08f-4260-8540-a0cc8bed4e11',
+                      title: 'Muscle & Fitness',
+                      image: '/n2n/muscle_fitness_logo.png',
+                      tags: ['Network'],
+                      videoUrl: '',
+                      linkUrl: '/?tenant=7a017c4d-c08f-4260-8540-a0cc8bed4e11',
+                      accent: '#E31B23'
+                    });
+                  }
                   
-                  mfNetworkItems.push({
-                    id: 'mf-hers-tenant-id',
-                    title: 'M&F Hers',
-                    image: '/n2n/mf_hers_bodybuilder.jpg',
-                    tags: ['Network', 'FullBleed'],
-                    videoUrl: '',
-                    linkUrl: '/?tenant=mf-hers-tenant-id',
-                    accent: '#E31B23'
-                  });
+                  // 2. Add Mr. Olympia if not current
+                  if (!isOlympian) {
+                    const mrO = childItems.find(item => item.id === '7a017c4d-c08f-4260-8540-a0cc8bed4e12' || (item.title || '').toLowerCase().includes('olympia'));
+                    if (mrO) {
+                      mfNetworkItems.push(mrO);
+                    } else {
+                      mfNetworkItems.push({
+                        id: '7a017c4d-c08f-4260-8540-a0cc8bed4e12',
+                        title: 'Mr. Olympia',
+                        image: '/n2n/mr_olympia_logo.png',
+                        tags: ['Network'],
+                        videoUrl: '',
+                        linkUrl: '/?tenant=7a017c4d-c08f-4260-8540-a0cc8bed4e12',
+                        accent: '#D4AF37'
+                      });
+                    }
+                  }
                   
-                  mfNetworkItems.push({
-                    id: 'flex-online-tenant-id',
-                    title: 'Flex Online',
-                    image: 'https://i0.wp.com/www.muscleandfitness.com/wp-content/uploads/2026/06/Bodybuilders-Mike-Mentzer-and-Dorian-Yates-training-and-mentoring-the-young-bodybuilder-on-the-Maximum-Results-training-method.jpg',
-                    tags: ['Network', 'FullBleed'],
-                    videoUrl: '',
-                    linkUrl: '/?tenant=flex-online-tenant-id',
-                    accent: '#E31B23'
-                  });
+                  // 3. Add Wings of Strength if not current
+                  if (config?.id !== 'wings-of-strength-tenant-id') {
+                    mfNetworkItems.push({
+                      id: 'wings-of-strength-tenant-id',
+                      title: 'Wings of Strength',
+                      image: 'https://wingsofstrength.net/wp-content/uploads/2025/02/27/inner-page-logo-min-1.png',
+                      tags: ['Network', 'FullBleed'],
+                      videoUrl: '',
+                      linkUrl: '/?tenant=wings-of-strength-tenant-id',
+                      accent: '#E31B23'
+                    });
+                  }
+                  
+                  // 4. Add M&F Hers if not current
+                  if (config?.id !== 'mf-hers-tenant-id') {
+                    mfNetworkItems.push({
+                      id: 'mf-hers-tenant-id',
+                      title: 'M&F Hers',
+                      image: '/n2n/mf_hers_bodybuilder.jpg',
+                      tags: ['Network', 'FullBleed'],
+                      videoUrl: '',
+                      linkUrl: '/?tenant=mf-hers-tenant-id',
+                      accent: '#E31B23'
+                    });
+                  }
+                  
+                  // 5. Add Flex Online if not current
+                  if (config?.id !== 'flex-online-tenant-id') {
+                    mfNetworkItems.push({
+                      id: 'flex-online-tenant-id',
+                      title: 'Flex Online',
+                      image: 'https://i0.wp.com/www.muscleandfitness.com/wp-content/uploads/2026/06/Bodybuilders-Mike-Mentzer-and-Dorian-Yates-training-and-mentoring-the-young-bodybuilder-on-the-Maximum-Results-training-method.jpg',
+                      tags: ['Network', 'FullBleed'],
+                      videoUrl: '',
+                      linkUrl: '/?tenant=flex-online-tenant-id',
+                      accent: '#E31B23'
+                    });
+                  }
                   
                   return mfNetworkItems;
                 }
@@ -735,7 +773,12 @@ export default function N2NHome({ wlConfig, categories, activeVideo, setActiveVi
               items={childItems.filter(item => {
                 const isCurrent = (item.title || '').toLowerCase() === (config?.name || '').toLowerCase() || item.id === config?.id;
                 const isOlympia = (item.title || '').toLowerCase().includes('olympia');
-                return !isCurrent && !isOlympia;
+                const isMediaNetwork = item.id === 'wings-of-strength-tenant-id' || 
+                                       item.id === 'mf-hers-tenant-id' || 
+                                       item.id === 'flex-online-tenant-id' ||
+                                       item.id === '7a017c4d-c08f-4260-8540-a0cc8bed4e11' ||
+                                       item.id === '7a017c4d-c08f-4260-8540-a0cc8bed4e12';
+                return !isCurrent && !isOlympia && !isMediaNetwork;
               })}
               delay={0}
               aspectRatio="16/9"
