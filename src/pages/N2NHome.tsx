@@ -34,6 +34,7 @@ export default function N2NHome({ wlConfig, categories, activeVideo, setActiveVi
   const videoRef = useRef<HTMLVideoElement>(null);
   const heroIframeRef = useRef<HTMLIFrameElement>(null);
   const [isHeroMuted, setIsHeroMuted] = useState(true);
+  const [heroVolume, setHeroVolume] = useState(30);
 
   const toggleHeroMute = () => {
     const iframe = heroIframeRef.current;
@@ -43,7 +44,39 @@ export default function N2NHome({ wlConfig, categories, activeVideo, setActiveVi
         event: 'command',
         func: nextMuteState ? 'mute' : 'unMute'
       }), '*');
+      if (!nextMuteState) {
+        iframe.contentWindow.postMessage(JSON.stringify({
+          event: 'command',
+          func: 'setVolume',
+          args: [heroVolume]
+        }), '*');
+      }
       setIsHeroMuted(nextMuteState);
+    }
+  };
+
+  const handleVolumeChange = (newVolume: number) => {
+    setHeroVolume(newVolume);
+    const iframe = heroIframeRef.current;
+    if (iframe && iframe.contentWindow) {
+      iframe.contentWindow.postMessage(JSON.stringify({
+        event: 'command',
+        func: 'setVolume',
+        args: [newVolume]
+      }), '*');
+      if (newVolume > 0 && isHeroMuted) {
+        iframe.contentWindow.postMessage(JSON.stringify({
+          event: 'command',
+          func: 'unMute'
+        }), '*');
+        setIsHeroMuted(false);
+      } else if (newVolume === 0 && !isHeroMuted) {
+        iframe.contentWindow.postMessage(JSON.stringify({
+          event: 'command',
+          func: 'mute'
+        }), '*');
+        setIsHeroMuted(true);
+      }
     }
   };
 
@@ -442,10 +475,9 @@ export default function N2NHome({ wlConfig, categories, activeVideo, setActiveVi
           </motion.div>
         </AnimatePresence>
 
-        {/* Mute/Unmute button — only if video is playing in background */}
+        {/* Mute/Unmute and Volume Slider Pill */}
         {isOlympian && (heroSlide % HERO_SLIDES.length) === 0 && (
-          <button
-            onClick={toggleHeroMute}
+          <div
             style={{
               position: 'absolute',
               bottom: '120px',
@@ -453,25 +485,56 @@ export default function N2NHome({ wlConfig, categories, activeVideo, setActiveVi
               zIndex: 3,
               display: 'flex',
               alignItems: 'center',
-              justifyContent: 'center',
-              width: '40px',
-              height: '40px',
-              borderRadius: '50%',
-              background: 'rgba(0,0,0,0.5)',
+              background: 'rgba(0,0,0,0.6)',
               backdropFilter: 'blur(10px)',
-              border: '1px solid rgba(255,255,255,0.2)',
-              color: '#fff',
-              cursor: 'pointer',
-              transition: 'all 0.25s',
+              border: '1px solid rgba(255,255,255,0.15)',
+              borderRadius: '22px',
+              padding: '2px 8px 2px 2px',
+              transition: 'all 0.3s ease',
             }}
-            title={isHeroMuted ? "Unmute Video" : "Mute Video"}
           >
-            {isHeroMuted ? (
-              <VolumeX size={16} />
-            ) : (
-              <Volume2 size={16} />
-            )}
-          </button>
+            <button
+              onClick={toggleHeroMute}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                width: '36px',
+                height: '36px',
+                borderRadius: '50%',
+                background: 'transparent',
+                border: 'none',
+                color: '#fff',
+                cursor: 'pointer',
+                transition: 'all 0.25s',
+              }}
+              title={isHeroMuted ? "Unmute Video" : "Mute Video"}
+            >
+              {isHeroMuted ? (
+                <VolumeX size={16} />
+              ) : (
+                <Volume2 size={16} />
+              )}
+            </button>
+            <input
+              type="range"
+              min="0"
+              max="100"
+              value={isHeroMuted ? 0 : heroVolume}
+              onChange={(e) => handleVolumeChange(Number(e.target.value))}
+              style={{
+                width: '70px',
+                height: '3px',
+                WebkitAppearance: 'none',
+                background: 'rgba(255,255,255,0.3)',
+                outline: 'none',
+                borderRadius: '2px',
+                cursor: 'pointer',
+                margin: '0 4px 0 4px',
+                accentColor: '#fff',
+              }}
+            />
+          </div>
         )}
 
         {/* Slide dots — right side, vertical, matches AVO */}
