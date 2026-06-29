@@ -30,14 +30,143 @@ interface PostItem {
   created_at: string;
   creator_id: string;
   creator?: Profile;
+  articleUrl?: string;
 }
 
-export default function ChildNetworkFeeds({ parentId, accent = 'var(--accent-primary)', isOlympian = false, isB2K = false }: { parentId: string, accent?: string, isOlympian?: boolean, isB2K?: boolean }) {
+export default function ChildNetworkFeeds({ parentId, accent = 'var(--accent-primary)', isOlympian = false, isB2K = false, isMf = false }: { parentId: string, accent?: string, isOlympian?: boolean, isB2K?: boolean, isMf?: boolean }) {
   const [posts, setPosts] = useState<PostItem[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const scrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
+    if (isMf) {
+      const mfArticles: PostItem[] = [
+        {
+          id: 'mf-art-1',
+          content: 'Norman Powell’s LA Clippers In-Season Routine: LA Clippers star Norman Powell details his functional, in-season workout strategy targeting maintenance, joint longevity, and explosive speed on the hardwood.',
+          image_url: 'https://images.unsplash.com/photo-1541534741688-6078c6bfb5c5?auto=format&fit=crop&q=80&w=800',
+          likes: 2450,
+          created_at: new Date().toISOString(),
+          creator_id: 'powell-fit',
+          articleUrl: 'https://www.muscleandfitness.com/athletes-celebrities/interviews/norman-powell-la-clippers-in-season-workout/',
+          creator: {
+            username: 'normanpowell',
+            avatar_url: 'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?auto=format&fit=crop&q=100&w=100',
+            whitelabel_id: 'mf-wl',
+            whitelabel: {
+              id: 'mf-wl',
+              name: 'Muscle & Fitness',
+              domain: 'muscleandfitness.com',
+              theme: { accent: '#E31B23' }
+            }
+          }
+        },
+        {
+          id: 'mf-art-2',
+          content: 'Damien Patrick’s Olympia 2025 Back Workout: Learn the latent training techniques, heavy rows, and lat pulldown splits Damien Patrick uses to build thickness and width ahead of his 2025 stage appearance.',
+          image_url: 'https://images.unsplash.com/photo-1581009146145-b5ef050c2e1e?auto=format&fit=crop&q=80&w=800',
+          likes: 1890,
+          created_at: new Date().toISOString(),
+          creator_id: 'damien-patrick',
+          articleUrl: 'https://www.muscleandfitness.com/workouts/back-exercises/damien-patrick-olympia-back-workout/',
+          creator: {
+            username: 'damienpatrick',
+            avatar_url: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&q=100&w=100',
+            whitelabel_id: 'mf-wl',
+            whitelabel: {
+              id: 'mf-wl',
+              name: 'Muscle & Fitness',
+              domain: 'muscleandfitness.com',
+              theme: { accent: '#E31B23' }
+            }
+          }
+        },
+        {
+          id: 'mf-art-3',
+          content: 'Sam Sulek’s Quad-Focused Leg Day Secrets: Sam Sulek breaks down his high-intensity, low-rep leg day routine for maximum quadriceps hypertrophy and deep conditioning during his cutting phases.',
+          image_url: 'https://images.unsplash.com/photo-1593079831268-3381b0db4a77?auto=format&fit=crop&q=80&w=800',
+          likes: 3120,
+          created_at: new Date().toISOString(),
+          creator_id: 'sam-sulek',
+          articleUrl: 'https://www.muscleandfitness.com/workouts/leg-exercises/sam-sulek-quad-focused-leg-day/',
+          creator: {
+            username: 'samsulek',
+            avatar_url: 'https://images.unsplash.com/photo-1570295999919-56ceb5ecca61?auto=format&fit=crop&q=100&w=100',
+            whitelabel_id: 'mf-wl',
+            whitelabel: {
+              id: 'mf-wl',
+              name: 'Muscle & Fitness',
+              domain: 'muscleandfitness.com',
+              theme: { accent: '#E31B23' }
+            }
+          }
+        },
+        {
+          id: 'mf-art-4',
+          content: 'The 28-Days-to-Lean Meal Plan and Nutrition Guide: A comprehensive, science-backed nutrition blueprint outlining high-protein, calorie-controlled meal preparation designed to shred fat while preserving lean muscle mass.',
+          image_url: 'https://images.unsplash.com/photo-1490645935967-10de6ba17061?auto=format&fit=crop&q=80&w=800',
+          likes: 1280,
+          created_at: new Date().toISOString(),
+          creator_id: 'mf-nutrition',
+          articleUrl: 'https://www.muscleandfitness.com/nutrition/meal-plans/28-days-lean-meal-plan/',
+          creator: {
+            username: 'mf_nutrition',
+            avatar_url: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?auto=format&fit=crop&q=100&w=100',
+            whitelabel_id: 'mf-wl',
+            whitelabel: {
+              id: 'mf-wl',
+              name: 'Muscle & Fitness',
+              domain: 'muscleandfitness.com',
+              theme: { accent: '#E31B23' }
+            }
+          }
+        },
+        {
+          id: 'mf-art-5',
+          content: 'Zach Fowle’s USRowing Indoor Championships Prep: Zach Fowle details the physical conditioning, high-stroke pacing, and mental endurance strategies he used to prepare for the 2025 championships.',
+          image_url: 'https://images.unsplash.com/photo-1517838277536-f5f99be501cd?auto=format&fit=crop&q=80&w=800',
+          likes: 980,
+          created_at: new Date().toISOString(),
+          creator_id: 'zach-fowle',
+          articleUrl: 'https://www.muscleandfitness.com/athletes-celebrities/news/zach-fowle-indoor-rowing/',
+          creator: {
+            username: 'zachfowle',
+            avatar_url: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=100&w=100',
+            whitelabel_id: 'mf-wl',
+            whitelabel: {
+              id: 'mf-wl',
+              name: 'Muscle & Fitness',
+              domain: 'muscleandfitness.com',
+              theme: { accent: '#E31B23' }
+            }
+          }
+        },
+        {
+          id: 'mf-art-6',
+          content: 'Metabolism Myths: The Physiological Truth About Yo-Yo Dieting: Fitness physiologists break down the science of chronic dieting and how rapid body composition shifts affect daily energy expenditure and thyroid hormones.',
+          image_url: 'https://images.unsplash.com/photo-1548690312-e3b507d8c110?auto=format&fit=crop&q=80&w=800',
+          likes: 1670,
+          created_at: new Date().toISOString(),
+          creator_id: 'mf-science',
+          articleUrl: 'https://www.muscleandfitness.com/nutrition/healthy-eating/yo-yo-dieting-metabolism/',
+          creator: {
+            username: 'mf_science',
+            avatar_url: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&q=100&w=100',
+            whitelabel_id: 'mf-wl',
+            whitelabel: {
+              id: 'mf-wl',
+              name: 'Muscle & Fitness',
+              domain: 'muscleandfitness.com',
+              theme: { accent: '#E31B23' }
+            }
+          }
+        }
+      ];
+      setPosts(mfArticles);
+      setLoading(false);
+      return;
+    }
+
     if (!parentId) return;
     let cancelled = false;
 
@@ -56,14 +185,12 @@ export default function ChildNetworkFeeds({ parentId, accent = 'var(--accent-pri
 
         if (cancelled) return;
 
-        // 3. Filter to get the top post for each child network
         const topPostsMap = new Map<string, PostItem>();
         for (const post of (postsData || []) as PostItem[]) {
           const wlId = post.creator?.whitelabel_id;
           const wlName = post.creator?.whitelabel?.name;
           const username = post.creator?.username;
 
-          // Exclude official network profiles (where username matches school/whitelabel name)
           if (wlName && username && username.toLowerCase() === wlName.toLowerCase()) {
             continue;
           }
@@ -73,12 +200,8 @@ export default function ChildNetworkFeeds({ parentId, accent = 'var(--accent-pri
           }
         }
 
-        // Convert map back to list
         const filteredPosts = Array.from(topPostsMap.values());
-        
-        // Sort by likes DESC to show the absolute most popular ones first
         filteredPosts.sort((a, b) => b.likes - a.likes);
-
         setPosts(filteredPosts);
       } catch (err) {
         console.error('Failed to load child network feeds:', err);
@@ -94,11 +217,11 @@ export default function ChildNetworkFeeds({ parentId, accent = 'var(--accent-pri
     return () => {
       cancelled = true;
     };
-  }, [parentId]);
+  }, [parentId, isMf]);
 
   const handleScroll = (direction: 'left' | 'right') => {
     if (!scrollRef.current) return;
-    const scrollAmount = scrollRef.current.clientWidth; // scroll exactly one full slide view
+    const scrollAmount = scrollRef.current.clientWidth;
     scrollRef.current.scrollBy({
       left: direction === 'left' ? -scrollAmount : scrollAmount,
       behavior: 'smooth'
@@ -119,22 +242,18 @@ export default function ChildNetworkFeeds({ parentId, accent = 'var(--accent-pri
     return null;
   }
 
-  // Calculate widths dynamically for 4 items per page on desktop
   const cardWidthDesktop = 'calc(25% - 18px)';
 
   return (
     <section style={{ maxWidth: '1400px', margin: '60px auto 40px', padding: '0 40px', overflow: 'hidden' }}>
-      
-      {/* Section Header with Navigation Controls */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '30px' }}>
         <h2 style={{ fontSize: '28px', margin: 0, fontWeight: 900, display: 'flex', alignItems: 'center', gap: '16px', letterSpacing: '-0.5px' }}>
           <span style={{ width: '4px', height: '24px', borderRadius: '4px', background: accent, boxShadow: `0 0 10px ${accent}` }} />
           <span style={{ color: 'var(--text-primary)', textTransform: 'uppercase' }}>
-            {isOlympian ? "Trending Partner Moments" : (isB2K ? "Trending Moments" : "Trending")}
+            {isOlympian ? "Trending Partner Moments" : (isMf ? "Muscle & Fitness Articles & News" : (isB2K ? "Trending Moments" : "Trending"))}
           </span>
         </h2>
         
-        {/* Navigation Buttons */}
         <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
           <button 
             onClick={() => handleScroll('left')} 
@@ -181,7 +300,6 @@ export default function ChildNetworkFeeds({ parentId, accent = 'var(--accent-pri
         </div>
       </div>
 
-      {/* Horizontal Slider Scroll Container */}
       <div 
         ref={scrollRef}
         style={{
@@ -227,12 +345,15 @@ export default function ChildNetworkFeeds({ parentId, accent = 'var(--accent-pri
                 cursor: 'pointer'
               }}
               onClick={() => {
-                window.location.href = cleanLink;
+                if (isMf && post.articleUrl) {
+                  window.open(post.articleUrl, '_blank');
+                } else {
+                  window.location.href = cleanLink;
+                }
               }}
               className="child-feed-card"
             >
               <div>
-                {/* School Pill / Accent indicator */}
                 <div style={{
                   background: 'rgba(0,0,0,0.4)',
                   padding: '12px 18px',
@@ -252,11 +373,10 @@ export default function ChildNetworkFeeds({ parentId, accent = 'var(--accent-pri
                     gap: '6px'
                   }}>
                     <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: childAccent, boxShadow: `0 0 6px ${childAccent}` }} />
-                    {shortSchool}
+                    {isMf ? 'M&F Premium' : shortSchool}
                   </span>
                 </div>
 
-                {/* Post Creator Header */}
                 <div style={{ padding: '14px 18px', display: 'flex', alignItems: 'center', gap: '8px' }}>
                   <img
                     src={post.creator?.avatar_url || `https://ui-avatars.com/api/?name=${post.creator?.username || 'Creator'}&background=random`}
@@ -275,12 +395,11 @@ export default function ChildNetworkFeeds({ parentId, accent = 'var(--accent-pri
                       @{post.creator?.username}
                     </h4>
                     <span style={{ fontSize: '10px', color: 'var(--text-muted)' }}>
-                      Influencer
+                      {isMf ? 'Muscle & Fitness Writer' : 'Influencer'}
                     </span>
                   </div>
                 </div>
 
-                {/* Post Media (Image) - Sleeker Aspect Ratio */}
                 {(() => {
                   if (!post.image_url) return null;
                   let src = post.image_url;
@@ -317,7 +436,6 @@ export default function ChildNetworkFeeds({ parentId, accent = 'var(--accent-pri
                   );
                 })()}
 
-                {/* Post Body (Content Text) - Shorter height for compactness */}
                 <div style={{
                   padding: '16px 18px',
                   fontSize: '13px',
@@ -333,7 +451,6 @@ export default function ChildNetworkFeeds({ parentId, accent = 'var(--accent-pri
                 </div>
               </div>
 
-              {/* Card Footer / Engagement & Action */}
               <div style={{
                 padding: '16px 18px',
                 borderTop: '1px solid rgba(255,255,255,0.04)',
@@ -347,12 +464,12 @@ export default function ChildNetworkFeeds({ parentId, accent = 'var(--accent-pri
                     <Heart size={14} fill="#ff4d85" /> {post.likes}
                   </span>
                   <span style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '12px', color: 'var(--text-muted)', fontWeight: 'bold' }}>
-                    <MessageCircle size={14} /> Top
+                    <MessageCircle size={14} /> {isMf ? 'M&F' : 'Top'}
                   </span>
                 </div>
 
-                <a
-                  href={cleanLink}
+                <button
+                  type="button"
                   style={{
                     display: 'flex',
                     alignItems: 'center',
@@ -367,6 +484,7 @@ export default function ChildNetworkFeeds({ parentId, accent = 'var(--accent-pri
                     borderRadius: '10px',
                     border: `1.5px solid ${childAccent}`,
                     background: 'transparent',
+                    cursor: 'pointer',
                     transition: 'all 0.25s'
                   }}
                   onMouseOver={e => {
@@ -378,8 +496,8 @@ export default function ChildNetworkFeeds({ parentId, accent = 'var(--accent-pri
                     e.currentTarget.style.color = '#fff';
                   }}
                 >
-                  Visit <ArrowRight size={10} />
-                </a>
+                  {isMf ? 'Read Article' : 'Visit'} <ArrowRight size={10} />
+                </button>
               </div>
             </motion.div>
           );
@@ -389,7 +507,6 @@ export default function ChildNetworkFeeds({ parentId, accent = 'var(--accent-pri
       <style>{`
         .hide-scrollbar::-webkit-scrollbar { display: none; }
         
-        /* Responsive widths for smaller screens */
         @media (max-width: 1024px) {
           .child-feed-card {
             width: calc(33.333% - 16px) !important;
