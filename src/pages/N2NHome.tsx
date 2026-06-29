@@ -569,7 +569,7 @@ export default function N2NHome({ wlConfig, categories, activeVideo, setActiveVi
             <div className="banner-image-column" style={{
               flex: '0 0 45%', position: 'relative', overflow: 'hidden',
             }}>
-              {isOlympian ? (
+              {isOlympian || isMf ? (
                 <iframe
                   src="https://www.youtube.com/embed/njSC3gMfjjU?autoplay=1&mute=1&loop=1&playlist=njSC3gMfjjU&controls=0&showinfo=0&rel=0&start=56"
                   title="Mr. Olympia Promo Video"
