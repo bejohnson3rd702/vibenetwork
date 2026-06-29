@@ -4089,7 +4089,7 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
                 
                 <select value={newProduct.type} onChange={e => setNewProduct({...newProduct, type: e.target.value})} style={{ background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.1)', padding: '14px', borderRadius: '12px', color: 'var(--text-primary)', outline: 'none', fontSize: '15px', cursor: 'pointer' }}>
                   <option value="digital">Digital Download / Ticket</option>
-                  <option value="physical">Physical Merch (Ships)</option>
+                  {/* <option value="physical">Physical Merch (Ships)</option> */}
                 </select>
 
                 {newProduct.type === 'physical' && (
@@ -4207,9 +4207,8 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
             </motion.div>
           )}
 
-          {/* Store Grid */}
           {(() => {
-            const visibleProducts = products.filter(p => (isNetworkLevel && isOwnProfile && viewMode === 'edit') ? true : !p.hidden_from_network);
+            const visibleProducts = products.filter(p => p.type !== 'physical' && ((isNetworkLevel && isOwnProfile && viewMode === 'edit') ? true : !p.hidden_from_network));
             if (visibleProducts.length === 0) {
               return (
                  <div style={{ textAlign: 'center', padding: '60px 20px', background: 'rgba(0,0,0,0.2)', borderRadius: '24px', border: `1px solid ${wlConfig?.accent || '#00ff88'}22` }}>
@@ -8109,7 +8108,7 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
                       <label style={{ display: 'block', marginBottom: '6px', fontSize: '13px', color: 'var(--text-muted)' }}>Product Type</label>
                       <select value={editingProduct.type} onChange={e => setEditingProduct({ ...editingProduct, type: e.target.value })} style={{ width: '100%', background: 'rgba(0,0,0,0.4)', border: '1px solid rgba(255,255,255,0.1)', padding: '12px', borderRadius: '10px', color: 'var(--text-primary)', outline: 'none', cursor: 'pointer' }}>
                         <option value="digital">Digital Release</option>
-                        <option value="physical">Physical Merch</option>
+                        {/* <option value="physical">Physical Merch</option> */}
                       </select>
                     </div>
                   </div>
