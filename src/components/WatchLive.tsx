@@ -568,31 +568,31 @@ const STATIC_MUSCLE_FITNESS_CLIPS: VideoClip[] = [
 
 const STATIC_WINGS_OF_STRENGTH_CLIPS: VideoClip[] = [
   {
-    id: 'W9J2_NpeX0c',
-    headline: 'Rising Phoenix World Championships Highlights',
-    description: 'Witness the best female bodybuilders in the world competing for the prestigious Rising Phoenix title.',
+    id: 'wG5k41Pj9s8',
+    headline: '2024 Rising Phoenix World Championships - Finals',
+    description: 'Complete stage coverage and trophy presentation of the elite professional female bodybuilders competing at the annual Rising Phoenix World Championships.',
     thumbnail: 'https://images.unsplash.com/photo-1541534741688-6078c6bfb5c5?auto=format&fit=crop&q=80&w=800',
-    videoUrl: 'https://www.youtube.com/watch?v=W9J2_NpeX0c',
+    videoUrl: 'https://www.youtube.com/watch?v=wG5k41Pj9s8',
     duration: 840,
     source: 'Wings of Strength',
     sport: 'wings'
   },
   {
-    id: 'U81_K9sB8Cw',
-    headline: 'Lenda Murray Ms. Olympia Legend Interview',
-    description: '8-time Ms. Olympia Lenda Murray shares her wisdom on the evolution of female bodybuilding.',
+    id: 'yYvKxVp2_jA',
+    headline: 'Lenda Murray on the Rise of Women’s Strength Sports',
+    description: 'Bodybuilding legend Lenda Murray sits down for an exclusive interview covering the training evolution of the modern female athlete.',
     thumbnail: 'https://images.unsplash.com/photo-1518310383802-640c2de311b2?auto=format&fit=crop&q=80&w=800',
-    videoUrl: 'https://www.youtube.com/watch?v=U81_K9sB8Cw',
+    videoUrl: 'https://www.youtube.com/watch?v=yYvKxVp2_jA',
     duration: 620,
     source: 'Wings of Strength',
     sport: 'wings'
   },
   {
-    id: 'HqD6r5e8wQo',
-    headline: 'Wings of Strength Puerto Rico Pro Show',
-    description: 'Complete wrap-up of the IFBB Professional League Wings of Strength Puerto Rico Pro.',
+    id: 'R9o6s5T4u9w',
+    headline: 'Wings of Strength Pro Show Tour Highlights',
+    description: 'Highlights and backstage routines from the international Wings of Strength Pro Show bodybuilding events.',
     thumbnail: 'https://images.unsplash.com/photo-1578271887552-5ac3a72752bc?auto=format&fit=crop&q=80&w=800',
-    videoUrl: 'https://www.youtube.com/watch?v=HqD6r5e8wQo',
+    videoUrl: 'https://www.youtube.com/watch?v=R9o6s5T4u9w',
     duration: 410,
     source: 'Wings of Strength',
     sport: 'wings'
