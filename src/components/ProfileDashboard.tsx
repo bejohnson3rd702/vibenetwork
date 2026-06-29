@@ -3465,41 +3465,43 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
               )}
 
               {/* Floating Share Icon Button in the Lower Right Corner of the Card */}
-              <button 
-                type="button"
-                onClick={handleShareChannel}
-                style={{
-                  position: 'absolute',
-                  bottom: '24px',
-                  right: '24px',
-                  background: 'rgba(255,255,255,0.05)',
-                  border: '1px solid rgba(255,255,255,0.1)',
-                  color: 'var(--text-secondary)',
-                  width: '38px',
-                  height: '38px',
-                  borderRadius: '50%',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  cursor: 'pointer',
-                  backdropFilter: 'blur(10px)',
-                  transition: 'all 0.2s ease-in-out',
-                  zIndex: 5
-                }}
-                onMouseOver={e => {
-                  e.currentTarget.style.background = 'rgba(255,255,255,0.12)';
-                  e.currentTarget.style.color = '#fff';
-                  e.currentTarget.style.transform = 'scale(1.08)';
-                }}
-                onMouseOut={e => {
-                  e.currentTarget.style.background = 'rgba(255,255,255,0.05)';
-                  e.currentTarget.style.color = 'var(--text-secondary)';
-                  e.currentTarget.style.transform = 'scale(1)';
-                }}
-                title="Share Channel"
-              >
-                <Share2 size={16} />
-              </button>
+              {viewMode !== 'edit' && (
+                <button 
+                  type="button"
+                  onClick={handleShareChannel}
+                  style={{
+                    position: 'absolute',
+                    bottom: '24px',
+                    right: '24px',
+                    background: 'rgba(255,255,255,0.05)',
+                    border: '1px solid rgba(255,255,255,0.1)',
+                    color: 'var(--text-secondary)',
+                    width: '38px',
+                    height: '38px',
+                    borderRadius: '50%',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    cursor: 'pointer',
+                    backdropFilter: 'blur(10px)',
+                    transition: 'all 0.2s ease-in-out',
+                    zIndex: 5
+                  }}
+                  onMouseOver={e => {
+                    e.currentTarget.style.background = 'rgba(255,255,255,0.12)';
+                    e.currentTarget.style.color = '#fff';
+                    e.currentTarget.style.transform = 'scale(1.08)';
+                  }}
+                  onMouseOut={e => {
+                    e.currentTarget.style.background = 'rgba(255,255,255,0.05)';
+                    e.currentTarget.style.color = 'var(--text-secondary)';
+                    e.currentTarget.style.transform = 'scale(1)';
+                  }}
+                  title="Share Channel"
+                >
+                  <Share2 size={16} />
+                </button>
+              )}
             </div>
           </div>
           </>
