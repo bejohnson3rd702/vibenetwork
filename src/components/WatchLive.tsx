@@ -31,6 +31,11 @@ const OLYMPIAN_FEEDS = [
   { key: 'jaycutler', label: '👑 Jay Cutler', channelId: 'UCiq2MIlqqeOcEvj9cP9f1bA' },
 ];
 
+const WINGS_OF_STRENGTH_FEEDS = [
+  { key: 'wingsofstrength', label: '🦋 Wings of Strength', channelId: 'UCngoFKlTPRHju2cYhTSizHA' },
+  { key: 'olympiatv', label: '🏆 OlympiaTV', channelId: 'UCYukge4AuskD8xPjfrSoiBg' },
+];
+
 const MUSCLE_FITNESS_FEEDS = [
   { key: 'muscleandfitness', label: '💪 Muscle & Fitness', channelId: 'UCd14ZJ94n6J8tC0VnK1d1Sg' },
   { key: 'athleanx', label: '🏋️ Athlean-X', channelId: 'UCqpOf_Nl5F4j_gXS2fB_58g' },
@@ -1608,7 +1613,7 @@ export default function WatchLive({ accent = '#D35400', isOlympian = false, isMf
     }
   }, [showFanZone]);
 
-  const feedsToUse = isOlympian ? OLYMPIAN_FEEDS : (isMf ? MUSCLE_FITNESS_FEEDS : (isB2K ? B2K_FEEDS : (isVibe100 ? VIBE_100_FEEDS : (isVibe ? VIBE_FEEDS : (isKple ? KPLE_FEEDS : FEEDS)))));
+  const feedsToUse = isOlympian ? OLYMPIAN_FEEDS : (isMf ? MUSCLE_FITNESS_FEEDS : (isB2K ? B2K_FEEDS : (isVibe100 ? VIBE_100_FEEDS : (isVibe ? VIBE_FEEDS : (isKple ? KPLE_FEEDS : (tenantId === 'wings-of-strength-tenant-id' ? WINGS_OF_STRENGTH_FEEDS : FEEDS))))));
 
   const handleClipClick = (clip: VideoClip) => {
     const isYouTube = clip.videoUrl.includes('youtube.com') || clip.videoUrl.includes('youtu.be');
@@ -1633,7 +1638,7 @@ export default function WatchLive({ accent = '#D35400', isOlympian = false, isMf
 
       if (isWingsOfStrength) {
         const dynamicClips: VideoClip[] = [];
-        for (const feed of OLYMPIAN_FEEDS) {
+        for (const feed of WINGS_OF_STRENGTH_FEEDS) {
           try {
             const res = await fetch(`/api/yt-rss/${feed.channelId}`);
             if (!res.ok) continue;
