@@ -566,6 +566,105 @@ const STATIC_MUSCLE_FITNESS_CLIPS: VideoClip[] = [
   }
 ];
 
+const STATIC_WINGS_OF_STRENGTH_CLIPS: VideoClip[] = [
+  {
+    id: 'W9J2_NpeX0c',
+    headline: 'Rising Phoenix World Championships Highlights',
+    description: 'Witness the best female bodybuilders in the world competing for the prestigious Rising Phoenix title.',
+    thumbnail: 'https://images.unsplash.com/photo-1541534741688-6078c6bfb5c5?auto=format&fit=crop&q=80&w=800',
+    videoUrl: 'https://www.youtube.com/watch?v=W9J2_NpeX0c',
+    duration: 840,
+    source: 'Wings of Strength',
+    sport: 'wings'
+  },
+  {
+    id: 'U81_K9sB8Cw',
+    headline: 'Lenda Murray Ms. Olympia Legend Interview',
+    description: '8-time Ms. Olympia Lenda Murray shares her wisdom on the evolution of female bodybuilding.',
+    thumbnail: 'https://images.unsplash.com/photo-1518310383802-640c2de311b2?auto=format&fit=crop&q=80&w=800',
+    videoUrl: 'https://www.youtube.com/watch?v=U81_K9sB8Cw',
+    duration: 620,
+    source: 'Wings of Strength',
+    sport: 'wings'
+  },
+  {
+    id: 'HqD6r5e8wQo',
+    headline: 'Wings of Strength Puerto Rico Pro Show',
+    description: 'Complete wrap-up of the IFBB Professional League Wings of Strength Puerto Rico Pro.',
+    thumbnail: 'https://images.unsplash.com/photo-1578271887552-5ac3a72752bc?auto=format&fit=crop&q=80&w=800',
+    videoUrl: 'https://www.youtube.com/watch?v=HqD6r5e8wQo',
+    duration: 410,
+    source: 'Wings of Strength',
+    sport: 'wings'
+  }
+];
+
+const STATIC_MF_HERS_CLIPS: VideoClip[] = [
+  {
+    id: 'vyqy7PcDGLM',
+    headline: 'Full Body Strength & Conditioning Blueprint',
+    description: 'A high-intensity workout tutorial designed to build lean muscle and burn fat efficiently.',
+    thumbnail: '/n2n/mf_hers_bodybuilder.jpg',
+    videoUrl: 'https://www.youtube.com/watch?v=vyqy7PcDGLM',
+    duration: 620,
+    source: 'M&F Hers',
+    sport: 'hers_workouts'
+  },
+  {
+    id: 'U81_K9sB8Cw',
+    headline: 'Core & Glute Sculpting Workout',
+    description: 'Sculpt your core and build lower body power with these key exercises from M&F Hers.',
+    thumbnail: 'https://images.unsplash.com/photo-1518310383802-640c2de311b2?auto=format&fit=crop&q=80&w=800',
+    videoUrl: 'https://www.youtube.com/watch?v=U81_K9sB8Cw',
+    duration: 540,
+    source: 'M&F Hers',
+    sport: 'hers_workouts'
+  },
+  {
+    id: 'HqD6r5e8wQo',
+    headline: 'Fat Loss Nutrition & Supplementation Secrets',
+    description: 'Learn what vitamins, protein powders, and amino acids are essential for optimal athletic recovery.',
+    thumbnail: 'https://i0.wp.com/www.muscleandfitness.com/wp-content/uploads/2026/06/Leucine-powder-and-supplement-with-chemical-formula.jpg',
+    videoUrl: 'https://www.youtube.com/watch?v=HqD6r5e8wQo',
+    duration: 410,
+    source: 'M&F Hers',
+    sport: 'hers_workouts'
+  }
+];
+
+const STATIC_FLEX_ONLINE_CLIPS: VideoClip[] = [
+  {
+    id: 'vyqy7PcDGLM',
+    headline: 'Hardcore Bodybuilder Posing Routine Highlights',
+    description: 'Dorian Yates and Mike Mentzer classic training methods demonstrated by elite champions.',
+    thumbnail: 'https://i0.wp.com/www.muscleandfitness.com/wp-content/uploads/2026/06/Bodybuilders-Mike-Mentzer-and-Dorian-Yates-training-and-mentoring-the-young-bodybuilder-on-the-Maximum-Results-training-method.jpg',
+    videoUrl: 'https://www.youtube.com/watch?v=vyqy7PcDGLM',
+    duration: 620,
+    source: 'Flex Online',
+    sport: 'flex'
+  },
+  {
+    id: 'U81_K9sB8Cw',
+    headline: 'Golden Era Maximum Intensity Training',
+    description: 'Dorian Yates shares bodybuilding secrets of building absolute mass using brief, intense exercises.',
+    thumbnail: 'https://images.unsplash.com/photo-1578271887552-5ac3a72752bc?auto=format&fit=crop&q=80&w=800',
+    videoUrl: 'https://www.youtube.com/watch?v=U81_K9sB8Cw',
+    duration: 540,
+    source: 'Flex Online',
+    sport: 'flex'
+  },
+  {
+    id: 'HqD6r5e8wQo',
+    headline: 'Mr. Olympia Heavyweight Pre-Judging Showdown',
+    description: 'Exclusive coverage of the heavyweight comparisons live from the main arena stage.',
+    thumbnail: '/n2n/derek.jpeg',
+    videoUrl: 'https://www.youtube.com/watch?v=HqD6r5e8wQo',
+    duration: 410,
+    source: 'Flex Online',
+    sport: 'flex'
+  }
+];
+
 const STATIC_VIBE_CLIPS: VideoClip[] = [
   {
     id: '4cqcl3Jy_hw',
@@ -720,7 +819,7 @@ const generateFallbackTranscript = (title: string, description: string) => {
   ];
 };
 
-export default function WatchLive({ accent = '#D35400', isOlympian = false, isMf = false, isB2K = false, isVibe = false, isKple = false, isVibe100 = false }: { accent?: string; isOlympian?: boolean; isMf?: boolean; isB2K?: boolean; isVibe?: boolean; isKple?: boolean; isVibe100?: boolean }) {
+export default function WatchLive({ accent = '#D35400', isOlympian = false, isMf = false, isB2K = false, isVibe = false, isKple = false, isVibe100 = false, tenantId = '' }: { accent?: string; isOlympian?: boolean; isMf?: boolean; isB2K?: boolean; isVibe?: boolean; isKple?: boolean; isVibe100?: boolean; tenantId?: string }) {
   const [clips, setClips] = useState<VideoClip[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeVideo, setActiveVideo] = useState<VideoClip | null>(null);
@@ -1498,7 +1597,135 @@ export default function WatchLive({ accent = '#D35400', isOlympian = false, isMf
       const allClips: VideoClip[] = [];
       const seen = new Set<string>();
 
-      if (isOlympian) {
+      const isWingsOfStrength = tenantId === 'wings-of-strength-tenant-id';
+      const isHers = tenantId === 'mf-hers-tenant-id';
+      const isFlex = tenantId === 'flex-online-tenant-id';
+
+      if (isWingsOfStrength) {
+        const dynamicClips: VideoClip[] = [];
+        for (const feed of OLYMPIAN_FEEDS) {
+          try {
+            const res = await fetch(`/api/yt-rss/${feed.channelId}`);
+            if (!res.ok) continue;
+            const xmlText = await res.text();
+            const parser = new DOMParser();
+            const xml = parser.parseFromString(xmlText, 'text/xml');
+            const entries = xml.getElementsByTagName('entry');
+            for (let i = 0; i < entries.length; i++) {
+              const entry = entries[i];
+              const id = entry.getElementsByTagName('yt:videoId')[0]?.textContent || entry.getElementsByTagName('id')[0]?.textContent?.split(':').pop() || '';
+              const headline = entry.getElementsByTagName('title')[0]?.textContent || '';
+              const mediaGroup = entry.getElementsByTagName('media:group')[0];
+              const description = mediaGroup?.getElementsByTagName('media:description')[0]?.textContent || entry.getElementsByTagName('summary')[0]?.textContent || '';
+              const thumbnail = mediaGroup?.getElementsByTagName('media:thumbnail')[0]?.getAttribute('url') || `https://i.ytimg.com/vi/${id}/hqdefault.jpg`;
+              const videoUrl = `https://www.youtube.com/watch?v=${id}`;
+              const publishedText = entry.getElementsByTagName('published')[0]?.textContent || '';
+              const published = publishedText ? new Date(publishedText) : new Date(0);
+              if (id && !seen.has(id)) {
+                seen.add(id);
+                dynamicClips.push({
+                  id, headline, description, thumbnail, videoUrl,
+                  duration: 0, source: 'YouTube', sport: 'wings', published
+                });
+              }
+            }
+          } catch (e) {
+            console.warn(e);
+          }
+        }
+        dynamicClips.sort((a, b) => (b.published?.getTime() || 0) - (a.published?.getTime() || 0));
+        allClips.push(...dynamicClips);
+        
+        for (const item of STATIC_WINGS_OF_STRENGTH_CLIPS) {
+          if (!seen.has(item.id)) {
+            seen.add(item.id);
+            allClips.push(item);
+          }
+        }
+      } else if (isHers) {
+        const dynamicClips: VideoClip[] = [];
+        for (const feed of MUSCLE_FITNESS_FEEDS) {
+          try {
+            const res = await fetch(`/api/yt-rss/${feed.channelId}`);
+            if (!res.ok) continue;
+            const xmlText = await res.text();
+            const parser = new DOMParser();
+            const xml = parser.parseFromString(xmlText, 'text/xml');
+            const entries = xml.getElementsByTagName('entry');
+            for (let i = 0; i < entries.length; i++) {
+              const entry = entries[i];
+              const id = entry.getElementsByTagName('yt:videoId')[0]?.textContent || entry.getElementsByTagName('id')[0]?.textContent?.split(':').pop() || '';
+              const headline = entry.getElementsByTagName('title')[0]?.textContent || '';
+              const mediaGroup = entry.getElementsByTagName('media:group')[0];
+              const description = mediaGroup?.getElementsByTagName('media:description')[0]?.textContent || entry.getElementsByTagName('summary')[0]?.textContent || '';
+              const thumbnail = mediaGroup?.getElementsByTagName('media:thumbnail')[0]?.getAttribute('url') || `https://i.ytimg.com/vi/${id}/hqdefault.jpg`;
+              const videoUrl = `https://www.youtube.com/watch?v=${id}`;
+              const publishedText = entry.getElementsByTagName('published')[0]?.textContent || '';
+              const published = publishedText ? new Date(publishedText) : new Date(0);
+              const matchesHers = headline.toLowerCase().includes('woman') || headline.toLowerCase().includes('women') || headline.toLowerCase().includes('hers') || headline.toLowerCase().includes('girl') || headline.toLowerCase().includes('female') || headline.toLowerCase().includes('workout') || headline.toLowerCase().includes('fitness') || headline.toLowerCase().includes('yoga') || headline.toLowerCase().includes('glute') || headline.toLowerCase().includes('abs');
+              if (id && !seen.has(id) && matchesHers) {
+                seen.add(id);
+                dynamicClips.push({
+                  id, headline, description, thumbnail, videoUrl,
+                  duration: 0, source: 'YouTube', sport: 'hers_workouts', published
+                });
+              }
+            }
+          } catch (e) {
+            console.warn(e);
+          }
+        }
+        dynamicClips.sort((a, b) => (b.published?.getTime() || 0) - (a.published?.getTime() || 0));
+        allClips.push(...dynamicClips);
+        
+        for (const item of STATIC_MF_HERS_CLIPS) {
+          if (!seen.has(item.id)) {
+            seen.add(item.id);
+            allClips.push(item);
+          }
+        }
+      } else if (isFlex) {
+        const dynamicClips: VideoClip[] = [];
+        for (const feed of OLYMPIAN_FEEDS) {
+          try {
+            const res = await fetch(`/api/yt-rss/${feed.channelId}`);
+            if (!res.ok) continue;
+            const xmlText = await res.text();
+            const parser = new DOMParser();
+            const xml = parser.parseFromString(xmlText, 'text/xml');
+            const entries = xml.getElementsByTagName('entry');
+            for (let i = 0; i < entries.length; i++) {
+              const entry = entries[i];
+              const id = entry.getElementsByTagName('yt:videoId')[0]?.textContent || entry.getElementsByTagName('id')[0]?.textContent?.split(':').pop() || '';
+              const headline = entry.getElementsByTagName('title')[0]?.textContent || '';
+              const mediaGroup = entry.getElementsByTagName('media:group')[0];
+              const description = mediaGroup?.getElementsByTagName('media:description')[0]?.textContent || entry.getElementsByTagName('summary')[0]?.textContent || '';
+              const thumbnail = mediaGroup?.getElementsByTagName('media:thumbnail')[0]?.getAttribute('url') || `https://i.ytimg.com/vi/${id}/hqdefault.jpg`;
+              const videoUrl = `https://www.youtube.com/watch?v=${id}`;
+              const publishedText = entry.getElementsByTagName('published')[0]?.textContent || '';
+              const published = publishedText ? new Date(publishedText) : new Date(0);
+              if (id && !seen.has(id)) {
+                seen.add(id);
+                dynamicClips.push({
+                  id, headline, description, thumbnail, videoUrl,
+                  duration: 0, source: 'YouTube', sport: 'flex', published
+                });
+              }
+            }
+          } catch (e) {
+            console.warn(e);
+          }
+        }
+        dynamicClips.sort((a, b) => (b.published?.getTime() || 0) - (a.published?.getTime() || 0));
+        allClips.push(...dynamicClips);
+        
+        for (const item of STATIC_FLEX_ONLINE_CLIPS) {
+          if (!seen.has(item.id)) {
+            seen.add(item.id);
+            allClips.push(item);
+          }
+        }
+      } else if (isOlympian) {
         const dynamicClips: VideoClip[] = [];
         for (const feed of OLYMPIAN_FEEDS) {
           try {
@@ -1950,7 +2177,7 @@ export default function WatchLive({ accent = '#D35400', isOlympian = false, isMf
     fetchClips(false);
     const interval = setInterval(() => fetchClips(true), 3600000); // refresh silently every hour
     return () => clearInterval(interval);
-  }, [isOlympian, isMf, isB2K, isVibe, isKple, isVibe100]);
+  }, [isOlympian, isMf, isB2K, isVibe, isKple, isVibe100, tenantId]);
 
   useEffect(() => {
     if (activeVideo) {

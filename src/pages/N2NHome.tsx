@@ -149,12 +149,24 @@ export default function N2NHome({ wlConfig, categories, activeVideo, setActiveVi
     if (!config?.id) return;
     let cancelled = false;
     (async () => {
-      let children = await getChildNetworks(config.id);
+      const parentId = config.parent_network_id || config.theme?.parent_network_id || '';
+      const isMfFamily = isMf || isOlympian || 
+                         config.id === 'wings-of-strength-tenant-id' ||
+                         config.id === 'mf-hers-tenant-id' ||
+                         config.id === 'flex-online-tenant-id';
+
+      let targetId = config.id;
+      if (isMfFamily && parentId) {
+        targetId = parentId;
+      } else if (isMfFamily && !isMf) {
+        targetId = '7a017c4d-c08f-4260-8540-a0cc8bed4e11';
+      }
+
+      let children = await getChildNetworks(targetId);
       if (cancelled) return;
 
       // Sort Mr. Olympia first if parent is Muscle & Fitness
-      const isMf = isMuscleFitnessConfig(config);
-      if (isMf) {
+      if (isMfFamily) {
         children = [...children].sort((a: any, b: any) => {
           const isOlympiaA = a.id === '7a017c4d-c08f-4260-8540-a0cc8bed4e12' || (a.name || '').toLowerCase().includes('olympia');
           const isOlympiaB = b.id === '7a017c4d-c08f-4260-8540-a0cc8bed4e12' || (b.name || '').toLowerCase().includes('olympia');
@@ -241,6 +253,10 @@ export default function N2NHome({ wlConfig, categories, activeVideo, setActiveVi
 
   const isOlympian = isOlympianConfig(config);
   const isMf = isMuscleFitnessConfig(config);
+  const isMfFamily = isMf || isOlympian || 
+                     config?.id === 'wings-of-strength-tenant-id' ||
+                     config?.id === 'mf-hers-tenant-id' ||
+                     config?.id === 'flex-online-tenant-id';
   const isB2K = isB2kConfig(config);
   const isKple = isKpleConfig(config);
 
@@ -580,7 +596,7 @@ export default function N2NHome({ wlConfig, categories, activeVideo, setActiveVi
         {/* ── Watch Live ──────────────────────────────────────── */}
         <div id="whats-on-now">
           <Suspense fallback={null}>
-            <WatchLive accent={config.accent} isOlympian={isOlympian} isMf={isMf} isB2K={isB2K} isVibe={isVibe} isKple={isKple} isVibe100={isVibe100} />
+            <WatchLive accent={config.accent} isOlympian={isOlympian} isMf={isMf} isB2K={isB2K} isVibe={isVibe} isKple={isKple} isVibe100={isVibe100} tenantId={config?.id} />
           </Suspense>
         </div>
 
@@ -712,11 +728,15 @@ export default function N2NHome({ wlConfig, categories, activeVideo, setActiveVi
         )}
 
         {/* ── Muscle & Fitness Sponsors Slider ──────────────────── */}
-        {(isMf && childItems.length > 0) && (
+        {(isMfFamily && childItems.length > 0) && (
           <div id="mf-sponsors-slider" style={{ marginTop: '20px', marginBottom: '20px' }}>
             <SliderSection
               title="SPONSORS"
-              items={childItems.filter(item => !(item.title || '').toLowerCase().includes('olympia'))}
+              items={childItems.filter(item => {
+                const isCurrent = (item.title || '').toLowerCase() === (config?.name || '').toLowerCase() || item.id === config?.id;
+                const isOlympia = (item.title || '').toLowerCase().includes('olympia');
+                return !isCurrent && !isOlympia;
+              })}
               delay={0}
               aspectRatio="16/9"
               cardsPerView={4}
