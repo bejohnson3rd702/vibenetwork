@@ -414,7 +414,7 @@ export default function N2NHome({ wlConfig, categories, activeVideo, setActiveVi
       {/* NCAA College Ticker — bottom of hero */}
       <div style={{ position: 'relative', zIndex: 10 }}>
         <Suspense fallback={null}>
-          <CollegeTicker accent={config.accent} isOlympian={isOlympian} isB2K={isB2K} isKple={isKple} isWings={tenantId === 'wings-of-strength-tenant-id'} />
+          <CollegeTicker accent={config.accent} isOlympian={isOlympian} isB2K={isB2K} isKple={isKple} isWings={config?.id === 'wings-of-strength-tenant-id'} />
         </Suspense>
       </div>
 
