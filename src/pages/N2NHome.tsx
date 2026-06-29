@@ -164,6 +164,14 @@ export default function N2NHome({ wlConfig, categories, activeVideo, setActiveVi
                  config?.id === 'adb92e36-5ebc-4dc3-ae96-429f3dc1bb30');
 
 
+  const WINGS_SPONSORS = [
+    { id: 'wos-sponsor-charged', title: 'Charged', image: '/n2n/sponsor_charged.png', linkUrl: 'https://wingsofstrength.net/', tags: ['Network'], accent: '#FF9D00' },
+    { id: 'wos-sponsor-s4f', title: 'S4F Summit', image: '/n2n/sponsor_s4f.png', linkUrl: 'https://wingsofstrength.net/', tags: ['Network'], accent: '#FF9D00' },
+    { id: 'wos-sponsor-nebbia', title: 'Nebbia', image: '/n2n/sponsor_nebbia.png', linkUrl: 'https://nebbia.fitness/', tags: ['Network'], accent: '#FF9D00' },
+    { id: 'wos-sponsor-gymstack', title: 'Gym Stack', image: '/n2n/sponsor_gymstack.png', linkUrl: 'https://wingsofstrength.net/', tags: ['Network'], accent: '#FF9D00' },
+    { id: 'wos-sponsor-gymmakers', title: 'Gym Makers', image: '/n2n/sponsor_gymmakers.png', linkUrl: 'https://wingsofstrength.net/', tags: ['Network'], accent: '#FF9D00' },
+  ];
+
   // ─── AVO Hero Slides — real shopavo.la CDN images ───────────────
   const AVO_HERO_SLIDES = [
     { school: 'Baylor', short: 'Baylor', subtitle: 'New Collection', copy: 'Represent the Bears with our newest campus essentials.', image: 'https://shopavo.la/cdn/shop/files/msu-hp-hero_1500x.jpg?v=1775144388', link: 'https://shopavo.la/collections/baylor' },
@@ -668,11 +676,11 @@ export default function N2NHome({ wlConfig, categories, activeVideo, setActiveVi
         )}
 
         {/* ── Muscle & Fitness Sponsors Slider ──────────────────── */}
-        {(isMfFamily && childItems.length > 0) && (
+        {(isMfFamily && (childItems.length > 0 || config?.id === 'wings-of-strength-tenant-id')) && (
           <div id="mf-sponsors-slider" style={{ marginTop: '20px', marginBottom: '20px' }}>
             <SliderSection
               title="SPONSORS"
-              items={childItems.filter(item => {
+              items={config?.id === 'wings-of-strength-tenant-id' ? WINGS_SPONSORS : childItems.filter(item => {
                 const isCurrent = (item.title || '').toLowerCase() === (config?.name || '').toLowerCase() || item.id === config?.id;
                 const isOlympia = (item.title || '').toLowerCase().includes('olympia');
                 const isMediaNetwork = item.id === 'wings-of-strength-tenant-id' || 
