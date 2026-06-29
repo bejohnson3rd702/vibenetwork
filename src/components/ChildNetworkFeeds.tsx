@@ -35,87 +35,46 @@ interface PostItem {
 
 const ARTICLE_BODIES: Record<string, { category: string; sections: string[]; routine?: string[]; tips?: string }> = {
   'mf-art-1': {
-    category: 'Training & Longevity',
+    category: 'INTERVIEWS',
     sections: [
-      'LA Clippers star guard Norman Powell shares his in-season workout strategy designed to maintain explosive force, power, and athletic longevity without overtaxing his central nervous system during the rigorous NBA schedule.',
-      'During the season, the primary goal is not raw muscle building but rather maintenance, joint stability, injury prevention, and core power. Powell emphasizes high eccentric control and deep activation.'
+      "Max Reps, No Rest Days: Zach John King is putting everything on the bar. There’s strength in honesty with this country artist's new album, 'I'm What You Picture'.",
+      "Between writing hit records and touring across the country, Zach John King follows a heavy lifting, high-intensity split to build raw power. Here is a look at his daily physical grind."
     ],
     routine: [
-      'Bulgarian Split Squats: 3 sets x 8 reps (Focus on depth and glute load)',
-      'Single-Arm Dumbbell Incline Bench Press: 3 sets x 10 reps (Unilateral control)',
-      'Single-Leg Glute Bridges: 3 sets x 12 reps (Posterior chain activation)',
-      'Med Ball Rotational Slams: 3 sets x 10 reps per side (Core power)'
+      'Deadlifts: 4 sets x 8, 6, 4, 2 reps (Heavy weight, maximal effort)',
+      'Dumbbell Flat Bench Press: 4 sets x 10, 8, 8, 6 reps',
+      'Weighted Pull-ups: 3 sets x max reps (To complete failure)',
+      'Barbell Bicep Curls: 3 sets x 12 reps'
     ],
-    tips: 'Keep intensity high but volume moderate during the active season to prioritize recovery.'
+    tips: 'Consistency is your main driver. Keep pushing the boundaries of your lifts every single week.'
   },
   'mf-art-2': {
-    category: 'Hypertrophy & Mass',
+    category: 'WORKOUT TIPS',
     sections: [
-      'IFBB Pro Damien Patrick details the high-volume back day workout that helped him carve out maximum detail, thickness, and width during his final prep phases for the Olympia stage.',
-      'His philosophy revolves around maximum squeeze at peak contraction and slow negative release to target deep motor units.'
+      "Dumbbells or Kettlebells? Here's what most lifters need to hear about both training tools.",
+      "For most lifters, old-school tools may be the safest, simplest, and most results-driven choices for muscle development and core stability. While dumbbells are ideal for linear, isolated muscle growth, kettlebells excel at dynamic, explosive, and multi-planar movements."
     ],
     routine: [
-      'Wide-Grip Cable Lat Pulldowns: 4 sets x 12, 10, 8, 8 reps (Squeeze at the bottom)',
-      'Single-Arm Machine Rows: 3 sets x 10 reps (Pull with your elbows)',
-      'Barbell Bent-Over Rows: 4 sets x 10 reps (Heavy compound lifter)',
-      'Straight-Arm Cable Pullovers: 3 sets x 15 reps (Stretches the lat fascia)'
+      'Dumbbell Romanian Deadlifts: 3 sets x 10 reps (Focus on hamstring stretch)',
+      'Kettlebell Swings: 4 sets x 20 reps (Explosive hip extension)',
+      'Dumbbell Shoulder Press: 3 sets x 8 reps (Linear overhead power)',
+      'Kettlebell Goblet Squats: 3 sets x 12 reps (Core and quad activation)'
     ],
-    tips: 'Control the negative portion of every single repetition to recruit maximum muscle fibers.'
+    tips: 'Use dumbbells for hypertrophy and kettlebells for conditioning, core, and functional athleticism.'
   },
   'mf-art-3': {
-    category: 'Leg Hypertrophy',
+    category: 'NEWS',
     sections: [
-      'Sam Sulek breaks down his quad-focused leg day routine used during his cutting cycles to carve deep, feather-like detail into the vastus lateralis and rectus femoris.',
-      'Sulek focuses on intense knee flexion, pushing past failure, and maximizing volume on isolation machine lifts.'
+      "Milos Sarcev reveals the one mistake that could cost Nick Walker the Tampa Pro.",
+      "On the recent 'Menace Podcast', legendary coach Milos Sarcev analyzed Nick Walker's conditioning and pointed out a crucial error in his transition posing that might impact his scoring against Joe Palacios."
     ],
     routine: [
-      'Leg Extensions: 5 sets x 15-20 reps (Hold contraction, warm up the knees)',
-      'Smith Machine Squats: 4 sets x 8-12 reps (Deep depth, slow eccentric tempo)',
-      'Horizontal Leg Press: 3 sets x 10-12 reps (High and wide foot placement)',
-      'Dumbbell Walking Lunges: 3 sets x 20 steps (Total leg finisher)'
+      'Transition Posing: Hold every mandatory pose for 10 seconds without breathing out.',
+      'Side Chest Pose: Focus on keeping the ribcage high and contracting the hamstrings.',
+      'Front Double Biceps: Keep elbows high and vacuum the midsection.',
+      'Abdominal and Thigh: Control breathing and maintain complete core stability.'
     ],
-    tips: 'Focus on full range of motion and deep knee flexion rather than raw weight load.'
-  },
-  'mf-art-4': {
-    category: 'Diet & Nutrition',
-    sections: [
-      'A comprehensive, science-backed nutrition blueprint designed to safely shred body fat while maintaining high energy levels and retaining lean tissue mass.',
-      'Consistent meal prep and precise macro breakdown are critical. Focus on high protein, moderate healthy fats, and low glycemic carbs.'
-    ],
-    routine: [
-      'Meal 1: 5 Egg Whites, 1 Whole Egg, 1/2 Cup Oats with Berries.',
-      'Meal 2: 6oz Grilled Chicken Breast, 1 Cup Broccoli, 4oz Sweet Potato.',
-      'Meal 3: 6oz Grilled Tilapia, Mixed Greens Salad with Olive Oil.',
-      'Meal 4 (Post-Workout): 1.5 scoops Whey Isolate, 1 Medium Banana.',
-      'Meal 5: 6oz Lean Sirloin Steak, Grilled Asparagus.'
-    ],
-    tips: 'Drink at least 1 gallon of clean water daily to support metabolic function and recovery.'
-  },
-  'mf-art-5': {
-    category: 'Endurance & Conditioning',
-    sections: [
-      'Champion athlete Zach Fowle shares the intense rowing drills, lung-burning interval splits, and mental framing techniques he used to prepare his body for the USRowing Indoor Championships.',
-      'Rowing requires an extraordinary balance of aerobic capacity and muscular power. Pacing is everything.'
-    ],
-    routine: [
-      'Interval Work: 4x 1,000m row (Targeting 2k pace, 3 mins rest between)',
-      'Aerobic Base: 45-minute steady-state row (Keep strokes per minute at 18-20)',
-      'Strength Assist: Deadlifts and plank holds to maintain strong posture.'
-    ],
-    tips: 'Pace the first quarter of your piece conservatively to preserve energy for a strong finish.'
-  },
-  'mf-art-6': {
-    category: 'Science & Metabolism',
-    sections: [
-      'Sports science researchers and nutrition physiologists debunk the myths surrounding weight fluctuation and explain how repeated cycles of rapid weight loss and gain affect thyroid production, metabolic rate, and hormone signaling.',
-      'Yo-yo dieting damages metabolic efficiency. Protecting muscle mass through resistance training and consuming sufficient protein is key to long-term health.'
-    ],
-    routine: [
-      'Metabolic Adaptation: Energy output decreases to match restricted calories.',
-      'Hormonal Shifts: Dieting decreases leptin (fullness) and increases ghrelin (hunger).',
-      'The Solution: Deficits should be small (10-15%) with gradual step-ups.'
-    ],
-    tips: 'Avoid crash dieting; a slow caloric reduction ensures your metabolism remains active.'
+    tips: 'Bodybuilding shows are won in the transitions. Posing stamina is just as important as heavy training.'
   }
 };
 
@@ -130,15 +89,14 @@ export default function ChildNetworkFeeds({ parentId, accent = 'var(--accent-pri
       const mfArticles: PostItem[] = [
         {
           id: 'mf-art-1',
-          content: 'Norman Powell’s LA Clippers In-Season Routine: LA Clippers star Norman Powell details his functional, in-season workout strategy targeting maintenance, joint longevity, and explosive speed on the hardwood.',
-          image_url: 'https://images.unsplash.com/photo-1541534741688-6078c6bfb5c5?auto=format&fit=crop&q=80&w=800',
+          content: "MAX REPS, NO REST DAYS: ZAcH JOHN KING IS PUTTING EVERYTHING ON THE BAR. There’s strength in honesty with this country artist's new album, \"I'm What You Picture\".",
+          image_url: 'https://images.unsplash.com/photo-1541899481282-d53bffe3c35d?auto=format&fit=crop&q=80&w=800',
           likes: 2450,
           created_at: new Date().toISOString(),
           creator_id: 'powell-fit',
-          articleUrl: 'https://www.muscleandfitness.com/athletes-celebrities/interviews/norman-powell-la-clippers-in-season-workout/',
           creator: {
-            username: 'normanpowell',
-            avatar_url: 'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?auto=format&fit=crop&q=100&w=100',
+            username: 'zachjohnking',
+            avatar_url: 'https://images.unsplash.com/photo-1534538327276-14e5300c3a48?auto=format&fit=crop&q=100&w=100',
             whitelabel_id: 'mf-wl',
             whitelabel: {
               id: 'mf-wl',
@@ -150,14 +108,13 @@ export default function ChildNetworkFeeds({ parentId, accent = 'var(--accent-pri
         },
         {
           id: 'mf-art-2',
-          content: 'Damien Patrick’s Olympia 2025 Back Workout: Learn the latent training techniques, heavy rows, and lat pulldown splits Damien Patrick uses to build thickness and width ahead of his 2025 stage appearance.',
-          image_url: 'https://images.unsplash.com/photo-1581009146145-b5ef050c2e1e?auto=format&fit=crop&q=80&w=800',
+          content: "DUMBBELLS OR KETTLEBELLS? HERE'S WHAT MOST LIFTERS NEED TO HEAR ABOUT BOTH. For most lifters, old-school tools may be the safest, simplest and most results-driven choices.",
+          image_url: 'https://images.unsplash.com/photo-1583454110551-21f2fa2afe61?auto=format&fit=crop&q=80&w=800',
           likes: 1890,
           created_at: new Date().toISOString(),
           creator_id: 'damien-patrick',
-          articleUrl: 'https://www.muscleandfitness.com/workouts/back-exercises/damien-patrick-olympia-back-workout/',
           creator: {
-            username: 'damienpatrick',
+            username: 'mf_workout_tips',
             avatar_url: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&q=100&w=100',
             whitelabel_id: 'mf-wl',
             whitelabel: {
@@ -170,75 +127,14 @@ export default function ChildNetworkFeeds({ parentId, accent = 'var(--accent-pri
         },
         {
           id: 'mf-art-3',
-          content: 'Sam Sulek’s Quad-Focused Leg Day Secrets: Sam Sulek breaks down his high-intensity, low-rep leg day routine for maximum quadriceps hypertrophy and deep conditioning during his cutting phases.',
-          image_url: 'https://images.unsplash.com/photo-1593079831268-3381b0db4a77?auto=format&fit=crop&q=80&w=800',
+          content: "MILOS SARCEV REVEALS THE ONE MISTAKE THAT COULD COST NICK WALKER THE TAMPA PRO. The \"Menace Podcast\" discussed his posing stamina against Joe Palacios.",
+          image_url: 'https://images.unsplash.com/photo-1578271887552-5ac3a72752bc?auto=format&fit=crop&q=80&w=800',
           likes: 3120,
           created_at: new Date().toISOString(),
           creator_id: 'sam-sulek',
-          articleUrl: 'https://www.muscleandfitness.com/workouts/leg-exercises/sam-sulek-quad-focused-leg-day/',
           creator: {
-            username: 'samsulek',
+            username: 'menacepodcast',
             avatar_url: 'https://images.unsplash.com/photo-1570295999919-56ceb5ecca61?auto=format&fit=crop&q=100&w=100',
-            whitelabel_id: 'mf-wl',
-            whitelabel: {
-              id: 'mf-wl',
-              name: 'Muscle & Fitness',
-              domain: 'muscleandfitness.com',
-              theme: { accent: '#E31B23' }
-            }
-          }
-        },
-        {
-          id: 'mf-art-4',
-          content: 'The 28-Days-to-Lean Meal Plan and Nutrition Guide: A comprehensive, science-backed nutrition blueprint outlining high-protein, calorie-controlled meal preparation designed to shred fat while preserving lean muscle mass.',
-          image_url: 'https://images.unsplash.com/photo-1490645935967-10de6ba17061?auto=format&fit=crop&q=80&w=800',
-          likes: 1280,
-          created_at: new Date().toISOString(),
-          creator_id: 'mf-nutrition',
-          articleUrl: 'https://www.muscleandfitness.com/nutrition/meal-plans/28-days-lean-meal-plan/',
-          creator: {
-            username: 'mf_nutrition',
-            avatar_url: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?auto=format&fit=crop&q=100&w=100',
-            whitelabel_id: 'mf-wl',
-            whitelabel: {
-              id: 'mf-wl',
-              name: 'Muscle & Fitness',
-              domain: 'muscleandfitness.com',
-              theme: { accent: '#E31B23' }
-            }
-          }
-        },
-        {
-          id: 'mf-art-5',
-          content: 'Zach Fowle’s USRowing Indoor Championships Prep: Zach Fowle details the physical conditioning, high-stroke pacing, and mental endurance strategies he used to prepare for the 2025 championships.',
-          image_url: 'https://images.unsplash.com/photo-1517838277536-f5f99be501cd?auto=format&fit=crop&q=80&w=800',
-          likes: 980,
-          created_at: new Date().toISOString(),
-          creator_id: 'zach-fowle',
-          articleUrl: 'https://www.muscleandfitness.com/athletes-celebrities/news/zach-fowle-indoor-rowing/',
-          creator: {
-            username: 'zachfowle',
-            avatar_url: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=100&w=100',
-            whitelabel_id: 'mf-wl',
-            whitelabel: {
-              id: 'mf-wl',
-              name: 'Muscle & Fitness',
-              domain: 'muscleandfitness.com',
-              theme: { accent: '#E31B23' }
-            }
-          }
-        },
-        {
-          id: 'mf-art-6',
-          content: 'Metabolism Myths: The Physiological Truth About Yo-Yo Dieting: Fitness physiologists break down the science of chronic dieting and how rapid body composition shifts affect daily energy expenditure and thyroid hormones.',
-          image_url: 'https://images.unsplash.com/photo-1548690312-e3b507d8c110?auto=format&fit=crop&q=80&w=800',
-          likes: 1670,
-          created_at: new Date().toISOString(),
-          creator_id: 'mf-science',
-          articleUrl: 'https://www.muscleandfitness.com/nutrition/healthy-eating/yo-yo-dieting-metabolism/',
-          creator: {
-            username: 'mf_science',
-            avatar_url: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&q=100&w=100',
             whitelabel_id: 'mf-wl',
             whitelabel: {
               id: 'mf-wl',
@@ -340,7 +236,7 @@ export default function ChildNetworkFeeds({ parentId, accent = 'var(--accent-pri
         <h2 style={{ fontSize: '28px', margin: 0, fontWeight: 900, display: 'flex', alignItems: 'center', gap: '16px', letterSpacing: '-0.5px' }}>
           <span style={{ width: '4px', height: '24px', borderRadius: '4px', background: accent, boxShadow: `0 0 10px ${accent}` }} />
           <span style={{ color: 'var(--text-primary)', textTransform: 'uppercase' }}>
-            {isOlympian ? "Trending Partner Moments" : (isMf ? "Muscle & Fitness Articles & News" : (isB2K ? "Trending Moments" : "Trending"))}
+            {isOlympian ? "Trending Partner Moments" : (isMf ? "M&F Workouts" : (isB2K ? "Trending Moments" : "Trending"))}
           </span>
         </h2>
         
@@ -463,7 +359,7 @@ export default function ChildNetworkFeeds({ parentId, accent = 'var(--accent-pri
                     gap: '6px'
                   }}>
                     <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: childAccent, boxShadow: `0 0 6px ${childAccent}` }} />
-                    {isMf ? 'M&F Premium' : shortSchool}
+                    {isMf ? (details?.category || 'M&F') : shortSchool}
                   </span>
                 </div>
 
@@ -485,7 +381,7 @@ export default function ChildNetworkFeeds({ parentId, accent = 'var(--accent-pri
                       @{post.creator?.username}
                     </h4>
                     <span style={{ fontSize: '10px', color: 'var(--text-muted)' }}>
-                      {isMf ? 'Muscle & Fitness Writer' : 'Influencer'}
+                      {isMf ? 'M&F Editor' : 'Influencer'}
                     </span>
                   </div>
                 </div>
@@ -530,14 +426,15 @@ export default function ChildNetworkFeeds({ parentId, accent = 'var(--accent-pri
                   padding: '16px 18px',
                   fontSize: '13px',
                   lineHeight: '1.5',
-                  color: 'rgba(255,255,255,0.65)',
+                  color: 'rgba(255,255,255,0.85)',
                   display: '-webkit-box',
                   WebkitLineClamp: 3,
                   WebkitBoxOrient: 'vertical',
                   overflow: 'hidden',
-                  minHeight: '58px'
+                  minHeight: '58px',
+                  fontWeight: 600
                 }}>
-                  {post.content}
+                  {post.content.split(':').slice(0, 2).join(':')}
                 </div>
               </div>
 
@@ -687,8 +584,8 @@ export default function ChildNetworkFeeds({ parentId, accent = 'var(--accent-pri
 
               {/* Reader Body content */}
               <div style={{ padding: '30px 40px 40px' }}>
-                <h3 style={{ fontSize: '24px', fontWeight: 900, margin: '0 0 20px', color: '#fff', lineHeight: '1.3' }}>
-                  {activeArticle.content.split(':')[0]}
+                <h3 style={{ fontSize: '20px', fontWeight: 900, margin: '0 0 20px', color: '#fff', lineHeight: '1.4' }}>
+                  {activeArticle.content.split(':').slice(0, 2).join(':')}
                 </h3>
 
                 {/* Paragraphs */}
@@ -708,7 +605,7 @@ export default function ChildNetworkFeeds({ parentId, accent = 'var(--accent-pri
                     borderRadius: '16px'
                   }}>
                     <h4 style={{ margin: '0 0 16px', textTransform: 'uppercase', fontSize: '12px', letterSpacing: '1px', color: accent, fontWeight: 900 }}>
-                      {details.category.toLowerCase().includes('diet') ? 'Daily Nutritional Plan' : 'Routine Guide & Breakdown'}
+                      Routine Guide & Breakdown
                     </h4>
                     <ul style={{ padding: 0, margin: 0, listStyle: 'none', display: 'flex', flexDirection: 'column', gap: '12px' }}>
                       {details.routine.map((item, idx) => (
