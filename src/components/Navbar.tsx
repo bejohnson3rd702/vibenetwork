@@ -204,7 +204,19 @@ const Navbar: React.FC<NavbarProps> = ({ user, onLoginClick, onAdminClick }) => 
             </div>
           )}
         </div>
-        <div className={user ? "" : "show-on-mobile-tablet"} style={{ display: 'flex', alignItems: 'center', marginLeft: '12px', position: 'relative' }}>
+        <div className={user ? "" : "show-on-mobile-tablet"} style={{ display: 'flex', alignItems: 'center', marginLeft: '12px', position: 'relative', gap: '12px' }}>
+          {user && (
+            <Link 
+              to={`/profile${window.location.search}`} 
+              className="show-on-mobile-tablet"
+              style={{ display: 'flex', alignItems: 'center', textDecoration: 'none' }}
+              title="View Profile"
+            >
+              <div style={{ width: '28px', height: '28px', borderRadius: '50%', background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1px solid rgba(255,255,255,0.15)' }}>
+                <span style={{ color: '#000', fontWeight: 'bold', fontSize: '11px' }}>{user.email?.[0].toUpperCase()}</span>
+              </div>
+            </Link>
+          )}
           <Menu size={24} color="white" cursor="pointer" onClick={() => setIsMenuOpen(!isMenuOpen)} />
           
           {isMenuOpen && (
@@ -243,9 +255,13 @@ const Navbar: React.FC<NavbarProps> = ({ user, onLoginClick, onAdminClick }) => 
                     </div>
                   )}
                   
-                  <Link to={`/profile${window.location.search}${window.location.search ? '&' : '?'}tab=wallet`} onClick={() => setIsMenuOpen(false)} style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '12px 16px', color: 'var(--text-primary)', textDecoration: 'none', fontSize: '14px', borderRadius: '8px', cursor: 'pointer', transition: 'background 0.2s' }} onMouseOver={e => e.currentTarget.style.background='rgba(255,255,255,0.1)'} onMouseOut={e => e.currentTarget.style.background='transparent'}>
-                    <Wallet size={16} /> Digital Wallet
-                  </Link>
+                   <Link to={`/profile${window.location.search}`} onClick={() => setIsMenuOpen(false)} style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '12px 16px', color: 'var(--text-primary)', textDecoration: 'none', fontSize: '14px', borderRadius: '8px', cursor: 'pointer', transition: 'background 0.2s' }} onMouseOver={e => e.currentTarget.style.background='rgba(255,255,255,0.1)'} onMouseOut={e => e.currentTarget.style.background='transparent'}>
+                     <User size={16} /> My Profile
+                   </Link>
+
+                   <Link to={`/profile${window.location.search}${window.location.search ? '&' : '?'}tab=wallet`} onClick={() => setIsMenuOpen(false)} style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '12px 16px', color: 'var(--text-primary)', textDecoration: 'none', fontSize: '14px', borderRadius: '8px', cursor: 'pointer', transition: 'background 0.2s' }} onMouseOver={e => e.currentTarget.style.background='rgba(255,255,255,0.1)'} onMouseOut={e => e.currentTarget.style.background='transparent'}>
+                     <Wallet size={16} /> Digital Wallet
+                   </Link>
 
                   <Link to={`/profile${window.location.search}`} onClick={() => setIsMenuOpen(false)} style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '12px 16px', color: 'var(--text-primary)', textDecoration: 'none', fontSize: '14px', borderRadius: '8px', cursor: 'pointer', transition: 'background 0.2s' }} onMouseOver={e => e.currentTarget.style.background='rgba(255,255,255,0.1)'} onMouseOut={e => e.currentTarget.style.background='transparent'}>
                     <Settings size={16} /> Account Settings
