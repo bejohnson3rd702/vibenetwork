@@ -312,13 +312,14 @@ export default function N2NHome({ wlConfig, categories, activeVideo, setActiveVi
                   title="Mr. Olympia Hero Promo Video"
                   style={{
                     position: 'absolute',
-                    top: '50%',
+                    top: '0',
                     left: '50%',
                     width: '100vw',
                     height: '56.25vw', /* 16:9 ratio */
-                    minHeight: '100vh',
-                    minWidth: '177.77vh', /* 16:9 ratio */
-                    transform: 'translate(-50%, -50%) scale(1.15)',
+                    minHeight: isOlympian || isMf ? '80vh' : '100vh',
+                    minWidth: isOlympian || isMf ? '142.22vh' : '177.77vh', /* 16:9 ratio */
+                    transform: 'translateX(-50%) scale(1.05)',
+                    transformOrigin: 'top center',
                     border: 'none',
                     pointerEvents: 'none'
                   }}
