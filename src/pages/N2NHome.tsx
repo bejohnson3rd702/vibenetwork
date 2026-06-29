@@ -183,12 +183,19 @@ export default function N2NHome({ wlConfig, categories, activeVideo, setActiveVi
     { school: 'Penn State', short: 'Penn State', subtitle: 'We Are', copy: 'Nittany Lions gear crafted for the Happy Valley lifestyle.', image: 'https://shopavo.la/cdn/shop/files/PSU_Homepage_Banner_Desktop2_1500x.jpg?v=1776375978', link: 'https://shopavo.la/collections/penn-state' },
     { school: 'Alabama', schoolSlug: 'avo-x-bama', short: 'Alabama', subtitle: 'Roll Tide', copy: 'Crimson and cream essentials for the Crimson Tide.', image: 'https://shopavo.la/cdn/shop/files/bama-desk-hp-1_1500x.jpg?v=1774210820', link: 'https://shopavo.la/pages/avo-x-bama' },
     { school: 'Ole Miss', short: 'Ole Miss', subtitle: 'Hotty Toddy', copy: 'Oxford-inspired style meets college spirit.', image: 'https://shopavo.la/cdn/shop/files/desk-ole-miss-hp_1500x.jpg?v=1774210006', link: 'https://shopavo.la/collections/ole-miss' },
-    { school: 'Colorado', short: 'Colorado', subtitle: 'Sko Buffs', copy: 'Boulder vibes and mountain-ready campus apparel.', image: 'https://shopavo.la/cdn/shop/files/co-desktop2_4230eb90-9553-4d72-b205-30e62658bcce_1500x.jpg?v=1776445128', link: 'https://shopavo.la/collections/colorado' },
     { school: 'Georgia', short: 'Georgia', subtitle: 'Go Dawgs', copy: 'Red and black essentials for the Bulldog nation.', image: 'https://shopavo.la/cdn/shop/files/UGA_Collections_Desktop_1500x.jpg?v=1776210559', link: 'https://shopavo.la/collections/georgia' },
   ];
 
   const OLYMPIAN_HERO_SLIDES = [
-    { school: 'Olympia Finals', short: 'Finals', subtitle: 'The Sandow Trophy', copy: 'Watch the historic battle of the titans live from Las Vegas. Witness bodybuilding history.', image: '/n2n/mr_olympia_hero.png', link: 'https://mrolympia.com/weekend-schedule' },
+    { 
+      school: 'Olympia Finals', 
+      short: 'Finals', 
+      subtitle: 'The Sandow Trophy', 
+      copy: 'Watch the historic battle of the titans live from Las Vegas. Witness bodybuilding history.', 
+      image: '/n2n/mr_olympia_hero.png', 
+      videoUrl: 'https://www.youtube.com/embed/njSC3gMfjjU?autoplay=1&mute=1&loop=1&playlist=njSC3gMfjjU&controls=0&showinfo=0&rel=0&start=56',
+      link: 'https://mrolympia.com/weekend-schedule' 
+    },
     { school: '62nd Mr. Olympia 2026', short: 'Las Vegas 2026', subtitle: 'September 24–27, 2026', copy: 'Mark your calendars for the ultimate fitness weekend in Las Vegas. Venue, ticket sales, and athlete updates are now online.', image: 'https://images.unsplash.com/photo-1541534741688-6078c6bfb5c5?auto=format&fit=crop&q=80&w=1500', link: 'https://mrolympia.com/' },
     { school: 'Meet the Olympians', short: 'Expo & Fan Experience', subtitle: 'Expo Weekend', copy: 'Connect with legendary fitness icons, explore world-class brands, and discover new supplements.', image: 'https://images.unsplash.com/photo-1517838277536-f5f99be501cd?auto=format&fit=crop&q=80&w=1500', link: 'https://mrolympia.com/weekend-schedule' },
     { school: 'Press Conference', short: 'Press Conf.', subtitle: 'Face‑offs & Predictions', copy: 'Hear from the world\'s best athletes as they face off before taking the stage.', image: 'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?auto=format&fit=crop&q=80&w=1500', link: 'https://mrolympia.com/weekend-schedule' }
@@ -260,7 +267,7 @@ export default function N2NHome({ wlConfig, categories, activeVideo, setActiveVi
   useEffect(() => {
     const timer = setInterval(() => {
       setHeroSlide(prev => (prev + 1) % HERO_SLIDES.length);
-    }, 5000);
+    }, 8000);
     return () => clearInterval(timer);
   }, [HERO_SLIDES.length]);
 
@@ -279,11 +286,53 @@ export default function N2NHome({ wlConfig, categories, activeVideo, setActiveVi
             transition={{ duration: 0.8, ease: 'easeInOut' }}
             style={{ position: 'absolute', inset: 0, zIndex: 0 }}
           >
-            <img
-              src={HERO_SLIDES[heroSlide % HERO_SLIDES.length]?.image}
-              alt={HERO_SLIDES[heroSlide % HERO_SLIDES.length]?.school}
-              style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center top' }}
-            />
+            {(isOlympian && (heroSlide % HERO_SLIDES.length) === 0) ? (
+              <div style={{ width: '100%', height: '100%', position: 'relative', overflow: 'hidden' }}>
+                <iframe
+                  src="https://www.youtube.com/embed/njSC3gMfjjU?autoplay=1&mute=1&loop=1&playlist=njSC3gMfjjU&controls=0&showinfo=0&rel=0&start=56"
+                  title="Mr. Olympia Hero Promo Video"
+                  style={{
+                    position: 'absolute',
+                    top: '50%',
+                    left: '50%',
+                    width: '100vw',
+                    height: '56.25vw', /* 16:9 ratio */
+                    minHeight: '100vh',
+                    minWidth: '177.77vh', /* 16:9 ratio */
+                    transform: 'translate(-50%, -50%) scale(1.15)',
+                    border: 'none',
+                    pointerEvents: 'none'
+                  }}
+                  allow="autoplay; encrypted-media; fullscreen"
+                />
+              </div>
+            ) : (HERO_SLIDES[heroSlide % HERO_SLIDES.length]?.videoUrl ? (
+              <div style={{ width: '100%', height: '100%', position: 'relative', overflow: 'hidden' }}>
+                <iframe
+                  src={HERO_SLIDES[heroSlide % HERO_SLIDES.length].videoUrl}
+                  title={HERO_SLIDES[heroSlide % HERO_SLIDES.length]?.school}
+                  style={{
+                    position: 'absolute',
+                    top: '50%',
+                    left: '50%',
+                    width: '100vw',
+                    height: '56.25vw', /* 16:9 ratio */
+                    minHeight: '100vh',
+                    minWidth: '177.77vh', /* 16:9 ratio */
+                    transform: 'translate(-50%, -50%) scale(1.15)',
+                    border: 'none',
+                    pointerEvents: 'none'
+                  }}
+                  allow="autoplay; encrypted-media; fullscreen"
+                />
+              </div>
+            ) : (
+              <img
+                src={HERO_SLIDES[heroSlide % HERO_SLIDES.length]?.image}
+                alt={HERO_SLIDES[heroSlide % HERO_SLIDES.length]?.school}
+                style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center top' }}
+              />
+            ))}
           </motion.div>
         </AnimatePresence>
 
