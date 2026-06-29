@@ -2884,6 +2884,42 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
     });
   };
 
+  const handleShareChannel = async () => {
+    const cleanParams = new URLSearchParams(window.location.search);
+    cleanParams.delete('post');
+    cleanParams.delete('tab');
+    const paramString = cleanParams.toString();
+    const profilePath = profile?.id ? `/profile/${profile.id}` : window.location.pathname;
+    const shareUrl = `${window.location.origin}${profilePath}${paramString ? '?' + paramString : ''}`;
+    
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: `${profile?.full_name || profile?.username || 'Creator'}'s Channel | ${wlConfig?.name || 'Vibe Network'}`,
+          text: `Check out ${profile?.full_name || profile?.username || 'Creator'}'s exclusive channel on ${wlConfig?.name || 'Vibe Network'}!\n\n${shareUrl}`,
+          url: shareUrl
+        });
+        return;
+      } catch (err) {
+        if ((err as Error).name !== 'AbortError') {
+          console.warn('Native share failed, falling back to clipboard copy:', err);
+        } else {
+          return; // User cancelled
+        }
+      }
+    }
+
+    const copyPromise = navigator.clipboard && navigator.clipboard.writeText 
+      ? navigator.clipboard.writeText(shareUrl) 
+      : copyToClipboardFallback(shareUrl);
+
+    copyPromise.then(() => {
+      toast.success('Channel link copied to clipboard!');
+    }).catch(() => {
+      toast.error('Failed to copy channel link.');
+    });
+  };
+
   const handleOpenNetwork = (network: any) => {
     const hostname = window.location.hostname;
     const isLocalOrPreview = hostname === 'localhost' || hostname === '127.0.0.1' || hostname.includes('vercel.app') || hostname.includes('.local');
@@ -3347,6 +3383,29 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
                           >
                             Background Settings
                           </button>
+
+                          <button 
+                            type="button" 
+                            onClick={handleShareChannel} 
+                            style={{ 
+                              padding: '12px 24px', 
+                              background: 'rgba(255,255,255,0.08)', 
+                              border: '1px solid rgba(255,255,255,0.15)', 
+                              color: 'var(--text-primary)', 
+                              borderRadius: '12px', 
+                              fontWeight: 'bold', 
+                              cursor: 'pointer', 
+                              fontSize: '15px', 
+                              display: 'flex', 
+                              alignItems: 'center', 
+                              gap: '8px', 
+                              transition: 'all 0.2s' 
+                            }}
+                            onMouseOver={e => e.currentTarget.style.background = 'rgba(255,255,255,0.15)'}
+                            onMouseOut={e => e.currentTarget.style.background = 'rgba(255,255,255,0.08)'}
+                          >
+                            <Share2 size={16} /> Share Channel
+                          </button>
                         </div>
                       </>
                     ) : (
@@ -3359,46 +3418,84 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
               </div>
 
               {/* Action Buttons Column */}
-              {!isOwnProfile && (
-                <div className="profile-header-actions">
-                  {/* Follow Button */}
-                  <button
-                    onClick={handleToggleFollow}
-                    disabled={followLoading}
-                    style={{
-                      padding: '10px 24px',
-                      background: isFollowing ? 'rgba(255,255,255,0.08)' : 'rgba(255, 204, 0, 0.15)',
-                      color: isFollowing ? '#aaa' : '#ffcc00',
-                      border: '1px solid',
-                      borderColor: isFollowing ? 'rgba(255,255,255,0.15)' : 'rgba(255, 204, 0, 0.4)',
-                      borderRadius: '100px',
-                      fontWeight: 'bold',
-                      fontSize: '14px',
-                      cursor: 'pointer',
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '6px',
-                      transition: 'all 0.3s ease',
-                      backdropFilter: 'blur(10px)'
-                    }}
-                    onMouseOver={e => e.currentTarget.style.transform = 'scale(1.05)'}
-                    onMouseOut={e => e.currentTarget.style.transform = 'scale(1)'}
-                  >
-                    <Star size={14} fill={isFollowing ? '#aaa' : 'transparent'} />
-                    {isFollowing ? 'Following' : 'Follow'}
-                  </button>
+              {(viewMode === 'public' || !isOwnProfile) && (
+                <div className="profile-header-actions" style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+                  {!isOwnProfile && (
+                    <>
+                      {/* Follow Button */}
+                      <button
+                        onClick={handleToggleFollow}
+                        disabled={followLoading}
+                        style={{
+                          padding: '10px 24px',
+                          background: isFollowing ? 'rgba(255,255,255,0.08)' : 'rgba(255, 204, 0, 0.15)',
+                          color: isFollowing ? '#aaa' : '#ffcc00',
+                          border: '1px solid',
+                          borderColor: isFollowing ? 'rgba(255,255,255,0.15)' : 'rgba(255, 204, 0, 0.4)',
+                          borderRadius: '100px',
+                          fontWeight: 'bold',
+                          fontSize: '14px',
+                          cursor: 'pointer',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '6px',
+                          transition: 'all 0.3s ease',
+                          backdropFilter: 'blur(10px)'
+                        }}
+                        onMouseOver={e => e.currentTarget.style.transform = 'scale(1.05)'}
+                        onMouseOut={e => e.currentTarget.style.transform = 'scale(1)'}
+                      >
+                        <Star size={14} fill={isFollowing ? '#aaa' : 'transparent'} />
+                        {isFollowing ? 'Following' : 'Follow'}
+                      </button>
 
-                  {/* Subscribe Button */}
+                      {/* Subscribe Button */}
+                      <button
+                        className="profile-subscribe-btn"
+                        onClick={handleSubscribe}
+                        style={{
+                          padding: '10px 24px',
+                          background: isSubscribed
+                            ? 'rgba(255,255,255,0.08)'
+                            : 'linear-gradient(135deg, #FF0055, #8A2BE2)',
+                          color: '#fff',
+                          border: isSubscribed ? '1px solid rgba(255,255,255,0.15)' : 'none',
+                          borderRadius: '100px',
+                          fontWeight: 'bold',
+                          fontSize: '14px',
+                          cursor: 'pointer',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '6px',
+                          boxShadow: isSubscribed ? 'none' : '0 8px 20px rgba(255,0,85,0.3)',
+                          transition: 'all 0.3s ease',
+                          backdropFilter: 'blur(10px)'
+                        }}
+                        onMouseOver={e => e.currentTarget.style.transform = 'scale(1.05)'}
+                        onMouseOut={e => e.currentTarget.style.transform = 'scale(1)'}
+                      >
+                        {isSubscribed ? (
+                          <>
+                            <CheckCircle size={14} color="#00ff88" />
+                            <span style={{ color: '#00ff88' }}>Subscribed</span>
+                          </>
+                        ) : (
+                          <span>
+                            {Number(subPrice) > 0 ? `Subscribe $${Number(subPrice).toFixed(2)}/mo` : 'Subscribe Free'}
+                          </span>
+                        )}
+                      </button>
+                    </>
+                  )}
+
+                  {/* Share Button (Visible to everyone in public view, including owner) */}
                   <button
-                    className="profile-subscribe-btn"
-                    onClick={handleSubscribe}
+                    onClick={handleShareChannel}
                     style={{
                       padding: '10px 24px',
-                      background: isSubscribed
-                        ? 'rgba(255,255,255,0.08)'
-                        : 'linear-gradient(135deg, #FF0055, #8A2BE2)',
+                      background: 'rgba(255,255,255,0.08)',
                       color: '#fff',
-                      border: isSubscribed ? '1px solid rgba(255,255,255,0.15)' : 'none',
+                      border: '1px solid rgba(255,255,255,0.15)',
                       borderRadius: '100px',
                       fontWeight: 'bold',
                       fontSize: '14px',
@@ -3406,23 +3503,15 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
                       display: 'flex',
                       alignItems: 'center',
                       gap: '6px',
-                      boxShadow: isSubscribed ? 'none' : '0 8px 20px rgba(255,0,85,0.3)',
                       transition: 'all 0.3s ease',
                       backdropFilter: 'blur(10px)'
                     }}
                     onMouseOver={e => e.currentTarget.style.transform = 'scale(1.05)'}
                     onMouseOut={e => e.currentTarget.style.transform = 'scale(1)'}
+                    title="Share Channel"
                   >
-                    {isSubscribed ? (
-                      <>
-                        <CheckCircle size={14} color="#00ff88" />
-                        <span style={{ color: '#00ff88' }}>Subscribed</span>
-                      </>
-                    ) : (
-                      <span>
-                        {Number(subPrice) > 0 ? `Subscribe $${Number(subPrice).toFixed(2)}/mo` : 'Subscribe Free'}
-                      </span>
-                    )}
+                    <Share2 size={14} />
+                    <span>Share</span>
                   </button>
                 </div>
               )}
