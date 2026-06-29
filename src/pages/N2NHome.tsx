@@ -502,6 +502,36 @@ export default function N2NHome({ wlConfig, categories, activeVideo, setActiveVi
 
       <main style={{ background: 'var(--bg-color)', paddingBottom: '100px', zIndex: 10, position: 'relative', width: '100%' }}>
 
+        {/* ── Mr. & Mrs. Olympia Slider ──────────────────────── */}
+        {isOlympian && (
+          <div id="olympia-champions-slider">
+            <SliderSection
+              title="MR. & MRS. OLYMPIA"
+              items={OLYMPIA_CHAMPIONS}
+              delay={0}
+              aspectRatio="1/1"
+              onItemClick={(item) => navigate('/profile/' + item.id + window.location.search)}
+            />
+          </div>
+        )}
+
+        {/* ── Child Networks Slider ────────────────────────────── */}
+        {childItems.length > 0 && (
+          <div id="child-networks-slider">
+            <SliderSection
+              title={isOlympian ? "OLYMPIA PARTNERS" : (isMf ? "MUSCLE & FITNESS NETWORKS" : (isB2K ? "B2K MEMBERS" : (isKple ? "CHRISTIAN REVIVAL NETWORKS" : (isVibe100 ? "VIBE 100 NETWORKS" : "AVO NETWORKS"))))}
+              items={childItems}
+              delay={isOlympian || isMf ? 0.1 : 0}
+              aspectRatio="16/9"
+              onItemClick={(item) => {
+                if (item.linkUrl) {
+                  window.location.href = mergeQueryParams(item.linkUrl, window.location.search);
+                }
+              }}
+            />
+          </div>
+        )}
+
         {/* ── Watch Live ──────────────────────────────────────── */}
         <div id="whats-on-now">
           <Suspense fallback={null}>
@@ -610,35 +640,7 @@ export default function N2NHome({ wlConfig, categories, activeVideo, setActiveVi
           </div>
         </section>
 
-        {/* ── Mr. & Mrs. Olympia Slider ──────────────────────── */}
-        {isOlympian && (
-          <div id="olympia-champions-slider">
-            <SliderSection
-              title="MR. & MRS. OLYMPIA"
-              items={OLYMPIA_CHAMPIONS}
-              delay={0}
-              aspectRatio="1/1"
-              onItemClick={(item) => navigate('/profile/' + item.id + window.location.search)}
-            />
-          </div>
-        )}
 
-        {/* ── Child Networks Slider ────────────────────────────── */}
-        {childItems.length > 0 && (
-          <div id="child-networks-slider">
-            <SliderSection
-              title={isOlympian ? "OLYMPIA PARTNERS" : (isMf ? "MUSCLE & FITNESS NETWORKS" : (isB2K ? "B2K MEMBERS" : (isKple ? "CHRISTIAN REVIVAL NETWORKS" : (isVibe100 ? "VIBE 100 NETWORKS" : "AVO NETWORKS"))))}
-              items={childItems}
-              delay={isOlympian || isMf ? 0.1 : 0}
-              aspectRatio="16/9"
-              onItemClick={(item) => {
-                if (item.linkUrl) {
-                  window.location.href = mergeQueryParams(item.linkUrl, window.location.search);
-                }
-              }}
-            />
-          </div>
-        )}
 
         {/* ── AVO Campus Athletes / KPLE Channel Profiles Slider ──────────────────────── */}
         {((isAvo || isKple) && athleteItems.length > 0) && (
