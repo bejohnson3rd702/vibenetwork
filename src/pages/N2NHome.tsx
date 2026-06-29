@@ -798,7 +798,7 @@ export default function N2NHome({ wlConfig, categories, activeVideo, setActiveVi
             <div className="banner-image-column" style={{
               flex: '0 0 45%', position: 'relative', overflow: 'hidden',
             }}>
-              {isOlympian || isMf ? (
+              {isOlympian || isMf || isVibe ? (
                 <iframe
                   src="https://www.youtube.com/embed/njSC3gMfjjU?autoplay=1&mute=1&loop=1&playlist=njSC3gMfjjU&controls=0&showinfo=0&rel=0&start=56"
                   title="Mr. Olympia Promo Video"
@@ -827,7 +827,7 @@ export default function N2NHome({ wlConfig, categories, activeVideo, setActiveVi
                 padding: '6px 14px', background: accent, color: '#000',
                 fontSize: '10px', fontWeight: 900, letterSpacing: '2px', textTransform: 'uppercase',
               }}>
-                {isOlympian ? "Live Webcast" : isMf ? "Workout Gear" : isWings ? "Wings Contest" : (isB2K ? "Official Merch" : (isKple ? "Media Mission" : (isVibe100 ? "Exclusive Gear" : "New Drop")))}
+                {isOlympian || isVibe ? "Live Webcast" : isMf ? "Workout Gear" : isWings ? "Wings Contest" : (isB2K ? "Official Merch" : (isKple ? "Media Mission" : (isVibe100 ? "Exclusive Gear" : "New Drop")))}
               </div>
             </div>
 
@@ -847,13 +847,13 @@ export default function N2NHome({ wlConfig, categories, activeVideo, setActiveVi
                 fontSize: '13px', fontWeight: 800, textTransform: 'uppercase',
                 letterSpacing: '3px', color: accent, margin: '0 0 12px 0',
               }}>
-                {isOlympian ? "Olympia PPV Webcast" : isMf ? "Fitness Collection" : isWings ? "Wings of Strength" : (isB2K ? "Official Tour Merch" : (isKple ? "Support Our Mission" : (isVibe100 ? "VIBE 100 Store" : "Summer 2026 Collection")))}
+                {isOlympian || isVibe ? "Olympia PPV Webcast" : isMf ? "Fitness Collection" : isWings ? "Wings of Strength" : (isB2K ? "Official Tour Merch" : (isKple ? "Support Our Mission" : (isVibe100 ? "VIBE 100 Store" : "Summer 2026 Collection")))}
               </p>
               <h2 style={{
                 fontSize: '44px', fontWeight: 900, color: '#fff', margin: '0 0 16px 0',
                 lineHeight: 1.15, letterSpacing: '-1px', textTransform: 'uppercase',
               }}>
-                {isOlympian ? (
+                {isOlympian || isVibe ? (
                   <>Watch Mr. Olympia<br />Live Webcast</>
                 ) : isMf ? (
                   <>Muscle & Fitness<br />Training Guides</>
@@ -879,11 +879,11 @@ export default function N2NHome({ wlConfig, categories, activeVideo, setActiveVi
                 fontSize: '16px', color: 'rgba(255,255,255,0.7)', lineHeight: 1.7,
                 margin: '0 0 32px 0', maxWidth: '520px',
               }}>
-                {isOlympian ? "Experience the pinnacle of bodybuilding live from anywhere in the world. Subscribe to the official webcast to stream the 62nd Mr. Olympia pre-judging, finals, and exclusive backstage interviews live in high-definition." : isMf ? "Explore premium workouts, digital training guides, and high-performance activewear designed to take your fitness to the next level." : isWings ? "Experience the pinnacle of professional women's bodybuilding. Purchase official pay-per-view live streams, secure event tickets, and browse the official Alina Popa & Rising Phoenix championship collections." : (isB2K ? "Pre-order exclusive Boys 4 Life tour hoodies, vintage graphic tees, and autographed vinyl. Rep the legendary boy band reunion in style." : (isKple ? "The Christian Revival Network is a 501(c)3 non-profit media mission. Your donations help us broadcast the Gospel 24/7 to Central Texas and the world. Support our ministry today." : (isVibe100 ? "Explore premium merchandise, albums, and exclusive releases from all Top 100 networks. Shop official gear and support your favorite channels." : "Premium collegiate apparel for every school in the AVO family. Rep your team with style — new colorways and exclusive designs just dropped.")))}
+                {isOlympian || isVibe ? "Experience the pinnacle of bodybuilding live from anywhere in the world. Subscribe to the official webcast to stream the 62nd Mr. Olympia pre-judging, finals, and exclusive backstage interviews live in high-definition." : isMf ? "Explore premium workouts, digital training guides, and high-performance activewear designed to take your fitness to the next level." : isWings ? "Experience the pinnacle of professional women's bodybuilding. Purchase official pay-per-view live streams, secure event tickets, and browse the official Alina Popa & Rising Phoenix championship collections." : (isB2K ? "Pre-order exclusive Boys 4 Life tour hoodies, vintage graphic tees, and autographed vinyl. Rep the legendary boy band reunion in style." : (isKple ? "The Christian Revival Network is a 501(c)3 non-profit media mission. Your donations help us broadcast the Gospel 24/7 to Central Texas and the world. Support our ministry today." : (isVibe100 ? "Explore premium merchandise, albums, and exclusive releases from all Top 100 networks. Shop official gear and support your favorite channels." : "Premium collegiate apparel for every school in the AVO family. Rep your team with style — new colorways and exclusive designs just dropped.")))}
               </p>
               <a
-                href={isOlympian ? "https://www.olympiaproductions.com/" : (isWings ? "https://wingsofstrength.net/" : (isKple ? "https://www.paypal.com/donate/?hosted_button_id=A7WXAKZEAGBPA" : (isMf ? "https://www.muscleandfitness.com/" : ('/shop' + (typeof window !== 'undefined' ? window.location.search : '')))))}
-                target={isOlympian || isWings || isKple || isMf ? "_blank" : "_self"}
+                href={isOlympian || isVibe ? "https://www.olympiaproductions.com/" : (isWings ? "https://wingsofstrength.net/" : (isKple ? "https://www.paypal.com/donate/?hosted_button_id=A7WXAKZEAGBPA" : (isMf ? "https://www.muscleandfitness.com/" : ('/shop' + (typeof window !== 'undefined' ? window.location.search : '')))))}
+                target={isOlympian || isVibe || isWings || isKple || isMf ? "_blank" : "_self"}
                 style={{
                   display: 'inline-block', padding: '15px 46px', fontSize: '13px', fontWeight: 800,
                   textTransform: 'uppercase', letterSpacing: '2.5px', width: 'fit-content',
@@ -894,13 +894,11 @@ export default function N2NHome({ wlConfig, categories, activeVideo, setActiveVi
                 onMouseOver={e => { e.currentTarget.style.background = '#fff'; e.currentTarget.style.color = '#000'; }}
                 onMouseOut={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = '#fff'; }}
               >
-                {isOlympian ? "Watch Webcast" : isMf ? "Shop Store" : isWings ? "Explore Shows" : (isB2K ? "Shop The Merch" : (isKple ? "Support Our Station" : (isVibe100 ? "Shop The Collection" : "Shop The Drop")))}
+                {isOlympian || isVibe ? "Watch Webcast" : isMf ? "Shop Store" : isWings ? "Explore Shows" : (isB2K ? "Shop The Merch" : (isKple ? "Support Our Station" : (isVibe100 ? "Shop The Collection" : "Shop The Drop")))}
               </a>
             </div>
           </div>
         </section>
-
-
 
         {/* ── AVO Campus Athletes / KPLE Channel Profiles Slider ──────────────────────── */}
         {((isAvo || isKple) && athleteItems.length > 0) && (
