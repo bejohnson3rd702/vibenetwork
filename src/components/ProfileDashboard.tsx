@@ -3299,7 +3299,7 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
 
                         <div className="profile-save-container">
                           <button onClick={saveProfile} disabled={saving} style={{ padding: '12px 32px', background: '#fff', color: '#000', borderRadius: '12px', border: 'none', fontWeight: 'bold', cursor: 'pointer', opacity: saving ? 0.7 : 1, fontSize: '15px', transition: 'transform 0.2s' }} onMouseOver={e=>e.currentTarget.style.transform='scale(1.05)'} onMouseOut={e=>e.currentTarget.style.transform='scale(1)'}>
-                            {saving ? 'Saving...' : 'Save Profile'}
+                            {saving ? 'Saving...' : 'Save Bio'}
                           </button>
 
                           <button 
