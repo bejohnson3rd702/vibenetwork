@@ -748,6 +748,22 @@ export default function N2NHome({ wlConfig, categories, activeVideo, setActiveVi
           </Suspense>
         </div>
 
+        {/* ── Wings of Strength Athletes Slider ────────────────── */}
+        {isWings && (
+          <div id="wings-athletes-slider" style={{ marginTop: '20px', marginBottom: '20px' }}>
+            <SliderSection
+              title="ATHLETES"
+              items={WINGS_ATHLETES}
+              delay={0.1}
+              aspectRatio="1/1"
+              cardsPerView={4}
+              onItemClick={(item) => {
+                // Button goes nowhere for now
+              }}
+            />
+          </div>
+        )}
+
         {isMf && (
           <Suspense fallback={null}>
             <MFRSSFeed accent={accent} />
@@ -887,21 +903,7 @@ export default function N2NHome({ wlConfig, categories, activeVideo, setActiveVi
           </div>
         )}
 
-        {/* ── Wings of Strength Athletes Slider ────────────────── */}
-        {isWings && (
-          <div id="wings-athletes-slider" style={{ marginTop: '20px', marginBottom: '20px' }}>
-            <SliderSection
-              title="ATHLETES"
-              items={WINGS_ATHLETES}
-              delay={0.1}
-              aspectRatio="1/1"
-              cardsPerView={4}
-              onItemClick={(item) => {
-                // Button goes nowhere for now
-              }}
-            />
-          </div>
-        )}
+
 
         {/* ── Child Network Feeds (Trending Moments) ────────────── */}
         {childItems.length > 0 && (
