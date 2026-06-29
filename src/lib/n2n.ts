@@ -53,7 +53,7 @@ export async function getChildNetworks(parentId: string, includeInactive: boolea
         theme: {
           accent: '#FF9D00',
           heroCopy: 'The Premier Global Promoter for Elite Female Bodybuilding and Professional Strength Sports.',
-          heroImage: 'https://wingsofstrength.net/wp-content/uploads/2025/06/13/home-banner-1349px-min.jpg',
+          heroImage: '/n2n/wings_home_banner.jpg',
           logoImage: 'https://wingsofstrength.net/wp-content/uploads/2025/02/27/inner-page-logo-min-1.png',
           shopifyUrl: 'https://wingsofstrength.net/',
           sliderCount: 4,
@@ -67,7 +67,7 @@ export async function getChildNetworks(parentId: string, includeInactive: boolea
               title: 'Rising Phoenix World Championships',
               subtitle: 'Elite Female Bodybuilding',
               copy: 'The highest level of competition in professional women\'s bodybuilding. Witness the world\'s best athletes battle for the Sandow.',
-              imageUrl: 'https://wingsofstrength.net/wp-content/uploads/2025/06/13/home-banner-1349px-min.jpg',
+              imageUrl: '/n2n/wings_home_banner.jpg',
               videoUrl: 'https://wingsofstrength.net/'
             },
             {
@@ -75,7 +75,7 @@ export async function getChildNetworks(parentId: string, includeInactive: boolea
               title: 'Alina Popa Classic',
               subtitle: 'IFBB Pro League Contest',
               copy: 'Celebrate strength, muscle, and dedication at the annual Alina Popa Classic featuring elite professional athletes.',
-              imageUrl: 'https://wingsofstrength.net/wp-content/uploads/2026/01/20/ALINA-ALINA-POPA-CLASSIC-2026-social-media-.jpg',
+              imageUrl: '/n2n/wings_alina_popa_classic.jpg',
               videoUrl: 'https://wingsofstrength.net/'
             },
             {
@@ -83,7 +83,7 @@ export async function getChildNetworks(parentId: string, includeInactive: boolea
               title: 'Arizona Women\'s Pro',
               subtitle: 'Rising Phoenix Arizona Pro',
               copy: 'The road to the Rising Phoenix World Championships continues in Phoenix. Discover ticket releases and schedules.',
-              imageUrl: 'https://wingsofstrength.net/wp-content/uploads/2026/02/12/2026-Rising-Phoenix-1080x1440px.jpg',
+              imageUrl: '/n2n/wings_rising_phoenix_poster.jpg',
               videoUrl: 'https://wingsofstrength.net/'
             },
             {
@@ -91,12 +91,12 @@ export async function getChildNetworks(parentId: string, includeInactive: boolea
               title: 'Phoenix Iron Games',
               subtitle: 'IFBB Pro & NPC Amateur',
               copy: 'A premier fitness weekend featuring both professional face-offs and national NPC amateur qualifiers.',
-              imageUrl: 'https://wingsofstrength.net/wp-content/uploads/2026/02/02/2026-Phoenix-Iron-Games-1080x1440px.jpg',
+              imageUrl: '/n2n/wings_phoenix_iron_games.jpg',
               videoUrl: 'https://wingsofstrength.net/'
-                }
-              ]
             }
-          });
+          ]
+        }
+      });
     }
 
     const hasHers = data.some((row: any) => row.id === 'mf-hers-tenant-id');
