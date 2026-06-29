@@ -700,7 +700,7 @@ export default function N2NHome({ wlConfig, categories, activeVideo, setActiveVi
                       image: '/n2n/mf_hers_bodybuilder.jpg',
                       tags: ['Network', 'FullBleed'],
                       videoUrl: '',
-                      linkUrl: '/?tenant=mf-hers-tenant-id',
+                      linkUrl: '',
                       accent: '#E31B23'
                     });
                   }
@@ -713,7 +713,7 @@ export default function N2NHome({ wlConfig, categories, activeVideo, setActiveVi
                       image: 'https://i0.wp.com/www.muscleandfitness.com/wp-content/uploads/2026/06/Bodybuilders-Mike-Mentzer-and-Dorian-Yates-training-and-mentoring-the-young-bodybuilder-on-the-Maximum-Results-training-method.jpg',
                       tags: ['Network', 'FullBleed'],
                       videoUrl: '',
-                      linkUrl: '/?tenant=flex-online-tenant-id',
+                      linkUrl: '',
                       accent: '#E31B23'
                     });
                   }
@@ -726,6 +726,9 @@ export default function N2NHome({ wlConfig, categories, activeVideo, setActiveVi
               aspectRatio="16/9"
               cardsPerView={isMf ? 4 : (isOlympian ? 3 : 4)}
               onItemClick={(item) => {
+                if (item.id === 'mf-hers-tenant-id' || item.id === 'flex-online-tenant-id') {
+                  return; // Don't link anywhere for now
+                }
                 if (item.linkUrl) {
                   if (item.linkUrl.startsWith('http')) {
                     window.open(item.linkUrl, '_blank');
