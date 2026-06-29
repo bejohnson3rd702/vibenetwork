@@ -3394,7 +3394,7 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
                   { id: 'live', label: 'Live Stream', icon: <Video size={16} /> },
                   ...(wlConfig?.enableBooking !== false ? [{ id: 'booking', label: 'Booking', icon: <Calendar size={16} /> }] : []),
                   { id: 'series', label: 'Episodes', icon: <Video size={16} /> },
-                  { id: 'courses', label: 'Sessions', icon: <CheckCircle size={16} /> },
+                  ...(!import.meta.env.PROD ? [{ id: 'courses', label: 'Sessions', icon: <CheckCircle size={16} /> }] : []),
                   ...(isOwnProfile && viewMode === 'edit' ? [
                     { id: 'flipbook', label: 'Vibe Drive', icon: <Folder size={16} /> },
                     { id: 'creator_control_panel', label: 'Creator Control Panel', icon: <Settings size={16} />, isToggle: true }
@@ -6197,7 +6197,7 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
           </div>
         )}
 
-        {activeTab === 'courses' && (
+        {activeTab === 'courses' && !import.meta.env.PROD && (
         /* ----------- COURSES TAB ----------- */
           <div style={{ display: 'flex', flexDirection: 'column', gap: '30px' }}>
             {isOwnProfile && viewMode === 'edit' && (
