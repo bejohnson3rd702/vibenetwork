@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, lazy, Suspense } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Play, X, Network } from 'lucide-react';
+import { Play, X, Network, Volume2, VolumeX } from 'lucide-react';
 import SliderSection from '../components/SliderSection';
 import { useWhiteLabel } from '../context/WhiteLabelContext';
 import { getChildNetworks, mergeQueryParams, OLYMPIA_CHAMPIONS } from '../lib/n2n';
@@ -32,6 +32,20 @@ export default function N2NHome({ wlConfig, categories, activeVideo, setActiveVi
   const config = wlConfig || ctxConfig;
   const accent = config?.accent || 'var(--accent-primary)';
   const videoRef = useRef<HTMLVideoElement>(null);
+  const heroIframeRef = useRef<HTMLIFrameElement>(null);
+  const [isHeroMuted, setIsHeroMuted] = useState(true);
+
+  const toggleHeroMute = () => {
+    const iframe = heroIframeRef.current;
+    if (iframe && iframe.contentWindow) {
+      const nextMuteState = !isHeroMuted;
+      iframe.contentWindow.postMessage(JSON.stringify({
+        event: 'command',
+        func: nextMuteState ? 'mute' : 'unMute'
+      }), '*');
+      setIsHeroMuted(nextMuteState);
+    }
+  };
 
   // ─── Child Networks ──────────────────────────────────────────────
   const [childItems, setChildItems] = useState<any[]>([]);
@@ -271,10 +285,14 @@ export default function N2NHome({ wlConfig, categories, activeVideo, setActiveVi
     return () => clearInterval(timer);
   }, [HERO_SLIDES.length]);
 
+  useEffect(() => {
+    setIsHeroMuted(true);
+  }, [heroSlide]);
+
   return (
     <>
       {/* ═══ shopavo.la Hero — Identical Recreation ═══ */}
-      <div style={{ position: 'relative', width: '100%', height: '100vh', backgroundColor: '#000', overflow: 'hidden' }}>
+      <div style={{ position: 'relative', width: '100%', height: isOlympian || isMf ? '80vh' : '100vh', backgroundColor: '#000', overflow: 'hidden' }}>
         
         {/* Full-bleed hero slideshow — uses actual AVO Shopify CDN images */}
         <AnimatePresence mode="wait">
@@ -289,7 +307,8 @@ export default function N2NHome({ wlConfig, categories, activeVideo, setActiveVi
             {(isOlympian && (heroSlide % HERO_SLIDES.length) === 0) ? (
               <div style={{ width: '100%', height: '100%', position: 'relative', overflow: 'hidden' }}>
                 <iframe
-                  src="https://www.youtube.com/embed/njSC3gMfjjU?autoplay=1&mute=1&loop=1&playlist=njSC3gMfjjU&controls=0&showinfo=0&rel=0&start=56"
+                  ref={heroIframeRef}
+                  src="https://www.youtube.com/embed/njSC3gMfjjU?autoplay=1&mute=1&loop=1&playlist=njSC3gMfjjU&controls=0&showinfo=0&rel=0&start=56&enablejsapi=1"
                   title="Mr. Olympia Hero Promo Video"
                   style={{
                     position: 'absolute',
@@ -421,6 +440,38 @@ export default function N2NHome({ wlConfig, categories, activeVideo, setActiveVi
             </div>
           </motion.div>
         </AnimatePresence>
+
+        {/* Mute/Unmute button — only if video is playing in background */}
+        {isOlympian && (heroSlide % HERO_SLIDES.length) === 0 && (
+          <button
+            onClick={toggleHeroMute}
+            style={{
+              position: 'absolute',
+              bottom: '120px',
+              right: '30px',
+              zIndex: 3,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              width: '40px',
+              height: '40px',
+              borderRadius: '50%',
+              background: 'rgba(0,0,0,0.5)',
+              backdropFilter: 'blur(10px)',
+              border: '1px solid rgba(255,255,255,0.2)',
+              color: '#fff',
+              cursor: 'pointer',
+              transition: 'all 0.25s',
+            }}
+            title={isHeroMuted ? "Unmute Video" : "Mute Video"}
+          >
+            {isHeroMuted ? (
+              <VolumeX size={16} />
+            ) : (
+              <Volume2 size={16} />
+            )}
+          </button>
+        )}
 
         {/* Slide dots — right side, vertical, matches AVO */}
         <div style={{ position: 'absolute', right: '30px', top: '50%', transform: 'translateY(-50%)', zIndex: 3, display: 'flex', flexDirection: 'column', gap: '10px' }}>
