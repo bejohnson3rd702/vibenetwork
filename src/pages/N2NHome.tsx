@@ -1032,13 +1032,80 @@ export default function N2NHome({ wlConfig, categories, activeVideo, setActiveVi
                 <div className="banner-cta-right" style={{ flexShrink: 0, width: '320px', position: 'relative' }}>
                   <img
                     src={isKple ? "https://images.unsplash.com/photo-1544717305-2782549b5136?auto=format&fit=crop&q=80&w=600" : "/n2n/hoodie-competition.png"}
-                    alt={isKple ? "Prayer Request" : "College Hoodie Competition"}
+                        alt={isKple ? "Prayer Request" : "College Hoodie Competition"}
                     style={{
                       width: '100%', borderRadius: '4px',
                       border: '1px solid rgba(255,255,255,0.08)',
                       boxShadow: '0 20px 60px rgba(0,0,0,0.5)',
                     }}
                   />
+                </div>
+              </div>
+            </div>
+          </section>
+        )}
+
+        {isOlympian && (
+          <section style={{ maxWidth: '1400px', margin: '40px auto', padding: '0 40px' }}>
+            <div style={{
+              position: 'relative', overflow: 'hidden',
+              border: '1px solid rgba(255,255,255,0.06)',
+              background: '#000',
+              minHeight: '380px',
+              display: 'flex',
+              alignItems: 'center'
+            }}>
+              {/* Background Image */}
+              <div style={{
+                position: 'absolute', inset: 0,
+                backgroundImage: 'url("https://images.unsplash.com/photo-1517838277536-f5f99be501cd?auto=format&fit=crop&q=80&w=1200")',
+                backgroundSize: 'cover', backgroundPosition: 'center',
+                filter: 'brightness(0.3)'
+              }} />
+              {/* Gradient Overlay */}
+              <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to right, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.5) 60%, transparent 100%)' }} />
+
+              <div className="banner-full-bleed-content" style={{
+                position: 'relative', zIndex: 2,
+                padding: '64px 60px', maxWidth: '640px',
+              }}>
+                <div style={{
+                  display: 'inline-flex', alignItems: 'center', gap: '8px',
+                  padding: '6px 14px', background: accent, color: '#000',
+                  fontSize: '10px', fontWeight: 900, letterSpacing: '2px', textTransform: 'uppercase',
+                  marginBottom: '20px',
+                }}>
+                  🔥 Limited Edition Drop
+                </div>
+                <h2 style={{
+                  fontSize: '38px', fontWeight: 900, color: '#fff', margin: '0 0 16px 0',
+                  lineHeight: 1.1, letterSpacing: '-1px', textTransform: 'uppercase',
+                }}>
+                  Gymreapers x Olympia<br />Official Collection
+                </h2>
+                <p style={{
+                  fontSize: '15px', color: 'rgba(255,255,255,0.6)', lineHeight: 1.7,
+                  margin: '0 0 28px 0',
+                }}>
+                  Shop the official Gymreapers Mr. Olympia collaboration. Premium weightlifting belts, lifting straps, wraps, and apparel engineered for elite performance and styled with the iconic Olympia golden crest.
+                </p>
+                <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap' }}>
+                  <a
+                    href="https://www.gymreapers.com/collections/olympia-collection?utm_source=Website&utm_medium=Olympia&utm_campaign=Web+Banner&utm_id=Olympia&utm_term=limited+drop"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style={{
+                      display: 'inline-block', padding: '14px 44px', fontSize: '11px', fontWeight: 800,
+                      textTransform: 'uppercase', letterSpacing: '2.5px',
+                      background: accent, color: '#000',
+                      border: 'none', textDecoration: 'none', transition: 'all 0.25s',
+                      cursor: 'pointer'
+                    }}
+                    onMouseOver={e => { e.currentTarget.style.opacity = '0.85'; }}
+                    onMouseOut={e => { e.currentTarget.style.opacity = '1'; }}
+                  >
+                    Shop Collection
+                  </a>
                 </div>
               </div>
             </div>
