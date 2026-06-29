@@ -601,32 +601,32 @@ const STATIC_WINGS_OF_STRENGTH_CLIPS: VideoClip[] = [
 
 const STATIC_MF_HERS_CLIPS: VideoClip[] = [
   {
-    id: 'vyqy7PcDGLM',
-    headline: 'Full Body Strength & Conditioning Blueprint',
-    description: 'A high-intensity workout tutorial designed to build lean muscle and burn fat efficiently.',
+    id: 'p4v5b4mJj4Q',
+    headline: 'Dany Garcia Muscle & Fitness Hers Cover Shoot',
+    description: 'Go behind the scenes of the Muscle & Fitness Hers cover shoot with business mogul and fitness enthusiast Dany Garcia.',
     thumbnail: '/n2n/mf_hers_bodybuilder.jpg',
-    videoUrl: 'https://www.youtube.com/watch?v=vyqy7PcDGLM',
-    duration: 620,
+    videoUrl: 'https://www.youtube.com/watch?v=p4v5b4mJj4Q',
+    duration: 345,
     source: 'M&F Hers',
     sport: 'hers_workouts'
   },
   {
-    id: 'U81_K9sB8Cw',
-    headline: 'Core & Glute Sculpting Workout',
-    description: 'Sculpt your core and build lower body power with these key exercises from M&F Hers.',
+    id: 'XQn3oF5Y1jE',
+    headline: 'WWE Star Charlotte Flair Cover Shoot & Workout',
+    description: 'WWE Superstar Charlotte Flair discusses her athletic background and displays her power-focused training routine.',
     thumbnail: 'https://images.unsplash.com/photo-1518310383802-640c2de311b2?auto=format&fit=crop&q=80&w=800',
-    videoUrl: 'https://www.youtube.com/watch?v=U81_K9sB8Cw',
-    duration: 540,
+    videoUrl: 'https://www.youtube.com/watch?v=XQn3oF5Y1jE',
+    duration: 290,
     source: 'M&F Hers',
     sport: 'hers_workouts'
   },
   {
-    id: 'HqD6r5e8wQo',
-    headline: 'Fat Loss Nutrition & Supplementation Secrets',
-    description: 'Learn what vitamins, protein powders, and amino acids are essential for optimal athletic recovery.',
+    id: 'iWz1lP5tqO4',
+    headline: 'Ava Cowan Hardcore Back Training Workout',
+    description: 'IFBB Pro Ava Cowan takes us through her complete strength workout, focusing on back thickness and glute recovery.',
     thumbnail: 'https://i0.wp.com/www.muscleandfitness.com/wp-content/uploads/2026/06/Leucine-powder-and-supplement-with-chemical-formula.jpg',
-    videoUrl: 'https://www.youtube.com/watch?v=HqD6r5e8wQo',
-    duration: 410,
+    videoUrl: 'https://www.youtube.com/watch?v=iWz1lP5tqO4',
+    duration: 420,
     source: 'M&F Hers',
     sport: 'hers_workouts'
   }
@@ -634,31 +634,31 @@ const STATIC_MF_HERS_CLIPS: VideoClip[] = [
 
 const STATIC_FLEX_ONLINE_CLIPS: VideoClip[] = [
   {
-    id: 'vyqy7PcDGLM',
-    headline: 'Hardcore Bodybuilder Posing Routine Highlights',
-    description: 'Dorian Yates and Mike Mentzer classic training methods demonstrated by elite champions.',
+    id: 'vZnLRqD4M-I',
+    headline: 'Dorian Yates - Back & Rear Delts - Blood & Guts',
+    description: '6-time Mr. Olympia Dorian Yates puts trainer Kris Gethin through a brutal high-intensity back and rear delt workout session.',
     thumbnail: 'https://i0.wp.com/www.muscleandfitness.com/wp-content/uploads/2026/06/Bodybuilders-Mike-Mentzer-and-Dorian-Yates-training-and-mentoring-the-young-bodybuilder-on-the-Maximum-Results-training-method.jpg',
-    videoUrl: 'https://www.youtube.com/watch?v=vyqy7PcDGLM',
+    videoUrl: 'https://www.youtube.com/watch?v=vZnLRqD4M-I',
     duration: 620,
     source: 'Flex Online',
     sport: 'flex'
   },
   {
-    id: 'U81_K9sB8Cw',
-    headline: 'Golden Era Maximum Intensity Training',
-    description: 'Dorian Yates shares bodybuilding secrets of building absolute mass using brief, intense exercises.',
+    id: 'm3JM5-16zkM',
+    headline: 'Dorian Yates - Chest & Biceps - Blood & Guts',
+    description: 'Complete High-Intensity Training (HIT) tutorial focusing on chest size and dumbbell flyes taken to absolute failure.',
     thumbnail: 'https://images.unsplash.com/photo-1578271887552-5ac3a72752bc?auto=format&fit=crop&q=80&w=800',
-    videoUrl: 'https://www.youtube.com/watch?v=U81_K9sB8Cw',
+    videoUrl: 'https://www.youtube.com/watch?v=m3JM5-16zkM',
     duration: 540,
     source: 'Flex Online',
     sport: 'flex'
   },
   {
-    id: 'HqD6r5e8wQo',
-    headline: 'Mr. Olympia Heavyweight Pre-Judging Showdown',
-    description: 'Exclusive coverage of the heavyweight comparisons live from the main arena stage.',
+    id: 'A4L4f0Ja4iM',
+    headline: 'Dorian Yates - Delts & Triceps - Blood & Guts',
+    description: 'Dorian Yates coaches Kris Gethin through the deltoids and triceps training split, demonstrating strict execution principles.',
     thumbnail: '/n2n/derek.jpeg',
-    videoUrl: 'https://www.youtube.com/watch?v=HqD6r5e8wQo',
+    videoUrl: 'https://www.youtube.com/watch?v=A4L4f0Ja4iM',
     duration: 410,
     source: 'Flex Online',
     sport: 'flex'
