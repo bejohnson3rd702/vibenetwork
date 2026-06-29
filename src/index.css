@@ -669,8 +669,10 @@ img, video {
 
 .profile-save-container {
   display: flex;
-  justify-content: flex-end;
+  align-items: center;
+  gap: 12px;
   margin-top: 24px;
+  flex-wrap: nowrap;
 }
 
 @media (max-width: 768px) {
@@ -687,6 +689,8 @@ img, video {
   
   .profile-save-container {
     justify-content: center !important;
+    flex-wrap: wrap !important;
+    gap: 10px;
   }
 }
 
