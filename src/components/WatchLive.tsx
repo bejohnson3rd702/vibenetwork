@@ -37,7 +37,7 @@ const WINGS_OF_STRENGTH_FEEDS = [
 ];
 
 const MUSCLE_FITNESS_FEEDS = [
-  { key: 'muscleandfitness', label: '💪 Muscle & Fitness', channelId: 'UCd14ZJ94n6J8tC0VnK1d1Sg' },
+  { key: 'muscleandfitness', label: '💪 Muscle & Fitness', channelId: 'UC-lHJZR3Gqxm24_Vd_AJ5Yw' },
   { key: 'athleanx', label: '🏋️ Athlean-X', channelId: 'UCqpOf_Nl5F4j_gXS2fB_58g' },
   { key: 'jeffnippard', label: '🔬 Jeff Nippard', channelId: 'UC68TLK0mAEzUyZd5Y55ky6A' },
 ];
