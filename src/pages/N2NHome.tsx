@@ -528,32 +528,32 @@ export default function N2NHome({ wlConfig, categories, activeVideo, setActiveVi
                   if (mrO) mfNetworkItems.push(mrO);
                   
                   mfNetworkItems.push({
-                    id: 'mock-wl-wings',
+                    id: 'wings-of-strength-tenant-id',
                     title: 'Wings of Strength',
                     image: 'https://wingsofstrength.net/wp-content/uploads/2025/02/27/inner-page-logo-min-1.png',
                     tags: ['Network', 'FullBleed'],
                     videoUrl: '',
-                    linkUrl: 'https://wingsofstrength.net/',
+                    linkUrl: '/?tenant=wings-of-strength-tenant-id',
                     accent: '#E31B23'
                   });
                   
                   mfNetworkItems.push({
-                    id: 'mock-wl-hers',
+                    id: 'mf-hers-tenant-id',
                     title: 'M&F Hers',
                     image: '/n2n/mf_hers_bodybuilder.jpg',
                     tags: ['Network', 'FullBleed'],
                     videoUrl: '',
-                    linkUrl: 'https://www.muscleandfitness.com/hers/',
+                    linkUrl: '/?tenant=mf-hers-tenant-id',
                     accent: '#E31B23'
                   });
                   
                   mfNetworkItems.push({
-                    id: 'mock-wl-flex',
+                    id: 'flex-online-tenant-id',
                     title: 'Flex Online',
                     image: 'https://i0.wp.com/www.muscleandfitness.com/wp-content/uploads/2026/06/Bodybuilders-Mike-Mentzer-and-Dorian-Yates-training-and-mentoring-the-young-bodybuilder-on-the-Maximum-Results-training-method.jpg',
                     tags: ['Network', 'FullBleed'],
                     videoUrl: '',
-                    linkUrl: 'https://www.muscleandfitness.com/flexonline/',
+                    linkUrl: '/?tenant=flex-online-tenant-id',
                     accent: '#E31B23'
                   });
                   

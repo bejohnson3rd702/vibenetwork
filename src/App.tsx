@@ -394,6 +394,48 @@ function App() {
               enableWatchLive: true
             }
           });
+        } else if (activeTenantId === 'mf-hers-tenant-id') {
+          loadedTenantId = 'mf-hers-tenant-id';
+          loadedConfig = normalizeWlConfig({
+            id: 'mf-hers-tenant-id',
+            name: 'M&F Hers',
+            domain: 'muscleandfitness.com/hers',
+            logo: 'https://i0.wp.com/www.muscleandfitness.com/wp-content/uploads/2024/04/MF-Circle-Blk-Wht.jpg',
+            parent_network_id: '7a017c4d-c08f-4260-8540-a0cc8bed4e11',
+            is_active: true,
+            theme: {
+              accent: '#E31B23',
+              heroCopy: 'M&F Hers — Workouts, Nutrition, Tips, and Guides Tailored for Active Women.',
+              heroImage: '/n2n/mf_hers_bodybuilder.jpg',
+              logoImage: 'https://i0.wp.com/www.muscleandfitness.com/wp-content/uploads/2024/04/MF-Circle-Blk-Wht.jpg',
+              shopifyUrl: 'https://www.muscleandfitness.com/hers/',
+              sliderCount: 4,
+              enableBooking: false,
+              heroLayoutMode: 'verbiage',
+              enableWatchLive: true
+            }
+          });
+        } else if (activeTenantId === 'flex-online-tenant-id') {
+          loadedTenantId = 'flex-online-tenant-id';
+          loadedConfig = normalizeWlConfig({
+            id: 'flex-online-tenant-id',
+            name: 'Flex Online',
+            domain: 'muscleandfitness.com/flexonline',
+            logo: 'https://www.muscleandfitness.com/wp-content/themes/muscle-and-fitness/assets/source/images/logo.png',
+            parent_network_id: '7a017c4d-c08f-4260-8540-a0cc8bed4e11',
+            is_active: true,
+            theme: {
+              accent: '#E31B23',
+              heroCopy: 'Flex Online — The Ultimate Source for Hardcore Bodybuilding, Athlete Contests, and Classic Strength Coaching.',
+              heroImage: 'https://i0.wp.com/www.muscleandfitness.com/wp-content/uploads/2026/06/Bodybuilders-Mike-Mentzer-and-Dorian-Yates-training-and-mentoring-the-young-bodybuilder-on-the-Maximum-Results-training-method.jpg',
+              logoImage: 'https://www.muscleandfitness.com/wp-content/themes/muscle-and-fitness/assets/source/images/logo.png',
+              shopifyUrl: 'https://www.muscleandfitness.com/flexonline/',
+              sliderCount: 4,
+              enableBooking: false,
+              heroLayoutMode: 'verbiage',
+              enableWatchLive: true
+            }
+          });
         } else if (dbTenantData && dbTenantData.length > 0) {
           const dbConf = dbTenantData[0];
           loadedTenantId = dbConf.id;

@@ -38,7 +38,7 @@ export async function getChildNetworks(parentId: string, includeInactive: boolea
     data = [];
   }
 
-  // Dynamically append Wings of Strength for Muscle & Fitness parent if not already present
+  // Dynamically append Wings of Strength, M&F Hers, and Flex Online for Muscle & Fitness parent if not already present
   if (parentId === '7a017c4d-c08f-4260-8540-a0cc8bed4e11') {
     const hasWings = data.some((row: any) => row.name === 'Wings of Strength' || row.id === 'wings-of-strength-tenant-id');
     if (!hasWings) {
@@ -56,6 +56,56 @@ export async function getChildNetworks(parentId: string, includeInactive: boolea
           heroImage: 'https://images.unsplash.com/photo-1541534741688-6078c6bfb5c5?auto=format&fit=crop&q=80&w=1600',
           logoImage: 'https://wingsofstrength.net/wp-content/uploads/2025/02/27/inner-page-logo-min-1.png',
           shopifyUrl: 'https://wingsofstrength.net/',
+          sliderCount: 4,
+          enableBooking: false,
+          heroLayoutMode: 'verbiage',
+          enableWatchLive: true,
+          parent_network_id: '7a017c4d-c08f-4260-8540-a0cc8bed4e11'
+        }
+      });
+    }
+
+    const hasHers = data.some((row: any) => row.id === 'mf-hers-tenant-id');
+    if (!hasHers) {
+      data.push({
+        id: 'mf-hers-tenant-id',
+        name: 'M&F Hers',
+        domain: 'muscleandfitness.com/hers',
+        logo: 'https://i0.wp.com/www.muscleandfitness.com/wp-content/uploads/2024/04/MF-Circle-Blk-Wht.jpg',
+        parent_network_id: '7a017c4d-c08f-4260-8540-a0cc8bed4e11',
+        platform_fee_percentage: 30,
+        is_active: true,
+        theme: {
+          accent: '#E31B23',
+          heroCopy: 'M&F Hers — Workouts, Nutrition, Tips, and Guides Tailored for Active Women.',
+          heroImage: '/n2n/mf_hers_bodybuilder.jpg',
+          logoImage: 'https://i0.wp.com/www.muscleandfitness.com/wp-content/uploads/2024/04/MF-Circle-Blk-Wht.jpg',
+          shopifyUrl: 'https://www.muscleandfitness.com/hers/',
+          sliderCount: 4,
+          enableBooking: false,
+          heroLayoutMode: 'verbiage',
+          enableWatchLive: true,
+          parent_network_id: '7a017c4d-c08f-4260-8540-a0cc8bed4e11'
+        }
+      });
+    }
+
+    const hasFlex = data.some((row: any) => row.id === 'flex-online-tenant-id');
+    if (!hasFlex) {
+      data.push({
+        id: 'flex-online-tenant-id',
+        name: 'Flex Online',
+        domain: 'muscleandfitness.com/flexonline',
+        logo: 'https://www.muscleandfitness.com/wp-content/themes/muscle-and-fitness/assets/source/images/logo.png',
+        parent_network_id: '7a017c4d-c08f-4260-8540-a0cc8bed4e11',
+        platform_fee_percentage: 30,
+        is_active: true,
+        theme: {
+          accent: '#E31B23',
+          heroCopy: 'Flex Online — The Ultimate Source for Hardcore Bodybuilding, Athlete Contests, and Classic Strength Coaching.',
+          heroImage: 'https://i0.wp.com/www.muscleandfitness.com/wp-content/uploads/2026/06/Bodybuilders-Mike-Mentzer-and-Dorian-Yates-training-and-mentoring-the-young-bodybuilder-on-the-Maximum-Results-training-method.jpg',
+          logoImage: 'https://www.muscleandfitness.com/wp-content/themes/muscle-and-fitness/assets/source/images/logo.png',
+          shopifyUrl: 'https://www.muscleandfitness.com/flexonline/',
           sliderCount: 4,
           enableBooking: false,
           heroLayoutMode: 'verbiage',
