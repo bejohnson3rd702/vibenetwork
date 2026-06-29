@@ -232,6 +232,35 @@ export default function MFRSSFeed({ accent = '#E31B23' }: { accent?: string }) {
             justifyContent: 'center',
             padding: '20px'
           }}>
+            {/* Highly-visible Fixed Close Button */}
+            <button 
+              onClick={() => setActiveArticle(null)}
+              style={{
+                position: 'fixed',
+                top: '24px',
+                right: '24px',
+                width: '44px',
+                height: '44px',
+                borderRadius: '50%',
+                background: 'rgba(0,0,0,0.7)',
+                backdropFilter: 'blur(10px)',
+                WebkitBackdropFilter: 'blur(10px)',
+                border: '1px solid rgba(255,255,255,0.2)',
+                color: '#fff',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                zIndex: 10005,
+                boxShadow: '0 4px 15px rgba(0,0,0,0.5)',
+                transition: 'all 0.2s'
+              }}
+              onMouseOver={e => e.currentTarget.style.background = 'rgba(255,255,255,0.2)'}
+              onMouseOut={e => e.currentTarget.style.background = 'rgba(0,0,0,0.7)'}
+            >
+              <X size={24} />
+            </button>
+
             <motion.div
               initial={{ opacity: 0, y: 30, scale: 0.95 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
@@ -260,31 +289,6 @@ export default function MFRSSFeed({ accent = '#E31B23' }: { accent?: string }) {
                   style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                 />
                 <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to bottom, rgba(0,0,0,0.2), rgba(0,0,0,0.7))' }} />
-                
-                <button 
-                  onClick={() => setActiveArticle(null)}
-                  style={{
-                    position: 'absolute',
-                    top: '20px',
-                    right: '20px',
-                    width: '40px',
-                    height: '40px',
-                    borderRadius: '50%',
-                    background: 'rgba(0,0,0,0.6)',
-                    backdropFilter: 'blur(8px)',
-                    border: '1px solid rgba(255,255,255,0.1)',
-                    color: '#fff',
-                    cursor: 'pointer',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    transition: 'all 0.2s'
-                  }}
-                  onMouseOver={e => e.currentTarget.style.background = 'rgba(255,255,255,0.15)'}
-                  onMouseOut={e => e.currentTarget.style.background = 'rgba(0,0,0,0.6)'}
-                >
-                  <X size={20} />
-                </button>
 
                 <div style={{
                   position: 'absolute',
