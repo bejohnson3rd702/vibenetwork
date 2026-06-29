@@ -569,11 +569,22 @@ export default function N2NHome({ wlConfig, categories, activeVideo, setActiveVi
             <div className="banner-image-column" style={{
               flex: '0 0 45%', position: 'relative', overflow: 'hidden',
             }}>
-              <img
-                src={isOlympian ? "https://images.unsplash.com/photo-1583454110551-21f2fa2afe61?auto=format&fit=crop&q=80&w=800" : isMf ? "https://images.unsplash.com/photo-1541534741688-6078c6bfb5c5?auto=format&fit=crop&q=80&w=800" : isWings ? "/n2n/wings_rising_phoenix_poster.jpg" : (isB2K ? "https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?auto=format&fit=crop&q=80&w=800" : (isKple ? "https://images.unsplash.com/photo-1593113598332-cd288d649433?auto=format&fit=crop&q=80&w=800" : (isVibe100 ? "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?auto=format&fit=crop&q=80&w=800" : "https://shopavo.la/cdn/shop/files/bama-desk-hp-1_1500x.jpg?v=1774210820")))}
-                alt={isOlympian ? "Official Gear" : isMf ? "Workout Gear" : isWings ? "Wings Contest Event" : (isB2K ? "Official Tour Merch" : (isKple ? "Support CRN" : (isVibe100 ? "Official Merch" : "New Drop")))}
-                style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
-              />
+              {isOlympian ? (
+                <video
+                  src="/videos/preroll.mp4"
+                  autoPlay
+                  loop
+                  muted
+                  playsInline
+                  style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+                />
+              ) : (
+                <img
+                  src={isMf ? "https://images.unsplash.com/photo-1541534741688-6078c6bfb5c5?auto=format&fit=crop&q=80&w=800" : isWings ? "/n2n/wings_rising_phoenix_poster.jpg" : (isB2K ? "https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?auto=format&fit=crop&q=80&w=800" : (isKple ? "https://images.unsplash.com/photo-1593113598332-cd288d649433?auto=format&fit=crop&q=80&w=800" : (isVibe100 ? "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?auto=format&fit=crop&q=80&w=800" : "https://shopavo.la/cdn/shop/files/bama-desk-hp-1_1500x.jpg?v=1774210820")))}
+                  alt={isMf ? "Workout Gear" : isWings ? "Wings Contest Event" : (isB2K ? "Official Tour Merch" : (isKple ? "Support CRN" : (isVibe100 ? "Official Merch" : "New Drop")))}
+                  style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+                />
+              )}
               <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to right, transparent 60%, #000 100%)' }} />
               {/* NEW DROP / OFFICIAL GEAR pill */}
               <div style={{
