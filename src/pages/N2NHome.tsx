@@ -869,6 +869,18 @@ export default function N2NHome({ wlConfig, categories, activeVideo, setActiveVi
           </section>
         )}
 
+        {isMf && (
+          <div id="olympia-champions-slider-mf">
+            <SliderSection
+              title="MR. & MRS. OLYMPIA"
+              items={OLYMPIA_CHAMPIONS}
+              delay={0}
+              aspectRatio="1/1"
+              onItemClick={(item) => navigate('/profile/' + item.id + window.location.search)}
+            />
+          </div>
+        )}
+
         {/* ── College Sports News Feed ──────────────────────── */}
         {!isOlympian && !isMf && !isB2K && !isKple && (
           <Suspense fallback={null}>
