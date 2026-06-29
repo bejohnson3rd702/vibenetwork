@@ -3076,8 +3076,12 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
         <button 
           onClick={() => {
             setActiveTab('appearance');
-            setImageTarget('homepage');
-            setShowImageModal(true);
+            setTimeout(() => {
+              const el = document.getElementById('manage-backgrounds-section');
+              if (el) {
+                el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+              }
+            }, 100);
           }}
           style={{
             position: 'absolute',
@@ -6758,7 +6762,7 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
             <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
               
               {/* Background Images Upload */}
-              <div style={{ background: 'rgba(0,0,0,0.4)', padding: '24px', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.08)' }}>
+              <div id="manage-backgrounds-section" style={{ background: 'rgba(0,0,0,0.4)', padding: '24px', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.08)' }}>
                 <h4 style={{ margin: '0 0 12px 0', fontSize: '15px', color: '#D35400', display: 'flex', alignItems: 'center', gap: '10px' }}>
                   <ImageIcon size={18} /> Manage Channel Backgrounds
                 </h4>
@@ -7793,7 +7797,9 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
             
             <motion.div initial={{ scale: 0.9, opacity: 0, y: 20 }} animate={{ scale: 1, opacity: 1, y: 0 }} exit={{ scale: 0.9, opacity: 0, y: 20 }} style={{ position: 'relative', background: 'rgba(20,20,20,0.95)', border: '1px solid rgba(255,255,255,0.1)', padding: '40px', borderRadius: '24px', width: '100%', maxWidth: '500px', display: 'flex', flexDirection: 'column', gap: '20px', boxShadow: '0 20px 40px rgba(0,0,0,0.5)' }}>
               
-              <h2 style={{ margin: 0, fontSize: '24px', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '20px' }}>Update Profile Picture</h2>
+              <h2 style={{ margin: 0, fontSize: '24px', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '20px' }}>
+                {imageTarget === 'homepage' ? 'Update Channel Background' : 'Update Profile Picture'}
+              </h2>
               
               {/* Option 1: AI Engine */}
               <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
