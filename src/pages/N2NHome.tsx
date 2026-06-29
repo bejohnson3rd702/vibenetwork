@@ -521,7 +521,7 @@ export default function N2NHome({ wlConfig, categories, activeVideo, setActiveVi
           <div id="child-networks-slider">
             <SliderSection
               title={isOlympian ? "OLYMPIA PARTNERS" : (isMf ? "MUSCLE & FITNESS NETWORKS" : (isB2K ? "B2K MEMBERS" : (isKple ? "CHRISTIAN REVIVAL NETWORKS" : (isVibe100 ? "VIBE 100 NETWORKS" : "AVO NETWORKS"))))}
-              items={childItems}
+              items={isMf ? childItems.filter(item => (item.title || '').toLowerCase().includes('olympia')) : childItems}
               delay={isOlympian || isMf ? 0.1 : 0}
               aspectRatio="16/9"
               cardsPerView={isMf || isOlympian ? 3 : 4}
@@ -666,6 +666,24 @@ export default function N2NHome({ wlConfig, categories, activeVideo, setActiveVi
           <Suspense fallback={null}>
             <ChildNetworkFeeds parentId={config.id} accent={accent} isOlympian={isOlympian} isMf={isMf} isB2K={isB2K} />
           </Suspense>
+        )}
+
+        {/* ── Muscle & Fitness Sponsors Slider ──────────────────── */}
+        {(isMf && childItems.length > 0) && (
+          <div id="mf-sponsors-slider" style={{ marginTop: '20px', marginBottom: '20px' }}>
+            <SliderSection
+              title="SPONSORS"
+              items={childItems.filter(item => !(item.title || '').toLowerCase().includes('olympia'))}
+              delay={0}
+              aspectRatio="16/9"
+              cardsPerView={4}
+              onItemClick={(item) => {
+                if (item.linkUrl) {
+                  window.location.href = mergeQueryParams(item.linkUrl, window.location.search);
+                }
+              }}
+            />
+          </div>
         )}
 
         {/* ── Hoodie Competition Banner / Prayer Request Banner ── */}
