@@ -570,13 +570,19 @@ export default function N2NHome({ wlConfig, categories, activeVideo, setActiveVi
               flex: '0 0 45%', position: 'relative', overflow: 'hidden',
             }}>
               {isOlympian ? (
-                <video
-                  src="/videos/preroll.mp4"
-                  autoPlay
-                  loop
-                  muted
-                  playsInline
-                  style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+                <iframe
+                  src="https://www.youtube.com/embed/njSC3gMfjjU?autoplay=1&mute=1&loop=1&playlist=njSC3gMfjjU&controls=0&showinfo=0&rel=0&start=56"
+                  title="Mr. Olympia Promo Video"
+                  style={{
+                    width: '100%',
+                    height: '100%',
+                    border: 'none',
+                    display: 'block',
+                    pointerEvents: 'none',
+                    transform: 'scale(1.35)',
+                    transformOrigin: 'center',
+                  }}
+                  allow="autoplay; encrypted-media; fullscreen"
                 />
               ) : (
                 <img
