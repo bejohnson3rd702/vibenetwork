@@ -352,7 +352,7 @@ export default function N2NHome({ wlConfig, categories, activeVideo, setActiveVi
               <div style={{ width: '100%', height: '100%', position: 'relative', overflow: 'hidden' }}>
                 <iframe
                   ref={heroIframeRef}
-                  src="https://www.youtube.com/embed/njSC3gMfjjU?autoplay=1&mute=1&loop=1&playlist=njSC3gMfjjU&controls=0&showinfo=0&rel=0&start=56&enablejsapi=1"
+                  src={`https://www.youtube.com/embed/njSC3gMfjjU?autoplay=1&mute=1&loop=1&playlist=njSC3gMfjjU&controls=0&showinfo=0&rel=0&start=56&enablejsapi=1&origin=${encodeURIComponent(typeof window !== 'undefined' ? window.location.origin : '')}`}
                   title="Mr. Olympia Hero Promo Video"
                   style={{
                     position: 'absolute',
