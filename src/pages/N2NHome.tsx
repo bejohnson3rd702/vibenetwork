@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, lazy, Suspense } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Play, X, Network, Volume2, VolumeX } from 'lucide-react';
+import { Play, X, Network, Volume1, Volume2, VolumeX } from 'lucide-react';
 import SliderSection from '../components/SliderSection';
 import { useWhiteLabel } from '../context/WhiteLabelContext';
 import { getChildNetworks, mergeQueryParams, OLYMPIA_CHAMPIONS } from '../lib/n2n';
@@ -35,6 +35,7 @@ export default function N2NHome({ wlConfig, categories, activeVideo, setActiveVi
   const heroIframeRef = useRef<HTMLIFrameElement>(null);
   const [isHeroMuted, setIsHeroMuted] = useState(true);
   const [heroVolume, setHeroVolume] = useState(30);
+  const [isVolumeHovered, setIsVolumeHovered] = useState(false);
 
   const toggleHeroMute = () => {
     const iframe = heroIframeRef.current;
@@ -478,6 +479,8 @@ export default function N2NHome({ wlConfig, categories, activeVideo, setActiveVi
         {/* Mute/Unmute and Volume Slider Pill */}
         {isOlympian && (heroSlide % HERO_SLIDES.length) === 0 && (
           <div
+            onMouseEnter={() => setIsVolumeHovered(true)}
+            onMouseLeave={() => setIsVolumeHovered(false)}
             style={{
               position: 'absolute',
               bottom: '120px',
@@ -485,12 +488,13 @@ export default function N2NHome({ wlConfig, categories, activeVideo, setActiveVi
               zIndex: 3,
               display: 'flex',
               alignItems: 'center',
-              background: 'rgba(0,0,0,0.6)',
-              backdropFilter: 'blur(10px)',
-              border: '1px solid rgba(255,255,255,0.15)',
-              borderRadius: '22px',
-              padding: '2px 8px 2px 2px',
-              transition: 'all 0.3s ease',
+              background: 'rgba(15, 15, 15, 0.75)',
+              backdropFilter: 'blur(16px) saturate(180%)',
+              border: '1px solid rgba(255, 255, 255, 0.12)',
+              borderRadius: '24px',
+              padding: '4px',
+              boxShadow: '0 4px 30px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.1)',
+              transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
             }}
           >
             <button
@@ -506,34 +510,50 @@ export default function N2NHome({ wlConfig, categories, activeVideo, setActiveVi
                 border: 'none',
                 color: '#fff',
                 cursor: 'pointer',
-                transition: 'all 0.25s',
+                transition: 'background-color 0.2s',
               }}
+              onMouseOver={(e) => { e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.1)'; }}
+              onMouseOut={(e) => { e.currentTarget.style.backgroundColor = 'transparent'; }}
               title={isHeroMuted ? "Unmute Video" : "Mute Video"}
             >
-              {isHeroMuted ? (
-                <VolumeX size={16} />
+              {isHeroMuted || heroVolume === 0 ? (
+                <VolumeX size={18} />
+              ) : heroVolume < 50 ? (
+                <Volume1 size={18} />
               ) : (
-                <Volume2 size={16} />
+                <Volume2 size={18} />
               )}
             </button>
-            <input
-              type="range"
-              min="0"
-              max="100"
-              value={isHeroMuted ? 0 : heroVolume}
-              onChange={(e) => handleVolumeChange(Number(e.target.value))}
+            <div
               style={{
-                width: '70px',
-                height: '3px',
-                WebkitAppearance: 'none',
-                background: 'rgba(255,255,255,0.3)',
-                outline: 'none',
-                borderRadius: '2px',
-                cursor: 'pointer',
-                margin: '0 4px 0 4px',
-                accentColor: '#fff',
+                width: isVolumeHovered ? '80px' : '0px',
+                opacity: isVolumeHovered ? 1 : 0,
+                overflow: 'hidden',
+                display: 'flex',
+                alignItems: 'center',
+                transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
               }}
-            />
+            >
+              <input
+                type="range"
+                min="0"
+                max="100"
+                value={isHeroMuted ? 0 : heroVolume}
+                onChange={(e) => handleVolumeChange(Number(e.target.value))}
+                style={{
+                  width: '70px',
+                  height: '4px',
+                  WebkitAppearance: 'none',
+                  background: 'rgba(255,255,255,0.2)',
+                  outline: 'none',
+                  borderRadius: '2px',
+                  cursor: 'pointer',
+                  margin: '0 8px 0 4px',
+                  accentColor: accent,
+                  transition: 'background 0.2s',
+                }}
+              />
+            </div>
           </div>
         )}
 
