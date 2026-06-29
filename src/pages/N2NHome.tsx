@@ -45,6 +45,24 @@ export const OLYMPIA_CHAMPIONS = [
     tags: ['2022 Champion', 'Mr. Olympia'],
   },
   {
+    id: 'c1a0110c-5bd4-412d-9a42-d256a5ba9fc3',
+    title: 'Chris Bumstead',
+    image: 'https://upload.wikimedia.org/wikipedia/commons/e/ec/Chris_Bumstead_on_Gymshark.jpg',
+    tags: ['6x Champion', 'Classic Physique'],
+  },
+  {
+    id: 'k2a0110d-5bd4-412d-9a42-d256a5ba9fc4',
+    title: 'Keone Pearson',
+    image: 'https://images.unsplash.com/photo-1605296867304-46d5465a25f1?auto=format&fit=crop&q=80&w=800',
+    tags: ['2024 Champion', '212 Olympia'],
+  },
+  {
+    id: 'r3a0110e-5bd4-412d-9a42-d256a5ba9fc5',
+    title: 'Ryan Terry',
+    image: 'https://images.unsplash.com/photo-1532384748853-8f54a8f476e2?auto=format&fit=crop&q=80&w=800',
+    tags: ['2024 Champion', 'Men\'s Physique'],
+  },
+  {
     id: 'f92fad9e-ab7e-44d6-818c-0527000810eb',
     title: 'Big Ramy',
     image: 'https://upload.wikimedia.org/wikipedia/commons/4/4f/Big_Ramy2.png',
@@ -79,6 +97,36 @@ export const OLYMPIA_CHAMPIONS = [
     title: 'Iris Kyle',
     image: 'https://upload.wikimedia.org/wikipedia/commons/7/78/Iris_Kyle_posing_at_2008_Ms._Olympia_%28cropped%29.jpg',
     tags: ['10x Champion', 'Ms. Olympia'],
+  },
+  {
+    id: 'c4a0110f-5bd4-412d-9a42-d256a5ba9fc6',
+    title: 'Cydney Gillon',
+    image: 'https://images.unsplash.com/photo-1518310383802-640c2de311b2?auto=format&fit=crop&q=80&w=800',
+    tags: ['8x Champion', 'Figure Olympia'],
+  },
+  {
+    id: 'l5a01110-5bd4-412d-9a42-d256a5ba9fc7',
+    title: 'Lauralie Chapados',
+    image: 'https://images.unsplash.com/photo-1526506118085-60ce8714f8c5?auto=format&fit=crop&q=80&w=800',
+    tags: ['3x Champion', 'Bikini Olympia'],
+  },
+  {
+    id: 'i6a01111-5bd4-412d-9a42-d256a5ba9fc8',
+    title: 'Isabelle Nunes',
+    image: 'https://images.unsplash.com/photo-1594381898411-846e7d193883?auto=format&fit=crop&q=80&w=800',
+    tags: ['2024 Champion', 'Wellness Olympia'],
+  },
+  {
+    id: 's7a01112-5bd4-412d-9a42-d256a5ba9fc9',
+    title: 'Sarah Villegas',
+    image: 'https://images.unsplash.com/photo-1590556409324-aa1d726e5c3c?auto=format&fit=crop&q=80&w=800',
+    tags: ['4x Champion', 'Women\'s Physique'],
+  },
+  {
+    id: 'm8a01113-5bd4-412d-9a42-d256a5ba9fca',
+    title: 'Missy Truscott',
+    image: 'https://images.unsplash.com/photo-1548690312-e3b507d8c110?auto=format&fit=crop&q=80&w=800',
+    tags: ['2x Champion', 'Fitness Olympia'],
   },
 ];
 
@@ -221,6 +269,7 @@ export default function N2NHome({ wlConfig, categories, activeVideo, setActiveVi
 
   const OLYMPIAN_HERO_SLIDES = [
     { school: 'Olympia Finals', short: 'Finals', subtitle: 'The Sandow Trophy', copy: 'Watch the historic battle of the titans live from Las Vegas. Witness bodybuilding history.', image: '/n2n/mr_olympia_hero.png', link: 'https://mrolympia.com/weekend-schedule' },
+    { school: '62nd Mr. Olympia 2026', short: 'Las Vegas 2026', subtitle: 'September 24–27, 2026', copy: 'Mark your calendars for the ultimate fitness weekend in Las Vegas. Venue, ticket sales, and athlete updates are now online.', image: 'https://images.unsplash.com/photo-1541534741688-6078c6bfb5c5?auto=format&fit=crop&q=80&w=1500', link: 'https://mrolympia.com/' },
     { school: 'Meet the Olympians', short: 'Expo & Fan Experience', subtitle: 'Expo Weekend', copy: 'Connect with legendary fitness icons, explore world-class brands, and discover new supplements.', image: 'https://images.unsplash.com/photo-1517838277536-f5f99be501cd?auto=format&fit=crop&q=80&w=1500', link: 'https://mrolympia.com/weekend-schedule' },
     { school: 'Press Conference', short: 'Press Conf.', subtitle: 'Face‑offs & Predictions', copy: 'Hear from the world\'s best athletes as they face off before taking the stage.', image: 'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?auto=format&fit=crop&q=80&w=1500', link: 'https://mrolympia.com/weekend-schedule' }
   ];

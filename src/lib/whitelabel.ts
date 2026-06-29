@@ -84,6 +84,10 @@ export function normalizeWlConfig(
     ...(isKpleParent ? {
       heroCopy: 'Christian Revival Network — Come All Revival. Class A Christian Broadcasting.',
       logoImage: 'https://fimzetmvrmbmdggvqzpr.supabase.co/storage/v1/object/public/images/whitelabel/kple_logo_1782369339776.png'
+    } : {}),
+    ...(isOlympian ? {
+      heroCopy: "Joe Weider's Mr. Olympia Fitness & Performance Weekend — The Pinnacle of Bodybuilding.",
+      logoImage: 'https://upload.wikimedia.org/wikipedia/commons/thumb/e/ec/Chris_Bumstead_on_Gymshark.jpg/250px-Chris_Bumstead_on_Gymshark.jpg'
     } : {})
   };
   const base = {

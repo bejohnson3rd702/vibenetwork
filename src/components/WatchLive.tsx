@@ -432,6 +432,26 @@ const B2K_CLIPS: VideoClip[] = [
 
 const STATIC_OLYMPIAN_CLIPS: VideoClip[] = [
   {
+    id: 'z-aLgC2W_mk',
+    headline: 'Official OlympiaTV - 2024 Mr. Olympia Samson Dauda Winning Moment',
+    description: 'Watch the historic crowning of Samson Dauda as the 2024 Mr. Olympia champion on the main stage in Las Vegas.',
+    thumbnail: 'https://images.unsplash.com/photo-1578271887552-5ac3a72752bc?auto=format&fit=crop&q=80&w=800',
+    videoUrl: 'https://www.youtube.com/watch?v=z-aLgC2W_mk',
+    duration: 540,
+    source: 'YouTube',
+    sport: 'olympiatv'
+  },
+  {
+    id: 'c-bum-6x-win',
+    headline: 'Chris Bumstead - The 6th Sandow Classic Physique Routine',
+    description: 'Review Chris Bumstead\'s masterpiece posing routine from the 2024 Classic Physique Olympia finals.',
+    thumbnail: 'https://images.unsplash.com/photo-1517838277536-f5f99be501cd?auto=format&fit=crop&q=80&w=800',
+    videoUrl: 'https://www.youtube.com/watch?v=y3nBv9p1oFg',
+    duration: 380,
+    source: 'YouTube',
+    sport: 'olympiatv'
+  },
+  {
     id: 'SV7JP7y80UM',
     headline: 'Official OlympiaTV - The 212 Debate',
     description: 'Watch the official debate and analysis of the 212 division ahead of the Mr. Olympia contest.',
