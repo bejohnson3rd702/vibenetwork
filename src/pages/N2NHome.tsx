@@ -149,6 +149,7 @@ export default function N2NHome({ wlConfig, categories, activeVideo, setActiveVi
                      config?.id === 'wings-of-strength-tenant-id' ||
                      config?.id === 'mf-hers-tenant-id' ||
                      config?.id === 'flex-online-tenant-id';
+  const isWings = config?.id === 'wings-of-strength-tenant-id';
   const isB2K = isB2kConfig(config);
   const isKple = isKpleConfig(config);
 
@@ -567,8 +568,8 @@ export default function N2NHome({ wlConfig, categories, activeVideo, setActiveVi
               flex: '0 0 45%', position: 'relative', overflow: 'hidden',
             }}>
               <img
-                src={isOlympian ? "https://images.unsplash.com/photo-1583454110551-21f2fa2afe61?auto=format&fit=crop&q=80&w=800" : isMf ? "https://images.unsplash.com/photo-1541534741688-6078c6bfb5c5?auto=format&fit=crop&q=80&w=800" : (isB2K ? "https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?auto=format&fit=crop&q=80&w=800" : (isKple ? "https://images.unsplash.com/photo-1593113598332-cd288d649433?auto=format&fit=crop&q=80&w=800" : (isVibe100 ? "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?auto=format&fit=crop&q=80&w=800" : "https://shopavo.la/cdn/shop/files/bama-desk-hp-1_1500x.jpg?v=1774210820")))}
-                alt={isOlympian ? "Official Gear" : isMf ? "Workout Gear" : (isB2K ? "Official Tour Merch" : (isKple ? "Support CRN" : (isVibe100 ? "Official Merch" : "New Drop")))}
+                src={isOlympian ? "https://images.unsplash.com/photo-1583454110551-21f2fa2afe61?auto=format&fit=crop&q=80&w=800" : isMf ? "https://images.unsplash.com/photo-1541534741688-6078c6bfb5c5?auto=format&fit=crop&q=80&w=800" : isWings ? "/n2n/wings_home_banner.jpg" : (isB2K ? "https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?auto=format&fit=crop&q=80&w=800" : (isKple ? "https://images.unsplash.com/photo-1593113598332-cd288d649433?auto=format&fit=crop&q=80&w=800" : (isVibe100 ? "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?auto=format&fit=crop&q=80&w=800" : "https://shopavo.la/cdn/shop/files/bama-desk-hp-1_1500x.jpg?v=1774210820")))}
+                alt={isOlympian ? "Official Gear" : isMf ? "Workout Gear" : isWings ? "Wings Contest Event" : (isB2K ? "Official Tour Merch" : (isKple ? "Support CRN" : (isVibe100 ? "Official Merch" : "New Drop")))}
                 style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
               />
               <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to right, transparent 60%, #000 100%)' }} />
@@ -578,7 +579,7 @@ export default function N2NHome({ wlConfig, categories, activeVideo, setActiveVi
                 padding: '6px 14px', background: accent, color: '#000',
                 fontSize: '10px', fontWeight: 900, letterSpacing: '2px', textTransform: 'uppercase',
               }}>
-                {isOlympian ? "Official Gear" : isMf ? "Workout Gear" : (isB2K ? "Official Merch" : (isKple ? "Media Mission" : (isVibe100 ? "Exclusive Gear" : "New Drop")))}
+                {isOlympian ? "Official Gear" : isMf ? "Workout Gear" : isWings ? "Wings Contest" : (isB2K ? "Official Merch" : (isKple ? "Media Mission" : (isVibe100 ? "Exclusive Gear" : "New Drop")))}
               </div>
             </div>
 
@@ -598,7 +599,7 @@ export default function N2NHome({ wlConfig, categories, activeVideo, setActiveVi
                 fontSize: '11px', fontWeight: 800, textTransform: 'uppercase',
                 letterSpacing: '3px', color: accent, margin: '0 0 12px 0',
               }}>
-                {isOlympian ? "Olympia Collection" : isMf ? "Fitness Collection" : (isB2K ? "Official Tour Merch" : (isKple ? "Support Our Mission" : (isVibe100 ? "VIBE 100 Store" : "Summer 2026 Collection")))}
+                {isOlympian ? "Olympia Collection" : isMf ? "Fitness Collection" : isWings ? "Wings of Strength" : (isB2K ? "Official Tour Merch" : (isKple ? "Support Our Mission" : (isVibe100 ? "VIBE 100 Store" : "Summer 2026 Collection")))}
               </p>
               <h2 style={{
                 fontSize: '34px', fontWeight: 900, color: '#fff', margin: '0 0 14px 0',
@@ -608,6 +609,8 @@ export default function N2NHome({ wlConfig, categories, activeVideo, setActiveVi
                   <>Official Weekend<br />Gear & Wear</>
                 ) : isMf ? (
                   <>Muscle & Fitness<br />Training Guides</>
+                ) : isWings ? (
+                  <>Rising Phoenix<br />World Champions</>
                 ) : (
                   isB2K ? (
                     <>Millennium Tour<br />Official Merch</>
@@ -628,11 +631,11 @@ export default function N2NHome({ wlConfig, categories, activeVideo, setActiveVi
                 fontSize: '14px', color: 'rgba(255,255,255,0.5)', lineHeight: 1.7,
                 margin: '0 0 28px 0', maxWidth: '380px',
               }}>
-                {isOlympian ? `Premium bodybuilding and lifestyle apparel engineered for champions. Rep the legacy with official ${config?.name || 'Muscle & Fitness'} hoodies, workout shirts, and accessories.` : isMf ? "Explore premium workouts, digital training guides, and high-performance activewear designed to take your fitness to the next level." : (isB2K ? "Pre-order exclusive Boys 4 Life tour hoodies, vintage graphic tees, and autographed vinyl. Rep the legendary boy band reunion in style." : (isKple ? "The Christian Revival Network is a 501(c)3 non-profit media mission. Your donations help us broadcast the Gospel 24/7 to Central Texas and the world. Support our ministry today." : (isVibe100 ? "Explore premium merchandise, albums, and exclusive releases from all Top 100 networks. Shop official gear and support your favorite channels." : "Premium collegiate apparel for every school in the AVO family. Rep your team with style — new colorways and exclusive designs just dropped.")))}
+                {isOlympian ? `Premium bodybuilding and lifestyle apparel engineered for champions. Rep the legacy with official ${config?.name || 'Muscle & Fitness'} hoodies, workout shirts, and accessories.` : isMf ? "Explore premium workouts, digital training guides, and high-performance activewear designed to take your fitness to the next level." : isWings ? "Experience the pinnacle of professional women's bodybuilding. Purchase official pay-per-view live streams, secure event tickets, and browse the official Alina Popa & Rising Phoenix championship collections." : (isB2K ? "Pre-order exclusive Boys 4 Life tour hoodies, vintage graphic tees, and autographed vinyl. Rep the legendary boy band reunion in style." : (isKple ? "The Christian Revival Network is a 501(c)3 non-profit media mission. Your donations help us broadcast the Gospel 24/7 to Central Texas and the world. Support our ministry today." : (isVibe100 ? "Explore premium merchandise, albums, and exclusive releases from all Top 100 networks. Shop official gear and support your favorite channels." : "Premium collegiate apparel for every school in the AVO family. Rep your team with style — new colorways and exclusive designs just dropped.")))}
               </p>
               <a
-                href={isKple ? "https://www.paypal.com/donate/?hosted_button_id=A7WXAKZEAGBPA" : ('/shop' + (typeof window !== 'undefined' ? window.location.search : ''))}
-                target={isKple ? "_blank" : "_self"}
+                href={isWings ? "https://wingsofstrength.net/" : (isKple ? "https://www.paypal.com/donate/?hosted_button_id=A7WXAKZEAGBPA" : ('/shop' + (typeof window !== 'undefined' ? window.location.search : '')))}
+                target={isWings || isKple ? "_blank" : "_self"}
                 style={{
                   display: 'inline-block', padding: '13px 40px', fontSize: '11px', fontWeight: 800,
                   textTransform: 'uppercase', letterSpacing: '2.5px', width: 'fit-content',
@@ -643,7 +646,7 @@ export default function N2NHome({ wlConfig, categories, activeVideo, setActiveVi
                 onMouseOver={e => { e.currentTarget.style.background = '#fff'; e.currentTarget.style.color = '#000'; }}
                 onMouseOut={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = '#fff'; }}
               >
-                {isOlympian ? "Shop The Collection" : isMf ? "Shop Store" : (isB2K ? "Shop The Merch" : (isKple ? "Support Our Station" : (isVibe100 ? "Shop The Collection" : "Shop The Drop")))}
+                {isOlympian ? "Shop The Collection" : isMf ? "Shop Store" : isWings ? "Explore Shows" : (isB2K ? "Shop The Merch" : (isKple ? "Support Our Station" : (isVibe100 ? "Shop The Collection" : "Shop The Drop")))}
               </a>
             </div>
           </div>
