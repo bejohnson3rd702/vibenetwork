@@ -279,16 +279,26 @@ export default function N2NHome({ wlConfig, categories, activeVideo, setActiveVi
   ];
 
   const HERO_SLIDES = (config?.theme?.heroSlider && config.theme.heroSlider.length > 0)
-    ? config.theme.heroSlider.map((s: any) => ({
-        id: s.id,
-        school: s.title,
-        short: s.short || s.title,
-        subtitle: s.subtitle || 'Featured Slide',
-        copy: s.copy || '',
-        image: s.imageUrl,
-        videoUrl: s.videoUrl,
-        link: s.videoUrl
-      }))
+    ? config.theme.heroSlider.map((s: any) => {
+        const rawVideo = s.videoUrl || '';
+        const isActualVideo = rawVideo && (
+          rawVideo.includes('youtube.com') ||
+          rawVideo.includes('youtu.be') ||
+          rawVideo.includes('vimeo.com') ||
+          rawVideo.endsWith('.mp4') ||
+          rawVideo.endsWith('.webm')
+        );
+        return {
+          id: s.id,
+          school: s.title,
+          short: s.short || s.title,
+          subtitle: s.subtitle || 'Featured Slide',
+          copy: s.copy || '',
+          image: s.imageUrl,
+          videoUrl: isActualVideo ? rawVideo : '',
+          link: rawVideo || s.linkUrl || ''
+        };
+      })
     : ((config?.theme?.heroImage || config?.theme?.heroCopy)
       ? [{
           school: config.name || '',
