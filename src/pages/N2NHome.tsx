@@ -598,13 +598,13 @@ export default function N2NHome({ wlConfig, categories, activeVideo, setActiveVi
               }} />
 
               <p style={{
-                fontSize: '11px', fontWeight: 800, textTransform: 'uppercase',
+                fontSize: '13px', fontWeight: 800, textTransform: 'uppercase',
                 letterSpacing: '3px', color: accent, margin: '0 0 12px 0',
               }}>
                 {isOlympian ? "Olympia Collection" : isMf ? "Fitness Collection" : isWings ? "Wings of Strength" : (isB2K ? "Official Tour Merch" : (isKple ? "Support Our Mission" : (isVibe100 ? "VIBE 100 Store" : "Summer 2026 Collection")))}
               </p>
               <h2 style={{
-                fontSize: '34px', fontWeight: 900, color: '#fff', margin: '0 0 14px 0',
+                fontSize: '44px', fontWeight: 900, color: '#fff', margin: '0 0 16px 0',
                 lineHeight: 1.15, letterSpacing: '-1px', textTransform: 'uppercase',
               }}>
                 {isOlympian ? (
@@ -630,8 +630,8 @@ export default function N2NHome({ wlConfig, categories, activeVideo, setActiveVi
                 )}
               </h2>
               <p style={{
-                fontSize: '14px', color: 'rgba(255,255,255,0.5)', lineHeight: 1.7,
-                margin: '0 0 28px 0', maxWidth: '380px',
+                fontSize: '16px', color: 'rgba(255,255,255,0.7)', lineHeight: 1.7,
+                margin: '0 0 32px 0', maxWidth: '520px',
               }}>
                 {isOlympian ? `Premium bodybuilding and lifestyle apparel engineered for champions. Rep the legacy with official ${config?.name || 'Muscle & Fitness'} hoodies, workout shirts, and accessories.` : isMf ? "Explore premium workouts, digital training guides, and high-performance activewear designed to take your fitness to the next level." : isWings ? "Experience the pinnacle of professional women's bodybuilding. Purchase official pay-per-view live streams, secure event tickets, and browse the official Alina Popa & Rising Phoenix championship collections." : (isB2K ? "Pre-order exclusive Boys 4 Life tour hoodies, vintage graphic tees, and autographed vinyl. Rep the legendary boy band reunion in style." : (isKple ? "The Christian Revival Network is a 501(c)3 non-profit media mission. Your donations help us broadcast the Gospel 24/7 to Central Texas and the world. Support our ministry today." : (isVibe100 ? "Explore premium merchandise, albums, and exclusive releases from all Top 100 networks. Shop official gear and support your favorite channels." : "Premium collegiate apparel for every school in the AVO family. Rep your team with style — new colorways and exclusive designs just dropped.")))}
               </p>
@@ -639,7 +639,7 @@ export default function N2NHome({ wlConfig, categories, activeVideo, setActiveVi
                 href={isWings ? "https://wingsofstrength.net/" : (isKple ? "https://www.paypal.com/donate/?hosted_button_id=A7WXAKZEAGBPA" : ('/shop' + (typeof window !== 'undefined' ? window.location.search : '')))}
                 target={isWings || isKple ? "_blank" : "_self"}
                 style={{
-                  display: 'inline-block', padding: '13px 40px', fontSize: '11px', fontWeight: 800,
+                  display: 'inline-block', padding: '15px 46px', fontSize: '13px', fontWeight: 800,
                   textTransform: 'uppercase', letterSpacing: '2.5px', width: 'fit-content',
                   background: 'transparent', color: '#fff',
                   border: '1.5px solid #fff', textDecoration: 'none',
