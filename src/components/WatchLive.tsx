@@ -37,7 +37,7 @@ const WINGS_OF_STRENGTH_FEEDS = [
 ];
 
 const MUSCLE_FITNESS_FEEDS = [
-  { key: 'muscleandfitness', label: '💪 Muscle & Fitness', channelId: 'UC3kbAe8BguiZFnsVYY1oW0w' },
+  { key: 'muscleandfitness', label: '💪 Muscle & Fitness', channelId: 'UCwi9teS8XW21G3hhct5SJgw' },
 ];
 
 const B2K_FEEDS = [
