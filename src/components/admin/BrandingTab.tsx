@@ -29,7 +29,7 @@ export const BrandingTab = ({ wlConfig }: { wlConfig: any }) => {
       
       setUploading(true);
       const isLogo = setUploading === setUploadingLogo;
-      toast.info(`✨ Nalu AI is enhancing and auto-cropping your branding ${isLogo ? 'logo' : 'favicon'}...`);
+      toast.info(`✨ Vibe is enhancing and auto-cropping your branding ${isLogo ? 'logo' : 'favicon'}...`);
       const enhancedFile = await processAndEnhanceImage(file, isLogo ? 'logo' : 'favicon');
 
       const fileExt = enhancedFile.name.split('.').pop();

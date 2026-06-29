@@ -43,7 +43,7 @@ export const N2NFleetTab = ({ wlConfig }: { wlConfig: any }) => {
       if (!file) return;
 
       setUploading(true);
-      toast.info(`✨ Nalu AI is enhancing and auto-cropping your image...`);
+      toast.info(`✨ Vibe is enhancing and auto-cropping your image...`);
       const enhancedFile = await processAndEnhanceImage(file, aspectMode);
 
       const fileExt = enhancedFile.name.split('.').pop();

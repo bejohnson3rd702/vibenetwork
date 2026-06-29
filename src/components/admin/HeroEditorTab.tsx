@@ -249,7 +249,7 @@ export const HeroEditorTab = ({ wlConfig }: { wlConfig: any }) => {
       if (!file) return;
       setUploadingHeroImage(true);
 
-      toast.info("✨ Nalu AI is enhancing and auto-cropping your hero banner...");
+      toast.info("✨ Vibe is enhancing and auto-cropping your hero banner...");
       const enhancedFile = await processAndEnhanceImage(file, 'hero');
 
       const fileExt = enhancedFile.name.split('.').pop();

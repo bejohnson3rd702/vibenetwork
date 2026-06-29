@@ -2,7 +2,7 @@ import React, { useEffect, useState, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { supabase } from '../supabaseClient';
 import { motion, AnimatePresence } from 'framer-motion';
-import { LogOut, Camera, Lock, Unlock, Image as ImageIcon, Star, ShieldCheck, Eye, Edit2, Trash2, Wand, Calendar, Edit3, Clock, CheckCircle, Heart, MessageCircle, Wallet, ArrowUpRight, ArrowDownLeft, Activity, Monitor, Settings, Video, DollarSign, Share2, Pin, ChevronLeft, ChevronRight, AlertCircle, Users, Folder, File, FileText, Download, UploadCloud, Search, Plus, X, Globe, EyeOff, Copy, Play } from 'lucide-react';
+import { LogOut, Camera, Lock, Unlock, Image as ImageIcon, Star, ShieldCheck, Eye, Edit2, Trash2, Wand, Calendar, Edit3, Clock, CheckCircle, Heart, MessageCircle, Wallet, ArrowUpRight, ArrowDownLeft, Activity, Monitor, Settings, Video, DollarSign, Share2, Pin, ChevronLeft, ChevronRight, AlertCircle, Users, Folder, File as FileIcon, FileText, Download, UploadCloud, Search, Plus, X, Globe, EyeOff, Copy, Play } from 'lucide-react';
 import { DictationButton } from './DictationButton';
 import { EmojiPickerButton } from './EmojiPickerButton';
 import EndUserAuthModal from './EndUserAuthModal';
@@ -687,7 +687,7 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
 
   // Real Booking State
   const [bookingPrice, setBookingPrice] = useState('49.00');
-  const [bookingDuration, setBookingDuration] = useState(1);
+  const [bookingDuration, setBookingDuration] = useState(60);
   const [bookingType, setBookingType] = useState('virtual');
   const [virtualCallType, setVirtualCallType] = useState('video');
   const [availableSlots, setAvailableSlots] = useState<Record<number, string[]>>({});
@@ -1350,6 +1350,38 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
           }
           setAvailableSlots(formattedSlots);
 
+          // Automatically select the first available date for guest view convenience
+          if (slotsData && slotsData.length > 0) {
+            const activeSlots = slotsData
+              .filter((row: any) => !row.is_booked)
+              .map((row: any) => row.date)
+              .sort((a: number, b: number) => a - b);
+            
+            if (activeSlots.length > 0) {
+              const firstDate = activeSlots[0];
+              setSelectedDate(firstDate);
+              
+              const now = new Date();
+              const todayDate = now.getDate();
+              
+              if (firstDate > 10000000) {
+                const slotYear = Math.floor(firstDate / 10000);
+                const slotMonth = Math.floor((firstDate % 10000) / 100) - 1;
+                const offset = (slotYear - now.getFullYear()) * 12 + (slotMonth - now.getMonth());
+                setCalendarMonthOffset(offset >= 0 ? offset : 0);
+                setSelectedMonthOffset(offset >= 0 ? offset : 0);
+              } else {
+                if (firstDate < todayDate) {
+                  setCalendarMonthOffset(1);
+                  setSelectedMonthOffset(1);
+                } else {
+                  setCalendarMonthOffset(0);
+                  setSelectedMonthOffset(0);
+                }
+              }
+            }
+          }
+
           if (user) {
              setPurchasedBookings(pBookings || []);
              const localNetworks = JSON.parse(localStorage.getItem('vibe_local_networks') || '[]');
@@ -1655,7 +1687,7 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
       setSaving(true);
       
       // AI aspect ratio crop and enhance
-      toast.info(`✨ Nalu AI is enhancing and auto-cropping your ${imageTarget === 'avatar' ? 'avatar/logo' : 'background banner'}...`);
+      toast.info(`✨ Vibe is enhancing and auto-cropping your ${imageTarget === 'avatar' ? 'avatar/logo' : 'background banner'}...`);
       const enhancedFile = await processAndEnhanceImage(file, imageTarget === 'avatar' ? 'avatar' : 'homepage');
 
       const fileExt = enhancedFile.name.split('.').pop();
@@ -1783,16 +1815,27 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
   };
 
   const getScheduledAtISO = (slotDate: number, slotTime: string): string => {
-    const now = new Date();
-    let year = now.getFullYear();
-    let month = now.getMonth(); // 0-indexed
-    
-    // If the slot date is less than today's date, it must be for next month!
-    if (slotDate < now.getDate()) {
-      month += 1;
-      if (month > 11) {
-        month = 0;
-        year += 1;
+    let year: number;
+    let month: number;
+    let day: number;
+
+    if (slotDate > 10000000) {
+      // YYYYMMDD format
+      year = Math.floor(slotDate / 10000);
+      month = Math.floor((slotDate % 10000) / 100) - 1; // 0-indexed
+      day = slotDate % 100;
+    } else {
+      // Legacy fallback (just day number)
+      const now = new Date();
+      year = now.getFullYear();
+      month = now.getMonth();
+      day = slotDate;
+      if (day < now.getDate()) {
+        month += 1;
+        if (month > 11) {
+          month = 0;
+          year += 1;
+        }
       }
     }
 
@@ -1802,7 +1845,7 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
     if (ampm === 'PM' && hours < 12) hours += 12;
     if (ampm === 'AM' && hours === 12) hours = 0;
 
-    const scheduledDate = new Date(year, month, slotDate, hours, minutes, 0);
+    const scheduledDate = new Date(year, month, day, hours, minutes, 0);
     return scheduledDate.toISOString();
   };
 
@@ -1817,7 +1860,7 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
       if (!file) return;
       setUploadingProductImg(true);
       
-      toast.info("✨ Nalu AI is enhancing and auto-cropping your product photo...");
+      toast.info("✨ Vibe is enhancing and auto-cropping your product photo...");
       const enhancedFile = await processAndEnhanceImage(file, 'product');
 
       const filePath = `${user?.id}/prod_${Math.random()}.${enhancedFile.name.split('.').pop()}`;
@@ -1873,7 +1916,7 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
       if (!file) return;
       setUploadingSeriesImg(true);
       
-      toast.info("✨ Nalu AI is enhancing and auto-cropping your series cover...");
+      toast.info("✨ Vibe is enhancing and auto-cropping your series cover...");
       const enhancedFile = await processAndEnhanceImage(file, 'hero'); // 16:9 aspect ratio
 
       const filePath = `${user?.id}/series_${Math.random()}.${enhancedFile.name.split('.').pop()}`;
@@ -1900,7 +1943,7 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
       if (!file) return;
       setUploadingEpisodeImg(true);
       
-      toast.info("✨ Nalu AI is enhancing and auto-cropping your episode cover...");
+      toast.info("✨ Vibe is enhancing and auto-cropping your episode cover...");
       const enhancedFile = await processAndEnhanceImage(file, 'hero'); // 16:9 aspect ratio
 
       const filePath = `${user?.id}/ep_cover_${Math.random()}.${enhancedFile.name.split('.').pop()}`;
@@ -2367,7 +2410,7 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
       if (!file) return;
       setUploadingEditSeriesImg(true);
       
-      toast.info("✨ Nalu AI is enhancing and auto-cropping your series cover...");
+      toast.info("✨ Vibe is enhancing and auto-cropping your series cover...");
       const enhancedFile = await processAndEnhanceImage(file, 'hero'); // 16:9 aspect ratio
 
       const filePath = `${user?.id}/series_edit_${Math.random()}.${enhancedFile.name.split('.').pop()}`;
@@ -2394,7 +2437,7 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
       if (!file) return;
       setUploadingEditEpisodeImg(true);
       
-      toast.info("✨ Nalu AI is enhancing and auto-cropping your episode cover...");
+      toast.info("✨ Vibe is enhancing and auto-cropping your episode cover...");
       const enhancedFile = await processAndEnhanceImage(file, 'hero'); // 16:9 aspect ratio
 
       const filePath = `${user?.id}/ep_edit_${Math.random()}.${enhancedFile.name.split('.').pop()}`;
@@ -2578,7 +2621,7 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
       
       const newUrls: string[] = [];
       for (const file of filesToUpload) {
-        toast.info(`✨ Nalu AI is enhancing and auto-cropping your post media: ${file.name}...`);
+        toast.info(`✨ Vibe is enhancing and auto-cropping your post media: ${file.name}...`);
         const enhancedFile = await processAndEnhanceImage(file, 'post');
 
         const filePath = `${user?.id}/post_${Math.random()}.${enhancedFile.name.split('.').pop()}`;
@@ -2588,8 +2631,9 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
       }
       
       setPostMediaUrls(prev => [...prev, ...newUrls]);
-    } catch {
-      toast.error('Upload failed. Did you run the storage buckets script?');
+    } catch (err: any) {
+      console.error('Feed media upload failed:', err);
+      toast.error(`Upload failed: ${err?.message || err || 'Did you run the storage buckets script?'}`);
     } finally {
       setUploadingPostMedia(false);
     }
@@ -4279,7 +4323,12 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
 
           const maxDaysInNextMonth = 30 - (totalDaysInCurrentMonth - todayDate + 1);
 
+          const getYYYYMMDD = (day: number) => {
+            return displayYear * 10000 + (displayMonth + 1) * 100 + day;
+          };
+
           const isDayDisabled = (day: number) => {
+            const yyyymmdd = getYYYYMMDD(day);
             if (viewMode === 'edit') {
               if (calendarMonthOffset === 0) {
                 return day < todayDate;
@@ -4292,17 +4341,19 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
               } else {
                 if (day > maxDaysInNextMonth) return true;
               }
-              const isAvailable = availableSlots[day] && availableSlots[day].length > 0;
+              const isAvailable = (availableSlots[yyyymmdd] && availableSlots[yyyymmdd].length > 0) || (availableSlots[day] && availableSlots[day].length > 0);
               return !isAvailable;
             }
           };
 
           const isDaySelected = (day: number) => {
-            return selectedDate === day && selectedMonthOffset === calendarMonthOffset;
+            const yyyymmdd = getYYYYMMDD(day);
+            return selectedDate === yyyymmdd || selectedDate === day;
           };
 
           const isDayAvailable = (day: number) => {
-            return availableSlots[day] && availableSlots[day].length > 0;
+            const yyyymmdd = getYYYYMMDD(day);
+            return (availableSlots[yyyymmdd] && availableSlots[yyyymmdd].length > 0) || (availableSlots[day] && availableSlots[day].length > 0);
           };
 
           const weekdays = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
@@ -4322,7 +4373,8 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
                 key={`day-${d}`}
                 disabled={disabled}
                 onClick={() => {
-                  setSelectedDate(d);
+                  const yyyymmdd = getYYYYMMDD(d);
+                  setSelectedDate(yyyymmdd);
                   setSelectedMonthOffset(calendarMonthOffset);
                   setSelectedTime(null);
                 }}
@@ -4537,25 +4589,30 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
                               currentTarget.setDate(today.getDate() + offset);
                               const dayName = currentTarget.toLocaleString('default', { weekday: 'short' });
                               const dayConfig = bookingAvailability[dayName];
-                              
                               if (dayConfig && dayConfig.active) {
-                                const dateVal = currentTarget.getDate();
+                                const dateVal = currentTarget.getFullYear() * 10000 + (currentTarget.getMonth() + 1) * 100 + currentTarget.getDate();
                                 const [startH, startM] = dayConfig.start.split(':').map(Number);
                                 const [endH, endM] = dayConfig.end.split(':').map(Number);
                                 
-                                let currentHour = startH;
-                                while (currentHour < endH) {
-                                  const ampm = currentHour >= 12 ? 'PM' : 'AM';
-                                  const displayHour = currentHour % 12 || 12;
-                                  const timeStr = `${displayHour}:00 ${ampm}`;
-                                  
+                                let currentMinutes = startH * 60 + startM;
+                                const endMinutes = endH * 60 + endM;
+                                const increment = 30;
+                                 
+                                while (currentMinutes < endMinutes) {
+                                  const h = Math.floor(currentMinutes / 60);
+                                  const m = currentMinutes % 60;
+                                  const ampm = h >= 12 ? 'PM' : 'AM';
+                                  const displayHour = h % 12 || 12;
+                                  const displayMinute = m.toString().padStart(2, '0');
+                                  const timeStr = `${displayHour}:${displayMinute} ${ampm}`;
+                                   
                                   slotsToInsert.push({
                                     creator_id: user.id,
                                     date: dateVal,
                                     time: timeStr,
                                     is_booked: false
                                   });
-                                  currentHour += 1;
+                                  currentMinutes += increment;
                                 }
                               }
                             }
@@ -4709,9 +4766,9 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
                       {/* Add Slot Block for Creator Edit View */}
                       {isOwnProfile && viewMode === 'edit' && selectedDate ? (
                         <div style={{ marginBottom: '20px', padding: '16px', background: 'rgba(0,0,0,0.3)', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.05)' }}>
-                          <span style={{ fontSize: '12px', color: 'var(--text-secondary)', display: 'block', marginBottom: '10px', fontWeight: 'bold' }}>Add manual slot for {displayMonthName} {selectedDate}:</span>
+                          <span style={{ fontSize: '12px', color: 'var(--text-secondary)', display: 'block', marginBottom: '10px', fontWeight: 'bold' }}>Add manual slot for {displayMonthName} {selectedDate > 10000000 ? selectedDate % 100 : selectedDate}:</span>
                           <div style={{ display: 'flex', gap: '8px' }}>
-                            <input type="time" value={newTimeInput} onChange={e => setNewTimeInput(e.target.value)} style={{ flex: 1, background: 'rgba(0,0,0,0.4)', border: '1px solid rgba(255,255,255,0.08)', padding: '10px 14px', borderRadius: '10px', color: 'var(--text-primary)', outline: 'none', fontSize: '14px' }} />
+                            <input type="time" step="1800" value={newTimeInput} onChange={e => setNewTimeInput(e.target.value)} style={{ flex: 1, background: 'rgba(0,0,0,0.4)', border: '1px solid rgba(255,255,255,0.08)', padding: '10px 14px', borderRadius: '10px', color: 'var(--text-primary)', outline: 'none', fontSize: '14px' }} />
                             <button 
                               onClick={async () => {
                                 if (!newTimeInput) return;
@@ -4758,109 +4815,124 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
                         </div>
                       ) : null}
 
-                      {selectedDate ? (
-                        availableSlots[selectedDate]?.length > 0 ? (
-                          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(110px, 1fr))', gap: '10px' }}>
-                            {availableSlots[selectedDate].map(time => {
-                              const isTimeSelected = selectedTime === time;
-                              return (
-                                <div key={time} style={{ display: 'flex', gap: '6px' }}>
-                                  <button 
-                                    onClick={() => setSelectedTime(time)}
-                                    style={{ 
-                                      flex: 1, 
-                                      padding: '14px 10px', 
-                                      borderRadius: '12px', 
-                                      border: '1.5px solid', 
-                                      borderColor: isTimeSelected ? (wlConfig?.accent || '#00ff88') : 'transparent', 
-                                      background: isTimeSelected 
-                                        ? `${wlConfig?.accent || '#00ff88'}1c` 
-                                        : 'rgba(255,255,255,0.02)', 
-                                      color: isTimeSelected ? (wlConfig?.accent || '#00ff88') : '#fff', 
-                                      fontSize: '13px', 
-                                      fontWeight: 'bold', 
-                                      cursor: 'pointer', 
-                                      transition: 'all 0.2s ease',
-                                      textAlign: 'center',
-                                      boxShadow: isTimeSelected ? `0 0 12px ${wlConfig?.accent || '#00ff88'}1c` : 'none'
-                                    }}
-                                    onMouseOver={e => {
-                                      if (!isTimeSelected) {
-                                        e.currentTarget.style.background = 'rgba(255,255,255,0.06)';
-                                      }
-                                    }}
-                                    onMouseOut={e => {
-                                      if (!isTimeSelected) {
-                                        e.currentTarget.style.background = 'rgba(255,255,255,0.02)';
-                                      }
-                                    }}
-                                  >
-                                    {time}
-                                  </button>
-                                  {isOwnProfile && viewMode === 'edit' && (
+                      {(() => {
+                        const legacyDay = selectedDate ? (selectedDate > 10000000 ? selectedDate % 100 : selectedDate) : null;
+                        const slots = selectedDate ? (availableSlots[selectedDate] || availableSlots[legacyDay!] || []) : [];
+                        
+                        if (!selectedDate) {
+                          return (
+                            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '40px 0', gap: '10px', color: 'var(--text-muted)' }}>
+                              <Calendar size={32} style={{ opacity: 0.5, color: wlConfig?.accent || '#00ff88' }} />
+                              <span style={{ fontSize: '13px', fontStyle: 'italic' }}>Please select a date on the calendar.</span>
+                            </div>
+                          );
+                        }
+
+                        if (slots.length > 0) {
+                          return (
+                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(110px, 1fr))', gap: '10px' }}>
+                              {slots.map(time => {
+                                const isTimeSelected = selectedTime === time;
+                                return (
+                                  <div key={time} style={{ display: 'flex', gap: '6px' }}>
                                     <button 
-                                      onClick={async () => {
-                                        try {
-                                          const { error } = await supabase!
-                                            .from('available_slots')
-                                            .delete()
-                                            .match({
-                                              creator_id: targetProfileId,
-                                              date: selectedDate,
-                                              time: time
-                                            });
-
-                                          if (error) {
-                                            toast.error(`Failed to delete timeslot: ${error.message}`);
-                                            return;
-                                          }
-
-                                          setAvailableSlots(prev => ({
-                                            ...prev,
-                                            [selectedDate!]: prev[selectedDate!].filter(t => t !== time)
-                                          }));
-                                          if (selectedTime === time) setSelectedTime(null);
-                                          toast.success('Slot removed.');
-                                        } catch (err: any) {
-                                          toast.error(err.message || 'Failed to remove slot');
+                                      onClick={() => setSelectedTime(time)}
+                                      style={{ 
+                                        flex: 1, 
+                                        padding: '14px 10px', 
+                                        borderRadius: '12px', 
+                                        border: '1.5px solid', 
+                                        borderColor: isTimeSelected ? (wlConfig?.accent || '#00ff88') : 'transparent', 
+                                        background: isTimeSelected 
+                                          ? `${wlConfig?.accent || '#00ff88'}1c` 
+                                          : 'rgba(255,255,255,0.02)', 
+                                        color: isTimeSelected ? (wlConfig?.accent || '#00ff88') : '#fff', 
+                                        fontSize: '13px', 
+                                        fontWeight: 'bold', 
+                                        cursor: 'pointer', 
+                                        transition: 'all 0.2s ease',
+                                        textAlign: 'center',
+                                        boxShadow: isTimeSelected ? `0 0 12px ${wlConfig?.accent || '#00ff88'}1c` : 'none'
+                                      }}
+                                      onMouseOver={e => {
+                                        if (!isTimeSelected) {
+                                          e.currentTarget.style.background = 'rgba(255,255,255,0.06)';
                                         }
                                       }}
-                                      style={{ 
-                                        background: 'rgba(255,0,0,0.08)', 
-                                        color: '#ff4d4d', 
-                                        border: '1px solid rgba(255,0,0,0.15)', 
-                                        borderRadius: '12px', 
-                                        padding: '0 12px', 
-                                        cursor: 'pointer', 
-                                        display: 'flex', 
-                                        alignItems: 'center', 
-                                        justifyContent: 'center',
-                                        fontSize: '14px',
-                                        fontWeight: 'bold',
-                                        transition: 'all 0.2s'
+                                      onMouseOut={e => {
+                                        if (!isTimeSelected) {
+                                          e.currentTarget.style.background = 'rgba(255,255,255,0.02)';
+                                        }
                                       }}
-                                      onMouseOver={e => e.currentTarget.style.background = 'rgba(255,0,0,0.15)'}
-                                      onMouseOut={e => e.currentTarget.style.background = 'rgba(255,0,0,0.08)'}
                                     >
-                                      ✕
+                                      {time}
                                     </button>
-                                  )}
-                                </div>
-                              );
-                            })}
-                          </div>
-                        ) : (
-                          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '40px 0', gap: '10px', color: 'var(--text-muted)' }}>
-                            <Clock size={32} style={{ opacity: 0.5, color: wlConfig?.accent || '#00ff88' }} />
-                            <span style={{ fontSize: '13px', fontStyle: 'italic' }}>No times available on this date.</span>
-                          </div>
-                        )
-                      ) : (
-                        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '40px 0', gap: '10px', color: 'var(--text-muted)' }}>
-                          <Calendar size={32} style={{ opacity: 0.5, color: wlConfig?.accent || '#00ff88' }} />
-                          <span style={{ fontSize: '13px', fontStyle: 'italic' }}>Please select a date on the calendar.</span>
-                        </div>
-                      )}
+                                    {isOwnProfile && viewMode === 'edit' && (
+                                      <button 
+                                        onClick={async () => {
+                                          try {
+                                            const { error } = await supabase!
+                                              .from('available_slots')
+                                              .delete()
+                                              .eq('creator_id', targetProfileId)
+                                              .eq('time', time)
+                                              .in('date', [selectedDate, legacyDay!]);
+
+                                            if (error) {
+                                              toast.error(`Failed to delete timeslot: ${error.message}`);
+                                              return;
+                                            }
+
+                                            setAvailableSlots(prev => {
+                                              const newSlots = { ...prev };
+                                              if (newSlots[selectedDate]) {
+                                                newSlots[selectedDate] = newSlots[selectedDate].filter(t => t !== time);
+                                              }
+                                              if (newSlots[legacyDay!]) {
+                                                newSlots[legacyDay!] = newSlots[legacyDay!].filter(t => t !== time);
+                                              }
+                                              return newSlots;
+                                            });
+                                            if (selectedTime === time) setSelectedTime(null);
+                                            toast.success('Slot removed.');
+                                          } catch (err: any) {
+                                            toast.error(err.message || 'Failed to remove slot');
+                                          }
+                                        }}
+                                        style={{ 
+                                          background: 'rgba(255,0,0,0.08)', 
+                                          color: '#ff4d4d', 
+                                          border: '1px solid rgba(255,0,0,0.15)', 
+                                          borderRadius: '12px', 
+                                          padding: '0 12px', 
+                                          cursor: 'pointer', 
+                                          display: 'flex', 
+                                          alignItems: 'center', 
+                                          justifyContent: 'center',
+                                          fontSize: '14px',
+                                          fontWeight: 'bold',
+                                          transition: 'all 0.2s'
+                                        }}
+                                        onMouseOver={e => e.currentTarget.style.background = 'rgba(255,0,0,0.15)'}
+                                        onMouseOut={e => e.currentTarget.style.background = 'rgba(255,0,0,0.08)'}
+                                      >
+                                        ✕
+                                      </button>
+                                    )}
+                                  </div>
+                                );
+                              })}
+                            </div>
+                          );
+                        } else {
+                          return (
+                            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '40px 0', gap: '10px', color: 'var(--text-muted)' }}>
+                              <Clock size={32} style={{ opacity: 0.5, color: wlConfig?.accent || '#00ff88' }} />
+                              <span style={{ fontSize: '13px', fontStyle: 'italic' }}>No times available on this date.</span>
+                            </div>
+                          );
+                        }
+                      })()}
                     </div>
                   </div>
 
@@ -4888,7 +4960,7 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
                           <div>
                             <span style={{ fontSize: '11px', color: '#aaa', textTransform: 'uppercase', letterSpacing: '0.5px', display: 'block', fontWeight: 'bold' }}>Selected Appointment</span>
                             <strong style={{ fontSize: '14px', color: '#fff' }}>
-                              {displayMonthName} {selectedDate}, {displayYearName} at {selectedTime}
+                              {displayMonthName} {selectedDate > 10000000 ? selectedDate % 100 : selectedDate}, {displayYearName} at {selectedTime}
                             </strong>
                           </div>
                         </div>
@@ -4969,11 +5041,12 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
                                 cursor: 'pointer' 
                               }}
                             >
-                              <option value={1} style={{ background: '#111' }}>1 Hour Session</option>
-                              <option value={2} style={{ background: '#111' }}>2 Hours Session</option>
-                              <option value={3} style={{ background: '#111' }}>3 Hours Session</option>
-                              <option value={4} style={{ background: '#111' }}>4 Hours Session</option>
-                              <option value={8} style={{ background: '#111' }}>8 Hours (Full Day)</option>
+                              <option value={10} style={{ background: '#111' }}>10 Minutes</option>
+                              <option value={20} style={{ background: '#111' }}>20 Minutes</option>
+                              <option value={30} style={{ background: '#111' }}>30 Minutes</option>
+                              <option value={40} style={{ background: '#111' }}>40 Minutes</option>
+                              <option value={50} style={{ background: '#111' }}>50 Minutes</option>
+                              <option value={60} style={{ background: '#111' }}>1 Hour</option>
                             </select>
                             <div style={{ position: 'absolute', right: '16px', top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none', color: '#888', fontSize: '12px' }}>▼</div>
                           </div>
@@ -5055,8 +5128,8 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
                           <div style={{ position: 'absolute', right: '-8px', top: '50%', transform: 'translateY(-50%)', width: '16px', height: '16px', borderRadius: '50%', background: '#09090b', borderLeft: '1px solid rgba(255,255,255,0.06)' }} />
                           
                           <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px', color: 'var(--text-secondary)', marginBottom: '10px' }}>
-                            <span>Consultation Fee ({bookingDuration}hr x ${Number(bookingPrice).toFixed(2)}/hr)</span>
-                            <span style={{ color: '#fff', fontWeight: '500' }}>${(Number(bookingPrice) * bookingDuration).toFixed(2)}</span>
+                            <span>Consultation Fee ({bookingDuration === 60 ? '1 Hour' : `${bookingDuration} Mins`} @ ${Number(bookingPrice).toFixed(2)}/hr)</span>
+                            <span style={{ color: '#fff', fontWeight: '500' }}>${(Number(bookingPrice) * (bookingDuration / 60)).toFixed(2)}</span>
                           </div>
                           
                           {recordCall && bookingType === 'virtual' && (
@@ -5071,7 +5144,7 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
                           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                             <span style={{ fontSize: '14px', color: '#fff', fontWeight: 'bold' }}>Total Amount</span>
                             <strong style={{ fontSize: '22px', color: wlConfig?.accent || '#00ff88', textShadow: `0 0 15px ${(wlConfig?.accent || '#00ff88')}33`, fontFamily: 'monospace' }}>
-                              ${((Number(bookingPrice) * bookingDuration) + (recordCall && bookingType === 'virtual' ? (virtualCallType === 'audio' ? 10 : 15) : 0)).toFixed(2)}
+                              ${((Number(bookingPrice) * (bookingDuration / 60)) + (recordCall && bookingType === 'virtual' ? (virtualCallType === 'audio' ? 10 : 15) : 0)).toFixed(2)}
                             </strong>
                           </div>
                         </div>
@@ -5110,27 +5183,27 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
                               console.error("Booking db error:", err);
                             }
 
-                            const recordingFee = recordCall && bookingType === 'virtual' ? (virtualCallType === 'audio' ? 10 : 15) : 0;
-                            const finalPrice = (Number(bookingPrice) * bookingDuration) + recordingFee;
-                            const scheduledAtISO = getScheduledAtISO(slotDate, slotTime);
-
-                            handleStripeCheckout(
-                              `${bookingType === 'virtual' ? `1-on-1 Virtual ${virtualCallType === 'audio' ? 'Audio' : 'Video'} Call` : 'Physical Meeting'} (${monthName} ${slotDate} at ${slotTime}) - ${bookingDuration} Hour(s)`,
-                              finalPrice,
-                              { 
-                                is_booking: true, 
-                                date: `${monthName} ${slotDate}`, 
-                                time: slotTime, 
-                                duration: bookingDuration, 
-                                meeting_type: bookingType === 'virtual' ? `virtual_${virtualCallType}` : 'physical',
-                                guest_name: guestName,
-                                guest_phone: guestPhone,
-                                meeting_purpose: meetingPurpose,
-                                scheduled_at: scheduledAtISO,
-                                record_call: recordCall && bookingType === 'virtual',
-                                recording_price: recordingFee
-                              }
-                            ); 
+                             const recordingFee = recordCall && bookingType === 'virtual' ? (virtualCallType === 'audio' ? 10 : 15) : 0;
+                             const finalPrice = (Number(bookingPrice) * (bookingDuration / 60)) + recordingFee;
+                             const scheduledAtISO = getScheduledAtISO(slotDate, slotTime);
+ 
+                             handleStripeCheckout(
+                               `${bookingType === 'virtual' ? `1-on-1 Virtual ${virtualCallType === 'audio' ? 'Audio' : 'Video'} Call` : 'Physical Meeting'} (${monthName} ${(slotDate > 10000000 ? slotDate % 100 : slotDate)} at ${slotTime}) - ${bookingDuration === 60 ? '1 Hour' : `${bookingDuration} Mins`}`,
+                               finalPrice,
+                               { 
+                                 is_booking: true, 
+                                 date: `${monthName} ${(slotDate > 10000000 ? slotDate % 100 : slotDate)}`, 
+                                 time: slotTime, 
+                                 duration: bookingDuration / 60, 
+                                 meeting_type: bookingType === 'virtual' ? `virtual_${virtualCallType}` : 'physical',
+                                 guest_name: guestName,
+                                 guest_phone: guestPhone,
+                                 meeting_purpose: meetingPurpose,
+                                 scheduled_at: scheduledAtISO,
+                                 record_call: recordCall && bookingType === 'virtual',
+                                 recording_price: recordingFee
+                               }
+                             ); 
                             
                             setSelectedTime(null); 
                             setSelectedDate(null); 
@@ -6368,7 +6441,7 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
                           <div onClick={() => handleViewDriveFile(file)} style={{ width: '100%', height: '140px', borderRadius: '12px', background: `${iconColor}15`, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', border: '1px dashed rgba(255,255,255,0.05)' }}>
                             {file.file_type === 'video' && <Video size={36} style={{ color: iconColor }} />}
                             {file.file_type === 'pdf' && <FileText size={36} style={{ color: iconColor }} />}
-                            {file.file_type !== 'image' && file.file_type !== 'video' && file.file_type !== 'pdf' && <File size={36} style={{ color: iconColor }} />}
+                            {file.file_type !== 'image' && file.file_type !== 'video' && file.file_type !== 'pdf' && <FileIcon size={36} style={{ color: iconColor }} />}
                             {file.file_type === 'image' && <ImageIcon size={36} style={{ color: iconColor }} />}
                           </div>
                         )}
@@ -6439,7 +6512,7 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
                                 {file.file_type === 'image' && <ImageIcon size={16} style={{ color: iconColor }} />}
                                 {file.file_type === 'video' && <Video size={16} style={{ color: iconColor }} />}
                                 {file.file_type === 'pdf' && <FileText size={16} style={{ color: iconColor }} />}
-                                {file.file_type !== 'image' && file.file_type !== 'video' && file.file_type !== 'pdf' && <File size={16} style={{ color: iconColor }} />}
+                                {file.file_type !== 'image' && file.file_type !== 'video' && file.file_type !== 'pdf' && <FileIcon size={16} style={{ color: iconColor }} />}
                               </span>
                               <span style={{ fontWeight: '600', fontSize: '14px', color: 'var(--text-primary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={file.name}>
                                 {file.name}
@@ -6569,7 +6642,7 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
                         {previewFile.file_type === 'image' && <ImageIcon size={20} color="#ffb300" />}
                         {previewFile.file_type === 'video' && <Video size={20} color="#00b0ff" />}
                         {previewFile.file_type === 'pdf' && <FileText size={20} color="#ff5252" />}
-                        {previewFile.file_type !== 'image' && previewFile.file_type !== 'video' && previewFile.file_type !== 'pdf' && <File size={20} color="#90a4ae" />}
+                        {previewFile.file_type !== 'image' && previewFile.file_type !== 'video' && previewFile.file_type !== 'pdf' && <FileIcon size={20} color="#90a4ae" />}
                         {previewFile.name}
                       </h3>
                       <button onClick={() => { setPreviewFile(null); setPreviewUrl(''); }} style={{ background: 'rgba(255,255,255,0.05)', border: 'none', borderRadius: '50%', width: '32px', height: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-muted)', cursor: 'pointer', transition: 'background 0.2s' }} onMouseOver={e=>e.currentTarget.style.background='rgba(255,255,255,0.1)'} onMouseOut={e=>e.currentTarget.style.background='rgba(255,255,255,0.05)'}><X size={16} /></button>
@@ -6592,7 +6665,7 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
 
                           {previewFile.file_type !== 'image' && previewFile.file_type !== 'video' && previewFile.file_type !== 'pdf' && (
                             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '16px', padding: '40px', textAlign: 'center' }}>
-                              <File size={64} style={{ color: 'var(--text-muted)', opacity: 0.5 }} />
+                              <FileIcon size={64} style={{ color: 'var(--text-muted)', opacity: 0.5 }} />
                               <div>
                                 <p style={{ margin: 0, fontSize: '15px', fontWeight: 'bold' }}>No direct viewer available for this file type</p>
                                 <p style={{ margin: '4px 0 0 0', fontSize: '13px', color: 'var(--text-muted)' }}>Click 'Download File' below to download and view on your device.</p>
