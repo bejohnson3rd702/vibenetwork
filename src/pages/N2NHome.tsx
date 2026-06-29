@@ -13,7 +13,6 @@ const CollegeTicker = lazy(() => import('../components/CollegeTicker'));
 const CollegeNewsFeed = lazy(() => import('../components/CollegeNewsFeed'));
 const WatchLive = lazy(() => import('../components/WatchLive'));
 const ChildNetworkFeeds = lazy(() => import('../components/ChildNetworkFeeds'));
-const FeaturedArticles = lazy(() => import('../components/FeaturedArticles'));
 const MFRSSFeed = lazy(() => import('../components/MFRSSFeed'));
 const TopAmbassadors = lazy(() => import('../components/TopAmbassadors'));
 const AmbassadorModal = lazy(() => import('../components/AmbassadorModal'));
@@ -539,12 +538,6 @@ export default function N2NHome({ wlConfig, categories, activeVideo, setActiveVi
             <WatchLive accent={config.accent} isOlympian={isOlympian} isMf={isMf} isB2K={isB2K} isVibe={isVibe} isKple={isKple} isVibe100={isVibe100} />
           </Suspense>
         </div>
-
-        {isMf && (
-          <Suspense fallback={null}>
-            <FeaturedArticles accent={accent} />
-          </Suspense>
-        )}
 
         {isMf && (
           <Suspense fallback={null}>

@@ -115,7 +115,7 @@ export default function MFRSSFeed({ accent = '#E31B23' }: { accent?: string }) {
       <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '32px' }}>
         <span style={{ width: '4px', height: '24px', borderRadius: '4px', background: accent, boxShadow: `0 0 10px ${accent}` }} />
         <h2 style={{ fontSize: '24px', margin: 0, fontWeight: 900, color: 'var(--text-primary)', letterSpacing: '-0.5px' }}>
-          M&F RSS Feed
+          Muscle & Fitness Articles
         </h2>
       </div>
 
