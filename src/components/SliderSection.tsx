@@ -61,6 +61,7 @@ const SlideItem: React.FC<{ item: Item, aspectRatio: string, onClick?: () => voi
           width: (isNetwork && !isFullBleed) ? (isOlympian ? '96%' : '84%') : '100%',
           height: (isNetwork && !isFullBleed) ? (isOlympian ? '96%' : '84%') : '100%',
           objectFit: (isNetwork && !isFullBleed) ? 'contain' : 'cover',
+          objectPosition: (isNetwork && !isFullBleed) ? 'center' : 'center top',
           zIndex: 0,
         }}
       />
