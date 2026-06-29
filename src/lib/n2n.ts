@@ -460,10 +460,64 @@ export function mergeQueryParams(targetUrl: string, currentSearch: string): stri
 
 export const OLYMPIA_CHAMPIONS = [
   {
+    id: '84071a35-5f73-4927-a0a7-828800245096',
+    title: 'Samson Dauda',
+    image: '/n2n/samson.jpeg',
+    tags: ['2024 Champion', 'Mr. Olympia'],
+  },
+  {
+    id: 'c88adb24-5d9e-4886-9be0-e79f03f3d79e',
+    title: 'Derek Lunsford',
+    image: '/n2n/derek.jpeg',
+    tags: ['2023 Champion', 'Mr. Olympia'],
+  },
+  {
+    id: 'b4537110-f393-4fde-9f94-6885391589d8',
+    title: 'Hadi Choopan',
+    image: '/n2n/hadi.jpg',
+    tags: ['2022 Champion', 'Mr. Olympia'],
+  },
+  {
     id: '7fb2a325-d877-4daf-a308-bd0089d888f1',
     title: 'Chris Bumstead',
     image: 'https://images.unsplash.com/photo-1581009146145-b5ef050c2e1e?auto=format&fit=crop&q=80&w=800',
     tags: ['6x Champion', 'Classic Physique'],
+  },
+  {
+    id: 'f92fad9e-ab7e-44d6-818c-0527000810eb',
+    title: 'Big Ramy',
+    image: 'https://upload.wikimedia.org/wikipedia/commons/4/4f/Big_Ramy2.png',
+    tags: ['2x Champion', 'Mr. Olympia'],
+  },
+  {
+    id: '6d0b723d-c5ba-4991-8a89-b1466ed3b3ef',
+    title: 'Brandon Curry',
+    image: '/n2n/brandon.jpeg',
+    tags: ['2019 Champion', 'Mr. Olympia'],
+  },
+  {
+    id: '59e9f92c-c712-4676-bb07-40a4c394dfab',
+    title: 'Shawn Rhoden',
+    image: 'https://upload.wikimedia.org/wikipedia/commons/3/30/Shawn_Rhoden.jpg',
+    tags: ['2018 Champion', 'Mr. Olympia'],
+  },
+  {
+    id: 'b6013ed0-5bd4-412d-9a42-d256a5ba9fc3',
+    title: 'Phil Heath',
+    image: 'https://upload.wikimedia.org/wikipedia/commons/9/91/Philheath.jpg',
+    tags: ['7x Champion', 'Mr. Olympia'],
+  },
+  {
+    id: 'a7f353ba-6281-4b33-aff4-977325a1ebe8',
+    title: 'Andrea Shaw',
+    image: 'https://upload.wikimedia.org/wikipedia/commons/9/9f/Andrea_Shaw_at_the_2023_IFBB_Pro_League_New_York_Pro.png',
+    tags: ['6x Champion', 'Ms. Olympia'],
+  },
+  {
+    id: '0efb86ee-ab84-4e95-8d27-51c7368915e3',
+    title: 'Iris Kyle',
+    image: 'https://upload.wikimedia.org/wikipedia/commons/7/78/Iris_Kyle_posing_at_2008_Ms._Olympia_%28cropped%29.jpg',
+    tags: ['10x Champion', 'Ms. Olympia'],
   },
 ];
 
