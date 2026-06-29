@@ -34,6 +34,38 @@ export async function getChildNetworks(parentId: string, includeInactive: boolea
     }
   }
 
+  if (!data) {
+    data = [];
+  }
+
+  // Dynamically append Wings of Strength for Muscle & Fitness parent if not already present
+  if (parentId === '7a017c4d-c08f-4260-8540-a0cc8bed4e11') {
+    const hasWings = data.some((row: any) => row.name === 'Wings of Strength' || row.id === 'wings-of-strength-tenant-id');
+    if (!hasWings) {
+      data.push({
+        id: 'wings-of-strength-tenant-id',
+        name: 'Wings of Strength',
+        domain: 'wingsofstrength.net',
+        logo: 'https://wingsofstrength.net/wp-content/uploads/2025/02/27/inner-page-logo-min-1.png',
+        parent_network_id: '7a017c4d-c08f-4260-8540-a0cc8bed4e11',
+        platform_fee_percentage: 30,
+        is_active: true,
+        theme: {
+          accent: '#E31B23',
+          heroCopy: 'Wings of Strength — Female Bodybuilding World and Professional Strength Sports Promotion.',
+          heroImage: 'https://images.unsplash.com/photo-1541534741688-6078c6bfb5c5?auto=format&fit=crop&q=80&w=1600',
+          logoImage: 'https://wingsofstrength.net/wp-content/uploads/2025/02/27/inner-page-logo-min-1.png',
+          shopifyUrl: 'https://wingsofstrength.net/',
+          sliderCount: 4,
+          enableBooking: false,
+          heroLayoutMode: 'verbiage',
+          enableWatchLive: true,
+          parent_network_id: '7a017c4d-c08f-4260-8540-a0cc8bed4e11'
+        }
+      });
+    }
+  }
+
   if (!data) return [];
   
   // Filter out test networks (Noelani, Bennie, Leilani, Leiloe, etc.)

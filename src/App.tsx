@@ -373,7 +373,28 @@ function App() {
         ]);
 
         const dbTenantData = configRes?.data;
-        if (dbTenantData && dbTenantData.length > 0) {
+        if (activeTenantId === 'wings-of-strength-tenant-id') {
+          loadedTenantId = 'wings-of-strength-tenant-id';
+          loadedConfig = normalizeWlConfig({
+            id: 'wings-of-strength-tenant-id',
+            name: 'Wings of Strength',
+            domain: 'wingsofstrength.net',
+            logo: 'https://wingsofstrength.net/wp-content/uploads/2025/02/27/inner-page-logo-min-1.png',
+            parent_network_id: '7a017c4d-c08f-4260-8540-a0cc8bed4e11',
+            is_active: true,
+            theme: {
+              accent: '#E31B23',
+              heroCopy: 'Wings of Strength — Female Bodybuilding World and Professional Strength Sports Promotion.',
+              heroImage: 'https://images.unsplash.com/photo-1541534741688-6078c6bfb5c5?auto=format&fit=crop&q=80&w=1600',
+              logoImage: 'https://wingsofstrength.net/wp-content/uploads/2025/02/27/inner-page-logo-min-1.png',
+              shopifyUrl: 'https://wingsofstrength.net/',
+              sliderCount: 4,
+              enableBooking: false,
+              heroLayoutMode: 'verbiage',
+              enableWatchLive: true
+            }
+          });
+        } else if (dbTenantData && dbTenantData.length > 0) {
           const dbConf = dbTenantData[0];
           loadedTenantId = dbConf.id;
           loadedConfig = normalizeWlConfig(dbConf, { name: dbConf.name || 'Vibe B2B Enterprise' });
