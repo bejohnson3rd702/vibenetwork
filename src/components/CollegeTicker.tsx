@@ -38,9 +38,19 @@ const KPLE_EVENTS = [
   { sport: '✝️ MEMBER SUPPORT', away: { name: 'KKCBC 501(c)3 Media Mission' }, home: { name: 'Become a Partner / Monthly Member' }, status: 'members.kple-tv.org' },
 ];
 
+const WINGS_EVENTS = [
+  { sport: '🔥 IRON GAMES', away: { name: 'Phoenix, AZ' }, home: { name: 'NPC Phoenix Iron Games Qualifier' }, status: 'JULY 18, 2026' },
+  { sport: '👑 SUPERSHOW', away: { name: 'Atlanta, GA' }, home: { name: 'Lenda Murray Atlanta Pro-Am' }, status: 'AUG 8-9, 2026' },
+  { sport: '💫 PRO-AM', away: { name: 'Phoenix, AZ' }, home: { name: 'NPC/IFBB Rising Phoenix Pro-Am' }, status: 'AUG 22, 2026' },
+  { sport: '🏆 AMATEUR OLYMPIA', away: { name: 'Eastern Europe' }, home: { name: 'Olympia Amateur Qualifier' }, status: 'AUG 29-30, 2026' },
+  { sport: '💪 ALINA POPA CLASSIC', away: { name: 'IFBB Pro League' }, home: { name: 'Alina Popa Classic Pro' }, status: 'AUG 30, 2026' },
+  { sport: '⚔️ WARRIORS', away: { name: 'Romania' }, home: { name: 'Valahia Warriors Championship' }, status: 'OCT 3, 2026' },
+  { sport: '🇷🇴 MUSCLE FEST', away: { name: 'Romania' }, home: { name: 'Romania Muscle Fest Pro-Am' }, status: 'NOV 7-8, 2026' },
+];
+
 const API_BASE = '/api/ncaa';
 
-export default function CollegeTicker({ accent = '#D35400', isOlympian = false, isB2K = false, isKple = false }: { accent?: string; isOlympian?: boolean; isB2K?: boolean; isKple?: boolean }) {
+export default function CollegeTicker({ accent = '#D35400', isOlympian = false, isB2K = false, isKple = false, isWings = false }: { accent?: string; isOlympian?: boolean; isB2K?: boolean; isKple?: boolean; isWings?: boolean }) {
   const [games, setGames] = useState<GameScore[]>([]);
   const [loading, setLoading] = useState(true);
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -76,6 +86,19 @@ export default function CollegeTicker({ accent = '#D35400', isOlympian = false, 
     if (isKple) {
       const allGames: GameScore[] = KPLE_EVENTS.map((e, idx) => ({
         id: `kple-${idx}`,
+        away: { name: e.away.name, score: '' },
+        home: { name: e.home.name, score: '' },
+        status: e.status,
+        sport: e.sport,
+      }));
+      setGames(allGames);
+      setLoading(false);
+      return;
+    }
+
+    if (isWings) {
+      const allGames: GameScore[] = WINGS_EVENTS.map((e, idx) => ({
+        id: `wings-${idx}`,
         away: { name: e.away.name, score: '' },
         home: { name: e.home.name, score: '' },
         status: e.status,
