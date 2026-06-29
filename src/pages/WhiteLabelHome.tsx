@@ -8,7 +8,7 @@ import { ASSETS } from '../data';
 import type { WhiteLabelConfig, Category, VideoItem, User } from '../types';
 import { isOlympianConfig, isMuscleFitnessConfig, isB2kConfig, isKpleConfig } from '../lib/whitelabel';
 
-import { OLYMPIA_CHAMPIONS } from './N2NHome';
+import { OLYMPIA_CHAMPIONS } from '../lib/n2n';
 
 const ProfileDashboard = lazy(() => import('../components/ProfileDashboard'));
 const ShopifyStore = lazy(() => import('../components/ShopifyStore'));

@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Play, X, Network } from 'lucide-react';
 import SliderSection from '../components/SliderSection';
 import { useWhiteLabel } from '../context/WhiteLabelContext';
-import { getChildNetworks, mergeQueryParams } from '../lib/n2n';
+import { getChildNetworks, mergeQueryParams, OLYMPIA_CHAMPIONS } from '../lib/n2n';
 import { getN2NCategories } from '../api';
 import type { Category, VideoItem, User } from '../types';
 import { supabase } from '../supabaseClient';
@@ -25,111 +25,6 @@ interface N2NHomeProps {
   activeVideo: VideoItem | null;
   setActiveVideo: (video: VideoItem | null) => void;
 }
-
-export const OLYMPIA_CHAMPIONS = [
-  {
-    id: '84071a35-5f73-4927-a0a7-828800245096',
-    title: 'Samson Dauda',
-    image: '/n2n/samson.jpeg',
-    tags: ['2024 Champion', 'Mr. Olympia'],
-  },
-  {
-    id: 'c88adb24-5d9e-4886-9be0-e79f03f3d79e',
-    title: 'Derek Lunsford',
-    image: '/n2n/derek.jpeg',
-    tags: ['2023 Champion', 'Mr. Olympia'],
-  },
-  {
-    id: 'b4537110-f393-4fde-9f94-6885391589d8',
-    title: 'Hadi Choopan',
-    image: '/n2n/hadi.jpg',
-    tags: ['2022 Champion', 'Mr. Olympia'],
-  },
-  {
-    id: 'c1a0110c-5bd4-412d-9a42-d256a5ba9fc3',
-    title: 'Chris Bumstead',
-    image: 'https://images.unsplash.com/photo-1581009146145-b5ef050c2e1e?auto=format&fit=crop&q=80&w=800',
-    tags: ['6x Champion', 'Classic Physique'],
-  },
-  {
-    id: 'k2a0110d-5bd4-412d-9a42-d256a5ba9fc4',
-    title: 'Keone Pearson',
-    image: 'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?auto=format&fit=crop&q=80&w=800',
-    tags: ['2024 Champion', '212 Olympia'],
-  },
-  {
-    id: 'r3a0110e-5bd4-412d-9a42-d256a5ba9fc5',
-    title: 'Ryan Terry',
-    image: 'https://images.unsplash.com/photo-1532384748853-8f54a8f476e2?auto=format&fit=crop&q=80&w=800',
-    tags: ['2024 Champion', 'Men\'s Physique'],
-  },
-  {
-    id: 'f92fad9e-ab7e-44d6-818c-0527000810eb',
-    title: 'Big Ramy',
-    image: 'https://upload.wikimedia.org/wikipedia/commons/4/4f/Big_Ramy2.png',
-    tags: ['2x Champion', 'Mr. Olympia'],
-  },
-  {
-    id: '6d0b723d-c5ba-4991-8a89-b1466ed3b3ef',
-    title: 'Brandon Curry',
-    image: '/n2n/brandon.jpeg',
-    tags: ['2019 Champion', 'Mr. Olympia'],
-  },
-  {
-    id: '59e9f92c-c712-4676-bb07-40a4c394dfab',
-    title: 'Shawn Rhoden',
-    image: 'https://upload.wikimedia.org/wikipedia/commons/3/30/Shawn_Rhoden.jpg',
-    tags: ['2018 Champion', 'Mr. Olympia'],
-  },
-  {
-    id: 'b6013ed0-5bd4-412d-9a42-d256a5ba9fc3',
-    title: 'Phil Heath',
-    image: 'https://upload.wikimedia.org/wikipedia/commons/9/91/Philheath.jpg',
-    tags: ['7x Champion', 'Mr. Olympia'],
-  },
-  {
-    id: 'a7f353ba-6281-4b33-aff4-977325a1ebe8',
-    title: 'Andrea Shaw',
-    image: 'https://upload.wikimedia.org/wikipedia/commons/9/9f/Andrea_Shaw_at_the_2023_IFBB_Pro_League_New_York_Pro.png',
-    tags: ['6x Champion', 'Ms. Olympia'],
-  },
-  {
-    id: '0efb86ee-ab84-4e95-8d27-51c7368915e3',
-    title: 'Iris Kyle',
-    image: 'https://upload.wikimedia.org/wikipedia/commons/7/78/Iris_Kyle_posing_at_2008_Ms._Olympia_%28cropped%29.jpg',
-    tags: ['10x Champion', 'Ms. Olympia'],
-  },
-  {
-    id: 'c4a0110f-5bd4-412d-9a42-d256a5ba9fc6',
-    title: 'Cydney Gillon',
-    image: 'https://images.unsplash.com/photo-1518310383802-640c2de311b2?auto=format&fit=crop&q=80&w=800',
-    tags: ['8x Champion', 'Figure Olympia'],
-  },
-  {
-    id: 'l5a01110-5bd4-412d-9a42-d256a5ba9fc7',
-    title: 'Lauralie Chapados',
-    image: 'https://images.unsplash.com/photo-1526506118085-60ce8714f8c5?auto=format&fit=crop&q=80&w=800',
-    tags: ['3x Champion', 'Bikini Olympia'],
-  },
-  {
-    id: 'i6a01111-5bd4-412d-9a42-d256a5ba9fc8',
-    title: 'Isabelle Nunes',
-    image: 'https://images.unsplash.com/photo-1594381898411-846e7d193883?auto=format&fit=crop&q=80&w=800',
-    tags: ['2024 Champion', 'Wellness Olympia'],
-  },
-  {
-    id: 's7a01112-5bd4-412d-9a42-d256a5ba9fc9',
-    title: 'Sarah Villegas',
-    image: 'https://images.unsplash.com/photo-1590556409324-aa1d726e5c3c?auto=format&fit=crop&q=80&w=800',
-    tags: ['4x Champion', 'Women\'s Physique'],
-  },
-  {
-    id: 'm8a01113-5bd4-412d-9a42-d256a5ba9fca',
-    title: 'Missy Truscott',
-    image: 'https://images.unsplash.com/photo-1548690312-e3b507d8c110?auto=format&fit=crop&q=80&w=800',
-    tags: ['2x Champion', 'Fitness Olympia'],
-  },
-];
 
 export default function N2NHome({ wlConfig, categories, activeVideo, setActiveVideo }: N2NHomeProps) {
   const navigate = useNavigate();

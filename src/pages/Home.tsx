@@ -18,8 +18,7 @@ interface HomeProps {
 }
 
 import { useWhiteLabel } from '../context/WhiteLabelContext';
-import { getChildNetworks, mergeQueryParams } from '../lib/n2n';
-import { OLYMPIA_CHAMPIONS } from './N2NHome';
+import { getChildNetworks, mergeQueryParams, OLYMPIA_CHAMPIONS } from '../lib/n2n';
 
 export default function Home({ categories, activeVideo, setActiveVideo, user }: HomeProps) {
   const { wlConfig } = useWhiteLabel();
