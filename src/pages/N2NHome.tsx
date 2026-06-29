@@ -683,7 +683,7 @@ export default function N2NHome({ wlConfig, categories, activeVideo, setActiveVi
                   }
                   
                   // 4. Add M&F Hers if not current
-                  if (config?.id !== 'mf-hers-tenant-id') {
+                  if (config?.id !== 'mf-hers-tenant-id' && !isOlympian) {
                     mfNetworkItems.push({
                       id: 'mf-hers-tenant-id',
                       title: 'M&F Hers',
@@ -696,7 +696,7 @@ export default function N2NHome({ wlConfig, categories, activeVideo, setActiveVi
                   }
                   
                   // 5. Add Flex Online if not current
-                  if (config?.id !== 'flex-online-tenant-id') {
+                  if (config?.id !== 'flex-online-tenant-id' && !isOlympian) {
                     mfNetworkItems.push({
                       id: 'flex-online-tenant-id',
                       title: 'Flex Online',
