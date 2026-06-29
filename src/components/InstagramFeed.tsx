@@ -253,7 +253,7 @@ const InstagramPostCard: React.FC<PostProps> = ({ post, accent }) => {
   );
 };
 
-export const InstagramFeed: React.FC<{ accent: string }> = ({ accent }) => {
+const InstagramFeed: React.FC<{ accent: string }> = ({ accent }) => {
   return (
     <div style={{
       maxWidth: '500px',
@@ -276,3 +276,5 @@ export const InstagramFeed: React.FC<{ accent: string }> = ({ accent }) => {
     </div>
   );
 };
+
+export default InstagramFeed;
