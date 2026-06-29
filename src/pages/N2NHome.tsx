@@ -683,7 +683,7 @@ export default function N2NHome({ wlConfig, categories, activeVideo, setActiveVi
                   }
                   
                   // 4. Add M&F Hers if not current
-                  if (config?.id !== 'mf-hers-tenant-id' && !isOlympian) {
+                  if (config?.id !== 'mf-hers-tenant-id') {
                     mfNetworkItems.push({
                       id: 'mf-hers-tenant-id',
                       title: 'M&F Hers',
@@ -696,7 +696,7 @@ export default function N2NHome({ wlConfig, categories, activeVideo, setActiveVi
                   }
                   
                   // 5. Add Flex Online if not current
-                  if (config?.id !== 'flex-online-tenant-id' && !isOlympian) {
+                  if (config?.id !== 'flex-online-tenant-id') {
                     mfNetworkItems.push({
                       id: 'flex-online-tenant-id',
                       title: 'Flex Online',
@@ -1136,7 +1136,7 @@ export default function N2NHome({ wlConfig, categories, activeVideo, setActiveVi
         )}
 
         {/* ── M&F Sister Publications Banners ────────────────── */}
-        {(isOlympian || isMf) && (
+        {isMf && (
           <section style={{ maxWidth: '1400px', margin: '40px auto 20px', padding: '0 40px' }}>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '32px' }}>
               
