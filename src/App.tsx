@@ -394,14 +394,6 @@ function App() {
               enableWatchLive: true,
               heroSlider: [
                 {
-                  id: 'wos-slide-1',
-                  title: 'Rising Phoenix World Championships',
-                  subtitle: 'Elite Female Bodybuilding',
-                  copy: 'The highest level of competition in professional women\'s bodybuilding. Witness the world\'s best athletes battle for the Sandow.',
-                  imageUrl: '/n2n/wings_home_banner.jpg',
-                  videoUrl: 'https://wingsofstrength.net/'
-                },
-                {
                   id: 'wos-slide-2',
                   title: 'Alina Popa Classic',
                   subtitle: 'IFBB Pro League Contest',
