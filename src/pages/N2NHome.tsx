@@ -47,13 +47,13 @@ export const OLYMPIA_CHAMPIONS = [
   {
     id: 'c1a0110c-5bd4-412d-9a42-d256a5ba9fc3',
     title: 'Chris Bumstead',
-    image: 'https://upload.wikimedia.org/wikipedia/commons/e/ec/Chris_Bumstead_on_Gymshark.jpg',
+    image: 'https://images.unsplash.com/photo-1581009146145-b5ef050c2e1e?auto=format&fit=crop&q=80&w=800',
     tags: ['6x Champion', 'Classic Physique'],
   },
   {
     id: 'k2a0110d-5bd4-412d-9a42-d256a5ba9fc4',
     title: 'Keone Pearson',
-    image: 'https://images.unsplash.com/photo-1605296867304-46d5465a25f1?auto=format&fit=crop&q=80&w=800',
+    image: 'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?auto=format&fit=crop&q=80&w=800',
     tags: ['2024 Champion', '212 Olympia'],
   },
   {

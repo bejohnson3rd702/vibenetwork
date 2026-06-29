@@ -87,7 +87,7 @@ export function normalizeWlConfig(
     } : {}),
     ...(isOlympian ? {
       heroCopy: "Joe Weider's Mr. Olympia Fitness & Performance Weekend — The Pinnacle of Bodybuilding.",
-      logoImage: 'https://upload.wikimedia.org/wikipedia/commons/thumb/e/ec/Chris_Bumstead_on_Gymshark.jpg/250px-Chris_Bumstead_on_Gymshark.jpg'
+      logoImage: null
     } : {})
   };
   const base = {
