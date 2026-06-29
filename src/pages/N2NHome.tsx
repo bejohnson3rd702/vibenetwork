@@ -1062,7 +1062,7 @@ export default function N2NHome({ wlConfig, categories, activeVideo, setActiveVi
               {/* Background image */}
               <div style={{
                 position: 'absolute', inset: 0,
-                backgroundImage: `url(${isOlympian || isMf ? "https://images.unsplash.com/photo-1517838277536-f5f99be501cd?auto=format&fit=crop&q=80&w=1200" : (isB2K ? "https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?auto=format&fit=crop&q=80&w=1200" : (isKple ? "https://images.unsplash.com/photo-1510915228340-29c85a43dcfe?auto=format&fit=crop&q=80&w=1200" : "https://shopavo.la/cdn/shop/files/Homepage_Vanderbilt_Desktop2_c7f572ef-cd7e-4de4-bb9c-160b99884e08_1500x.jpg?v=1776284877"))})`,
+                backgroundImage: `url(${isOlympian || isMf ? "https://images.unsplash.com/photo-1517838277536-f5f99be501cd?auto=format&fit=crop&q=80&w=1200" : isWings ? "/n2n/wings_phoenix_iron_games.jpg" : (isB2K ? "https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?auto=format&fit=crop&q=80&w=1200" : (isKple ? "https://images.unsplash.com/photo-1510915228340-29c85a43dcfe?auto=format&fit=crop&q=80&w=1200" : "https://shopavo.la/cdn/shop/files/Homepage_Vanderbilt_Desktop2_c7f572ef-cd7e-4de4-bb9c-160b99884e08_1500x.jpg?v=1776284877"))})`,
                 backgroundSize: 'cover', backgroundPosition: 'center',
                 filter: 'brightness(0.3)',
               }} />
@@ -1074,7 +1074,7 @@ export default function N2NHome({ wlConfig, categories, activeVideo, setActiveVi
                     fontSize: '11px', fontWeight: 800, textTransform: 'uppercase',
                     letterSpacing: '3px', color: accent, marginBottom: '12px',
                   }}>
-                    {isOlympian ? "Olympia Ambassadors" : isMf ? "Fitness Ambassadors" : (isB2K ? "Street Team" : (isKple ? "Media Partner" : "Campus Ambassadors"))}
+                    {isOlympian ? "Olympia Ambassadors" : isMf ? "Fitness Ambassadors" : isWings ? "Wings Ambassadors" : (isB2K ? "Street Team" : (isKple ? "Media Partner" : "Campus Ambassadors"))}
                   </p>
                   <h2 style={{
                     fontSize: '36px', fontWeight: 900, color: '#fff', margin: '0 0 16px 0',
@@ -1082,6 +1082,8 @@ export default function N2NHome({ wlConfig, categories, activeVideo, setActiveVi
                   }}>
                     {isOlympian || isMf ? (
                       <>Represent {config?.name || 'Muscle & Fitness'}<br />In Your Community</>
+                    ) : isWings ? (
+                      <>Represent Wings<br />Everywhere You Go</>
                     ) : (
                       isB2K ? (
                         <>B2K Street Team &amp;<br />Millennium Ambassador</>
@@ -1099,10 +1101,12 @@ export default function N2NHome({ wlConfig, categories, activeVideo, setActiveVi
                   }}>
                     {isOlympian || isMf 
                       ? `Join the official ${config?.name || 'Muscle & Fitness'} Ambassador Program. Share fitness tips, review premium workout apparel, and earn exclusive event credentials, early access, and commissions.`
-                      : (isB2K 
-                        ? "Join the official B2K Millennium Street Team. Promote the Boys 4 Life Tour, share new music updates, and earn exclusive backstage passes, VIP meet-and-greets, and limited edition merch."
-                        : (isKple ? "Become a supporting partner of the Christian Revival Network. Join our media mission to keep the Gospel broadcasting 24/7. Your support enables us to continue revealing the love of Jesus Christ." : "Join the AVO Ambassador Program and bring premium college apparel to your school. Earn exclusive perks, early access to drops, and commissions on every sale.")
-                      )}
+                      : isWings
+                        ? "Join the official Wings of Strength Ambassador Program. Spread the passion for female bodybuilding, review premium strength gear, and earn exclusive event passes, backstage credentials, and athlete sponsorship perks."
+                        : (isB2K 
+                          ? "Join the official B2K Millennium Street Team. Promote the Boys 4 Life Tour, share new music updates, and earn exclusive backstage passes, VIP meet-and-greets, and limited edition merch."
+                          : (isKple ? "Become a supporting partner of the Christian Revival Network. Join our media mission to keep the Gospel broadcasting 24/7. Your support enables us to continue revealing the love of Jesus Christ." : "Join the AVO Ambassador Program and bring premium college apparel to your school. Earn exclusive perks, early access to drops, and commissions on every sale.")
+                        )}
                   </p>
                 </div>
                 <button
@@ -1125,7 +1129,7 @@ export default function N2NHome({ wlConfig, categories, activeVideo, setActiveVi
                   onMouseOver={e => { e.currentTarget.style.background = '#fff'; e.currentTarget.style.color = '#000'; }}
                   onMouseOut={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = '#fff'; }}
                 >
-                  {isKple ? "Join Now" : "More Info"}
+                  {isKple ? "Join Now" : isWings ? "Become An Ambassador" : "More Info"}
                 </button>
               </div>
             </div>
