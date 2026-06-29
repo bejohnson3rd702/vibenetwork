@@ -3594,7 +3594,7 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
               />
               <div style={{ position: 'relative', width: '100%', display: 'flex', flexDirection: 'column', gap: '10px' }}>
                 <textarea 
-                  placeholder="What would you like to share with your audience? Write updates, drop links, or describe new content..." 
+                  placeholder="What would you like to share?..." 
                   value={postTitle} 
                   onChange={(e) => setPostTitle(e.target.value)}
                   style={{ 
