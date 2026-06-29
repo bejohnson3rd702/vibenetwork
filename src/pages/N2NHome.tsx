@@ -14,6 +14,7 @@ const CollegeNewsFeed = lazy(() => import('../components/CollegeNewsFeed'));
 const WatchLive = lazy(() => import('../components/WatchLive'));
 const ChildNetworkFeeds = lazy(() => import('../components/ChildNetworkFeeds'));
 const FeaturedArticles = lazy(() => import('../components/FeaturedArticles'));
+const MFRSSFeed = lazy(() => import('../components/MFRSSFeed'));
 const TopAmbassadors = lazy(() => import('../components/TopAmbassadors'));
 const AmbassadorModal = lazy(() => import('../components/AmbassadorModal'));
 const HoodieVoteModal = lazy(() => import('../components/HoodieVoteModal'));
@@ -542,6 +543,12 @@ export default function N2NHome({ wlConfig, categories, activeVideo, setActiveVi
         {isMf && (
           <Suspense fallback={null}>
             <FeaturedArticles accent={accent} />
+          </Suspense>
+        )}
+
+        {isMf && (
+          <Suspense fallback={null}>
+            <MFRSSFeed accent={accent} />
           </Suspense>
         )}
 
