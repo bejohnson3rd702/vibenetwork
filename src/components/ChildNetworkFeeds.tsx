@@ -422,6 +422,7 @@ export default function ChildNetworkFeeds({ parentId, accent = 'var(--accent-pri
               style={{
                 background: 'rgba(15,15,15,0.7)',
                 backdropFilter: 'blur(10px)',
+                WebkitBackdropFilter: 'blur(10px)',
                 borderRadius: '24px',
                 border: '1px solid rgba(255,255,255,0.06)',
                 overflow: 'hidden',
@@ -526,15 +527,11 @@ export default function ChildNetworkFeeds({ parentId, accent = 'var(--accent-pri
                   );
                 })()}
 
-                <div style={{
+                <div className="line-clamp-3" style={{
                   padding: '16px 18px',
                   fontSize: '13px',
                   lineHeight: '1.5',
                   color: 'rgba(255,255,255,0.65)',
-                  display: '-webkit-box',
-                  WebkitLineClamp: 3,
-                  WebkitBoxOrient: 'vertical',
-                  overflow: 'hidden',
                   minHeight: '58px'
                 }}>
                   {post.content}
@@ -606,6 +603,7 @@ export default function ChildNetworkFeeds({ parentId, accent = 'var(--accent-pri
             zIndex: 10000,
             background: 'rgba(0, 0, 0, 0.85)',
             backdropFilter: 'blur(12px)',
+            WebkitBackdropFilter: 'blur(12px)',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
@@ -769,7 +767,12 @@ export default function ChildNetworkFeeds({ parentId, accent = 'var(--accent-pri
 
       <style>{`
         .hide-scrollbar::-webkit-scrollbar { display: none; }
-        
+        .line-clamp-3 {
+          display: -webkit-box;
+          -webkit-line-clamp: 3;
+          -webkit-box-orient: vertical;
+          overflow: hidden;
+        }
         @media (max-width: 1024px) {
           .child-feed-card {
             width: calc(33.333% - 16px) !important;

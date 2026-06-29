@@ -131,6 +131,7 @@ export default function MFRSSFeed({ accent = '#E31B23' }: { accent?: string }) {
               display: 'flex',
               background: 'rgba(15, 15, 15, 0.4)',
               backdropFilter: 'blur(10px)',
+              WebkitBackdropFilter: 'blur(10px)',
               borderRadius: '16px',
               border: '1px solid rgba(255, 255, 255, 0.05)',
               overflow: 'hidden',
@@ -185,15 +186,11 @@ export default function MFRSSFeed({ accent = '#E31B23' }: { accent?: string }) {
                 {article.title}
               </h3>
               
-              <p style={{
+              <p className="line-clamp-2" style={{
                 fontSize: '13px',
                 color: 'rgba(255, 255, 255, 0.6)',
                 margin: 0,
-                lineHeight: '1.5',
-                display: '-webkit-box',
-                WebkitLineClamp: 2,
-                WebkitBoxOrient: 'vertical',
-                overflow: 'hidden'
+                lineHeight: '1.5'
               }}>
                 {article.description}
               </p>
@@ -229,6 +226,7 @@ export default function MFRSSFeed({ accent = '#E31B23' }: { accent?: string }) {
             zIndex: 10000,
             background: 'rgba(0, 0, 0, 0.85)',
             backdropFilter: 'blur(12px)',
+            WebkitBackdropFilter: 'blur(12px)',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
@@ -394,6 +392,12 @@ export default function MFRSSFeed({ accent = '#E31B23' }: { accent?: string }) {
       </AnimatePresence>
 
       <style>{`
+        .line-clamp-2 {
+          display: -webkit-box;
+          -webkit-line-clamp: 2;
+          -webkit-box-orient: vertical;
+          overflow: hidden;
+        }
         @media (max-width: 768px) {
           .article-card-row {
             flex-direction: column !important;
