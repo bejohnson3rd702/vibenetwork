@@ -391,7 +391,41 @@ function App() {
               sliderCount: 4,
               enableBooking: false,
               heroLayoutMode: 'verbiage',
-              enableWatchLive: true
+              enableWatchLive: true,
+              heroSlider: [
+                {
+                  id: 'wos-slide-1',
+                  title: 'Rising Phoenix World Championships',
+                  subtitle: 'Elite Female Bodybuilding',
+                  copy: 'The highest level of competition in professional women\'s bodybuilding. Witness the world\'s best athletes battle for the Sandow.',
+                  imageUrl: 'https://wingsofstrength.net/wp-content/uploads/2025/06/13/home-banner-1349px-min.jpg',
+                  videoUrl: 'https://wingsofstrength.net/'
+                },
+                {
+                  id: 'wos-slide-2',
+                  title: 'Alina Popa Classic',
+                  subtitle: 'IFBB Pro League Contest',
+                  copy: 'Celebrate strength, muscle, and dedication at the annual Alina Popa Classic featuring elite professional athletes.',
+                  imageUrl: 'https://wingsofstrength.net/wp-content/uploads/2026/01/20/ALINA-ALINA-POPA-CLASSIC-2026-social-media-.jpg',
+                  videoUrl: 'https://wingsofstrength.net/'
+                },
+                {
+                  id: 'wos-slide-3',
+                  title: 'Arizona Women\'s Pro',
+                  subtitle: 'Rising Phoenix Arizona Pro',
+                  copy: 'The road to the Rising Phoenix World Championships continues in Phoenix. Discover ticket releases and schedules.',
+                  imageUrl: 'https://wingsofstrength.net/wp-content/uploads/2026/02/12/2026-Rising-Phoenix-1080x1440px.jpg',
+                  videoUrl: 'https://wingsofstrength.net/'
+                },
+                {
+                  id: 'wos-slide-4',
+                  title: 'Phoenix Iron Games',
+                  subtitle: 'IFBB Pro & NPC Amateur',
+                  copy: 'A premier fitness weekend featuring both professional face-offs and national NPC amateur qualifiers.',
+                  imageUrl: 'https://wingsofstrength.net/wp-content/uploads/2026/02/02/2026-Phoenix-Iron-Games-1080x1440px.jpg',
+                  videoUrl: 'https://wingsofstrength.net/'
+                }
+              ]
             }
           });
         } else if (activeTenantId === 'mf-hers-tenant-id') {
