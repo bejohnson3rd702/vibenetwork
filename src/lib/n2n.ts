@@ -478,7 +478,7 @@ export const OLYMPIA_CHAMPIONS = [
     tags: ['2022 Champion', 'Mr. Olympia'],
   },
   {
-    id: 'c1a0110c-5bd4-412d-9a42-d256a5ba9fc3',
+    id: '7fb2a325-d877-4daf-a308-bd0089d888f1',
     title: 'Chris Bumstead',
     image: 'https://images.unsplash.com/photo-1581009146145-b5ef050c2e1e?auto=format&fit=crop&q=80&w=800',
     tags: ['6x Champion', 'Classic Physique'],
