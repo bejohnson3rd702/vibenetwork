@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
-import { Heart, MessageCircle, ArrowRight, ChevronLeft, ChevronRight } from 'lucide-react';
-import { motion } from 'framer-motion';
+import { Heart, MessageCircle, ArrowRight, ChevronLeft, ChevronRight, X } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from '../supabaseClient';
 
 interface WhitelabelTheme {
@@ -33,9 +33,96 @@ interface PostItem {
   articleUrl?: string;
 }
 
+const ARTICLE_BODIES: Record<string, { category: string; sections: string[]; routine?: string[]; tips?: string }> = {
+  'mf-art-1': {
+    category: 'Training & Longevity',
+    sections: [
+      'LA Clippers star guard Norman Powell shares his in-season workout strategy designed to maintain explosive force, power, and athletic longevity without overtaxing his central nervous system during the rigorous NBA schedule.',
+      'During the season, the primary goal is not raw muscle building but rather maintenance, joint stability, injury prevention, and core power. Powell emphasizes high eccentric control and deep activation.'
+    ],
+    routine: [
+      'Bulgarian Split Squats: 3 sets x 8 reps (Focus on depth and glute load)',
+      'Single-Arm Dumbbell Incline Bench Press: 3 sets x 10 reps (Unilateral control)',
+      'Single-Leg Glute Bridges: 3 sets x 12 reps (Posterior chain activation)',
+      'Med Ball Rotational Slams: 3 sets x 10 reps per side (Core power)'
+    ],
+    tips: 'Keep intensity high but volume moderate during the active season to prioritize recovery.'
+  },
+  'mf-art-2': {
+    category: 'Hypertrophy & Mass',
+    sections: [
+      'IFBB Pro Damien Patrick details the high-volume back day workout that helped him carve out maximum detail, thickness, and width during his final prep phases for the Olympia stage.',
+      'His philosophy revolves around maximum squeeze at peak contraction and slow negative release to target deep motor units.'
+    ],
+    routine: [
+      'Wide-Grip Cable Lat Pulldowns: 4 sets x 12, 10, 8, 8 reps (Squeeze at the bottom)',
+      'Single-Arm Machine Rows: 3 sets x 10 reps (Pull with your elbows)',
+      'Barbell Bent-Over Rows: 4 sets x 10 reps (Heavy compound lifter)',
+      'Straight-Arm Cable Pullovers: 3 sets x 15 reps (Stretches the lat fascia)'
+    ],
+    tips: 'Control the negative portion of every single repetition to recruit maximum muscle fibers.'
+  },
+  'mf-art-3': {
+    category: 'Leg Hypertrophy',
+    sections: [
+      'Sam Sulek breaks down his quad-focused leg day routine used during his cutting cycles to carve deep, feather-like detail into the vastus lateralis and rectus femoris.',
+      'Sulek focuses on intense knee flexion, pushing past failure, and maximizing volume on isolation machine lifts.'
+    ],
+    routine: [
+      'Leg Extensions: 5 sets x 15-20 reps (Hold contraction, warm up the knees)',
+      'Smith Machine Squats: 4 sets x 8-12 reps (Deep depth, slow eccentric tempo)',
+      'Horizontal Leg Press: 3 sets x 10-12 reps (High and wide foot placement)',
+      'Dumbbell Walking Lunges: 3 sets x 20 steps (Total leg finisher)'
+    ],
+    tips: 'Focus on full range of motion and deep knee flexion rather than raw weight load.'
+  },
+  'mf-art-4': {
+    category: 'Diet & Nutrition',
+    sections: [
+      'A comprehensive, science-backed nutrition blueprint designed to safely shred body fat while maintaining high energy levels and retaining lean tissue mass.',
+      'Consistent meal prep and precise macro breakdown are critical. Focus on high protein, moderate healthy fats, and low glycemic carbs.'
+    ],
+    routine: [
+      'Meal 1: 5 Egg Whites, 1 Whole Egg, 1/2 Cup Oats with Berries.',
+      'Meal 2: 6oz Grilled Chicken Breast, 1 Cup Broccoli, 4oz Sweet Potato.',
+      'Meal 3: 6oz Grilled Tilapia, Mixed Greens Salad with Olive Oil.',
+      'Meal 4 (Post-Workout): 1.5 scoops Whey Isolate, 1 Medium Banana.',
+      'Meal 5: 6oz Lean Sirloin Steak, Grilled Asparagus.'
+    ],
+    tips: 'Drink at least 1 gallon of clean water daily to support metabolic function and recovery.'
+  },
+  'mf-art-5': {
+    category: 'Endurance & Conditioning',
+    sections: [
+      'Champion athlete Zach Fowle shares the intense rowing drills, lung-burning interval splits, and mental framing techniques he used to prepare his body for the USRowing Indoor Championships.',
+      'Rowing requires an extraordinary balance of aerobic capacity and muscular power. Pacing is everything.'
+    ],
+    routine: [
+      'Interval Work: 4x 1,000m row (Targeting 2k pace, 3 mins rest between)',
+      'Aerobic Base: 45-minute steady-state row (Keep strokes per minute at 18-20)',
+      'Strength Assist: Deadlifts and plank holds to maintain strong posture.'
+    ],
+    tips: 'Pace the first quarter of your piece conservatively to preserve energy for a strong finish.'
+  },
+  'mf-art-6': {
+    category: 'Science & Metabolism',
+    sections: [
+      'Sports science researchers and nutrition physiologists debunk the myths surrounding weight fluctuation and explain how repeated cycles of rapid weight loss and gain affect thyroid production, metabolic rate, and hormone signaling.',
+      'Yo-yo dieting damages metabolic efficiency. Protecting muscle mass through resistance training and consuming sufficient protein is key to long-term health.'
+    ],
+    routine: [
+      'Metabolic Adaptation: Energy output decreases to match restricted calories.',
+      'Hormonal Shifts: Dieting decreases leptin (fullness) and increases ghrelin (hunger).',
+      'The Solution: Deficits should be small (10-15%) with gradual step-ups.'
+    ],
+    tips: 'Avoid crash dieting; a slow caloric reduction ensures your metabolism remains active.'
+  }
+};
+
 export default function ChildNetworkFeeds({ parentId, accent = 'var(--accent-primary)', isOlympian = false, isB2K = false, isMf = false }: { parentId: string, accent?: string, isOlympian?: boolean, isB2K?: boolean, isMf?: boolean }) {
   const [posts, setPosts] = useState<PostItem[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
+  const [activeArticle, setActiveArticle] = useState<PostItem | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -244,6 +331,9 @@ export default function ChildNetworkFeeds({ parentId, accent = 'var(--accent-pri
 
   const cardWidthDesktop = 'calc(25% - 18px)';
 
+  // Find detailed reader content for the active modal
+  const details = activeArticle ? ARTICLE_BODIES[activeArticle.id] : null;
+
   return (
     <section style={{ maxWidth: '1400px', margin: '60px auto 40px', padding: '0 40px', overflow: 'hidden' }}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '30px' }}>
@@ -345,8 +435,8 @@ export default function ChildNetworkFeeds({ parentId, accent = 'var(--accent-pri
                 cursor: 'pointer'
               }}
               onClick={() => {
-                if (isMf && post.articleUrl) {
-                  window.open(post.articleUrl, '_blank');
+                if (isMf) {
+                  setActiveArticle(post);
                 } else {
                   window.location.href = cleanLink;
                 }
@@ -503,6 +593,179 @@ export default function ChildNetworkFeeds({ parentId, accent = 'var(--accent-pri
           );
         })}
       </div>
+
+      {/* Modern, glassmorphic Article Modal Reader */}
+      <AnimatePresence>
+        {activeArticle && details && (
+          <div style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            width: '100vw',
+            height: '100vh',
+            zIndex: 10000,
+            background: 'rgba(0, 0, 0, 0.85)',
+            backdropFilter: 'blur(12px)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: '20px'
+          }}>
+            <motion.div
+              initial={{ opacity: 0, y: 30, scale: 0.95 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: 30, scale: 0.95 }}
+              transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+              style={{
+                background: 'rgba(22, 22, 22, 0.95)',
+                border: '1px solid rgba(255, 255, 255, 0.08)',
+                borderRadius: '28px',
+                maxWidth: '650px',
+                width: '100%',
+                maxHeight: '90vh',
+                overflowY: 'auto',
+                display: 'flex',
+                flexDirection: 'column',
+                position: 'relative',
+                boxShadow: '0 25px 60px rgba(0,0,0,0.8)'
+              }}
+              className="hide-scrollbar"
+            >
+              {/* Header Image with close overlay */}
+              <div style={{ width: '100%', height: '240px', overflow: 'hidden', position: 'relative', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+                <img 
+                  src={activeArticle.image_url} 
+                  alt={activeArticle.content.split(':')[0]} 
+                  style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                />
+                <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to bottom, rgba(0,0,0,0.2), rgba(0,0,0,0.7))' }} />
+                
+                {/* Float Close Button */}
+                <button 
+                  onClick={() => setActiveArticle(null)}
+                  style={{
+                    position: 'absolute',
+                    top: '20px',
+                    right: '20px',
+                    width: '40px',
+                    height: '40px',
+                    borderRadius: '50%',
+                    background: 'rgba(0,0,0,0.6)',
+                    backdropFilter: 'blur(8px)',
+                    border: '1px solid rgba(255,255,255,0.1)',
+                    color: '#fff',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    transition: 'all 0.2s'
+                  }}
+                  onMouseOver={e => e.currentTarget.style.background = 'rgba(255,255,255,0.15)'}
+                  onMouseOut={e => e.currentTarget.style.background = 'rgba(0,0,0,0.6)'}
+                >
+                  <X size={20} />
+                </button>
+
+                {/* Top Category Badge */}
+                <div style={{
+                  position: 'absolute',
+                  bottom: '20px',
+                  left: '24px',
+                  background: accent,
+                  color: '#fff',
+                  fontSize: '10px',
+                  fontWeight: 900,
+                  textTransform: 'uppercase',
+                  padding: '6px 14px',
+                  borderRadius: '30px',
+                  letterSpacing: '1px',
+                  boxShadow: `0 4px 15px ${accent}66`
+                }}>
+                  {details.category}
+                </div>
+              </div>
+
+              {/* Reader Body content */}
+              <div style={{ padding: '30px 40px 40px' }}>
+                <h3 style={{ fontSize: '24px', fontWeight: 900, margin: '0 0 20px', color: '#fff', lineHeight: '1.3' }}>
+                  {activeArticle.content.split(':')[0]}
+                </h3>
+
+                {/* Paragraphs */}
+                {details.sections.map((p, idx) => (
+                  <p key={idx} style={{ fontSize: '15px', color: 'rgba(255,255,255,0.7)', lineHeight: '1.7', margin: '0 0 20px' }}>
+                    {p}
+                  </p>
+                ))}
+
+                {/* Routine Split */}
+                {details.routine && (
+                  <div style={{
+                    margin: '30px 0',
+                    background: 'rgba(255,255,255,0.02)',
+                    border: '1px solid rgba(255,255,255,0.04)',
+                    padding: '24px 28px',
+                    borderRadius: '16px'
+                  }}>
+                    <h4 style={{ margin: '0 0 16px', textTransform: 'uppercase', fontSize: '12px', letterSpacing: '1px', color: accent, fontWeight: 900 }}>
+                      {details.category.toLowerCase().includes('diet') ? 'Daily Nutritional Plan' : 'Routine Guide & Breakdown'}
+                    </h4>
+                    <ul style={{ padding: 0, margin: 0, listStyle: 'none', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                      {details.routine.map((item, idx) => (
+                        <li key={idx} style={{ display: 'flex', gap: '10px', fontSize: '14px', color: '#fff', lineHeight: '1.5' }}>
+                          <span style={{ color: accent, fontWeight: 'bold' }}>•</span>
+                          <span>{item}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+
+                {/* Pro Tips Alert */}
+                {details.tips && (
+                  <div style={{
+                    borderLeft: `3px solid ${accent}`,
+                    background: 'rgba(227, 27, 35, 0.05)',
+                    padding: '16px 20px',
+                    borderRadius: '0 12px 12px 0',
+                    margin: '0 0 30px'
+                  }}>
+                    <strong style={{ display: 'block', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.8px', color: accent, marginBottom: '4px', fontWeight: 900 }}>
+                      Muscle & Fitness Pro-Tip
+                    </strong>
+                    <span style={{ fontSize: '13.5px', color: 'rgba(255,255,255,0.85)', lineHeight: '1.5' }}>
+                      {details.tips}
+                    </span>
+                  </div>
+                )}
+
+                {/* Close Button */}
+                <button
+                  type="button"
+                  onClick={() => setActiveArticle(null)}
+                  style={{
+                    width: '100%',
+                    padding: '16px',
+                    borderRadius: '14px',
+                    border: 'none',
+                    background: accent,
+                    color: '#fff',
+                    fontSize: '14px',
+                    fontWeight: 'bold',
+                    cursor: 'pointer',
+                    boxShadow: `0 6px 20px ${accent}44`,
+                    transition: 'transform 0.2s, filter 0.2s'
+                  }}
+                  onMouseOver={e => e.currentTarget.style.filter = 'brightness(1.1)'}
+                  onMouseOut={e => e.currentTarget.style.filter = 'brightness(1.0)'}
+                >
+                  Close Reader
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
 
       <style>{`
         .hide-scrollbar::-webkit-scrollbar { display: none; }
