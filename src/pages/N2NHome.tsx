@@ -836,8 +836,8 @@ export default function N2NHome({ wlConfig, categories, activeVideo, setActiveVi
               {/* Background Image */}
               <div style={{
                 position: 'absolute', inset: 0,
-                backgroundImage: `url(${isMf ? "/n2n/derek.jpeg" : (isB2K ? "https://images.unsplash.com/photo-1470225620780-dba8ba36b745?auto=format&fit=crop&q=80&w=1200" : "/n2n/concert_in_the_park.png")})`,
-                backgroundSize: 'cover', backgroundPosition: isMf ? '125% center' : 'center 35%',
+                backgroundImage: `url(${(isMf || isOlympian) ? "/n2n/derek.jpeg" : (isB2K ? "https://images.unsplash.com/photo-1470225620780-dba8ba36b745?auto=format&fit=crop&q=80&w=1200" : "/n2n/concert_in_the_park.png")})`,
+                backgroundSize: 'cover', backgroundPosition: (isMf || isOlympian) ? '125% center' : 'center 35%',
                 filter: 'brightness(0.35)'
               }} />
               {/* Gradient Overlay */}
@@ -849,28 +849,28 @@ export default function N2NHome({ wlConfig, categories, activeVideo, setActiveVi
               }}>
                 <div style={{
                   display: 'inline-flex', alignItems: 'center', gap: '8px',
-                  padding: '6px 14px', background: (isMf || isB2K) ? accent : 'linear-gradient(90deg, #FF512F, #DD2476)', color: (isMf || isB2K) ? '#000' : '#fff',
+                  padding: '6px 14px', background: (isMf || isOlympian || isB2K) ? accent : 'linear-gradient(90deg, #FF512F, #DD2476)', color: (isMf || isOlympian || isB2K) ? '#000' : '#fff',
                   fontSize: '10px', fontWeight: 900, letterSpacing: '2px', textTransform: 'uppercase',
                   marginBottom: '20px',
                 }}>
-                  {isMf ? "🏆 Joe Weider's Mr. Olympia Weekend" : (isB2K ? "🎤 The Millennium Tour" : "🎸 Summer 2026 Tour")}
+                  {isMf || isOlympian ? "🏆 Joe Weider's Mr. Olympia Weekend" : (isB2K ? "🎤 The Millennium Tour" : "🎸 Summer 2026 Tour")}
                 </div>
                 <h2 style={{
                   fontSize: '38px', fontWeight: 900, color: '#fff', margin: '0 0 16px 0',
                   lineHeight: 1.1, letterSpacing: '-1px', textTransform: 'uppercase',
                 }}>
-                  {isMf ? <>62nd Mr. Olympia<br />Las Vegas 2026</> : (isB2K ? <>The Boys 4 Life<br />Reunion Tour</> : <>AVO Summer<br />Concert Tour</>)}
+                  {isMf || isOlympian ? <>62nd Mr. Olympia<br />Las Vegas 2026</> : (isB2K ? <>The Boys 4 Life<br />Reunion Tour</> : <>AVO Summer<br />Concert Tour</>)}
                 </h2>
                 <p style={{
                   fontSize: '15px', color: 'rgba(255,255,255,0.6)', lineHeight: 1.7,
                   margin: '0 0 28px 0',
                 }}>
-                  {isMf ? "The ultimate fitness event of the year returns to Las Vegas, Nevada on September 24-27, 2026. Get your tickets to witness bodybuilding history live as elite champions from around the globe battle for the prestigious Sandow Trophy." : (isB2K ? "B2K is back on stage celebrating their 25th anniversary. The 28-city reunion tour features Bow Wow, Jeremih, Pretty Ricky, Amerie, and more, kicking off in Columbia, SC, and routing across the country. Don't miss this historic R&B reunion live!" : "Catch the vibes live! AVO is hitting the road this summer, bringing your favorite bands and artists to collegiate campus parks nationwide. Grab your crew, rep your school colors, and experience the ultimate summer soundtrack.")}
+                  {isMf || isOlympian ? "The ultimate fitness event of the year returns to Las Vegas, Nevada on September 24-27, 2026. Get your tickets to witness bodybuilding history live as elite champions from around the globe battle for the prestigious Sandow Trophy." : (isB2K ? "B2K is back on stage celebrating their 25th anniversary. The 28-city reunion tour features Bow Wow, Jeremih, Pretty Ricky, Amerie, and more, kicking off in Columbia, SC, and routing across the country. Don't miss this historic R&B reunion live!" : "Catch the vibes live! AVO is hitting the road this summer, bringing your favorite bands and artists to collegiate campus parks nationwide. Grab your crew, rep your school colors, and experience the ultimate summer soundtrack.")}
                 </p>
                 <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap' }}>
                   <button
                     onClick={() => {
-                      if (isMf) {
+                      if (isMf || isOlympian) {
                         window.open("https://mrolympia.com/", "_blank");
                       } else if (isB2K) {
                         window.open("https://b2kofficial.com/tour", "_blank");
@@ -886,11 +886,11 @@ export default function N2NHome({ wlConfig, categories, activeVideo, setActiveVi
                     onMouseOver={e => { e.currentTarget.style.opacity = '0.85'; }}
                     onMouseOut={e => { e.currentTarget.style.opacity = '1'; }}
                   >
-                    {isMf ? "Get Tickets" : "Buy Now"}
+                    {isMf || isOlympian ? "Get Tickets" : "Buy Now"}
                   </button>
                   <button
                     onClick={() => {
-                      if (isMf) {
+                      if (isMf || isOlympian) {
                         window.open("https://mrolympia.com/weekend-schedule", "_blank");
                       } else if (isB2K) {
                         window.location.hash = "#whats-on-now";
@@ -906,7 +906,7 @@ export default function N2NHome({ wlConfig, categories, activeVideo, setActiveVi
                     onMouseOver={e => { e.currentTarget.style.background = 'rgba(255, 255, 255, 0.15)'; }}
                     onMouseOut={e => { e.currentTarget.style.background = 'rgba(255, 255, 255, 0.08)'; }}
                   >
-                    {isMf ? "View Schedule" : "Join The Live Stream"}
+                    {isMf || isOlympian ? "View Schedule" : "Join The Live Stream"}
                   </button>
                 </div>
               </div>
