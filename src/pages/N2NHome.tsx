@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Play, X, Network, Volume1, Volume2, VolumeX } from 'lucide-react';
 import SliderSection from '../components/SliderSection';
 import { useWhiteLabel } from '../context/WhiteLabelContext';
-import { getChildNetworks, mergeQueryParams, OLYMPIA_CHAMPIONS } from '../lib/n2n';
+import { getChildNetworks, mergeQueryParams, OLYMPIA_CHAMPIONS, WINGS_ATHLETES } from '../lib/n2n';
 import { getN2NCategories } from '../api';
 import type { Category, VideoItem, User } from '../types';
 import { supabase } from '../supabaseClient';
@@ -882,6 +882,22 @@ export default function N2NHome({ wlConfig, categories, activeVideo, setActiveVi
                 if (item.linkUrl) {
                   window.location.href = mergeQueryParams(item.linkUrl, window.location.search);
                 }
+              }}
+            />
+          </div>
+        )}
+
+        {/* ── Wings of Strength Athletes Slider ────────────────── */}
+        {isWings && (
+          <div id="wings-athletes-slider" style={{ marginTop: '20px', marginBottom: '20px' }}>
+            <SliderSection
+              title="ATHLETES"
+              items={WINGS_ATHLETES}
+              delay={0.1}
+              aspectRatio="1/1"
+              cardsPerView={4}
+              onItemClick={(item) => {
+                // Button goes nowhere for now
               }}
             />
           </div>

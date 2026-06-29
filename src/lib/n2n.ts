@@ -521,5 +521,68 @@ export const OLYMPIA_CHAMPIONS = [
   },
 ];
 
+export const WINGS_ATHLETES = [
+  {
+    id: 'wos-ath-1',
+    title: 'Aisling Hickey',
+    image: '/n2n/wos_ath_1.jpg',
+    tags: ['Wings Athlete'],
+  },
+  {
+    id: 'wos-ath-2',
+    title: 'Alana Shipp',
+    image: '/n2n/wos_ath_2.jpg',
+    tags: ['Wings Athlete'],
+  },
+  {
+    id: 'wos-ath-3',
+    title: 'Amanda Aivaliotis',
+    image: '/n2n/wos_ath_3.jpg',
+    tags: ['Wings Athlete'],
+  },
+  {
+    id: 'wos-ath-4',
+    title: 'Amanda Machado',
+    image: '/n2n/wos_ath_4.jpg',
+    tags: ['Wings Athlete'],
+  },
+  {
+    id: 'wos-ath-5',
+    title: 'Amanda Ptak',
+    image: '/n2n/wos_ath_5.jpg',
+    tags: ['Wings Athlete'],
+  },
+  {
+    id: 'wos-ath-6',
+    title: 'Amanda Slinker',
+    image: '/n2n/wos_ath_6.jpg',
+    tags: ['Wings Athlete'],
+  },
+  {
+    id: 'wos-ath-7',
+    title: 'Amanda Smith',
+    image: '/n2n/wos_ath_7.jpg',
+    tags: ['Wings Athlete'],
+  },
+  {
+    id: 'wos-ath-8',
+    title: 'Amberly Plaski',
+    image: '/n2n/wos_ath_8.jpg',
+    tags: ['Wings Athlete'],
+  },
+  {
+    id: 'wos-ath-9',
+    title: 'Anastasia Korableva',
+    image: '/n2n/wos_ath_9.jpg',
+    tags: ['Wings Athlete'],
+  },
+  {
+    id: 'wos-ath-10',
+    title: 'Anca Ioana Bergen',
+    image: '/n2n/wos_ath_10.jpg',
+    tags: ['Wings Athlete'],
+  },
+];
+
 
 
