@@ -530,12 +530,12 @@ const STATIC_OLYMPIAN_CLIPS: VideoClip[] = [
 
 const STATIC_MUSCLE_FITNESS_CLIPS: VideoClip[] = [
   {
-    id: 'v1B1T02qD-M',
-    headline: 'The PERFECT Chest Workout (Sets and Reps Included)',
-    description: 'Build a thicker, stronger chest with this science-based high-volume training routine by ATHLEAN-X.',
-    thumbnail: 'https://i.ytimg.com/vi/v1B1T02qD-M/hqdefault.jpg',
-    videoUrl: 'https://www.youtube.com/watch?v=v1B1T02qD-M',
-    duration: 620,
+    id: 'y3nBv9p1oFg',
+    headline: "Chris Bumstead's Masterpiece Classic Physique Posing Routine",
+    description: "Watch Chris Bumstead's posing routine showcasing muscle definition, control, and structure on the main stage.",
+    thumbnail: 'https://i.ytimg.com/vi/y3nBv9p1oFg/hqdefault.jpg',
+    videoUrl: 'https://www.youtube.com/watch?v=y3nBv9p1oFg',
+    duration: 380,
     source: 'YouTube',
     sport: 'muscleandfitness'
   },
@@ -560,12 +560,12 @@ const STATIC_MUSCLE_FITNESS_CLIPS: VideoClip[] = [
     sport: 'muscleandfitness'
   },
   {
-    id: 'y3nBv9p1oFg',
-    headline: "Chris Bumstead's Masterpiece Classic Physique Posing Routine",
-    description: "Watch Chris Bumstead's posing routine showcasing muscle definition, control, and structure on the main stage.",
-    thumbnail: 'https://i.ytimg.com/vi/y3nBv9p1oFg/hqdefault.jpg',
-    videoUrl: 'https://www.youtube.com/watch?v=y3nBv9p1oFg',
-    duration: 380,
+    id: 'z-aLgC2W_mk',
+    headline: '2024 Mr. Olympia Samson Dauda Winning Moment',
+    description: 'Watch the historic crowning of Samson Dauda as the 2024 Mr. Olympia champion on the main stage in Las Vegas.',
+    thumbnail: 'https://i.ytimg.com/vi/z-aLgC2W_mk/hqdefault.jpg',
+    videoUrl: 'https://www.youtube.com/watch?v=z-aLgC2W_mk',
+    duration: 540,
     source: 'YouTube',
     sport: 'muscleandfitness'
   }
