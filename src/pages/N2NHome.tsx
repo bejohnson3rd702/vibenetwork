@@ -792,7 +792,7 @@ export default function N2NHome({ wlConfig, categories, activeVideo, setActiveVi
               <div style={{
                 position: 'absolute', inset: 0,
                 backgroundImage: `url(${(isOlympian || isMf) ? "/n2n/derek.jpeg" : (isB2K ? "https://images.unsplash.com/photo-1470225620780-dba8ba36b745?auto=format&fit=crop&q=80&w=1200" : "/n2n/concert_in_the_park.png")})`,
-                backgroundSize: 'cover', backgroundPosition: 'center 20%',
+                backgroundSize: 'cover', backgroundPosition: 'right 20%',
                 filter: 'brightness(0.35)'
               }} />
               {/* Gradient Overlay */}
