@@ -578,7 +578,7 @@ export default function N2NHome({ wlConfig, categories, activeVideo, setActiveVi
                       tags: ['Network', 'FullBleed'],
                       videoUrl: '',
                       linkUrl: '/?tenant=wings-of-strength-tenant-id',
-                      accent: '#E31B23'
+                      accent: '#FF9D00'
                     });
                   }
                   

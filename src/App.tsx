@@ -383,9 +383,9 @@ function App() {
             parent_network_id: '7a017c4d-c08f-4260-8540-a0cc8bed4e11',
             is_active: true,
             theme: {
-              accent: '#E31B23',
-              heroCopy: 'Wings of Strength — Female Bodybuilding World and Professional Strength Sports Promotion.',
-              heroImage: 'https://images.unsplash.com/photo-1541534741688-6078c6bfb5c5?auto=format&fit=crop&q=80&w=1600',
+              accent: '#FF9D00',
+              heroCopy: 'The Premier Global Promoter for Elite Female Bodybuilding and Professional Strength Sports.',
+              heroImage: 'https://wingsofstrength.net/wp-content/uploads/2025/06/13/home-banner-1349px-min.jpg',
               logoImage: 'https://wingsofstrength.net/wp-content/uploads/2025/02/27/inner-page-logo-min-1.png',
               shopifyUrl: 'https://wingsofstrength.net/',
               sliderCount: 4,
