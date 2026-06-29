@@ -3073,37 +3073,7 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
         </div>
       )}
 
-      {/* Background Camera Button (Mobile and Web) */}
-      {!isGuestMode && !isNetworkLevel && isOwnProfile && viewMode === 'edit' && (
-        <button 
-          onClick={() => {
-            setShowBgSettingsModal(true);
-          }}
-          style={{
-            position: 'absolute',
-            top: '100px',
-            right: '24px',
-            zIndex: 10,
-            background: 'rgba(0,0,0,0.6)',
-            backdropFilter: 'blur(8px)',
-            border: '1.5px solid rgba(255,255,255,0.2)',
-            borderRadius: '50%',
-            width: '42px',
-            height: '42px',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            cursor: 'pointer',
-            boxShadow: '0 4px 20px rgba(0,0,0,0.4)',
-            transition: 'all 0.2s ease-in-out'
-          }}
-          onMouseOver={e=>e.currentTarget.style.transform='scale(1.1)'}
-          onMouseOut={e=>e.currentTarget.style.transform='scale(1)'}
-          title="Change Background Banner"
-        >
-          <Camera size={20} color="#fff" />
-        </button>
-      )}
+
 
       {/* Main Content Wrapper */}
       <div style={{ position: 'relative', zIndex: 1, paddingTop: isNetworkLevel ? '0px' : (isGuestMode ? '80px' : '200px') }}>
@@ -3352,7 +3322,7 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
                             onMouseOver={e => e.currentTarget.style.background = 'rgba(255,255,255,0.15)'}
                             onMouseOut={e => e.currentTarget.style.background = 'rgba(255,255,255,0.08)'}
                           >
-                            💳 Subscription Settings
+                            Subscription Settings
                           </button>
 
                           <button 
@@ -3375,7 +3345,7 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
                             onMouseOver={e => e.currentTarget.style.background = 'rgba(255,255,255,0.15)'}
                             onMouseOut={e => e.currentTarget.style.background = 'rgba(255,255,255,0.08)'}
                           >
-                            🖼️ Background Settings
+                            Background Settings
                           </button>
                         </div>
                       </>
@@ -7673,7 +7643,7 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
             
             <motion.div initial={{ scale: 0.9, opacity: 0, y: 20 }} animate={{ scale: 1, opacity: 1, y: 0 }} exit={{ scale: 0.9, opacity: 0, y: 20 }} style={{ position: 'relative', background: 'rgba(20,20,20,0.95)', border: '1px solid rgba(255,255,255,0.12)', padding: '40px', borderRadius: '24px', width: '100%', maxWidth: '600px', display: 'flex', flexDirection: 'column', gap: '20px', boxShadow: '0 20px 40px rgba(0,0,0,0.5)', color: '#fff' }}>
               <h2 style={{ margin: 0, fontSize: '24px', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '20px', display: 'flex', alignItems: 'center', gap: '10px' }}>
-                🖼️ Manage Channel Backgrounds
+                Manage Channel Backgrounds
               </h2>
               
               <p style={{ color: 'var(--text-secondary)', fontSize: '13px', margin: 0, lineHeight: 1.5 }}>Upload images to cycle through in the background of your channel.</p>
@@ -7745,7 +7715,7 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
             
             <motion.div initial={{ scale: 0.9, opacity: 0, y: 20 }} animate={{ scale: 1, opacity: 1, y: 0 }} exit={{ scale: 0.9, opacity: 0, y: 20 }} style={{ position: 'relative', background: 'rgba(20,20,20,0.95)', border: '1px solid rgba(255,255,255,0.12)', padding: '40px', borderRadius: '24px', width: '100%', maxWidth: '500px', display: 'flex', flexDirection: 'column', gap: '20px', boxShadow: '0 20px 40px rgba(0,0,0,0.5)', color: '#fff' }}>
               <h2 style={{ margin: 0, fontSize: '24px', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '20px', display: 'flex', alignItems: 'center', gap: '10px' }}>
-                💳 Subscription / Free Tier Settings
+                Subscription / Free Tier Settings
               </h2>
               
               <p style={{ color: 'var(--text-secondary)', fontSize: '13px', margin: 0, lineHeight: 1.5 }}>Choose if your channel is free or requires a monthly paid subscription to access premium content.</p>
