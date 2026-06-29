@@ -471,18 +471,20 @@ export default function N2NHome({ wlConfig, categories, activeVideo, setActiveVi
             </button>
 
             {/* Fundraising / Legacy stat */}
-            <div style={{
-              marginTop: '32px', padding: '16px 24px',
-              borderLeft: `3px solid ${accent}`,
-              background: 'rgba(255,255,255,0.05)', backdropFilter: 'blur(10px)',
-            }}>
-              <p style={{ margin: 0, fontSize: '32px', fontWeight: 900, color: '#fff', letterSpacing: '-1px', lineHeight: 1.2 }}>
-                {isOlympian ? '50+ Years' : (isMf ? '85+ Years' : (isB2K ? '25 Years' : (isKple ? '30+ Years' : (isVibe100 ? 'Top 100' : '$17,480,130'))))}<span style={{ color: accent }}>{isVibe100 ? '' : '+'}</span>
-              </p>
-              <p style={{ margin: '4px 0 0', fontSize: '13px', fontWeight: 600, color: 'rgba(255,255,255,0.6)', textTransform: 'uppercase', letterSpacing: '2px' }}>
-                {isOlympian ? 'Of Championing Legendary Athletes & Fitness Excellence' : (isMf ? 'Of Providing World-Class Fitness Advice, Training & Nutrition Blueprints' : (isB2K ? 'Of R&B Harmonies, Multi-Platinum Hits & Tour Legacies' : (isKple ? 'Serving Central Texas with Inspirational Programming' : (isVibe100 ? 'Ecosystem Networks Displaying Posts and Content' : 'Raised to empower student‑athletes nationwide'))))}
-              </p>
-            </div>
+            {!isWings && !isHers && !isFlex && (
+              <div style={{
+                marginTop: '32px', padding: '16px 24px',
+                borderLeft: `3px solid ${accent}`,
+                background: 'rgba(255,255,255,0.05)', backdropFilter: 'blur(10px)',
+              }}>
+                <p style={{ margin: 0, fontSize: '32px', fontWeight: 900, color: '#fff', letterSpacing: '-1px', lineHeight: 1.2 }}>
+                  {isOlympian ? '50+ Years' : (isMf ? '85+ Years' : (isB2K ? '25 Years' : (isKple ? '30+ Years' : (isVibe100 ? 'Top 100' : '$17,480,130'))))}<span style={{ color: accent }}>{isVibe100 ? '' : '+'}</span>
+                </p>
+                <p style={{ margin: '4px 0 0', fontSize: '13px', fontWeight: 600, color: 'rgba(255,255,255,0.6)', textTransform: 'uppercase', letterSpacing: '2px' }}>
+                  {isOlympian ? 'Of Championing Legendary Athletes & Fitness Excellence' : (isMf ? 'Of Providing World-Class Fitness Advice, Training & Nutrition Blueprints' : (isB2K ? 'Of R&B Harmonies, Multi-Platinum Hits & Tour Legacies' : (isKple ? 'Serving Central Texas with Inspirational Programming' : (isVibe100 ? 'Ecosystem Networks Displaying Posts and Content' : 'Raised to empower student‑athletes nationwide'))))}
+                </p>
+              </div>
+            )}
           </motion.div>
         </AnimatePresence>
 
