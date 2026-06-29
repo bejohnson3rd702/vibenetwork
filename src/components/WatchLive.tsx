@@ -568,32 +568,62 @@ const STATIC_MUSCLE_FITNESS_CLIPS: VideoClip[] = [
 
 const STATIC_WINGS_OF_STRENGTH_CLIPS: VideoClip[] = [
   {
-    id: 'wG5k41Pj9s8',
-    headline: '2024 Rising Phoenix World Championships - Finals',
-    description: 'Complete stage coverage and trophy presentation of the elite professional female bodybuilders competing at the annual Rising Phoenix World Championships.',
+    id: 'kYJ-pL-l6sQ',
+    headline: 'Andrea Shaw vs Natalia Kovaleva - 2025 Rising Phoenix Showdown',
+    description: 'Witness the intense stage battle and posing comparison between world champions Andrea Shaw and Natalia Kovaleva at the 2025 Rising Phoenix World Championships.',
     thumbnail: 'https://wingsofstrength.net/wp-content/uploads/2026/02/12/2026-Rising-Phoenix-1080x1440px.jpg',
-    videoUrl: 'https://www.youtube.com/watch?v=wG5k41Pj9s8',
-    duration: 840,
+    videoUrl: 'https://www.youtube.com/watch?v=kYJ-pL-l6sQ',
+    duration: 510,
     source: 'Wings of Strength',
     sport: 'wings'
   },
   {
-    id: 'yYvKxVp2_jA',
-    headline: 'Lenda Murray on the Rise of Women’s Strength Sports',
-    description: 'Bodybuilding legend Lenda Murray sits down for an exclusive interview covering the training evolution of the modern female athlete.',
+    id: 'F08h_v-LqQk',
+    headline: 'Andrea Shaw - 2025 Rising Phoenix Individual Routine',
+    description: 'Watch the full individual posing routine of the reigning champion Andrea Shaw on the Rising Phoenix World Championship stage.',
+    thumbnail: '/n2n/wings_home_banner.jpg',
+    videoUrl: 'https://www.youtube.com/watch?v=F08h_v-LqQk',
+    duration: 180,
+    source: 'Wings of Strength',
+    sport: 'wings'
+  },
+  {
+    id: 'F3zWw9Z89Wk',
+    headline: 'Lenda Murray - Complete Back Workout for Longevity & Shape',
+    description: 'Eight-time Ms. Olympia Lenda Murray shares her complete back workout routine designed to build strength, improve posture, and ensure training longevity.',
     thumbnail: 'https://wingsofstrength.net/wp-content/uploads/2020/08/WOS-FEMME-FLEX-1a-resize-2-min.png',
-    videoUrl: 'https://www.youtube.com/watch?v=yYvKxVp2_jA',
-    duration: 620,
+    videoUrl: 'https://www.youtube.com/watch?v=F3zWw9Z89Wk',
+    duration: 640,
     source: 'Wings of Strength',
     sport: 'wings'
   },
   {
-    id: 'R9o6s5T4u9w',
-    headline: 'Wings of Strength Pro Show Tour Highlights',
-    description: 'Highlights and backstage routines from the international Wings of Strength Pro Show bodybuilding events.',
+    id: 'vVj44vD7x5Y',
+    headline: 'Lenda Murray\'s Method for Perfect Lat Pulldowns',
+    description: 'Learn the exact lat activation secrets and posture keys from bodybuilding legend Lenda Murray to maximize back development and avoid joint fatigue.',
+    thumbnail: '/n2n/mf_hers_bodybuilder.jpg',
+    videoUrl: 'https://www.youtube.com/watch?v=vVj44vD7x5Y',
+    duration: 380,
+    source: 'Wings of Strength',
+    sport: 'wings'
+  },
+  {
+    id: 'AUnZcZ_WzS0',
+    headline: '2023 Rising Phoenix World Championships Posedown',
+    description: 'The final, electrifying posedown featuring the world\'s top professional female bodybuilders competing for the prestigious Rising Phoenix title.',
     thumbnail: 'https://wingsofstrength.net/wp-content/uploads/2026/02/02/2026-Phoenix-Iron-Games-1080x1440px.jpg',
-    videoUrl: 'https://www.youtube.com/watch?v=R9o6s5T4u9w',
-    duration: 410,
+    videoUrl: 'https://www.youtube.com/watch?v=AUnZcZ_WzS0',
+    duration: 490,
+    source: 'Wings of Strength',
+    sport: 'wings'
+  },
+  {
+    id: 'F0f5b9C-Z2I',
+    headline: 'Classic Rising Phoenix World Championships Posedown',
+    description: 'Relive the high-stakes posing rounds and final comparisons from the historical archive of the Rising Phoenix World Championships.',
+    thumbnail: '/n2n/mr_olympia_hero.png',
+    videoUrl: 'https://www.youtube.com/watch?v=F0f5b9C-Z2I',
+    duration: 520,
     source: 'Wings of Strength',
     sport: 'wings'
   }
