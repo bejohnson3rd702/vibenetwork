@@ -150,6 +150,8 @@ export default function N2NHome({ wlConfig, categories, activeVideo, setActiveVi
                      config?.id === 'mf-hers-tenant-id' ||
                      config?.id === 'flex-online-tenant-id';
   const isWings = config?.id === 'wings-of-strength-tenant-id';
+  const isHers = config?.id === 'mf-hers-tenant-id';
+  const isFlex = config?.id === 'flex-online-tenant-id';
   const isB2K = isB2kConfig(config);
   const isKple = isKpleConfig(config);
 
@@ -821,7 +823,7 @@ export default function N2NHome({ wlConfig, categories, activeVideo, setActiveVi
         )}
 
         {/* ── AVO Summer Concert Tour Banner / B2K Tour Banner / Mr. Olympia CTA ── */}
-        {!isKple && !isVibe100 && (
+        {!isKple && !isVibe100 && !isWings && !isHers && !isFlex && (
           <section style={{ maxWidth: '1400px', margin: '40px auto', padding: '0 40px' }}>
             <div style={{
               position: 'relative', overflow: 'hidden',
