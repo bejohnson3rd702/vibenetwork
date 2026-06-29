@@ -510,6 +510,7 @@ export default function N2NHome({ wlConfig, categories, activeVideo, setActiveVi
               items={OLYMPIA_CHAMPIONS}
               delay={0}
               aspectRatio="1/1"
+              cardsPerView={4}
               onItemClick={(item) => navigate('/profile/' + item.id + window.location.search)}
             />
           </div>
@@ -523,6 +524,7 @@ export default function N2NHome({ wlConfig, categories, activeVideo, setActiveVi
               items={childItems}
               delay={isOlympian || isMf ? 0.1 : 0}
               aspectRatio="16/9"
+              cardsPerView={isMf || isOlympian ? 3 : 4}
               onItemClick={(item) => {
                 if (item.linkUrl) {
                   window.location.href = mergeQueryParams(item.linkUrl, window.location.search);
@@ -876,6 +878,7 @@ export default function N2NHome({ wlConfig, categories, activeVideo, setActiveVi
               items={OLYMPIA_CHAMPIONS}
               delay={0}
               aspectRatio="1/1"
+              cardsPerView={4}
               onItemClick={(item) => navigate('/profile/' + item.id + window.location.search)}
             />
           </div>

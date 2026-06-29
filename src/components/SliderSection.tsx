@@ -18,6 +18,7 @@ interface SliderSectionProps {
   delay?: number;
   aspectRatio?: string;
   sizeMultiplier?: number;
+  cardsPerView?: number;
   onItemClick?: (item: Item) => void;
 }
 
@@ -195,7 +196,7 @@ const SlideItem: React.FC<{ item: Item, aspectRatio: string, onClick?: () => voi
   );
 };
 
-const SliderSection: React.FC<SliderSectionProps> = ({ title, items, delay = 0, aspectRatio = '16/9', onItemClick }) => {
+const SliderSection: React.FC<SliderSectionProps> = ({ title, items, delay = 0, aspectRatio = '16/9', cardsPerView = 5, onItemClick }) => {
   const scrollRef = useRef<HTMLDivElement>(null);
   const [isDragging, setIsDragging] = useState(false);
   const [startX, setStartX] = useState(0);
@@ -217,9 +218,8 @@ const SliderSection: React.FC<SliderSectionProps> = ({ title, items, delay = 0, 
 
   const endDrag = () => setIsDragging(false);
 
-  // Set width dynamically so exactly 5 cards are visible at a time
-  // The gap is 30px, so 4 gaps between 5 cards is 120px total. 120 / 5 = 24px subtracted from 20%
-  const widthVal = 'calc(20% - 24px)';
+  // Set width dynamically based on cardsPerView (gap is 30px)
+  const widthVal = `calc(${100 / cardsPerView}% - ${(30 * (cardsPerView - 1)) / cardsPerView}px)`;
 
   return (
     <motion.section 
