@@ -908,6 +908,15 @@ export default function N2NHome({ wlConfig, categories, activeVideo, setActiveVi
                                        item.id === '7a017c4d-c08f-4260-8540-a0cc8bed4e11' ||
                                        item.id === '7a017c4d-c08f-4260-8540-a0cc8bed4e12';
                 return !isCurrent && !isOlympia && !isMediaNetwork;
+              }).map(item => {
+                const lowerTitle = (item.title || '').toLowerCase();
+                let linkUrl = item.linkUrl;
+                if (lowerTitle.includes('gymshark')) linkUrl = 'https://www.gymshark.com/';
+                else if (lowerTitle.includes('gaspari')) linkUrl = 'https://gasparinutrition.com/';
+                else if (lowerTitle.includes('gold')) linkUrl = 'https://www.goldsgym.com/';
+                else if (lowerTitle.includes('rogue')) linkUrl = 'https://www.roguefitness.com/';
+                else if (lowerTitle.includes('redcon')) linkUrl = 'https://redcon1.com/';
+                return { ...item, linkUrl };
               })}
               delay={0}
               aspectRatio="16/9"
