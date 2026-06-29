@@ -3335,6 +3335,105 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
 
                         {/* Flip Book editor moved to flipbook tab */}
 
+                        {/* Subscription / Free Tier Settings embedded directly in Hero Card */}
+                        <div style={{ background: 'rgba(0,0,0,0.3)', padding: '20px', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.08)', marginTop: '20px' }}>
+                          <h4 style={{ margin: '0 0 8px 0', fontSize: '14px', color: '#ff4d85', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                            💳 Monthly Subscription / Free Tier
+                          </h4>
+                          <p style={{ color: 'var(--text-secondary)', fontSize: '12px', marginBottom: '16px', margin: '0 0 16px 0', lineHeight: 1.5 }}>Choose if your channel is free or requires a monthly paid subscription to access premium content.</p>
+                          
+                          {/* Free vs Subscription Toggle */}
+                          <div style={{ display: 'flex', background: 'rgba(0,0,0,0.5)', padding: '4px', borderRadius: '10px', width: 'fit-content', border: '1px solid rgba(255,255,255,0.1)', marginBottom: '16px' }}>
+                            <button 
+                              type="button"
+                              onClick={() => {
+                                setIsSub(false);
+                                setSubPrice('0');
+                              }}
+                              style={{ padding: '8px 20px', borderRadius: '6px', border: 'none', background: !isSub ? 'linear-gradient(135deg, #ff4d85, #8A2BE2)' : 'transparent', color: '#fff', fontWeight: 'bold', cursor: 'pointer', transition: 'all 0.2s', fontSize: '13px' }}
+                            >
+                              Free
+                            </button>
+                            <button 
+                              type="button"
+                              onClick={() => {
+                                setIsSub(true);
+                                if (parseFloat(subPrice) === 0 || !subPrice) {
+                                  setSubPrice('4.99');
+                                }
+                              }}
+                              style={{ padding: '8px 20px', borderRadius: '6px', border: 'none', background: isSub ? 'linear-gradient(135deg, #ff4d85, #8A2BE2)' : 'transparent', color: '#fff', fontWeight: 'bold', cursor: 'pointer', transition: 'all 0.2s', fontSize: '13px' }}
+                            >
+                              Subscription
+                            </button>
+                          </div>
+
+                          {isSub ? (
+                            <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+                              <div style={{ position: 'relative', flex: 1 }}>
+                                <span style={{ position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)', fontSize: '14px', fontWeight: 'bold' }}>$</span>
+                                <input
+                                  id="hero-sub-price-input"
+                                  type="number"
+                                  min="0.01"
+                                  step="0.01"
+                                  value={subPrice}
+                                  onChange={e => setSubPrice(e.target.value)}
+                                  placeholder="4.99"
+                                  style={{ width: '100%', paddingLeft: '28px', padding: '10px 10px 10px 28px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.15)', borderRadius: '8px', color: 'var(--text-primary)', fontSize: '14px', outline: 'none', boxSizing: 'border-box' }}
+                                />
+                              </div>
+                              <button
+                                type="button"
+                                onClick={async () => {
+                                  const price = parseFloat(subPrice) || 0;
+                                  if (price <= 0) {
+                                    showToast('Please enter a price greater than $0 for a paid subscription.', 'error');
+                                    return;
+                                  }
+                                  setSaving(true);
+                                  const { error } = await supabase!.from('profiles').update({ sub_price: price }).eq('id', user?.id);
+                                  setSaving(false);
+                                  if (!error) showToast('Subscription price saved!', 'success');
+                                  else showToast('Failed to save price.', 'error');
+                                }}
+                                style={{ padding: '10px 20px', background: 'linear-gradient(135deg, #ff4d85, #8A2BE2)', color: 'white', border: 'none', borderRadius: '8px', fontWeight: 'bold', cursor: 'pointer', fontSize: '13px', whiteSpace: 'nowrap', transition: 'opacity 0.2s' }}
+                                onMouseOver={e => (e.currentTarget.style.opacity = '0.85')}
+                                onMouseOut={e => (e.currentTarget.style.opacity = '1')}
+                              >
+                                Save Price
+                              </button>
+                            </div>
+                          ) : (
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'rgba(0,255,136,0.05)', padding: '12px', borderRadius: '10px', border: '1px dashed rgba(0,255,136,0.2)' }}>
+                              <span style={{ color: 'var(--text-secondary)', fontSize: '13px' }}>🎁 Fans can subscribe for free.</span>
+                              <button
+                                type="button"
+                                onClick={async () => {
+                                  setSaving(true);
+                                  const { error } = await supabase!.from('profiles').update({ sub_price: 0 }).eq('id', user?.id);
+                                  setSaving(false);
+                                  if (!error) {
+                                    setSubPrice('0');
+                                    showToast('Channel set to free successfully!', 'success');
+                                  } else {
+                                    showToast('Failed to save settings.', 'error');
+                                  }
+                                }}
+                                style={{ padding: '8px 16px', background: '#00ff88', color: '#000', border: 'none', borderRadius: '8px', fontWeight: 'bold', cursor: 'pointer', fontSize: '12px', transition: 'opacity 0.2s' }}
+                                onMouseOver={e => (e.currentTarget.style.opacity = '0.85')}
+                                onMouseOut={e => (e.currentTarget.style.opacity = '1')}
+                              >
+                                Save Free
+                              </button>
+                            </div>
+                          )}
+                          
+                          <p style={{ margin: '12px 0 0 0', color: 'var(--text-muted)', fontSize: '11px' }}>
+                            Current Status: <strong style={{ color: Number(subPrice) > 0 ? '#00ff88' : 'var(--text-muted)' }}>{Number(subPrice) > 0 ? `Paid ($${Number(subPrice).toFixed(2)}/mo)` : 'Free Channel'}</strong>
+                          </p>
+                        </div>
+
                         <div className="profile-save-container">
                           <button onClick={saveProfile} disabled={saving} style={{ padding: '12px 32px', background: '#fff', color: '#000', borderRadius: '12px', border: 'none', fontWeight: 'bold', cursor: 'pointer', opacity: saving ? 0.7 : 1, fontSize: '15px', transition: 'transform 0.2s' }} onMouseOver={e=>e.currentTarget.style.transform='scale(1.05)'} onMouseOut={e=>e.currentTarget.style.transform='scale(1)'}>
                             {saving ? 'Saving...' : 'Save Profile'}
@@ -3526,7 +3625,7 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
                     { id: 'subscriptions', label: 'Following & Subs', icon: <Star size={16} />, color: '#ffcc00', bg: 'rgba(255,204,0,0.12)', border: 'rgba(255,204,0,0.4)', show: !!user },
                     { id: 'ai_report', label: 'AI Creator Report', icon: <Activity size={16} />, color: '#3399ff', bg: 'rgba(51,153,255,0.12)', border: 'rgba(51,153,255,0.4)', show: isInfluencer },
                     { id: 'crm', label: 'Vibe CRM', icon: <Users size={16} />, color: '#00ffcc', bg: 'rgba(0,255,204,0.12)', border: 'rgba(0,255,204,0.4)', show: isInfluencer },
-                    { id: 'appearance', label: 'Appearance', icon: <Wand size={16} />, color: '#ff9933', bg: 'rgba(255,153,51,0.12)', border: 'rgba(255,153,51,0.4)', show: isInfluencer && !isNetworkLevel },
+
                     { 
                       id: 'wallet', 
                       label: 'Wallet', 
@@ -6822,98 +6921,7 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
                 )}
               </div>
 
-              {/* ── Subscription Price ── */}
-              <div style={{ background: 'rgba(0,0,0,0.4)', padding: '24px', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.08)' }}>
-                <h4 style={{ margin: '0 0 8px 0', fontSize: '15px', color: '#D35400', display: 'flex', alignItems: 'center', gap: '10px' }}>
-                  💳 Monthly Subscription / Free Tier Settings
-                </h4>
-                <p style={{ color: 'var(--text-secondary)', fontSize: '13px', marginBottom: '16px', lineHeight: 1.5 }}>Choose if your channel is free or requires a monthly paid subscription to access premium content.</p>
-                
-                {/* Free vs Subscription Toggle */}
-                <div style={{ display: 'flex', background: 'rgba(0,0,0,0.5)', padding: '4px', borderRadius: '12px', width: 'fit-content', border: '1px solid rgba(255,255,255,0.1)', marginBottom: '20px' }}>
-                  <button 
-                    type="button"
-                    onClick={() => {
-                      setIsSub(false);
-                      setSubPrice('0');
-                    }}
-                    style={{ padding: '10px 24px', borderRadius: '8px', border: 'none', background: !isSub ? 'linear-gradient(135deg, #D35400, #ff6b35)' : 'transparent', color: '#fff', fontWeight: 'bold', cursor: 'pointer', transition: 'all 0.2s' }}
-                  >
-                    Free
-                  </button>
-                  <button 
-                    type="button"
-                    onClick={() => {
-                      setIsSub(true);
-                      if (parseFloat(subPrice) === 0 || !subPrice) {
-                        setSubPrice('4.99');
-                      }
-                    }}
-                    style={{ padding: '10px 24px', borderRadius: '8px', border: 'none', background: isSub ? 'linear-gradient(135deg, #D35400, #ff6b35)' : 'transparent', color: '#fff', fontWeight: 'bold', cursor: 'pointer', transition: 'all 0.2s' }}
-                  >
-                    Subscription
-                  </button>
-                </div>
 
-                {isSub ? (
-                  <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
-                    <div style={{ position: 'relative', flex: 1 }}>
-                      <span style={{ position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)', fontSize: '16px', fontWeight: 'bold' }}>$</span>
-                      <input
-                        id="sub-price-input"
-                        type="number"
-                        min="0.01"
-                        step="0.01"
-                        value={subPrice}
-                        onChange={e => setSubPrice(e.target.value)}
-                        placeholder="9.99"
-                        style={{ width: '100%', paddingLeft: '32px', padding: '14px 14px 14px 32px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.15)', borderRadius: '10px', color: 'var(--text-primary)', fontSize: '16px', outline: 'none', boxSizing: 'border-box' }}
-                      />
-                    </div>
-                    <button
-                      onClick={async () => {
-                        const price = parseFloat(subPrice) || 0;
-                        if (price <= 0) {
-                          showToast('Please enter a price greater than $0 for a paid subscription.', 'error');
-                          return;
-                        }
-                        const { error } = await supabase!.from('profiles').update({ sub_price: price }).eq('id', user?.id);
-                        if (!error) showToast('Subscription price saved!', 'success');
-                        else showToast('Failed to save price.', 'error');
-                      }}
-                      style={{ padding: '14px 24px', background: 'linear-gradient(135deg, #D35400, #ff6b35)', color: 'white', border: 'none', borderRadius: '10px', fontWeight: 'bold', cursor: 'pointer', fontSize: '14px', whiteSpace: 'nowrap', transition: 'opacity 0.2s' }}
-                      onMouseOver={e => (e.currentTarget.style.opacity = '0.85')}
-                      onMouseOut={e => (e.currentTarget.style.opacity = '1')}
-                    >
-                      Save Price
-                    </button>
-                  </div>
-                ) : (
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'rgba(0,255,136,0.05)', padding: '16px', borderRadius: '12px', border: '1px dashed rgba(0,255,136,0.2)' }}>
-                    <span style={{ color: 'var(--text-secondary)', fontSize: '14px' }}>🎁 Fans can subscribe to your channel for free.</span>
-                    <button
-                      onClick={async () => {
-                        const { error } = await supabase!.from('profiles').update({ sub_price: 0 }).eq('id', user?.id);
-                        if (!error) {
-                          setSubPrice('0');
-                          showToast('Channel set to free successfully!', 'success');
-                        } else {
-                          showToast('Failed to save settings.', 'error');
-                        }
-                      }}
-                      style={{ padding: '10px 20px', background: '#00ff88', color: '#000', border: 'none', borderRadius: '10px', fontWeight: 'bold', cursor: 'pointer', fontSize: '13px', transition: 'opacity 0.2s' }}
-                      onMouseOver={e => (e.currentTarget.style.opacity = '0.85')}
-                      onMouseOut={e => (e.currentTarget.style.opacity = '1')}
-                    >
-                      Confirm Free Tier
-                    </button>
-                  </div>
-                )}
-                
-                <p style={{ margin: '15px 0 0 0', color: 'var(--text-muted)', fontSize: '12px' }}>
-                  Current Status: <strong style={{ color: Number(subPrice) > 0 ? '#00ff88' : 'var(--text-muted)' }}>{Number(subPrice) > 0 ? `Paid ($${Number(subPrice).toFixed(2)}/mo)` : 'Free Channel'}</strong>
-                </p>
-              </div>
             </div>
           </motion.div>
         )}
