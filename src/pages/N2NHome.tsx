@@ -521,13 +521,56 @@ export default function N2NHome({ wlConfig, categories, activeVideo, setActiveVi
           <div id="child-networks-slider">
             <SliderSection
               title={isOlympian ? "OLYMPIA PARTNERS" : (isMf ? "MUSCLE & FITNESS NETWORKS" : (isB2K ? "B2K MEMBERS" : (isKple ? "CHRISTIAN REVIVAL NETWORKS" : (isVibe100 ? "VIBE 100 NETWORKS" : "AVO NETWORKS"))))}
-              items={isMf ? childItems.filter(item => (item.title || '').toLowerCase().includes('olympia')) : childItems}
+              items={(() => {
+                if (isMf) {
+                  const mrO = childItems.find(item => (item.title || '').toLowerCase().includes('olympia'));
+                  const mfNetworkItems = [];
+                  if (mrO) mfNetworkItems.push(mrO);
+                  
+                  mfNetworkItems.push({
+                    id: 'mock-wl-wings',
+                    title: 'Wings of Strength',
+                    image: 'https://images.unsplash.com/photo-1541534741688-6078c6bfb5c5?auto=format&fit=crop&q=80&w=600',
+                    tags: ['Network'],
+                    videoUrl: '',
+                    linkUrl: 'https://wingsofstrength.net/',
+                    accent: '#E31B23'
+                  });
+                  
+                  mfNetworkItems.push({
+                    id: 'mock-wl-hers',
+                    title: 'M&F Hers',
+                    image: 'https://images.unsplash.com/photo-1518310383802-640c2de311b2?auto=format&fit=crop&q=80&w=600',
+                    tags: ['Network'],
+                    videoUrl: '',
+                    linkUrl: 'https://www.muscleandfitness.com/hers/',
+                    accent: '#E31B23'
+                  });
+                  
+                  mfNetworkItems.push({
+                    id: 'mock-wl-flex',
+                    title: 'Flex Online',
+                    image: 'https://images.unsplash.com/photo-1578271887552-5ac3a72752bc?auto=format&fit=crop&q=80&w=600',
+                    tags: ['Network'],
+                    videoUrl: '',
+                    linkUrl: 'https://www.muscleandfitness.com/flexonline/',
+                    accent: '#E31B23'
+                  });
+                  
+                  return mfNetworkItems;
+                }
+                return childItems;
+              })()}
               delay={isOlympian || isMf ? 0.1 : 0}
               aspectRatio="16/9"
-              cardsPerView={isMf || isOlympian ? 3 : 4}
+              cardsPerView={isMf ? 4 : (isOlympian ? 3 : 4)}
               onItemClick={(item) => {
                 if (item.linkUrl) {
-                  window.location.href = mergeQueryParams(item.linkUrl, window.location.search);
+                  if (item.linkUrl.startsWith('http')) {
+                    window.open(item.linkUrl, '_blank');
+                  } else {
+                    window.location.href = mergeQueryParams(item.linkUrl, window.location.search);
+                  }
                 }
               }}
             />
@@ -679,7 +722,11 @@ export default function N2NHome({ wlConfig, categories, activeVideo, setActiveVi
               cardsPerView={4}
               onItemClick={(item) => {
                 if (item.linkUrl) {
-                  window.location.href = mergeQueryParams(item.linkUrl, window.location.search);
+                  if (item.linkUrl.startsWith('http')) {
+                    window.open(item.linkUrl, '_blank');
+                  } else {
+                    window.location.href = mergeQueryParams(item.linkUrl, window.location.search);
+                  }
                 }
               }}
             />
