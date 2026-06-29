@@ -530,42 +530,42 @@ const STATIC_OLYMPIAN_CLIPS: VideoClip[] = [
 
 const STATIC_MUSCLE_FITNESS_CLIPS: VideoClip[] = [
   {
-    id: 'vyqy7PcDGLM',
-    headline: 'The Ultimate Chest Workout for Mass',
-    description: 'Build a thicker, stronger chest with this high-volume training routine featured on Muscle & Fitness.',
-    thumbnail: 'https://images.unsplash.com/photo-1583454110551-21f2fa2afe61?auto=format&fit=crop&q=80&w=600',
-    videoUrl: 'https://www.youtube.com/watch?v=vyqy7PcDGLM',
+    id: 'v1B1T02qD-M',
+    headline: 'The PERFECT Chest Workout (Sets and Reps Included)',
+    description: 'Build a thicker, stronger chest with this science-based high-volume training routine by ATHLEAN-X.',
+    thumbnail: 'https://i.ytimg.com/vi/v1B1T02qD-M/hqdefault.jpg',
+    videoUrl: 'https://www.youtube.com/watch?v=v1B1T02qD-M',
     duration: 620,
     source: 'YouTube',
     sport: 'muscleandfitness'
   },
   {
-    id: 'MzWgJtFIxg8',
-    headline: "Arnold Schwarzenegger's Golden Era Blueprint",
+    id: '1n_S4662T0Q',
+    headline: "Arnold Schwarzenegger's Golden Era Blueprint for Mass",
     description: 'Learn the classic training split, chest-back supersets, and bodybuilding secrets that built the greatest physique of all time.',
-    thumbnail: 'https://i.ytimg.com/vi/MzWgJtFIxg8/hqdefault.jpg',
-    videoUrl: 'https://www.youtube.com/watch?v=MzWgJtFIxg8',
+    thumbnail: 'https://i.ytimg.com/vi/1n_S4662T0Q/hqdefault.jpg',
+    videoUrl: 'https://www.youtube.com/watch?v=1n_S4662T0Q',
     duration: 780,
     source: 'YouTube',
     sport: 'muscleandfitness'
   },
   {
-    id: 'dTqpdNacxYM',
-    headline: '10-Minute Meal Prep for Muscle Growth',
+    id: '5S1X-uT21XQ',
+    headline: 'Bodybuilding Meal Prep 101 | IFBB Pro Romane Lanceford',
     description: 'Quick, high-protein recipes and meal prep strategies to fuel your workouts and recover faster without spending hours in the kitchen.',
-    thumbnail: 'https://i.ytimg.com/vi/dTqpdNacxYM/hqdefault.jpg',
-    videoUrl: 'https://www.youtube.com/watch?v=dTqpdNacxYM',
+    thumbnail: 'https://i.ytimg.com/vi/5S1X-uT21XQ/hqdefault.jpg',
+    videoUrl: 'https://www.youtube.com/watch?v=5S1X-uT21XQ',
     duration: 540,
     source: 'YouTube',
     sport: 'muscleandfitness'
   },
   {
-    id: 'SV7JP7y80UM',
-    headline: "Dwayne 'The Rock' Johnson's Iron Paradise Routine",
-    description: 'A deep dive into the intense weekly training split and massive nutrition plan of the Hollywood action star.',
-    thumbnail: 'https://images.unsplash.com/photo-1517838277536-f5f99be501cd?auto=format&fit=crop&q=80&w=600',
-    videoUrl: 'https://www.youtube.com/watch?v=SV7JP7y80UM',
-    duration: 915,
+    id: 'y3nBv9p1oFg',
+    headline: "Chris Bumstead's Masterpiece Classic Physique Posing Routine",
+    description: "Watch Chris Bumstead's posing routine showcasing muscle definition, control, and structure on the main stage.",
+    thumbnail: 'https://i.ytimg.com/vi/y3nBv9p1oFg/hqdefault.jpg',
+    videoUrl: 'https://www.youtube.com/watch?v=y3nBv9p1oFg',
+    duration: 380,
     source: 'YouTube',
     sport: 'muscleandfitness'
   }
