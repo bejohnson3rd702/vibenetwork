@@ -791,9 +791,9 @@ export default function N2NHome({ wlConfig, categories, activeVideo, setActiveVi
               {/* Background Image */}
               <div style={{
                 position: 'absolute', inset: 0,
-                backgroundImage: `url(${(isOlympian || isMf) ? "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?auto=format&fit=crop&q=80&w=1600" : (isB2K ? "https://images.unsplash.com/photo-1470225620780-dba8ba36b745?auto=format&fit=crop&q=80&w=1200" : "/n2n/concert_in_the_park.png")})`,
-                backgroundSize: 'cover', backgroundPosition: 'center 35%',
-                filter: 'brightness(0.32)'
+                backgroundImage: `url(${(isOlympian || isMf) ? "/n2n/derek.jpeg" : (isB2K ? "https://images.unsplash.com/photo-1470225620780-dba8ba36b745?auto=format&fit=crop&q=80&w=1200" : "/n2n/concert_in_the_park.png")})`,
+                backgroundSize: 'cover', backgroundPosition: 'center 20%',
+                filter: 'brightness(0.35)'
               }} />
               {/* Gradient Overlay */}
               <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to right, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.4) 60%, transparent 100%)' }} />
