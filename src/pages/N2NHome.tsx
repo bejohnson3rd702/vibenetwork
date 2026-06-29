@@ -223,17 +223,26 @@ export default function N2NHome({ wlConfig, categories, activeVideo, setActiveVi
         videoUrl: s.videoUrl,
         link: s.videoUrl
       }))
-    : (isOlympian 
-      ? OLYMPIAN_HERO_SLIDES 
-      : (isMf 
-        ? MUSCLE_FITNESS_HERO_SLIDES
-        : (isB2K 
-          ? B2K_HERO_SLIDES 
-          : (isKple 
-            ? KPLE_HERO_SLIDES 
-            : (isVibe100 
-              ? VIBE_100_HERO_SLIDES 
-              : AVO_HERO_SLIDES)))));
+    : ((config?.theme?.heroImage || config?.theme?.heroCopy)
+      ? [{
+          school: config.name || '',
+          short: config.name || '',
+          subtitle: 'Welcome',
+          copy: config.theme.heroCopy || '',
+          image: config.theme.heroImage || '',
+          link: config.theme.shopifyUrl || ''
+        }]
+      : (isOlympian 
+        ? OLYMPIAN_HERO_SLIDES 
+        : (isMf 
+          ? MUSCLE_FITNESS_HERO_SLIDES
+          : (isB2K 
+            ? B2K_HERO_SLIDES 
+            : (isKple 
+              ? KPLE_HERO_SLIDES 
+              : (isVibe100 
+                ? VIBE_100_HERO_SLIDES 
+                : AVO_HERO_SLIDES))))));
 
   const [heroSlide, setHeroSlide] = useState(0);
 
@@ -332,6 +341,7 @@ export default function N2NHome({ wlConfig, categories, activeVideo, setActiveVi
               {(() => {
                 const currentSlide = HERO_SLIDES[heroSlide % HERO_SLIDES.length];
                 if (currentSlide.videoUrl) return "Play Video";
+                if (config?.theme?.shopifyUrl && !config.theme.shopifyUrl.includes('shop')) return "Visit Website";
                 return isOlympian ? "View Schedule" : (isMf ? "Read Workouts" : (isB2K ? "Learn More" : (isKple ? "Watch Network" : (isVibe100 ? "Enter Channel" : "Shop Now"))));
               })()}
             </button>
