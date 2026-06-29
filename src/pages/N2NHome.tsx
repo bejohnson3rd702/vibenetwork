@@ -782,7 +782,7 @@ export default function N2NHome({ wlConfig, categories, activeVideo, setActiveVi
                 padding: '6px 14px', background: accent, color: '#000',
                 fontSize: '10px', fontWeight: 900, letterSpacing: '2px', textTransform: 'uppercase',
               }}>
-                {isOlympian ? "Official Gear" : isMf ? "Workout Gear" : isWings ? "Wings Contest" : (isB2K ? "Official Merch" : (isKple ? "Media Mission" : (isVibe100 ? "Exclusive Gear" : "New Drop")))}
+                {isOlympian ? "Live Webcast" : isMf ? "Workout Gear" : isWings ? "Wings Contest" : (isB2K ? "Official Merch" : (isKple ? "Media Mission" : (isVibe100 ? "Exclusive Gear" : "New Drop")))}
               </div>
             </div>
 
@@ -802,14 +802,14 @@ export default function N2NHome({ wlConfig, categories, activeVideo, setActiveVi
                 fontSize: '13px', fontWeight: 800, textTransform: 'uppercase',
                 letterSpacing: '3px', color: accent, margin: '0 0 12px 0',
               }}>
-                {isOlympian ? "Olympia Collection" : isMf ? "Fitness Collection" : isWings ? "Wings of Strength" : (isB2K ? "Official Tour Merch" : (isKple ? "Support Our Mission" : (isVibe100 ? "VIBE 100 Store" : "Summer 2026 Collection")))}
+                {isOlympian ? "Olympia PPV Webcast" : isMf ? "Fitness Collection" : isWings ? "Wings of Strength" : (isB2K ? "Official Tour Merch" : (isKple ? "Support Our Mission" : (isVibe100 ? "VIBE 100 Store" : "Summer 2026 Collection")))}
               </p>
               <h2 style={{
                 fontSize: '44px', fontWeight: 900, color: '#fff', margin: '0 0 16px 0',
                 lineHeight: 1.15, letterSpacing: '-1px', textTransform: 'uppercase',
               }}>
                 {isOlympian ? (
-                  <>Official Weekend<br />Gear & Wear</>
+                  <>Watch Mr. Olympia<br />Live Webcast</>
                 ) : isMf ? (
                   <>Muscle & Fitness<br />Training Guides</>
                 ) : isWings ? (
@@ -834,11 +834,11 @@ export default function N2NHome({ wlConfig, categories, activeVideo, setActiveVi
                 fontSize: '16px', color: 'rgba(255,255,255,0.7)', lineHeight: 1.7,
                 margin: '0 0 32px 0', maxWidth: '520px',
               }}>
-                {isOlympian ? `Premium bodybuilding and lifestyle apparel engineered for champions. Rep the legacy with official ${config?.name || 'Muscle & Fitness'} hoodies, workout shirts, and accessories.` : isMf ? "Explore premium workouts, digital training guides, and high-performance activewear designed to take your fitness to the next level." : isWings ? "Experience the pinnacle of professional women's bodybuilding. Purchase official pay-per-view live streams, secure event tickets, and browse the official Alina Popa & Rising Phoenix championship collections." : (isB2K ? "Pre-order exclusive Boys 4 Life tour hoodies, vintage graphic tees, and autographed vinyl. Rep the legendary boy band reunion in style." : (isKple ? "The Christian Revival Network is a 501(c)3 non-profit media mission. Your donations help us broadcast the Gospel 24/7 to Central Texas and the world. Support our ministry today." : (isVibe100 ? "Explore premium merchandise, albums, and exclusive releases from all Top 100 networks. Shop official gear and support your favorite channels." : "Premium collegiate apparel for every school in the AVO family. Rep your team with style — new colorways and exclusive designs just dropped.")))}
+                {isOlympian ? "Experience the pinnacle of bodybuilding live from anywhere in the world. Subscribe to the official webcast to stream the 62nd Mr. Olympia pre-judging, finals, and exclusive backstage interviews live in high-definition." : isMf ? "Explore premium workouts, digital training guides, and high-performance activewear designed to take your fitness to the next level." : isWings ? "Experience the pinnacle of professional women's bodybuilding. Purchase official pay-per-view live streams, secure event tickets, and browse the official Alina Popa & Rising Phoenix championship collections." : (isB2K ? "Pre-order exclusive Boys 4 Life tour hoodies, vintage graphic tees, and autographed vinyl. Rep the legendary boy band reunion in style." : (isKple ? "The Christian Revival Network is a 501(c)3 non-profit media mission. Your donations help us broadcast the Gospel 24/7 to Central Texas and the world. Support our ministry today." : (isVibe100 ? "Explore premium merchandise, albums, and exclusive releases from all Top 100 networks. Shop official gear and support your favorite channels." : "Premium collegiate apparel for every school in the AVO family. Rep your team with style — new colorways and exclusive designs just dropped.")))}
               </p>
               <a
-                href={isWings ? "https://wingsofstrength.net/" : (isKple ? "https://www.paypal.com/donate/?hosted_button_id=A7WXAKZEAGBPA" : ('/shop' + (typeof window !== 'undefined' ? window.location.search : '')))}
-                target={isWings || isKple ? "_blank" : "_self"}
+                href={isOlympian ? "https://www.olympiaproductions.com/" : (isWings ? "https://wingsofstrength.net/" : (isKple ? "https://www.paypal.com/donate/?hosted_button_id=A7WXAKZEAGBPA" : ('/shop' + (typeof window !== 'undefined' ? window.location.search : ''))))}
+                target={isOlympian || isWings || isKple ? "_blank" : "_self"}
                 style={{
                   display: 'inline-block', padding: '15px 46px', fontSize: '13px', fontWeight: 800,
                   textTransform: 'uppercase', letterSpacing: '2.5px', width: 'fit-content',
@@ -849,7 +849,7 @@ export default function N2NHome({ wlConfig, categories, activeVideo, setActiveVi
                 onMouseOver={e => { e.currentTarget.style.background = '#fff'; e.currentTarget.style.color = '#000'; }}
                 onMouseOut={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = '#fff'; }}
               >
-                {isOlympian ? "Shop The Collection" : isMf ? "Shop Store" : isWings ? "Explore Shows" : (isB2K ? "Shop The Merch" : (isKple ? "Support Our Station" : (isVibe100 ? "Shop The Collection" : "Shop The Drop")))}
+                {isOlympian ? "Watch Webcast" : isMf ? "Shop Store" : isWings ? "Explore Shows" : (isB2K ? "Shop The Merch" : (isKple ? "Support Our Station" : (isVibe100 ? "Shop The Collection" : "Shop The Drop")))}
               </a>
             </div>
           </div>
@@ -1054,26 +1054,24 @@ export default function N2NHome({ wlConfig, categories, activeVideo, setActiveVi
                   fontSize: '10px', fontWeight: 900, letterSpacing: '2px', textTransform: 'uppercase',
                   marginBottom: '20px',
                 }}>
-                  {isOlympian ? "📺 Olympia Productions Webcast" : isMf ? "🏆 Joe Weider's Mr. Olympia Weekend" : (isB2K ? "🎤 The Millennium Tour" : "🎸 Summer 2026 Tour")}
+                  {isMf || isOlympian ? "🏆 Joe Weider's Mr. Olympia Weekend" : (isB2K ? "🎤 The Millennium Tour" : "🎸 Summer 2026 Tour")}
                 </div>
                 <h2 style={{
                   fontSize: '38px', fontWeight: 900, color: '#fff', margin: '0 0 16px 0',
                   lineHeight: 1.1, letterSpacing: '-1px', textTransform: 'uppercase',
                 }}>
-                  {isOlympian ? <>Watch Mr. Olympia<br />Live Webcast</> : isMf ? <>62nd Mr. Olympia<br />Las Vegas 2026</> : (isB2K ? <>The Boys 4 Life<br />Reunion Tour</> : <>AVO Summer<br />Concert Tour</>)}
+                  {isMf || isOlympian ? <>62nd Mr. Olympia<br />Las Vegas 2026</> : (isB2K ? <>The Boys 4 Life<br />Reunion Tour</> : <>AVO Summer<br />Concert Tour</>)}
                 </h2>
                 <p style={{
                   fontSize: '15px', color: 'rgba(255,255,255,0.6)', lineHeight: 1.7,
                   margin: '0 0 28px 0',
                 }}>
-                  {isOlympian ? "Experience the pinnacle of bodybuilding live from anywhere in the world. Subscribe to the official webcast to stream the 62nd Mr. Olympia pre-judging, finals, and exclusive backstage interviews live in high-definition." : isMf ? "The ultimate fitness event of the year returns to Las Vegas, Nevada on September 24-27, 2026. Get your tickets to witness bodybuilding history live as elite champions from around the globe battle for the prestigious Sandow Trophy." : (isB2K ? "B2K is back on stage celebrating their 25th anniversary. The 28-city reunion tour features Bow Wow, Jeremih, Pretty Ricky, Amerie, and more, kicking off in Columbia, SC, and routing across the country. Don't miss this historic R&B reunion live! " : "Catch the vibes live! AVO is hitting the road this summer, bringing your favorite bands and artists to collegiate campus parks nationwide. Grab your crew, rep your school colors, and experience the ultimate summer soundtrack.")}
+                  {isMf || isOlympian ? "The ultimate fitness event of the year returns to Las Vegas, Nevada on September 24-27, 2026. Get your tickets to witness bodybuilding history live as elite champions from around the globe battle for the prestigious Sandow Trophy." : (isB2K ? "B2K is back on stage celebrating their 25th anniversary. The 28-city reunion tour features Bow Wow, Jeremih, Pretty Ricky, Amerie, and more, kicking off in Columbia, SC, and routing across the country. Don't miss this historic R&B reunion live! " : "Catch the vibes live! AVO is hitting the road this summer, bringing your favorite bands and artists to collegiate campus parks nationwide. Grab your crew, rep your school colors, and experience the ultimate summer soundtrack.")}
                 </p>
                 <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap' }}>
                   <button
                     onClick={() => {
-                      if (isOlympian) {
-                        window.open("https://www.olympiaproductions.com/", "_blank");
-                      } else if (isMf) {
+                      if (isMf || isOlympian) {
                         window.open("https://mrolympia.com/", "_blank");
                       } else if (isB2K) {
                         window.open("https://b2kofficial.com/tour", "_blank");
@@ -1089,13 +1087,11 @@ export default function N2NHome({ wlConfig, categories, activeVideo, setActiveVi
                     onMouseOver={e => { e.currentTarget.style.opacity = '0.85'; }}
                     onMouseOut={e => { e.currentTarget.style.opacity = '1'; }}
                   >
-                    {isOlympian ? "Watch Webcast" : isMf ? "Get Tickets" : "Buy Now"}
+                    {isMf || isOlympian ? "Get Tickets" : "Buy Now"}
                   </button>
                   <button
                     onClick={() => {
-                      if (isOlympian) {
-                        window.open("https://www.olympiaproductions.com/", "_blank");
-                      } else if (isMf) {
+                      if (isMf || isOlympian) {
                         window.open("https://mrolympia.com/weekend-schedule", "_blank");
                       } else if (isB2K) {
                         window.location.hash = "#whats-on-now";
@@ -1111,7 +1107,7 @@ export default function N2NHome({ wlConfig, categories, activeVideo, setActiveVi
                     onMouseOver={e => { e.currentTarget.style.background = 'rgba(255, 255, 255, 0.15)'; }}
                     onMouseOut={e => { e.currentTarget.style.background = 'rgba(255, 255, 255, 0.08)'; }}
                   >
-                    {isOlympian ? "Order PPV" : isMf ? "View Schedule" : "Join The Live Stream"}
+                    {isMf || isOlympian ? "View Schedule" : "Join The Live Stream"}
                   </button>
                 </div>
               </div>
