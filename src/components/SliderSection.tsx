@@ -26,6 +26,7 @@ const SlideItem: React.FC<{ item: Item, aspectRatio: string, onClick?: () => voi
   const [isHovered, setIsHovered] = useState(false);
   const isInfluencer = !item.videoUrl || (item.tags && item.tags.includes('Influencer Channel'));
   const isNetwork = item.tags && item.tags.includes('Network');
+  const isFullBleed = item.tags && item.tags.includes('FullBleed');
   const isOlympian = item.title?.toLowerCase().includes('olympia') || 
                      item.image?.toLowerCase().includes('olympia') ||
                      item.title?.toLowerCase().includes('vibe 100') ||
@@ -39,7 +40,7 @@ const SlideItem: React.FC<{ item: Item, aspectRatio: string, onClick?: () => voi
         height: '100%', 
         borderRadius: '24px', 
         overflow: 'hidden',
-        background: isNetwork 
+        background: (isNetwork && !isFullBleed) 
           ? `radial-gradient(circle at center, ${item.accent || '#D35400'}${isHovered ? 'aa' : '77'} 0%, #000000 100%)` 
           : 'transparent'
       }}
@@ -55,11 +56,11 @@ const SlideItem: React.FC<{ item: Item, aspectRatio: string, onClick?: () => voi
         referrerPolicy="no-referrer"
         style={{
           position: 'absolute',
-          top: isNetwork ? (isOlympian ? '2%' : '8%') : 0,
-          left: isNetwork ? (isOlympian ? '2%' : '8%') : 0,
-          width: isNetwork ? (isOlympian ? '96%' : '84%') : '100%',
-          height: isNetwork ? (isOlympian ? '96%' : '84%') : '100%',
-          objectFit: isNetwork ? 'contain' : 'cover',
+          top: (isNetwork && !isFullBleed) ? (isOlympian ? '2%' : '8%') : 0,
+          left: (isNetwork && !isFullBleed) ? (isOlympian ? '2%' : '8%') : 0,
+          width: (isNetwork && !isFullBleed) ? (isOlympian ? '96%' : '84%') : '100%',
+          height: (isNetwork && !isFullBleed) ? (isOlympian ? '96%' : '84%') : '100%',
+          objectFit: (isNetwork && !isFullBleed) ? 'contain' : 'cover',
           zIndex: 0,
         }}
       />
