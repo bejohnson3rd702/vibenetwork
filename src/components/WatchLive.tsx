@@ -38,8 +38,6 @@ const WINGS_OF_STRENGTH_FEEDS = [
 
 const MUSCLE_FITNESS_FEEDS = [
   { key: 'muscleandfitness', label: '💪 Muscle & Fitness', channelId: 'UC-lHJZR3Gqxm24_Vd_AJ5Yw' },
-  { key: 'athleanx', label: '🏋️ Athlean-X', channelId: 'UCqpOf_Nl5F4j_gXS2fB_58g' },
-  { key: 'jeffnippard', label: '🔬 Jeff Nippard', channelId: 'UC68TLK0mAEzUyZd5Y55ky6A' },
 ];
 
 const B2K_FEEDS = [
@@ -530,42 +528,42 @@ const STATIC_OLYMPIAN_CLIPS: VideoClip[] = [
 
 const STATIC_MUSCLE_FITNESS_CLIPS: VideoClip[] = [
   {
-    id: 'y3nBv9p1oFg',
-    headline: "Chris Bumstead's Masterpiece Classic Physique Posing Routine",
-    description: "Watch Chris Bumstead's posing routine showcasing muscle definition, control, and structure on the main stage.",
-    thumbnail: 'https://i.ytimg.com/vi/y3nBv9p1oFg/hqdefault.jpg',
-    videoUrl: 'https://www.youtube.com/watch?v=y3nBv9p1oFg',
-    duration: 380,
+    id: 'mQ6X2g9w7Ew',
+    headline: 'SLEEVELESS Sepe & Saladino: Chest & Biceps Workout',
+    description: 'Go live on Instagram with Frank Sepe and celebrity trainer Don Saladino for an intense Chest & Biceps routine.',
+    thumbnail: 'https://i.ytimg.com/vi/mQ6X2g9w7Ew/hqdefault.jpg',
+    videoUrl: 'https://www.youtube.com/watch?v=mQ6X2g9w7Ew',
+    duration: 650,
     source: 'YouTube',
     sport: 'muscleandfitness'
   },
   {
-    id: '1n_S4662T0Q',
-    headline: "Arnold Schwarzenegger's Golden Era Blueprint for Mass",
-    description: 'Learn the classic training split, chest-back supersets, and bodybuilding secrets that built the greatest physique of all time.',
-    thumbnail: 'https://i.ytimg.com/vi/1n_S4662T0Q/hqdefault.jpg',
-    videoUrl: 'https://www.youtube.com/watch?v=1n_S4662T0Q',
-    duration: 780,
-    source: 'YouTube',
-    sport: 'muscleandfitness'
-  },
-  {
-    id: '5S1X-uT21XQ',
-    headline: 'Bodybuilding Meal Prep 101 | IFBB Pro Romane Lanceford',
-    description: 'Quick, high-protein recipes and meal prep strategies to fuel your workouts and recover faster without spending hours in the kitchen.',
-    thumbnail: 'https://i.ytimg.com/vi/5S1X-uT21XQ/hqdefault.jpg',
-    videoUrl: 'https://www.youtube.com/watch?v=5S1X-uT21XQ',
+    id: '3g6w9w_f_lI',
+    headline: 'SLEEVELESS: Shoulders with The Muscle Doc',
+    description: 'Frank Sepe and Don Saladino train shoulders with Dr. Jordan Shallow D.C. (The Muscle Doc) covering activation and joint fatigue.',
+    thumbnail: 'https://i.ytimg.com/vi/3g6w9w_f_lI/hqdefault.jpg',
+    videoUrl: 'https://www.youtube.com/watch?v=3g6w9w_f_lI',
     duration: 540,
     source: 'YouTube',
     sport: 'muscleandfitness'
   },
   {
-    id: 'z-aLgC2W_mk',
-    headline: '2024 Mr. Olympia Samson Dauda Winning Moment',
-    description: 'Watch the historic crowning of Samson Dauda as the 2024 Mr. Olympia champion on the main stage in Las Vegas.',
-    thumbnail: 'https://i.ytimg.com/vi/z-aLgC2W_mk/hqdefault.jpg',
-    videoUrl: 'https://www.youtube.com/watch?v=z-aLgC2W_mk',
-    duration: 540,
+    id: 'v2K5r1K7g-w',
+    headline: 'Muscle & Fitness Sleeveless Workout Show: LEG DAY',
+    description: 'Frank Sepe, Don Saladino, and Maria Moda take you through an intense, high-volume leg day live at Bev Francis Powerhouse Gym.',
+    thumbnail: 'https://i.ytimg.com/vi/v2K5r1K7g-w/hqdefault.jpg',
+    videoUrl: 'https://www.youtube.com/watch?v=v2K5r1K7g-w',
+    duration: 720,
+    source: 'YouTube',
+    sport: 'muscleandfitness'
+  },
+  {
+    id: 'kYJv1zT05C8',
+    headline: 'SLEEVELESS: Abdominal Workout from Long Island',
+    description: 'A dedicated post-holiday abdominal and core training routine focused on achieving maximum muscle definition and a ripped midsection.',
+    thumbnail: 'https://i.ytimg.com/vi/kYJv1zT05C8/hqdefault.jpg',
+    videoUrl: 'https://www.youtube.com/watch?v=kYJv1zT05C8',
+    duration: 480,
     source: 'YouTube',
     sport: 'muscleandfitness'
   }
