@@ -530,7 +530,7 @@ export default function N2NHome({ wlConfig, categories, activeVideo, setActiveVi
                   mfNetworkItems.push({
                     id: 'mock-wl-wings',
                     title: 'Wings of Strength',
-                    image: 'https://images.unsplash.com/photo-1541534741688-6078c6bfb5c5?auto=format&fit=crop&q=80&w=600',
+                    image: 'https://wingsofstrength.net/wp-content/uploads/2025/02/27/inner-page-logo-min-1.png',
                     tags: ['Network'],
                     videoUrl: '',
                     linkUrl: 'https://wingsofstrength.net/',
@@ -540,7 +540,7 @@ export default function N2NHome({ wlConfig, categories, activeVideo, setActiveVi
                   mfNetworkItems.push({
                     id: 'mock-wl-hers',
                     title: 'M&F Hers',
-                    image: 'https://images.unsplash.com/photo-1518310383802-640c2de311b2?auto=format&fit=crop&q=80&w=600',
+                    image: 'https://i0.wp.com/www.muscleandfitness.com/wp-content/uploads/2026/04/Girl-holding-a-linear-bar.jpg',
                     tags: ['Network'],
                     videoUrl: '',
                     linkUrl: 'https://www.muscleandfitness.com/hers/',
@@ -550,7 +550,7 @@ export default function N2NHome({ wlConfig, categories, activeVideo, setActiveVi
                   mfNetworkItems.push({
                     id: 'mock-wl-flex',
                     title: 'Flex Online',
-                    image: 'https://images.unsplash.com/photo-1578271887552-5ac3a72752bc?auto=format&fit=crop&q=80&w=600',
+                    image: 'https://i0.wp.com/www.muscleandfitness.com/wp-content/uploads/2026/06/Bodybuilders-Mike-Mentzer-and-Dorian-Yates-training-and-mentoring-the-young-bodybuilder-on-the-Maximum-Results-training-method.jpg',
                     tags: ['Network'],
                     videoUrl: '',
                     linkUrl: 'https://www.muscleandfitness.com/flexonline/',
