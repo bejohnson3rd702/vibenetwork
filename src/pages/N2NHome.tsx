@@ -1072,7 +1072,7 @@ export default function N2NHome({ wlConfig, categories, activeVideo, setActiveVi
                   <button
                     onClick={() => {
                       if (isMf || isOlympian) {
-                        window.open("https://mrolympia.com/", "_blank");
+                        window.open("https://mrolympia.com/ticket-type", "_blank");
                       } else if (isB2K) {
                         window.open("https://b2kofficial.com/tour", "_blank");
                       }
