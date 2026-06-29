@@ -540,7 +540,7 @@ export default function N2NHome({ wlConfig, categories, activeVideo, setActiveVi
                   mfNetworkItems.push({
                     id: 'mock-wl-hers',
                     title: 'M&F Hers',
-                    image: 'https://i0.wp.com/www.muscleandfitness.com/wp-content/uploads/2026/04/Girl-holding-a-linear-bar.jpg',
+                    image: '/n2n/mf_hers_bodybuilder.jpg',
                     tags: ['Network'],
                     videoUrl: '',
                     linkUrl: 'https://www.muscleandfitness.com/hers/',
