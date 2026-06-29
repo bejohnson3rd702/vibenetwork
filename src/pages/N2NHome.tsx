@@ -150,10 +150,7 @@ export default function N2NHome({ wlConfig, categories, activeVideo, setActiveVi
     let cancelled = false;
     (async () => {
       const parentId = config.parent_network_id || config.theme?.parent_network_id || '';
-      const isMfFamily = isMf || isOlympian || 
-                         config.id === 'wings-of-strength-tenant-id' ||
-                         config.id === 'mf-hers-tenant-id' ||
-                         config.id === 'flex-online-tenant-id';
+      const isMfFamily = isMf || isOlympian;
 
       let targetId = config.id;
       if (isMfFamily && parentId) {
@@ -253,10 +250,7 @@ export default function N2NHome({ wlConfig, categories, activeVideo, setActiveVi
 
   const isOlympian = isOlympianConfig(config);
   const isMf = isMuscleFitnessConfig(config);
-  const isMfFamily = isMf || isOlympian || 
-                     config?.id === 'wings-of-strength-tenant-id' ||
-                     config?.id === 'mf-hers-tenant-id' ||
-                     config?.id === 'flex-online-tenant-id';
+  const isMfFamily = isMf || isOlympian;
   const isB2K = isB2kConfig(config);
   const isKple = isKpleConfig(config);
 
@@ -577,7 +571,7 @@ export default function N2NHome({ wlConfig, categories, activeVideo, setActiveVi
                     mfNetworkItems.push({
                       id: 'wings-of-strength-tenant-id',
                       title: 'Wings of Strength',
-                      image: 'https://images.unsplash.com/photo-1541534741688-6078c6bfb5c5?auto=format&fit=crop&q=80&w=800',
+                      image: 'https://wingsofstrength.net/wp-content/uploads/2025/02/27/inner-page-logo-min-1.png',
                       tags: ['Network', 'FullBleed'],
                       videoUrl: '',
                       linkUrl: '/?tenant=wings-of-strength-tenant-id',
