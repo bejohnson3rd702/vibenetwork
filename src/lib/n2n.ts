@@ -584,5 +584,68 @@ export const WINGS_ATHLETES = [
   },
 ];
 
+export const WINGS_LEGENDS = [
+  {
+    id: 'wos-leg-1',
+    title: 'Alina Popa',
+    image: 'https://images.unsplash.com/photo-1541534741688-6078c6bfb5c5?auto=format&fit=crop&q=80&w=600',
+    tags: ['Hall of Fame', 'Legend'],
+  },
+  {
+    id: 'wos-leg-2',
+    title: 'Andrulla Blanchette',
+    image: 'https://images.unsplash.com/photo-1517838277536-f5f99be501cd?auto=format&fit=crop&q=80&w=600',
+    tags: ['Ms. Olympia', 'Legend'],
+  },
+  {
+    id: 'wos-leg-3',
+    title: 'Carla Dunlap',
+    image: 'https://images.unsplash.com/photo-1518310383802-640c2de311b2?auto=format&fit=crop&q=80&w=600',
+    tags: ['Ms. Olympia', 'Legend'],
+  },
+  {
+    id: 'wos-leg-4',
+    title: 'Dayana Cadeau',
+    image: '/n2n/wos_leg_4.jpg',
+    tags: ['Ms. Olympia', 'Legend'],
+  },
+  {
+    id: 'wos-leg-5',
+    title: 'Helle Trevino',
+    image: 'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?auto=format&fit=crop&q=80&w=600',
+    tags: ['Rising Phoenix', 'Legend'],
+  },
+  {
+    id: 'wos-leg-6',
+    title: 'Iris Kyle',
+    image: '/n2n/wos_leg_6.jpg',
+    tags: ['10x Ms. Olympia', 'Legend'],
+  },
+  {
+    id: 'wos-leg-7',
+    title: 'Kike Elomaa',
+    image: 'https://images.unsplash.com/photo-1574680096145-d05b474e2155?auto=format&fit=crop&q=80&w=600',
+    tags: ['Ms. Olympia', 'Legend'],
+  },
+  {
+    id: 'wos-leg-8',
+    title: 'Lenda Murray',
+    image: 'https://images.unsplash.com/photo-1526506118085-60ce8714f8c5?auto=format&fit=crop&q=80&w=600',
+    tags: ['8x Ms. Olympia', 'Legend'],
+  },
+  {
+    id: 'wos-leg-9',
+    title: 'Margie Martin',
+    image: '/n2n/wos_leg_9.jpg',
+    tags: ['Rising Phoenix', 'Legend'],
+  },
+  {
+    id: 'wos-leg-10',
+    title: 'Yaxeni Oriquen',
+    image: '/n2n/wos_leg_10.jpg',
+    tags: ['Ms. Olympia', 'Legend'],
+  },
+];
+
 
 
