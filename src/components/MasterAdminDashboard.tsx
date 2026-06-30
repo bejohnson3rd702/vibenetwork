@@ -4,7 +4,7 @@ import {
   Globe, Users, Activity, Database, 
   ShieldAlert, Terminal, ChevronRight, BarChart3, 
   Network, Server, Play, StopCircle, CheckCircle, Wallet, AlertCircle, Mail, ShoppingBag,
-  Brain, Type
+  Brain, Type, Menu
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../supabaseClient';
@@ -69,6 +69,23 @@ function N2NChildrenList({ parentId, parentAccent, showToast, onEditHero }: { pa
 function MasterAdminDashboard() {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('overview');
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 1024);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth < 1024);
+    };
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  const handleTabClick = (tabId: string) => {
+    setActiveTab(tabId);
+    if (isMobile) {
+      setIsSidebarOpen(false);
+    }
+  };
 
   const [dbStats, setDbStats] = useState({
       whitelabels: 0,
@@ -249,16 +266,37 @@ function MasterAdminDashboard() {
     <div style={{ width: '100vw', height: '100vh', background: 'var(--bg-color)', display: 'flex', color: 'var(--text-primary)', overflow: 'hidden', position: 'relative' }}>
       
       {/* Floating Exit Button */}
-      <button onClick={() => navigate('/')} style={{ position: 'absolute', top: 24, right: 24, width: '40px', height: '40px', borderRadius: '50%', background: 'var(--bg-surface-hover)', border: '1px solid rgba(255,255,255,0.1)', color: 'var(--text-primary)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', zIndex: 100, transition: '0.2s' }} onMouseOver={e => e.currentTarget.style.background = '#ff3366'} onMouseOut={e => e.currentTarget.style.background = 'var(--bg-surface-hover)'}>
+      <button onClick={() => navigate('/')} style={{ position: 'absolute', top: 24, right: 24, width: '40px', height: '40px', borderRadius: '50%', background: 'var(--bg-surface-hover)', border: '1px solid rgba(255,255,255,0.1)', color: 'var(--text-primary)', display: isMobile ? 'none' : 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', zIndex: 100, transition: '0.2s' }} onMouseOver={e => e.currentTarget.style.background = '#ff3366'} onMouseOut={e => e.currentTarget.style.background = 'var(--bg-surface-hover)'}>
          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
       </button>
       
+      {isMobile && isSidebarOpen && (
+        <div 
+          onClick={() => setIsSidebarOpen(false)}
+          style={{
+            position: 'fixed',
+            inset: 0,
+            background: 'rgba(0, 0, 0, 0.6)',
+            backdropFilter: 'blur(4px)',
+            zIndex: 9998,
+          }}
+        />
+      )}
+
       {/* Sidebar Command Center */}
       <div style={{ 
         width: '280px', 
         background: 'var(--bg-color)', 
         borderRight: '1px solid rgba(255,255,255,0.05)',
-        display: 'flex', flexDirection: 'column'
+        display: isMobile ? (isSidebarOpen ? 'flex' : 'none') : 'flex',
+        flexDirection: 'column',
+        position: isMobile ? 'fixed' : 'static',
+        left: 0,
+        top: 0,
+        bottom: 0,
+        zIndex: 9999,
+        boxShadow: isMobile ? '5px 0 25px rgba(0,0,0,0.8)' : 'none',
+        height: '100vh',
       }}>
         <div style={{ padding: '30px 24px', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '8px' }}>
@@ -287,7 +325,7 @@ function MasterAdminDashboard() {
           ].map(tab => (
             <button
               key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
+              onClick={() => handleTabClick(tab.id)}
               style={{
                 width: '100%', padding: '14px 16px', borderRadius: '12px', background: activeTab === tab.id ? 'rgba(0, 85, 255, 0.1)' : 'transparent',
                 border: 'none', color: activeTab === tab.id ? '#0055ff' : '#888', display: 'flex', alignItems: 'center', gap: '12px',
@@ -313,16 +351,35 @@ function MasterAdminDashboard() {
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflowY: 'auto' }}>
         
         {/* Top Header */}
-        <div style={{ height: '80px', borderBottom: '1px solid rgba(255,255,255,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 40px', background: 'rgba(5,5,5,0.8)', backdropFilter: 'blur(10px)', position: 'sticky', top: 0, zIndex: 10 }}>
-          <h2 style={{ margin: 0, fontSize: '20px', textTransform: 'capitalize' }}>{activeTab.replace('-', ' ')}</h2>
-          <div style={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
-             <ShieldAlert size={20} color="#FFD700" />
-             <span style={{ fontSize: '14px', color: 'var(--text-secondary)', fontWeight: 'bold' }}>God Mode Enabled</span>
+        <div style={{ height: '80px', borderBottom: '1px solid rgba(255,255,255,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: isMobile ? '0 20px' : '0 40px', background: 'rgba(5,5,5,0.8)', backdropFilter: 'blur(10px)', position: 'sticky', top: 0, zIndex: 10 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+            {isMobile && (
+              <button 
+                onClick={() => setIsSidebarOpen(true)}
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  color: 'var(--text-primary)',
+                  cursor: 'pointer',
+                  padding: 0,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}
+              >
+                <Menu size={24} />
+              </button>
+            )}
+            <h2 style={{ margin: 0, fontSize: isMobile ? '16px' : '20px', textTransform: 'capitalize' }}>{activeTab.replace('-', ' ')}</h2>
+          </div>
+          <div style={{ display: 'flex', gap: isMobile ? '8px' : '16px', alignItems: 'center' }}>
+             <ShieldAlert size={isMobile ? 16 : 20} color="#FFD700" />
+             <span style={{ fontSize: isMobile ? '12px' : '14px', color: 'var(--text-secondary)', fontWeight: 'bold' }}>{isMobile ? "God Mode" : "God Mode Enabled"}</span>
           </div>
         </div>
 
         {/* Dynamic Content Space */}
-        <div style={{ padding: '40px', maxWidth: '1400px', margin: '0 auto', width: '100%' }}>
+        <div style={{ padding: isMobile ? '20px 16px' : '40px', maxWidth: '1400px', margin: '0 auto', width: '100%' }}>
           
           {activeTab === 'overview' && (
             <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} style={{ display: 'flex', flexDirection: 'column', gap: '40px' }}>
@@ -568,7 +625,7 @@ function MasterAdminDashboard() {
                              {/* Create Child Form (hidden by default) */}
                              <div id={`n2n-create-${brandConfig.id}`} style={{ display: 'none', flexDirection: 'column', gap: '12px', background: 'rgba(0,0,0,0.3)', borderRadius: '16px', padding: '24px', marginBottom: '20px', border: '1px solid rgba(255,77,133,0.15)' }}>
                                <h5 style={{ margin: '0 0 4px 0', fontSize: '14px', color: '#ff4d85', textTransform: 'uppercase', letterSpacing: '1px' }}>Create New Child Network</h5>
-                               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                               <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: '12px' }}>
                                  <input id={`n2n-child-name-${brandConfig.id}`} placeholder="Network Name (e.g. Baylor University)" style={{ padding: '12px 16px', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '10px', color: '#fff', fontSize: '14px', outline: 'none' }} />
                                  <input id={`n2n-child-domain-${brandConfig.id}`} placeholder="Domain (e.g. baylor.avoclothing.com)" style={{ padding: '12px 16px', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '10px', color: '#fff', fontSize: '14px', outline: 'none' }} />
                                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
@@ -1122,7 +1179,7 @@ function MasterAdminDashboard() {
                    </div>
                 </div>
 
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: '20px' }}>
                    <div style={{ background: 'var(--bg-surface)', padding: '24px', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.05)' }}>
                      <h4 style={{ margin: '0 0 16px 0', color: 'var(--text-primary)', fontSize: '18px' }}>Network Nodes</h4>
                      <div style={{ display: 'flex', justifyContent: 'space-between', padding: '12px 0', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
@@ -1260,7 +1317,7 @@ function MasterAdminDashboard() {
                   <button style={{ background: '#FFD700', color: '#000', border: 'none', padding: '12px 24px', borderRadius: '12px', fontWeight: 'bold', cursor: 'pointer' }}>Commit Ledger Sync</button>
                 </div>
 
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: '20px' }}>
                    
                    {/* Direct Platform Tier */}
                    <div style={{ background: 'rgba(0,0,0,0.3)', padding: '20px', borderRadius: '16px', borderLeft: '4px solid var(--accent-primary)' }}>
