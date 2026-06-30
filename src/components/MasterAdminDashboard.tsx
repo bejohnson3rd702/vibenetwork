@@ -368,7 +368,7 @@ function MasterAdminDashboard() {
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflowY: 'auto' }}>
         
         {/* Top Header */}
-        <div style={{ height: '80px', borderBottom: '1px solid rgba(255,255,255,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: isMobile ? '0 20px' : '0 40px', background: 'rgba(5,5,5,0.8)', backdropFilter: 'blur(10px)', position: 'sticky', top: 0, zIndex: 10 }}>
+        <div style={{ height: isMobile ? '96px' : '112px', borderBottom: '1px solid rgba(255,255,255,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: isMobile ? '0 20px' : '0 40px', background: 'rgba(5,5,5,0.8)', backdropFilter: 'blur(10px)', position: 'sticky', top: 0, zIndex: 10 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
             {isMobile && (
               <button 
@@ -387,11 +387,11 @@ function MasterAdminDashboard() {
                 <Menu size={24} />
               </button>
             )}
-            <h2 style={{ margin: 0, fontSize: isMobile ? '16px' : '20px', textTransform: 'capitalize' }}>{activeTab.replace('-', ' ')}</h2>
+            <h2 style={{ margin: 0, fontSize: isMobile ? '18px' : '24px', textTransform: 'capitalize' }}>{activeTab.replace('-', ' ')}</h2>
           </div>
           <div style={{ display: 'flex', gap: isMobile ? '8px' : '16px', alignItems: 'center' }}>
-             <ShieldAlert size={isMobile ? 16 : 20} color="#FFD700" />
-             <span style={{ fontSize: isMobile ? '12px' : '14px', color: 'var(--text-secondary)', fontWeight: 'bold' }}>{isMobile ? "God Mode" : "God Mode Enabled"}</span>
+             <ShieldAlert size={isMobile ? 18 : 24} color="#FFD700" />
+             <span style={{ fontSize: isMobile ? '13px' : '15px', color: 'var(--text-secondary)', fontWeight: 'bold' }}>{isMobile ? "God Mode" : "God Mode Enabled"}</span>
              {isMobile && (
                <button 
                  onClick={() => navigate('/')} 
