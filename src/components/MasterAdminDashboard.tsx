@@ -985,12 +985,28 @@ function MasterAdminDashboard() {
           )}
 
           {activeTab === 'users' && (
+             <NetworkDirectoryTab
+               isMobile={isMobile}
+               loading={loading}
+               usersList={usersList}
+               setUsersList={setUsersList}
+               whitelabelsList={whitelabelsList}
+               setWhitelabelsList={setWhitelabelsList}
+               globalSettings={globalSettings}
+               fetchUsers={fetchUsers}
+               supabase={supabase}
+               showToast={showToast}
+               logSystemEvent={logSystemEvent}
+               MASTER_DOMAIN={MASTER_DOMAIN}
+             />
+          )}
+          {false && activeTab === 'users' && (
              <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
                  <h3 style={{ margin: 0, fontSize: '24px' }}>System Network Directory</h3>
                  <button onClick={fetchUsers} style={{ padding: '8px 16px', background: 'rgba(255,255,255,0.1)', color: 'var(--text-primary)', border: 'none', borderRadius: '8px', cursor: 'pointer' }}>Refresh Index</button>
                </div>
-               <div style={{ background: 'var(--bg-surface)', padding: '20px', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.05)', overflowX: 'auto', width: '100%' }}>
+               <div style={{ background: 'var(--bg-surface)', padding: '20px', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.05)' }}>
                   <table style={{ width: '100%', textAlign: 'left', borderCollapse: 'collapse' }}>
                     <thead>
                       <tr style={{ color: 'var(--text-muted)', borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
