@@ -393,7 +393,7 @@ function MasterAdminDashboard() {
           <div style={{ display: 'flex', gap: isMobile ? '8px' : '16px', alignItems: 'center' }}>
              <ShieldAlert size={isMobile ? 18 : 24} color="#FFD700" />
              <span style={{ fontSize: isMobile ? '13px' : '15px', color: 'var(--text-secondary)', fontWeight: 'bold' }}>{isMobile ? "God Mode" : "God Mode Enabled"}</span>
-             {isMobile && (
+             {isMobile ? (
                <button 
                  onClick={() => navigate('/')} 
                  style={{ 
@@ -408,6 +408,28 @@ function MasterAdminDashboard() {
                  }}
                >
                  Exit
+               </button>
+             ) : (
+               <button 
+                 onClick={() => navigate('/')} 
+                 style={{ 
+                   width: '40px', 
+                   height: '40px', 
+                   borderRadius: '50%', 
+                   background: 'var(--bg-surface-hover)', 
+                   border: '1px solid rgba(255,255,255,0.1)', 
+                   color: 'var(--text-primary)', 
+                   display: 'flex', 
+                   alignItems: 'center', 
+                   justifyContent: 'center', 
+                   cursor: 'pointer', 
+                   transition: '0.2s', 
+                   marginLeft: '8px' 
+                 }} 
+                 onMouseOver={e => e.currentTarget.style.background = '#ff3366'} 
+                 onMouseOut={e => e.currentTarget.style.background = 'var(--bg-surface-hover)'}
+               >
+                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
                </button>
              )}
           </div>
