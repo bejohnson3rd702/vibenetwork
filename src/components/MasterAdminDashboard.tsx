@@ -15,6 +15,7 @@ import { EnterpriseAiTab } from './admin/EnterpriseAiTab';
 import { getChildNetworks, deleteChildNetwork, createChildNetwork } from '../lib/n2n';
 import LiveTelemetry from './LiveTelemetry';
 import { HeroEditorTab } from './admin/HeroEditorTab';
+import { NetworkDirectoryTab } from './NetworkDirectoryTab';
 import { MASTER_DOMAIN } from '../constants';
 
 /** Inline component to list child networks in the Master Admin N2N panel */
