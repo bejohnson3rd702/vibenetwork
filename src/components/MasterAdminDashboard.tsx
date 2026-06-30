@@ -18,7 +18,7 @@ import { HeroEditorTab } from './admin/HeroEditorTab';
 import { MASTER_DOMAIN } from '../constants';
 
 /** Inline component to list child networks in the Master Admin N2N panel */
-function N2NChildrenList({ parentId, parentAccent, showToast, onEditHero }: { parentId: string; parentAccent?: string; showToast: (msg: string, type: 'success' | 'error') => void; onEditHero?: (childWl: any) => void }) {
+function N2NChildrenList({ parentId, parentAccent, showToast, onEditHero, isMobile }: { parentId: string; parentAccent?: string; showToast: (msg: string, type: 'success' | 'error') => void; onEditHero?: (childWl: any) => void; isMobile?: boolean }) {
   const [children, setChildren] = React.useState<any[]>([]);
   const [loading, setLoading] = React.useState(true);
 
@@ -37,13 +37,30 @@ function N2NChildrenList({ parentId, parentAccent, showToast, onEditHero }: { pa
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
       {children.map((child, idx) => (
-        <div key={child.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 16px', background: idx % 2 === 0 ? 'rgba(0,0,0,0.15)' : 'rgba(0,0,0,0.08)', borderRadius: '10px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+        <div key={child.id} style={{ 
+          display: 'flex', 
+          flexDirection: isMobile ? 'column' : 'row', 
+          alignItems: isMobile ? 'stretch' : 'center', 
+          justifyContent: 'space-between', 
+          padding: '12px 16px', 
+          background: idx % 2 === 0 ? 'rgba(0,0,0,0.15)' : 'rgba(0,0,0,0.08)', 
+          borderRadius: '10px',
+          gap: isMobile ? '12px' : '0'
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
             <div style={{ width: '10px', height: '10px', borderRadius: '50%', background: child.accent || parentAccent || '#ff4d85', flexShrink: 0 }} />
             <span style={{ fontWeight: '700', fontSize: '14px', color: 'var(--text-primary)' }}>{child.name}</span>
             <span style={{ fontSize: '12px', color: 'var(--text-muted)', fontFamily: 'monospace' }}>{child.domain || '—'}</span>
           </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+          <div style={{ 
+            display: 'flex', 
+            alignItems: 'center', 
+            gap: '10px',
+            justifyContent: isMobile ? 'space-between' : 'flex-end',
+            width: isMobile ? '100%' : 'auto',
+            borderTop: isMobile ? '1px solid rgba(255,255,255,0.05)' : 'none',
+            paddingTop: isMobile ? '8px' : '0'
+          }}>
             <span style={{ fontSize: '12px', color: '#ff4d85', fontWeight: '600' }}>{child.platform_fee_percentage ?? 30}% fee</span>
             {onEditHero && (
               <button onClick={() => onEditHero(child)} style={{ padding: '4px 10px', background: 'rgba(255,255,255,0.05)', color: '#fff', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '6px', cursor: 'pointer', fontWeight: '700', fontSize: '11px' }}>
@@ -375,6 +392,23 @@ function MasterAdminDashboard() {
           <div style={{ display: 'flex', gap: isMobile ? '8px' : '16px', alignItems: 'center' }}>
              <ShieldAlert size={isMobile ? 16 : 20} color="#FFD700" />
              <span style={{ fontSize: isMobile ? '12px' : '14px', color: 'var(--text-secondary)', fontWeight: 'bold' }}>{isMobile ? "God Mode" : "God Mode Enabled"}</span>
+             {isMobile && (
+               <button 
+                 onClick={() => navigate('/')} 
+                 style={{ 
+                   padding: '6px 12px', 
+                   background: 'rgba(255,51,102,0.15)', 
+                   color: '#ff3366', 
+                   border: '1px solid rgba(255,51,102,0.3)', 
+                   borderRadius: '8px', 
+                   fontSize: '11px', 
+                   fontWeight: 'bold', 
+                   cursor: 'pointer' 
+                 }}
+               >
+                 Exit
+               </button>
+             )}
           </div>
         </div>
 
@@ -466,8 +500,15 @@ function MasterAdminDashboard() {
 
           {activeTab === 'networks' && (
              <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
-               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '30px' }}>
-                 <h3 style={{ margin: 0, fontSize: '24px' }}>Provisioned Whitelabels</h3>
+               <div style={{ 
+                 display: 'flex', 
+                 flexDirection: isMobile ? 'column' : 'row',
+                 alignItems: isMobile ? 'stretch' : 'center',
+                 justifyContent: 'space-between', 
+                 marginBottom: '30px',
+                 gap: isMobile ? '16px' : '0'
+               }}>
+                 <h3 style={{ margin: 0, fontSize: '24px', textAlign: isMobile ? 'center' : 'left' }}>Provisioned Whitelabels</h3>
                  <button style={{ background: '#fff', color: '#000', border: 'none', padding: '12px 24px', borderRadius: '12px', fontWeight: 'bold', cursor: 'pointer' }}>+ Spawn New Tenant</button>
                </div>
 
@@ -482,9 +523,16 @@ function MasterAdminDashboard() {
                     return (
                     <div key={brandConfig.id || i} style={{ background: 'var(--bg-surface)', borderRadius: '16px', border: `1px solid ${isN2N ? 'rgba(255,77,133,0.15)' : 'rgba(255,255,255,0.05)'}`, overflow: 'hidden' }}>
                        {/* Main Card Row */}
-                       <div style={{ padding: '24px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                       <div style={{ 
+                          padding: '24px', 
+                          display: 'flex', 
+                          flexDirection: isMobile ? 'column' : 'row', 
+                          alignItems: isMobile ? 'stretch' : 'center', 
+                          justifyContent: 'space-between',
+                          gap: isMobile ? '20px' : '0'
+                        }}>
                        <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
-                          <div style={{ width: '60px', height: '60px', background: brandConfig.accent || `linear-gradient(135deg, hsl(${(i * 50) % 360}, 100%, 50%), hsl(${((i * 50) + 60) % 360}, 100%, 50%))`, borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-primary)', fontWeight: 'bold' }}>
+                          <div style={{ width: '60px', height: '60px', background: brandConfig.accent || `linear-gradient(135deg, hsl(${(i * 50) % 360}, 100%, 50%), hsl(${((i * 50) + 60) % 360}, 100%, 50%))`, borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-primary)', fontWeight: 'bold', flexShrink: 0 }}>
                              {brandConfig.name?.substring(0,2).toUpperCase() || 'WL'}
                           </div>
                           <div>
@@ -492,7 +540,16 @@ function MasterAdminDashboard() {
                             <span style={{ color: brandConfig.accent || '#0055ff', fontSize: '13px', background: brandConfig.accent ? `${brandConfig.accent}11` : 'rgba(0,85,255,0.1)', padding: '4px 10px', borderRadius: '12px', fontWeight: 'bold' }}>{brandConfig.domain}</span>
                           </div>
                        </div>
-                       <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+                        <div style={{ 
+                          display: 'flex', 
+                          gap: '12px', 
+                          alignItems: isMobile ? 'stretch' : 'center',
+                          flexDirection: isMobile ? 'column' : 'row',
+                          width: isMobile ? '100%' : 'auto',
+                          marginTop: isMobile ? '16px' : '0',
+                          borderTop: isMobile ? '1px solid rgba(255,255,255,0.05)' : 'none',
+                          paddingTop: isMobile ? '16px' : '0'
+                        }}>
                           <div style={{ display: 'flex', alignItems: 'center', gap: '4px', background: 'rgba(0,0,0,0.4)', padding: '6px 12px', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.1)' }}>
                              <span style={{ color: 'var(--text-muted)', fontSize: '12px', fontWeight: 'bold' }}>Fee:</span>
                              <input 
