@@ -423,14 +423,20 @@ function MasterAdminDashboard() {
                  background: 'linear-gradient(135deg, rgba(0, 85, 255, 0.08) 0%, rgba(255, 77, 133, 0.08) 100%)', 
                  border: '1px solid rgba(255, 255, 255, 0.08)',
                  borderRadius: '24px', 
-                 padding: '24px 30px', 
+                 padding: isMobile ? '16px 20px' : '24px 30px', 
                  display: 'flex', 
                  flexDirection: 'column',
                  gap: '16px',
                  position: 'relative',
                  overflow: 'hidden'
                }}>
-                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                 <div style={{ 
+                   display: 'flex', 
+                   flexDirection: isMobile ? 'column' : 'row',
+                   alignItems: isMobile ? 'flex-start' : 'center',
+                   justifyContent: 'space-between', 
+                   gap: isMobile ? '12px' : '0'
+                 }}>
                    <div>
                      <h4 style={{ margin: 0, fontSize: '18px', fontWeight: 'bold', color: '#fff' }}>24-Hour Activity Recap</h4>
                      <p style={{ margin: '4px 0 0 0', fontSize: '13px', color: 'var(--text-secondary)' }}>Real-time telemetry of new registrations and child network provisioning.</p>
@@ -780,7 +786,7 @@ function MasterAdminDashboard() {
                   </div>
                   <p style={{ color: 'var(--text-muted)', marginBottom: '32px', fontSize: '16px', lineHeight: 1.6 }}>Direct connection established to the primary Supabase cluster. Use caution when executing raw SQL directives against the production fleet.</p>
                   
-                  <div style={{ background: 'var(--bg-color)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px', padding: '20px', fontFamily: 'monospace', color: '#4CAF50', height: '200px', overflowY: 'auto' }}>
+                  <div style={{ background: 'var(--bg-color)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px', padding: '20px', fontFamily: 'monospace', color: '#4CAF50', height: '200px', overflowY: 'auto', overflowX: 'auto' }}>
                      root@vibe-network-db:~# SELECT count(*) FROM system_logs; <br/>
                      <span style={{ color: 'var(--text-primary)' }}>-{'>'} {systemLogs.length} audit records found in telemetry index.</span><br/><br/>
                      {isRestarting && <span style={{ color: '#ffaa00' }}>{">>>"} SYSTEM LOGS TRUNCATED IN PRODUCTION DATABASE...</span>}
@@ -931,7 +937,7 @@ function MasterAdminDashboard() {
                <div style={{ background: 'var(--bg-surface)', padding: '30px', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.05)' }}>
                  <h4 style={{ margin: '0 0 20px 0', fontSize: '18px', color: '#00ff88' }}>2. Create Content Slider (Category)</h4>
                  <p style={{ color: 'var(--text-muted)', marginBottom: '20px' }}>Every category creates a new horizontal scrolling slider row on the homepage.</p>
-                 <div style={{ display: 'flex', gap: '16px' }}>
+                 <div style={{ display: 'flex', flexDirection: isMobile ? 'column' : 'row', gap: '16px' }}>
                     <input type="text" placeholder="Slider Title (e.g. Trending Business Podcasts)" style={{ flex: 1, background: 'var(--bg-color)', border: '1px solid var(--bg-surface-hover)', padding: '16px', borderRadius: '8px', color: 'var(--text-primary)', fontSize: '15px' }} id="new-category" />
                     <button onClick={async () => {
                        const title = (document.getElementById('new-category') as HTMLInputElement).value;
@@ -940,7 +946,7 @@ function MasterAdminDashboard() {
                        fetchCategories();
                        showToast('Category Slider Created!', 'success');
                        (document.getElementById('new-category') as HTMLInputElement).value = '';
-                    }} style={{ background: '#00ff88', color: '#000', border: 'none', padding: '0 24px', borderRadius: '8px', fontWeight: 'bold', cursor: 'pointer' }}>Add Slider</button>
+                    }} style={{ background: '#00ff88', color: '#000', border: 'none', padding: isMobile ? '16px' : '0 24px', borderRadius: '8px', fontWeight: 'bold', cursor: 'pointer', height: isMobile ? '52px' : 'auto' }}>Add Slider</button>
                  </div>
                </div>
 
@@ -984,7 +990,7 @@ function MasterAdminDashboard() {
                  <h3 style={{ margin: 0, fontSize: '24px' }}>System Network Directory</h3>
                  <button onClick={fetchUsers} style={{ padding: '8px 16px', background: 'rgba(255,255,255,0.1)', color: 'var(--text-primary)', border: 'none', borderRadius: '8px', cursor: 'pointer' }}>Refresh Index</button>
                </div>
-               <div style={{ background: 'var(--bg-surface)', padding: '20px', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.05)' }}>
+               <div style={{ background: 'var(--bg-surface)', padding: '20px', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.05)', overflowX: 'auto', width: '100%' }}>
                   <table style={{ width: '100%', textAlign: 'left', borderCollapse: 'collapse' }}>
                     <thead>
                       <tr style={{ color: 'var(--text-muted)', borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
@@ -1262,7 +1268,7 @@ function MasterAdminDashboard() {
                   </div>
                 </div>
 
-                <div style={{ background: 'var(--bg-surface)', borderRadius: '24px', border: '1px solid rgba(255,255,255,0.05)', overflow: 'hidden' }}>
+                <div style={{ background: 'var(--bg-surface)', borderRadius: '24px', border: '1px solid rgba(255,255,255,0.05)', overflow: 'hidden', overflowX: 'auto', width: '100%' }}>
                   <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
                     <thead>
                       <tr style={{ background: 'rgba(255,255,255,0.02)', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
@@ -1329,7 +1335,7 @@ function MasterAdminDashboard() {
                 </div>
               </div>
               
-              <div style={{ background: 'var(--bg-surface)', borderRadius: '24px', border: '1px solid rgba(255,255,255,0.05)', overflow: 'hidden' }}>
+              <div style={{ background: 'var(--bg-surface)', borderRadius: '24px', border: '1px solid rgba(255,255,255,0.05)', overflow: 'hidden', overflowX: 'auto', width: '100%' }}>
                 <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
                   <thead>
                     <tr style={{ background: 'rgba(255,255,255,0.02)', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
@@ -1506,7 +1512,7 @@ function MasterAdminDashboard() {
                     <button onClick={() => setLedgerFilter('Whitelabel')} style={{ padding: '8px 16px', background: ledgerFilter === 'Whitelabel' ? 'rgba(0,85,255,0.1)' : 'transparent', color: ledgerFilter === 'Whitelabel' ? '#0055ff' : '#888', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold', fontSize: '13px' }}>Whitelabels Only</button>
                   </div>
                 </div>
-                <div style={{ background: 'var(--bg-surface)', padding: '20px', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.05)' }}>
+                <div style={{ background: 'var(--bg-surface)', padding: '20px', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.05)', overflowX: 'auto', width: '100%' }}>
                   <table style={{ width: '100%', textAlign: 'left', borderCollapse: 'collapse' }}>
                     <thead>
                       <tr style={{ color: 'var(--text-muted)', borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
