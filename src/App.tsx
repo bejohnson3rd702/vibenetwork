@@ -568,6 +568,41 @@ function App() {
             </div>
             <h1 style={{ margin: '0 0 16px 0', fontSize: '24px', fontWeight: 800 }}>Network Suspended</h1>
             <p style={{ color: '#aaa', fontSize: '15px', lineHeight: 1.6, margin: 0 }}>This whitelabel network portal has been deactivated by the platform administrator. Please contact support or the network administrator for further details.</p>
+            <button 
+              onClick={() => {
+                if (window.history.length > 1) {
+                  window.history.back();
+                } else {
+                  window.location.href = window.location.origin;
+                }
+              }}
+              style={{
+                marginTop: '32px',
+                padding: '12px 28px',
+                borderRadius: '30px',
+                background: 'rgba(255, 255, 255, 0.08)',
+                border: '1px solid rgba(255, 255, 255, 0.15)',
+                color: '#fff',
+                fontSize: '14px',
+                fontWeight: 700,
+                cursor: 'pointer',
+                transition: 'all 0.25s ease',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '8px',
+              }}
+              onMouseOver={e => {
+                e.currentTarget.style.background = 'rgba(255, 255, 255, 0.15)';
+                e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.3)';
+              }}
+              onMouseOut={e => {
+                e.currentTarget.style.background = 'rgba(255, 255, 255, 0.08)';
+                e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.15)';
+              }}
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+              Go Back
+            </button>
           </div>
         </div>
       );
