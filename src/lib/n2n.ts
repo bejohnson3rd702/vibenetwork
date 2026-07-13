@@ -437,6 +437,23 @@ export async function updateN2NUserRole(
   return true;
 }
 
+/** Enable or disable a user profile */
+export async function updateN2NUserActive(
+  userId: string,
+  isActive: boolean
+): Promise<boolean> {
+  const { error } = await supabase
+    .from('profiles')
+    .update({ is_active: isActive })
+    .eq('id', userId);
+
+  if (error) {
+    console.error('N2N: Failed to update user active status', error);
+    return false;
+  }
+  return true;
+}
+
 /** Log an N2N action to system_logs */
 export async function logN2NAction(
   actorId: string,

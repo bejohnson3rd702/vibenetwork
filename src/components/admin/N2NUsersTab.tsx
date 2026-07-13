@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import { Users, Search, UserCheck, Briefcase, Eye } from 'lucide-react';
 import { useToast } from '../../context/ToastContext';
-import { getChildNetworks, getN2NProfiles, updateN2NUserRole } from '../../lib/n2n';
+import { getChildNetworks, getN2NProfiles, updateN2NUserRole, updateN2NUserActive } from '../../lib/n2n';
 
 export const N2NUsersTab = ({ wlConfig }: { wlConfig: any }) => {
   const toast = useToast();
@@ -13,6 +13,7 @@ export const N2NUsersTab = ({ wlConfig }: { wlConfig: any }) => {
   const [search, setSearch] = useState('');
   const [networkFilter, setNetworkFilter] = useState('all');
   const [updatingRole, setUpdatingRole] = useState<string | null>(null);
+  const [updatingActive, setUpdatingActive] = useState<string | null>(null);
 
   useEffect(() => {
     if (!wlConfig?.id) return;
@@ -67,6 +68,19 @@ export const N2NUsersTab = ({ wlConfig }: { wlConfig: any }) => {
       toast.error('Failed to update role');
     }
     setUpdatingRole(null);
+  };
+
+  const handleActiveToggle = async (userId: string, currentStatus: boolean) => {
+    setUpdatingActive(userId);
+    const newStatus = !currentStatus;
+    const ok = await updateN2NUserActive(userId, newStatus);
+    if (ok) {
+      setProfiles(prev => prev.map(p => p.id === userId ? { ...p, is_active: newStatus } : p));
+      toast.success(newStatus ? 'Channel enabled' : 'Channel disabled');
+    } else {
+      toast.error('Failed to update status');
+    }
+    setUpdatingActive(null);
   };
 
   const inputStyle: React.CSSProperties = {
@@ -176,7 +190,7 @@ export const N2NUsersTab = ({ wlConfig }: { wlConfig: any }) => {
             <table style={{ width: '100%', borderCollapse: 'collapse' }}>
               <thead>
                 <tr>
-                  {['', 'Username', 'Email', 'Role', 'Network', 'Joined'].map(h => (
+                  {['', 'Username', 'Email', 'Role', 'Status', 'Network', 'Joined'].map(h => (
                     <th key={h} style={{ textAlign: 'left', padding: '12px 16px', borderBottom: '1px solid rgba(255,255,255,0.08)', color: 'var(--text-muted)', fontSize: '12px', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '1px' }}>
                       {h}
                     </th>
@@ -218,6 +232,27 @@ export const N2NUsersTab = ({ wlConfig }: { wlConfig: any }) => {
                         <option value="business">Business</option>
                         <option value="admin">Admin</option>
                       </select>
+                    </td>
+                    <td style={{ padding: '14px 16px', borderBottom: '1px solid rgba(255,255,255,0.03)' }}>
+                      <button
+                        disabled={updatingActive === user.id}
+                        onClick={() => handleActiveToggle(user.id, user.is_active !== false)}
+                        style={{
+                          padding: '6px 12px',
+                          background: user.is_active !== false ? 'rgba(0,255,136,0.1)' : 'rgba(255,59,48,0.1)',
+                          border: `1px solid ${user.is_active !== false ? '#00ff88' : '#ff3b30'}44`,
+                          borderRadius: '8px',
+                          color: user.is_active !== false ? '#00ff88' : '#ff3b30',
+                          fontSize: '12px',
+                          fontWeight: '700',
+                          cursor: 'pointer',
+                          outline: 'none',
+                          opacity: updatingActive === user.id ? 0.5 : 1,
+                          transition: '0.2s',
+                        }}
+                      >
+                        {user.is_active !== false ? 'Active' : 'Disabled'}
+                      </button>
                     </td>
                     <td style={{ padding: '14px 16px', borderBottom: '1px solid rgba(255,255,255,0.03)', color: 'var(--text-secondary)', fontSize: '14px' }}>
                       {networkMap[user.whitelabel_id] || user.whitelabel_id?.slice(0, 8) + '...'}
