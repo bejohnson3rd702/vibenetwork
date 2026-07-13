@@ -127,7 +127,7 @@ export const HeroEditorTab = ({ wlConfig }: { wlConfig: any }) => {
   };
 
   // Slider State
-  const [heroSlider, setHeroSlider] = useState<Array<{ id: string, title: string, imageUrl: string, videoUrl: string, short?: string, subtitle?: string, copy?: string }>>(
+  const [heroSlider, setHeroSlider] = useState<Array<{ id: string, title: string, imageUrl: string, videoUrl: string, short?: string, subtitle?: string, copy?: string, buttonText?: string, buttonLink?: string }>>(
     getInitialSlider()
   );
   const [editingSlideId, setEditingSlideId] = useState<string | null>(null);
@@ -137,8 +137,11 @@ export const HeroEditorTab = ({ wlConfig }: { wlConfig: any }) => {
   const [slideCopy, setSlideCopy] = useState('');
   const [slideImageUrl, setSlideImageUrl] = useState('');
   const [slideVideoUrl, setSlideVideoUrl] = useState('');
+  const [slideButtonText, setSlideButtonText] = useState('');
+  const [slideButtonLink, setSlideButtonLink] = useState('');
   const [uploadingSlideImage, setUploadingSlideImage] = useState(false);
   const [uploadingSlideVideo, setUploadingSlideVideo] = useState(false);
+  const [focusedField, setFocusedField] = useState<string | null>(null);
 
   // AI Video Shield States
   const [showScanner, setShowScanner] = useState(false);
@@ -459,6 +462,8 @@ export const HeroEditorTab = ({ wlConfig }: { wlConfig: any }) => {
                   setSlideCopy('');
                   setSlideImageUrl('');
                   setSlideVideoUrl('');
+                  setSlideButtonText('');
+                  setSlideButtonLink('');
                 }}
                 style={{ padding: '10px 20px', background: wlConfig.accent, border: 'none', borderRadius: '8px', color: '#fff', fontWeight: 'bold', cursor: 'pointer' }}
               >
@@ -468,149 +473,505 @@ export const HeroEditorTab = ({ wlConfig }: { wlConfig: any }) => {
           </div>
 
           {editingSlideId !== null && (
-            <div style={{ border: '1px solid rgba(255,255,255,0.1)', padding: '20px', borderRadius: '16px', background: 'rgba(0,0,0,0.3)', display: 'flex', flexDirection: 'column', gap: '16px' }}>
-              <h4 style={{ margin: 0 }}>{editingSlideId === 'new' ? 'Add New Slider Banner' : 'Edit Slider Banner'}</h4>
+            <div style={{ 
+              border: '1px solid rgba(255,255,255,0.08)', 
+              padding: '24px', 
+              borderRadius: '20px', 
+              background: 'rgba(15,15,15,0.85)', 
+              backdropFilter: 'blur(20px)',
+              boxShadow: '0 20px 50px rgba(0,0,0,0.5)',
+              display: 'flex', 
+              flexDirection: 'column', 
+              gap: '20px' 
+            }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '16px' }}>
+                <h4 style={{ margin: 0, fontSize: '20px', fontWeight: 900, letterSpacing: '-0.5px' }}>
+                  {editingSlideId === 'new' ? '✨ Add New Slider Banner' : '✏️ Edit Slider Banner'}
+                </h4>
+                <span style={{ fontSize: '12px', color: 'var(--text-muted)', background: 'rgba(255,255,255,0.05)', padding: '4px 10px', borderRadius: '20px' }}>
+                  Step-by-Step Customizer
+                </span>
+              </div>
               
-              <div>
-                <label style={{ display: 'block', fontSize: '14px', marginBottom: '8px', color: 'var(--text-muted)' }}>Slide Title (Main Headline)</label>
-                <input 
-                  type="text" 
-                  value={slideTitle} 
-                  onChange={(e) => setSlideTitle(e.target.value)} 
-                  placeholder="e.g. Entertainment" 
-                  style={{ width: '100%', padding: '12px', background: 'rgba(0,0,0,0.5)', color: 'var(--text-primary)', border: '1px solid rgba(255,255,255,0.2)', borderRadius: '10px', fontSize: '15px', outline: 'none' }} 
-                />
-              </div>
+              {/* Responsive Split Screen Layout */}
+              <div style={{ 
+                display: 'grid', 
+                gridTemplateColumns: 'repeat(auto-fit, minmax(360px, 1fr))', 
+                gap: '30px', 
+                alignItems: 'start' 
+              }}>
+                
+                {/* Left Side: Form Fields */}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                  
+                  {/* Step 1: Banner Copy and Headings Card */}
+                  <div style={{ 
+                    background: 'rgba(255, 255, 255, 0.01)', 
+                    border: '1px solid rgba(255, 255, 255, 0.05)', 
+                    padding: '20px', 
+                    borderRadius: '14px', 
+                    display: 'flex', 
+                    flexDirection: 'column', 
+                    gap: '14px' 
+                  }}>
+                    <h5 style={{ margin: '0 0 4px 0', fontSize: '13px', textTransform: 'uppercase', color: wlConfig.accent, letterSpacing: '1.5px', fontWeight: 'bold' }}>
+                      1. Headline & Copy
+                    </h5>
+                    
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px' }}>
+                      <div>
+                        <label style={{ display: 'block', fontSize: '12px', marginBottom: '6px', color: 'var(--text-muted)', fontWeight: 600 }}>
+                          Slide Title (Main Headline)
+                        </label>
+                        <input 
+                          type="text" 
+                          value={slideTitle} 
+                          onChange={(e) => setSlideTitle(e.target.value)} 
+                          placeholder="e.g. Entertainment" 
+                          style={{ 
+                            width: '100%', 
+                            padding: '12px 14px', 
+                            background: 'rgba(0,0,0,0.5)', 
+                            color: 'var(--text-primary)', 
+                            border: `1px solid ${focusedField === 'title' ? wlConfig.accent : 'rgba(255,255,255,0.15)'}`, 
+                            boxShadow: focusedField === 'title' ? `0 0 8px ${wlConfig.accent}33` : 'none',
+                            borderRadius: '8px', 
+                            fontSize: '14px', 
+                            outline: 'none',
+                            transition: 'all 0.2s ease'
+                          }} 
+                          onFocus={() => setFocusedField('title')}
+                          onBlur={() => setFocusedField(null)}
+                        />
+                      </div>
 
-              <div>
-                <label style={{ display: 'block', fontSize: '14px', marginBottom: '8px', color: 'var(--text-muted)' }}>Tab Label / Short Title (Appears in bottom bar buttons)</label>
-                <input 
-                  type="text" 
-                  value={slideShort} 
-                  onChange={(e) => setSlideShort(e.target.value)} 
-                  placeholder="e.g. Entertainment" 
-                  style={{ width: '100%', padding: '12px', background: 'rgba(0,0,0,0.5)', color: 'var(--text-primary)', border: '1px solid rgba(255,255,255,0.2)', borderRadius: '10px', fontSize: '15px', outline: 'none' }} 
-                />
-              </div>
+                      <div>
+                        <label style={{ display: 'block', fontSize: '12px', marginBottom: '6px', color: 'var(--text-muted)', fontWeight: 600 }}>
+                          Tab label (Short Title)
+                        </label>
+                        <input 
+                          type="text" 
+                          value={slideShort} 
+                          onChange={(e) => setSlideShort(e.target.value)} 
+                          placeholder="e.g. Entertainment" 
+                          style={{ 
+                            width: '100%', 
+                            padding: '12px 14px', 
+                            background: 'rgba(0,0,0,0.5)', 
+                            color: 'var(--text-primary)', 
+                            border: `1px solid ${focusedField === 'short' ? wlConfig.accent : 'rgba(255,255,255,0.15)'}`, 
+                            boxShadow: focusedField === 'short' ? `0 0 8px ${wlConfig.accent}33` : 'none',
+                            borderRadius: '8px', 
+                            fontSize: '14px', 
+                            outline: 'none',
+                            transition: 'all 0.2s ease'
+                          }} 
+                          onFocus={() => setFocusedField('short')}
+                          onBlur={() => setFocusedField(null)}
+                        />
+                      </div>
+                    </div>
 
-              <div>
-                <label style={{ display: 'block', fontSize: '14px', marginBottom: '8px', color: 'var(--text-muted)' }}>Overhead Subtitle</label>
-                <input 
-                  type="text" 
-                  value={slideSubtitle} 
-                  onChange={(e) => setSlideSubtitle(e.target.value)} 
-                  placeholder="e.g. LATEST LIVE SETS & SHOWS" 
-                  style={{ width: '100%', padding: '12px', background: 'rgba(0,0,0,0.5)', color: 'var(--text-primary)', border: '1px solid rgba(255,255,255,0.2)', borderRadius: '10px', fontSize: '15px', outline: 'none' }} 
-                />
-              </div>
+                    <div>
+                      <label style={{ display: 'block', fontSize: '12px', marginBottom: '6px', color: 'var(--text-muted)', fontWeight: 600 }}>
+                        Overhead Subtitle
+                      </label>
+                      <input 
+                        type="text" 
+                        value={slideSubtitle} 
+                        onChange={(e) => setSlideSubtitle(e.target.value)} 
+                        placeholder="e.g. LATEST LIVE SETS & SHOWS" 
+                        style={{ 
+                          width: '100%', 
+                          padding: '12px 14px', 
+                          background: 'rgba(0,0,0,0.5)', 
+                          color: 'var(--text-primary)', 
+                          border: `1px solid ${focusedField === 'subtitle' ? wlConfig.accent : 'rgba(255,255,255,0.15)'}`, 
+                          boxShadow: focusedField === 'subtitle' ? `0 0 8px ${wlConfig.accent}33` : 'none',
+                          borderRadius: '8px', 
+                          fontSize: '14px', 
+                          outline: 'none',
+                          transition: 'all 0.2s ease'
+                        }} 
+                        onFocus={() => setFocusedField('subtitle')}
+                        onBlur={() => setFocusedField(null)}
+                      />
+                    </div>
 
-              <div>
-                <label style={{ display: 'block', fontSize: '14px', marginBottom: '8px', color: 'var(--text-muted)' }}>Description Copy / Paragraph</label>
-                <textarea 
-                  value={slideCopy} 
-                  onChange={(e) => setSlideCopy(e.target.value)} 
-                  placeholder="e.g. Experience top DJ sets, live concerts, and exclusive music releases streaming 24/7." 
-                  rows={3}
-                  style={{ width: '100%', padding: '12px', background: 'rgba(0,0,0,0.5)', color: 'var(--text-primary)', border: '1px solid rgba(255,255,255,0.2)', borderRadius: '10px', fontSize: '15px', outline: 'none', resize: 'vertical' }} 
-                />
-              </div>
+                    <div>
+                      <label style={{ display: 'block', fontSize: '12px', marginBottom: '6px', color: 'var(--text-muted)', fontWeight: 600 }}>
+                        Description Copy / Paragraph
+                      </label>
+                      <textarea 
+                        value={slideCopy} 
+                        onChange={(e) => setSlideCopy(e.target.value)} 
+                        placeholder="e.g. Experience top DJ sets, live concerts, and exclusive music releases..." 
+                        rows={3} 
+                        style={{ 
+                          width: '100%', 
+                          padding: '12px 14px', 
+                          background: 'rgba(0,0,0,0.5)', 
+                          color: 'var(--text-primary)', 
+                          border: `1px solid ${focusedField === 'copy' ? wlConfig.accent : 'rgba(255,255,255,0.15)'}`, 
+                          boxShadow: focusedField === 'copy' ? `0 0 8px ${wlConfig.accent}33` : 'none',
+                          borderRadius: '8px', 
+                          fontSize: '14px', 
+                          outline: 'none',
+                          resize: 'vertical',
+                          transition: 'all 0.2s ease'
+                        }} 
+                        onFocus={() => setFocusedField('copy')}
+                        onBlur={() => setFocusedField(null)}
+                      />
+                    </div>
+                  </div>
 
-              <div>
-                <label style={{ display: 'block', fontSize: '14px', marginBottom: '8px', color: 'var(--text-muted)' }}>Slide Preview Image (16:9 Banner)</label>
-                <div style={{ display: 'flex', gap: '10px' }}>
-                  <input 
-                    type="text" 
-                    value={slideImageUrl} 
-                    onChange={(e) => setSlideImageUrl(e.target.value)} 
-                    placeholder="e.g. https://images.unsplash.com/..." 
-                    style={{ flex: 1, padding: '12px', background: 'rgba(0,0,0,0.5)', color: 'var(--text-primary)', border: '1px solid rgba(255,255,255,0.2)', borderRadius: '10px', fontSize: '15px', outline: 'none' }} 
-                  />
-                  <label style={{ padding: '12px 20px', background: 'rgba(255,255,255,0.1)', borderRadius: '10px', cursor: uploadingSlideImage ? 'not-allowed' : 'pointer', fontWeight: 'bold' }}>
-                    {uploadingSlideImage ? 'Uploading...' : 'Upload'}
-                    <input 
-                      type="file" 
-                      accept="image/*" 
-                      onChange={async (e) => {
-                        if (e.target.files && e.target.files[0]) {
-                          try {
-                            setUploadingSlideImage(true);
-                            const enhancedFile = await processAndEnhanceImage(e.target.files[0], 'hero');
-                            const fileExt = enhancedFile.name.split('.').pop();
-                            const fileName = `${Date.now()}_slide_${Math.random()}.${fileExt}`;
-                            const filePath = `hero/${fileName}`;
-                            const { error: uploadError } = await supabase.storage.from('images').upload(filePath, enhancedFile);
-                            if (uploadError) throw uploadError;
-                            const { data } = supabase.storage.from('images').getPublicUrl(filePath);
-                            if (data?.publicUrl) {
-                              setSlideImageUrl(data.publicUrl);
-                              toast.success('Slide preview image uploaded!');
-                            }
-                          } catch (err: any) {
-                            toast.error('Image upload failed: ' + err.message);
-                          } finally {
-                            setUploadingSlideImage(false);
-                          }
-                        }
-                      }} 
-                      style={{ display: 'none' }} 
-                      disabled={uploadingSlideImage} 
-                    />
-                  </label>
+                  {/* Step 2: Media Assets & Button Actions Card */}
+                  <div style={{ 
+                    background: 'rgba(255, 255, 255, 0.01)', 
+                    border: '1px solid rgba(255, 255, 255, 0.05)', 
+                    padding: '20px', 
+                    borderRadius: '14px', 
+                    display: 'flex', 
+                    flexDirection: 'column', 
+                    gap: '14px' 
+                  }}>
+                    <h5 style={{ margin: '0 0 4px 0', fontSize: '13px', textTransform: 'uppercase', color: wlConfig.accent, letterSpacing: '1.5px', fontWeight: 'bold' }}>
+                      2. Media Assets & Button Link
+                    </h5>
+
+                    <div>
+                      <label style={{ display: 'block', fontSize: '12px', marginBottom: '6px', color: 'var(--text-muted)', fontWeight: 600 }}>
+                        Slide Preview Image (16:9 Banner URL)
+                      </label>
+                      <div style={{ display: 'flex', gap: '8px' }}>
+                        <input 
+                          type="text" 
+                          value={slideImageUrl} 
+                          onChange={(e) => setSlideImageUrl(e.target.value)} 
+                          placeholder="e.g. https://images.unsplash.com/..." 
+                          style={{ 
+                            flex: 1, 
+                            padding: '12px 14px', 
+                            background: 'rgba(0,0,0,0.5)', 
+                            color: 'var(--text-primary)', 
+                            border: `1px solid ${focusedField === 'image' ? wlConfig.accent : 'rgba(255,255,255,0.15)'}`, 
+                            boxShadow: focusedField === 'image' ? `0 0 8px ${wlConfig.accent}33` : 'none',
+                            borderRadius: '8px', 
+                            fontSize: '14px', 
+                            outline: 'none',
+                            transition: 'all 0.2s ease'
+                          }} 
+                          onFocus={() => setFocusedField('image')}
+                          onBlur={() => setFocusedField(null)}
+                        />
+                        <label style={{ 
+                          padding: '12px 18px', 
+                          background: wlConfig.accent, 
+                          color: '#fff',
+                          borderRadius: '8px', 
+                          cursor: uploadingSlideImage ? 'not-allowed' : 'pointer', 
+                          fontWeight: 'bold',
+                          fontSize: '13px',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          minWidth: '80px',
+                          boxShadow: `0 4px 12px ${wlConfig.accent}33`
+                        }}>
+                          {uploadingSlideImage ? 'Uploading...' : 'Upload'}
+                          <input 
+                            type="file" 
+                            accept="image/*" 
+                            onChange={async (e) => {
+                              if (e.target.files && e.target.files[0]) {
+                                try {
+                                  setUploadingSlideImage(true);
+                                  const enhancedFile = await processAndEnhanceImage(e.target.files[0], 'hero');
+                                  const fileExt = enhancedFile.name.split('.').pop();
+                                  const fileName = `${Date.now()}_slide_${Math.random()}.${fileExt}`;
+                                  const filePath = `hero/${fileName}`;
+                                  const { error: uploadError } = await supabase.storage.from('images').upload(filePath, enhancedFile);
+                                  if (uploadError) throw uploadError;
+                                  const { data } = supabase.storage.from('images').getPublicUrl(filePath);
+                                  if (data?.publicUrl) {
+                                    setSlideImageUrl(data.publicUrl);
+                                    toast.success('Slide preview image uploaded!');
+                                  }
+                                } catch (err: any) {
+                                  toast.error('Image upload failed: ' + err.message);
+                                } finally {
+                                  setUploadingSlideImage(false);
+                                }
+                              }
+                            }} 
+                            style={{ display: 'none' }} 
+                            disabled={uploadingSlideImage} 
+                          />
+                        </label>
+                      </div>
+                    </div>
+
+                    <div>
+                      <label style={{ display: 'block', fontSize: '12px', marginBottom: '6px', color: 'var(--text-muted)', fontWeight: 600 }}>
+                        Slide Video Link (YouTube or Direct File - Optional)
+                      </label>
+                      <div style={{ display: 'flex', gap: '8px' }}>
+                        <input 
+                          type="text" 
+                          value={slideVideoUrl} 
+                          onChange={(e) => setSlideVideoUrl(e.target.value)} 
+                          placeholder="e.g. https://youtube.com/watch?v=..." 
+                          style={{ 
+                            flex: 1, 
+                            padding: '12px 14px', 
+                            background: 'rgba(0,0,0,0.5)', 
+                            color: 'var(--text-primary)', 
+                            border: `1px solid ${focusedField === 'video' ? wlConfig.accent : 'rgba(255,255,255,0.15)'}`, 
+                            boxShadow: focusedField === 'video' ? `0 0 8px ${wlConfig.accent}33` : 'none',
+                            borderRadius: '8px', 
+                            fontSize: '14px', 
+                            outline: 'none',
+                            transition: 'all 0.2s ease'
+                          }} 
+                          onFocus={() => setFocusedField('video')}
+                          onBlur={() => setFocusedField(null)}
+                        />
+                        <label style={{ 
+                          padding: '12px 18px', 
+                          background: 'rgba(255,255,255,0.1)', 
+                          color: '#fff',
+                          border: '1px solid rgba(255,255,255,0.2)',
+                          borderRadius: '8px', 
+                          cursor: uploadingSlideVideo ? 'not-allowed' : 'pointer', 
+                          fontWeight: 'bold',
+                          fontSize: '13px',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          minWidth: '80px'
+                        }}>
+                          {uploadingSlideVideo ? 'Uploading...' : 'Upload'}
+                          <input 
+                            type="file" 
+                            accept="video/*" 
+                            onChange={async (e) => {
+                              if (e.target.files && e.target.files[0]) {
+                                const file = e.target.files[0];
+                                if (file.size > 50 * 1024 * 1024) {
+                                  toast.error('Video file size exceeds the 50MB limit.');
+                                  return;
+                                }
+                                try {
+                                  setUploadingSlideVideo(true);
+                                  const fileExt = file.name.split('.').pop();
+                                  const fileName = `${Date.now()}_slide_${Math.random()}.${fileExt}`;
+                                  const filePath = `hero/${fileName}`;
+                                  const { error: uploadError } = await supabase.storage.from('videos').upload(filePath, file);
+                                  if (uploadError) throw uploadError;
+                                  const { data } = supabase.storage.from('videos').getPublicUrl(filePath);
+                                  if (data?.publicUrl) {
+                                    setSlideVideoUrl(data.publicUrl);
+                                    toast.success('Slide video uploaded!');
+                                  }
+                                } catch (err: any) {
+                                  toast.error('Video upload failed: ' + err.message);
+                                } finally {
+                                  setUploadingSlideVideo(false);
+                                }
+                              }
+                            }} 
+                            style={{ display: 'none' }} 
+                            disabled={uploadingSlideVideo} 
+                          />
+                        </label>
+                      </div>
+                    </div>
+
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px' }}>
+                      <div>
+                        <label style={{ display: 'block', fontSize: '12px', marginBottom: '6px', color: 'var(--text-muted)', fontWeight: 600 }}>
+                          Button Label Text (Optional)
+                        </label>
+                        <input 
+                          type="text" 
+                          value={slideButtonText} 
+                          onChange={(e) => setSlideButtonText(e.target.value)} 
+                          placeholder="e.g. Watch Live" 
+                          style={{ 
+                            width: '100%', 
+                            padding: '12px 14px', 
+                            background: 'rgba(0,0,0,0.5)', 
+                            color: 'var(--text-primary)', 
+                            border: `1px solid ${focusedField === 'btnText' ? wlConfig.accent : 'rgba(255,255,255,0.15)'}`, 
+                            boxShadow: focusedField === 'btnText' ? `0 0 8px ${wlConfig.accent}33` : 'none',
+                            borderRadius: '8px', 
+                            fontSize: '14px', 
+                            outline: 'none',
+                            transition: 'all 0.2s ease'
+                          }} 
+                          onFocus={() => setFocusedField('btnText')}
+                          onBlur={() => setFocusedField(null)}
+                        />
+                      </div>
+
+                      <div>
+                        <label style={{ display: 'block', fontSize: '12px', marginBottom: '6px', color: 'var(--text-muted)', fontWeight: 600 }}>
+                          Button Action Link (Optional)
+                        </label>
+                        <input 
+                          type="text" 
+                          value={slideButtonLink} 
+                          onChange={(e) => setSlideButtonLink(e.target.value)} 
+                          placeholder="e.g. /shop or https://..." 
+                          style={{ 
+                            width: '100%', 
+                            padding: '12px 14px', 
+                            background: 'rgba(0,0,0,0.5)', 
+                            color: 'var(--text-primary)', 
+                            border: `1px solid ${focusedField === 'btnLink' ? wlConfig.accent : 'rgba(255,255,255,0.15)'}`, 
+                            boxShadow: focusedField === 'btnLink' ? `0 0 8px ${wlConfig.accent}33` : 'none',
+                            borderRadius: '8px', 
+                            fontSize: '14px', 
+                            outline: 'none',
+                            transition: 'all 0.2s ease'
+                          }} 
+                          onFocus={() => setFocusedField('btnLink')}
+                          onBlur={() => setFocusedField(null)}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Right Side: Live Hero Card Preview */}
+                <div style={{ 
+                  display: 'flex', 
+                  flexDirection: 'column', 
+                  gap: '16px', 
+                  position: 'sticky', 
+                  top: '20px' 
+                }}>
+                  <h5 style={{ margin: 0, fontSize: '13px', textTransform: 'uppercase', color: 'rgba(255,255,255,0.6)', letterSpacing: '1.5px', fontWeight: 'bold' }}>
+                    Live Homepage Hero Preview
+                  </h5>
+                  
+                  {/* Mock Hero Card */}
+                  <div style={{
+                    width: '100%',
+                    aspectRatio: '16/9',
+                    borderRadius: '16px',
+                    border: '1px solid rgba(255,255,255,0.12)',
+                    background: slideImageUrl ? `url(${slideImageUrl})` : '#0d0d0d',
+                    backgroundSize: 'cover',
+                    backgroundPosition: 'center',
+                    position: 'relative',
+                    overflow: 'hidden',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    justifyContent: 'flex-end',
+                    padding: '24px',
+                    boxShadow: '0 20px 40px rgba(0,0,0,0.6)'
+                  }}>
+                    {/* Shadow Overlay */}
+                    <div style={{
+                      position: 'absolute',
+                      inset: 0,
+                      background: 'linear-gradient(to top, rgba(0,0,0,0.95) 20%, rgba(0,0,0,0.5) 60%, rgba(0,0,0,0.15) 100%)',
+                      zIndex: 1
+                    }} />
+                    
+                    {/* Mock Content */}
+                    <div style={{ position: 'relative', zIndex: 2, display: 'flex', flexDirection: 'column', gap: '8px', alignItems: 'flex-start' }}>
+                      <span style={{
+                        fontSize: '10px',
+                        color: wlConfig.accent,
+                        fontWeight: 800,
+                        textTransform: 'uppercase',
+                        letterSpacing: '2px',
+                        textShadow: '0 2px 4px rgba(0,0,0,0.8)'
+                      }}>
+                        {slideSubtitle || 'OVERHEAD SUBTITLE'}
+                      </span>
+                      <h2 style={{
+                        margin: 0,
+                        fontSize: '24px',
+                        fontWeight: 900,
+                        color: '#fff',
+                        lineHeight: 1.2,
+                        textShadow: '0 2px 4px rgba(0,0,0,0.8)',
+                        letterSpacing: '-0.5px'
+                      }}>
+                        {slideTitle || 'Slide Headline'}
+                      </h2>
+                      <p style={{
+                        margin: '0 0 10px 0',
+                        fontSize: '12px',
+                        color: 'rgba(255,255,255,0.7)',
+                        lineHeight: 1.5,
+                        textShadow: '0 1px 2px rgba(0,0,0,0.8)',
+                        maxWidth: '90%'
+                      }}>
+                        {slideCopy || 'This is the description paragraph that will be rendered on the slide.'}
+                      </p>
+                      
+                      {/* CTA Button */}
+                      <button style={{
+                        padding: '8px 24px',
+                        background: 'transparent',
+                        color: '#fff',
+                        border: '1.5px solid #fff',
+                        borderRadius: '0px',
+                        fontSize: '9px',
+                        fontWeight: 800,
+                        textTransform: 'uppercase',
+                        letterSpacing: '2px',
+                        pointerEvents: 'none'
+                      }}>
+                        {slideButtonText || (slideVideoUrl ? 'Play Video' : 'Shop Now')}
+                      </button>
+                    </div>
+                  </div>
+                  
+                  {/* Informational Hint */}
+                  <div style={{
+                    background: 'rgba(255,255,255,0.03)',
+                    border: '1px solid rgba(255,255,255,0.06)',
+                    borderRadius: '10px',
+                    padding: '12px 16px',
+                    fontSize: '12px',
+                    color: 'var(--text-muted)',
+                    lineHeight: 1.4
+                  }}>
+                    💡 <strong>Tip:</strong> Changes you make to titles, subtitles, description, and images are updated instantly in the preview card above. Click <strong>Save Slide Settings</strong> to save changes temporarily.
+                  </div>
                 </div>
               </div>
 
-              <div>
-                <label style={{ display: 'block', fontSize: '14px', marginBottom: '8px', color: 'var(--text-muted)' }}>Slide Video Link (YouTube or Direct File - Optional)</label>
-                <div style={{ display: 'flex', gap: '10px' }}>
-                  <input 
-                    type="text" 
-                    value={slideVideoUrl} 
-                    onChange={(e) => setSlideVideoUrl(e.target.value)} 
-                    placeholder="e.g. https://youtube.com/watch?v=..." 
-                    style={{ flex: 1, padding: '12px', background: 'rgba(0,0,0,0.5)', color: 'var(--text-primary)', border: '1px solid rgba(255,255,255,0.2)', borderRadius: '10px', fontSize: '15px', outline: 'none' }} 
-                  />
-                  <label style={{ padding: '12px 20px', background: 'rgba(255,255,255,0.1)', borderRadius: '10px', cursor: uploadingSlideVideo ? 'not-allowed' : 'pointer', fontWeight: 'bold' }}>
-                    {uploadingSlideVideo ? 'Uploading...' : 'Upload'}
-                    <input 
-                      type="file" 
-                      accept="video/*" 
-                      onChange={async (e) => {
-                        if (e.target.files && e.target.files[0]) {
-                          const file = e.target.files[0];
-                          if (file.size > 50 * 1024 * 1024) {
-                            toast.error('Video file size exceeds the 50MB limit.');
-                            return;
-                          }
-                          try {
-                            setUploadingSlideVideo(true);
-                            const fileExt = file.name.split('.').pop();
-                            const fileName = `${Date.now()}_slide_${Math.random()}.${fileExt}`;
-                            const filePath = `hero/${fileName}`;
-                            const { error: uploadError } = await supabase.storage.from('videos').upload(filePath, file);
-                            if (uploadError) throw uploadError;
-                            const { data } = supabase.storage.from('videos').getPublicUrl(filePath);
-                            if (data?.publicUrl) {
-                              setSlideVideoUrl(data.publicUrl);
-                              toast.success('Slide video uploaded!');
-                            }
-                          } catch (err: any) {
-                            toast.error('Video upload failed: ' + err.message);
-                          } finally {
-                            setUploadingSlideVideo(false);
-                          }
-                        }
-                      }} 
-                      style={{ display: 'none' }} 
-                      disabled={uploadingSlideVideo} 
-                    />
-                  </label>
-                </div>
-              </div>
-
-              <div style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end', marginTop: '10px' }}>
+              {/* Action Buttons Footer */}
+              <div style={{ 
+                display: 'flex', 
+                gap: '12px', 
+                justifyContent: 'flex-end', 
+                borderTop: '1px solid rgba(255,255,255,0.1)', 
+                paddingTop: '20px',
+                marginTop: '10px' 
+              }}>
                 <button 
                   onClick={() => setEditingSlideId(null)}
-                  style={{ padding: '8px 16px', background: 'rgba(255,255,255,0.1)', border: 'none', borderRadius: '8px', color: '#fff', cursor: 'pointer' }}
+                  style={{ 
+                    padding: '10px 24px', 
+                    background: 'rgba(255,255,255,0.08)', 
+                    border: '1px solid rgba(255,255,255,0.15)',
+                    borderRadius: '8px', 
+                    color: '#fff', 
+                    fontWeight: 'bold',
+                    fontSize: '14px',
+                    cursor: 'pointer',
+                    transition: 'all 0.2s ease'
+                  }}
+                  onMouseOver={e=>e.currentTarget.style.background='rgba(255,255,255,0.15)'}
+                  onMouseOut={e=>e.currentTarget.style.background='rgba(255,255,255,0.08)'}
                 >
                   Cancel
                 </button>
@@ -627,7 +988,9 @@ export const HeroEditorTab = ({ wlConfig }: { wlConfig: any }) => {
                       subtitle: slideSubtitle || 'Featured',
                       copy: slideCopy || '',
                       imageUrl: slideImageUrl,
-                      videoUrl: slideVideoUrl || ''
+                      videoUrl: slideVideoUrl || '',
+                      buttonText: slideButtonText || '',
+                      buttonLink: slideButtonLink || ''
                     };
                     if (editingSlideId === 'new') {
                       setHeroSlider([...heroSlider, newSlide]);
@@ -637,7 +1000,20 @@ export const HeroEditorTab = ({ wlConfig }: { wlConfig: any }) => {
                     setEditingSlideId(null);
                     toast.success('Slide temporarily saved! Save configurations to publish.');
                   }}
-                  style={{ padding: '8px 16px', background: wlConfig.accent, border: 'none', borderRadius: '8px', color: '#fff', fontWeight: 'bold', cursor: 'pointer' }}
+                  style={{ 
+                    padding: '10px 28px', 
+                    background: wlConfig.accent, 
+                    border: 'none', 
+                    borderRadius: '8px', 
+                    color: '#fff', 
+                    fontWeight: 'bold',
+                    fontSize: '14px',
+                    cursor: 'pointer',
+                    boxShadow: `0 4px 15px ${wlConfig.accent}44`,
+                    transition: 'all 0.2s ease'
+                  }}
+                  onMouseOver={e=>e.currentTarget.style.opacity='0.9'}
+                  onMouseOut={e=>e.currentTarget.style.opacity='1'}
                 >
                   Save Slide Settings
                 </button>
@@ -669,6 +1045,12 @@ export const HeroEditorTab = ({ wlConfig }: { wlConfig: any }) => {
                     )}
                     {slide.videoUrl && (
                       <span style={{ fontSize: '12px', color: 'rgba(255,255,255,0.4)', wordBreak: 'break-all', display: 'block', marginTop: '4px' }}>Link: {slide.videoUrl}</span>
+                    )}
+                    {slide.buttonText && (
+                      <span style={{ fontSize: '12px', color: 'rgba(255,255,255,0.4)', display: 'block', marginTop: '4px' }}>Button Text: "{slide.buttonText}"</span>
+                    )}
+                    {slide.buttonLink && (
+                      <span style={{ fontSize: '12px', color: 'rgba(255,255,255,0.4)', display: 'block', marginTop: '4px' }}>Button Link: {slide.buttonLink}</span>
                     )}
                   </div>
                   
@@ -712,6 +1094,8 @@ export const HeroEditorTab = ({ wlConfig }: { wlConfig: any }) => {
                         setSlideCopy(slide.copy || '');
                         setSlideImageUrl(slide.imageUrl || '');
                         setSlideVideoUrl(slide.videoUrl || '');
+                        setSlideButtonText(slide.buttonText || '');
+                        setSlideButtonLink(slide.buttonLink || '');
                       }}
                       style={{ padding: '6px 12px', background: 'rgba(255,255,255,0.05)', border: 'none', borderRadius: '6px', color: '#fff', cursor: 'pointer' }}
                     >

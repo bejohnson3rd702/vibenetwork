@@ -296,7 +296,8 @@ export default function N2NHome({ wlConfig, categories, activeVideo, setActiveVi
           copy: s.copy || '',
           image: s.imageUrl,
           videoUrl: isActualVideo ? rawVideo : '',
-          link: rawVideo || s.linkUrl || ''
+          link: s.buttonLink || rawVideo || s.linkUrl || '',
+          buttonText: s.buttonText || ''
         };
       })
     : ((config?.theme?.heroImage || config?.theme?.heroCopy)
@@ -427,7 +428,7 @@ export default function N2NHome({ wlConfig, categories, activeVideo, setActiveVi
                 const currentSlide = HERO_SLIDES[heroSlide % HERO_SLIDES.length];
                 const hasCustomSlides = config?.theme?.heroSlider && config.theme.heroSlider.length > 0;
                 if (isKple && !hasCustomSlides) return; // Go nowhere for now
-                if (currentSlide.videoUrl) {
+                if (currentSlide.videoUrl && (!currentSlide.link || currentSlide.link === currentSlide.videoUrl)) {
                   setActiveVideo({
                     id: currentSlide.id || heroSlide.toString(),
                     title: currentSlide.school || currentSlide.title || '',
@@ -464,6 +465,7 @@ export default function N2NHome({ wlConfig, categories, activeVideo, setActiveVi
             >
               {(() => {
                 const currentSlide = HERO_SLIDES[heroSlide % HERO_SLIDES.length];
+                if (currentSlide.buttonText) return currentSlide.buttonText;
                 if (currentSlide.videoUrl) return "Play Video";
                 if (config?.theme?.shopifyUrl && !config.theme.shopifyUrl.includes('shop')) return "Visit Website";
                 return isOlympian ? "View Schedule" : (isMf ? "Read Workouts" : (isB2K ? "Learn More" : (isKple ? "Watch Network" : (isVibe100 ? "Enter Channel" : "Shop Now"))));
@@ -619,11 +621,13 @@ export default function N2NHome({ wlConfig, categories, activeVideo, setActiveVi
       </div>
 
       {/* NCAA College Ticker — bottom of hero */}
-      <div style={{ position: 'relative', zIndex: 10 }}>
-        <Suspense fallback={null}>
-          <CollegeTicker accent={config.accent} isOlympian={isOlympian} isB2K={isB2K} isKple={isKple} isWings={config?.id === 'wings-of-strength-tenant-id'} />
-        </Suspense>
-      </div>
+      {!isKple && (
+        <div style={{ position: 'relative', zIndex: 10 }}>
+          <Suspense fallback={null}>
+            <CollegeTicker accent={config.accent} isOlympian={isOlympian} isB2K={isB2K} isKple={isKple} isWings={config?.id === 'wings-of-strength-tenant-id'} />
+          </Suspense>
+        </div>
+      )}
 
       <main style={{ background: 'var(--bg-color)', paddingBottom: '100px', zIndex: 10, position: 'relative', width: '100%' }}>
 
@@ -641,106 +645,172 @@ export default function N2NHome({ wlConfig, categories, activeVideo, setActiveVi
           </div>
         )}
 
-        {/* ── Child Networks Slider ────────────────────────────── */}
-        {childItems.length > 0 && (
-          <div id="child-networks-slider">
-            <SliderSection
-              title={isOlympian ? "OLYMPIA PARTNERS" : (isMf ? "MUSCLE & FITNESS NETWORKS" : (isB2K ? "B2K MEMBERS" : (isKple ? "CHRISTIAN REVIVAL NETWORKS" : (isVibe100 ? "VIBE 100 NETWORKS" : "AVO NETWORKS"))))}
-              items={(() => {
-                if (isMfFamily) {
-                  const mfNetworkItems = [];
-                  
-                  // 1. Add parent network (Muscle & Fitness) if not current
-                  if (!isMf) {
-                    mfNetworkItems.push({
-                      id: '7a017c4d-c08f-4260-8540-a0cc8bed4e11',
-                      title: 'Muscle & Fitness',
-                      image: '/n2n/muscle_fitness_logo.png',
-                      tags: ['Network'],
-                      videoUrl: '',
-                      linkUrl: '/?tenant=7a017c4d-c08f-4260-8540-a0cc8bed4e11',
-                      accent: '#E31B23'
-                    });
-                  }
-                  
-                  // 2. Add Mr. Olympia if not current
-                  if (!isOlympian) {
-                    const mrO = childItems.find(item => item.id === '7a017c4d-c08f-4260-8540-a0cc8bed4e12' || (item.title || '').toLowerCase().includes('olympia'));
-                    if (mrO) {
-                      mfNetworkItems.push(mrO);
-                    } else {
+        {/* ── Child Networks Section (Slider or KPLE Introduction Call to Action) ── */}
+        {isKple ? (
+          <div id="child-networks-slider" style={{ maxWidth: '1400px', margin: '20px auto 40px', padding: '0 40px' }}>
+            {/* Title styled exactly like SliderSection header */}
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '30px' }}>
+              <h2 style={{ fontSize: '28px', margin: 0, fontWeight: 900, display: 'flex', alignItems: 'center', gap: '16px', letterSpacing: '-0.5px' }}>
+                <span style={{ width: '4px', height: '24px', borderRadius: '4px', background: accent, boxShadow: `0 0 10px ${accent}` }} />
+                <span style={{ color: 'var(--text-primary)' }}>CHRISTIAN REVIVAL NETWORKS</span>
+              </h2>
+            </div>
+
+            {/* Brand New Call to Action Banner introducing the KPLE parent network */}
+            <div className="banner-flex-container" style={{
+              position: 'relative', overflow: 'hidden',
+              display: 'flex', minHeight: '340px',
+              border: '1px solid rgba(255,255,255,0.06)',
+              background: '#000',
+            }}>
+              {/* Left — Image */}
+              <div className="banner-image-column" style={{
+                flex: '0 0 45%', position: 'relative', overflow: 'hidden',
+              }}>
+                <img
+                  src="https://images.unsplash.com/photo-1438232992991-995b7058bbb3?auto=format&fit=crop&q=80&w=800"
+                  alt="KPLE TV Cross"
+                  style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+                />
+                <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to right, transparent 60%, #000 100%)' }} />
+              </div>
+
+              {/* Right — Content */}
+              <div className="banner-text-column" style={{
+                flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center',
+                padding: '48px 48px 48px 32px', position: 'relative',
+              }}>
+                <div style={{
+                  position: 'absolute', right: '-80px', top: '-40px',
+                  width: '300px', height: '300px', borderRadius: '50%',
+                  background: accent, filter: 'blur(120px)', opacity: 0.12,
+                }} />
+
+                <p style={{
+                  fontSize: '13px', fontWeight: 800, textTransform: 'uppercase',
+                  letterSpacing: '3px', color: accent, margin: '0 0 12px 0',
+                }}>
+                  KPLE TV-31 Broadcast
+                </p>
+                <h2 style={{
+                  fontSize: '44px', fontWeight: 900, color: '#fff', margin: '0 0 16px 0',
+                  lineHeight: 1.15, letterSpacing: '-1px', textTransform: 'uppercase',
+                }}>
+                  KPLE TV-31<br />Christian Television
+                </h2>
+                <p style={{
+                  fontSize: '16px', color: 'rgba(255,255,255,0.7)', lineHeight: 1.7,
+                  margin: '0 0 32px 0', maxWidth: '520px',
+                }}>
+                  Welcome to KPLE TV-31, your local source for faith, family, and community-centered programming. Serving Central Texas and streaming worldwide, we are dedicated to broadcasting the message of Jesus Christ 24 hours a day through inspiring sermons, teaching, educational programs, and local community stories.
+                </p>
+                <a
+                  href={mergeQueryParams('/?tenant=100d0000-c08f-4260-8540-a0cc8bed4e01', typeof window !== 'undefined' ? window.location.search : '')}
+                  style={{
+                    display: 'inline-block', padding: '15px 46px', fontSize: '13px', fontWeight: 800,
+                    textTransform: 'uppercase', letterSpacing: '2.5px', width: 'fit-content',
+                    background: 'transparent', color: '#fff',
+                    border: '1.5px solid #fff', textDecoration: 'none',
+                    transition: 'all 0.25s',
+                  }}
+                  onMouseOver={e => { e.currentTarget.style.background = '#fff'; e.currentTarget.style.color = '#000'; }}
+                  onMouseOut={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = '#fff'; }}
+                >
+                  Watch KPLE Live
+                </a>
+              </div>
+            </div>
+          </div>
+        ) : (
+          childItems.length > 0 && (
+            <div id="child-networks-slider">
+              <SliderSection
+                title={isOlympian ? "OLYMPIA PARTNERS" : (isMf ? "MUSCLE & FITNESS NETWORKS" : (isB2K ? "B2K MEMBERS" : (isVibe100 ? "VIBE 100 NETWORKS" : "AVO NETWORKS")))}
+                items={(() => {
+                  if (isMfFamily) {
+                    const mfNetworkItems = [];
+                    if (!isMf) {
                       mfNetworkItems.push({
-                        id: '7a017c4d-c08f-4260-8540-a0cc8bed4e12',
-                        title: 'Mr. Olympia',
-                        image: '/n2n/mr_olympia_logo.png',
+                        id: '7a017c4d-c08f-4260-8540-a0cc8bed4e11',
+                        title: 'Muscle & Fitness',
+                        image: '/n2n/muscle_fitness_logo.png',
                         tags: ['Network'],
                         videoUrl: '',
-                        linkUrl: '/?tenant=7a017c4d-c08f-4260-8540-a0cc8bed4e12',
-                        accent: '#D4AF37'
+                        linkUrl: '/?tenant=7a017c4d-c08f-4260-8540-a0cc8bed4e11',
+                        accent: '#E31B23'
                       });
                     }
+                    if (!isOlympian) {
+                      const mrO = childItems.find(item => item.id === '7a017c4d-c08f-4260-8540-a0cc8bed4e12' || (item.title || '').toLowerCase().includes('olympia'));
+                      if (mrO) {
+                        mfNetworkItems.push(mrO);
+                      } else {
+                        mfNetworkItems.push({
+                          id: '7a017c4d-c08f-4260-8540-a0cc8bed4e12',
+                          title: 'Mr. Olympia',
+                          image: '/n2n/mr_olympia_logo.png',
+                          tags: ['Network'],
+                          videoUrl: '',
+                          linkUrl: '/?tenant=7a017c4d-c08f-4260-8540-a0cc8bed4e12',
+                          accent: '#D4AF37'
+                        });
+                      }
+                    }
+                    if (config?.id !== 'wings-of-strength-tenant-id') {
+                      mfNetworkItems.push({
+                        id: 'wings-of-strength-tenant-id',
+                        title: 'Wings of Strength',
+                        image: 'https://wingsofstrength.net/wp-content/uploads/2025/02/27/inner-page-logo-min-1.png',
+                        tags: ['Network', 'FullBleed'],
+                        videoUrl: '',
+                        linkUrl: '/?tenant=wings-of-strength-tenant-id',
+                        accent: '#FF9D00'
+                      });
+                    }
+                    if (config?.id !== 'mf-hers-tenant-id') {
+                      mfNetworkItems.push({
+                        id: 'mf-hers-tenant-id',
+                        title: 'M&F Hers',
+                        image: '/n2n/mf_hers_bodybuilder.jpg',
+                        tags: ['Network', 'FullBleed'],
+                        videoUrl: '',
+                        linkUrl: '',
+                        accent: '#E31B23'
+                      });
+                    }
+                    if (config?.id !== 'flex-online-tenant-id') {
+                      mfNetworkItems.push({
+                        id: 'flex-online-tenant-id',
+                        title: 'Flex Online',
+                        image: 'https://i0.wp.com/www.muscleandfitness.com/wp-content/uploads/2026/06/Bodybuilders-Mike-Mentzer-and-Dorian-Yates-training-and-mentoring-the-young-bodybuilder-on-the-Maximum-Results-training-method.jpg',
+                        tags: ['Network', 'FullBleed'],
+                        videoUrl: '',
+                        linkUrl: '',
+                        accent: '#E31B23'
+                      });
+                    }
+                    return mfNetworkItems;
                   }
-                  
-                  // 3. Add Wings of Strength if not current
-                  if (config?.id !== 'wings-of-strength-tenant-id') {
-                    mfNetworkItems.push({
-                      id: 'wings-of-strength-tenant-id',
-                      title: 'Wings of Strength',
-                      image: 'https://wingsofstrength.net/wp-content/uploads/2025/02/27/inner-page-logo-min-1.png',
-                      tags: ['Network', 'FullBleed'],
-                      videoUrl: '',
-                      linkUrl: '/?tenant=wings-of-strength-tenant-id',
-                      accent: '#FF9D00'
-                    });
+                  return childItems;
+                })()}
+                delay={isOlympian || isMf ? 0.1 : 0}
+                aspectRatio="16/9"
+                cardsPerView={isMf ? 4 : (isOlympian ? 3 : 4)}
+                onItemClick={(item) => {
+                  if (item.id === 'mf-hers-tenant-id' || item.id === 'flex-online-tenant-id') {
+                    return; // Don't link anywhere for now
                   }
-                  
-                  // 4. Add M&F Hers if not current
-                  if (config?.id !== 'mf-hers-tenant-id') {
-                    mfNetworkItems.push({
-                      id: 'mf-hers-tenant-id',
-                      title: 'M&F Hers',
-                      image: '/n2n/mf_hers_bodybuilder.jpg',
-                      tags: ['Network', 'FullBleed'],
-                      videoUrl: '',
-                      linkUrl: '',
-                      accent: '#E31B23'
-                    });
+                  if (item.linkUrl) {
+                    if (item.linkUrl.startsWith('http')) {
+                      window.open(item.linkUrl, '_blank');
+                    } else {
+                      window.location.href = mergeQueryParams(item.linkUrl, window.location.search);
+                    }
                   }
-                  
-                  // 5. Add Flex Online if not current
-                  if (config?.id !== 'flex-online-tenant-id') {
-                    mfNetworkItems.push({
-                      id: 'flex-online-tenant-id',
-                      title: 'Flex Online',
-                      image: 'https://i0.wp.com/www.muscleandfitness.com/wp-content/uploads/2026/06/Bodybuilders-Mike-Mentzer-and-Dorian-Yates-training-and-mentoring-the-young-bodybuilder-on-the-Maximum-Results-training-method.jpg',
-                      tags: ['Network', 'FullBleed'],
-                      videoUrl: '',
-                      linkUrl: '',
-                      accent: '#E31B23'
-                    });
-                  }
-                  
-                  return mfNetworkItems;
-                }
-                return childItems;
-              })()}
-              delay={isOlympian || isMf ? 0.1 : 0}
-              aspectRatio="16/9"
-              cardsPerView={isMf ? 4 : (isOlympian ? 3 : 4)}
-              onItemClick={(item) => {
-                if (item.id === 'mf-hers-tenant-id' || item.id === 'flex-online-tenant-id') {
-                  return; // Don't link anywhere for now
-                }
-                if (item.linkUrl) {
-                  if (item.linkUrl.startsWith('http')) {
-                    window.open(item.linkUrl, '_blank');
-                  } else {
-                    window.location.href = mergeQueryParams(item.linkUrl, window.location.search);
-                  }
-                }
-              }}
-            />
-          </div>
+                }}
+              />
+            </div>
+          )
         )}
 
         {/* ── Wings of Strength Legends & Champions Slider ────── */}
@@ -788,119 +858,121 @@ export default function N2NHome({ wlConfig, categories, activeVideo, setActiveVi
           </Suspense>
         )}
 
-        {/* ── New Drop CTA Banner ─────────────────────────────── */}
-        <section style={{ maxWidth: '1400px', margin: '20px auto 40px', padding: '0 40px' }}>
-          <div className="banner-flex-container" style={{
-            position: 'relative', overflow: 'hidden',
-            display: 'flex', minHeight: '340px',
-            border: '1px solid rgba(255,255,255,0.06)',
-            background: '#000',
-          }}>
-            {/* Left — Image */}
-            <div className="banner-image-column" style={{
-              flex: '0 0 45%', position: 'relative', overflow: 'hidden',
+        {/* ── New Drop CTA Banner (disabled for KPLE since it is moved to the top) ── */}
+        {!isKple && (
+          <section style={{ maxWidth: '1400px', margin: '20px auto 40px', padding: '0 40px' }}>
+            <div className="banner-flex-container" style={{
+              position: 'relative', overflow: 'hidden',
+              display: 'flex', minHeight: '340px',
+              border: '1px solid rgba(255,255,255,0.06)',
+              background: '#000',
             }}>
-              {isOlympian || isMf || isVibe ? (
-                <iframe
-                  src="https://www.youtube.com/embed/njSC3gMfjjU?autoplay=1&mute=1&loop=1&playlist=njSC3gMfjjU&controls=0&showinfo=0&rel=0&start=56"
-                  title="Mr. Olympia Promo Video"
-                  style={{
-                    width: '100%',
-                    height: '100%',
-                    border: 'none',
-                    display: 'block',
-                    pointerEvents: 'none',
-                    transform: 'scale(1.35)',
-                    transformOrigin: 'center',
-                  }}
-                  allow="autoplay; encrypted-media; fullscreen"
-                />
-              ) : (
-                <img
-                  src={isMf ? "https://images.unsplash.com/photo-1541534741688-6078c6bfb5c5?auto=format&fit=crop&q=80&w=800" : isWings ? "/n2n/wings_rising_phoenix_poster.jpg" : (isB2K ? "https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?auto=format&fit=crop&q=80&w=800" : (isKple ? "https://images.unsplash.com/photo-1593113598332-cd288d649433?auto=format&fit=crop&q=80&w=800" : (isVibe100 ? "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?auto=format&fit=crop&q=80&w=800" : "https://shopavo.la/cdn/shop/files/bama-desk-hp-1_1500x.jpg?v=1774210820")))}
-                  alt={isMf ? "Workout Gear" : isWings ? "Wings Contest Event" : (isB2K ? "Official Tour Merch" : (isKple ? "Support CRN" : (isVibe100 ? "Official Merch" : "New Drop")))}
-                  style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
-                />
-              )}
-              <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to right, transparent 60%, #000 100%)' }} />
-              {/* NEW DROP / OFFICIAL GEAR pill */}
-              <div style={{
-                position: 'absolute', top: '24px', left: '24px',
-                padding: '6px 14px', background: accent, color: '#000',
-                fontSize: '10px', fontWeight: 900, letterSpacing: '2px', textTransform: 'uppercase',
+              {/* Left — Image */}
+              <div className="banner-image-column" style={{
+                flex: '0 0 45%', position: 'relative', overflow: 'hidden',
               }}>
-                {isOlympian || isVibe ? "Live Webcast" : isMf ? "Workout Gear" : isWings ? "Wings Contest" : (isB2K ? "Official Merch" : (isKple ? "Media Mission" : (isVibe100 ? "Exclusive Gear" : "New Drop")))}
-              </div>
-            </div>
-
-            {/* Right — Content */}
-            <div className="banner-text-column" style={{
-              flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center',
-              padding: '48px 48px 48px 32px', position: 'relative',
-            }}>
-              {/* Subtle accent glow */}
-              <div style={{
-                position: 'absolute', right: '-80px', top: '-40px',
-                width: '300px', height: '300px', borderRadius: '50%',
-                background: accent, filter: 'blur(120px)', opacity: 0.12,
-              }} />
-
-              <p style={{
-                fontSize: '13px', fontWeight: 800, textTransform: 'uppercase',
-                letterSpacing: '3px', color: accent, margin: '0 0 12px 0',
-              }}>
-                {isOlympian || isVibe ? "Olympia PPV Webcast" : isMf ? "Fitness Collection" : isWings ? "Wings of Strength" : (isB2K ? "Official Tour Merch" : (isKple ? "Support Our Mission" : (isVibe100 ? "VIBE 100 Store" : "Summer 2026 Collection")))}
-              </p>
-              <h2 style={{
-                fontSize: '44px', fontWeight: 900, color: '#fff', margin: '0 0 16px 0',
-                lineHeight: 1.15, letterSpacing: '-1px', textTransform: 'uppercase',
-              }}>
-                {isOlympian || isVibe ? (
-                  <>Watch Mr. Olympia<br />Live Webcast</>
-                ) : isMf ? (
-                  <>Muscle & Fitness<br />Training Guides</>
-                ) : isWings ? (
-                  <>Rising Phoenix<br />World Champions</>
+                {isOlympian || isMf || isVibe ? (
+                  <iframe
+                    src="https://www.youtube.com/embed/njSC3gMfjjU?autoplay=1&mute=1&loop=1&playlist=njSC3gMfjjU&controls=0&showinfo=0&rel=0&start=56"
+                    title="Mr. Olympia Promo Video"
+                    style={{
+                      width: '100%',
+                      height: '100%',
+                      border: 'none',
+                      display: 'block',
+                      pointerEvents: 'none',
+                      transform: 'scale(1.35)',
+                      transformOrigin: 'center',
+                    }}
+                    allow="autoplay; encrypted-media; fullscreen"
+                  />
                 ) : (
-                  isB2K ? (
-                    <>Millennium Tour<br />Official Merch</>
+                  <img
+                    src={isMf ? "https://images.unsplash.com/photo-1541534741688-6078c6bfb5c5?auto=format&fit=crop&q=80&w=800" : isWings ? "/n2n/wings_rising_phoenix_poster.jpg" : (isB2K ? "https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?auto=format&fit=crop&q=80&w=800" : (isKple ? "https://images.unsplash.com/photo-1593113598332-cd288d649433?auto=format&fit=crop&q=80&w=800" : (isVibe100 ? "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?auto=format&fit=crop&q=80&w=800" : "https://shopavo.la/cdn/shop/files/bama-desk-hp-1_1500x.jpg?v=1774210820")))}
+                    alt={isMf ? "Workout Gear" : isWings ? "Wings Contest Event" : (isB2K ? "Official Tour Merch" : (isKple ? "Support CRN" : (isVibe100 ? "Official Merch" : "New Drop")))}
+                    style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+                  />
+                )}
+                <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to right, transparent 60%, #000 100%)' }} />
+                {/* NEW DROP / OFFICIAL GEAR pill */}
+                <div style={{
+                  position: 'absolute', top: '24px', left: '24px',
+                  padding: '6px 14px', background: accent, color: '#000',
+                  fontSize: '10px', fontWeight: 900, letterSpacing: '2px', textTransform: 'uppercase',
+                }}>
+                  {isOlympian || isVibe ? "Live Webcast" : isMf ? "Workout Gear" : isWings ? "Wings Contest" : (isB2K ? "Official Merch" : (isKple ? "Media Mission" : (isVibe100 ? "Exclusive Gear" : "New Drop")))}
+                </div>
+              </div>
+
+              {/* Right — Content */}
+              <div className="banner-text-column" style={{
+                flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center',
+                padding: '48px 48px 48px 32px', position: 'relative',
+              }}>
+                {/* Subtle accent glow */}
+                <div style={{
+                  position: 'absolute', right: '-80px', top: '-40px',
+                  width: '300px', height: '300px', borderRadius: '50%',
+                  background: accent, filter: 'blur(120px)', opacity: 0.12,
+                }} />
+
+                <p style={{
+                  fontSize: '13px', fontWeight: 800, textTransform: 'uppercase',
+                  letterSpacing: '3px', color: accent, margin: '0 0 12px 0',
+                }}>
+                  {isOlympian || isVibe ? "Olympia PPV Webcast" : isMf ? "Fitness Collection" : isWings ? "Wings of Strength" : (isB2K ? "Official Tour Merch" : (isKple ? "Support Our Mission" : (isVibe100 ? "VIBE 100 Store" : "Summer 2026 Collection")))}
+                </p>
+                <h2 style={{
+                  fontSize: '44px', fontWeight: 900, color: '#fff', margin: '0 0 16px 0',
+                  lineHeight: 1.15, letterSpacing: '-1px', textTransform: 'uppercase',
+                }}>
+                  {isOlympian || isVibe ? (
+                    <>Watch Mr. Olympia<br />Live Webcast</>
+                  ) : isMf ? (
+                    <>Muscle & Fitness<br />Training Guides</>
+                  ) : isWings ? (
+                    <>Rising Phoenix<br />World Champions</>
                   ) : (
-                    isKple ? (
-                      <>Keep The Gospel<br />On The Air</>
+                    isB2K ? (
+                      <>Millennium Tour<br />Official Merch</>
                     ) : (
-                      isVibe100 ? (
-                        <>Network Official<br />Collection</>
+                      isKple ? (
+                        <>Keep The Gospel<br />On The Air</>
                       ) : (
-                        <>Game Day<br />Essentials</>
+                        isVibe100 ? (
+                          <>Network Official<br />Collection</>
+                        ) : (
+                          <>Game Day<br />Essentials</>
+                        )
                       )
                     )
-                  )
-                )}
-              </h2>
-              <p style={{
-                fontSize: '16px', color: 'rgba(255,255,255,0.7)', lineHeight: 1.7,
-                margin: '0 0 32px 0', maxWidth: '520px',
-              }}>
-                {isOlympian || isVibe ? "Experience the pinnacle of bodybuilding live from anywhere in the world. Subscribe to the official webcast to stream the 62nd Mr. Olympia pre-judging, finals, and exclusive backstage interviews live in high-definition." : isMf ? "Explore premium workouts, digital training guides, and high-performance activewear designed to take your fitness to the next level." : isWings ? "Experience the pinnacle of professional women's bodybuilding. Purchase official pay-per-view live streams, secure event tickets, and browse the official Alina Popa & Rising Phoenix championship collections." : (isB2K ? "Pre-order exclusive Boys 4 Life tour hoodies, vintage graphic tees, and autographed vinyl. Rep the legendary boy band reunion in style." : (isKple ? "The Christian Revival Network is a 501(c)3 non-profit media mission. Your donations help us broadcast the Gospel 24/7 to Central Texas and the world. Support our ministry today." : (isVibe100 ? "Explore premium merchandise, albums, and exclusive releases from all Top 100 networks. Shop official gear and support your favorite channels." : "Premium collegiate apparel for every school in the AVO family. Rep your team with style — new colorways and exclusive designs just dropped.")))}
-              </p>
-              <a
-                href={isOlympian || isVibe ? "https://www.olympiaproductions.com/" : (isWings ? "https://wingsofstrength.net/" : (isKple ? "https://www.paypal.com/donate/?hosted_button_id=A7WXAKZEAGBPA" : (isMf ? "https://www.muscleandfitness.com/" : ('/shop' + (typeof window !== 'undefined' ? window.location.search : '')))))}
-                target={isOlympian || isVibe || isWings || isKple || isMf ? "_blank" : "_self"}
-                style={{
-                  display: 'inline-block', padding: '15px 46px', fontSize: '13px', fontWeight: 800,
-                  textTransform: 'uppercase', letterSpacing: '2.5px', width: 'fit-content',
-                  background: 'transparent', color: '#fff',
-                  border: '1.5px solid #fff', textDecoration: 'none',
-                  transition: 'all 0.25s',
-                }}
-                onMouseOver={e => { e.currentTarget.style.background = '#fff'; e.currentTarget.style.color = '#000'; }}
-                onMouseOut={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = '#fff'; }}
-              >
-                {isOlympian || isVibe ? "Watch Webcast" : isMf ? "Shop Store" : isWings ? "Explore Shows" : (isB2K ? "Shop The Merch" : (isKple ? "Support Our Station" : (isVibe100 ? "Shop The Collection" : "Shop The Drop")))}
-              </a>
+                  )}
+                </h2>
+                <p style={{
+                  fontSize: '16px', color: 'rgba(255,255,255,0.7)', lineHeight: 1.7,
+                  margin: '0 0 32px 0', maxWidth: '520px',
+                }}>
+                  {isOlympian || isVibe ? "Experience the pinnacle of bodybuilding live from anywhere in the world. Subscribe to the official webcast to stream the 62nd Mr. Olympia pre-judging, finals, and exclusive backstage interviews live in high-definition." : isMf ? "Explore premium workouts, digital training guides, and high-performance activewear designed to take your fitness to the next level." : isWings ? "Experience the pinnacle of professional women's bodybuilding. Purchase official pay-per-view live streams, secure event tickets, and browse the official Alina Popa & Rising Phoenix championship collections." : (isB2K ? "Pre-order exclusive Boys 4 Life tour hoodies, vintage graphic tees, and autographed vinyl. Rep the legendary boy band reunion in style." : (isKple ? "The Christian Revival Network is a 501(c)3 non-profit media mission. Your donations help us broadcast the Gospel 24/7 to Central Texas and the world. Support our ministry today." : (isVibe100 ? "Explore premium merchandise, albums, and exclusive releases from all Top 100 networks. Shop official gear and support your favorite channels." : "Premium collegiate apparel for every school in the AVO family. Rep your team with style — new colorways and exclusive designs just dropped.")))}
+                </p>
+                <a
+                  href={isOlympian || isVibe ? "https://www.olympiaproductions.com/" : (isWings ? "https://wingsofstrength.net/" : (isKple ? "https://www.paypal.com/donate/?hosted_button_id=A7WXAKZEAGBPA" : (isMf ? "https://www.muscleandfitness.com/" : ('/shop' + (typeof window !== 'undefined' ? window.location.search : '')))))}
+                  target={isOlympian || isVibe || isWings || isKple || isMf ? "_blank" : "_self"}
+                  style={{
+                    display: 'inline-block', padding: '15px 46px', fontSize: '13px', fontWeight: 800,
+                    textTransform: 'uppercase', letterSpacing: '2.5px', width: 'fit-content',
+                    background: 'transparent', color: '#fff',
+                    border: '1.5px solid #fff', textDecoration: 'none',
+                    transition: 'all 0.25s',
+                  }}
+                  onMouseOver={e => { e.currentTarget.style.background = '#fff'; e.currentTarget.style.color = '#000'; }}
+                  onMouseOut={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = '#fff'; }}
+                >
+                  {isOlympian || isVibe ? "Watch Webcast" : isMf ? "Shop Store" : isWings ? "Explore Shows" : (isB2K ? "Shop The Merch" : (isKple ? "Support Our Station" : (isVibe100 ? "Shop The Collection" : "Shop The Drop")))}
+                </a>
+              </div>
             </div>
-          </div>
-        </section>
+          </section>
+        )}
 
         {/* ── AVO Campus Athletes / KPLE Channel Profiles Slider ──────────────────────── */}
         {((isAvo || isKple) && athleteItems.length > 0) && (

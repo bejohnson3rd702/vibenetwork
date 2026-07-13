@@ -82,8 +82,7 @@ export function normalizeWlConfig(
   const theme = {
     ...(raw?.theme || {}),
     ...(isKpleParent ? {
-      heroCopy: 'Christian Revival Network — Come All Revival. Class A Christian Broadcasting.',
-      logoImage: 'https://fimzetmvrmbmdggvqzpr.supabase.co/storage/v1/object/public/images/whitelabel/kple_logo_1782369339776.png'
+      heroCopy: 'Christian Revival Network — Come All Revival. Class A Christian Broadcasting.'
     } : {}),
     ...(isOlympian ? {
       heroCopy: "Joe Weider's Mr. Olympia Fitness & Performance Weekend — The Pinnacle of Bodybuilding.",
@@ -122,7 +121,6 @@ export function normalizeWlConfig(
 
   if (isKpleParent) {
     base.name = 'Christian Revival Network';
-    base.logoImage = 'https://fimzetmvrmbmdggvqzpr.supabase.co/storage/v1/object/public/images/whitelabel/kple_logo_1782369339776.png';
     base.heroCopy = 'Christian Revival Network — Come All Revival. Class A Christian Broadcasting.';
   }
 
