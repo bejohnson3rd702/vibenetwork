@@ -58,11 +58,15 @@ export const BrandingTab = ({ wlConfig }: { wlConfig: any }) => {
       if (wlConfig.id === 'master') {
         const { data: existing } = await supabase.from('whitelabel_configs').select('id, theme').eq('domain', 'vibenetwork.tv').limit(1);
         if (existing && existing.length > 0) {
-          const { error } = await supabase.from('whitelabel_configs').update({
-            logo: logoImage,
-            accent: accentColor,
-            theme: { ...(existing[0].theme || {}), accent: accentColor, faviconImage: faviconImage, defaultBio }
-          }).eq('id', existing[0].id);
+          const mergedTheme = { ...(existing[0].theme || {}), accent: accentColor, faviconImage: faviconImage, defaultBio };
+          const sql = `
+            UPDATE public.whitelabel_configs
+            SET logo = '${logoImage}',
+                accent = '${accentColor}',
+                theme = '${JSON.stringify(mergedTheme).replace(/'/g, "''")}'::jsonb
+            WHERE id = '${existing[0].id}';
+          `;
+          const { error } = await supabase.rpc('execute_sql', { sql });
           if (error) throw error;
         } else {
           const { error } = await supabase.from('whitelabel_configs').insert([{
@@ -75,11 +79,15 @@ export const BrandingTab = ({ wlConfig }: { wlConfig: any }) => {
           if (error) throw error;
         }
       } else {
-        const { error } = await supabase.from('whitelabel_configs').update({
-          logo: logoImage,
-          accent: accentColor,
-          theme: { ...wlConfig.theme, accent: accentColor, faviconImage: faviconImage, defaultBio }
-        }).eq('id', wlConfig.id);
+        const mergedTheme = { ...wlConfig.theme, accent: accentColor, faviconImage: faviconImage, defaultBio };
+        const sql = `
+          UPDATE public.whitelabel_configs
+          SET logo = '${logoImage}',
+              accent = '${accentColor}',
+              theme = '${JSON.stringify(mergedTheme).replace(/'/g, "''")}'::jsonb
+          WHERE id = '${wlConfig.id}';
+        `;
+        const { error } = await supabase.rpc('execute_sql', { sql });
         if (error) throw error;
       }
       
