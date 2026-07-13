@@ -26,9 +26,20 @@ export const VideosTab = ({ wlConfig }: { wlConfig: any }) => {
   const loadData = async (userId: string) => {
     setLoading(true);
     try {
+      let videosQuery = supabase
+        .from('videos')
+        .select('*, categories(title)')
+        .order('created_at', { ascending: false });
+
+      if (wlConfig?.id && wlConfig.id !== 'master') {
+        videosQuery = videosQuery.eq('whitelabel_id', wlConfig.id);
+      } else {
+        videosQuery = videosQuery.eq('creator_id', userId);
+      }
+
       const [catResult, vidResult] = await Promise.all([
         supabase.from('categories').select('*').order('title', { ascending: true }),
-        supabase.from('videos').select('*, categories(title)').eq('creator_id', userId).order('created_at', { ascending: false })
+        videosQuery
       ]);
 
       if (catResult.data) {
@@ -105,6 +116,7 @@ export const VideosTab = ({ wlConfig }: { wlConfig: any }) => {
         image_url: imageUrl.trim() || 'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?auto=format&fit=crop&q=80&w=800',
         category_id: categoryId,
         creator_id: currentUser.id,
+        whitelabel_id: wlConfig?.id && wlConfig.id !== 'master' ? wlConfig.id : null,
         tags: ['Custom', wlConfig?.name || 'White Label']
       };
 

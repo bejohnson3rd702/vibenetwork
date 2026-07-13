@@ -133,23 +133,12 @@ export async function getCategoriesWithVideos(tenantId?: string) {
   // Dynamically load custom categories and their assigned videos using an optimized join
   let categoriesQuery = supabase
     .from('categories')
-    .select('*, videos(id, title, image_url, tags, video_url, creator:profiles!inner(whitelabel_id))');
+    .select('*, videos(id, title, image_url, tags, video_url, whitelabel_id)');
 
   if (tenantId) {
-    const fetchIds = [tenantId];
-    const { data: tenantConfig } = await supabase
-      .from('whitelabel_configs')
-      .select('parent_network_id')
-      .eq('id', tenantId)
-      .maybeSingle();
-
-    if (tenantConfig?.parent_network_id) {
-      fetchIds.push(tenantConfig.parent_network_id);
-    }
-
-    categoriesQuery = categoriesQuery.in('videos.creator.whitelabel_id', fetchIds);
+    categoriesQuery = categoriesQuery.eq('videos.whitelabel_id', tenantId);
   } else {
-    categoriesQuery = categoriesQuery.is('videos.creator.whitelabel_id', null);
+    categoriesQuery = categoriesQuery.is('videos.whitelabel_id', null);
   }
 
   const { data: dbCategories } = await categoriesQuery.limit(10); // Limit to top 10 custom categories to prevent massive payload sizes
