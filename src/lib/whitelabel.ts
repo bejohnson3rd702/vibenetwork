@@ -99,7 +99,7 @@ export function normalizeWlConfig(
     btnPrimary: theme.btnPrimary || raw?.btnPrimary || 'Explore Content',
     sliderCount: theme.sliderCount || raw?.sliderCount || 4,
     customSections: theme.customSections || raw?.customSections || '',
-    heroImage: theme.heroImage || raw?.heroImage || null,
+    heroImage: theme.heroImage !== undefined ? theme.heroImage : (raw?.heroImage !== undefined ? raw.heroImage : null),
     logoImage: raw?.logo || theme.logoImage || raw?.logoImage || null,
     contactEmail: theme.contactEmail || raw?.contactEmail,
     contactPhone: theme.contactPhone || raw?.contactPhone,

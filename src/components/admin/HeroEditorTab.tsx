@@ -16,7 +16,11 @@ export const HeroEditorTab = ({ wlConfig }: { wlConfig: any }) => {
   const [heroLayoutMode, setHeroLayoutMode] = useState<'verbiage' | 'video' | 'slider'>(wlConfig?.theme?.heroLayoutMode || wlConfig?.heroLayoutMode || 'verbiage');
   const [heroVideoUrl, setHeroVideoUrl] = useState(wlConfig?.theme?.heroVideoUrl || wlConfig?.heroVideoUrl || '');
   const [heroVideoTitle, setHeroVideoTitle] = useState(wlConfig?.theme?.heroVideoTitle || wlConfig?.heroVideoTitle || '');
-  const [heroImage, setHeroImage] = useState(wlConfig?.theme?.heroImage || wlConfig?.heroImage || ASSETS.heroMain || '');
+  const [heroImage, setHeroImage] = useState(
+    wlConfig?.theme?.heroImage !== undefined
+      ? wlConfig.theme.heroImage
+      : (wlConfig?.heroImage !== undefined ? wlConfig.heroImage : (ASSETS.heroMain || ''))
+  );
   const [uploadingHeroVideo, setUploadingHeroVideo] = useState(false);
   const [uploadingHeroImage, setUploadingHeroImage] = useState(false);
   const [uploadStatus, setUploadStatus] = useState<string | null>(null);
