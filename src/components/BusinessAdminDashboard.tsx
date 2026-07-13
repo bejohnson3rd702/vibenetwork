@@ -23,6 +23,8 @@ export default function BusinessAdminDashboard({ onClose }: { onClose: () => voi
   const { wlConfig } = useWhiteLabel();
   const [activeTab, setActiveTab] = useState('analytics');
 
+  const isGodsMode = new URLSearchParams(window.location.search).get('godsMode') === 'true' || localStorage.getItem('vibe_gods_mode') === 'true';
+
   return (
      <div style={{ position: 'fixed', inset: 0, background: 'var(--content-bg)', color: 'var(--text-primary)', zIndex: 999999, display: 'flex', flexDirection: 'column' }}>
        {/* Header */}
@@ -65,21 +67,25 @@ export default function BusinessAdminDashboard({ onClose }: { onClose: () => voi
              </button>
              */}
 
-             <button onClick={() => setActiveTab('pages')} style={{ padding: '16px 20px', background: activeTab === 'pages' ? wlConfig.accent : 'transparent', color: activeTab === 'pages' ? '#fff' : '#888', border: 'none', borderRadius: '12px', display: 'flex', alignItems: 'center', gap: '16px', cursor: 'pointer', textAlign: 'left', fontWeight: 'bold', fontSize: '15px', transition: '0.2s' }}>
-                <Layout size={22} /> About & Custom Hubs
-             </button>
+             {isGodsMode && (
+               <>
+                 <button onClick={() => setActiveTab('pages')} style={{ padding: '16px 20px', background: activeTab === 'pages' ? wlConfig.accent : 'transparent', color: activeTab === 'pages' ? '#fff' : '#888', border: 'none', borderRadius: '12px', display: 'flex', alignItems: 'center', gap: '16px', cursor: 'pointer', textAlign: 'left', fontWeight: 'bold', fontSize: '15px', transition: '0.2s' }}>
+                    <Layout size={22} /> About & Custom Hubs
+                 </button>
 
-             <button onClick={() => setActiveTab('inbox')} style={{ padding: '16px 20px', background: activeTab === 'inbox' ? wlConfig.accent : 'transparent', color: activeTab === 'inbox' ? '#fff' : '#888', border: 'none', borderRadius: '12px', display: 'flex', alignItems: 'center', gap: '16px', cursor: 'pointer', textAlign: 'left', fontWeight: 'bold', fontSize: '15px', transition: '0.2s' }}>
-                <Mail size={22} /> Ingest Leads (Inbox)
-             </button>
+                 <button onClick={() => setActiveTab('inbox')} style={{ padding: '16px 20px', background: activeTab === 'inbox' ? wlConfig.accent : 'transparent', color: activeTab === 'inbox' ? '#fff' : '#888', border: 'none', borderRadius: '12px', display: 'flex', alignItems: 'center', gap: '16px', cursor: 'pointer', textAlign: 'left', fontWeight: 'bold', fontSize: '15px', transition: '0.2s' }}>
+                    <Mail size={22} /> Ingest Leads (Inbox)
+                 </button>
 
-             <button onClick={() => setActiveTab('enterprise-ai')} style={{ padding: '16px 20px', background: activeTab === 'enterprise-ai' ? wlConfig.accent : 'transparent', color: activeTab === 'enterprise-ai' ? '#fff' : '#888', border: 'none', borderRadius: '12px', display: 'flex', alignItems: 'center', gap: '16px', cursor: 'pointer', textAlign: 'left', fontWeight: 'bold', fontSize: '15px', transition: '0.2s' }}>
-                <Brain size={22} /> Enterprise AI (NaluAsk)
-             </button>
+                 <button onClick={() => setActiveTab('enterprise-ai')} style={{ padding: '16px 20px', background: activeTab === 'enterprise-ai' ? wlConfig.accent : 'transparent', color: activeTab === 'enterprise-ai' ? '#fff' : '#888', border: 'none', borderRadius: '12px', display: 'flex', alignItems: 'center', gap: '16px', cursor: 'pointer', textAlign: 'left', fontWeight: 'bold', fontSize: '15px', transition: '0.2s' }}>
+                    <Brain size={22} /> Enterprise AI (NaluAsk)
+                 </button>
 
-             <button onClick={() => setActiveTab('translation')} style={{ padding: '16px 20px', background: activeTab === 'translation' ? wlConfig.accent : 'transparent', color: activeTab === 'translation' ? '#fff' : '#888', border: 'none', borderRadius: '12px', display: 'flex', alignItems: 'center', gap: '16px', cursor: 'pointer', textAlign: 'left', fontWeight: 'bold', fontSize: '15px', transition: '0.2s' }}>
-                <Languages size={22} /> WWTC Translation
-             </button>
+                 <button onClick={() => setActiveTab('translation')} style={{ padding: '16px 20px', background: activeTab === 'translation' ? wlConfig.accent : 'transparent', color: activeTab === 'translation' ? '#fff' : '#888', border: 'none', borderRadius: '12px', display: 'flex', alignItems: 'center', gap: '16px', cursor: 'pointer', textAlign: 'left', fontWeight: 'bold', fontSize: '15px', transition: '0.2s' }}>
+                    <Languages size={22} /> WWTC Translation
+                 </button>
+               </>
+             )}
 
              <div style={{ height: '1px', background: 'rgba(255,255,255,0.05)', margin: '10px 0' }} />
 
