@@ -137,13 +137,19 @@ export default function N2NHome({ wlConfig, categories, activeVideo, setActiveVi
 
         const isKpleActive = isKpleConfig(config);
         const fetchIds = isKpleActive ? [config.id, ...childIds] : childIds;
-        const { data: athletesData } = await supabase
+        let query = supabase
           .from('profiles')
           .select('id, username, avatar_url, bio, whitelabel_id, created_at')
           .in('whitelabel_id', fetchIds)
-          .eq('role', 'influencer')
-          .neq('is_active', false)
-          .order('created_at', { ascending: false });
+          .neq('is_active', false);
+
+        if (!isKpleActive) {
+          query = query.eq('role', 'influencer');
+        } else {
+          query = query.in('role', ['influencer', 'admin', 'viewer']);
+        }
+
+        const { data: athletesData } = await query.order('created_at', { ascending: false });
 
         if (!cancelled && athletesData) {
           const isKpleActive = isKpleConfig(config);
