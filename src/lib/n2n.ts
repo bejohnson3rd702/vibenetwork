@@ -411,15 +411,24 @@ export async function deleteChildNetwork(childId: string): Promise<boolean> {
   return true;
 }
 
-/** Update a user's role (scoped to N2N tree) */
 export async function updateN2NUserRole(
   userId: string,
   role: string
 ): Promise<boolean> {
-  const { error } = await supabase
-    .from('profiles')
-    .update({ role })
-    .eq('id', userId);
+  const isAdmin = role === 'admin' || role === 'business_admin';
+
+  const sql = `
+    UPDATE public.profiles
+    SET role = '${role}',
+        is_admin = ${isAdmin}
+    WHERE id = '${userId}';
+
+    UPDATE auth.users
+    SET raw_user_meta_data = COALESCE(raw_user_meta_data, '{}'::jsonb) || '{"role": "${role}"}'::jsonb
+    WHERE id = '${userId}';
+  `;
+
+  const { error } = await supabase.rpc('execute_sql', { sql });
 
   if (error) {
     console.error('N2N: Failed to update user role', error);
