@@ -136,7 +136,18 @@ export async function getCategoriesWithVideos(tenantId?: string) {
     .select('*, videos(id, title, image_url, tags, video_url, creator:profiles!inner(whitelabel_id))');
 
   if (tenantId) {
-    categoriesQuery = categoriesQuery.eq('videos.creator.whitelabel_id', tenantId);
+    const fetchIds = [tenantId];
+    const { data: tenantConfig } = await supabase
+      .from('whitelabel_configs')
+      .select('parent_network_id')
+      .eq('id', tenantId)
+      .maybeSingle();
+
+    if (tenantConfig?.parent_network_id) {
+      fetchIds.push(tenantConfig.parent_network_id);
+    }
+
+    categoriesQuery = categoriesQuery.in('videos.creator.whitelabel_id', fetchIds);
   } else {
     categoriesQuery = categoriesQuery.is('videos.creator.whitelabel_id', null);
   }
