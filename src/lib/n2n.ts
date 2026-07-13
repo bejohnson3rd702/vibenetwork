@@ -440,10 +440,13 @@ export async function updateN2NUserActive(
   userId: string,
   isActive: boolean
 ): Promise<boolean> {
-  const { error } = await supabase
-    .from('profiles')
-    .update({ is_active: isActive })
-    .eq('id', userId);
+  const sql = `
+    UPDATE public.profiles
+    SET is_active = ${isActive}
+    WHERE id = '${userId}';
+  `;
+
+  const { error } = await supabase.rpc('execute_sql', { sql });
 
   if (error) {
     console.error('N2N: Failed to update user active status', error);
