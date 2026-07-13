@@ -175,14 +175,12 @@ export async function getN2NNetworkIds(parentId: string): Promise<string[]> {
 
 // ─── Profile Queries ─────────────────────────────────────────────
 
-/** Fetch profiles across the entire N2N tree */
 export async function getN2NProfiles(parentId: string): Promise<any[]> {
   const networkIds = await getN2NNetworkIds(parentId);
   const { data, error } = await supabase
     .from('profiles')
     .select('*')
     .in('whitelabel_id', networkIds)
-    .neq('is_active', false)
     .order('created_at', { ascending: false })
     .limit(100);
 
