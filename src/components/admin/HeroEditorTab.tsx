@@ -833,7 +833,11 @@ export const HeroEditorTab = ({ wlConfig }: { wlConfig: any }) => {
                         <input 
                           type="text" 
                           value={slideButtonLink} 
-                          onChange={(e) => setSlideButtonLink(e.target.value)} 
+                          onChange={(e) => {
+                            let val = e.target.value;
+                            val = val.replace(/(https?:\/\/)(https?:\/\/)/gi, '$1');
+                            setSlideButtonLink(val);
+                          }} 
                           placeholder="e.g. /shop or https://..." 
                           style={{ 
                             width: '100%', 
@@ -1001,7 +1005,7 @@ export const HeroEditorTab = ({ wlConfig }: { wlConfig: any }) => {
                       imageUrl: slideImageUrl,
                       videoUrl: slideVideoUrl || '',
                       buttonText: slideButtonText || '',
-                      buttonLink: slideButtonLink || ''
+                      buttonLink: (slideButtonLink || '').replace(/(https?:\/\/)(https?:\/\/)/gi, '$1')
                     };
                     if (editingSlideId === 'new') {
                       setHeroSlider([...heroSlider, newSlide]);
