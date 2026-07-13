@@ -42,6 +42,21 @@ import { X } from 'lucide-react';
 
 
 
+function checkIsMasterHost(hostname: string): boolean {
+  return (
+    hostname === 'localhost' ||
+    hostname === '127.0.0.1' ||
+    hostname.startsWith('192.168.') ||
+    hostname.startsWith('10.') ||
+    hostname.startsWith('172.') ||
+    hostname.endsWith('.local') ||
+    hostname === MASTER_DOMAIN ||
+    hostname === 'vibenetwork.com' ||
+    hostname === 'vibenetwork.tv' ||
+    hostname.includes('vercel.app')
+  );
+}
+
 function App() {
 
   const location = useLocation();
@@ -58,7 +73,7 @@ function App() {
   const [isTenantMode, setIsTenantMode] = useState(() => {
     const hostname = window.location.hostname.replace(/^www\./, '');
     const params = new URLSearchParams(window.location.search);
-    const isMaster = hostname === 'localhost' || hostname === '127.0.0.1' || hostname === MASTER_DOMAIN || hostname === 'vibenetwork.com' || hostname === 'vibenetwork.tv' || hostname.includes('vercel.app');
+    const isMaster = checkIsMasterHost(hostname);
     return params.has('tenant') || !isMaster;
   });
   const [showAdminPanel, setShowAdminPanel] = useState(() => {
@@ -344,7 +359,7 @@ function App() {
           console.warn('Could not retrieve session for tenant resolution', authErr);
         }
 
-        const isMaster = hostname === 'localhost' || hostname === '127.0.0.1' || hostname === MASTER_DOMAIN || hostname === 'vibenetwork.com' || hostname === 'vibenetwork.tv' || hostname.includes('vercel.app');
+        const isMaster = checkIsMasterHost(hostname);
         const activeTenantId = forceTenant || (isMaster ? null : userWlId);
         
         let configPromise;
