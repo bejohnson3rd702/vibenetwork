@@ -344,8 +344,8 @@ function App() {
           console.warn('Could not retrieve session for tenant resolution', authErr);
         }
 
-        const activeTenantId = forceTenant || userWlId;
         const isMaster = hostname === 'localhost' || hostname === '127.0.0.1' || hostname === MASTER_DOMAIN || hostname === 'vibenetwork.com' || hostname === 'vibenetwork.tv' || hostname.includes('vercel.app');
+        const activeTenantId = forceTenant || (isMaster ? null : userWlId);
         
         let configPromise;
         let categoriesPromise;
