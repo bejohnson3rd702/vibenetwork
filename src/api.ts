@@ -29,6 +29,7 @@ export async function getCategoriesWithVideos(tenantId?: string) {
   const whitelabels = whitelabelsResult.data || [];
 
   const APPROVED_N2N_PARENT_IDS = [
+    'b0ea0000-c08f-4260-8540-a0cc8bed4e11', // Bonaire Chamber of Commerce
     'e5c100aa-c08f-4260-8540-a0cc8bed4e11', // VIBE 100
     '3915f1e5-4c79-4b2a-ad41-7029ce8052d7', // AVO NETWORK
     '4d16dae7-518d-440e-bb21-b6f3a7cfcd64', // B2K Network
@@ -87,9 +88,13 @@ export async function getCategoriesWithVideos(tenantId?: string) {
     };
   });
 
-  // Sort VIBE 100 to the top of the list
+  // Sort Bonaire Chamber of Commerce to the absolute top, and VIBE 100 next
   mappedNetworks.sort((a: any, b: any) => {
+    const bonaireId = 'wl_b0ea0000-c08f-4260-8540-a0cc8bed4e11';
     const vibe100Id = 'wl_e5c100aa-c08f-4260-8540-a0cc8bed4e11';
+    
+    if (a.id === bonaireId) return -1;
+    if (b.id === bonaireId) return 1;
     if (a.id === vibe100Id) return -1;
     if (b.id === vibe100Id) return 1;
     return 0;
