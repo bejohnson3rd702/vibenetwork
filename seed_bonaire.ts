@@ -23,7 +23,7 @@ const BONAIRE_PARENT_THEME = {
   accent: '#00A3E0',
   heroCopy: 'Welcome to the Bonaire Chamber of Commerce N2N Network. Supporting local businesses, encouraging commerce, and showcasing Bonaire\'s premier shops online.',
   heroImage: 'https://images.unsplash.com/photo-1544551763-46a013bb70d5?auto=format&fit=crop&q=80&w=1200',
-  logoImage: 'https://bonairechamber.com/wp-content/uploads/2019/09/Logo-Kamer-van-Koophandel-Kvk-Bonaire-Chamber-of-Commerce-300x120.png',
+  logoImage: '/n2n/kvk_bonaire_logo.png',
   enableWatchLive: true,
   enableBooking: true,
   heroLayoutMode: 'verbiage',
@@ -199,7 +199,7 @@ async function run() {
       '${BONAIRE_PARENT_ID}',
       $$Bonaire Chamber of Commerce$$,
       $$bonairechamber.vibenetwork.tv$$,
-      $$https://bonairechamber.com/wp-content/uploads/2019/09/Logo-Kamer-van-Koophandel-Kvk-Bonaire-Chamber-of-Commerce-300x120.png$$,
+      $$/n2n/kvk_bonaire_logo.png$$,
       15.00,
       true,
       $$${JSON.stringify(BONAIRE_PARENT_THEME)}$$::jsonb
