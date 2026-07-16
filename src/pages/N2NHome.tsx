@@ -87,6 +87,7 @@ export default function N2NHome({ wlConfig, categories, activeVideo, setActiveVi
   const [athleteItems, setAthleteItems] = useState<any[]>([]);
   const [isAmbassadorOpen, setIsAmbassadorOpen] = useState(false);
   const [isHoodieVoteOpen, setIsHoodieVoteOpen] = useState(false);
+  const [activeNews, setActiveNews] = useState<any>(null);
 
   useEffect(() => {
     if (!config?.id) return;
@@ -1497,21 +1498,33 @@ export default function N2NHome({ wlConfig, categories, activeVideo, setActiveVi
                   date: 'July 15, 2026',
                   summary: 'New protective guidelines and expanded coral nurseries are implemented across Kralendijk reefs to support marine biodiversity and dive tourism.',
                   image: 'https://images.unsplash.com/photo-1544551763-46a013bb70d5?auto=format&fit=crop&q=80&w=600',
-                  link: 'https://stinapabonaire.org/'
+                  paragraphs: [
+                    "The National Parks Foundation Bonaire (STINAPA) has officially launched an expansion of its coral restoration nurseries along the west coast of Bonaire and Klein Bonaire. The initiative aims to propagate over 10,000 new coral colonies, specifically targeting staghorn and elkhorn species, which are critical for reef structure and biodiversity.",
+                    "In partnership with local dive operators, STINAPA has established three new nursery zones. These areas will be protected under temporary anchoring and entry restrictions to ensure the young coral fragments can mature undisturbed. Dive merchants are volunteering as nursery monitors, helping clean algae from the trees and transplanting healthy fragments back onto the degraded house reefs.",
+                    "Dive tourists visiting Bonaire are encouraged to participate in Reef Renewal courses offered by certified local shops, where they can learn how to assist in coral maintenance and contribute directly to preserving Bonaire's world-famous marine ecosystem."
+                  ]
                 },
                 {
                   title: 'Chamber Announces 2026 Sustainable Business Finalists',
                   date: 'July 10, 2026',
                   summary: 'The Bonaire Chamber of Commerce (KvK) has released the shortlist of local merchants recognized for outstanding environmental practices.',
                   image: 'https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?auto=format&fit=crop&q=80&w=600',
-                  link: 'https://bonairechamber.com/'
+                  paragraphs: [
+                    "The Bonaire Chamber of Commerce (Kamer van Koophandel) has unveiled the official shortlist of local merchants nominated for the 2026 Sustainable Commerce Awards. This annual recognition honors businesses that have integrated environmental sustainability, social responsibility, and carbon reduction into their daily operations.",
+                    "This year's finalists represent a diverse mix of sectors, from eco-tourism operators using electric boats to local craft distilleries powered by solar energy. The Chamber highlighted that sustainable tourism and trade are vital for Bonaire's long-term economic resilience, given the island's sensitive ecological footprint.",
+                    "The winners will be announced during a live ceremony at the KvK headquarters in Kralendijk next month. The selected merchants will receive commercial grants, marketing packages, and the official KvK Green Ribbon seal of approval to display on their shopfronts and digital storefronts."
+                  ]
                 },
                 {
                   title: 'Direct Airline Routes to Flamingo Airport Expanding',
                   date: 'July 05, 2026',
                   summary: 'New direct seasonal flights from North American hubs are set to launch this winter, easing travel and boosting island commercial trade.',
                   image: 'https://images.unsplash.com/photo-1436491865332-7a61a109cc05?auto=format&fit=crop&q=80&w=600',
-                  link: 'https://www.bonaireisland.com/'
+                  paragraphs: [
+                    "Flamingo International Airport (BON) in Kralendijk is set to undergo a major winter flight schedule expansion. Leading airlines have confirmed new direct, non-stop seasonal flights connecting Bonaire to major North American transit hubs including Miami, Atlanta, and Charlotte.",
+                    "The airport authority confirmed that airport upgrades completed earlier this year—including runway resurfacing and modernized customs processing lanes—were crucial in securing these agreements. The increased flight frequency is expected to boost winter tourism arrivals by 18% and ease transport routes for local export businesses.",
+                    "Local tourism associations and chamber members welcomed the news, stating that direct routes make the island significantly more accessible to international trade partners and tourists, reducing layovers in Curaçao or Aruba and bringing direct economic growth to the island."
+                  ]
                 }
               ].map((item, idx) => (
                 <div 
@@ -1534,7 +1547,7 @@ export default function N2NHome({ wlConfig, categories, activeVideo, setActiveVi
                     e.currentTarget.style.transform = 'translateY(0)';
                     e.currentTarget.style.borderColor = 'rgba(255,255,255,0.06)';
                   }}
-                  onClick={() => window.open(item.link, '_blank')}
+                  onClick={() => setActiveNews(item)}
                 >
                   <div style={{ width: '100%', aspectRatio: '16/10', backgroundImage: `url(${item.image})`, backgroundSize: 'cover', backgroundPosition: 'center' }} />
                   <div style={{ padding: '24px', display: 'flex', flexDirection: 'column', flex: 1 }}>
@@ -1880,6 +1893,130 @@ export default function N2NHome({ wlConfig, categories, activeVideo, setActiveVi
                     {tag}
                   </span>
                 ))}
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* ── Bonaire News Reader Modal ──────────────────────────── */}
+      <AnimatePresence>
+        {activeNews && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => setActiveNews(null)}
+            style={{
+              position: 'fixed',
+              inset: 0,
+              zIndex: 99999,
+              background: 'rgba(5, 5, 5, 0.75)',
+              backdropFilter: 'blur(30px)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              padding: '24px',
+              boxSizing: 'border-box'
+            }}
+          >
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 20 }}
+              transition={{ type: 'spring', damping: 25, stiffness: 200 }}
+              onClick={(e) => e.stopPropagation()}
+              style={{
+                background: 'rgba(20, 20, 20, 0.85)',
+                border: '1px solid rgba(255,255,255,0.1)',
+                borderRadius: '32px',
+                width: '100%',
+                maxWidth: '750px',
+                maxHeight: '90vh',
+                overflowY: 'auto',
+                boxShadow: '0 30px 60px rgba(0,0,0,0.8)',
+                position: 'relative',
+                display: 'flex',
+                flexDirection: 'column'
+              }}
+            >
+              {/* Header Image */}
+              <div 
+                style={{ 
+                  width: '100%', 
+                  aspectRatio: '16/8', 
+                  backgroundImage: `url(${activeNews.image})`, 
+                  backgroundSize: 'cover', 
+                  backgroundPosition: 'center',
+                  position: 'relative'
+                }}
+              >
+                {/* Close Button */}
+                <button
+                  onClick={() => setActiveNews(null)}
+                  style={{
+                    position: 'absolute',
+                    top: '24px',
+                    right: '24px',
+                    background: 'rgba(0, 0, 0, 0.6)',
+                    backdropFilter: 'blur(10px)',
+                    border: 'none',
+                    color: 'white',
+                    width: '40px',
+                    height: '40px',
+                    borderRadius: '50%',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    cursor: 'pointer',
+                    transition: 'transform 0.2s',
+                    boxShadow: '0 4px 12px rgba(0,0,0,0.3)'
+                  }}
+                  onMouseOver={(e) => e.currentTarget.style.transform = 'scale(1.1)'}
+                  onMouseOut={(e) => e.currentTarget.style.transform = 'scale(1)'}
+                >
+                  <X size={18} />
+                </button>
+              </div>
+
+              {/* Body Content */}
+              <div style={{ padding: '40px' }}>
+                <span style={{ fontSize: '12px', color: accent, fontWeight: 900, textTransform: 'uppercase', letterSpacing: '2px', display: 'block', marginBottom: '12px' }}>
+                  {activeNews.date} • LOCAL NEWS
+                </span>
+                
+                <h2 style={{ fontSize: '28px', fontWeight: 900, margin: '0 0 24px 0', color: '#fff', lineHeight: 1.25, letterSpacing: '-0.5px' }}>
+                  {activeNews.title}
+                </h2>
+
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                  {activeNews.paragraphs && activeNews.paragraphs.map((p: string, idx: number) => (
+                    <p key={idx} style={{ fontSize: '16px', color: 'rgba(255,255,255,0.75)', lineHeight: 1.8, margin: 0 }}>
+                      {p}
+                    </p>
+                  ))}
+                </div>
+
+                <div style={{ marginTop: '40px', borderTop: '1px solid rgba(255,255,255,0.06)', paddingTop: '24px', display: 'flex', justifyContent: 'flex-end' }}>
+                  <button
+                    onClick={() => setActiveNews(null)}
+                    style={{
+                      background: 'white',
+                      color: 'black',
+                      border: 'none',
+                      padding: '12px 28px',
+                      borderRadius: '12px',
+                      fontWeight: 'bold',
+                      fontSize: '14px',
+                      cursor: 'pointer',
+                      transition: 'transform 0.2s'
+                    }}
+                    onMouseOver={(e) => e.currentTarget.style.transform = 'scale(1.05)'}
+                    onMouseOut={(e) => e.currentTarget.style.transform = 'scale(1)'}
+                  >
+                    Done Reading
+                  </button>
+                </div>
               </div>
             </motion.div>
           </motion.div>
