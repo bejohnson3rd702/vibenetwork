@@ -3295,7 +3295,7 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
               </div>
 
               <div className="profile-info-col" style={{ flex: 1, minWidth: '300px' }}>
-                <h1 className="profile-title" style={{ fontSize: '48px', fontWeight: 900, margin: '0 0 16px 0', letterSpacing: '-1px', textShadow: '0 4px 20px rgba(0,0,0,0.5)' }}>{profile.username || 'Anonymous Creator'}</h1>
+                <h1 className="profile-title" style={{ fontSize: '48px', fontWeight: 900, margin: '0 0 16px 0', letterSpacing: '-1px', textShadow: '0 4px 20px rgba(0,0,0,0.5)', overflowWrap: 'break-word', wordBreak: 'break-word' }}>{profile.username || 'Anonymous Creator'}</h1>
                 
                 {isInfluencer ? (
                   <>
