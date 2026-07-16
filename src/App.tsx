@@ -519,6 +519,30 @@ function App() {
     initPlatform();
   }, [tenantParam]);
 
+  // Disable right-click and DevTools inspect hotkeys in production
+  useEffect(() => {
+    if (import.meta.env.PROD) {
+      const handleContextMenu = (e: MouseEvent) => e.preventDefault();
+      const handleKeyDown = (e: KeyboardEvent) => {
+        if (
+          e.key === 'F12' ||
+          ((e.ctrlKey || e.metaKey) && e.shiftKey && (e.key === 'i' || e.key === 'j' || e.key === 'c' || e.key === 'I' || e.key === 'J' || e.key === 'C')) ||
+          ((e.ctrlKey || e.metaKey) && (e.key === 'u' || e.key === 'U'))
+        ) {
+          e.preventDefault();
+        }
+      };
+
+      document.addEventListener('contextmenu', handleContextMenu);
+      document.addEventListener('keydown', handleKeyDown);
+
+      return () => {
+        document.removeEventListener('contextmenu', handleContextMenu);
+        document.removeEventListener('keydown', handleKeyDown);
+      };
+    }
+  }, []);
+
   useEffect(() => {
     if (wlConfig) {
       if (wlConfig.accent) {
