@@ -59,6 +59,13 @@ const BONAIRE_CHILDREN = [
       { title: 'Gourmet Coarse Sea Salt (250g)', price: 8.99, image_url: 'https://images.unsplash.com/photo-1518005020951-eccb494ad742?auto=format&fit=crop&q=80&w=600' },
       { title: 'Lavender Bath Salt Crystals (500g)', price: 12.50, image_url: 'https://images.unsplash.com/photo-1608571423902-eed4a5ad8108?auto=format&fit=crop&q=80&w=600' },
       { title: 'Artisanal Wooden Salt Mill', price: 24.99, image_url: 'https://images.unsplash.com/photo-1588854337236-6889d631faa8?auto=format&fit=crop&q=80&w=600' }
+    ],
+    posts: [
+      {
+        content: 'Fresh batch of our gourmet coarse sea salt has just been hand-harvested from the southern salt pans of Bonaire! Perfect for curing, cooking, and adding a touch of Caribbean magic to your table.',
+        image_url: '["https://images.unsplash.com/photo-1518005020951-eccb494ad742?auto=format&fit=crop&q=80&w=800"]',
+        likes: 45
+      }
     ]
   },
   {
@@ -88,6 +95,13 @@ const BONAIRE_CHILDREN = [
       { title: 'UV-Protection Long-Sleeve Rashguard', price: 34.99, image_url: 'https://images.unsplash.com/photo-1607345366928-199ea26cfe3e?auto=format&fit=crop&q=80&w=600' },
       { title: 'Premium Snorkeling Mask & Snorkel Set', price: 49.99, image_url: 'https://images.unsplash.com/photo-1582967788606-a171c1080cb0?auto=format&fit=crop&q=80&w=600' },
       { title: 'Waterproof Ocean Dry Bag (20L)', price: 19.99, image_url: 'https://images.unsplash.com/photo-1622560480605-d83c853bc5c3?auto=format&fit=crop&q=80&w=600' }
+    ],
+    posts: [
+      {
+        content: 'Keep our oceans clean and protect our reefs! STINAPA-certified decontamination stations are now set up at Bonaire Dive Gear. Stop by to disinfect your equipment and get our new eco-friendly snorkel mask set.',
+        image_url: '["https://images.unsplash.com/photo-1582967788606-a171c1080cb0?auto=format&fit=crop&q=80&w=800"]',
+        likes: 32
+      }
     ]
   },
   {
@@ -117,6 +131,13 @@ const BONAIRE_CHILDREN = [
       { title: 'Guided Mangrove Snorkeling Tour Ticket', price: 75.00, image_url: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&q=80&w=600' },
       { title: 'Flamingo Eco Plush Toy (Organic)', price: 14.99, image_url: 'https://images.unsplash.com/photo-1559251606-c623743a6d76?auto=format&fit=crop&q=80&w=600' },
       { title: 'Aluminum Island Refillable Water Bottle', price: 18.50, image_url: 'https://images.unsplash.com/photo-1602143407151-7111542de6e8?auto=format&fit=crop&q=80&w=600' }
+    ],
+    posts: [
+      {
+        content: 'Morning views from our Pekelmeer Flamingo Sanctuary tour. Today we spotted a flock of over 200 Caribbean flamingos! Book your guided eco-tour online and help us support conservation programs.',
+        image_url: '["https://images.unsplash.com/photo-1510672981848-a1c4f1cb5ccf?auto=format&fit=crop&q=80&w=800"]',
+        likes: 58
+      }
     ]
   },
   {
@@ -146,6 +167,13 @@ const BONAIRE_CHILDREN = [
       { title: 'Cadushy Cactus Liqueur Gift Set', price: 29.99, image_url: 'https://images.unsplash.com/photo-1527061011665-3652c757a4d4?auto=format&fit=crop&q=80&w=600' },
       { title: 'Rom Rincon 12-Year Aged Rum (750ml)', price: 59.99, image_url: 'https://images.unsplash.com/photo-1470225620780-dba8ba36b745?auto=format&fit=crop&q=80&w=600' },
       { title: 'The Cadushy Distillery Branded Apron', price: 22.00, image_url: 'https://images.unsplash.com/photo-1598033129183-c4f50c736f10?auto=format&fit=crop&q=80&w=600' }
+    ],
+    posts: [
+      {
+        content: 'Distilling another batch of our world-famous Cadushy Cactus Liqueur in Rincon. Made from real local kadushi cacti, it brings the authentic flavor of the island to your glass. Come by for a free tasting!',
+        image_url: '["https://images.unsplash.com/photo-1527061011665-3652c757a4d4?auto=format&fit=crop&q=80&w=800"]',
+        likes: 64
+      }
     ]
   }
 ];
@@ -307,6 +335,33 @@ async function run() {
         console.error(`     ❌ Failed to seed product ${prod.title}:`, prodErr);
       } else {
         console.log(`     Added product: ${prod.title}`);
+      }
+    }
+
+    // Seed posts
+    console.log(`   Seeding posts...`);
+    const deletePostsSql = `DELETE FROM public.posts WHERE creator_id = '${child.influencer.userId}';`;
+    await supabase.rpc('execute_sql', { sql: deletePostsSql });
+
+    if (child.posts) {
+      for (const post of child.posts) {
+        const postSql = `
+          INSERT INTO public.posts (creator_id, content, is_locked, likes, image_url, created_at)
+          VALUES (
+            '${child.influencer.userId}',
+            $$${post.content}$$,
+            false,
+            ${post.likes},
+            $$${post.image_url}$$,
+            now()
+          );
+        `;
+        const { error: postErr } = await supabase.rpc('execute_sql', { sql: postSql });
+        if (postErr) {
+          console.error(`     ❌ Failed to seed post:`, postErr);
+        } else {
+          console.log(`     Added post: "${post.content.substring(0, 30)}..."`);
+        }
       }
     }
 

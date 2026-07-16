@@ -654,11 +654,15 @@ function App() {
                 <div style={{ paddingTop: '80px', minHeight: '100vh', background: 'var(--bg-color)' }}>
                   {(() => {
                     const isAvo = wlConfig?.id === '3915f1e5-4c79-4b2a-ad41-7029ce8052d7' || wlConfig?.parent_network_id === '3915f1e5-4c79-4b2a-ad41-7029ce8052d7';
-                    return isAvo ? (
-                      <AvoMarketplace accent={wlConfig?.accent || '#D35400'} />
-                    ) : (
-                      <ShopifyStore />
-                    );
+                    const isBonaire = wlConfig?.id === 'b0ea0000-c08f-4260-8540-a0cc8bed4e11' || wlConfig?.parent_network_id === 'b0ea0000-c08f-4260-8540-a0cc8bed4e11';
+                    
+                    if (isAvo) {
+                      return <AvoMarketplace accent={wlConfig?.accent || '#D35400'} />;
+                    } else if (isBonaire) {
+                      return <Marketplace />;
+                    } else {
+                      return <ShopifyStore />;
+                    }
                   })()}
                 </div>
               } />

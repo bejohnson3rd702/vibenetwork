@@ -174,7 +174,18 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
   const [driveUploadName, setDriveUploadName] = useState('');
   const [currentBgIndex, setCurrentBgIndex] = useState(0);
   const [saving, setSaving] = useState(false);
-  const [activeTab, setActiveTab] = useState<'feed' | 'store' | 'live' | 'booking' | 'series' | 'courses' | 'wallet' | 'flipbook' | 'appearance' | 'my_bookings' | 'networks' | 'members' | 'community' | 'security' | 'crm' | 'subscriptions'>('feed');
+  const [activeTab, setActiveTab] = useState<'feed' | 'store' | 'live' | 'booking' | 'series' | 'courses' | 'wallet' | 'flipbook' | 'appearance' | 'my_bookings' | 'networks' | 'members' | 'community' | 'security' | 'crm' | 'subscriptions'>(() => {
+    if (typeof window !== 'undefined') {
+      const hashParams = new URLSearchParams(window.location.search);
+      const tab = hashParams.get('tab');
+      if (tab) return tab as any;
+    }
+    // If it is a child network under the Bonaire parent N2N network, default to 'store'
+    if (isNetworkLevel && wlConfig?.parent_network_id === 'b0ea0000-c08f-4260-8540-a0cc8bed4e11') {
+      return 'store';
+    }
+    return 'feed';
+  });
   const [showCreatorPanel, setShowCreatorPanel] = useState(() => {
     if (typeof window === 'undefined') return false;
     const hashParams = new URLSearchParams(window.location.search);
@@ -768,6 +779,12 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
       if (validTabs.includes(tabParam)) {
         setActiveTab(tabParam as any);
       }
+    } else {
+      if (isNetworkLevel && wlConfig?.parent_network_id === 'b0ea0000-c08f-4260-8540-a0cc8bed4e11') {
+        setActiveTab('store');
+      } else {
+        setActiveTab('feed');
+      }
     }
     
     // Auto-mount as guest from invite links
@@ -776,7 +793,7 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
       setStreamSource('camera');
       setGuestSetup({ show: true, name: '', title: '' }); // Show Green Room Prompt
     }
-  }, [location.search]);
+  }, [location.search, isNetworkLevel, wlConfig]);
 
   useEffect(() => {
     if (isNetworkLevel && wlConfig?.id) {
@@ -4338,7 +4355,7 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
           )}
 
           {(() => {
-            const visibleProducts = products.filter(p => p.type !== 'physical' && ((isNetworkLevel && isOwnProfile && viewMode === 'edit') ? true : !p.hidden_from_network));
+            const visibleProducts = products.filter(p => (p.type !== 'physical' || isNetworkLevel || wlConfig?.parent_network_id === 'b0ea0000-c08f-4260-8540-a0cc8bed4e11') && ((isNetworkLevel && isOwnProfile && viewMode === 'edit') ? true : !p.hidden_from_network));
             if (visibleProducts.length === 0) {
               return (
                  <div style={{ textAlign: 'center', padding: '60px 20px', background: 'rgba(0,0,0,0.2)', borderRadius: '24px', border: `1px solid ${wlConfig?.accent || '#00ff88'}22` }}>

@@ -854,7 +854,7 @@ export default function N2NHome({ wlConfig, categories, activeVideo, setActiveVi
           childItems.length > 0 && (
             <div id="child-networks-slider">
               <SliderSection
-                title={isOlympian ? "OLYMPIA PARTNERS" : (isMf ? "MUSCLE & FITNESS NETWORKS" : (isB2K ? "B2K MEMBERS" : (isVibe100 ? "VIBE 100 NETWORKS" : "AVO NETWORKS")))}
+                title={isBonaire ? "BONAIRE BUSINESS NETWORKS" : (isOlympian ? "OLYMPIA PARTNERS" : (isMf ? "MUSCLE & FITNESS NETWORKS" : (isB2K ? "B2K MEMBERS" : (isVibe100 ? "VIBE 100 NETWORKS" : "AVO NETWORKS"))))}
                 items={(() => {
                   if (isMfFamily) {
                     const mfNetworkItems = [];
@@ -940,6 +940,23 @@ export default function N2NHome({ wlConfig, categories, activeVideo, setActiveVi
               />
             </div>
           )
+        )}
+
+        {/* ── Bonaire Local Merchants Slider positioned directly under Bonaire Business Networks slider ── */}
+        {(isBonaire && athleteItems.length > 0) && (
+          <div id="bonaire-merchants-slider" style={{ marginTop: '20px', marginBottom: '20px' }}>
+            <SliderSection
+              title="LOCAL MERCHANTS"
+              items={athleteItems}
+              delay={0.1}
+              aspectRatio="1/1"
+              onItemClick={(item) => {
+                if (item.linkUrl) {
+                  window.location.href = mergeQueryParams(item.linkUrl, window.location.search);
+                }
+              }}
+            />
+          </div>
         )}
 
         {/* ── Wings of Strength Legends & Champions Slider ────── */}
@@ -1108,7 +1125,7 @@ export default function N2NHome({ wlConfig, categories, activeVideo, setActiveVi
         )}
 
         {/* ── AVO Campus Athletes / KPLE Channel Profiles Slider ──────────────────────── */}
-        {((isAvo || isKple || isBonaire) && athleteItems.length > 0) && (
+        {(((isAvo || isKple) && !isBonaire) && athleteItems.length > 0) && (
           <div id="avo-athletes-slider">
             <SliderSection
               title={isKple ? "CHANNEL PROFILES" : (isBonaire ? "LOCAL MERCHANTS" : "CAMPUS ATHLETES")}
@@ -1129,7 +1146,7 @@ export default function N2NHome({ wlConfig, categories, activeVideo, setActiveVi
         {/* ── Child Network Feeds (Trending Moments) ────────────── */}
         {childItems.length > 0 && (
           <Suspense fallback={null}>
-            <ChildNetworkFeeds parentId={config.id} accent={accent} isOlympian={isOlympian} isMf={isMf} isB2K={isB2K} />
+            <ChildNetworkFeeds parentId={config.id} accent={accent} isOlympian={isOlympian} isMf={isMf} isB2K={isB2K} isBonaire={isBonaire} />
           </Suspense>
         )}
 
@@ -1460,6 +1477,79 @@ export default function N2NHome({ wlConfig, categories, activeVideo, setActiveVi
                   </button>
                 </div>
               </div>
+            </div>
+          </section>
+        )}
+
+        {/* ── Bonaire Local News Section (Separating the 2 bottom CTAs) ── */}
+        {isBonaire && (
+          <section style={{ maxWidth: '1400px', margin: '60px auto', padding: '0 40px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '30px' }}>
+              <h2 style={{ fontSize: '28px', margin: 0, fontWeight: 900, display: 'flex', alignItems: 'center', gap: '16px', letterSpacing: '-0.5px' }}>
+                <span style={{ width: '4px', height: '24px', borderRadius: '4px', background: accent, boxShadow: `0 0 10px ${accent}` }} />
+                <span style={{ color: 'var(--text-primary)', textTransform: 'uppercase' }}>Bonaire Local News</span>
+              </h2>
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '30px' }}>
+              {[
+                {
+                  title: 'STINAPA Announces Coral Restoration Zone Expansion',
+                  date: 'July 15, 2026',
+                  summary: 'New protective guidelines and expanded coral nurseries are implemented across Kralendijk reefs to support marine biodiversity and dive tourism.',
+                  image: 'https://images.unsplash.com/photo-1544551763-46a013bb70d5?auto=format&fit=crop&q=80&w=600',
+                  link: 'https://stinapabonaire.org/'
+                },
+                {
+                  title: 'Chamber Announces 2026 Sustainable Business Finalists',
+                  date: 'July 10, 2026',
+                  summary: 'The Bonaire Chamber of Commerce (KvK) has released the shortlist of local merchants recognized for outstanding environmental practices.',
+                  image: 'https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?auto=format&fit=crop&q=80&w=600',
+                  link: 'https://bonairechamber.com/'
+                },
+                {
+                  title: 'Direct Airline Routes to Flamingo Airport Expanding',
+                  date: 'July 05, 2026',
+                  summary: 'New direct seasonal flights from North American hubs are set to launch this winter, easing travel and boosting island commercial trade.',
+                  image: 'https://images.unsplash.com/photo-1436491865332-7a61a109cc05?auto=format&fit=crop&q=80&w=600',
+                  link: 'https://www.bonaireisland.com/'
+                }
+              ].map((item, idx) => (
+                <div 
+                  key={idx} 
+                  style={{ 
+                    background: 'rgba(255,255,255,0.02)', 
+                    border: '1px solid rgba(255,255,255,0.06)', 
+                    borderRadius: '24px', 
+                    overflow: 'hidden',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    transition: 'transform 0.2s, border-color 0.2s',
+                    cursor: 'pointer'
+                  }}
+                  onMouseOver={e => {
+                    e.currentTarget.style.transform = 'translateY(-4px)';
+                    e.currentTarget.style.borderColor = `${accent}55`;
+                  }}
+                  onMouseOut={e => {
+                    e.currentTarget.style.transform = 'translateY(0)';
+                    e.currentTarget.style.borderColor = 'rgba(255,255,255,0.06)';
+                  }}
+                  onClick={() => window.open(item.link, '_blank')}
+                >
+                  <div style={{ width: '100%', aspectRatio: '16/10', backgroundImage: `url(${item.image})`, backgroundSize: 'cover', backgroundPosition: 'center' }} />
+                  <div style={{ padding: '24px', display: 'flex', flexDirection: 'column', flex: 1 }}>
+                    <span style={{ fontSize: '11px', color: accent, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '8px' }}>
+                      {item.date}
+                    </span>
+                    <h3 style={{ fontSize: '18px', fontWeight: 800, margin: '0 0 12px 0', color: '#fff', lineHeight: 1.3 }}>
+                      {item.title}
+                    </h3>
+                    <p style={{ fontSize: '14px', color: 'rgba(255,255,255,0.6)', lineHeight: 1.6, margin: 0, flex: 1 }}>
+                      {item.summary}
+                    </p>
+                  </div>
+                </div>
+              ))}
             </div>
           </section>
         )}

@@ -119,7 +119,7 @@ const ARTICLE_BODIES: Record<string, { category: string; sections: string[]; rou
   }
 };
 
-export default function ChildNetworkFeeds({ parentId, accent = 'var(--accent-primary)', isOlympian = false, isB2K = false, isMf = false }: { parentId: string, accent?: string, isOlympian?: boolean, isB2K?: boolean, isMf?: boolean }) {
+export default function ChildNetworkFeeds({ parentId, accent = 'var(--accent-primary)', isOlympian = false, isB2K = false, isMf = false, isBonaire = false }: { parentId: string, accent?: string, isOlympian?: boolean, isB2K?: boolean, isMf?: boolean, isBonaire?: boolean }) {
   const [posts, setPosts] = useState<PostItem[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [activeArticle, setActiveArticle] = useState<PostItem | null>(null);
@@ -319,7 +319,7 @@ export default function ChildNetworkFeeds({ parentId, accent = 'var(--accent-pri
     return (
       <div style={{ maxWidth: '1400px', margin: '40px auto', padding: '0 40px', textAlign: 'center', color: 'var(--text-muted)' }}>
         <p style={{ fontSize: '14px', letterSpacing: '1px', textTransform: 'uppercase' }}>
-          {isOlympian ? "Loading Trending Partner Moments..." : (isB2K ? "Loading Trending Moments..." : "Loading Trending Moments...")}
+          {isOlympian ? "Loading Trending Partner Moments..." : (isB2K ? "Loading Trending Moments..." : (isBonaire ? "Loading Latest Merchant Updates..." : "Loading Trending Moments..."))}
         </p>
       </div>
     );
@@ -340,7 +340,7 @@ export default function ChildNetworkFeeds({ parentId, accent = 'var(--accent-pri
         <h2 style={{ fontSize: '28px', margin: 0, fontWeight: 900, display: 'flex', alignItems: 'center', gap: '16px', letterSpacing: '-0.5px' }}>
           <span style={{ width: '4px', height: '24px', borderRadius: '4px', background: accent, boxShadow: `0 0 10px ${accent}` }} />
           <span style={{ color: 'var(--text-primary)', textTransform: 'uppercase' }}>
-            {isOlympian ? "Trending Partner Moments" : (isMf ? "Muscle & Fitness Workouts" : (isB2K ? "Trending Moments" : "Trending"))}
+            {isOlympian ? "Trending Partner Moments" : (isMf ? "Muscle & Fitness Workouts" : (isB2K ? "Trending Moments" : (isBonaire ? "Latest Merchant Updates" : "Trending")))}
           </span>
         </h2>
         

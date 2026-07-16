@@ -56,7 +56,16 @@ const Marketplace: React.FC = () => {
         .select('*, creator:profiles!inner(username, avatar_url, whitelabel_id)');
 
       if (wlConfig?.domain && !isMasterPlatform) {
-        query.eq('creator.whitelabel_id', wlConfig.id);
+        const { data: children } = await supabase
+          .from('whitelabel_configs')
+          .select('id')
+          .eq('parent_network_id', wlConfig.id);
+        
+        const tenantIds = [wlConfig.id];
+        if (children && children.length > 0) {
+          tenantIds.push(...children.map((c: any) => c.id));
+        }
+        query.in('creator.whitelabel_id', tenantIds);
       }
 
       const fetchAvoShopify = async () => {
