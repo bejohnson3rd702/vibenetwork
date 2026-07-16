@@ -65,6 +65,18 @@ export function isKpleConfig(config: any): boolean {
          domain.includes('kpletv.org');
 }
 
+export function isBonaireConfig(config: any): boolean {
+  if (!config) return false;
+  const id = config.id || '';
+  const name = config.name?.toLowerCase() || '';
+  const domain = config.domain?.toLowerCase() || '';
+  const parentId = config.parent_network_id || '';
+  return id === 'b0ea0000-c08f-4260-8540-a0cc8bed4e11' ||
+         parentId === 'b0ea0000-c08f-4260-8540-a0cc8bed4e11' ||
+         name.includes('bonaire') ||
+         domain.includes('bonairechamber');
+}
+
 export function normalizeWlConfig(
   raw: any,
   overrides?: Partial<WlConfig>
@@ -73,16 +85,23 @@ export function normalizeWlConfig(
   const isOlympian = isOlympianConfig(raw) || isOlympianConfig(overrides);
   const isMf = isMuscleFitnessConfig(raw) || isMuscleFitnessConfig(overrides);
   const isB2k = isB2kConfig(raw) || isB2kConfig(overrides);
+  const isBonaire = isBonaireConfig(raw) || isBonaireConfig(overrides);
 
   const isKpleChild = (raw?.parent_network_id === '33742e2f-430b-4c2d-9cba-42507891ef02') || (overrides?.parent_network_id === '33742e2f-430b-4c2d-9cba-42507891ef02');
   const isKpleParent = isKple && !isKpleChild;
 
-  const defaultAccent = isKple ? '#004e98' : (isOlympian ? '#D4AF37' : (isMf ? '#E31B23' : (isB2k ? '#FF2A54' : '#D35400')));
+  const isBonaireChild = (raw?.parent_network_id === 'b0ea0000-c08f-4260-8540-a0cc8bed4e11') || (overrides?.parent_network_id === 'b0ea0000-c08f-4260-8540-a0cc8bed4e11');
+  const isBonaireParent = isBonaire && !isBonaireChild;
+
+  const defaultAccent = isKple ? '#004e98' : (isOlympian ? '#D4AF37' : (isMf ? '#E31B23' : (isB2k ? '#FF2A54' : (isBonaire ? '#00A3E0' : '#D35400'))));
 
   const theme = {
     ...(raw?.theme || {}),
     ...(isKpleParent ? {
       heroCopy: 'Christian Revival Network — Come All Revival. Class A Christian Broadcasting.'
+    } : {}),
+    ...(isBonaireParent ? {
+      heroCopy: 'Bonaire Chamber of Commerce Network — Discover, Shop, and Support Bonaire Local Businesses Online.'
     } : {}),
     ...(isOlympian ? {
       heroCopy: "Joe Weider's Mr. Olympia Fitness & Performance Weekend — The Pinnacle of Bodybuilding.",
@@ -91,7 +110,7 @@ export function normalizeWlConfig(
   };
   const base = {
     id: raw?.id || 'master',
-    name: isKpleParent ? 'Christian Revival Network' : (raw?.name || DEFAULT_PLATFORM_NAME),
+    name: isKpleParent ? 'Christian Revival Network' : (isBonaireParent ? 'Bonaire Chamber of Commerce' : (raw?.name || DEFAULT_PLATFORM_NAME)),
     domain: raw?.domain || MASTER_DOMAIN,
     accent: raw?.accent || theme.accent || defaultAccent,
     bg: theme.bg || raw?.bg || 'var(--bg-color)',
@@ -111,7 +130,7 @@ export function normalizeWlConfig(
     heroVideoUrl: theme.heroVideoUrl || raw?.heroVideoUrl || '',
     heroVideoTitle: theme.heroVideoTitle || raw?.heroVideoTitle || '',
     platform_fee_percentage: raw?.platform_fee_percentage || 0,
-    n2n_enabled: !!(raw?.n2n_enabled || theme.n2n_enabled || raw?.id === 'adb92e36-5ebc-4dc3-ae96-429f3dc1bb30' || raw?.domain === 'vibenetwork.tv'),
+    n2n_enabled: !!(raw?.n2n_enabled || theme.n2n_enabled || raw?.id === 'adb92e36-5ebc-4dc3-ae96-429f3dc1bb30' || raw?.domain === 'vibenetwork.tv' || raw?.id === 'b0ea0000-c08f-4260-8540-a0cc8bed4e11'),
     parent_network_id: raw?.parent_network_id ?? theme.parent_network_id ?? null,
     theme: theme,
     shopifyUrl: raw?.shopifyUrl || theme.shopifyUrl || null,
@@ -122,6 +141,11 @@ export function normalizeWlConfig(
   if (isKpleParent) {
     base.name = 'Christian Revival Network';
     base.heroCopy = 'Christian Revival Network — Come All Revival. Class A Christian Broadcasting.';
+  }
+
+  if (isBonaireParent) {
+    base.name = 'Bonaire Chamber of Commerce';
+    base.heroCopy = 'Bonaire Chamber of Commerce Network — Discover, Shop, and Support Bonaire Local Businesses Online.';
   }
 
   // Ensure default accent is correct if none exists

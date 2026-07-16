@@ -1,7 +1,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { useWhiteLabel } from '../context/WhiteLabelContext';
-import { isOlympianConfig, isB2kConfig, isKpleConfig } from '../lib/whitelabel';
+import { isOlympianConfig, isB2kConfig, isKpleConfig, isBonaireConfig } from '../lib/whitelabel';
 
 const MoreInfo: React.FC = () => {
   const { wlConfig } = useWhiteLabel();
@@ -15,6 +15,7 @@ const MoreInfo: React.FC = () => {
   const isOlympian = isOlympianConfig(wlConfig);
   const isB2K = isB2kConfig(wlConfig);
   const isKple = isKpleConfig(wlConfig);
+  const isBonaire = isBonaireConfig(wlConfig);
   const accentColor = wlConfig?.accent || 'var(--accent-primary)';
 
   return (
@@ -427,7 +428,7 @@ const MoreInfo: React.FC = () => {
                 style={{ background: 'var(--bg-surface)', padding: '40px', borderRadius: '24px', border: '1px solid var(--bg-surface-hover)' }}
               >
                 <h2 style={{ fontSize: '24px', fontWeight: 700, marginBottom: '16px' }}>
-                  {isOlympian ? `About ${wlConfig?.name || 'Muscle & Fitness'}` : (isB2K ? `About ${wlConfig?.name || 'B2K'}` : 'Our Platform')}
+                  {isOlympian ? `About ${wlConfig?.name || 'Muscle & Fitness'}` : (isB2K ? `About ${wlConfig?.name || 'B2K'}` : (isBonaire ? `About ${wlConfig?.name || 'KvK Bonaire'}` : 'Our Platform'))}
                 </h2>
                 
                 {isOlympian ? (
@@ -437,6 +438,12 @@ const MoreInfo: React.FC = () => {
                 ) : isB2K ? (
                   <p style={{ color: 'var(--text-secondary)', fontSize: '18px', lineHeight: 1.8, margin: 0 }}>
                     The official B2K Network-to-Network (N2N) platform aggregates exclusive content, new music pre-orders, and merchandise from B2K and the individual networks of all four members: Omarion, Lil' Fizz, J-Boog, and Raz-B. Experience the group's legendary R&B harmonies and keep up with their solo endeavors all in one place.
+                  </p>
+                ) : isBonaire ? (
+                  <p style={{ color: 'var(--text-secondary)', fontSize: '18px', lineHeight: 1.8, margin: 0 }}>
+                    The official <b>Bonaire Chamber of Commerce (Kamer van Koophandel Bonaire)</b> digital network-to-network portal connects local island merchants, diving shops, distillers, and ecotour operators with customers around the globe.
+                    <br /><br />
+                    Established in 1974, KvK Bonaire is dedicated to empowering local businesses, fostering commercial development, and supporting sustainable trade across our beautiful Caribbean island. Through this unified digital ecosystem, we aim to showcase the best artisanal craftsmanship, products, and experiences Bonaire has to offer.
                   </p>
                 ) : (
                   <p style={{ color: 'var(--text-secondary)', fontSize: '18px', lineHeight: 1.6 }}>

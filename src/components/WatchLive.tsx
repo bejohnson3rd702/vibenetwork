@@ -3,7 +3,7 @@ import { createPortal } from 'react-dom';
 import { Play, Tv, X, ChevronLeft, ChevronRight, Clock, ExternalLink, Video, VideoOff, Mic, MicOff, Copy, Check, Send, Globe, Lock, Sparkles, Languages, Volume2, VolumeX } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from '../supabaseClient';
-import { isOlympianConfig, isMuscleFitnessConfig, isB2kConfig, isKpleConfig } from '../lib/whitelabel';
+import { isOlympianConfig, isMuscleFitnessConfig, isB2kConfig, isKpleConfig, isBonaireConfig } from '../lib/whitelabel';
 import { getWwtcLanguages, translateText } from '../lib/wwtc';
 
 interface VideoClip {
@@ -23,6 +23,65 @@ const FEEDS = [
   { key: 'cfb', label: '🏈 Football', sport: 'football', league: 'college-football' },
   { key: 'cbb', label: '🏀 Basketball', sport: 'basketball', league: 'mens-college-basketball' },
   { key: 'base', label: '⚾ Baseball', sport: 'baseball', league: 'college-baseball' },
+];
+
+const BONAIRE_FEEDS = [
+  { key: 'lifestyle', label: '🌴 Island Life' },
+  { key: 'diving', label: '🤿 Diving & Ocean' },
+  { key: 'fishing', label: '🎣 Bonaire Fishing' }
+];
+
+const STATIC_BONAIRE_CLIPS: VideoClip[] = [
+  {
+    id: 'fishing-flats-bonaire',
+    headline: 'VisTD - Bonaire Fly Fishing [Flatventures]',
+    description: 'An exciting look at saltwater fly fishing on the shallow flats of Bonaire, targeting elusive bonefish and permit with local guides.',
+    thumbnail: 'https://i.ytimg.com/vi/o_WnhXfjmNI/hqdefault.jpg',
+    videoUrl: 'https://www.youtube.com/watch?v=o_WnhXfjmNI',
+    duration: 620,
+    source: 'VisTD',
+    sport: 'fishing'
+  },
+  {
+    id: 'fishing-action-bonaire',
+    headline: 'Fly Fishing Action in Bonaire',
+    description: 'Hooked with Henson presents high-energy saltwater fly fishing highlights from the clear coastal waters of Bonaire.',
+    thumbnail: 'https://i.ytimg.com/vi/JacXylo4d8w/hqdefault.jpg',
+    videoUrl: 'https://www.youtube.com/watch?v=JacXylo4d8w',
+    duration: 340,
+    source: 'HOOKED with Henson',
+    sport: 'fishing'
+  },
+  {
+    id: 'coral-decontamination-bonaire',
+    headline: 'Coral Disease: How to Decontaminate Diving Gear',
+    description: 'STINAPA Bonaire\'s official guide on decontaminating your scuba and snorkeling equipment to protect the island\'s reefs from coral diseases.',
+    thumbnail: 'https://i.ytimg.com/vi/laVvK0FgF5A/hqdefault.jpg',
+    videoUrl: 'https://www.youtube.com/watch?v=laVvK0FgF5A',
+    duration: 420,
+    source: 'STINAPA Bonaire',
+    sport: 'diving'
+  },
+  {
+    id: 'buddy-dive-resort-bonaire',
+    headline: 'Buddy Dive Resort Tour - Scuba Diving Capital',
+    description: 'Take a complete walkthrough tour of the Buddy Dive Resort in Bonaire, including the drive-thru air fill station, house reef, and facilities.',
+    thumbnail: 'https://i.ytimg.com/vi/lYX8w9HXMR4/hqdefault.jpg',
+    videoUrl: 'https://www.youtube.com/watch?v=lYX8w9HXMR4',
+    duration: 750,
+    source: 'Lake Hickory Scuba',
+    sport: 'diving'
+  },
+  {
+    id: 'complete-guide-bonaire',
+    headline: 'Bonaire: The Complete Travel Guide (58 Do\'s & Don\'ts)',
+    description: 'Globetrotting Gang presents the ultimate visitor guide to Bonaire, including navigation, maps, local culture, dining, and what to expect.',
+    thumbnail: 'https://i.ytimg.com/vi/xajKPqVCCbc/hqdefault.jpg',
+    videoUrl: 'https://www.youtube.com/watch?v=xajKPqVCCbc',
+    duration: 1140,
+    source: 'Globetrotting Gang',
+    sport: 'lifestyle'
+  }
 ];
 
 const OLYMPIAN_FEEDS = [
@@ -851,7 +910,7 @@ const generateFallbackTranscript = (title: string, description: string) => {
   ];
 };
 
-export default function WatchLive({ accent = '#D35400', isOlympian = false, isMf = false, isB2K = false, isVibe = false, isKple = false, isVibe100 = false, tenantId = '' }: { accent?: string; isOlympian?: boolean; isMf?: boolean; isB2K?: boolean; isVibe?: boolean; isKple?: boolean; isVibe100?: boolean; tenantId?: string }) {
+export default function WatchLive({ accent = '#D35400', isOlympian = false, isMf = false, isB2K = false, isVibe = false, isKple = false, isVibe100 = false, isBonaire = false, tenantId = '' }: { accent?: string; isOlympian?: boolean; isMf?: boolean; isB2K?: boolean; isVibe?: boolean; isKple?: boolean; isVibe100?: boolean; isBonaire?: boolean; tenantId?: string }) {
   const [clips, setClips] = useState<VideoClip[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeVideo, setActiveVideo] = useState<VideoClip | null>(null);
@@ -1524,8 +1583,8 @@ export default function WatchLive({ accent = '#D35400', isOlympian = false, isMf
 
     // Load initial messages
     const initialMsgs = [
-      { id: 'm1', user: 'Alex', text: isOlympian ? 'This physique is absolutely stacked!' : isMf ? 'Time to crush this workout! 💪' : isB2K ? 'B2K Uh Huh is an all-time classic.' : isKple ? 'Such a powerful word this evening.' : 'So hyped for this stream!', avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100&h=100&fit=crop', time: '10:04 PM' },
-      { id: 'm2', user: 'Sarah', text: isOlympian ? 'Check out the vascularity on stage. Wow.' : isMf ? 'Great form tips in this video.' : isB2K ? 'I remember trying to learn this dance in my living room 😂' : isKple ? 'Inspirational. Amen.' : 'This layout looks amazing.', avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&h=100&fit=crop', time: '10:05 PM' }
+      { id: 'm1', user: 'Alex', text: isOlympian ? 'This physique is absolutely stacked!' : isMf ? 'Time to crush this workout! 💪' : isB2K ? 'B2K Uh Huh is an all-time classic.' : isKple ? 'Such a powerful word this evening.' : (isBonaire ? 'Bonaire shore diving is the best in the Caribbean!' : 'So hyped for this stream!'), avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100&h=100&fit=crop', time: '10:04 PM' },
+      { id: 'm2', user: 'Sarah', text: isOlympian ? 'Check out the vascularity on stage. Wow.' : isMf ? 'Great form tips in this video.' : isB2K ? 'I remember trying to learn this dance in my living room 😂' : isKple ? 'Inspirational. Amen.' : (isBonaire ? 'The water clarity in these shots is insane 🌊' : 'This layout looks amazing.'), avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&h=100&fit=crop', time: '10:05 PM' }
     ];
     setChatMessages(initialMsgs);
 
@@ -1560,6 +1619,14 @@ export default function WatchLive({ accent = '#D35400', isOlympian = false, isMf
           { user: 'Alex', text: 'So blessed to be tuning in live.', avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100&h=100&fit=crop' },
           { user: 'Pastor John', text: 'Walking in faith is a daily walk.', avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop' },
           { user: 'Grace', text: 'God is good all the time. 🙏', avatar: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=100&h=100&fit=crop' },
+        ]
+      : isBonaire
+      ? [
+          { user: 'Sarah', text: 'I need to book a flight to Bonaire ASAP! ✈️', avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&h=100&fit=crop' },
+          { user: 'Jordan', text: 'Have you guys been to the Cadushy distillery? The cactus liqueur is delicious!', avatar: 'https://images.unsplash.com/photo-1570295999919-56ceb5ecca61?w=100&h=100&fit=crop' },
+          { user: 'Alex', text: 'The diving at Salt Pier is absolutely breathtaking.', avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100&h=100&fit=crop' },
+          { user: 'Captain Dave', text: 'Caught a 40lb wahoo last week off the north coast!', avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=100&h=100&fit=crop' },
+          { user: 'Emma', text: 'Bonaire is a true paradise for nature lovers.', avatar: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=100&h=100&fit=crop' },
         ]
       : [
           { user: 'Sarah', text: 'This stream is super crisp!', avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&h=100&fit=crop' },
@@ -1610,7 +1677,7 @@ export default function WatchLive({ accent = '#D35400', isOlympian = false, isMf
     }
   }, [showFanZone]);
 
-  const feedsToUse = isOlympian ? OLYMPIAN_FEEDS : (isMf ? MUSCLE_FITNESS_FEEDS : (isB2K ? B2K_FEEDS : (isVibe100 ? VIBE_100_FEEDS : (isVibe ? VIBE_FEEDS : (isKple ? KPLE_FEEDS : (tenantId === 'wings-of-strength-tenant-id' ? WINGS_OF_STRENGTH_FEEDS : FEEDS))))));
+  const feedsToUse = isBonaire ? BONAIRE_FEEDS : (isOlympian ? OLYMPIAN_FEEDS : (isMf ? MUSCLE_FITNESS_FEEDS : (isB2K ? B2K_FEEDS : (isVibe100 ? VIBE_100_FEEDS : (isVibe ? VIBE_FEEDS : (isKple ? KPLE_FEEDS : (tenantId === 'wings-of-strength-tenant-id' ? WINGS_OF_STRENGTH_FEEDS : FEEDS)))))));
 
   const handleClipClick = (clip: VideoClip) => {
     const isYouTube = clip.videoUrl.includes('youtube.com') || clip.videoUrl.includes('youtu.be');
@@ -1633,7 +1700,14 @@ export default function WatchLive({ accent = '#D35400', isOlympian = false, isMf
       const isHers = tenantId === 'mf-hers-tenant-id';
       const isFlex = tenantId === 'flex-online-tenant-id';
 
-      if (isWingsOfStrength) {
+      if (isBonaire) {
+        for (const item of STATIC_BONAIRE_CLIPS) {
+          if (!seen.has(item.id)) {
+            seen.add(item.id);
+            allClips.push(item);
+          }
+        }
+      } else if (isWingsOfStrength) {
         const dynamicClips: VideoClip[] = [];
         for (const feed of WINGS_OF_STRENGTH_FEEDS) {
           try {
@@ -2209,7 +2283,7 @@ export default function WatchLive({ accent = '#D35400', isOlympian = false, isMf
     fetchClips(false);
     const interval = setInterval(() => fetchClips(true), 3600000); // refresh silently every hour
     return () => clearInterval(interval);
-  }, [isOlympian, isMf, isB2K, isVibe, isKple, isVibe100, tenantId]);
+  }, [isOlympian, isMf, isB2K, isVibe, isKple, isVibe100, isBonaire, tenantId]);
 
   useEffect(() => {
     if (activeVideo) {
@@ -2365,7 +2439,9 @@ export default function WatchLive({ accent = '#D35400', isOlympian = false, isMf
               <div className="watch-featured-content" style={{ position: 'absolute', bottom: 0, left: 0, right: 0 }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '10px' }}>
                   <span style={{ padding: '4px 10px', borderRadius: '6px', background: accent, color: '#000', fontSize: '10px', fontWeight: 900, textTransform: 'uppercase', letterSpacing: '1px' }}>
-                    {isOlympian 
+                    {isBonaire ? (
+                      featured.sport === 'lifestyle' ? '🌴 Island Life' : featured.sport === 'diving' ? '🤿 Diving' : '🎣 Fishing'
+                    ) : isOlympian 
                       ? '🏆 Mr. Olympia' 
                       : (isMf ? '💪 Muscle & Fitness' : (isB2K ? '🎤 R&B Music' : (isKple ? (featured.sport === 'tct_network' ? '📺 TCT Network' : featured.sport === 'act_local' ? '🎥 ACT Local' : featured.sport === 'the_walk' ? '🚶 The Walk TV' : featured.sport === 'enlace_usa' ? '🌎 Enlace USA' : featured.sport === 'positiv_movies' ? '🎬 Positiv Family' : '👶 Smile of a Child') : (isVibe ? (featured.sport === 'news' ? '📰 News' : featured.sport === 'foxnews' ? '🦊 Fox News' : featured.sport === 'politics' ? '⚖️ Politics' : featured.sport === 'entertainment' ? '🎭 Entertainment' : featured.sport === 'money' ? '💵 Money' : '🏈 Sports') : (isVibe100 ? (featured.sport === 'avo' ? '🎒 AVO Channel' : featured.sport === 'olympia' ? '🏆 Muscle & Fitness' : featured.sport === 'b2k' ? '🎤 B2K Channel' : featured.sport === 'kple' ? '📺 Christian Revival' : '📺 VIBE 100') : (featured.sport === 'cfb' ? '🏈 Football' : featured.sport === 'cbb' ? '🏀 Basketball' : '⚾ Baseball'))))))}
                   </span>
@@ -2438,7 +2514,9 @@ export default function WatchLive({ accent = '#D35400', isOlympian = false, isMf
                   </div>
                   <div style={{ padding: '12px 14px' }}>
                     <div style={{ fontSize: '9px', fontWeight: 700, color: accent, textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '4px' }}>
-                      {isOlympian 
+                      {isBonaire ? (
+                        clip.sport === 'lifestyle' ? 'Island Life' : clip.sport === 'diving' ? 'Diving' : 'Fishing'
+                      ) : isOlympian 
                         ? 'Bodybuilding' 
                         : (isMf ? 'Fitness' : (isB2K ? 'Music' : (isKple ? (clip.sport === 'tct_network' ? 'TCT Network' : clip.sport === 'act_local' ? 'ACT Local' : clip.sport === 'the_walk' ? 'The Walk TV' : clip.sport === 'enlace_usa' ? 'Enlace USA' : clip.sport === 'positiv_movies' ? 'Positiv' : 'Smile of a Child') : (isVibe ? (clip.sport === 'news' ? 'News' : clip.sport === 'foxnews' ? 'Fox News' : clip.sport === 'politics' ? 'Politics' : clip.sport === 'entertainment' ? 'Entertainment' : clip.sport === 'money' ? 'Money' : 'Sports') : (isVibe100 ? (clip.sport === 'avo' ? 'AVO Channel' : clip.sport === 'olympia' ? 'Muscle & Fitness' : clip.sport === 'b2k' ? 'B2K Channel' : clip.sport === 'kple' ? 'Christian Revival' : 'VIBE 100') : (clip.sport === 'cfb' ? 'Football' : clip.sport === 'cbb' ? 'Basketball' : 'Baseball'))))))} · {clip.source}
                     </div>

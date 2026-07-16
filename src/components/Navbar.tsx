@@ -6,6 +6,7 @@ import { useWhiteLabel } from '../context/WhiteLabelContext';
 import { useToast } from '../context/ToastContext';
 import { supabase } from '../supabaseClient';
 import { mergeQueryParams } from '../lib/n2n';
+import { isBonaireConfig } from '../lib/whitelabel';
 
 interface NavbarProps {
   user: any;
@@ -70,13 +71,15 @@ const Navbar: React.FC<NavbarProps> = ({ user, onLoginClick, onAdminClick }) => 
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
+  const isBonaire = isBonaireConfig(wlConfig);
+
   return (
     <nav className="px-mobile-sm gap-mobile-sm" style={{
       position: 'fixed',
       top: 0,
       left: 0,
       width: '100%',
-      padding: '24px 60px',
+      padding: scrolled ? '16px 60px' : '24px 60px',
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'space-between',

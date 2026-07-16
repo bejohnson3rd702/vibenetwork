@@ -8,7 +8,7 @@ import { getChildNetworks, mergeQueryParams, OLYMPIA_CHAMPIONS, WINGS_ATHLETES, 
 import { getN2NCategories } from '../api';
 import type { Category, VideoItem, User } from '../types';
 import { supabase } from '../supabaseClient';
-import { isOlympianConfig, isMuscleFitnessConfig, isB2kConfig, isKpleConfig } from '../lib/whitelabel';
+import { isOlympianConfig, isMuscleFitnessConfig, isB2kConfig, isKpleConfig, isBonaireConfig } from '../lib/whitelabel';
 const CollegeTicker = lazy(() => import('../components/CollegeTicker'));
 const CollegeNewsFeed = lazy(() => import('../components/CollegeNewsFeed'));
 const WatchLive = lazy(() => import('../components/WatchLive'));
@@ -208,6 +208,7 @@ export default function N2NHome({ wlConfig, categories, activeVideo, setActiveVi
   const isFlex = config?.id === 'flex-online-tenant-id';
   const isB2K = isB2kConfig(config);
   const isKple = isKpleConfig(config);
+  const isBonaire = isBonaireConfig(config);
 
   const isAvo = config?.id === '3915f1e5-4c79-4b2a-ad41-7029ce8052d7' ||
                 config?.name?.toLowerCase().includes('avo');
@@ -216,7 +217,7 @@ export default function N2NHome({ wlConfig, categories, activeVideo, setActiveVi
                     config?.name?.toLowerCase().includes('vibe 100') ||
                     config?.domain?.includes('vibe100');
 
-  const isVibe = !isVibe100 && (config?.name?.toLowerCase().includes('vibe') || 
+  const isVibe = !isVibe100 && !isBonaire && !isKple && !isB2K && !isMfFamily && (config?.name?.toLowerCase().includes('vibe') || 
                  config?.domain?.includes('vibenetwork.tv') ||
                  config?.id === 'adb92e36-5ebc-4dc3-ae96-429f3dc1bb30');
 
@@ -276,6 +277,41 @@ export default function N2NHome({ wlConfig, categories, activeVideo, setActiveVi
     { school: 'Attention Central Texas', short: 'ACT', subtitle: 'Local Community News', copy: "Christian Revival Network's flagship local program featuring interviews from local churches, non-profit organizations, and community events.", image: '/n2n/kple_hero_act.png', link: '/?tenant=0421af68-56cb-4735-b7ee-f72454963bdd' },
   ];
 
+  const BONAIRE_HERO_SLIDES = [
+    {
+      school: 'Bonaire Chamber of Commerce',
+      short: 'Bonaire KvK',
+      subtitle: 'KvK Bonaire N2N Network',
+      copy: 'Promoting trade, commerce, and sustainable local business growth across Bonaire.',
+      image: 'https://images.unsplash.com/photo-1544551763-46a013bb70d5?auto=format&fit=crop&q=80&w=1200',
+      link: '/marketplace'
+    },
+    {
+      school: 'Salt & Sea Handcrafted',
+      short: 'Salt Shop',
+      subtitle: 'Authentic Sea Salt Products',
+      copy: 'Discover premium culinary sea salts and natural bath crystals hand-harvested from the pink salt pans of Bonaire.',
+      image: 'https://images.unsplash.com/photo-1518005020951-eccb494ad742?auto=format&fit=crop&q=80&w=1200',
+      link: '/?tenant=b0ea0001-c08f-4260-8540-a0cc8bed4e11'
+    },
+    {
+      school: 'Diver\'s Paradise Gear',
+      short: 'Dive Gear',
+      subtitle: 'Dive Apparel & Snorkel Sets',
+      copy: 'Equip your island adventure with premium eco-friendly diving shirts, rashguards, dry bags, and mask-snorkel combos.',
+      image: 'https://images.unsplash.com/photo-1582967788606-a171c1080cb0?auto=format&fit=crop&q=80&w=1200',
+      link: '/?tenant=b0ea0002-c08f-4260-8540-a0cc8bed4e11'
+    },
+    {
+      school: 'Cadushy Cactus Spirit',
+      short: 'Cadushy Shop',
+      subtitle: 'World\'s Only Cactus Liqueur',
+      copy: 'Order authentic green cactus liqueurs, local rums, and Cadushy merchandise direct from the Rincon distillery.',
+      image: 'https://images.unsplash.com/photo-1527061011665-3652c757a4d4?auto=format&fit=crop&q=80&w=1200',
+      link: '/?tenant=b0ea0004-c08f-4260-8540-a0cc8bed4e11'
+    }
+  ];
+
   const VIBE_100_HERO_SLIDES = [
     { school: 'AVO Channel', short: 'AVO', subtitle: 'VIBE 100', copy: 'Premium college lifestyle and gameday apparel.', image: '/n2n/baylor.png', link: '/?tenant=100a0000-c08f-4260-8540-a0cc8bed4e11' },
     { school: 'Muscle & Fitness Channel', short: 'Muscle & Fitness', subtitle: 'VIBE 100', copy: 'The ultimate resource for bodybuilding, workouts, nutrition, and fitness.', image: 'https://images.unsplash.com/photo-1517838277536-f5f99be501cd?auto=format&fit=crop&q=80&w=1200', link: '/?tenant=100b0000-c08f-4260-8540-a0cc8bed4e11' },
@@ -323,9 +359,11 @@ export default function N2NHome({ wlConfig, categories, activeVideo, setActiveVi
             ? B2K_HERO_SLIDES 
             : (isKple 
               ? KPLE_HERO_SLIDES 
-              : (isVibe100 
-                ? VIBE_100_HERO_SLIDES 
-                : AVO_HERO_SLIDES))))));
+              : (isBonaire
+                ? BONAIRE_HERO_SLIDES
+                : (isVibe100 
+                  ? VIBE_100_HERO_SLIDES 
+                  : AVO_HERO_SLIDES)))))));
 
   const [heroSlide, setHeroSlide] = useState(0);
 
@@ -474,7 +512,7 @@ export default function N2NHome({ wlConfig, categories, activeVideo, setActiveVi
                 if (currentSlide.buttonText) return currentSlide.buttonText;
                 if (currentSlide.videoUrl) return "Play Video";
                 if (config?.theme?.shopifyUrl && !config.theme.shopifyUrl.includes('shop')) return "Visit Website";
-                return isOlympian ? "View Schedule" : (isMf ? "Read Workouts" : (isB2K ? "Learn More" : (isKple ? "Watch Network" : (isVibe100 ? "Enter Channel" : "Shop Now"))));
+                return isOlympian ? "View Schedule" : (isMf ? "Read Workouts" : (isB2K ? "Learn More" : (isKple ? "Watch Network" : (isBonaire ? "Shop Now" : (isVibe100 ? "Enter Channel" : "Shop Now")))));
               })()}
             </button>
 
@@ -486,10 +524,10 @@ export default function N2NHome({ wlConfig, categories, activeVideo, setActiveVi
                 background: 'rgba(255,255,255,0.05)', backdropFilter: 'blur(10px)',
               }}>
                 <p style={{ margin: 0, fontSize: '32px', fontWeight: 900, color: '#fff', letterSpacing: '-1px', lineHeight: 1.2 }}>
-                  {isOlympian ? '50+ Years' : (isMf ? '85+ Years' : (isB2K ? '25 Years' : (isKple ? '30+ Years' : (isVibe100 ? 'Top 100' : '$17,480,130'))))}<span style={{ color: accent }}>{isVibe100 ? '' : '+'}</span>
+                  {isOlympian ? '50+ Years' : (isMf ? '85+ Years' : (isB2K ? '25 Years' : (isKple ? '30+ Years' : (isBonaire ? 'Established 1974' : (isVibe100 ? 'Top 100' : '$17,480,130')))))}<span style={{ color: accent }}>{isVibe100 || isBonaire ? '' : '+'}</span>
                 </p>
                 <p style={{ margin: '4px 0 0', fontSize: '13px', fontWeight: 600, color: 'rgba(255,255,255,0.6)', textTransform: 'uppercase', letterSpacing: '2px' }}>
-                  {isOlympian ? 'Of Championing Legendary Athletes & Fitness Excellence' : (isMf ? 'Of Providing World-Class Fitness Advice, Training & Nutrition Blueprints' : (isB2K ? 'Of R&B Harmonies, Multi-Platinum Hits & Tour Legacies' : (isKple ? 'Serving Central Texas with Inspirational Programming' : (isVibe100 ? 'Ecosystem Networks Displaying Posts and Content' : 'Raised to empower student‑athletes nationwide'))))}
+                  {isOlympian ? 'Of Championing Legendary Athletes & Fitness Excellence' : (isMf ? 'Of Providing World-Class Fitness Advice, Training & Nutrition Blueprints' : (isB2K ? 'Of R&B Harmonies, Multi-Platinum Hits & Tour Legacies' : (isKple ? 'Serving Central Texas with Inspirational Programming' : (isBonaire ? 'Empowering Local Bonaire Merchants & Supporting Island Trade' : (isVibe100 ? 'Ecosystem Networks Displaying Posts and Content' : 'Raised to empower student‑athletes nationwide')))))}
                 </p>
               </div>
             )}
@@ -627,11 +665,96 @@ export default function N2NHome({ wlConfig, categories, activeVideo, setActiveVi
       </div>
 
       {/* NCAA College Ticker — bottom of hero */}
-      {!isKple && (
+      {!isKple && !isBonaire && (
         <div style={{ position: 'relative', zIndex: 10 }}>
           <Suspense fallback={null}>
             <CollegeTicker accent={config.accent} isOlympian={isOlympian} isB2K={isB2K} isKple={isKple} isWings={config?.id === 'wings-of-strength-tenant-id'} />
           </Suspense>
+        </div>
+      )}
+
+      {/* Bonaire Live Conditions Weather Ticker — bottom of hero */}
+      {isBonaire && (
+        <div style={{
+          position: 'relative',
+          zIndex: 10,
+          width: '100%',
+          background: 'rgba(0, 43, 73, 0.85)', // Bonaire corporate deep navy transparent
+          backdropFilter: 'blur(10px)',
+          color: '#fff',
+          borderTop: '1px solid rgba(0, 163, 224, 0.3)',
+          borderBottom: '1px solid rgba(0, 163, 224, 0.3)',
+          padding: '12px 24px',
+          fontSize: '13px',
+          fontWeight: 600,
+          fontFamily: 'system-ui, -apple-system, sans-serif',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          overflow: 'hidden',
+          height: '42px',
+        }}>
+          {/* Left badge */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', whiteSpace: 'nowrap', zIndex: 10 }}>
+            <span style={{
+              display: 'inline-block',
+              width: '8px',
+              height: '8px',
+              borderRadius: '50%',
+              backgroundColor: '#00A3E0',
+              boxShadow: '0 0 8px #00A3E0',
+              animation: 'pulse 1.8s infinite'
+            }} />
+            <span style={{ color: '#00A3E0', letterSpacing: '1px', textTransform: 'uppercase', fontSize: '10px', fontWeight: 900 }}>Bonaire Live Conditions</span>
+          </div>
+
+          {/* Scrolling text marquee */}
+          <div style={{
+            flex: 1,
+            margin: '0 32px',
+            overflow: 'hidden',
+            position: 'relative',
+            height: '18px',
+            display: 'flex',
+            alignItems: 'center'
+          }}>
+            <style>{`
+              @keyframes marquee-n2n {
+                0% { transform: translateX(35%); }
+                100% { transform: translateX(-100%); }
+              }
+              @keyframes pulse {
+                0% { transform: scale(0.95); opacity: 0.5; }
+                50% { transform: scale(1.15); opacity: 1; }
+                100% { transform: scale(0.95); opacity: 0.5; }
+              }
+            `}</style>
+            <div style={{
+              display: 'flex',
+              gap: '60px',
+              whiteSpace: 'nowrap',
+              animation: 'marquee-n2n 35s linear infinite',
+              position: 'absolute',
+              width: 'max-content'
+            }}>
+              <span>☀️ Temperature: 84°F / 29°C</span>
+              <span>💨 Wind: ENE Trade Winds at 18 knots (Ideal for Windsurfing & Kiting)</span>
+              <span>🌡️ Water Temp: 81°F / 27°C</span>
+              <span>🌊 Wave Height: 3-4 ft</span>
+              <span>🤿 Visibility: 100+ ft (Excellent Shore Diving Conditions today!)</span>
+              <span>🐢 Marine Park Status: Open & Active (Remember your STINAPA tag)</span>
+              <span>☀️ Temperature: 84°F / 29°C</span>
+              <span>💨 Wind: ENE Trade Winds at 18 knots</span>
+              <span>🌡️ Water Temp: 81°F / 27°C</span>
+              <span>🌊 Wave Height: 3-4 ft</span>
+            </div>
+          </div>
+
+          {/* Right link */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', whiteSpace: 'nowrap', zIndex: 10, fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+            <span style={{ color: 'rgba(255,255,255,0.5)' }}>Local Time:</span>
+            <span style={{ color: '#FF5E13', fontWeight: 800 }}>{new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', timeZone: 'America/Puerto_Rico' })} AST</span>
+          </div>
         </div>
       )}
 
@@ -838,7 +961,7 @@ export default function N2NHome({ wlConfig, categories, activeVideo, setActiveVi
         {/* ── Watch Live ──────────────────────────────────────── */}
         <div id="whats-on-now">
           <Suspense fallback={null}>
-            <WatchLive accent={config.accent} isOlympian={isOlympian} isMf={isMf} isB2K={isB2K} isVibe={isVibe} isKple={isKple} isVibe100={isVibe100} tenantId={config?.id} />
+            <WatchLive accent={config.accent} isOlympian={isOlympian} isMf={isMf} isB2K={isB2K} isVibe={isVibe} isKple={isKple} isVibe100={isVibe100} isBonaire={isBonaire} tenantId={config?.id} />
           </Suspense>
         </div>
 
@@ -877,7 +1000,7 @@ export default function N2NHome({ wlConfig, categories, activeVideo, setActiveVi
               <div className="banner-image-column" style={{
                 flex: '0 0 45%', position: 'relative', overflow: 'hidden',
               }}>
-                {isOlympian || isMf || isVibe ? (
+                {isOlympian || isVibe ? (
                   <iframe
                     src="https://www.youtube.com/embed/njSC3gMfjjU?autoplay=1&mute=1&loop=1&playlist=njSC3gMfjjU&controls=0&showinfo=0&rel=0&start=56"
                     title="Mr. Olympia Promo Video"
@@ -894,8 +1017,8 @@ export default function N2NHome({ wlConfig, categories, activeVideo, setActiveVi
                   />
                 ) : (
                   <img
-                    src={isMf ? "https://images.unsplash.com/photo-1541534741688-6078c6bfb5c5?auto=format&fit=crop&q=80&w=800" : isWings ? "/n2n/wings_rising_phoenix_poster.jpg" : (isB2K ? "https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?auto=format&fit=crop&q=80&w=800" : (isKple ? "https://images.unsplash.com/photo-1593113598332-cd288d649433?auto=format&fit=crop&q=80&w=800" : (isVibe100 ? "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?auto=format&fit=crop&q=80&w=800" : "https://shopavo.la/cdn/shop/files/bama-desk-hp-1_1500x.jpg?v=1774210820")))}
-                    alt={isMf ? "Workout Gear" : isWings ? "Wings Contest Event" : (isB2K ? "Official Tour Merch" : (isKple ? "Support CRN" : (isVibe100 ? "Official Merch" : "New Drop")))}
+                    src={isMf ? "https://images.unsplash.com/photo-1541534741688-6078c6bfb5c5?auto=format&fit=crop&q=80&w=800" : isWings ? "/n2n/wings_rising_phoenix_poster.jpg" : (isB2K ? "https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?auto=format&fit=crop&q=80&w=800" : (isKple ? "https://images.unsplash.com/photo-1593113598332-cd288d649433?auto=format&fit=crop&q=80&w=800" : (isBonaire ? "https://images.unsplash.com/photo-1544551763-46a013bb70d5?auto=format&fit=crop&q=80&w=800" : (isVibe100 ? "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?auto=format&fit=crop&q=80&w=800" : "https://shopavo.la/cdn/shop/files/bama-desk-hp-1_1500x.jpg?v=1774210820"))))}
+                    alt={isMf ? "Workout Gear" : isWings ? "Wings Contest Event" : (isB2K ? "Official Tour Merch" : (isKple ? "Support CRN" : (isBonaire ? "Bonaire Chamber" : (isVibe100 ? "Official Merch" : "New Drop"))))}
                     style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
                   />
                 )}
@@ -906,7 +1029,7 @@ export default function N2NHome({ wlConfig, categories, activeVideo, setActiveVi
                   padding: '6px 14px', background: accent, color: '#000',
                   fontSize: '10px', fontWeight: 900, letterSpacing: '2px', textTransform: 'uppercase',
                 }}>
-                  {isOlympian || isVibe ? "Live Webcast" : isMf ? "Workout Gear" : isWings ? "Wings Contest" : (isB2K ? "Official Merch" : (isKple ? "Media Mission" : (isVibe100 ? "Exclusive Gear" : "New Drop")))}
+                  {isOlympian || isVibe ? "Live Webcast" : isMf ? "Workout Gear" : isWings ? "Wings Contest" : (isB2K ? "Official Merch" : (isKple ? "Media Mission" : (isBonaire ? "Bonaire KvK" : (isVibe100 ? "Exclusive Gear" : "New Drop"))))}
                 </div>
               </div>
 
@@ -926,7 +1049,7 @@ export default function N2NHome({ wlConfig, categories, activeVideo, setActiveVi
                   fontSize: '13px', fontWeight: 800, textTransform: 'uppercase',
                   letterSpacing: '3px', color: accent, margin: '0 0 12px 0',
                 }}>
-                  {isOlympian || isVibe ? "Olympia PPV Webcast" : isMf ? "Fitness Collection" : isWings ? "Wings of Strength" : (isB2K ? "Official Tour Merch" : (isKple ? "Support Our Mission" : (isVibe100 ? "VIBE 100 Store" : "Summer 2026 Collection")))}
+                  {isOlympian || isVibe ? "Olympia PPV Webcast" : isMf ? "Fitness Collection" : isWings ? "Wings of Strength" : (isB2K ? "Official Tour Merch" : (isKple ? "Support Our Mission" : (isBonaire ? "Local Commerce" : (isVibe100 ? "VIBE 100 Store" : "Summer 2026 Collection"))))}
                 </p>
                 <h2 style={{
                   fontSize: '44px', fontWeight: 900, color: '#fff', margin: '0 0 16px 0',
@@ -945,10 +1068,14 @@ export default function N2NHome({ wlConfig, categories, activeVideo, setActiveVi
                       isKple ? (
                         <>Keep The Gospel<br />On The Air</>
                       ) : (
-                        isVibe100 ? (
-                          <>Network Official<br />Collection</>
+                        isBonaire ? (
+                          <>Support Bonaire<br />Local Shops</>
                         ) : (
-                          <>Game Day<br />Essentials</>
+                          isVibe100 ? (
+                            <>Network Official<br />Collection</>
+                          ) : (
+                            <>Game Day<br />Essentials</>
+                          )
                         )
                       )
                     )
@@ -958,10 +1085,10 @@ export default function N2NHome({ wlConfig, categories, activeVideo, setActiveVi
                   fontSize: '16px', color: 'rgba(255,255,255,0.7)', lineHeight: 1.7,
                   margin: '0 0 32px 0', maxWidth: '520px',
                 }}>
-                  {isOlympian || isVibe ? "Experience the pinnacle of bodybuilding live from anywhere in the world. Subscribe to the official webcast to stream the 62nd Mr. Olympia pre-judging, finals, and exclusive backstage interviews live in high-definition." : isMf ? "Explore premium workouts, digital training guides, and high-performance activewear designed to take your fitness to the next level." : isWings ? "Experience the pinnacle of professional women's bodybuilding. Purchase official pay-per-view live streams, secure event tickets, and browse the official Alina Popa & Rising Phoenix championship collections." : (isB2K ? "Pre-order exclusive Boys 4 Life tour hoodies, vintage graphic tees, and autographed vinyl. Rep the legendary boy band reunion in style." : (isKple ? "The Christian Revival Network is a 501(c)3 non-profit media mission. Your donations help us broadcast the Gospel 24/7 to Central Texas and the world. Support our ministry today." : (isVibe100 ? "Explore premium merchandise, albums, and exclusive releases from all Top 100 networks. Shop official gear and support your favorite channels." : "Premium collegiate apparel for every school in the AVO family. Rep your team with style — new colorways and exclusive designs just dropped.")))}
+                  {isOlympian || isVibe ? "Experience the pinnacle of bodybuilding live from anywhere in the world. Subscribe to the official webcast to stream the 62nd Mr. Olympia pre-judging, finals, and exclusive backstage interviews live in high-definition." : isMf ? "Explore premium workouts, digital training guides, and high-performance activewear designed to take your fitness to the next level." : isWings ? "Experience the pinnacle of professional women's bodybuilding. Purchase official pay-per-view live streams, secure event tickets, and browse the official Alina Popa & Rising Phoenix championship collections." : (isB2K ? "Pre-order exclusive Boys 4 Life tour hoodies, vintage graphic tees, and autographed vinyl. Rep the legendary boy band reunion in style." : (isKple ? "The Christian Revival Network is a 501(c)3 non-profit media mission. Your donations help us broadcast the Gospel 24/7 to Central Texas and the world. Support our ministry today." : (isBonaire ? "Explore local handcrafted products, authentic Caribbean diving apparel, guided eco-tours, and cactus-flavored spirits from local Bonaire chamber members." : (isVibe100 ? "Explore premium merchandise, albums, and exclusive releases from all Top 100 networks. Shop official gear and support your favorite channels." : "Premium collegiate apparel for every school in the AVO family. Rep your team with style — new colorways and exclusive designs just dropped."))))}
                 </p>
                 <a
-                  href={isOlympian || isVibe ? "https://www.olympiaproductions.com/" : (isWings ? "https://wingsofstrength.net/" : (isKple ? "https://www.paypal.com/donate/?hosted_button_id=A7WXAKZEAGBPA" : (isMf ? "https://www.muscleandfitness.com/" : ('/shop' + (typeof window !== 'undefined' ? window.location.search : '')))))}
+                  href={isOlympian || isVibe ? "https://www.olympiaproductions.com/" : (isWings ? "https://wingsofstrength.net/" : (isKple ? "https://www.paypal.com/donate/?hosted_button_id=A7WXAKZEAGBPA" : (isMf ? "https://www.muscleandfitness.com/" : ('/marketplace' + (typeof window !== 'undefined' ? window.location.search : '')))))}
                   target={isOlympian || isVibe || isWings || isKple || isMf ? "_blank" : "_self"}
                   style={{
                     display: 'inline-block', padding: '15px 46px', fontSize: '13px', fontWeight: 800,
@@ -973,7 +1100,7 @@ export default function N2NHome({ wlConfig, categories, activeVideo, setActiveVi
                   onMouseOver={e => { e.currentTarget.style.background = '#fff'; e.currentTarget.style.color = '#000'; }}
                   onMouseOut={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = '#fff'; }}
                 >
-                  {isOlympian || isVibe ? "Watch Webcast" : isMf ? "Shop Store" : isWings ? "Explore Shows" : (isB2K ? "Shop The Merch" : (isKple ? "Support Our Station" : (isVibe100 ? "Shop The Collection" : "Shop The Drop")))}
+                  {isOlympian || isVibe ? "Watch Webcast" : isMf ? "Shop Store" : isWings ? "Explore Shows" : (isB2K ? "Shop The Merch" : (isKple ? "Support Our Station" : (isBonaire ? "Shop Bonaire" : (isVibe100 ? "Shop The Collection" : "Shop The Drop"))))}
                 </a>
               </div>
             </div>
@@ -981,10 +1108,10 @@ export default function N2NHome({ wlConfig, categories, activeVideo, setActiveVi
         )}
 
         {/* ── AVO Campus Athletes / KPLE Channel Profiles Slider ──────────────────────── */}
-        {((isAvo || isKple) && athleteItems.length > 0) && (
+        {((isAvo || isKple || isBonaire) && athleteItems.length > 0) && (
           <div id="avo-athletes-slider">
             <SliderSection
-              title={isKple ? "CHANNEL PROFILES" : "CAMPUS ATHLETES"}
+              title={isKple ? "CHANNEL PROFILES" : (isBonaire ? "LOCAL MERCHANTS" : "CAMPUS ATHLETES")}
               items={athleteItems}
               delay={0.1}
               aspectRatio="1/1"
@@ -1125,7 +1252,7 @@ export default function N2NHome({ wlConfig, categories, activeVideo, setActiveVi
               {/* Background image — full bleed */}
               <div style={{
                 position: 'absolute', inset: 0,
-                backgroundImage: `url(${isKple ? "https://images.unsplash.com/photo-1447752875215-b2761acb3c5d?auto=format&fit=crop&q=80&w=1200" : "/n2n/hoodie-competition.png"})`,
+                backgroundImage: `url(${isKple ? "https://images.unsplash.com/photo-1447752875215-b2761acb3c5d?auto=format&fit=crop&q=80&w=1200" : (isBonaire ? "https://images.unsplash.com/photo-1542856391-010fb87dcfed?auto=format&fit=crop&q=80&w=1200" : "/n2n/hoodie-competition.png")})`,
                 backgroundSize: 'cover', backgroundPosition: 'center',
                 filter: 'brightness(0.35)',
               }} />
@@ -1145,26 +1272,42 @@ export default function N2NHome({ wlConfig, categories, activeVideo, setActiveVi
                     fontSize: '10px', fontWeight: 900, letterSpacing: '2px', textTransform: 'uppercase',
                     marginBottom: '20px',
                   }}>
-                    {isKple ? "🙏 Prayer Request" : "🏆 Competition"}
+                    {isBonaire ? "Chamber Membership" : (isKple ? "🙏 Prayer Request" : "🏆 Competition")}
                   </div>
                   <h2 style={{
                     fontSize: '38px', fontWeight: 900, color: '#fff', margin: '0 0 14px 0',
                     lineHeight: 1.1, letterSpacing: '-1px', textTransform: 'uppercase',
                   }}>
-                    {isKple ? <>Need Prayer?<br />We Are Here</> : <>Best College<br />Hoodie Design</>}
+                    {isBonaire ? <>Join KvK Bonaire<br />Grow Your Business</> : (isKple ? <>Need Prayer?<br />We Are Here</> : <>Best College<br />Hoodie Design</>)}
                   </h2>
                   <p style={{
                     fontSize: '15px', color: 'rgba(255,255,255,0.5)', lineHeight: 1.7,
                     margin: '0 0 24px 0',
                   }}>
-                    {isKple 
-                      ? "Sometimes, all it takes is just one prayer to change everything. You are not alone, and our prayer warriors are here to stand with you. Call our prayer line or send a request."
-                      : "All 8 AVO schools go head-to-head. Which campus created the best branded hoodie? Browse the entries, rep your school, and cast your vote."
+                    {isBonaire 
+                      ? "Get listed, connect with local merchants, gain access to business support programs, and reach customers worldwide with our digital network tools. Join KvK today."
+                      : (isKple 
+                        ? "Sometimes, all it takes is just one prayer to change everything. You are not alone, and our prayer warriors are here to stand with you. Call our prayer line or send a request."
+                        : "All 8 AVO schools go head-to-head. Which campus created the best branded hoodie? Browse the entries, rep your school, and cast your vote."
+                      )
                     }
                   </p>
 
                   {/* School pills or prayer phone */}
-                  {!isKple ? (
+                  {isBonaire ? (
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginBottom: '28px' }}>
+                      {['Retail', 'Tourism', 'Services', 'Hospitality', 'Crafts', 'Logistics'].map(tag => (
+                        <span key={tag} style={{
+                          padding: '5px 12px', fontSize: '10px', fontWeight: 800,
+                          letterSpacing: '1px', textTransform: 'uppercase',
+                          border: '1px solid rgba(255,255,255,0.15)', color: 'rgba(255,255,255,0.6)',
+                          background: 'rgba(255,255,255,0.04)',
+                        }}>
+                          {tag}
+                        </span>
+                      ))}
+                    </div>
+                  ) : (!isKple ? (
                     <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginBottom: '28px' }}>
                       {['Baylor', 'Colorado', 'Georgia', 'Miss. State', 'Alabama', 'Ole Miss', 'Vanderbilt', 'Penn State'].map(school => (
                         <span key={school} style={{
@@ -1183,12 +1326,14 @@ export default function N2NHome({ wlConfig, categories, activeVideo, setActiveVi
                         📞 Toll Free: <a href="tel:8776405673" style={{ color: accent, textDecoration: 'none' }}>(877) 640-5673</a>
                       </span>
                     </div>
-                  )}
+                  ))}
 
                   <button
                     onClick={() => {
                       if (isKple) {
                         window.location.href = 'mailto:prayer@kpletv.org?subject=Prayer Request';
+                      } else if (isBonaire) {
+                        window.location.href = mergeQueryParams('/contact', window.location.search);
                       } else {
                         setIsHoodieVoteOpen(true);
                       }
@@ -1204,15 +1349,15 @@ export default function N2NHome({ wlConfig, categories, activeVideo, setActiveVi
                     onMouseOver={e => { e.currentTarget.style.opacity = '0.85'; }}
                     onMouseOut={e => { e.currentTarget.style.opacity = '1'; }}
                   >
-                    {isKple ? "Send Prayer Request" : "Vote Now"}
+                    {isBonaire ? "Join Chamber" : (isKple ? "Send Prayer Request" : "Vote Now")}
                   </button>
                 </div>
 
                 {/* Right — Image */}
                 <div className="banner-cta-right" style={{ flexShrink: 0, width: '320px', position: 'relative' }}>
                   <img
-                    src={isKple ? "https://images.unsplash.com/photo-1544717305-2782549b5136?auto=format&fit=crop&q=80&w=600" : "/n2n/hoodie-competition.png"}
-                        alt={isKple ? "Prayer Request" : "College Hoodie Competition"}
+                    src={isKple ? "https://images.unsplash.com/photo-1544717305-2782549b5136?auto=format&fit=crop&q=80&w=600" : (isBonaire ? "https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?auto=format&fit=crop&q=80&w=600" : "/n2n/hoodie-competition.png")}
+                    alt={isBonaire ? "Join Bonaire Chamber" : (isKple ? "Prayer Request" : "College Hoodie Competition")}
                     style={{
                       width: '100%', borderRadius: '4px',
                       border: '1px solid rgba(255,255,255,0.08)',
@@ -1228,7 +1373,7 @@ export default function N2NHome({ wlConfig, categories, activeVideo, setActiveVi
 
 
         {/* ── AVO Summer Concert Tour Banner / B2K Tour Banner / Mr. Olympia CTA ── */}
-        {!isKple && !isVibe100 && !isWings && !isHers && !isFlex && (
+        {!isKple && !isVibe100 && !isWings && !isHers && !isFlex && !isBonaire && (
           <section style={{ maxWidth: '1400px', margin: '40px auto', padding: '0 40px' }}>
             <div style={{
               position: 'relative', overflow: 'hidden',
@@ -1333,7 +1478,7 @@ export default function N2NHome({ wlConfig, categories, activeVideo, setActiveVi
         )}
 
         {/* ── College Sports News Feed ──────────────────────── */}
-        {!isMfFamily && !isB2K && !isKple && (
+        {!isMfFamily && !isB2K && !isKple && !isBonaire && (
           <Suspense fallback={null}>
             <CollegeNewsFeed accent={config.accent} />
           </Suspense>
@@ -1469,7 +1614,7 @@ export default function N2NHome({ wlConfig, categories, activeVideo, setActiveVi
               {/* Background image */}
               <div style={{
                 position: 'absolute', inset: 0,
-                backgroundImage: `url(${isOlympian || isMf ? "https://images.unsplash.com/photo-1517838277536-f5f99be501cd?auto=format&fit=crop&q=80&w=1200" : isWings ? "/n2n/wings_phoenix_iron_games.jpg" : (isB2K ? "https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?auto=format&fit=crop&q=80&w=1200" : (isKple ? "https://images.unsplash.com/photo-1510915228340-29c85a43dcfe?auto=format&fit=crop&q=80&w=1200" : "https://shopavo.la/cdn/shop/files/Homepage_Vanderbilt_Desktop2_c7f572ef-cd7e-4de4-bb9c-160b99884e08_1500x.jpg?v=1776284877"))})`,
+                backgroundImage: `url(${isOlympian || isMf ? "https://images.unsplash.com/photo-1517838277536-f5f99be501cd?auto=format&fit=crop&q=80&w=1200" : isWings ? "/n2n/wings_phoenix_iron_games.jpg" : (isB2K ? "https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?auto=format&fit=crop&q=80&w=1200" : (isKple ? "https://images.unsplash.com/photo-1510915228340-29c85a43dcfe?auto=format&fit=crop&q=80&w=1200" : (isBonaire ? "https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?auto=format&fit=crop&q=80&w=1200" : "https://shopavo.la/cdn/shop/files/Homepage_Vanderbilt_Desktop2_c7f572ef-cd7e-4de4-bb9c-160b99884e08_1500x.jpg?v=1776284877")))}`,
                 backgroundSize: 'cover', backgroundPosition: 'center',
                 filter: 'brightness(0.3)',
               }} />
@@ -1481,7 +1626,7 @@ export default function N2NHome({ wlConfig, categories, activeVideo, setActiveVi
                     fontSize: '11px', fontWeight: 800, textTransform: 'uppercase',
                     letterSpacing: '3px', color: accent, marginBottom: '12px',
                   }}>
-                    {isOlympian ? "Olympia Ambassadors" : isMf ? "Fitness Ambassadors" : isWings ? "Wings Ambassadors" : (isB2K ? "Street Team" : (isKple ? "Media Partner" : "Campus Ambassadors"))}
+                    {isOlympian ? "Olympia Ambassadors" : isMf ? "Fitness Ambassadors" : isWings ? "Wings Ambassadors" : (isB2K ? "Street Team" : (isKple ? "Media Partner" : (isBonaire ? "Chamber Partners" : "Campus Ambassadors")))}
                   </p>
                   <h2 style={{
                     fontSize: '36px', fontWeight: 900, color: '#fff', margin: '0 0 16px 0',
@@ -1498,7 +1643,11 @@ export default function N2NHome({ wlConfig, categories, activeVideo, setActiveVi
                         isKple ? (
                           <>Become A Partner &amp;<br />Support CRN</>
                         ) : (
-                          <>Represent AVO<br />On Your Campus</>
+                          isBonaire ? (
+                            <>Support Bonaire<br />Chamber of Commerce</>
+                          ) : (
+                            <>Represent AVO<br />On Your Campus</>
+                          )
                         )
                       )
                     )}
@@ -1512,7 +1661,7 @@ export default function N2NHome({ wlConfig, categories, activeVideo, setActiveVi
                         ? "Join the official Wings of Strength Ambassador Program. Spread the passion for female bodybuilding, review premium strength gear, and earn exclusive event passes, backstage credentials, and athlete sponsorship perks."
                         : (isB2K 
                           ? "Join the official B2K Millennium Street Team. Promote the Boys 4 Life Tour, share new music updates, and earn exclusive backstage passes, VIP meet-and-greets, and limited edition merch."
-                          : (isKple ? "Become a supporting partner of the Christian Revival Network. Join our media mission to keep the Gospel broadcasting 24/7. Your support enables us to continue revealing the love of Jesus Christ." : "Join the AVO Ambassador Program and bring premium college apparel to your school. Earn exclusive perks, early access to drops, and commissions on every sale.")
+                          : (isKple ? "Become a supporting partner of the Christian Revival Network. Join our media mission to keep the Gospel broadcasting 24/7. Your support enables us to continue revealing the love of Jesus Christ." : (isBonaire ? "Become a supporting partner of the Bonaire Chamber of Commerce. Your collaboration helps us empower local businesses, run training workshops, and sustain a thriving island economy." : "Join the AVO Ambassador Program and bring premium college apparel to your school. Earn exclusive perks, early access to drops, and commissions on every sale."))
                         )}
                   </p>
                 </div>
@@ -1521,6 +1670,8 @@ export default function N2NHome({ wlConfig, categories, activeVideo, setActiveVi
                   onClick={() => {
                     if (isKple) {
                       window.open("https://members.kple-tv.org/", "_blank");
+                    } else if (isBonaire) {
+                      window.open("https://bonairechamber.com/en/", "_blank");
                     } else {
                       setIsAmbassadorOpen(true);
                     }
@@ -1536,7 +1687,7 @@ export default function N2NHome({ wlConfig, categories, activeVideo, setActiveVi
                   onMouseOver={e => { e.currentTarget.style.background = '#fff'; e.currentTarget.style.color = '#000'; }}
                   onMouseOut={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = '#fff'; }}
                 >
-                  {isKple ? "Join Now" : isWings ? "Become An Ambassador" : "More Info"}
+                  {isKple ? "Join Now" : isWings ? "Become An Ambassador" : (isBonaire ? "Visit Chamber" : "More Info")}
                 </button>
               </div>
             </div>
