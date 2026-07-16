@@ -90,7 +90,7 @@ const Navbar: React.FC<NavbarProps> = ({ user, onLoginClick, onAdminClick }) => 
     }}>
       <Link to={`/${window.location.search}`} style={{ textDecoration: 'none', display: 'flex', alignItems: 'center' }}>
         {appLogo ? (
-          <img referrerPolicy="no-referrer" src={appLogo} alt={appName} onError={(e) => e.currentTarget.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(appName || 'Vibe')}&background=random`} style={{ height: appName.toLowerCase().includes('olympia') ? '80px' : appName.toLowerCase().includes('vibe 100') ? '55px' : '36px', objectFit: 'contain', cursor: 'pointer', borderRadius: '4px' }} />
+          <img referrerPolicy="no-referrer" src={appLogo} alt={appName} onError={(e) => e.currentTarget.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(appName || 'Vibe')}&background=random`} style={{ height: appName.toLowerCase().includes('olympia') ? '80px' : appName.toLowerCase().includes('vibe 100') ? '55px' : appName.toLowerCase().includes('bonaire') ? '60px' : '36px', objectFit: 'contain', cursor: 'pointer', borderRadius: '4px' }} />
         ) : appName ? (
           <h1 style={{ margin: 0, fontSize: '24px', color: '#fff', fontWeight: 900, textTransform: 'uppercase', letterSpacing: '2px', fontFamily: "'RNS Miles', sans-serif" }}>{appName}</h1>
         ) : (
