@@ -531,11 +531,12 @@ const AuthModal: React.FC<AuthModalProps> = ({ onClose, onSuccess, defaultIsLogi
                            }
                        }
 
-                       if (bg === '#f4f4f4' || bg === '#ffffff') {
-                           document.documentElement.setAttribute('data-theme', 'light');
-                       } else {
-                           document.documentElement.removeAttribute('data-theme');
-                       }
+                        // if (bg === '#f4f4f4' || bg === '#ffffff') {
+                        //     document.documentElement.setAttribute('data-theme', 'light');
+                        // } else {
+                        //     document.documentElement.removeAttribute('data-theme');
+                        // }
+                        document.documentElement.removeAttribute('data-theme');
 
                        document.documentElement.style.setProperty('--bg-color', bg);
                        window.dispatchEvent(new CustomEvent('whitelabel_update', { detail: { accent } }));

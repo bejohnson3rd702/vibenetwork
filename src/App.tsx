@@ -538,14 +538,15 @@ function App() {
         document.documentElement.style.setProperty('--bg-color', wlConfig.bg);
         
         // Dynamic Light/Dark Mode Toggle
-        const bgHex = wlConfig.bg.toLowerCase().trim();
-        const lightThemes = ['#f4f4f4', '#ffffff', '#fff', 'white', '#f7f7f7', '#f5f5f5', '#eeeeee', '#e5e5e5', '#fafafa', '#f8f9fa', '#d1d5db', '#cccccc', '#e0e0e0', '#f0f0f0', '#f3f4f6', '#d3d3d3'];
+        // const bgHex = wlConfig.bg.toLowerCase().trim();
+        // const lightThemes = ['#f4f4f4', '#ffffff', '#fff', 'white', '#f7f7f7', '#f5f5f5', '#eeeeee', '#e5e5e5', '#fafafa', '#f8f9fa', '#d1d5db', '#cccccc', '#e0e0e0', '#f0f0f0', '#f3f4f6', '#d3d3d3'];
         
-        if (lightThemes.includes(bgHex)) {
-           document.documentElement.setAttribute('data-theme', 'light');
-        } else {
-           document.documentElement.removeAttribute('data-theme');
-        }
+        // if (lightThemes.includes(bgHex)) {
+        //    document.documentElement.setAttribute('data-theme', 'light');
+        // } else {
+        //    document.documentElement.removeAttribute('data-theme');
+        // }
+        document.documentElement.removeAttribute('data-theme');
       }
       
       // Dynamic SEO Injection

@@ -57,9 +57,12 @@ const Navbar: React.FC<NavbarProps> = ({ user, onLoginClick, onAdminClick }) => 
   };
 
   const toggleTheme = () => {
+    // Light mode disabled sitewide
+    /*
     const newTheme = theme === 'dark' ? 'light' : 'dark';
     setTheme(newTheme);
     document.documentElement.setAttribute('data-theme', newTheme);
+    */
   };
 
   useEffect(() => {
@@ -166,6 +169,7 @@ const Navbar: React.FC<NavbarProps> = ({ user, onLoginClick, onAdminClick }) => 
       <div style={{ display: 'flex', alignItems: 'center', gap: '24px' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
 
+          {/*
           <Lightbulb 
             size={22} 
             color={theme === 'dark' ? '#D35400' : '#ffffff'} 
@@ -176,6 +180,7 @@ const Navbar: React.FC<NavbarProps> = ({ user, onLoginClick, onAdminClick }) => 
             }}
             onClick={toggleTheme} 
           />
+          */}
 
         </div>
         <div className="hide-on-mobile hide-on-tablet" style={{ display: 'flex', alignItems: 'center', gap: '8px', borderLeft: '1px solid rgba(255,255,255,0.2)', paddingLeft: '24px' }}>
