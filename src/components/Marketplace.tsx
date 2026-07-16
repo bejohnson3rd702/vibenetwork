@@ -29,6 +29,7 @@ const Marketplace: React.FC = () => {
   const [selectedImage, setSelectedImage] = useState(0);
 
   const isMasterPlatform = !wlConfig || wlConfig.id === 'master' || wlConfig.domain === 'vibenetwork.tv' || wlConfig.domain === 'vibenetwork.com' || wlConfig.domain?.includes('vercel.app');
+  const isBonaireTenant = wlConfig?.id === 'b0ea0000-c08f-4260-8540-a0cc8bed4e11' || wlConfig?.parent_network_id === 'b0ea0000-c08f-4260-8540-a0cc8bed4e11';
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -56,12 +57,13 @@ const Marketplace: React.FC = () => {
         .select('*, creator:profiles!inner(username, avatar_url, whitelabel_id)');
 
       if (wlConfig?.domain && !isMasterPlatform) {
+        const parentId = wlConfig.parent_network_id || wlConfig.id;
         const { data: children } = await supabase
           .from('whitelabel_configs')
           .select('id')
-          .eq('parent_network_id', wlConfig.id);
+          .eq('parent_network_id', parentId);
         
-        const tenantIds = [wlConfig.id];
+        const tenantIds = [parentId];
         if (children && children.length > 0) {
           tenantIds.push(...children.map((c: any) => c.id));
         }
@@ -224,11 +226,17 @@ const Marketplace: React.FC = () => {
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
           <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', padding: '8px 16px', background: 'rgba(255,255,255,0.05)', borderRadius: '30px', marginBottom: '16px', border: `1px solid ${wlConfig?.accent || 'var(--accent-primary)'}44` }}>
              <ShoppingBag size={16} color={wlConfig?.accent || 'var(--accent-primary)'} />
-             <span style={{ fontSize: '13px', fontWeight: 'bold', letterSpacing: '1px', color: wlConfig?.accent || 'var(--accent-primary)', textTransform: 'uppercase' }}>Network Marketplace</span>
+             <span style={{ fontSize: '13px', fontWeight: 'bold', letterSpacing: '1px', color: wlConfig?.accent || 'var(--accent-primary)', textTransform: 'uppercase' }}>
+               {isBonaireTenant ? "Bonaire Chamber Marketplace" : "Network Marketplace"}
+             </span>
           </div>
-          <h1 style={{ fontSize: '48px', margin: '0 0 16px 0', fontWeight: 900 }}>Discover & Collect</h1>
+          <h1 style={{ fontSize: '48px', margin: '0 0 16px 0', fontWeight: 900 }}>
+            {isBonaireTenant ? "Support Local Bonaire Merchants" : "Discover & Collect"}
+          </h1>
           <p style={{ color: 'var(--text-secondary)', fontSize: '18px', maxWidth: '600px', margin: '0 auto' }}>
-            Support creators directly. Purchase exclusive digital downloads, physical merch, beats, and premium courses.
+            {isBonaireTenant 
+              ? "Discover premium handcrafted sea salts, authentic Caribbean diving gear, guided mangrove snorkeling tickets, and authentic cactus spirits."
+              : "Support creators directly. Purchase exclusive digital downloads, physical merch, beats, and premium courses."}
           </p>
         </motion.div>
       </div>
