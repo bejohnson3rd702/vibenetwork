@@ -4136,15 +4136,16 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
         /* ----------- STORE TAB ----------- */
         <div id="profile-storefront" style={{ display: 'flex', flexDirection: 'column', gap: '30px' }}>
           {/* Shopify Products (fetched from child network's Shopify store) */}
-          {(wlConfig?.shopifyUrl || wlConfig?.theme?.shopifyUrl) && (
+          {(wlConfig?.shopifyUrl || wlConfig?.theme?.shopifyUrl) ? (
             <ErrorBoundary fallback={<div style={{ padding: '40px', color: '#ff4d4d', textAlign: 'center' }}>⚠️ Storefront failed to load.</div>}>
               <React.Suspense fallback={<div style={{ textAlign: 'center', padding: '40px', color: 'var(--text-muted)' }}>Loading store...</div>}>
                 <ShopifyStore />
               </React.Suspense>
             </ErrorBoundary>
-          )}
-          {/* Storefront Header */}
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '16px', marginBottom: '10px' }}>
+          ) : (
+            <>
+              {/* Storefront Header */}
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '16px', marginBottom: '10px' }}>
             <div>
               <h2 style={{ fontSize: '24px', margin: 0, fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '10px' }}>
                 🛍️ Storefront
@@ -4384,6 +4385,8 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
                 {refundPolicy || 'All sales are final. No refunds are provided for digital downloads or virtual bookings. For physical merchandise, please contact the creator directly.'}
               </p>
             </div>
+          )}
+            </>
           )}
         </div>
         )}

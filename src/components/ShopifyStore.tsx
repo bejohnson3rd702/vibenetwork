@@ -65,6 +65,8 @@ export default function ShopifyStore() {
         } else if (cleanUrl.includes('/pages/')) {
           const slug = cleanUrl.split('/pages/')[1]?.replace(/\/$/, '');
           jsonUrl = `https://shopavo.la/products.json?tag=${slug}`;
+        } else {
+          jsonUrl = cleanUrl + '/products.json';
         }
 
         if (!jsonUrl) { setLoading(false); return; }
