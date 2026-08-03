@@ -16,42 +16,73 @@ interface DashboardVideoControlCenterProps {
   onVideoPublished?: () => void;
 }
 
+export const GENRE_TAGS = [
+  'Religious',
+  'Christian',
+  'Culture & Society',
+  'Talk',
+  'Health',
+  'Travel',
+  'Education',
+  'News',
+  'History',
+  'Political',
+  'Documentary',
+  'Other'
+];
+
 export const DashboardVideoControlCenter: React.FC<DashboardVideoControlCenterProps> = ({
   whitelabelId = '100d0000-c08f-4260-8540-a0cc8bed4e01',
   accent = '#004e98',
   onVideoPublished
 }) => {
-  const [mode, setMode] = useState<'youtube' | 'upload'>('youtube');
+  const [mode, setMode] = useState<'youtube' | 'upload' | 'library'>('youtube');
   const [youtubeUrl, setYoutubeUrl] = useState('');
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [transcript, setTranscript] = useState('');
   const [coverImageUrl, setCoverImageUrl] = useState('');
   const [videoFileUrl, setVideoFileUrl] = useState('');
+  const [selectedGenre, setSelectedGenre] = useState('Religious');
+  const [selectedCategoryId, setSelectedCategoryId] = useState('');
 
   const [loadingYt, setLoadingYt] = useState(false);
   const [uploadingImage, setUploadingImage] = useState(false);
   const [uploadingVideo, setUploadingVideo] = useState(false);
+  const [uploadProgressMsg, setUploadProgressMsg] = useState('');
   const [publishing, setPublishing] = useState(false);
   const [successMsg, setSuccessMsg] = useState('');
   const [errorMsg, setErrorMsg] = useState('');
 
   const [publishedVideos, setPublishedVideos] = useState<any[]>([]);
+  const [categories, setCategories] = useState<any[]>([]);
+  const [newCategoryTitle, setNewCategoryTitle] = useState('');
   const [loadingVideos, setLoadingVideos] = useState(true);
+  const [selectedLibraryVideoId, setSelectedLibraryVideoId] = useState('');
 
-  // Fetch all videos published to this network
+  // Fetch videos & categories published to this network
   const fetchPublishedVideos = async () => {
     setLoadingVideos(true);
-    const { data } = await supabase
-      .from('videos')
-      .select('*')
-      .eq('whitelabel_id', whitelabelId)
-      .order('created_at', { ascending: false });
+    try {
+      const [vidRes, catRes] = await Promise.all([
+        supabase.from('videos').select('*').order('created_at', { ascending: false }),
+        supabase.from('categories').select('*').order('title', { ascending: true })
+      ]);
 
-    if (data) {
-      setPublishedVideos(data);
+      if (vidRes.data) {
+        setPublishedVideos(vidRes.data);
+      }
+      if (catRes.data) {
+        setCategories(catRes.data);
+        if (catRes.data.length > 0 && !selectedCategoryId) {
+          setSelectedCategoryId(catRes.data[0].id);
+        }
+      }
+    } catch (e) {
+      console.warn("Error fetching video manager data:", e);
+    } finally {
+      setLoadingVideos(false);
     }
-    setLoadingVideos(false);
   };
 
   useEffect(() => {
@@ -115,35 +146,63 @@ export const DashboardVideoControlCenter: React.FC<DashboardVideoControlCenterPr
     }
   };
 
-  // Upload video file to storage
+  // Upload large video file to storage (Supports 325 MB - 680 MB+ files)
   const handleVideoFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
+    const fileSizeMB = (file.size / (1024 * 1024)).toFixed(1);
     setUploadingVideo(true);
+    setUploadProgressMsg(`Uploading ${fileSizeMB} MB broadcast file to storage. Please wait...`);
     setErrorMsg('');
     try {
-      const fileExt = file.name.split('.').pop();
-      const filePath = `kple_videos/${Date.now()}_${Math.random().toString(36).substring(7)}.${fileExt}`;
-      const { error: uploadErr } = await supabase.storage.from('videos').upload(filePath, file);
+      const fileExt = file.name.split('.').pop() || 'mp4';
+      const fileName = `${Date.now()}_${Math.random().toString(36).substring(7)}.${fileExt}`;
+      const filePath = `broadcasts/${fileName}`;
+
+      const { error: uploadErr } = await supabase.storage.from('videos').upload(filePath, file, {
+        cacheControl: '3600',
+        upsert: true
+      });
 
       if (uploadErr) throw uploadErr;
 
       const { data } = supabase.storage.from('videos').getPublicUrl(filePath);
       if (data?.publicUrl) {
         setVideoFileUrl(data.publicUrl);
+        setUploadProgressMsg(`Upload complete (${fileSizeMB} MB)!`);
       }
     } catch (err: any) {
-      setErrorMsg('Failed to upload video file: ' + err.message);
+      setErrorMsg(`Video upload notice: ${err.message}. Direct stream URLs or external links can also be used below.`);
     } finally {
       setUploadingVideo(false);
     }
   };
 
-  // Generate transcript draft
-  const handleGenerateTranscriptDraft = () => {
-    const draftTitle = title || 'Broadcast Episode';
-    setTranscript(`[00:00] Welcome to ${draftTitle}\n[01:15] Key Scripture & Opening Prayer\n[04:30] Sermon Teaching & Message\n[09:00] Community Announcements & Benediction`);
+  // Create Category
+  const handleCreateCategory = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newCategoryTitle.trim()) return;
+    try {
+      const { error } = await supabase.from('categories').insert({ title: newCategoryTitle.trim() });
+      if (error) throw error;
+      setNewCategoryTitle('');
+      fetchPublishedVideos();
+    } catch (err: any) {
+      setErrorMsg('Failed to create category: ' + err.message);
+    }
+  };
+
+  // Delete Category (Request #10)
+  const handleDeleteCategory = async (catId: string, catTitle: string) => {
+    if (!window.confirm(`Are you sure you want to delete the category "${catTitle}"?`)) return;
+    try {
+      const { error } = await supabase.from('categories').delete().eq('id', catId);
+      if (error) throw error;
+      fetchPublishedVideos();
+    } catch (err: any) {
+      setErrorMsg('Failed to delete category: ' + err.message);
+    }
   };
 
   // Submit and Publish video to database
@@ -159,7 +218,7 @@ export const DashboardVideoControlCenter: React.FC<DashboardVideoControlCenterPr
       return;
     }
     if (!finalVideoUrl.trim()) {
-      setErrorMsg(mode === 'youtube' ? 'Please provide a valid YouTube URL.' : 'Please upload a video file or enter a video URL.');
+      setErrorMsg(mode === 'youtube' ? 'Please provide a valid YouTube URL.' : 'Please upload a video file or select a video link.');
       return;
     }
     if (!coverImageUrl.trim()) {
@@ -177,12 +236,13 @@ export const DashboardVideoControlCenter: React.FC<DashboardVideoControlCenterPr
         image_url: coverImageUrl.trim(),
         video_url: finalVideoUrl.trim(),
         whitelabel_id: whitelabelId,
-        tags: ['KPLE-TV', mode === 'youtube' ? 'YouTube Import' : 'Uploaded Broadcast']
+        category_id: selectedCategoryId || null,
+        tags: [selectedGenre, mode === 'youtube' ? 'YouTube Import' : 'Uploaded Broadcast']
       }).select().single();
 
       if (error) throw error;
 
-      setSuccessMsg('✨ Video successfully published to KPLE-TV Network!');
+      setSuccessMsg('✨ Video successfully published to Network OS!');
       setTitle('');
       setDescription('');
       setTranscript('');
@@ -489,34 +549,162 @@ export const DashboardVideoControlCenter: React.FC<DashboardVideoControlCenterPr
             />
           </div>
 
-          {/* Transcript Editor & Draft Generator */}
-          <div>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
-              <label style={{ fontSize: '13px', fontWeight: 800, color: 'rgba(255,255,255,0.85)' }}>
-                Video Transcript (Timestamped)
+          {/* Genre Tag & Category Playlist Selector */}
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+            <div>
+              <label style={{ display: 'block', fontSize: '13px', fontWeight: 800, color: 'rgba(255,255,255,0.85)', marginBottom: '8px' }}>
+                Genre Tag *
               </label>
-
-              <button
-                type="button"
-                onClick={handleGenerateTranscriptDraft}
+              <select
+                value={selectedGenre}
+                onChange={e => setSelectedGenre(e.target.value)}
                 style={{
-                  background: 'rgba(255,255,255,0.08)',
-                  color: '#fff',
+                  width: '100%',
+                  background: 'rgba(0,0,0,0.5)',
                   border: '1px solid rgba(255,255,255,0.15)',
-                  padding: '6px 14px',
+                  color: '#fff',
+                  padding: '14px 18px',
                   borderRadius: '14px',
-                  fontSize: '12px',
-                  fontWeight: 700,
-                  cursor: 'pointer',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '6px'
+                  fontSize: '14px',
+                  outline: 'none',
+                  boxSizing: 'border-box',
+                  cursor: 'pointer'
                 }}
               >
-                <Sparkles size={14} style={{ color: accent }} />
-                <span>✨ Generate Transcript Draft</span>
+                {GENRE_TAGS.map(g => (
+                  <option key={g} value={g} style={{ background: '#111', color: '#fff' }}>{g}</option>
+                ))}
+              </select>
+            </div>
+
+            <div>
+              <label style={{ display: 'block', fontSize: '13px', fontWeight: 800, color: 'rgba(255,255,255,0.85)', marginBottom: '8px' }}>
+                Playlist / Category
+              </label>
+              <select
+                value={selectedCategoryId}
+                onChange={e => setSelectedCategoryId(e.target.value)}
+                style={{
+                  width: '100%',
+                  background: 'rgba(0,0,0,0.5)',
+                  border: '1px solid rgba(255,255,255,0.15)',
+                  color: '#fff',
+                  padding: '14px 18px',
+                  borderRadius: '14px',
+                  fontSize: '14px',
+                  outline: 'none',
+                  boxSizing: 'border-box',
+                  cursor: 'pointer'
+                }}
+              >
+                <option value="" style={{ background: '#111' }}>-- General Network Playlist --</option>
+                {categories.map(c => (
+                  <option key={c.id} value={c.id} style={{ background: '#111' }}>{c.title}</option>
+                ))}
+              </select>
+            </div>
+          </div>
+
+          {/* Internal Video Library Picker (Request #9) */}
+          <div style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)', padding: '16px', borderRadius: '16px' }}>
+            <label style={{ display: 'block', fontSize: '13px', fontWeight: 800, color: 'rgba(255,255,255,0.85)', marginBottom: '8px' }}>
+              🔗 Select Internal Site Video Link (Optional)
+            </label>
+            <p style={{ margin: '0 0 10px 0', fontSize: '12px', color: 'rgba(255,255,255,0.5)' }}>
+              Want to stream or feature a video already uploaded to this site? Choose it below to copy its link and cover instantly.
+            </p>
+            <select
+              value={selectedLibraryVideoId}
+              onChange={e => {
+                const selectedId = e.target.value;
+                setSelectedLibraryVideoId(selectedId);
+                const found = publishedVideos.find(v => v.id === selectedId);
+                if (found) {
+                  setTitle(found.title || '');
+                  setDescription(found.description || '');
+                  setCoverImageUrl(found.image_url || '');
+                  setVideoFileUrl(found.video_url || '');
+                  if (found.video_url?.includes('youtube')) {
+                    setYoutubeUrl(found.video_url);
+                    setMode('youtube');
+                  } else {
+                    setMode('upload');
+                  }
+                }
+              }}
+              style={{
+                width: '100%',
+                background: 'rgba(0,0,0,0.6)',
+                border: `1px solid ${accent}66`,
+                color: '#fff',
+                padding: '12px 16px',
+                borderRadius: '12px',
+                fontSize: '13px',
+                outline: 'none',
+                cursor: 'pointer'
+              }}
+            >
+              <option value="">-- Choose from existing site video library --</option>
+              {publishedVideos.map(v => (
+                <option key={v.id} value={v.id} style={{ background: '#111' }}>
+                  {v.title} ({v.video_url ? v.video_url.slice(0, 40) + '...' : 'Internal Video'})
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {/* Category / Playlist Manager Card (Request #10) */}
+          <div style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)', padding: '20px', borderRadius: '16px', marginTop: '10px' }}>
+            <h4 style={{ margin: '0 0 12px 0', fontSize: '15px', color: '#fff', fontWeight: 800 }}>
+              📁 Category & Playlist Manager
+            </h4>
+            <div style={{ display: 'flex', gap: '10px', marginBottom: '16px' }}>
+              <input
+                type="text"
+                placeholder="New Category Title (e.g. Sermons, Talk, Health)..."
+                value={newCategoryTitle}
+                onChange={e => setNewCategoryTitle(e.target.value)}
+                style={{ flex: 1, background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.1)', padding: '10px 14px', borderRadius: '10px', color: '#fff', fontSize: '13px', outline: 'none' }}
+              />
+              <button
+                type="button"
+                onClick={handleCreateCategory}
+                style={{ padding: '10px 18px', background: accent, color: '#fff', border: 'none', borderRadius: '10px', fontSize: '13px', fontWeight: 700, cursor: 'pointer' }}
+              >
+                + Add Category
               </button>
             </div>
+
+            {/* List existing categories with 1-click Delete (Request #10) */}
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+              {categories.map(cat => (
+                <div
+                  key={cat.id}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                    padding: '6px 12px',
+                    background: 'rgba(255,255,255,0.05)',
+                    border: '1px solid rgba(255,255,255,0.1)',
+                    borderRadius: '20px',
+                    fontSize: '13px',
+                    color: '#fff'
+                  }}
+                >
+                  <span>{cat.title}</span>
+                  <button
+                    type="button"
+                    onClick={() => handleDeleteCategory(cat.id, cat.title)}
+                    title={`Delete category ${cat.title}`}
+                    style={{ background: 'none', border: 'none', color: '#ff453a', cursor: 'pointer', padding: 0, display: 'flex', alignItems: 'center' }}
+                  >
+                    <Trash2 size={14} />
+                  </button>
+                </div>
+              ))}
+            </div>
+          </div>
 
             <textarea
               placeholder="[00:00] Welcome to the broadcast&#10;[01:30] Sermon highlights..."

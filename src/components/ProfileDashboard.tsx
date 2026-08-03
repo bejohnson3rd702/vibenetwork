@@ -221,7 +221,11 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
   const [editingProduct, setEditingProduct] = useState<any | null>(null);
   const [showEditModal, setShowEditModal] = useState(false);
 
-  // Upgrade 3: TV Series Cinema Theater
+  // Upgrade 3: TV Series Cinema Theater & Edit Modal
+  const [editingSeries, setEditingSeries] = useState<any | null>(null);
+  const [showEditSeriesModal, setShowEditSeriesModal] = useState(false);
+  const [updatingSeries, setUpdatingSeries] = useState(false);
+
   const [activeCinemaSeries, setActiveCinemaSeries] = useState<any | null>(null);
   const [activeCinemaEpisode, setActiveCinemaEpisode] = useState<any | null>(null);
   const [showCinemaModal, setShowCinemaModal] = useState(false);
@@ -8876,21 +8880,142 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
               Processing Upload...
             </motion.h3>
 
-            <motion.p
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.4 }}
+        {/* ── Edit Series Modal Dialog (Request #7) ── */}
+        {showEditSeriesModal && editingSeries && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            style={{
+              position: 'fixed',
+              inset: 0,
+              background: 'rgba(0,0,0,0.85)',
+              backdropFilter: 'blur(12px)',
+              zIndex: 999999,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              padding: '20px'
+            }}
+          >
+            <motion.div
+              initial={{ scale: 0.9, y: 20 }}
+              animate={{ scale: 1, y: 0 }}
               style={{
-                marginTop: '8px',
-                fontSize: '14px',
-                color: '#888',
-                maxWidth: '280px',
-                textAlign: 'center',
-                lineHeight: 1.5
+                background: '#12131e',
+                border: '1px solid rgba(255,255,255,0.15)',
+                borderRadius: '24px',
+                padding: '32px',
+                maxWidth: '600px',
+                width: '100%',
+                maxHeight: '90vh',
+                overflowY: 'auto',
+                boxShadow: '0 20px 60px rgba(0,0,0,0.8)',
+                color: '#fff'
               }}
             >
-              Encoding and storing your media files. Please keep this page open.
-            </motion.p>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+                <h3 style={{ margin: 0, fontSize: '22px', fontWeight: 900 }}>Edit Series Settings</h3>
+                <button
+                  onClick={() => setShowEditSeriesModal(false)}
+                  style={{ background: 'rgba(255,255,255,0.1)', border: 'none', color: '#fff', borderRadius: '50%', width: '36px', height: '36px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '18px' }}
+                >
+                  ✕
+                </button>
+              </div>
+
+              <form
+                onSubmit={async (e) => {
+                  e.preventDefault();
+                  setUpdatingSeries(true);
+                  try {
+                    const { error } = await supabase
+                      .from('series')
+                      .update({
+                        title: editingSeries.title,
+                        description: editingSeries.description,
+                        billing_level: editingSeries.billing_level,
+                        price: editingSeries.price,
+                        subscriber_free: editingSeries.subscriber_free,
+                        subscriber_price: editingSeries.subscriber_price
+                      })
+                      .eq('id', editingSeries.id);
+
+                    if (error) throw error;
+                    toast.success('Series updated successfully!');
+                    setSeriesList(prev => prev.map(s => s.id === editingSeries.id ? { ...s, ...editingSeries } : s));
+                    setShowEditSeriesModal(false);
+                  } catch (err: any) {
+                    toast.error('Failed to update series: ' + err.message);
+                  } finally {
+                    setUpdatingSeries(false);
+                  }
+                }}
+                style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}
+              >
+                <div>
+                  <label style={{ display: 'block', fontSize: '13px', fontWeight: 'bold', color: '#ccc', marginBottom: '6px' }}>Series Title</label>
+                  <input
+                    type="text"
+                    value={editingSeries.title || ''}
+                    onChange={e => setEditingSeries({ ...editingSeries, title: e.target.value })}
+                    style={{ width: '100%', background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.15)', padding: '12px', borderRadius: '12px', color: '#fff', fontSize: '14px', outline: 'none' }}
+                  />
+                </div>
+
+                <div>
+                  <label style={{ display: 'block', fontSize: '13px', fontWeight: 'bold', color: '#ccc', marginBottom: '6px' }}>Description</label>
+                  <textarea
+                    value={editingSeries.description || ''}
+                    onChange={e => setEditingSeries({ ...editingSeries, description: e.target.value })}
+                    rows={3}
+                    style={{ width: '100%', background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.15)', padding: '12px', borderRadius: '12px', color: '#fff', fontSize: '14px', outline: 'none', resize: 'vertical' }}
+                  />
+                </div>
+
+                <div>
+                  <label style={{ display: 'block', fontSize: '13px', fontWeight: 'bold', color: '#ccc', marginBottom: '6px' }}>Billing Model</label>
+                  <select
+                    value={editingSeries.billing_level || 'series'}
+                    onChange={e => setEditingSeries({ ...editingSeries, billing_level: e.target.value })}
+                    style={{ width: '100%', background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.15)', padding: '12px', borderRadius: '12px', color: '#fff', fontSize: '14px', outline: 'none', cursor: 'pointer' }}
+                  >
+                    <option value="series">Charge Per Series (Season Pass)</option>
+                    <option value="episode">Charge Per Episode (Pay Per Episode)</option>
+                  </select>
+                </div>
+
+                {editingSeries.billing_level === 'series' && (
+                  <div>
+                    <label style={{ display: 'block', fontSize: '13px', fontWeight: 'bold', color: '#ccc', marginBottom: '6px' }}>Season Pass Price ($)</label>
+                    <input
+                      type="number"
+                      step="0.01"
+                      value={editingSeries.price || ''}
+                      onChange={e => setEditingSeries({ ...editingSeries, price: e.target.value })}
+                      style={{ width: '100%', background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.15)', padding: '12px', borderRadius: '12px', color: '#fff', fontSize: '14px', outline: 'none' }}
+                    />
+                  </div>
+                )}
+
+                <div style={{ display: 'flex', gap: '12px', justifyContent: 'flex-end', marginTop: '16px' }}>
+                  <button
+                    type="button"
+                    onClick={() => setShowEditSeriesModal(false)}
+                    style={{ padding: '12px 20px', background: 'rgba(255,255,255,0.1)', border: 'none', color: '#fff', borderRadius: '12px', cursor: 'pointer', fontWeight: 'bold' }}
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={updatingSeries}
+                    style={{ padding: '12px 24px', background: '#ff4d85', border: 'none', color: '#fff', borderRadius: '12px', cursor: updatingSeries ? 'not-allowed' : 'pointer', fontWeight: 'bold' }}
+                  >
+                    {updatingSeries ? 'Saving...' : 'Save Series Changes'}
+                  </button>
+                </div>
+              </form>
+            </motion.div>
           </motion.div>
         )}
       </AnimatePresence>

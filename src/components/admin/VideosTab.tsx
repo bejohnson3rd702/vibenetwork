@@ -7,17 +7,15 @@ import { isKpleOnlyConfig } from '../../lib/whitelabel';
 import { DashboardVideoControlCenter } from '../DashboardVideoControlCenter';
 
 export const VideosTab = ({ wlConfig }: { wlConfig: any }) => {
-  const toast = useToast();
   const accent = wlConfig?.theme?.accent || wlConfig?.accent || '#004e98';
 
-  if (wlConfig && isKpleOnlyConfig(wlConfig)) {
-    return (
-      <DashboardVideoControlCenter
-        whitelabelId={wlConfig.id || '100d0000-c08f-4260-8540-a0cc8bed4e01'}
-        accent={accent}
-      />
-    );
-  }
+  return (
+    <DashboardVideoControlCenter
+      whitelabelId={wlConfig?.id || '100d0000-c08f-4260-8540-a0cc8bed4e01'}
+      accent={accent}
+    />
+  );
+};
 
   const [categories, setCategories] = useState<any[]>([]);
   const [videos, setVideos] = useState<any[]>([]);
