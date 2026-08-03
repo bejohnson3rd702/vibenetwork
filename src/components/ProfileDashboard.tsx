@@ -3356,7 +3356,7 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
                   <div className="profile-header-layout">
                     {/* Profile Picture with Glow */}
                     {(() => {
-                      const isCourtney = loadedProfileId === 'courtney-bee-tenant-id' || wlConfig?.id === 'courtney-bee-tenant-id';
+                      const isCourtney = profile?.id === 'courtney-bee-tenant-id' || wlConfig?.id === 'courtney-bee-tenant-id' || creatorIdOverride === 'courtney-bee-tenant-id';
                       const effectiveAvatar = avatarUrl || profile?.avatar_url || (isCourtney ? 'https://static.wixstatic.com/media/066ffc_bb9bdff854db4b56bb3f6b58ee1ce532~mv2.png/v1/crop/x_0,y_261,w_1242,h_763/fill/w_860,h_528,al_c,q_90,usm_0.66_1.00_0.01,enc_avif,quality_auto/image%20(1).png' : (wlConfig?.logoImage || wlConfig?.logo || ''));
                       return (
                         <div 
