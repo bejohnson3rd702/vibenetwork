@@ -490,6 +490,30 @@ function App() {
               enableWatchLive: true
             }
           });
+        } else if (activeTenantId === 'courtney-bee-tenant-id' || activeTenantId === 'therealcourtneybee.com' || activeTenantId?.includes('courtney')) {
+          loadedTenantId = 'courtney-bee-tenant-id';
+          loadedConfig = normalizeWlConfig({
+            id: 'courtney-bee-tenant-id',
+            name: 'The Real Courtney Bee',
+            domain: 'therealcourtneybee.com',
+            logo: 'https://www.therealcourtneybee.com/favicon.ico',
+            parent_network_id: 'adb92e36-5ebc-4dc3-ae96-429f3dc1bb30',
+            platform_fee_percentage: 30,
+            is_active: true,
+            accent: '#ff4d85',
+            theme: {
+              accent: '#ff4d85',
+              heroCopy: 'Welcome to The Real Courtney Bee — Official Media, Broadcasts & Culture Stream.',
+              heroImage: 'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?auto=format&fit=crop&w=1920&q=80',
+              logoImage: 'https://www.therealcourtneybee.com/favicon.ico',
+              shopifyUrl: 'https://www.therealcourtneybee.com/',
+              sliderCount: 4,
+              enableBooking: true,
+              heroLayoutMode: 'verbiage',
+              enableWatchLive: true,
+              parent_network_id: 'adb92e36-5ebc-4dc3-ae96-429f3dc1bb30'
+            }
+          });
         } else if (dbTenantData && dbTenantData.length > 0) {
           const dbConf = dbTenantData[0];
           loadedTenantId = dbConf.id;
