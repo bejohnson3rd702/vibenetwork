@@ -143,8 +143,9 @@ export async function getChildNetworks(parentId: string, includeInactive: boolea
   }
 
   // Dynamically append The Real Courtney Bee under Vibe parent network
-  if (parentId === 'adb92e36-5ebc-4dc3-ae96-429f3dc1bb30' || parentId === 'master' || parentId === 'vibe-master-tenant-id') {
-    const hasCourtney = data.some((row: any) => row.domain?.includes('therealcourtneybee') || row.name?.toLowerCase().includes('courtney bee'));
+  const isOtherParent = parentId === '7a017c4d-c08f-4260-8540-a0cc8bed4e11' || parentId === '100d0000-c08f-4260-8540-a0cc8bed4e01' || parentId === '33742e2f-430b-4c2d-9cba-42507891ef02' || parentId === 'b0ea0000-c08f-4260-8540-a0cc8bed4e11';
+  if (!isOtherParent) {
+    const hasCourtney = data.some((row: any) => row.id === 'courtney-bee-tenant-id' || row.domain?.includes('therealcourtneybee') || row.name?.toLowerCase().includes('courtney bee'));
     if (!hasCourtney) {
       data.push({
         id: 'courtney-bee-tenant-id',
