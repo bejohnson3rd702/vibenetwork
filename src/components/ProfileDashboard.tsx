@@ -4130,7 +4130,7 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
         /* ----------- STORE TAB ----------- */
         <div id="profile-storefront" style={{ display: 'flex', flexDirection: 'column', gap: '30px' }}>
           {/* Shopify Products (fetched from child network's Shopify store) */}
-          {wlConfig?.theme?.shopifyUrl && (
+          {(wlConfig?.shopifyUrl || wlConfig?.theme?.shopifyUrl) && (
             <ErrorBoundary fallback={<div style={{ padding: '40px', color: '#ff4d4d', textAlign: 'center' }}>⚠️ Storefront failed to load.</div>}>
               <React.Suspense fallback={<div style={{ textAlign: 'center', padding: '40px', color: 'var(--text-muted)' }}>Loading store...</div>}>
                 <ShopifyStore />
