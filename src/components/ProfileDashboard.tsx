@@ -8819,7 +8819,6 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
           >
             {/* Concentric rotating loaders */}
             <div style={{ position: 'relative', width: '120px', height: '120px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              
               {/* Outer Halo ring */}
               <motion.div
                 animate={{ rotate: 360 }}
@@ -8880,7 +8879,27 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
               Processing Upload...
             </motion.h3>
 
-        {/* ── Edit Series Modal Dialog (Request #7) ── */}
+            <motion.p
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.4 }}
+              style={{
+                marginTop: '8px',
+                fontSize: '14px',
+                color: '#888',
+                maxWidth: '280px',
+                textAlign: 'center',
+                lineHeight: 1.5
+              }}
+            >
+              Encoding and storing your media files. Please keep this page open.
+            </motion.p>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* ── Edit Series Modal Dialog (Request #7) ── */}
+      <AnimatePresence>
         {showEditSeriesModal && editingSeries && (
           <motion.div
             initial={{ opacity: 0 }}
