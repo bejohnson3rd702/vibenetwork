@@ -154,18 +154,16 @@ export default function N2NHome({ wlConfig, categories, user, activeVideo, setAc
         children = Array.from(uniqueMap.values());
       }
 
-      // Sort Courtney Bee first for Vibe parent network
-      children = [...children].sort((a: any, b: any) => {
-        if (a.id === 'courtney-bee-tenant-id') return -1;
-        if (b.id === 'courtney-bee-tenant-id') return 1;
-        if (shouldLoadParentChildren) {
+      // Sort Mr. Olympia first if parent is Muscle & Fitness
+      if (shouldLoadParentChildren) {
+        children = [...children].sort((a: any, b: any) => {
           const isOlympiaA = a.id === '7a017c4d-c08f-4260-8540-a0cc8bed4e12' || (a.name || '').toLowerCase().includes('olympia');
           const isOlympiaB = b.id === '7a017c4d-c08f-4260-8540-a0cc8bed4e12' || (b.name || '').toLowerCase().includes('olympia');
           if (isOlympiaA && !isOlympiaB) return -1;
           if (!isOlympiaA && isOlympiaB) return 1;
-        }
-        return 0;
-      });
+          return 0;
+        });
+      }
 
       const childIds = children.map((c: any) => c.id);
 
@@ -174,10 +172,10 @@ export default function N2NHome({ wlConfig, categories, user, activeVideo, setAc
           id: child.id,
           title: child.name,
           image: child.logoImage || child.logo || child.theme?.logoImage || child.heroImage || child.theme?.heroImage || `https://ui-avatars.com/api/?name=${encodeURIComponent(child.name)}&background=111&color=fff&size=400`,
-          tags: [child.id === 'courtney-bee-tenant-id' ? 'Creator' : 'Network'],
+          tags: ['Network'],
           videoUrl: '',
           linkUrl: '/?tenant=' + child.id,
-          accent: child.accent || '#ff4d85',
+          accent: child.accent,
         }))
       );
 
