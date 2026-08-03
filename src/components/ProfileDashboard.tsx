@@ -1395,7 +1395,44 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
             progressPromise
           ]);
 
-          setProducts(prodData || []);
+          if (prodData && prodData.length > 0) {
+            setProducts(prodData);
+          } else if (loadedProfileId === 'courtney-bee-tenant-id' || wlConfig?.id === 'courtney-bee-tenant-id') {
+            setProducts([
+              {
+                id: 'cb-prod-1',
+                title: '“YOU DON\'T OWE NO MAN A FLAT STOMACH” Streetwear Tee',
+                description: 'Official Courtney Bee Bledsoe quote tee. Premium heavyweight 100% combed cotton with high-density neon print.',
+                price: 38.00,
+                image_url: '/n2n/merch/shirt_1.jpg',
+                category: 'Merch',
+                is_digital: false,
+                whitelabel_id: 'courtney-bee-tenant-id'
+              },
+              {
+                id: 'cb-prod-2',
+                title: 'Courtney Bee “Live in NYC & Detroit” Vintage Honeybee Tee',
+                description: 'Vintage washed oversized graphic tee featuring the iconic comedy honeybee mascot.',
+                price: 42.00,
+                image_url: '/n2n/merch/shirt_2.jpg',
+                category: 'Merch',
+                is_digital: false,
+                whitelabel_id: 'courtney-bee-tenant-id'
+              },
+              {
+                id: 'cb-prod-3',
+                title: '“Aggressive Punchlines” Signature Script Heavyweight Tee',
+                description: 'Clean luxury white tee with custom magenta & violet script branding.',
+                price: 35.00,
+                image_url: '/n2n/merch/shirt_3.jpg',
+                category: 'Merch',
+                is_digital: false,
+                whitelabel_id: 'courtney-bee-tenant-id'
+              }
+            ]);
+          } else {
+            setProducts([]);
+          }
           setSeriesList(seriesData || []);
           setCourses(coursesData || []);
 
