@@ -222,8 +222,6 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
   const [showEditModal, setShowEditModal] = useState(false);
 
   // Upgrade 3: TV Series Cinema Theater & Edit Modal
-  const [editingSeries, setEditingSeries] = useState<any | null>(null);
-  const [showEditSeriesModal, setShowEditSeriesModal] = useState(false);
   const [updatingSeries, setUpdatingSeries] = useState(false);
 
   const [activeCinemaSeries, setActiveCinemaSeries] = useState<any | null>(null);
