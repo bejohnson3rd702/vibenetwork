@@ -1184,8 +1184,8 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
         const targetProfile = data || {
           id: wlConfig?.owner_id || wlConfig?.id || 'courtney-bee-tenant-id',
           username: wlConfig?.name || 'The Real Courtney Bee',
-          bio: wlConfig?.heroCopy || wlConfig?.theme?.defaultBio || 'Official Channel Media & Culture Stream.',
-          avatar_url: wlConfig?.logoImage || wlConfig?.logo || 'https://www.therealcourtneybee.com/favicon.ico',
+          bio: 'Courtney Bee is a star on the NYC comedy scene (Wild \'N Out Season 18, HBO Max "That Damn Michael Che"). With her hometown Detroit roots, aggressive punchlines, and hilarious wit, she opens for Michael Che and Dulcé Sloan nationwide.',
+          avatar_url: wlConfig?.logoImage || wlConfig?.logo || 'https://static.wixstatic.com/media/066ffc_bb9bdff854db4b56bb3f6b58ee1ce532~mv2.png/v1/crop/x_0,y_261,w_1242,h_763/fill/w_860,h_528,al_c,q_90,usm_0.66_1.00_0.01,enc_avif,quality_auto/image%20(1).png',
           homepage_image_url: wlConfig?.heroImage || 'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?auto=format&fit=crop&w=1920&q=80',
           sub_price: 9.99,
           whitelabel_id: wlConfig?.id || 'courtney-bee-tenant-id'
@@ -1288,6 +1288,42 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
               is_pinned: p.is_pinned || false
             };
           }));
+        } else if (loadedProfileId === 'courtney-bee-tenant-id' || wlConfig?.id === 'courtney-bee-tenant-id') {
+          setFeed([
+            {
+              id: 'cb-post-1',
+              title: '🔥 Wild \'N Out Season 18 Highlights! Catch all new episodes streaming on MTV & Paramount+!',
+              locked: false,
+              likes: 428,
+              date: '2 hours ago',
+              img: 'https://static.wixstatic.com/media/066ffc_bb9bdff854db4b56bb3f6b58ee1ce532~mv2.png/v1/crop/x_0,y_261,w_1242,h_763/fill/w_860,h_528,al_c,q_90,usm_0.66_1.00_0.01,enc_avif,quality_auto/image%20(1).png',
+              imgs: ['https://static.wixstatic.com/media/066ffc_bb9bdff854db4b56bb3f6b58ee1ce532~mv2.png/v1/crop/x_0,y_261,w_1242,h_763/fill/w_860,h_528,al_c,q_90,usm_0.66_1.00_0.01,enc_avif,quality_auto/image%20(1).png'],
+              creator_username: 'The Real Courtney Bee',
+              is_pinned: true
+            },
+            {
+              id: 'cb-post-2',
+              title: '“LADIES, YOU DON\'T OWE NO MAN A FLAT STOMACH!” — Live comedy special snippet from New York City!',
+              locked: false,
+              likes: 312,
+              date: 'Yesterday',
+              img: 'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?auto=format&fit=crop&w=1920&q=80',
+              imgs: ['https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?auto=format&fit=crop&w=1920&q=80'],
+              creator_username: 'The Real Courtney Bee',
+              is_pinned: false
+            },
+            {
+              id: 'cb-post-3',
+              title: '⭐ Featured on HBO Max on "That Damn Michael Che" show & opening for Michael Che and Dulcé Sloan nationwide tour!',
+              locked: true,
+              likes: 589,
+              date: '3 days ago',
+              img: 'https://images.unsplash.com/photo-1585699324551-f6c309eedeca?auto=format&fit=crop&w=1200&q=80',
+              imgs: ['https://images.unsplash.com/photo-1585699324551-f6c309eedeca?auto=format&fit=crop&w=1200&q=80'],
+              creator_username: 'The Real Courtney Bee',
+              is_pinned: false
+            }
+          ]);
         } else {
           setFeed([]);
         }
