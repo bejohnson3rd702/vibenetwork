@@ -490,7 +490,7 @@ function App() {
               enableWatchLive: true
             }
           });
-        } else if (activeTenantId === 'courtney-bee-tenant-id' || activeTenantId === 'therealcourtneybee.com' || activeTenantId?.includes('courtney')) {
+        } else if (activeTenantId === 'courtney-bee-tenant-id' || activeTenantId === 'c0071234-c08f-4260-8540-a0cc8bed4e11' || activeTenantId === 'therealcourtneybee.com' || activeTenantId?.includes('courtney')) {
           loadedTenantId = 'courtney-bee-tenant-id';
           loadedConfig = normalizeWlConfig({
             id: 'courtney-bee-tenant-id',
