@@ -1180,51 +1180,60 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
         postsPromise
       ]);
 
-      if (!error && data) {
-        const loadedProfileId = data.id;
-        const isOwn = user && loadedProfileId === user.id;
-        setViewMode(isOwn ? 'edit' : 'public');
+      const targetProfile = data || {
+        id: wlConfig?.owner_id || wlConfig?.id || 'courtney-bee-tenant-id',
+        username: wlConfig?.name || 'The Real Courtney Bee',
+        bio: wlConfig?.heroCopy || wlConfig?.theme?.defaultBio || 'Official Channel Media & Culture Stream.',
+        avatar_url: wlConfig?.logoImage || wlConfig?.logo || 'https://www.therealcourtneybee.com/favicon.ico',
+        homepage_image_url: wlConfig?.heroImage || 'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?auto=format&fit=crop&w=1920&q=80',
+        sub_price: 9.99,
+        whitelabel_id: wlConfig?.id || 'courtney-bee-tenant-id'
+      };
 
-        setProfile(data);
-        setBio(data.bio !== null && data.bio !== undefined ? data.bio : (wlConfig?.theme?.defaultBio || 'Welcome to my official channel!'));
-        setAvatarUrl(data.avatar_url || '');
-        setHomepageImageUrl(data.homepage_image_url || '');
-        setFlipbookImages(data.flipbook_images || wlConfig?.theme?.flipbook_images || '');
-        setRefundPolicy(data.refund_policy || wlConfig?.theme?.refund_policy || 'All sales are final. No refunds are provided for digital downloads or virtual bookings. For physical merchandise, please contact the creator directly.');
-        if (data.genre) setSelectedGenre(data.genre);
-        if (data.sub_price != null) {
-          setSubPrice(String(data.sub_price));
-          setIsSub(data.sub_price > 0);
+      const loadedProfileId = targetProfile.id;
+      const isOwn = user && loadedProfileId === user.id;
+      setViewMode(isOwn ? 'edit' : 'public');
+
+      setProfile(targetProfile);
+      setBio(targetProfile.bio !== null && targetProfile.bio !== undefined ? targetProfile.bio : (wlConfig?.theme?.defaultBio || 'Welcome to my official channel!'));
+      setAvatarUrl(targetProfile.avatar_url || '');
+      setHomepageImageUrl(targetProfile.homepage_image_url || '');
+      setFlipbookImages(targetProfile.flipbook_images || wlConfig?.theme?.flipbook_images || '');
+      setRefundPolicy(targetProfile.refund_policy || wlConfig?.theme?.refund_policy || 'All sales are final. No refunds are provided for digital downloads or virtual bookings. For physical merchandise, please contact the creator directly.');
+      if (targetProfile.genre) setSelectedGenre(targetProfile.genre);
+      if (targetProfile.sub_price != null) {
+        setSubPrice(String(targetProfile.sub_price));
+        setIsSub(targetProfile.sub_price > 0);
+      }
+      if (targetProfile.booking_price !== undefined && targetProfile.booking_price !== null) setBookingPrice(String(targetProfile.booking_price));
+      if (targetProfile.booking_availability) setBookingAvailability(targetProfile.booking_availability);
+      if (targetProfile.sms_enabled !== undefined && targetProfile.sms_enabled !== null) setSmsEnabled(targetProfile.sms_enabled);
+      if (targetProfile.sms_phone !== undefined && targetProfile.sms_phone !== null) setSmsPhone(targetProfile.sms_phone);
+      if (user) {
+        // Check Supabase first (survives cache clears), localStorage as fallback
+        const localSub = localStorage.getItem(`vibe_sub_${user.id}_${loadedProfileId}`) === 'true';
+        setIsSubscribed(localSub); // Fast local cache while Supabase loads
+        if (supabase) {
+          supabase.from('subscriptions')
+            .select('status')
+            .eq('subscriber_id', user.id)
+            .eq('creator_id', loadedProfileId)
+            .eq('status', 'active')
+            .maybeSingle()
+            .then(({ data: subData }: any) => {
+              const isActive = !!subData;
+              setIsSubscribed(isActive);
+              // Sync localStorage cache with server truth
+              if (isActive) {
+                localStorage.setItem(`vibe_sub_${user.id}_${loadedProfileId}`, 'true');
+              } else {
+                localStorage.removeItem(`vibe_sub_${user.id}_${loadedProfileId}`);
+              }
+            });
         }
-        if (data.booking_price !== undefined && data.booking_price !== null) setBookingPrice(String(data.booking_price));
-        if (data.booking_availability) setBookingAvailability(data.booking_availability);
-        if (data.sms_enabled !== undefined && data.sms_enabled !== null) setSmsEnabled(data.sms_enabled);
-        if (data.sms_phone !== undefined && data.sms_phone !== null) setSmsPhone(data.sms_phone);
-        if (user) {
-          // Check Supabase first (survives cache clears), localStorage as fallback
-          const localSub = localStorage.getItem(`vibe_sub_${user.id}_${loadedProfileId}`) === 'true';
-          setIsSubscribed(localSub); // Fast local cache while Supabase loads
-          if (supabase) {
-            supabase.from('subscriptions')
-              .select('status')
-              .eq('subscriber_id', user.id)
-              .eq('creator_id', loadedProfileId)
-              .eq('status', 'active')
-              .maybeSingle()
-              .then(({ data: subData }: any) => {
-                const isActive = !!subData;
-                setIsSubscribed(isActive);
-                // Sync localStorage cache with server truth
-                if (isActive) {
-                  localStorage.setItem(`vibe_sub_${user.id}_${loadedProfileId}`, 'true');
-                } else {
-                  localStorage.removeItem(`vibe_sub_${user.id}_${loadedProfileId}`);
-                }
-              });
-          }
-        } else {
-          setIsSubscribed(false);
-        }
+      } else {
+        setIsSubscribed(false);
+      }
 
 
         let postsData = postsDataRaw;
