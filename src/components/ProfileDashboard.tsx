@@ -1185,7 +1185,7 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
           id: wlConfig?.owner_id || wlConfig?.id || 'courtney-bee-tenant-id',
           username: wlConfig?.name || 'The Real Courtney Bee',
           bio: 'Courtney Bee is a star on the NYC comedy scene (Wild \'N Out Season 18, HBO Max "That Damn Michael Che"). With her hometown Detroit roots, aggressive punchlines, and hilarious wit, she opens for Michael Che and Dulcé Sloan nationwide.',
-          avatar_url: wlConfig?.logoImage || wlConfig?.logo || '/n2n/courtney_bee_avatar.jpg',
+          avatar_url: wlConfig?.logoImage || wlConfig?.logo || 'https://static.wixstatic.com/media/066ffc_bb9bdff854db4b56bb3f6b58ee1ce532~mv2.png/v1/crop/x_0,y_261,w_1242,h_763/fill/w_860,h_528,al_c,q_90,usm_0.66_1.00_0.01,enc_avif,quality_auto/image%20(1).png',
           homepage_image_url: wlConfig?.heroImage || 'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?auto=format&fit=crop&w=1920&q=80',
           sub_price: 9.99,
           whitelabel_id: wlConfig?.id || 'courtney-bee-tenant-id'
