@@ -438,12 +438,18 @@ export const N2NFleetTab = ({ wlConfig }: { wlConfig: any }) => {
                         </span>
                       </td>
                       <td style={{ padding: '16px', borderBottom: '1px solid rgba(255,255,255,0.03)' }}>
-                        <div style={{ display: 'flex', gap: '8px' }}>
-                          {child.domain && (
-                            <a href={`https://${child.domain}`} target="_blank" rel="noopener noreferrer" style={{ padding: '6px', borderRadius: '8px', background: 'rgba(255,255,255,0.05)', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer', display: 'flex', alignItems: 'center', textDecoration: 'none' }}>
-                              <ExternalLink size={16} />
-                            </a>
-                          )}
+                        <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                          <button
+                            onClick={() => {
+                              const targetUrl = child.id ? `/?tenant=${child.id}` : (child.domain?.startsWith('http') ? child.domain : `https://${child.domain}`);
+                              window.open(targetUrl, '_blank');
+                            }}
+                            title="Open Network Tenant"
+                            style={{ padding: '6px 12px', borderRadius: '8px', background: `${accent}22`, border: `1px solid ${accent}44`, color: accent, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px', fontWeight: 'bold' }}
+                          >
+                            <ExternalLink size={14} /> Open
+                          </button>
+
                           {deleteConfirm === child.id ? (
                             <div style={{ display: 'flex', gap: '4px' }}>
                               <button onClick={() => handleDelete(child.id, child.name)} style={{ padding: '6px 10px', borderRadius: '8px', background: '#FF3B30', border: 'none', color: '#fff', cursor: 'pointer', fontSize: '11px', fontWeight: '700' }}>
@@ -454,8 +460,8 @@ export const N2NFleetTab = ({ wlConfig }: { wlConfig: any }) => {
                               </button>
                             </div>
                           ) : (
-                            <button onClick={() => setDeleteConfirm(child.id)} style={{ padding: '6px', borderRadius: '8px', background: 'rgba(255,59,48,0.08)', border: 'none', color: '#FF3B30', cursor: 'pointer', display: 'flex', alignItems: 'center' }}>
-                              <Trash2 size={16} />
+                            <button onClick={() => setDeleteConfirm(child.id)} title="Archive / Delete Network" style={{ padding: '6px 10px', borderRadius: '8px', background: 'rgba(255,59,48,0.1)', border: '1px solid rgba(255,59,48,0.2)', color: '#FF3B30', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px', fontSize: '12px', fontWeight: 'bold' }}>
+                              <Trash2 size={14} /> Delete
                             </button>
                           )}
                         </div>

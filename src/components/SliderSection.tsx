@@ -20,6 +20,8 @@ interface SliderSectionProps {
   sizeMultiplier?: number;
   cardsPerView?: number;
   onItemClick?: (item: Item) => void;
+  onViewAll?: () => void;
+  viewAllText?: string;
 }
 
 const SlideItem: React.FC<{ item: Item, aspectRatio: string, onClick?: () => void }> = ({ item, aspectRatio }) => {
@@ -198,7 +200,7 @@ const SlideItem: React.FC<{ item: Item, aspectRatio: string, onClick?: () => voi
   );
 };
 
-const SliderSection: React.FC<SliderSectionProps> = ({ title, items, delay = 0, aspectRatio = '16/9', cardsPerView = 5, onItemClick }) => {
+const SliderSection: React.FC<SliderSectionProps> = ({ title, items, delay = 0, aspectRatio = '16/9', cardsPerView = 5, onItemClick, onViewAll, viewAllText }) => {
   const scrollRef = useRef<HTMLDivElement>(null);
   const [isDragging, setIsDragging] = useState(false);
   const [startX, setStartX] = useState(0);
@@ -239,13 +241,43 @@ const SliderSection: React.FC<SliderSectionProps> = ({ title, items, delay = 0, 
             <span style={{ color: 'var(--text-primary)' }}>{title}</span>
           </h2>
           
-          <div style={{ display: 'flex', gap: '8px' }}>
-            <button onClick={() => { if(scrollRef.current) scrollRef.current.scrollBy({ left: -600, behavior: 'smooth' }) }} style={{ width: '48px', height: '48px', borderRadius: '50%', background: 'var(--bg-surface)', border: '1px solid var(--bg-surface-hover)', color: 'var(--text-primary)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.2s', boxShadow: '0 4px 10px rgba(0,0,0,0.1)' }} onMouseOver={e=>{e.currentTarget.style.background='var(--accent-primary)'; e.currentTarget.style.color='#fff'}} onMouseOut={e=>{e.currentTarget.style.background='var(--bg-surface)'; e.currentTarget.style.color='var(--text-primary)'}}>
-              <ChevronLeft size={28} />
-            </button>
-            <button onClick={() => { if(scrollRef.current) scrollRef.current.scrollBy({ left: 600, behavior: 'smooth' }) }} style={{ width: '48px', height: '48px', borderRadius: '50%', background: 'var(--bg-surface)', border: '1px solid var(--bg-surface-hover)', color: 'var(--text-primary)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.2s', boxShadow: '0 4px 10px rgba(0,0,0,0.1)' }} onMouseOver={e=>{e.currentTarget.style.background='var(--accent-primary)'; e.currentTarget.style.color='#fff'}} onMouseOut={e=>{e.currentTarget.style.background='var(--bg-surface)'; e.currentTarget.style.color='var(--text-primary)'}}>
-              <ChevronRight size={28} />
-            </button>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            {onViewAll && (
+              <button 
+                onClick={onViewAll}
+                style={{
+                  background: 'rgba(255,255,255,0.08)',
+                  backdropFilter: 'blur(10px)',
+                  border: '1px solid rgba(255,255,255,0.15)',
+                  color: 'var(--text-primary)',
+                  padding: '10px 20px',
+                  borderRadius: '30px',
+                  fontSize: '13px',
+                  fontWeight: 800,
+                  letterSpacing: '1px',
+                  textTransform: 'uppercase',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  transition: 'all 0.25s'
+                }}
+                onMouseOver={e => { e.currentTarget.style.background = 'var(--accent-primary)'; e.currentTarget.style.color = '#fff'; }}
+                onMouseOut={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.08)'; e.currentTarget.style.color = 'var(--text-primary)'; }}
+              >
+                <span>{viewAllText || 'View All'}</span>
+                <ArrowRight size={16} />
+              </button>
+            )}
+
+            <div style={{ display: 'flex', gap: '8px' }}>
+              <button onClick={() => { if(scrollRef.current) scrollRef.current.scrollBy({ left: -600, behavior: 'smooth' }) }} style={{ width: '48px', height: '48px', borderRadius: '50%', background: 'var(--bg-surface)', border: '1px solid var(--bg-surface-hover)', color: 'var(--text-primary)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.2s', boxShadow: '0 4px 10px rgba(0,0,0,0.1)' }} onMouseOver={e=>{e.currentTarget.style.background='var(--accent-primary)'; e.currentTarget.style.color='#fff'}} onMouseOut={e=>{e.currentTarget.style.background='var(--bg-surface)'; e.currentTarget.style.color='var(--text-primary)'}}>
+                <ChevronLeft size={28} />
+              </button>
+              <button onClick={() => { if(scrollRef.current) scrollRef.current.scrollBy({ left: 600, behavior: 'smooth' }) }} style={{ width: '48px', height: '48px', borderRadius: '50%', background: 'var(--bg-surface)', border: '1px solid var(--bg-surface-hover)', color: 'var(--text-primary)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.2s', boxShadow: '0 4px 10px rgba(0,0,0,0.1)' }} onMouseOver={e=>{e.currentTarget.style.background='var(--accent-primary)'; e.currentTarget.style.color='#fff'}} onMouseOut={e=>{e.currentTarget.style.background='var(--bg-surface)'; e.currentTarget.style.color='var(--text-primary)'}}>
+                <ChevronRight size={28} />
+              </button>
+            </div>
           </div>
         </div>
         

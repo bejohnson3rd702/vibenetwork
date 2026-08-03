@@ -59,10 +59,25 @@ export function isKpleConfig(config: any): boolean {
   const domain = config.domain?.toLowerCase() || '';
   const parentId = config.parent_network_id || '';
   return id === '33742e2f-430b-4c2d-9cba-42507891ef02' ||
+         id === '100d0000-c08f-4260-8540-a0cc8bed4e01' ||
          parentId === '33742e2f-430b-4c2d-9cba-42507891ef02' ||
+         parentId === '100d0000-c08f-4260-8540-a0cc8bed4e01' ||
          name.includes('kple') ||
          name.includes('christian revival') ||
          domain.includes('kpletv.org');
+}
+
+export function isKpleOnlyConfig(config: any): boolean {
+  if (!config) return false;
+  const id = config.id || '';
+  const name = config.name?.toLowerCase() || '';
+  if (id === '33742e2f-430b-4c2d-9cba-42507891ef02' || name.includes('christian revival')) {
+    return false;
+  }
+  const parentId = config.parent_network_id || '';
+  return id === '100d0000-c08f-4260-8540-a0cc8bed4e01' ||
+         parentId === '100d0000-c08f-4260-8540-a0cc8bed4e01' ||
+         name.includes('kple');
 }
 
 export function isBonaireConfig(config: any): boolean {

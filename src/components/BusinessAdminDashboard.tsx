@@ -19,6 +19,8 @@ import { Network, BookUser, Receipt, Palette, Brain, Languages } from 'lucide-re
 import { EnterpriseAiTab } from './admin/EnterpriseAiTab';
 import { TranslationTab } from './admin/TranslationTab';
 
+import { isKpleOnlyConfig } from '../lib/whitelabel';
+
 export default function BusinessAdminDashboard({ onClose }: { onClose: () => void }) {
   const { wlConfig } = useWhiteLabel();
   const [activeTab, setActiveTab] = useState('analytics');
@@ -28,22 +30,26 @@ export default function BusinessAdminDashboard({ onClose }: { onClose: () => voi
   return (
      <div style={{ position: 'fixed', inset: 0, background: 'var(--content-bg)', color: 'var(--text-primary)', zIndex: 999999, display: 'flex', flexDirection: 'column' }}>
        {/* Header */}
-       <div style={{ padding: '20px 40px', borderBottom: '1px solid rgba(255,255,255,0.1)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'var(--bg-color)' }}>
+       <div style={{ height: '70px', borderBottom: '1px solid rgba(255,255,255,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 30px', background: 'rgba(0,0,0,0.5)' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-             <div style={{ width: 40, height: 40, borderRadius: 8, background: wlConfig.accent, display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold', fontSize: '18px' }}>
-               {wlConfig.name.substring(0, 2).toUpperCase()}
+             <div style={{ width: '36px', height: '36px', borderRadius: '8px', background: wlConfig?.accent || '#ff4d85', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold', color: '#fff', fontSize: '14px' }}>
+                {wlConfig?.name?.substring(0, 2).toUpperCase() || 'WL'}
              </div>
-             <h2 style={{ margin: 0, fontSize: '20px', letterSpacing: '1px' }}>{wlConfig.name} Network OS</h2>
+             <h2 style={{ fontSize: '18px', fontWeight: 'bold', margin: 0 }}>
+                {wlConfig?.name || 'White Label'} Network OS
+             </h2>
           </div>
-          <button onClick={onClose} style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', display: 'flex', alignItems: 'center', padding: '8px', borderRadius: '50%', transition: '0.2s' }} onMouseOver={e=>e.currentTarget.style.background='rgba(255,255,255,0.1)'} onMouseOut={e=>e.currentTarget.style.background='transparent'}>
-              <X size={28} />
+
+          <button onClick={onClose} style={{ background: 'transparent', border: 'none', color: '#888', cursor: 'pointer', padding: '8px' }}>
+             <X size={24} />
           </button>
        </div>
-       
-       <div style={{ display: 'flex', flex: 1, overflow: 'hidden' }}>
-          <div style={{ width: '280px', background: 'var(--bg-color)', borderRight: '1px solid rgba(255,255,255,0.05)', padding: '30px 20px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
-             
-             <button onClick={() => setActiveTab('analytics')} style={{ padding: '16px 20px', background: activeTab === 'analytics' ? wlConfig.accent : 'transparent', color: activeTab === 'analytics' ? '#fff' : '#888', border: 'none', borderRadius: '12px', display: 'flex', alignItems: 'center', gap: '16px', cursor: 'pointer', textAlign: 'left', fontWeight: 'bold', fontSize: '15px', transition: '0.2s' }}>
+
+       {/* Body Workspace */}
+       <div style={{ flex: 1, display: 'flex', overflow: 'hidden' }}>
+          {/* Sidebar */}
+          <div style={{ width: '280px', borderRight: '1px solid rgba(255,255,255,0.05)', padding: '20px', display: 'flex', flexDirection: 'column', gap: '8px', overflowY: 'auto' }}>
+             <button onClick={() => setActiveTab('analytics')} style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '16px 20px', background: activeTab === 'analytics' ? wlConfig.accent : 'transparent', color: activeTab === 'analytics' ? '#fff' : '#888', border: 'none', borderRadius: '12px', cursor: 'pointer', textAlign: 'left', fontWeight: 'bold', transition: '0.2s' }}>
                 <BarChart3 size={22} /> Analytics Engine
              </button>
 
@@ -57,9 +63,11 @@ export default function BusinessAdminDashboard({ onClose }: { onClose: () => voi
                 <Sparkles size={22} /> Global Branding
              </button>
 
-             <button onClick={() => setActiveTab('videos')} style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '16px 20px', background: activeTab === 'videos' ? wlConfig.accent : 'transparent', color: activeTab === 'videos' ? '#fff' : '#888', border: 'none', borderRadius: '12px', cursor: 'pointer', textAlign: 'left', fontWeight: 'bold', transition: '0.2s' }}>
-                <Film size={22} /> Videos & Playlists
-             </button>
+             {isKpleOnlyConfig(wlConfig) && (
+               <button onClick={() => setActiveTab('videos')} style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '16px 20px', background: activeTab === 'videos' ? wlConfig.accent : 'transparent', color: activeTab === 'videos' ? '#fff' : '#888', border: 'none', borderRadius: '12px', cursor: 'pointer', textAlign: 'left', fontWeight: 'bold', transition: '0.2s' }}>
+                  <Film size={22} /> Videos & Playlists
+               </button>
+             )}
              
              {/* 
              <button onClick={() => setActiveTab('sliders')} style={{ padding: '16px 20px', background: activeTab === 'sliders' ? wlConfig.accent : 'transparent', color: activeTab === 'sliders' ? '#fff' : '#888', border: 'none', borderRadius: '12px', display: 'flex', alignItems: 'center', gap: '16px', cursor: 'pointer', textAlign: 'left', fontWeight: 'bold', fontSize: '15px', transition: '0.2s' }}>

@@ -154,7 +154,12 @@ export const BrandingTab = ({ wlConfig }: { wlConfig: any }) => {
       </div>
 
       <div style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)', padding: '30px', borderRadius: '20px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
-         <h3 style={{ margin: 0, fontSize: '20px' }}>Primary Logo</h3>
+         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+           <h3 style={{ margin: 0, fontSize: '20px' }}>Primary Logo</h3>
+           <span style={{ fontSize: '11px', fontWeight: 800, color: '#00ff88', background: 'rgba(0,255,136,0.1)', padding: '4px 10px', borderRadius: '12px', border: '1px solid rgba(0,255,136,0.2)' }}>
+             📏 Recommended: 512 × 512 px (1:1 Square)
+           </span>
+         </div>
          <p style={{ margin: 0, color: 'var(--text-muted)', fontSize: '15px' }}>This is the main logo shown in the navigation bar.</p>
          {logoImage && <img src={logoImage} style={{ height: '60px', objectFit: 'contain', background: 'rgba(0,0,0,0.5)', padding: '10px', borderRadius: '8px' }} alt="Logo Preview" />}
          <label 
@@ -184,13 +189,18 @@ export const BrandingTab = ({ wlConfig }: { wlConfig: any }) => {
             }}
          >
             <span>{uploadingLogo ? 'Uploading...' : dragActiveLogo ? 'Drop Logo here!' : 'Upload Logo (Drag & Drop)'}</span>
-            <span style={{ fontSize: '12px', color: 'var(--text-muted)', fontWeight: 'normal' }}>Drag & Drop or click to browse</span>
+            <span style={{ fontSize: '12px', color: 'var(--text-muted)', fontWeight: 'normal' }}>PNG or SVG • 512×512px (1:1 Ratio)</span>
             <input type="file" accept="image/*" onChange={(e) => handleImageUpload(e, setLogoImage, setUploadingLogo)} style={{ display: 'none' }} disabled={uploadingLogo} />
          </label>
       </div>
 
       <div style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)', padding: '30px', borderRadius: '20px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
-         <h3 style={{ margin: 0, fontSize: '20px' }}>Browser Favicon</h3>
+         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+           <h3 style={{ margin: 0, fontSize: '20px' }}>Browser Favicon</h3>
+           <span style={{ fontSize: '11px', fontWeight: 800, color: '#00ff88', background: 'rgba(0,255,136,0.1)', padding: '4px 10px', borderRadius: '12px', border: '1px solid rgba(0,255,136,0.2)' }}>
+             📏 Recommended: 64 × 64 px (1:1 Square)
+           </span>
+         </div>
          <p style={{ margin: 0, color: 'var(--text-muted)', fontSize: '15px' }}>This small square icon appears in the browser tab. If empty, the primary logo is used.</p>
          {faviconImage && <img src={faviconImage} style={{ width: '48px', height: '48px', objectFit: 'contain', background: 'rgba(0,0,0,0.5)', padding: '4px', borderRadius: '8px' }} alt="Favicon Preview" />}
          <label 

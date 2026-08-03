@@ -1,14 +1,16 @@
 import { useState, useEffect, useRef, lazy, Suspense } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Play, X, Network, Volume1, Volume2, VolumeX } from 'lucide-react';
+import { Play, X, Network, Volume1, Volume2, VolumeX, Plus, FileText, Copy, Check, Sparkles } from 'lucide-react';
 import SliderSection from '../components/SliderSection';
 import { useWhiteLabel } from '../context/WhiteLabelContext';
 import { getChildNetworks, mergeQueryParams, OLYMPIA_CHAMPIONS, WINGS_ATHLETES, WINGS_LEGENDS } from '../lib/n2n';
 import { getN2NCategories } from '../api';
 import type { Category, VideoItem, User } from '../types';
 import { supabase } from '../supabaseClient';
-import { isOlympianConfig, isMuscleFitnessConfig, isB2kConfig, isKpleConfig, isBonaireConfig } from '../lib/whitelabel';
+import { isOlympianConfig, isMuscleFitnessConfig, isB2kConfig, isKpleConfig, isKpleOnlyConfig, isBonaireConfig } from '../lib/whitelabel';
+import { KpleWatchPlayer } from '../components/KpleWatchPlayer';
+import { KpleInlineWatchSection } from '../components/KpleInlineWatchSection';
 const CollegeTicker = lazy(() => import('../components/CollegeTicker'));
 const CollegeNewsFeed = lazy(() => import('../components/CollegeNewsFeed'));
 const WatchLive = lazy(() => import('../components/WatchLive'));
@@ -26,7 +28,7 @@ interface N2NHomeProps {
   setActiveVideo: (video: VideoItem | null) => void;
 }
 
-export default function N2NHome({ wlConfig, categories, activeVideo, setActiveVideo }: N2NHomeProps) {
+export default function N2NHome({ wlConfig, categories, user, activeVideo, setActiveVideo }: N2NHomeProps) {
   const navigate = useNavigate();
   const { wlConfig: ctxConfig } = useWhiteLabel();
   const config = wlConfig || ctxConfig;
@@ -81,13 +83,46 @@ export default function N2NHome({ wlConfig, categories, activeVideo, setActiveVi
     }
   };
 
-  // ─── Child Networks ──────────────────────────────────────────────
   const [childItems, setChildItems] = useState<any[]>([]);
   const [childCategories, setChildCategories] = useState<any[]>([]);
   const [athleteItems, setAthleteItems] = useState<any[]>([]);
+  const [kpleChannelVideos, setKpleChannelVideos] = useState<any[]>([]);
+  const [showAllKpleVideosModal, setShowAllKpleVideosModal] = useState(false);
+  const [videoDetailTab, setVideoDetailTab] = useState<'description' | 'transcript'>('description');
+  const [copiedTranscript, setCopiedTranscript] = useState(false);
+  const [kpleSearchQuery, setKpleSearchQuery] = useState('');
+  const [isAdmin, setIsAdmin] = useState(false);
   const [isAmbassadorOpen, setIsAmbassadorOpen] = useState(false);
   const [isHoodieVoteOpen, setIsHoodieVoteOpen] = useState(false);
   const [activeNews, setActiveNews] = useState<any>(null);
+
+  useEffect(() => {
+    const checkAdmin = async () => {
+      const params = new URLSearchParams(window.location.search);
+      if (params.get('admin') === 'true' || params.get('admin_panel') === 'true') {
+        setIsAdmin(true);
+        return;
+      }
+      if (user?.id) {
+        if (config?.owner_id === user.id) {
+          setIsAdmin(true);
+          return;
+        }
+        const { data: prof } = await supabase
+          .from('profiles')
+          .select('is_admin, role')
+          .eq('id', user.id)
+          .single();
+
+        if (prof?.is_admin || prof?.role === 'admin' || prof?.role === 'influencer') {
+          setIsAdmin(true);
+          return;
+        }
+      }
+      setIsAdmin(false);
+    };
+    checkAdmin();
+  }, [user?.id, config?.owner_id]);
 
   useEffect(() => {
     if (!config?.id) return;
@@ -105,6 +140,19 @@ export default function N2NHome({ wlConfig, categories, activeVideo, setActiveVi
 
       let children = await getChildNetworks(targetId);
       if (cancelled) return;
+
+      if (isKpleConfig(config)) {
+        const kpleChildren = await getChildNetworks('100d0000-c08f-4260-8540-a0cc8bed4e01');
+        const crnChildren = await getChildNetworks('33742e2f-430b-4c2d-9cba-42507891ef02');
+        const allKpleNets = [...children, ...kpleChildren, ...crnChildren];
+        const uniqueMap = new Map();
+        allKpleNets.forEach((c: any) => {
+          if (c.id !== config.id && !uniqueMap.has(c.id)) {
+            uniqueMap.set(c.id, c);
+          }
+        });
+        children = Array.from(uniqueMap.values());
+      }
 
       // Sort Mr. Olympia first if parent is Muscle & Fitness
       if (shouldLoadParentChildren) {
@@ -184,6 +232,110 @@ export default function N2NHome({ wlConfig, categories, activeVideo, setActiveVi
             }))
           );
         }
+
+        if (isKpleConfig(config)) {
+          const fetchIds = Array.from(new Set([
+            config.id,
+            '100d0000-c08f-4260-8540-a0cc8bed4e01',
+            '33742e2f-430b-4c2d-9cba-42507891ef02',
+            'a0f7c22e-a3ab-4e3f-a3cf-e06cf0cb0bb0',
+            ...childIds
+          ]));
+
+          const { data: creatorProfiles } = await supabase
+            .from('profiles')
+            .select('id, username, whitelabel_id')
+            .in('whitelabel_id', fetchIds);
+
+          const creatorIds = (creatorProfiles || []).map((p: any) => p.id);
+
+          let query = supabase
+            .from('videos')
+            .select('*, whitelabel:whitelabel_configs(name), creator:profiles(username)')
+            .order('created_at', { ascending: false });
+
+          if (creatorIds.length > 0) {
+            query = query.or(`whitelabel_id.in.(${fetchIds.join(',')}),creator_id.in.(${creatorIds.join(',')})`);
+          } else {
+            query = query.in('whitelabel_id', fetchIds);
+          }
+
+          const [vidsResult, episodesResult] = await Promise.all([
+            query,
+            supabase.from('episodes').select('*, series:series(title, creator_id)').order('created_at', { ascending: false })
+          ]);
+
+          const vidsData = vidsResult.data || [];
+          const episodesData = episodesResult.data || [];
+
+          if (!cancelled) {
+            const nonLiveVideos = vidsData.filter((v: any) => {
+              const url = (v.video_url || '').toLowerCase();
+              const title = (v.title || '').toLowerCase();
+              const tagsStr = (Array.isArray(v.tags) ? v.tags.join(' ') : (v.tags || '')).toLowerCase();
+              return (
+                !tagsStr.includes('live stream') &&
+                !tagsStr.includes('livestream') &&
+                !title.includes('live stream') &&
+                !title.includes('livestream') &&
+                !url.includes('.m3u8') &&
+                !url.includes('stream.mux.com')
+              );
+            });
+
+            const formattedVids = nonLiveVideos.map((v: any) => {
+              const cName = v.whitelabel?.name || (v.creator?.username ? v.creator.username.replace(/_/g, ' ').replace(/\b\w/g, (c: string) => c.toUpperCase()) : 'Channel Video');
+              return {
+                id: v.id,
+                title: v.title,
+                image: v.image_url,
+                tags: [cName, 'Channel Video'],
+                videoUrl: v.video_url,
+                linkUrl: v.video_url,
+                channelName: cName,
+                description: v.description || '',
+                transcript: v.transcript || ''
+              };
+            });
+
+            const validEpisodes = episodesData.filter((ep: any) => {
+              const title = (ep.title || '').toLowerCase();
+              const url = (ep.video_url || '').toLowerCase();
+              return (
+                url &&
+                (title.includes('doc wales') || title.includes('kple') || title.includes('crn') || ep.series?.title?.toLowerCase().includes('doc wales'))
+              );
+            }).sort((a: any, b: any) => {
+              const numA = parseInt(a.title.match(/Episode\s+(\d+)/i)?.[1] || '0', 10);
+              const numB = parseInt(b.title.match(/Episode\s+(\d+)/i)?.[1] || '0', 10);
+              return numA - numB;
+            });
+
+            const formattedEpisodes = validEpisodes.map((ep: any) => {
+              const cName = ep.series?.title || 'Doc Wales Diaries';
+              return {
+                id: ep.id,
+                title: ep.title,
+                image: ep.thumbnail_url || ep.image_url || 'https://st1-fs.cdn01.net/subchannels/0000027/0027085/0027085b2.jpg?v=3',
+                tags: [cName, 'Episode'],
+                videoUrl: ep.video_url,
+                linkUrl: ep.video_url,
+                channelName: cName,
+                description: ep.description || 'Doc Wales Diaries episode featuring Dr. Steve Price on medical missions around the world.',
+                transcript: ep.transcript || ''
+              };
+            });
+
+            const combinedMap = new Map();
+            [...formattedEpisodes, ...formattedVids].forEach(v => {
+              if (!combinedMap.has(v.id)) {
+                combinedMap.set(v.id, v);
+              }
+            });
+
+            setKpleChannelVideos(Array.from(combinedMap.values()));
+          }
+        }
       }
     })();
     return () => { cancelled = true; };
@@ -209,6 +361,7 @@ export default function N2NHome({ wlConfig, categories, activeVideo, setActiveVi
   const isFlex = config?.id === 'flex-online-tenant-id';
   const isB2K = isB2kConfig(config);
   const isKple = isKpleConfig(config);
+  const isKpleOnly = isKpleOnlyConfig(config);
   const isBonaire = isBonaireConfig(config);
 
   const isAvo = config?.id === '3915f1e5-4c79-4b2a-ad41-7029ce8052d7' ||
@@ -470,9 +623,19 @@ export default function N2NHome({ wlConfig, categories, activeVideo, setActiveVi
             </p>
             <button
               onClick={() => {
+                if (isKple) {
+                  if (isKpleOnlyConfig(config)) {
+                    const watchEl = document.getElementById('whats-on-now');
+                    if (watchEl) {
+                      watchEl.scrollIntoView({ behavior: 'smooth' });
+                    }
+                  } else {
+                    window.location.href = mergeQueryParams('/?tenant=100d0000-c08f-4260-8540-a0cc8bed4e01', window.location.search);
+                  }
+                  return;
+                }
+
                 const currentSlide = HERO_SLIDES[heroSlide % HERO_SLIDES.length];
-                const hasCustomSlides = config?.theme?.heroSlider && config.theme.heroSlider.length > 0;
-                if (isKple && !hasCustomSlides) return; // Go nowhere for now
                 if (currentSlide.videoUrl && (!currentSlide.link || currentSlide.link === currentSlide.videoUrl)) {
                   setActiveVideo({
                     id: currentSlide.id || heroSlide.toString(),
@@ -494,16 +657,14 @@ export default function N2NHome({ wlConfig, categories, activeVideo, setActiveVi
                 display: 'inline-block', padding: '13px 40px', fontSize: '11px', fontWeight: 800,
                 textTransform: 'uppercase', letterSpacing: '2.5px',
                 background: 'transparent', color: '#fff',
-                border: '1.5px solid #fff', cursor: (isKple && !(config?.theme?.heroSlider && config.theme.heroSlider.length > 0)) ? 'default' : 'pointer',
+                border: '1.5px solid #fff', cursor: 'pointer',
                 transition: 'all 0.25s',
               }}
               onMouseOver={e => {
-                if (isKple && !(config?.theme?.heroSlider && config.theme.heroSlider.length > 0)) return;
                 e.currentTarget.style.background = '#fff';
                 e.currentTarget.style.color = '#000';
               }}
               onMouseOut={e => {
-                if (isKple && !(config?.theme?.heroSlider && config.theme.heroSlider.length > 0)) return;
                 e.currentTarget.style.background = 'transparent';
                 e.currentTarget.style.color = '#fff';
               }}
@@ -513,7 +674,7 @@ export default function N2NHome({ wlConfig, categories, activeVideo, setActiveVi
                 if (currentSlide.buttonText) return currentSlide.buttonText;
                 if (currentSlide.videoUrl) return "Play Video";
                 if (config?.theme?.shopifyUrl && !config.theme.shopifyUrl.includes('shop')) return "Visit Website";
-                return isOlympian ? "View Schedule" : (isMf ? "Read Workouts" : (isB2K ? "Learn More" : (isKple ? "Watch Network" : (isBonaire ? "Shop Now" : (isVibe100 ? "Enter Channel" : "Shop Now")))));
+                return isOlympian ? "View Schedule" : (isMf ? "Read Workouts" : (isB2K ? "Learn More" : (isKple ? "WATCH" : (isBonaire ? "Shop Now" : (isVibe100 ? "Enter Channel" : "Shop Now")))));
               })()}
             </button>
 
@@ -976,12 +1137,21 @@ export default function N2NHome({ wlConfig, categories, activeVideo, setActiveVi
           </div>
         )}
 
-        {/* ── Watch Live ──────────────────────────────────────── */}
-        <div id="whats-on-now">
-          <Suspense fallback={null}>
-            <WatchLive accent={config.accent} isOlympian={isOlympian} isMf={isMf} isB2K={isB2K} isVibe={isVibe} isKple={isKple} isVibe100={isVibe100} isBonaire={isBonaire} tenantId={config?.id} />
-          </Suspense>
-        </div>
+        {/* ── Watch Section: New KPLE Watch Cinema for KPLE & CRN ──────── */}
+        {isKple ? (
+          <KpleInlineWatchSection
+            videos={kpleChannelVideos}
+            accent={accent}
+            networkName={config.name || 'Christian Revival Network'}
+            onOpenModal={(vid) => setActiveVideo(vid)}
+          />
+        ) : (
+          <div id="whats-on-now">
+            <Suspense fallback={null}>
+              <WatchLive accent={config.accent} isOlympian={isOlympian} isMf={isMf} isB2K={isB2K} isVibe={isVibe} isKple={isKple} isVibe100={isVibe100} isBonaire={isBonaire} tenantId={config?.id} />
+            </Suspense>
+          </div>
+        )}
 
         {/* ── Wings of Strength Athletes Slider ────────────────── */}
         {isWings && (
@@ -1125,11 +1295,15 @@ export default function N2NHome({ wlConfig, categories, activeVideo, setActiveVi
           </section>
         )}
 
+
+
+
+
         {/* ── AVO Campus Athletes / KPLE Channel Profiles Slider ──────────────────────── */}
         {(((isAvo || isKple) && !isBonaire) && athleteItems.length > 0) && (
           <div id="avo-athletes-slider">
             <SliderSection
-              title={isKple ? "CHANNEL PROFILES" : (isBonaire ? "LOCAL MERCHANTS" : "CAMPUS ATHLETES")}
+              title={isKple ? "KPLE-TV CHANNELS" : (isBonaire ? "LOCAL MERCHANTS" : "CAMPUS ATHLETES")}
               items={athleteItems}
               delay={0.1}
               aspectRatio="1/1"
@@ -1884,16 +2058,127 @@ export default function N2NHome({ wlConfig, categories, activeVideo, setActiveVi
             <motion.div
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
-              style={{ marginTop: '24px', textAlign: 'center' }}
+              style={{ marginTop: '20px', textAlign: 'center', maxWidth: '800px', width: '90%' }}
             >
-              <h2 style={{ fontSize: '32px', marginBottom: '8px' }}>{activeVideo.title}</h2>
-              <div style={{ display: 'flex', gap: '8px', justifyContent: 'center' }}>
+              <h2 style={{ fontSize: '28px', marginBottom: '8px', fontWeight: 800 }}>{activeVideo.title}</h2>
+              
+              <div style={{ display: 'flex', gap: '8px', justifyContent: 'center', marginBottom: '20px' }}>
                 {activeVideo.tags.map((tag: string) => (
-                  <span key={tag} style={{ color: accent, fontSize: '14px', textTransform: 'uppercase', letterSpacing: '1px' }}>
+                  <span key={tag} style={{ color: accent, fontSize: '13px', textTransform: 'uppercase', letterSpacing: '1px', fontWeight: 700 }}>
                     {tag}
                   </span>
                 ))}
               </div>
+
+              {/* Description & Transcript Tabs */}
+              {((activeVideo as any).description || (activeVideo as any).transcript) && (
+                <div style={{
+                  background: 'rgba(255,255,255,0.04)',
+                  border: '1px solid rgba(255,255,255,0.1)',
+                  borderRadius: '20px',
+                  padding: '20px 24px',
+                  textAlign: 'left',
+                  marginTop: '16px'
+                }}>
+                  <div style={{ display: 'flex', gap: '12px', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '12px', marginBottom: '16px' }}>
+                    {(activeVideo as any).description && (
+                      <button
+                        onClick={() => setVideoDetailTab('description')}
+                        style={{
+                          background: videoDetailTab === 'description' ? accent : 'rgba(255,255,255,0.08)',
+                          color: '#fff',
+                          border: 'none',
+                          padding: '8px 18px',
+                          borderRadius: '20px',
+                          fontSize: '12px',
+                          fontWeight: 800,
+                          cursor: 'pointer'
+                        }}
+                      >
+                        Description
+                      </button>
+                    )}
+
+                    {(activeVideo as any).transcript && (
+                      <button
+                        onClick={() => setVideoDetailTab('transcript')}
+                        style={{
+                          background: videoDetailTab === 'transcript' ? accent : 'rgba(255,255,255,0.08)',
+                          color: '#fff',
+                          border: 'none',
+                          padding: '8px 18px',
+                          borderRadius: '20px',
+                          fontSize: '12px',
+                          fontWeight: 800,
+                          cursor: 'pointer',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '6px'
+                        }}
+                      >
+                        <FileText size={14} />
+                        <span>Transcript</span>
+                      </button>
+                    )}
+                  </div>
+
+                  {videoDetailTab === 'description' && (activeVideo as any).description && (
+                    <div style={{ fontSize: '14px', lineHeight: 1.6, color: 'rgba(255,255,255,0.85)', whiteSpace: 'pre-line' }}>
+                      {(activeVideo as any).description}
+                    </div>
+                  )}
+
+                  {videoDetailTab === 'transcript' && (activeVideo as any).transcript && (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <span style={{ fontSize: '12px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '1px', color: accent }}>
+                          Video Transcript
+                        </span>
+
+                        <button
+                          onClick={() => {
+                            navigator.clipboard.writeText((activeVideo as any).transcript);
+                            setCopiedTranscript(true);
+                            setTimeout(() => setCopiedTranscript(false), 2000);
+                          }}
+                          style={{
+                            background: 'rgba(255,255,255,0.1)',
+                            color: '#fff',
+                            border: 'none',
+                            padding: '6px 14px',
+                            borderRadius: '14px',
+                            fontSize: '12px',
+                            fontWeight: 700,
+                            cursor: 'pointer',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '6px'
+                          }}
+                        >
+                          {copiedTranscript ? <Check size={14} color="#30d158" /> : <Copy size={14} />}
+                          <span>{copiedTranscript ? 'Copied!' : 'Copy Transcript'}</span>
+                        </button>
+                      </div>
+
+                      <div style={{
+                        background: 'rgba(0,0,0,0.5)',
+                        border: '1px solid rgba(255,255,255,0.08)',
+                        borderRadius: '12px',
+                        padding: '16px',
+                        maxHeight: '220px',
+                        overflowY: 'auto',
+                        fontFamily: 'monospace',
+                        fontSize: '13px',
+                        lineHeight: 1.6,
+                        color: 'rgba(255,255,255,0.9)',
+                        whiteSpace: 'pre-line'
+                      }}>
+                        {(activeVideo as any).transcript}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
             </motion.div>
           </motion.div>
         )}
@@ -2052,6 +2337,155 @@ export default function N2NHome({ wlConfig, categories, activeVideo, setActiveVi
           accent={accent} 
         />
       </Suspense>
+
+      {/* ── KPLE All Videos View All Modal ─────────────────── */}
+      <AnimatePresence>
+        {showAllKpleVideosModal && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => setShowAllKpleVideosModal(false)}
+            style={{
+              position: 'fixed',
+              inset: 0,
+              background: 'rgba(0, 0, 0, 0.92)',
+              backdropFilter: 'blur(20px)',
+              zIndex: 1000,
+              display: 'flex',
+              alignItems: 'center',
+              justify: 'center',
+              padding: '30px'
+            }}
+          >
+            <motion.div
+              initial={{ scale: 0.95, y: 20 }}
+              animate={{ scale: 1, y: 0 }}
+              exit={{ scale: 0.95, y: 20 }}
+              onClick={e => e.stopPropagation()}
+              style={{
+                width: '100%',
+                maxWidth: '1280px',
+                maxHeight: '88vh',
+                background: '#0a0a0f',
+                border: '1px solid rgba(255,255,255,0.15)',
+                borderRadius: '24px',
+                display: 'flex',
+                flexDirection: 'column',
+                overflow: 'hidden',
+                boxShadow: '0 25px 60px rgba(0,0,0,0.85)'
+              }}
+            >
+              {/* Header */}
+              <div style={{ padding: '24px 36px', borderBottom: '1px solid rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: 'rgba(255,255,255,0.02)' }}>
+                <div>
+                  <span style={{ fontSize: '11px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '2px', color: accent }}>KPLE-TV Network Catalog</span>
+                  <h2 style={{ fontSize: '26px', fontWeight: 900, color: '#fff', margin: '4px 0 0', letterSpacing: '-0.5px' }}>
+                    All Channel Videos <span style={{ fontSize: '15px', color: 'rgba(255,255,255,0.5)', fontWeight: 600 }}>({kpleChannelVideos.length} Videos)</span>
+                  </h2>
+                </div>
+                
+                <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+                  <input 
+                    type="text"
+                    placeholder="Search title or channel..."
+                    value={kpleSearchQuery}
+                    onChange={e => setKpleSearchQuery(e.target.value)}
+                    style={{
+                      background: 'rgba(255,255,255,0.08)',
+                      border: '1px solid rgba(255,255,255,0.15)',
+                      color: '#fff',
+                      padding: '10px 18px',
+                      borderRadius: '20px',
+                      fontSize: '14px',
+                      outline: 'none',
+                      width: '240px'
+                    }}
+                  />
+                  <button
+                    onClick={() => setShowAllKpleVideosModal(false)}
+                    style={{
+                      background: 'rgba(255,255,255,0.1)',
+                      border: 'none',
+                      color: '#fff',
+                      borderRadius: '50%',
+                      width: '40px',
+                      height: '40px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justify: 'center',
+                      cursor: 'pointer',
+                      transition: 'all 0.2s'
+                    }}
+                    onMouseOver={e => e.currentTarget.style.background = 'rgba(255,255,255,0.25)'}
+                    onMouseOut={e => e.currentTarget.style.background = 'rgba(255,255,255,0.1)'}
+                  >
+                    <X size={22} />
+                  </button>
+                </div>
+              </div>
+
+              {/* Grid Body */}
+              <div style={{ flex: 1, overflowY: 'auto', padding: '32px', display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '24px' }}>
+                {kpleChannelVideos
+                  .filter(v => 
+                    v.title.toLowerCase().includes(kpleSearchQuery.toLowerCase()) || 
+                    (v.tags && v.tags.some((t: string) => t.toLowerCase().includes(kpleSearchQuery.toLowerCase()))) ||
+                    (v.channelName && v.channelName.toLowerCase().includes(kpleSearchQuery.toLowerCase()))
+                  )
+                  .map(vid => (
+                    <motion.div
+                      key={vid.id}
+                      whileHover={{ scale: 1.03, y: -4 }}
+                      transition={{ duration: 0.2 }}
+                      onClick={() => {
+                        setShowAllKpleVideosModal(false);
+                        setActiveVideo(vid);
+                      }}
+                      style={{
+                        background: 'rgba(255,255,255,0.03)',
+                        border: '1px solid rgba(255,255,255,0.08)',
+                        borderRadius: '20px',
+                        overflow: 'hidden',
+                        cursor: 'pointer',
+                        display: 'flex',
+                        flexDirection: 'column'
+                      }}
+                    >
+                      <div style={{ width: '100%', aspectRatio: '16/9', position: 'relative', overflow: 'hidden', background: '#000' }}>
+                        <img src={vid.image} alt={vid.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                        <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(0,0,0,0.85) 0%, transparent 60%)' }} />
+                        <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                          <div style={{ width: '52px', height: '52px', borderRadius: '50%', background: 'rgba(0,0,0,0.4)', backdropFilter: 'blur(10px)', border: '1px solid rgba(255,255,255,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                            <Play fill="white" size={22} style={{ marginLeft: '3px' }} />
+                          </div>
+                        </div>
+                        <div style={{ position: 'absolute', top: '12px', left: '12px', background: accent, color: '#fff', padding: '4px 12px', borderRadius: '14px', fontSize: '10px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '1px' }}>
+                          {vid.channelName || 'KPLE Channel'}
+                        </div>
+                      </div>
+                      <div style={{ padding: '18px 20px', display: 'flex', flexDirection: 'column', gap: '8px', flex: 1, justifyContent: 'space-between' }}>
+                        <h4 style={{ fontSize: '15px', fontWeight: 800, color: '#fff', margin: 0, lineHeight: 1.35 }}>{vid.title}</h4>
+                        <span style={{ fontSize: '12px', color: accent, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.5px' }}>▶ Watch Episode</span>
+                      </div>
+                    </motion.div>
+                  ))}
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+      {/* ── KPLE / CRN Watch Cinema Player UI ────────────────── */}
+      {isKple && activeVideo && (
+        <KpleWatchPlayer
+          isOpen={!!activeVideo}
+          onClose={() => setActiveVideo(null)}
+          videos={kpleChannelVideos}
+          initialVideoId={activeVideo.id}
+          accent={accent}
+          networkName={config.name || 'Christian Revival Network'}
+        />
+      )}
     </>
   );
 }

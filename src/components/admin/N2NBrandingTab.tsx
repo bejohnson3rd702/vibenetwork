@@ -266,7 +266,12 @@ export const N2NBrandingTab = ({ wlConfig }: { wlConfig: any }) => {
             </div>
 
             <div style={labelStyle}>
-              <span style={labelTextStyle}><Link size={14} /> Logo URL</span>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <span style={labelTextStyle}><Link size={14} /> Logo Graphic</span>
+                <span style={{ fontSize: '11px', fontWeight: 800, color: '#00ff88', background: 'rgba(0,255,136,0.1)', padding: '2px 8px', borderRadius: '10px', border: '1px solid rgba(0,255,136,0.2)' }}>
+                  📏 512 × 512 px (1:1 Ratio)
+                </span>
+              </div>
               <div style={{ display: 'flex', gap: '12px' }}>
                 <input
                   type="text"
@@ -309,7 +314,12 @@ export const N2NBrandingTab = ({ wlConfig }: { wlConfig: any }) => {
             </div>
 
             <div style={labelStyle}>
-              <span style={labelTextStyle}><Image size={14} /> Hero Image URL</span>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <span style={labelTextStyle}><Image size={14} /> Hero Background Image</span>
+                <span style={{ fontSize: '11px', fontWeight: 800, color: '#00ff88', background: 'rgba(0,255,136,0.1)', padding: '2px 8px', borderRadius: '10px', border: '1px solid rgba(0,255,136,0.2)' }}>
+                  📏 1920 × 1080 px (16:9 Ratio)
+                </span>
+              </div>
               <div style={{ display: 'flex', gap: '12px' }}>
                 <input
                   type="text"

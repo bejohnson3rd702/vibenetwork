@@ -16,6 +16,7 @@ import { getChildNetworks, deleteChildNetwork, createChildNetwork } from '../lib
 import LiveTelemetry from './LiveTelemetry';
 import { HeroEditorTab } from './admin/HeroEditorTab';
 import { NetworkDirectoryTab } from './NetworkDirectoryTab';
+import { DashboardVideoControlCenter } from './DashboardVideoControlCenter';
 import { MASTER_DOMAIN } from '../constants';
 
 /** Inline component to list child networks in the Master Admin N2N panel */
@@ -327,6 +328,7 @@ function MasterAdminDashboard() {
             { id: 'app-builder', icon: <ShoppingBag size={18} />, label: 'App Builder' },
             { id: 'branding', icon: <Globe size={18} />, label: 'Platform Branding' },
             { id: 'hero', icon: <Type size={18} />, label: 'Hero Display OS' },
+            { id: 'kple-publisher', icon: <Play size={18} />, label: 'KPLE-TV Video Publisher' },
             { id: 'networks', icon: <Network size={18} />, label: 'Whitelabel Fleet' },
             { id: 'users', icon: <Users size={18} />, label: 'Network Directory' },
             { id: 'database', icon: <Database size={18} />, label: 'Data Clusters' },
@@ -520,6 +522,15 @@ function MasterAdminDashboard() {
                  <LiveTelemetry accentColor="#0055ff" />
                </div>
 
+            </motion.div>
+          )}
+
+          {activeTab === 'kple-publisher' && (
+            <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
+              <DashboardVideoControlCenter
+                whitelabelId="100d0000-c08f-4260-8540-a0cc8bed4e01"
+                accent="#004e98"
+              />
             </motion.div>
           )}
 

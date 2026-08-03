@@ -355,16 +355,17 @@ export async function updateChildBranding(
   const payload: any = {};
   if (updates.name) payload.name = updates.name;
   if (updates.logo) payload.logo = updates.logo;
+  if (updates.accent) payload.accent = updates.accent;
 
   payload.theme = {
     ...existingTheme,
     ...(updates.accent && { accent: updates.accent }),
+    ...(updates.logo && { logo: updates.logo, logoImage: updates.logo }),
     ...(updates.heroCopy && { heroCopy: updates.heroCopy }),
     ...(updates.heroImage && { heroImage: updates.heroImage }),
     ...(updates.bg && { bg: updates.bg }),
     ...(updates.defaultBio !== undefined && { defaultBio: updates.defaultBio }),
   };
-
 
   const { error } = await supabase
     .from('whitelabel_configs')
@@ -403,8 +404,16 @@ export async function deleteChildNetwork(childId: string): Promise<boolean> {
     .eq('id', childId);
 
   if (error) {
-    console.error('N2N: Failed to delete child network', error);
-    return false;
+    console.warn('N2N: Hard delete blocked, performing soft archive update', error);
+    const { error: softError } = await supabase
+      .from('whitelabel_configs')
+      .update({ is_active: false, theme: { _n2n_disabled: true, is_active: false } })
+      .eq('id', childId);
+
+    if (softError) {
+      console.error('N2N: Failed to archive child network', softError);
+      return false;
+    }
   }
   return true;
 }
