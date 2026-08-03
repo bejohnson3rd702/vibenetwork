@@ -1180,15 +1180,16 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
         postsPromise
       ]);
 
-      const targetProfile = data || {
-        id: wlConfig?.owner_id || wlConfig?.id || 'courtney-bee-tenant-id',
-        username: wlConfig?.name || 'The Real Courtney Bee',
-        bio: wlConfig?.heroCopy || wlConfig?.theme?.defaultBio || 'Official Channel Media & Culture Stream.',
-        avatar_url: wlConfig?.logoImage || wlConfig?.logo || 'https://www.therealcourtneybee.com/favicon.ico',
-        homepage_image_url: wlConfig?.heroImage || 'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?auto=format&fit=crop&w=1920&q=80',
-        sub_price: 9.99,
-        whitelabel_id: wlConfig?.id || 'courtney-bee-tenant-id'
-      };
+      if ((!error && data) || (isNetworkLevel && wlConfig?.id)) {
+        const targetProfile = data || {
+          id: wlConfig?.owner_id || wlConfig?.id || 'courtney-bee-tenant-id',
+          username: wlConfig?.name || 'The Real Courtney Bee',
+          bio: wlConfig?.heroCopy || wlConfig?.theme?.defaultBio || 'Official Channel Media & Culture Stream.',
+          avatar_url: wlConfig?.logoImage || wlConfig?.logo || 'https://www.therealcourtneybee.com/favicon.ico',
+          homepage_image_url: wlConfig?.heroImage || 'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?auto=format&fit=crop&w=1920&q=80',
+          sub_price: 9.99,
+          whitelabel_id: wlConfig?.id || 'courtney-bee-tenant-id'
+        };
 
       const loadedProfileId = targetProfile.id;
       const isOwn = user && loadedProfileId === user.id;
