@@ -3257,47 +3257,52 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
                 <div className={`profile-header-card ${isOwnProfile ? 'own-profile' : ''}`} style={{ background: 'rgba(15, 15, 15, 0.4)', backdropFilter: 'blur(24px)', padding: '40px', borderRadius: '32px', border: `1px solid ${wlConfig?.accent || '#00ff88'}22`, position: 'relative', boxShadow: '0 20px 40px rgba(0,0,0,0.4)', marginBottom: '16px' }}>
                   <div className="profile-header-layout">
                     {/* Profile Picture with Glow */}
-                    <div 
-                      className="group" 
-                      onDragOver={(e) => {
-                        if (isOwnProfile && viewMode === 'edit') {
-                          e.preventDefault();
-                          setIsDraggingDirectAvatar(true);
-                        }
-                      }}
-                      onDragLeave={() => setIsDraggingDirectAvatar(false)}
-                      onDrop={(e) => {
-                        if (isOwnProfile && viewMode === 'edit') {
-                          e.preventDefault();
-                          setIsDraggingDirectAvatar(false);
-                          if (e.dataTransfer.files && e.dataTransfer.files[0]) {
-                            setImageTarget('avatar');
-                            handleFileUpload(e.dataTransfer.files[0]);
-                          }
-                        }
-                      }}
-                      onClick={() => { if (isOwnProfile && viewMode === 'edit') handleImageClick(); }}
-                      style={{ 
-                        position: 'relative', 
-                        cursor: isOwnProfile && viewMode === 'edit' ? 'pointer' : 'default',
-                        transition: 'all 0.3s ease'
-                      }} 
-                    >
-                      <div style={{ position: 'absolute', inset: '-10px', background: isDraggingDirectAvatar ? 'radial-gradient(circle at 50% 50%, rgba(0, 255, 136, 0.6), transparent 70%)' : `radial-gradient(circle at 50% 50%, ${wlConfig?.accent || '#ff4d85'}, transparent 70%)`, borderRadius: '50%', zIndex: 0, filter: 'blur(10px)', transition: 'all 0.3s ease' }} />
-                      <div style={{ 
-                        position: 'relative', zIndex: 1,
-                        width: '140px', height: '140px', borderRadius: '50%', 
-                        backgroundImage: avatarUrl ? `url(${avatarUrl})` : `linear-gradient(135deg, ${wlConfig?.accent || '#FF0055'}, #8A2BE2)`,
-                        backgroundSize: 'cover', backgroundPosition: 'center',
-                        display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        fontSize: '56px', fontWeight: 'bold', 
-                        border: isDraggingDirectAvatar ? '4px dashed #00ff88' : '4px solid rgba(255,255,255,0.2)', 
-                        boxShadow: isDraggingDirectAvatar ? '0 0 35px rgba(0,255,136,0.6)' : '0 10px 30px rgba(0,0,0,0.5)',
-                        transition: 'all 0.3s ease'
-                      }}>
-                        {!avatarUrl && (profile?.username ? profile.username[0].toUpperCase() : (user?.email ? user.email[0].toUpperCase() : 'V'))}
-                      </div>
-                    </div>
+                    {(() => {
+                      const effectiveAvatar = avatarUrl || profile?.avatar_url || 'https://static.wixstatic.com/media/066ffc_bb9bdff854db4b56bb3f6b58ee1ce532~mv2.png/v1/crop/x_0,y_261,w_1242,h_763/fill/w_860,h_528,al_c,q_90,usm_0.66_1.00_0.01,enc_avif,quality_auto/image%20(1).png';
+                      return (
+                        <div 
+                          className="group" 
+                          onDragOver={(e) => {
+                            if (isOwnProfile && viewMode === 'edit') {
+                              e.preventDefault();
+                              setIsDraggingDirectAvatar(true);
+                            }
+                          }}
+                          onDragLeave={() => setIsDraggingDirectAvatar(false)}
+                          onDrop={(e) => {
+                            if (isOwnProfile && viewMode === 'edit') {
+                              e.preventDefault();
+                              setIsDraggingDirectAvatar(false);
+                              if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+                                setImageTarget('avatar');
+                                handleFileUpload(e.dataTransfer.files[0]);
+                              }
+                            }
+                          }}
+                          onClick={() => { if (isOwnProfile && viewMode === 'edit') handleImageClick(); }}
+                          style={{ 
+                            position: 'relative', 
+                            cursor: isOwnProfile && viewMode === 'edit' ? 'pointer' : 'default',
+                            transition: 'all 0.3s ease'
+                          }} 
+                        >
+                          <div style={{ position: 'absolute', inset: '-10px', background: isDraggingDirectAvatar ? 'radial-gradient(circle at 50% 50%, rgba(0, 255, 136, 0.6), transparent 70%)' : `radial-gradient(circle at 50% 50%, ${wlConfig?.accent || '#ff4d85'}, transparent 70%)`, borderRadius: '50%', zIndex: 0, filter: 'blur(10px)', transition: 'all 0.3s ease' }} />
+                          <div style={{ 
+                            position: 'relative', zIndex: 1,
+                            width: '140px', height: '140px', borderRadius: '50%', 
+                            backgroundImage: effectiveAvatar ? `url("${effectiveAvatar}")` : `linear-gradient(135deg, ${wlConfig?.accent || '#FF0055'}, #8A2BE2)`,
+                            backgroundSize: 'cover', backgroundPosition: 'center',
+                            display: 'flex', alignItems: 'center', justifyContent: 'center',
+                            fontSize: '56px', fontWeight: 'bold', 
+                            border: isDraggingDirectAvatar ? '4px dashed #00ff88' : '4px solid rgba(255,255,255,0.2)', 
+                            boxShadow: isDraggingDirectAvatar ? '0 0 35px rgba(0,255,136,0.6)' : '0 10px 30px rgba(0,0,0,0.5)',
+                            transition: 'all 0.3s ease'
+                          }}>
+                            {!effectiveAvatar && (profile?.username ? profile.username[0].toUpperCase() : (user?.email ? user.email[0].toUpperCase() : 'V'))}
+                          </div>
+                        </div>
+                      );
+                    })()}
 
                     <div className="profile-info-col" style={{ flex: 1, minWidth: '300px' }}>
                       <h1 className="profile-title" style={{ fontSize: '48px', fontWeight: 900, margin: '0 0 16px 0', letterSpacing: '-1px', textShadow: '0 4px 20px rgba(0,0,0,0.5)', overflowWrap: 'break-word', wordBreak: 'break-word', color: '#fff' }}>
