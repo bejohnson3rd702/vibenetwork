@@ -1095,7 +1095,7 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
   const [commentTexts, setCommentTexts] = useState<Record<string, string>>({});
 
   // Store internal state MUST be above early returns!
-  const [newProduct, setNewProduct] = useState({ title: '', price: '19.99', type: 'digital', image_url: '', sizes: '', colors: '', is_clothing: false });
+  const [newProduct, setNewProduct] = useState({ title: '', price: '0.00', type: 'digital', image_url: '', sizes: '', colors: '', is_clothing: false });
   const [courses, setCourses] = useState<any[]>([]);
   const [purchasedBookings, setPurchasedBookings] = useState<any[]>([]);
   const [receivedBookings, setReceivedBookings] = useState<any[]>([]);
@@ -1140,6 +1140,24 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
 
     return () => clearTimeout(timer);
   }, [uploadingPostMedia, uploadingProductImg, uploadingVideo, uploadingSeriesImg, uploadingEpisodeImg, saving]);
+
+  // Deep linking shared post scroll effect (Top-level Hook)
+  useEffect(() => {
+    const searchParams = new URLSearchParams(location.search);
+    const sharedPostId = searchParams.get('post');
+    if (sharedPostId && feed.length > 0) {
+      const targetId = `post-${sharedPostId}`;
+      const timer = setTimeout(() => {
+        const el = document.getElementById(targetId);
+        if (el) {
+          el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          el.style.borderColor = '#00ff88';
+          el.style.boxShadow = '0 0 30px rgba(0, 255, 136, 0.4)';
+        }
+      }, 400);
+      return () => clearTimeout(timer);
+    }
+  }, [location.search, feed]);
 
   useEffect(() => {
     if (!targetProfileId && !isNetworkLevel) {
@@ -3213,7 +3231,6 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
     }
   };
 
-  // Dynamic SEO sharing overrides
   const searchParams = new URLSearchParams(location.search);
   const sharedPostId = searchParams.get('post');
   const sharedPost = sharedPostId ? feed.find(p => String(p.id) === String(sharedPostId)) : null;
@@ -3422,7 +3439,7 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
                     {/* Action Buttons Column */}
                     {!isOwnProfile && (
                       <div className="profile-header-actions" style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                        {/* Follow Button */}
+                        {/* Button 1: Follow (Yellow Accent) */}
                         <button
                           onClick={handleToggleFollow}
                           disabled={followLoading}
@@ -3431,7 +3448,7 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
                             background: isFollowing ? 'rgba(255,255,255,0.08)' : 'rgba(255, 204, 0, 0.15)',
                             color: isFollowing ? '#aaa' : '#ffcc00',
                             border: '1px solid',
-                            borderColor: isFollowing ? 'rgba(255,255,255,0.15)' : 'rgba(255, 204, 0, 0.4)',
+                            borderColor: isFollowing ? 'rgba(255,255,255,0.15)' : 'rgba(255, 204, 0, 0.5)',
                             borderRadius: '100px',
                             fontWeight: 'bold',
                             fontSize: '14px',
@@ -3440,14 +3457,15 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
                             alignItems: 'center',
                             gap: '6px',
                             transition: 'all 0.3s ease',
-                            backdropFilter: 'blur(10px)'
+                            backdropFilter: 'blur(10px)',
+                            boxShadow: isFollowing ? 'none' : '0 0 15px rgba(255, 204, 0, 0.2)'
                           }}
                         >
                           <Star size={14} fill={isFollowing ? '#aaa' : 'transparent'} />
                           {isFollowing ? 'Following' : 'Follow'}
                         </button>
 
-                        {/* Subscribe Button */}
+                        {/* Button 2: Subscribe (Hot Pink Accent) */}
                         <button
                           className="profile-subscribe-btn"
                           onClick={handleSubscribe}
@@ -3465,7 +3483,7 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
                             display: 'flex',
                             alignItems: 'center',
                             gap: '6px',
-                            boxShadow: isSubscribed ? 'none' : `0 8px 20px ${wlConfig?.accent || '#FF0055'}44`,
+                            boxShadow: isSubscribed ? 'none' : `0 8px 20px ${wlConfig?.accent || '#FF0055'}66`,
                             transition: 'all 0.3s ease'
                           }}
                         >
@@ -3497,25 +3515,25 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
               </div>
               <div className="creator-tools-list">
                 {[
-                  { id: 'feed', label: 'Content Feed', icon: <Activity size={16} /> },
-                  { id: 'store', label: 'Store', icon: <DollarSign size={16} /> },
-                  { id: 'live', label: 'Live Stream', icon: <Video size={16} /> },
-                  ...(wlConfig?.enableBooking !== false ? [{ id: 'booking', label: 'Booking', icon: <Calendar size={16} /> }] : []),
-                  { id: 'series', label: 'Episodes', icon: <Video size={16} /> },
-                  ...(!import.meta.env.PROD ? [{ id: 'courses', label: 'Sessions', icon: <CheckCircle size={16} /> }] : []),
+                  { id: 'feed', label: 'Content Feed', icon: <Activity size={16} />, color: '#ff4d85' },
+                  { id: 'store', label: 'Store', icon: <DollarSign size={16} />, color: '#00ff88' },
+                  { id: 'live', label: 'Live Stream', icon: <Video size={16} />, color: '#ff3b30' },
+                  ...(wlConfig?.enableBooking !== false ? [{ id: 'booking', label: 'Schedule Appointment', icon: <Calendar size={16} />, color: '#b380ff' }] : []),
+                  { id: 'series', label: 'Episodes', icon: <Video size={16} />, color: '#00e5ff' },
+                  ...(!import.meta.env.PROD ? [{ id: 'courses', label: 'Sessions', icon: <CheckCircle size={16} />, color: '#ffb700' }] : []),
                   ...(isOwnProfile && viewMode === 'edit' ? [
-                    { id: 'flipbook', label: 'Vibe Drive', icon: <Folder size={16} /> },
-                    { id: 'creator_control_panel', label: 'Creator Control Dashboard', icon: <Settings size={16} />, isToggle: true }
+                    { id: 'flipbook', label: 'Vibe Drive', icon: <Folder size={16} />, color: '#ff9d00' },
+                    { id: 'creator_control_panel', label: 'Creator Control Dashboard', icon: <Settings size={16} />, isToggle: true, color: '#00ffcc' }
                   ] : [])
                 ]
                   .concat(isNetworkLevel ? [
-                    { id: 'members', label: 'Network Profiles', icon: <Monitor size={16} /> },
-                    { id: 'community', label: 'Community', icon: <MessageCircle size={16} /> }
+                    { id: 'members', label: 'Network Profiles', icon: <Monitor size={16} />, color: '#9d4edd' },
+                    { id: 'community', label: 'Community', icon: <MessageCircle size={16} />, color: '#3399ff' }
                   ] : [])
-                  .concat((myNetworks.length > 0 && !isNetworkLevel) ? [{ id: 'networks', label: 'My Networks', icon: <Monitor size={16} /> }] : [])
+                  .concat((myNetworks.length > 0 && !isNetworkLevel) ? [{ id: 'networks', label: 'My Networks', icon: <Monitor size={16} />, color: '#ff007f' }] : [])
                   .map(tab => {
                     const isActive = tab.isToggle ? showCreatorPanel : activeTab === tab.id;
-                    const accentColor = wlConfig?.accent || '#ff4d85';
+                    const tabColor = tab.color || wlConfig?.accent || '#ff4d85';
                     return (
                       <button 
                         key={tab.id}
@@ -3529,10 +3547,10 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
                         }}
                         style={{ 
                           position: 'relative', 
-                          background: 'none',
-                          border: 'none', 
+                          background: isActive ? `${tabColor}26` : 'rgba(255,255,255,0.02)',
+                          border: isActive ? `1px solid ${tabColor}7f` : '1px solid transparent', 
                           padding: '12px 20px', 
-                          color: isActive ? accentColor : '#888', 
+                          color: isActive ? tabColor : '#888', 
                           fontSize: '14px', 
                           fontWeight: 'bold', 
                           cursor: 'pointer', 
@@ -3540,36 +3558,27 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
                           display: 'flex', 
                           alignItems: 'center', 
                           gap: '8px', 
-                          transition: 'color 0.2s'
+                          transition: 'all 0.25s ease'
                         }}
                         onMouseOver={(e) => {
                           if (!isActive) {
-                            e.currentTarget.style.color = '#fff';
+                            e.currentTarget.style.color = tabColor;
+                            e.currentTarget.style.background = `${tabColor}15`;
+                            e.currentTarget.style.borderColor = `${tabColor}40`;
                           }
                         }}
                         onMouseOut={(e) => {
                           if (!isActive) {
                             e.currentTarget.style.color = '#888';
+                            e.currentTarget.style.background = 'rgba(255,255,255,0.02)';
+                            e.currentTarget.style.borderColor = 'transparent';
                           }
                         }}
                       >
-                        {isActive && (
-                          <motion.div 
-                            layoutId="activepublictab" 
-                            style={{ 
-                              position: 'absolute', 
-                              inset: 0, 
-                              background: `${accentColor}26`, 
-                              borderRadius: '12px', 
-                              border: `1px solid ${accentColor}7f`,
-                              zIndex: 0
-                            }} 
-                          />
-                        )}
-                        <span style={{ display: 'flex', alignItems: 'center', color: isActive ? accentColor : 'inherit', position: 'relative', zIndex: 1 }}>
+                        <span style={{ display: 'flex', alignItems: 'center', color: isActive ? tabColor : 'inherit', position: 'relative', zIndex: 1 }}>
                           {tab.icon}
+                          <span style={{ marginLeft: '8px' }}>{tab.label}</span>
                         </span>
-                        <span style={{ position: 'relative', zIndex: 1 }}>{tab.label}</span>
                       </button>
                     );
                   })}
@@ -3587,7 +3596,7 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
                 </div>
                 <div className="creator-tools-list">
                   {[
-                    { id: 'my_bookings', label: 'Scheduled Bookings', icon: <Calendar size={16} />, color: '#b380ff', bg: 'rgba(179,128,255,0.12)', border: 'rgba(179,128,255,0.4)', show: !!user },
+                    { id: 'my_bookings', label: 'Schedule Appointment', icon: <Calendar size={16} />, color: '#b380ff', bg: 'rgba(179,128,255,0.12)', border: 'rgba(179,128,255,0.4)', show: !!user },
                     { id: 'subscriptions', label: 'Following & Subs', icon: <Star size={16} />, color: '#ffcc00', bg: 'rgba(255,204,0,0.12)', border: 'rgba(255,204,0,0.4)', show: !!user },
                     { id: 'ai_report', label: 'AI Creator Report', icon: <Activity size={16} />, color: '#3399ff', bg: 'rgba(51,153,255,0.12)', border: 'rgba(51,153,255,0.4)', show: isInfluencer },
                     { id: 'crm', label: 'Vibe CRM', icon: <Users size={16} />, color: '#00ffcc', bg: 'rgba(0,255,204,0.12)', border: 'rgba(0,255,204,0.4)', show: isInfluencer },
@@ -3681,7 +3690,7 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
                 <Edit3 size={20} color={wlConfig?.accent || '#ff4d85'} />
               </div>
               <div>
-                <h3 style={{ margin: 0, fontSize: '18px', fontWeight: 800, color: 'var(--text-primary)', letterSpacing: '-0.3px' }}>Create a New Post</h3>
+                <h3 style={{ margin: 0, fontSize: '18px', fontWeight: 800, color: 'var(--text-primary)', letterSpacing: '-0.3px' }}>Create a New Feed</h3>
                 <p style={{ margin: '2px 0 0 0', fontSize: '13px', color: 'var(--text-muted)' }}>Publish text, images, or videos directly to your feed.</p>
               </div>
             </div>
@@ -3750,7 +3759,7 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
                     boxShadow: '0 2px 8px rgba(138,43,226,0.3)'
                   }}
                 >
-                  <Wand size={12} /> AI Boost
+                  <span style={{ fontSize: '14px' }}>😊</span> AI Boost
                 </button>
               </div>
             </div>
@@ -3893,7 +3902,7 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
                     }
                   }}
                 >
-                  Publish Post
+                  Publish Feed
                 </button>
               </div>
             </div>
@@ -6837,10 +6846,10 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} style={{ display: 'flex', flexDirection: 'column', gap: '30px' }}>
               <div style={{ background: 'rgba(255,255,255,0.03)', borderRadius: '24px', padding: '30px', border: '1px solid rgba(255,255,255,0.05)' }}>
                 <h2 style={{ fontSize: '24px', margin: '0 0 20px 0', color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '10px' }}>
-                  <Calendar size={24} color={wlConfig?.accent || "#ff4d85"} /> Scheduled Bookings
+                  <Calendar size={24} color={wlConfig?.accent || "#ff4d85"} /> Schedule Appointment
                 </h2>
                 {allBookings.length === 0 ? (
-                  <p style={{ color: 'var(--text-muted)', fontStyle: 'italic' }}>You have no scheduled bookings yet.</p>
+                  <p style={{ color: 'var(--text-muted)', fontStyle: 'italic' }}>You have no scheduled appointments yet.</p>
                 ) : (
                   <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '20px' }}>
                     {allBookings.map((b, i) => {
@@ -8132,8 +8141,41 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
                   </div>
 
                   <div>
-                    <label style={{ display: 'block', marginBottom: '6px', fontSize: '13px', color: 'var(--text-muted)' }}>Product Image URL</label>
-                    <input type="text" value={editingProduct.image_url || ''} onChange={e => setEditingProduct({ ...editingProduct, image_url: e.target.value })} style={{ width: '100%', background: 'rgba(0,0,0,0.4)', border: '1px solid rgba(255,255,255,0.1)', padding: '12px', borderRadius: '10px', color: 'var(--text-primary)', outline: 'none' }} />
+                    <label style={{ display: 'block', marginBottom: '6px', fontSize: '13px', color: 'var(--text-muted)' }}>Product Image URL & Cover Art</label>
+                    <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+                      <input type="text" value={editingProduct.image_url || ''} onChange={e => setEditingProduct({ ...editingProduct, image_url: e.target.value })} style={{ flex: 1, background: 'rgba(0,0,0,0.4)', border: '1px solid rgba(255,255,255,0.1)', padding: '12px', borderRadius: '10px', color: 'var(--text-primary)', outline: 'none' }} />
+                      <label style={{ padding: '10px 16px', background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.2)', borderRadius: '10px', color: '#fff', fontSize: '12px', fontWeight: 'bold', cursor: 'pointer', whiteSpace: 'nowrap' }}>
+                        🖼️ Change Image
+                        <input type="file" accept="image/*" onChange={(e) => {
+                          if (e.target.files && e.target.files[0]) {
+                            handleProductImageUpload(e.target.files[0]).then(url => {
+                              if (url) setEditingProduct((prev: any) => ({ ...prev, image_url: url }));
+                            });
+                          }
+                        }} style={{ display: 'none' }} />
+                      </label>
+                    </div>
+                  </div>
+
+                  <div>
+                    <label style={{ display: 'block', marginBottom: '6px', fontSize: '13px', color: 'var(--text-muted)' }}>Product Content File (ZIP, PDF, Audio, Video)</label>
+                    <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+                      <input type="text" placeholder="https://... file attachment link" value={editingProduct.digital_file_url || ''} onChange={e => setEditingProduct({ ...editingProduct, digital_file_url: e.target.value })} style={{ flex: 1, background: 'rgba(0,0,0,0.4)', border: '1px solid rgba(255,255,255,0.1)', padding: '12px', borderRadius: '10px', color: 'var(--text-primary)', outline: 'none' }} />
+                      <label style={{ padding: '10px 16px', background: 'rgba(0, 229, 255, 0.15)', border: '1px solid rgba(0, 229, 255, 0.4)', borderRadius: '10px', color: '#00e5ff', fontSize: '12px', fontWeight: 'bold', cursor: 'pointer', whiteSpace: 'nowrap' }}>
+                        📁 Replace File
+                        <input type="file" onChange={async (e) => {
+                          if (e.target.files && e.target.files[0]) {
+                            const file = e.target.files[0];
+                            const filePath = `product_files/${Date.now()}_${file.name}`;
+                            const { data, error } = await supabase.storage.from('media').upload(filePath, file);
+                            if (!error && data) {
+                              const { data: pubData } = supabase.storage.from('media').getPublicUrl(filePath);
+                              if (pubData?.publicUrl) setEditingProduct((prev: any) => ({ ...prev, digital_file_url: pubData.publicUrl }));
+                            }
+                          }
+                        }} style={{ display: 'none' }} />
+                      </label>
+                    </div>
                   </div>
 
                   {editingProduct.type === 'physical' && (() => {
