@@ -706,6 +706,10 @@ export const DashboardVideoControlCenter: React.FC<DashboardVideoControlCenterPr
             </div>
           </div>
 
+          <div>
+            <label style={{ display: 'block', fontSize: '13px', fontWeight: 800, color: 'rgba(255,255,255,0.85)', marginBottom: '8px' }}>
+              Video Transcript / Chapters (Optional)
+            </label>
             <textarea
               placeholder="[00:00] Welcome to the broadcast&#10;[01:30] Sermon highlights..."
               value={transcript}
