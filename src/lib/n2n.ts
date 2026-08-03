@@ -142,6 +142,35 @@ export async function getChildNetworks(parentId: string, includeInactive: boolea
     }
   }
 
+  // Dynamically append The Real Courtney Bee under Vibe parent network
+  if (parentId === 'adb92e36-5ebc-4dc3-ae96-429f3dc1bb30' || parentId === 'master' || parentId === 'vibe-master-tenant-id') {
+    const hasCourtney = data.some((row: any) => row.domain?.includes('therealcourtneybee') || row.name?.toLowerCase().includes('courtney bee'));
+    if (!hasCourtney) {
+      data.push({
+        id: 'courtney-bee-tenant-id',
+        name: 'The Real Courtney Bee',
+        domain: 'therealcourtneybee.com',
+        logo: 'https://www.therealcourtneybee.com/favicon.ico',
+        parent_network_id: 'adb92e36-5ebc-4dc3-ae96-429f3dc1bb30',
+        platform_fee_percentage: 30,
+        is_active: true,
+        accent: '#ff4d85',
+        theme: {
+          accent: '#ff4d85',
+          heroCopy: 'Welcome to The Real Courtney Bee — Official Media, Broadcasts & Culture Stream.',
+          heroImage: 'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?auto=format&fit=crop&w=1920&q=80',
+          logoImage: 'https://www.therealcourtneybee.com/favicon.ico',
+          shopifyUrl: 'https://www.therealcourtneybee.com/',
+          sliderCount: 4,
+          enableBooking: true,
+          heroLayoutMode: 'verbiage',
+          enableWatchLive: true,
+          parent_network_id: 'adb92e36-5ebc-4dc3-ae96-429f3dc1bb30'
+        }
+      });
+    }
+  }
+
   if (!data) return [];
   
   // Filter out test networks (Noelani, Bennie, Leilani, Leiloe, etc.)
