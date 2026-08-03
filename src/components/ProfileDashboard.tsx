@@ -3171,9 +3171,9 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
         {/* Feed Layout Container */}
         <div style={{ maxWidth: isGuestMode ? '1200px' : '850px', margin: '0 auto', padding: '0 20px', display: 'flex', flexDirection: 'column', gap: '30px', paddingBottom: '100px' }}>
           
-          {!isGuestMode && !isNetworkLevel && (
+          {!isGuestMode && (
             <>
-              {wlConfig?.parent_network_id && (
+              {!isNetworkLevel && wlConfig?.parent_network_id && (
                 <button
                   onClick={() => navigate({ pathname: '/', search: location.search })}
                   style={{
@@ -3217,325 +3217,135 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
               )}
 
               {/* Glassmorphic Creator Header */}
-              <div className={`profile-header-card ${isOwnProfile ? 'own-profile' : ''}`} style={{ background: isNetworkLevel ? 'transparent' : 'rgba(15, 15, 15, 0.4)', backdropFilter: isNetworkLevel ? 'none' : 'blur(24px)', padding: isNetworkLevel ? '0 40px 40px' : '40px', borderRadius: '32px', border: isNetworkLevel ? 'none' : `1px solid ${wlConfig?.accent || '#00ff88'}22`, position: 'relative', boxShadow: isNetworkLevel ? 'none' : '0 20px 40px rgba(0,0,0,0.4)' }}>
-            
-
-
-
-
-            <div className="profile-header-layout">
-              
-              {/* Profile Picture with Glow */}
-              <div 
-                className="group" 
-                onDragOver={(e) => {
-                  if (isOwnProfile && viewMode === 'edit') {
-                    e.preventDefault();
-                    setIsDraggingDirectAvatar(true);
-                  }
-                }}
-                onDragLeave={() => setIsDraggingDirectAvatar(false)}
-                onDrop={(e) => {
-                  if (isOwnProfile && viewMode === 'edit') {
-                    e.preventDefault();
-                    setIsDraggingDirectAvatar(false);
-                    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
-                      setImageTarget('avatar');
-                      handleFileUpload(e.dataTransfer.files[0]);
-                    }
-                  }
-                }}
-                onClick={() => { if (isOwnProfile && viewMode === 'edit') handleImageClick(); }}
-                style={{ 
-                  position: 'relative', 
-                  cursor: isOwnProfile && viewMode === 'edit' ? 'pointer' : 'default',
-                  transition: 'all 0.3s ease'
-                }} 
-              >
-                <div style={{ position: 'absolute', inset: '-10px', background: isDraggingDirectAvatar ? 'radial-gradient(circle at 50% 50%, rgba(0, 255, 136, 0.6), transparent 70%)' : 'radial-gradient(circle at 50% 50%, rgba(255, 77, 133, 0.5), transparent 70%)', borderRadius: '50%', zIndex: 0, filter: 'blur(10px)', transition: 'all 0.3s ease' }} />
-                <div style={{ 
-                  position: 'relative', zIndex: 1,
-                  width: '140px', height: '140px', borderRadius: '50%', 
-                  backgroundImage: avatarUrl ? `url(${avatarUrl})` : 'linear-gradient(135deg, #FF0055, #8A2BE2)',
-                  backgroundSize: 'cover', backgroundPosition: 'center',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  fontSize: '56px', fontWeight: 'bold', 
-                  border: isDraggingDirectAvatar ? '4px dashed #00ff88' : '4px solid rgba(255,255,255,0.2)', 
-                  boxShadow: isDraggingDirectAvatar ? '0 0 35px rgba(0,255,136,0.6)' : '0 10px 30px rgba(0,0,0,0.5)',
-                  transition: 'all 0.3s ease'
-                }}>
-                  {!avatarUrl && (profile?.username ? profile.username[0].toUpperCase() : (user?.email ? user.email[0].toUpperCase() : 'V'))}
-                </div>
-                {/* Camera Overlay only on Edit Mode */}
-                {viewMode === 'edit' && (
-                  <div className="camera-overlay" style={{
-                    position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.6)', borderRadius: '50%',
-                    display: 'flex', alignItems: 'center', justifyContent: 'center', opacity: isDraggingDirectAvatar ? 1 : 0, transition: '0.2s', zIndex: 2
-                  }}>
-                    {isDraggingDirectAvatar ? (
-                      <span style={{ color: '#00ff88', fontWeight: 'black', fontSize: '14px', letterSpacing: '1px', textTransform: 'uppercase' }}>Drop Pic!</span>
-                    ) : (
-                      <Camera size={34} color="#fff" />
-                    )}
-                  </div>
-                )}
-                {/* Camera Badge/Icon on Edit Mode */}
-                {viewMode === 'edit' && !isDraggingDirectAvatar && (
-                  <div 
-                    className="camera-badge" 
-                    style={{
-                      position: 'absolute',
-                      bottom: '0px',
-                      right: '0px',
-                      background: wlConfig?.accent || 'var(--accent-primary)',
-                      borderRadius: '50%',
-                      width: '38px',
-                      height: '38px',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      border: '3px solid #0d0d0d',
-                      boxShadow: '0 4px 12px rgba(0,0,0,0.5)',
-                      zIndex: 3,
-                      transition: 'all 0.2s ease-in-out'
-                    }}
-                  >
-                    <Camera size={18} color="#fff" />
-                  </div>
-                )}
-                <input type="file" ref={fileInputRef} style={{ display: 'none' }} accept="image/*" />
-              </div>
-
-              <div className="profile-info-col" style={{ flex: 1, minWidth: '300px' }}>
-                <h1 className="profile-title" style={{ fontSize: '48px', fontWeight: 900, margin: '0 0 16px 0', letterSpacing: '-1px', textShadow: '0 4px 20px rgba(0,0,0,0.5)', overflowWrap: 'break-word', wordBreak: 'break-word' }}>{profile.username || 'Anonymous Creator'}</h1>
-                
-                {isInfluencer ? (
-                  <>
-                    <div className="profile-badge-container">
-                      <span style={{ padding: '8px 16px', background: 'rgba(0,85,255,0.15)', color: '#4da6ff', border: '1px solid rgba(0,85,255,0.3)', borderRadius: '24px', fontSize: '12px', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '1px' }}>Enterprise Profile</span>
-                      
-                      {/* {viewMode === 'edit' ? (
-                        <>
-                          <select aria-label="genre selector" value={selectedGenre} onChange={(e) => setSelectedGenre(e.target.value)} style={{ padding: '8px 16px', background: 'rgba(255,255,255,0.05)', color: 'var(--text-primary)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '24px', fontSize: '13px', outline: 'none', cursor: 'pointer', backdropFilter: 'blur(10px)' }}>
-                            <option>SaaS Platform</option>
-                            <option>Fintech API</option>
-                            <option>AI Automation</option>
-                            <option>B2B Marketplace</option>
-                          </select>
-                        </>
-                      ) : (
-                        <>
-                          <span style={{ padding: '8px 16px', background: 'rgba(255,255,255,0.1)', color: 'var(--text-primary)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '24px', fontSize: '13px', backdropFilter: 'blur(10px)' }}>{selectedGenre}</span>
-
-                        </>
-                      )} */}
+              {profile && (
+                <div className={`profile-header-card ${isOwnProfile ? 'own-profile' : ''}`} style={{ background: 'rgba(15, 15, 15, 0.4)', backdropFilter: 'blur(24px)', padding: '40px', borderRadius: '32px', border: `1px solid ${wlConfig?.accent || '#00ff88'}22`, position: 'relative', boxShadow: '0 20px 40px rgba(0,0,0,0.4)', marginBottom: '16px' }}>
+                  <div className="profile-header-layout">
+                    {/* Profile Picture with Glow */}
+                    <div 
+                      className="group" 
+                      onDragOver={(e) => {
+                        if (isOwnProfile && viewMode === 'edit') {
+                          e.preventDefault();
+                          setIsDraggingDirectAvatar(true);
+                        }
+                      }}
+                      onDragLeave={() => setIsDraggingDirectAvatar(false)}
+                      onDrop={(e) => {
+                        if (isOwnProfile && viewMode === 'edit') {
+                          e.preventDefault();
+                          setIsDraggingDirectAvatar(false);
+                          if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+                            setImageTarget('avatar');
+                            handleFileUpload(e.dataTransfer.files[0]);
+                          }
+                        }
+                      }}
+                      onClick={() => { if (isOwnProfile && viewMode === 'edit') handleImageClick(); }}
+                      style={{ 
+                        position: 'relative', 
+                        cursor: isOwnProfile && viewMode === 'edit' ? 'pointer' : 'default',
+                        transition: 'all 0.3s ease'
+                      }} 
+                    >
+                      <div style={{ position: 'absolute', inset: '-10px', background: isDraggingDirectAvatar ? 'radial-gradient(circle at 50% 50%, rgba(0, 255, 136, 0.6), transparent 70%)' : `radial-gradient(circle at 50% 50%, ${wlConfig?.accent || '#ff4d85'}, transparent 70%)`, borderRadius: '50%', zIndex: 0, filter: 'blur(10px)', transition: 'all 0.3s ease' }} />
+                      <div style={{ 
+                        position: 'relative', zIndex: 1,
+                        width: '140px', height: '140px', borderRadius: '50%', 
+                        backgroundImage: avatarUrl ? `url(${avatarUrl})` : `linear-gradient(135deg, ${wlConfig?.accent || '#FF0055'}, #8A2BE2)`,
+                        backgroundSize: 'cover', backgroundPosition: 'center',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        fontSize: '56px', fontWeight: 'bold', 
+                        border: isDraggingDirectAvatar ? '4px dashed #00ff88' : '4px solid rgba(255,255,255,0.2)', 
+                        boxShadow: isDraggingDirectAvatar ? '0 0 35px rgba(0,255,136,0.6)' : '0 10px 30px rgba(0,0,0,0.5)',
+                        transition: 'all 0.3s ease'
+                      }}>
+                        {!avatarUrl && (profile?.username ? profile.username[0].toUpperCase() : (user?.email ? user.email[0].toUpperCase() : 'V'))}
+                      </div>
                     </div>
 
-                    {viewMode === 'edit' ? (
-                      <>
-                        <div style={{ position: 'relative' }}>
-                          <textarea 
-                            value={bio}
-                            onChange={(e) => setBio(e.target.value)}
-                            placeholder="Write a bio to tell your viewers what your channel is about..."
-                            style={{ 
-                              width: '100%', 
-                              minHeight: '105px', 
-                              background: 'rgba(0,0,0,0.5)', 
-                              border: '1px solid rgba(255,255,255,0.1)', 
-                              borderRadius: '16px', 
-                              padding: '16px 16px 64px 16px', 
-                              color: 'var(--text-primary)', 
-                              resize: 'vertical', 
-                              fontSize: '15px', 
-                              outline: 'none', 
-                              backdropFilter: 'blur(10px)',
-                              boxSizing: 'border-box'
-                            }}
-                          />
-                          <div style={{ position: 'absolute', right: '120px', bottom: '20px', display: 'flex', gap: '4px' }}>
-                            <EmojiPickerButton onSelect={(emoji) => setBio(prev => prev + emoji)} />
-                            <DictationButton onResult={(text) => setBio(prev => prev ? `${prev} ${text}` : text)} />
-                          </div>
-                          <button type="button" onClick={() => enhanceText('bio')} disabled={saving} style={{ position: 'absolute', right: '16px', bottom: '20px', background: 'linear-gradient(135deg, #8A2BE2, #ff4d85)', color: 'var(--text-primary)', border: 'none', borderRadius: '12px', padding: '8px 16px', fontSize: '13px', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px', boxShadow: '0 4px 15px rgba(255,77,133,0.4)' }}>
-                            <Wand size={14} /> AI Boost
-                          </button>
-                        </div>
+                    <div className="profile-info-col" style={{ flex: 1, minWidth: '300px' }}>
+                      <h1 className="profile-title" style={{ fontSize: '48px', fontWeight: 900, margin: '0 0 16px 0', letterSpacing: '-1px', textShadow: '0 4px 20px rgba(0,0,0,0.5)', overflowWrap: 'break-word', wordBreak: 'break-word', color: '#fff' }}>
+                        {profile.username || wlConfig?.name || 'Anonymous Creator'}
+                      </h1>
+                      
+                      <div className="profile-badge-container" style={{ display: 'flex', gap: '10px', alignItems: 'center', marginBottom: '16px' }}>
+                        <span style={{ padding: '8px 16px', background: `${wlConfig?.accent || '#ff4d85'}22`, color: wlConfig?.accent || '#ff4d85', border: `1px solid ${wlConfig?.accent || '#ff4d85'}44`, borderRadius: '24px', fontSize: '12px', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '1px' }}>
+                          Verified Channel
+                        </span>
+                      </div>
 
-                        {/* Flip Book editor moved to flipbook tab */}
+                      <p style={{ color: '#eee', fontSize: '16px', lineHeight: 1.7, opacity: 0.9, margin: 0 }}>
+                        {bio || wlConfig?.heroCopy || 'Welcome to the official channel media & culture stream.'}
+                      </p>
+                    </div>
 
-                        <div className="profile-save-container">
-                          <button onClick={saveProfile} disabled={saving} style={{ padding: '12px 32px', background: '#fff', color: '#000', borderRadius: '12px', border: 'none', fontWeight: 'bold', cursor: 'pointer', opacity: saving ? 0.7 : 1, fontSize: '15px', transition: 'transform 0.2s' }} onMouseOver={e=>e.currentTarget.style.transform='scale(1.05)'} onMouseOut={e=>e.currentTarget.style.transform='scale(1)'}>
-                            {saving ? 'Saving...' : 'Save Bio'}
-                          </button>
+                    {/* Action Buttons Column */}
+                    {!isOwnProfile && (
+                      <div className="profile-header-actions" style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                        {/* Follow Button */}
+                        <button
+                          onClick={handleToggleFollow}
+                          disabled={followLoading}
+                          style={{
+                            padding: '10px 24px',
+                            background: isFollowing ? 'rgba(255,255,255,0.08)' : 'rgba(255, 204, 0, 0.15)',
+                            color: isFollowing ? '#aaa' : '#ffcc00',
+                            border: '1px solid',
+                            borderColor: isFollowing ? 'rgba(255,255,255,0.15)' : 'rgba(255, 204, 0, 0.4)',
+                            borderRadius: '100px',
+                            fontWeight: 'bold',
+                            fontSize: '14px',
+                            cursor: 'pointer',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '6px',
+                            transition: 'all 0.3s ease',
+                            backdropFilter: 'blur(10px)'
+                          }}
+                        >
+                          <Star size={14} fill={isFollowing ? '#aaa' : 'transparent'} />
+                          {isFollowing ? 'Following' : 'Follow'}
+                        </button>
 
-                          <button 
-                            type="button" 
-                            onClick={() => setShowSubModal(true)} 
-                            style={{ 
-                              padding: '12px 24px', 
-                              background: 'rgba(255,255,255,0.08)', 
-                              border: '1px solid rgba(255,255,255,0.15)', 
-                              color: 'var(--text-primary)', 
-                              borderRadius: '12px', 
-                              fontWeight: 'bold', 
-                              cursor: 'pointer', 
-                              fontSize: '15px', 
-                              display: 'flex', 
-                              alignItems: 'center', 
-                              gap: '8px', 
-                              transition: 'all 0.2s' 
-                            }}
-                            onMouseOver={e => e.currentTarget.style.background = 'rgba(255,255,255,0.15)'}
-                            onMouseOut={e => e.currentTarget.style.background = 'rgba(255,255,255,0.08)'}
-                          >
-                            Subscription Settings
-                          </button>
-
-                          <button 
-                            type="button" 
-                            onClick={() => setShowBgSettingsModal(true)} 
-                            style={{ 
-                              padding: '12px 24px', 
-                              background: 'rgba(255,255,255,0.08)', 
-                              border: '1px solid rgba(255,255,255,0.15)', 
-                              color: 'var(--text-primary)', 
-                              borderRadius: '12px', 
-                              fontWeight: 'bold', 
-                              cursor: 'pointer', 
-                              fontSize: '15px', 
-                              display: 'flex', 
-                              alignItems: 'center', 
-                              gap: '8px', 
-                              transition: 'all 0.2s' 
-                            }}
-                            onMouseOver={e => e.currentTarget.style.background = 'rgba(255,255,255,0.15)'}
-                            onMouseOut={e => e.currentTarget.style.background = 'rgba(255,255,255,0.08)'}
-                          >
-                            Background Settings
-                          </button>
-
-                        </div>
-                      </>
-                    ) : (
-                      <p style={{ color: '#eee', fontSize: '16px', lineHeight: 1.7, opacity: 0.9 }}>{bio}</p>
+                        {/* Subscribe Button */}
+                        <button
+                          className="profile-subscribe-btn"
+                          onClick={handleSubscribe}
+                          style={{
+                            padding: '10px 24px',
+                            background: isSubscribed
+                              ? 'rgba(255,255,255,0.08)'
+                              : `linear-gradient(135deg, ${wlConfig?.accent || '#FF0055'}, #8A2BE2)`,
+                            color: '#fff',
+                            border: isSubscribed ? '1px solid rgba(255,255,255,0.15)' : 'none',
+                            borderRadius: '100px',
+                            fontWeight: 'bold',
+                            fontSize: '14px',
+                            cursor: 'pointer',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '6px',
+                            boxShadow: isSubscribed ? 'none' : `0 8px 20px ${wlConfig?.accent || '#FF0055'}44`,
+                            transition: 'all 0.3s ease'
+                          }}
+                        >
+                          {isSubscribed ? (
+                            <>
+                              <CheckCircle size={14} color="#00ff88" />
+                              <span style={{ color: '#00ff88' }}>Subscribed</span>
+                            </>
+                          ) : (
+                            <span>
+                              {Number(subPrice) > 0 ? `Subscribe $${Number(subPrice).toFixed(2)}/mo` : 'Subscribe Free'}
+                            </span>
+                          )}
+                        </button>
+                      </div>
                     )}
-                  </>
-                ) : (
-                  <p style={{ color: 'var(--text-secondary)', fontSize: '16px' }}>Standard Viewer Account</p>
-                )}
-              </div>
-
-              {/* Action Buttons Column */}
-              {!isOwnProfile && (
-                <div className="profile-header-actions">
-                  {/* Follow Button */}
-                  <button
-                    onClick={handleToggleFollow}
-                    disabled={followLoading}
-                    style={{
-                      padding: '10px 24px',
-                      background: isFollowing ? 'rgba(255,255,255,0.08)' : 'rgba(255, 204, 0, 0.15)',
-                      color: isFollowing ? '#aaa' : '#ffcc00',
-                      border: '1px solid',
-                      borderColor: isFollowing ? 'rgba(255,255,255,0.15)' : 'rgba(255, 204, 0, 0.4)',
-                      borderRadius: '100px',
-                      fontWeight: 'bold',
-                      fontSize: '14px',
-                      cursor: 'pointer',
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '6px',
-                      transition: 'all 0.3s ease',
-                      backdropFilter: 'blur(10px)'
-                    }}
-                    onMouseOver={e => e.currentTarget.style.transform = 'scale(1.05)'}
-                    onMouseOut={e => e.currentTarget.style.transform = 'scale(1)'}
-                  >
-                    <Star size={14} fill={isFollowing ? '#aaa' : 'transparent'} />
-                    {isFollowing ? 'Following' : 'Follow'}
-                  </button>
-
-                  {/* Subscribe Button */}
-                  <button
-                    className="profile-subscribe-btn"
-                    onClick={handleSubscribe}
-                    style={{
-                      padding: '10px 24px',
-                      background: isSubscribed
-                        ? 'rgba(255,255,255,0.08)'
-                        : 'linear-gradient(135deg, #FF0055, #8A2BE2)',
-                      color: '#fff',
-                      border: isSubscribed ? '1px solid rgba(255,255,255,0.15)' : 'none',
-                      borderRadius: '100px',
-                      fontWeight: 'bold',
-                      fontSize: '14px',
-                      cursor: 'pointer',
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '6px',
-                      boxShadow: isSubscribed ? 'none' : '0 8px 20px rgba(255,0,85,0.3)',
-                      transition: 'all 0.3s ease',
-                      backdropFilter: 'blur(10px)'
-                    }}
-                    onMouseOver={e => e.currentTarget.style.transform = 'scale(1.05)'}
-                    onMouseOut={e => e.currentTarget.style.transform = 'scale(1)'}
-                  >
-                    {isSubscribed ? (
-                      <>
-                        <CheckCircle size={14} color="#00ff88" />
-                        <span style={{ color: '#00ff88' }}>Subscribed</span>
-                      </>
-                    ) : (
-                      <span>
-                        {Number(subPrice) > 0 ? `Subscribe $${Number(subPrice).toFixed(2)}/mo` : 'Subscribe Free'}
-                      </span>
-                    )}
-                  </button>
+                  </div>
                 </div>
               )}
-
-              {/* Floating Share Icon Button in the Lower Right Corner of the Card */}
-              {viewMode !== 'edit' && (
-                <button 
-                  type="button"
-                  onClick={handleShareChannel}
-                  style={{
-                    position: 'absolute',
-                    bottom: '24px',
-                    right: '24px',
-                    background: 'rgba(255,255,255,0.05)',
-                    border: '1px solid rgba(255,255,255,0.1)',
-                    color: 'var(--text-secondary)',
-                    width: '38px',
-                    height: '38px',
-                    borderRadius: '50%',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    cursor: 'pointer',
-                    backdropFilter: 'blur(10px)',
-                    transition: 'all 0.2s ease-in-out',
-                    zIndex: 5
-                  }}
-                  onMouseOver={e => {
-                    e.currentTarget.style.background = 'rgba(255,255,255,0.12)';
-                    e.currentTarget.style.color = '#fff';
-                    e.currentTarget.style.transform = 'scale(1.08)';
-                  }}
-                  onMouseOut={e => {
-                    e.currentTarget.style.background = 'rgba(255,255,255,0.05)';
-                    e.currentTarget.style.color = 'var(--text-secondary)';
-                    e.currentTarget.style.transform = 'scale(1)';
-                  }}
-                  title="Share Channel"
-                >
-                  <Share2 size={16} />
-                </button>
-              )}
-            </div>
-          </div>
-          </>
+            </>
           )}
 
           {/* Public Channel Sections Panel */}
