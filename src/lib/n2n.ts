@@ -159,7 +159,7 @@ export async function getChildNetworks(parentId: string, includeInactive: boolea
         theme: {
           accent: '#ff4d85',
           heroCopy: 'Welcome to The Real Courtney Bee — Official Media, Broadcasts & Culture Stream.',
-          heroImage: 'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?auto=format&fit=crop&w=1920&q=80',
+          heroImage: '/n2n/comedy_club_bg.jpg',
           logoImage: '',
           shopifyUrl: 'https://f5c4e7-3.myshopify.com',
           sliderCount: 4,

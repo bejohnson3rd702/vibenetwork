@@ -1191,7 +1191,7 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
           avatar_url: isCourtney 
             ? 'https://static.wixstatic.com/media/066ffc_bb9bdff854db4b56bb3f6b58ee1ce532~mv2.png/v1/crop/x_0,y_261,w_1242,h_763/fill/w_860,h_528,al_c,q_90,usm_0.66_1.00_0.01,enc_avif,quality_auto/image%20(1).png'
             : (wlConfig?.logoImage || wlConfig?.logo || ''),
-          homepage_image_url: wlConfig?.heroImage || wlConfig?.theme?.heroImage || 'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?auto=format&fit=crop&w=1920&q=80',
+          homepage_image_url: wlConfig?.heroImage || wlConfig?.theme?.heroImage || '/n2n/comedy_club_bg.jpg',
           sub_price: 9.99,
           whitelabel_id: wlConfig?.id
         };
