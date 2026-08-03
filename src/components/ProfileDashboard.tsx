@@ -1400,31 +1400,31 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
           } else if (loadedProfileId === 'courtney-bee-tenant-id' || wlConfig?.id === 'courtney-bee-tenant-id') {
             setProducts([
               {
-                id: 'cb-prod-1',
-                title: '“YOU DON\'T OWE NO MAN A FLAT STOMACH” Streetwear Tee',
-                description: 'Official Courtney Bee Bledsoe quote tee. Premium heavyweight 100% combed cotton with high-density neon print.',
-                price: 38.00,
-                image_url: '/n2n/merch/shirt_1.jpg',
+                id: 'cb-prod-real-1',
+                title: "Detroit's Finest Courtney Bee Tee",
+                description: "This limited edition gray tee features Detroit's Finest comedian Courtney Bee in her element, on stage.",
+                price: 40.00,
+                image_url: 'https://f5c4e7-3.myshopify.com/cdn/shop/files/IMG_2120.jpg?v=1740607164&width=800',
                 category: 'Merch',
                 is_digital: false,
                 whitelabel_id: 'courtney-bee-tenant-id'
               },
               {
-                id: 'cb-prod-2',
-                title: 'Courtney Bee “Live in NYC & Detroit” Vintage Honeybee Tee',
-                description: 'Vintage washed oversized graphic tee featuring the iconic comedy honeybee mascot.',
-                price: 42.00,
-                image_url: '/n2n/merch/shirt_2.jpg',
+                id: 'cb-prod-real-2',
+                title: "I DON'T OWE NO MAN A FLAT STOMACH (BLACK)",
+                description: "Official black quote tee from Courtney Bee's hit stand-up routine.",
+                price: 40.00,
+                image_url: 'https://f5c4e7-3.myshopify.com/cdn/shop/files/Facetune_22-12-2025-10-23-10.jpg?v=1766473139&width=800',
                 category: 'Merch',
                 is_digital: false,
                 whitelabel_id: 'courtney-bee-tenant-id'
               },
               {
-                id: 'cb-prod-3',
-                title: '“Aggressive Punchlines” Signature Script Heavyweight Tee',
-                description: 'Clean luxury white tee with custom magenta & violet script branding.',
-                price: 35.00,
-                image_url: '/n2n/merch/shirt_3.jpg',
+                id: 'cb-prod-real-3',
+                title: "I DON'T OWE NO MAN A FLAT STOMACH (Stone Wash)",
+                description: "This one of a kind shirt was created based from a joke performed by comedian Courtney Bee. It's funny and hilariously true while encouraging women to love and appreciate their bodies in every way.",
+                price: 40.00,
+                image_url: 'https://f5c4e7-3.myshopify.com/cdn/shop/files/Facetune_22-12-2025-10-21-39.jpg?v=1766468730&width=800',
                 category: 'Merch',
                 is_digital: false,
                 whitelabel_id: 'courtney-bee-tenant-id'
@@ -1433,7 +1433,63 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
           } else {
             setProducts([]);
           }
-          setSeriesList(seriesData || []);
+
+          if (seriesData && seriesData.length > 0) {
+            setSeriesList(seriesData);
+          } else if (loadedProfileId === 'courtney-bee-tenant-id' || wlConfig?.id === 'courtney-bee-tenant-id') {
+            setSeriesList([
+              {
+                id: 'cb-series-real-1',
+                title: 'Courtney Bee Stand-Up Specials & Media',
+                description: 'Official standup comedy specials, audition clips, and live sets from Brooklyn House of Comedy, The Stand, and Comedy Cellar.',
+                thumbnail_url: 'https://static.wixstatic.com/media/066ffc_8315683e72fe4f0f95c2e21069a4009ef002.jpg/v1/fill/w_672,h_378,enc_auto/file.jpeg',
+                episodes: [
+                  {
+                    id: 'cb-ep-1',
+                    title: 'BK House of Comedy (Full Set)',
+                    description: 'Courtney Bee performing live at Brooklyn House of Comedy in NYC.',
+                    video_url: 'https://www.youtube.com/embed/QwyPdpg6brA',
+                    thumbnail_url: 'https://static.wixstatic.com/media/066ffc_8315683e72fe4f0f95c2e21069a4009ef002.jpg/v1/fill/w_672,h_378,enc_auto/file.jpeg',
+                    duration: '15:55'
+                  },
+                  {
+                    id: 'cb-ep-2',
+                    title: 'MTV Wild N\' Out Season 18 Audition',
+                    description: 'Official audition clip that earned Courtney Bee a spot on Wild N\' Out Season 18.',
+                    video_url: 'https://www.youtube.com/embed/QwyPdpg6brA',
+                    thumbnail_url: 'https://static.wixstatic.com/media/066ffc_87e1db6472cd467e842a044751489ce1f002.jpg/v1/fill/w_672,h_378,enc_auto/file.jpeg',
+                    duration: '05:26'
+                  },
+                  {
+                    id: 'cb-ep-3',
+                    title: 'Courtney Bee at The Stand NYC',
+                    description: 'Live standup performance at The Stand Comedy Club in NYC.',
+                    video_url: 'https://www.youtube.com/embed/QwyPdpg6brA',
+                    thumbnail_url: 'https://static.wixstatic.com/media/066ffc_b45c7f679a6f479ea73631d4b2cabca1f002.jpg/v1/fill/w_672,h_378,enc_auto/file.jpeg',
+                    duration: '15:50'
+                  },
+                  {
+                    id: 'cb-ep-4',
+                    title: 'Comedy Cellar w/ Amy Schumer',
+                    description: 'Courtney Bee performing live at the world famous Comedy Cellar with Amy Schumer.',
+                    video_url: 'https://www.youtube.com/embed/QwyPdpg6brA',
+                    thumbnail_url: 'https://static.wixstatic.com/media/066ffc_6db8b93c1bf946cdbf80ab39cf4cbce4f002.jpg/v1/fill/w_672,h_378,enc_auto/file.jpeg',
+                    duration: '19:05'
+                  },
+                  {
+                    id: 'cb-ep-5',
+                    title: 'Courtney B Takes Broadway Comedy Club',
+                    description: 'Comedian Courtney B takes over Broadway Comedy Club in New York City.',
+                    video_url: 'https://www.youtube.com/embed/QwyPdpg6brA',
+                    thumbnail_url: 'https://i.ytimg.com/vi/QwyPdpg6brA/mqdefault.jpg',
+                    duration: '10:14'
+                  }
+                ]
+              }
+            ]);
+          } else {
+            setSeriesList([]);
+          }
           setCourses(coursesData || []);
 
           if (progressData) {
