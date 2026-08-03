@@ -103,13 +103,31 @@ export async function getCategoriesWithVideos(tenantId?: string) {
 
 
 
-  const mappedProfiles = (profiles || []).map((p: any) => ({
+  let mappedProfiles = (profiles || []).map((p: any) => ({
     id: p.id,
     title: p.username || 'Creator Profile',
     image: p.avatar_url || '/n2n/default_avatar.png',
     tags: [p.role === 'influencer' ? 'Creator' : 'Member'],
     linkUrl: `/profile/${p.id}`
   }));
+
+  const courtneyProfileItem = {
+    id: 'courtney-bee-tenant-id',
+    title: 'The Real Courtney Bee',
+    image: 'https://static.wixstatic.com/media/066ffc_bb9bdff854db4b56bb3f6b58ee1ce532~mv2.png/v1/crop/x_0,y_261,w_1242,h_763/fill/w_860,h_528,al_c,q_90,usm_0.66_1.00_0.01,enc_avif,quality_auto/image%20(1).png',
+    tags: ['Creator'],
+    linkUrl: '/?tenant=courtney-bee-tenant-id'
+  };
+
+  const courtneyIdx = mappedProfiles.findIndex((p: any) => p.id === 'courtney-bee-tenant-id' || (p.title || '').toLowerCase().includes('courtney bee'));
+  if (courtneyIdx > -1) {
+    const [c] = mappedProfiles.splice(courtneyIdx, 1);
+    c.image = 'https://static.wixstatic.com/media/066ffc_bb9bdff854db4b56bb3f6b58ee1ce532~mv2.png/v1/crop/x_0,y_261,w_1242,h_763/fill/w_860,h_528,al_c,q_90,usm_0.66_1.00_0.01,enc_avif,quality_auto/image%20(1).png';
+    c.linkUrl = '/?tenant=courtney-bee-tenant-id';
+    mappedProfiles.unshift(c);
+  } else {
+    mappedProfiles.unshift(courtneyProfileItem);
+  }
 
   const mappedContent = (videos || []).map((vid: any) => ({
     id: vid.id,
