@@ -91,7 +91,6 @@ const COURTNEY_BEE_FEEDS = [
 ];
 
 const STATIC_COURTNEY_BEE_CLIPS: VideoClip[] = [
-  // ── We Playin' Spades (Official Show hosted by Courtney Bee & Nick Cannon) ──
   {
     id: 'CytqhMMV7sQ',
     headline: "“I'm Ovulating, Nick” with Tiffany Haddish | We Playin' Spades",
@@ -103,82 +102,82 @@ const STATIC_COURTNEY_BEE_CLIPS: VideoClip[] = [
     sport: 'spades'
   },
   {
-    id: 'mZ6Y9-YVvj8',
-    headline: "“It's in the Illuminati Handbook” with Kevin Hart | We Playin' Spades",
-    description: "Kevin Hart joins Courtney Bee and Nick Cannon for non-stop laughs, wild comedy stories, and intense Spades strategy.",
-    thumbnail: 'https://i.ytimg.com/vi/mZ6Y9-YVvj8/hqdefault.jpg',
-    videoUrl: 'https://www.youtube.com/watch?v=mZ6Y9-YVvj8',
-    duration: 1820,
-    source: "We Playin' Spades",
-    sport: 'spades'
-  },
-  {
-    id: 'k4uD5hFj53E',
+    id: 'pd5J_kQqLB0',
     headline: "Standing on Boundaries and Wrestling with Mercedes Moné | We Playin' Spades",
     description: "Pro wrestling superstar Mercedes Moné hits the Spades table with Courtney Bee and Nick Cannon.",
-    thumbnail: 'https://i.ytimg.com/vi/k4uD5hFj53E/hqdefault.jpg',
-    videoUrl: 'https://www.youtube.com/watch?v=k4uD5hFj53E',
+    thumbnail: 'https://i.ytimg.com/vi/pd5J_kQqLB0/hqdefault.jpg',
+    videoUrl: 'https://www.youtube.com/watch?v=pd5J_kQqLB0',
     duration: 1540,
     source: "We Playin' Spades",
     sport: 'spades'
   },
   {
-    id: '2r1pQ0eH-Jk',
-    headline: "Life After the NFL: Antonio Brown on Freedom & Wild Viral Moments | We Playin' Spades",
-    description: "Antonio Brown sits down with Courtney Bee and Nick Cannon to talk NFL career, viral internet moments, and Spades cards.",
-    thumbnail: 'https://i.ytimg.com/vi/2r1pQ0eH-Jk/hqdefault.jpg',
-    videoUrl: 'https://www.youtube.com/watch?v=2r1pQ0eH-Jk',
-    duration: 1710,
-    source: "We Playin' Spades",
-    sport: 'spades'
+    id: 'xajKPqVCCbc',
+    headline: "Courtney Bee Live Stand-Up Special - Unfiltered Comedy",
+    description: "Courtney Bee takes the main stage with a hilarious, raw, and relatable stand-up comedy set on dating, culture, and life.",
+    thumbnail: 'https://i.ytimg.com/vi/xajKPqVCCbc/hqdefault.jpg',
+    videoUrl: 'https://www.youtube.com/watch?v=xajKPqVCCbc',
+    duration: 1420,
+    source: "Courtney Bee Comedy",
+    sport: 'standup'
   },
   {
-    id: '6-T9S9U2ZpE',
-    headline: "Keith Sweat On R&B Legacy, New Jack Swing, & Fatherhood | We Playin' Spades",
-    description: "R&B legend Keith Sweat joins Courtney Bee & Nick Cannon to drop game, talk music history, and play Spades.",
-    thumbnail: 'https://i.ytimg.com/vi/6-T9S9U2ZpE/hqdefault.jpg',
-    videoUrl: 'https://www.youtube.com/watch?v=6-T9S9U2ZpE',
-    duration: 1680,
-    source: "We Playin' Spades",
-    sport: 'spades'
+    id: 'VY6x9P02m-0',
+    headline: "Courtney Bee Stand-Up - Modern Relationships & Red Flags",
+    description: "Live from the Comedy Club: Courtney Bee breaks down dating red flags, texting etiquette, and modern relationship drama.",
+    thumbnail: 'https://i.ytimg.com/vi/VY6x9P02m-0/hqdefault.jpg',
+    videoUrl: 'https://www.youtube.com/watch?v=VY6x9P02m-0',
+    duration: 680,
+    source: "Courtney Bee Comedy",
+    sport: 'standup'
   },
   {
-    id: 'dYw5iN9q2mE',
-    headline: "SAG Awards, Geese Fights, and Comedy Hustle with Lavell Crawford | We Playin' Spades",
-    description: "Comedian Lavell Crawford brings hilarious stories to Courtney Bee and Nick Cannon's Spades table.",
-    thumbnail: 'https://i.ytimg.com/vi/dYw5iN9q2mE/hqdefault.jpg',
-    videoUrl: 'https://www.youtube.com/watch?v=dYw5iN9q2mE',
-    duration: 1490,
-    source: "We Playin' Spades",
-    sport: 'spades'
+    id: 'L_LUpnjgPso',
+    headline: "Best of Courtney Bee - Wild 'N Out Freestyle & Roasts",
+    description: "Watch Courtney Bee drop savage punchlines, roast the Black Squad, and dominate the Wild 'N Out stage on MTV.",
+    thumbnail: 'https://i.ytimg.com/vi/L_LUpnjgPso/hqdefault.jpg',
+    videoUrl: 'https://www.youtube.com/watch?v=L_LUpnjgPso',
+    duration: 720,
+    source: "Wild 'N Out",
+    sport: 'wildnout'
   },
   {
-    id: 'fJkK7cK3m7U',
-    headline: "With Ryan Clark & Channing Crowder | We Playin' Spades",
-    description: "The Pivot Podcast crew (Ryan Clark & Channing Crowder) battle Courtney Bee and Nick Cannon in a hilarious Spades match.",
-    thumbnail: 'https://i.ytimg.com/vi/fJkK7cK3m7U/hqdefault.jpg',
-    videoUrl: 'https://www.youtube.com/watch?v=fJkK7cK3m7U',
-    duration: 1890,
-    source: "We Playin' Spades",
-    sport: 'spades'
+    id: '2g811Koinn0',
+    headline: "Courtney Bee vs DC Young Fly & Chico Bean Wild 'N Out Roast",
+    description: "Courtney Bee goes toe-to-toe with DC Young Fly, Chico Bean, and Nick Cannon in Wild 'N Out's wild roast battles.",
+    thumbnail: 'https://i.ytimg.com/vi/2g811Koinn0/hqdefault.jpg',
+    videoUrl: 'https://www.youtube.com/watch?v=2g811Koinn0',
+    duration: 540,
+    source: "Wild 'N Out",
+    sport: 'wildnout'
   },
   {
-    id: 'jW9Uo_Qx3wA',
-    headline: "Claudia Jordan & Annie Ilonzeh Talk Love, Hollywood & Wild Spades | We Playin' Spades",
-    description: "Claudia Jordan & Annie Ilonzeh join Courtney Bee & Nick Cannon for candid talk on love, entertainment, and bidding 10.",
-    thumbnail: 'https://i.ytimg.com/vi/jW9Uo_Qx3wA/hqdefault.jpg',
-    videoUrl: 'https://www.youtube.com/watch?v=jW9Uo_Qx3wA',
-    duration: 1620,
-    source: "We Playin' Spades",
-    sport: 'spades'
+    id: 'fJ9rUzIMcZQ',
+    headline: "Wild 'N Out Season 18 - Best of Courtney Bee Highlights",
+    description: "The ultimate collection of Courtney Bee's sharpest freestyle bars, team games, and comedic improvisations on Wild 'N Out.",
+    thumbnail: 'https://i.ytimg.com/vi/fJ9rUzIMcZQ/hqdefault.jpg',
+    videoUrl: 'https://www.youtube.com/watch?v=fJ9rUzIMcZQ',
+    duration: 890,
+    source: "Wild 'N Out",
+    sport: 'wildnout'
   },
   {
-    id: 'C7G7W2m2I2k',
-    headline: "Baby Mommas and Hood Lessons with Lil Scrappy & Momma Dee | We Playin' Spades",
-    description: "Lil Scrappy & Momma Dee bring pure entertainment to the Spades table with Courtney Bee and Nick Cannon.",
-    thumbnail: 'https://i.ytimg.com/vi/C7G7W2m2I2k/hqdefault.jpg',
-    videoUrl: 'https://www.youtube.com/watch?v=C7G7W2m2I2k',
-    duration: 1780,
+    id: 'aqz-KE-bpKQ',
+    headline: "Courtney Bee Skits - When Your Friends Don't Know How To Play Spades",
+    description: "Courtney Bee's viral comedy sketch on table manners, bidding 10, and hilarious card game arguments.",
+    thumbnail: 'https://i.ytimg.com/vi/aqz-KE-bpKQ/hqdefault.jpg',
+    videoUrl: 'https://www.youtube.com/watch?v=aqz-KE-bpKQ',
+    duration: 410,
+    source: "Courtney Bee Comedy",
+    sport: 'standup'
+  },
+  {
+    id: 'bK6hFk8ne0I',
+    headline: "The Rules of Spades & Table Talk with Courtney Bee",
+    description: "Courtney Bee breaks down the cardinal rules of Spades: never talk to your partner's hand, bidding strategy, and throwing off suit like a pro.",
+    thumbnail: 'https://i.ytimg.com/vi/bK6hFk8ne0I/hqdefault.jpg',
+    videoUrl: 'https://www.youtube.com/watch?v=bK6hFk8ne0I',
+    duration: 840,
     source: "We Playin' Spades",
     sport: 'spades'
   }
