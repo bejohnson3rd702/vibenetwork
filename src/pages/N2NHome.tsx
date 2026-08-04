@@ -479,21 +479,21 @@ export default function N2NHome({ wlConfig, categories, user, activeVideo, setAc
 
   const COURTNEY_BEE_HERO_SLIDES = [
     {
-      school: "Wild 'N Out Special",
-      short: "Wild 'N Out",
-      subtitle: 'Season Highlights',
-      copy: "Watch Courtney Bee drop savage punchlines, roast the Black Squad, and dominate the Wild 'N Out stage on MTV.",
-      image: 'https://i.ytimg.com/vi/gC1V0uL_5xI/hqdefault.jpg',
-      videoUrl: 'https://www.youtube.com/embed/gC1V0uL_5xI?autoplay=1&mute=1&loop=1&playlist=gC1V0uL_5xI&controls=0&showinfo=0&rel=0',
-      link: '#whats-on-now'
-    },
-    {
       school: "We Playin' Spades",
       short: 'Playing Spades',
       subtitle: 'Nick Cannon & Courtney Bee',
       copy: 'High-stakes Spades, celebrity table talk, and hilarious arguments with guests like Tiffany Haddish and Karlous Miller.',
-      image: 'https://i.ytimg.com/vi/JwIHOk7b5sQ/hqdefault.jpg',
-      videoUrl: 'https://www.youtube.com/embed/JwIHOk7b5sQ?autoplay=1&mute=1&loop=1&playlist=JwIHOk7b5sQ&controls=0&showinfo=0&rel=0',
+      image: 'https://i.ytimg.com/vi/CytqhMMV7sQ/hqdefault.jpg',
+      videoUrl: 'https://www.youtube.com/embed/CytqhMMV7sQ?autoplay=1&mute=1&loop=1&playlist=CytqhMMV7sQ&controls=0&showinfo=0&rel=0',
+      link: '#whats-on-now'
+    },
+    {
+      school: "Wild 'N Out Special",
+      short: "Wild 'N Out",
+      subtitle: 'Season Highlights',
+      copy: "Watch Courtney Bee drop savage punchlines, roast the Black Squad, and dominate the Wild 'N Out stage on MTV.",
+      image: 'https://i.ytimg.com/vi/J8nO5P-5lqQ/hqdefault.jpg',
+      videoUrl: 'https://www.youtube.com/embed/J8nO5P-5lqQ?autoplay=1&mute=1&loop=1&playlist=J8nO5P-5lqQ&controls=0&showinfo=0&rel=0',
       link: '#whats-on-now'
     },
     {
@@ -502,7 +502,7 @@ export default function N2NHome({ wlConfig, categories, user, activeVideo, setAc
       subtitle: 'National Tour 2026',
       copy: 'Unfiltered, hilarious stand-up comedy on dating, culture, and life live from top comedy clubs nationwide.',
       image: '/n2n/comedy_club_bg.jpg',
-      videoUrl: 'https://www.youtube.com/embed/d8BFf32yDWQ?autoplay=1&mute=1&loop=1&playlist=d8BFf32yDWQ&controls=0&showinfo=0&rel=0',
+      videoUrl: 'https://www.youtube.com/embed/V7W_Ww64v9A?autoplay=1&mute=1&loop=1&playlist=V7W_Ww64v9A&controls=0&showinfo=0&rel=0',
       link: '#whats-on-now'
     }
   ];
