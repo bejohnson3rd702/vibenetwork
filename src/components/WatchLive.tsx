@@ -93,28 +93,28 @@ const COURTNEY_BEE_FEEDS = [
 const STATIC_COURTNEY_BEE_CLIPS: VideoClip[] = [
   // ── Wild 'N Out ──
   {
-    id: '5gZg_r1s2d8',
-    headline: "Courtney Bee's Funniest Wild 'N Out Battles & Freestyle Moments",
+    id: 'gC1V0uL_5xI',
+    headline: "Best of Courtney Bee - Wild 'N Out Freestyle & Roasts",
     description: "Watch Courtney Bee drop savage punchlines, roast the Black Squad, and dominate the Wild 'N Out stage on MTV.",
-    thumbnail: 'https://i.ytimg.com/vi/5gZg_r1s2d8/hqdefault.jpg',
-    videoUrl: 'https://www.youtube.com/watch?v=5gZg_r1s2d8',
+    thumbnail: 'https://i.ytimg.com/vi/gC1V0uL_5xI/hqdefault.jpg',
+    videoUrl: 'https://www.youtube.com/watch?v=gC1V0uL_5xI',
     duration: 720,
     source: "Wild 'N Out",
     sport: 'wildnout'
   },
   {
-    id: 'CgiX53hjAPc',
+    id: '5gZg_r1s2d8',
     headline: "Courtney Bee vs DC Young Fly & Chico Bean Wild 'N Out Roast",
     description: "Courtney Bee goes toe-to-toe with DC Young Fly, Chico Bean, and Nick Cannon in Wild 'N Out's wild roast battles.",
-    thumbnail: 'https://i.ytimg.com/vi/CgiX53hjAPc/hqdefault.jpg',
-    videoUrl: 'https://www.youtube.com/watch?v=CgiX53hjAPc',
+    thumbnail: 'https://i.ytimg.com/vi/5gZg_r1s2d8/hqdefault.jpg',
+    videoUrl: 'https://www.youtube.com/watch?v=5gZg_r1s2d8',
     duration: 540,
     source: "Wild 'N Out",
     sport: 'wildnout'
   },
   {
     id: '6OihwykYdBc',
-    headline: "Wild 'N Out Season Highlights - Best of Courtney Bee",
+    headline: "Wild 'N Out Season 18 - Best of Courtney Bee Highlights",
     description: "The ultimate collection of Courtney Bee's sharpest freestyle bars, team games, and comedic improvisations on Wild 'N Out.",
     thumbnail: 'https://i.ytimg.com/vi/6OihwykYdBc/hqdefault.jpg',
     videoUrl: 'https://www.youtube.com/watch?v=6OihwykYdBc',
@@ -155,35 +155,35 @@ const STATIC_COURTNEY_BEE_CLIPS: VideoClip[] = [
     sport: 'standup'
   },
 
-  // ── Playing Spades ──
+  // ── We Playin' Spades (Official Show with Nick Cannon & Courtney Bee) ──
   {
     id: 'JwIHOk7b5sQ',
-    headline: "Courtney Bee & Crew Playing Spades - High-Stakes Table Game",
-    description: "Courtney Bee hosts an intense, hilarious round of Spades with celebrity guests, featuring non-stop trash talk, reneges, and Boston calls.",
+    headline: "We Playin' Spades Ep. 1 - Nick Cannon & Courtney Bee ft. Tiffany Haddish",
+    description: "Courtney Bee & Nick Cannon host Tiffany Haddish at the turquoise table for high-stakes Spades, trash talk, and uncensored stories.",
     thumbnail: 'https://i.ytimg.com/vi/JwIHOk7b5sQ/hqdefault.jpg',
     videoUrl: 'https://www.youtube.com/watch?v=JwIHOk7b5sQ',
     duration: 1650,
-    source: "Playing Spades",
+    source: "We Playin' Spades",
     sport: 'spades'
   },
   {
     id: 'OJl-628FyIk',
-    headline: "Spades Tournament Finals - Courtney Bee vs Wild 'N Out Crew",
-    description: "Watch Courtney Bee lock in with her partner for the ultimate Spades championship battle. High stakes, wheeling and dealing, and classic card game banter.",
+    headline: "We Playin' Spades - Courtney Bee vs Karlous Miller & Wild 'N Out Crew",
+    description: "Watch Courtney Bee lock in with Nick Cannon against Karlous Miller for the ultimate Spades championship battle.",
     thumbnail: 'https://i.ytimg.com/vi/OJl-628FyIk/hqdefault.jpg',
     videoUrl: 'https://www.youtube.com/watch?v=OJl-628FyIk',
     duration: 1980,
-    source: "Playing Spades",
+    source: "We Playin' Spades",
     sport: 'spades'
   },
   {
-    id: '5gZg_r1s2d8',
+    id: 'CgiX53hjAPc',
     headline: "The Rules of Spades & Table Talk with Courtney Bee",
     description: "Courtney Bee breaks down the cardinal rules of Spades: never talk to your partner's hand, bidding strategy, and throwing off suit like a pro.",
-    thumbnail: 'https://images.unsplash.com/photo-1518310383802-640c2de311b2?auto=format&fit=crop&q=80&w=800',
-    videoUrl: 'https://www.youtube.com/watch?v=5gZg_r1s2d8',
+    thumbnail: 'https://i.ytimg.com/vi/CgiX53hjAPc/hqdefault.jpg',
+    videoUrl: 'https://www.youtube.com/watch?v=CgiX53hjAPc',
     duration: 840,
-    source: "Playing Spades",
+    source: "We Playin' Spades",
     sport: 'spades'
   }
 ];
@@ -2704,12 +2704,17 @@ export default function WatchLive({ accent = '#D35400', isOlympian = false, isMf
                   <div className={showFanZone ? "watch-live-left-col-fanzone" : "watch-live-left-col"} style={{ flex: showFanZone ? '0 0 65%' : '1 1 100%', minWidth: '280px', transition: 'all 0.4s cubic-bezier(0.16, 1, 0.3, 1)', display: 'flex', flexDirection: 'column' }}>
                     <div style={{ borderRadius: '16px', overflow: 'hidden', background: '#000', aspectRatio: '16/9', position: 'relative', boxShadow: '0 20px 50px rgba(0,0,0,0.5)' }}>
                       {(() => {
-                        const isYouTube = activeVideo.videoUrl.includes('youtube.com') || activeVideo.videoUrl.includes('youtu.be') || activeVideo.source === 'YouTube';
+                        const isYouTube = activeVideo.videoUrl.includes('youtube.com') || activeVideo.videoUrl.includes('youtu.be') || activeVideo.source === 'YouTube' || activeVideo.source === "Wild 'N Out" || activeVideo.source === "Courtney Bee Comedy" || activeVideo.source === "We Playin' Spades";
                         const isDailymotion = activeVideo.videoUrl.includes('dailymotion.com') || activeVideo.videoUrl.includes('dai.ly') || activeVideo.source === 'Dailymotion';
                         
                         if (isYouTube) {
                           const match = activeVideo.videoUrl.match(/^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/);
-                          const ytId = (match && match[2].length === 11) ? match[2] : (activeVideo.id.length === 11 ? activeVideo.id : '');
+                          let ytId = (match && match[2].length === 11) ? match[2] : (activeVideo.id.length === 11 ? activeVideo.id : '');
+                          if (!ytId && activeVideo.videoUrl) {
+                            const parts = activeVideo.videoUrl.split('v=');
+                            if (parts.length > 1) ytId = parts[1].substring(0, 11);
+                          }
+                          if (!ytId) ytId = 'gC1V0uL_5xI';
                           
                           return (
                             <iframe
