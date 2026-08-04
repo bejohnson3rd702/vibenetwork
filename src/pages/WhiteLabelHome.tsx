@@ -208,7 +208,7 @@ export default function WhiteLabelHome({ wlConfig, categories, user, activeVideo
         )}
 
         {/* Live Section if enabled and on network level (not sub-tenant creator channels) */}
-        {wlConfig.enableWatchLive !== false && !wlConfig.parent_network_id && wlConfig.id !== 'courtney-bee-tenant-id' && (
+        {wlConfig.enableWatchLive !== false && !wlConfig.parent_network_id && wlConfig.id !== 'courtney-bee-tenant-id' && wlConfig.id !== 'cb000000-c08f-4260-8540-a0cc8bed4e11' && !(wlConfig.name || '').toLowerCase().includes('courtney bee') && (
           <div id="whats-on-now" style={{ position: 'relative', zIndex: 10, marginTop: '40px' }}>
             <Suspense fallback={null}>
               <WatchLive 

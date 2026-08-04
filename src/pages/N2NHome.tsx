@@ -1162,13 +1162,13 @@ export default function N2NHome({ wlConfig, categories, user, activeVideo, setAc
             networkName={config.name || 'Christian Revival Network'}
             onOpenModal={(vid) => setActiveVideo(vid)}
           />
-        ) : (
+        ) : !isCourtneyBee ? (
           <div id="whats-on-now">
             <Suspense fallback={null}>
               <WatchLive accent={config.accent} isCourtneyBee={isCourtneyBee} isOlympian={isOlympian} isMf={isMf} isB2K={isB2K} isVibe={isVibe} isKple={isKple} isVibe100={isVibe100} isBonaire={isBonaire} tenantId={config?.id} />
             </Suspense>
           </div>
-        )}
+        ) : null}
 
         {/* ── Wings of Strength Athletes Slider ────────────────── */}
         {isWings && (
