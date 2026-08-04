@@ -32,6 +32,26 @@ const COURTNEY_BEE_VIDEOS: CourtneyVideo[] = [
     description: "Pro wrestling superstar Mercedes Moné hits the Spades table with Courtney Bee and Nick Cannon.",
     duration: '25:40',
     thumbnail: 'https://i.ytimg.com/vi/pd5J_kQqLB0/hqdefault.jpg'
+  },
+  {
+    id: 'cb-3',
+    youtubeId: 'J8nO5P-5lqQ',
+    title: "Best Of Courtney Bee | Wild 'N Out Freestyle & Roasts",
+    show: "MTV Wild 'N Out",
+    category: 'wildnout',
+    description: "Watch Courtney Bee drop savage punchlines, roast the Black Squad, and dominate the Wild 'N Out stage on MTV.",
+    duration: '12:15',
+    thumbnail: 'https://i.ytimg.com/vi/J8nO5P-5lqQ/hqdefault.jpg'
+  },
+  {
+    id: 'cb-4',
+    youtubeId: 'V7W_Ww64v9A',
+    title: "Courtney Bee vs Black Squad | Wild 'N Out Roast Battles",
+    show: "MTV Wild 'N Out",
+    category: 'wildnout',
+    description: "Courtney Bee goes toe-to-toe with DC Young Fly, Chico Bean, and Nick Cannon in legendary Wild 'N Out roast battles.",
+    duration: '14:50',
+    thumbnail: 'https://i.ytimg.com/vi/V7W_Ww64v9A/hqdefault.jpg'
   }
 ];
 
@@ -103,6 +123,22 @@ export default function CourtneyBeeWatchSection({ accent = '#D35400' }: { accent
             }}
           >
             ♠️ We Playin' Spades
+          </button>
+          <button
+            onClick={() => setFilter('wildnout')}
+            style={{
+              padding: '6px 16px',
+              borderRadius: '8px',
+              border: 'none',
+              background: filter === 'wildnout' ? accent : 'transparent',
+              color: filter === 'wildnout' ? '#000' : '#888',
+              fontSize: '12px',
+              fontWeight: 800,
+              cursor: 'pointer',
+              transition: 'all 0.2s'
+            }}
+          >
+            🔥 Wild 'N Out
           </button>
         </div>
       </div>
