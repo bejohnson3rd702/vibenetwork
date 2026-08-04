@@ -73,8 +73,11 @@ function App() {
   const [isTenantMode, setIsTenantMode] = useState(() => {
     const hostname = window.location.hostname.replace(/^www\./, '');
     const params = new URLSearchParams(window.location.search);
+    const tenantVal = params.get('tenant');
     const isMaster = checkIsMasterHost(hostname);
-    return params.has('tenant') || !isMaster;
+    const isMainVibeTenant = tenantVal === 'adb92e36-5ebc-4dc3-ae96-429f3dc1bb30' || tenantVal === 'b0ea0000-c08f-4260-8540-a0cc8bed4e11' || tenantVal === 'master' || tenantVal === 'vibe';
+    if (isMainVibeTenant) return false;
+    return (params.has('tenant') && !isMainVibeTenant) || !isMaster;
   });
   const [showAdminPanel, setShowAdminPanel] = useState(() => {
     const params = new URLSearchParams(window.location.search);
@@ -378,7 +381,9 @@ function App() {
         let configPromise;
         let categoriesPromise;
 
-        if (activeTenantId) {
+        const isMainVibeTenant = activeTenantId === 'adb92e36-5ebc-4dc3-ae96-429f3dc1bb30' || activeTenantId === 'b0ea0000-c08f-4260-8540-a0cc8bed4e11' || activeTenantId === 'master' || activeTenantId === 'vibe';
+
+        if (activeTenantId && !isMainVibeTenant) {
           isTenant = true;
           setIsTenantMode(true);
           loadedTenantId = activeTenantId;
