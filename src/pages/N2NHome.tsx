@@ -478,25 +478,14 @@ export default function N2NHome({ wlConfig, categories, user, activeVideo, setAc
   ];
 
   const HERO_SLIDES = (config?.theme?.heroSlider && config.theme.heroSlider.length > 0)
-    ? config.theme.heroSlider.map((s: any) => {
-        const rawVideo = s.videoUrl || '';
-        const isActualVideo = rawVideo && (
-          rawVideo.includes('youtube.com') ||
-          rawVideo.includes('youtu.be') ||
-          rawVideo.includes('vimeo.com') ||
-          rawVideo.endsWith('.mp4') ||
-          rawVideo.endsWith('.webm')
-        );
+    ? config.theme.heroSlider.map((slide: any) => {
         return {
-          id: s.id,
-          school: s.title,
-          short: s.short || s.title,
-          subtitle: s.subtitle || 'Featured Slide',
-          copy: s.copy || '',
-          image: s.imageUrl,
-          videoUrl: isActualVideo ? rawVideo : '',
-          link: s.buttonLink || rawVideo || s.linkUrl || '',
-          buttonText: s.buttonText || ''
+          school: slide.title || config?.name || '',
+          short: slide.subtitle || slide.title || config?.name || '',
+          subtitle: slide.subtitle || 'Featured',
+          copy: slide.copy || slide.description || config?.theme?.heroCopy || '',
+          image: slide.imageUrl || slide.image || config?.theme?.heroImage || '',
+          link: slide.videoUrl || slide.link || config?.theme?.shopifyUrl || ''
         };
       })
     : ((config?.theme?.heroImage || config?.theme?.heroCopy)
@@ -520,7 +509,9 @@ export default function N2NHome({ wlConfig, categories, user, activeVideo, setAc
                 ? BONAIRE_HERO_SLIDES
                 : (isVibe100 
                   ? VIBE_100_HERO_SLIDES 
-                  : AVO_HERO_SLIDES)))))));
+                  : (isCourtneyBee 
+                    ? COURTNEY_BEE_HERO_SLIDES 
+                    : AVO_HERO_SLIDES))))))));
 
   const [heroSlide, setHeroSlide] = useState(0);
 
@@ -1302,11 +1293,11 @@ export default function N2NHome({ wlConfig, categories, user, activeVideo, setAc
 
 
 
-        {/* ── AVO Campus Athletes / KPLE Channel Profiles Slider ──────────────────────── */}
-        {(((isAvo || isKple) && !isBonaire) && athleteItems.length > 0) && (
+        {/* ── Courtney Bee Channels / AVO Campus Athletes / KPLE Channel Profiles Slider ── */}
+        {(((isCourtneyBee || isAvo || isKple) && !isBonaire) && athleteItems.length > 0) && (
           <div id="avo-athletes-slider">
             <SliderSection
-              title={isKple ? "KPLE-TV CHANNELS" : (isBonaire ? "LOCAL MERCHANTS" : "CAMPUS ATHLETES")}
+              title={isCourtneyBee ? "COURTNEY BEE CHANNELS" : (isKple ? "KPLE-TV CHANNELS" : (isBonaire ? "LOCAL MERCHANTS" : "CAMPUS ATHLETES"))}
               items={athleteItems}
               delay={0.1}
               aspectRatio="1/1"
