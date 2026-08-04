@@ -1809,41 +1809,6 @@ export default function WatchLive({ accent = '#D35400', isCourtneyBee = false, i
       const isFlex = tenantId === 'flex-online-tenant-id';
 
       if (isCourtneyBeeNet) {
-        const dynamicClips: VideoClip[] = [];
-        for (const feed of COURTNEY_BEE_FEEDS) {
-          if (!feed.channelId) continue;
-          try {
-            const res = await fetch(`/api/yt-rss/${feed.channelId}`);
-            if (!res.ok) continue;
-            const xmlText = await res.text();
-            const parser = new DOMParser();
-            const xml = parser.parseFromString(xmlText, 'text/xml');
-            const entries = xml.getElementsByTagName('entry');
-            for (let i = 0; i < entries.length; i++) {
-              const entry = entries[i];
-              const id = entry.getElementsByTagName('yt:videoId')[0]?.textContent || entry.getElementsByTagName('id')[0]?.textContent?.split(':').pop() || '';
-              const headline = entry.getElementsByTagName('title')[0]?.textContent || '';
-              const mediaGroup = entry.getElementsByTagName('media:group')[0];
-              const description = mediaGroup?.getElementsByTagName('media:description')[0]?.textContent || entry.getElementsByTagName('summary')[0]?.textContent || '';
-              const thumbnail = mediaGroup?.getElementsByTagName('media:thumbnail')[0]?.getAttribute('url') || `https://i.ytimg.com/vi/${id}/hqdefault.jpg`;
-              const videoUrl = `https://www.youtube.com/watch?v=${id}`;
-              const publishedText = entry.getElementsByTagName('published')[0]?.textContent || '';
-              const published = publishedText ? new Date(publishedText) : new Date(0);
-              if (id && !seen.has(id)) {
-                seen.add(id);
-                dynamicClips.push({
-                  id, headline, description, thumbnail, videoUrl,
-                  duration: 0, source: 'YouTube', sport: feed.key, published
-                });
-              }
-            }
-          } catch (e) {
-            console.warn(e);
-          }
-        }
-        dynamicClips.sort((a, b) => (b.published?.getTime() || 0) - (a.published?.getTime() || 0));
-        allClips.push(...dynamicClips);
-
         for (const item of STATIC_COURTNEY_BEE_CLIPS) {
           if (!seen.has(item.id)) {
             seen.add(item.id);
