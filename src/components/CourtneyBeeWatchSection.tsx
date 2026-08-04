@@ -4,6 +4,7 @@ import { Play, ExternalLink, Sparkles, Tv, Flame, Mic, ChevronRight } from 'luci
 export interface CourtneyVideo {
   id: string;
   youtubeId: string;
+  videoUrl?: string;
   title: string;
   show: string;
   category: 'spades' | 'wildnout' | 'standup';
@@ -36,6 +37,7 @@ const COURTNEY_BEE_VIDEOS: CourtneyVideo[] = [
   {
     id: 'cb-3',
     youtubeId: 'J8nO5P-5lqQ',
+    videoUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4',
     title: "Best Of Courtney Bee | Wild 'N Out Freestyle & Roasts",
     show: "MTV Wild 'N Out",
     category: 'wildnout',
@@ -46,6 +48,7 @@ const COURTNEY_BEE_VIDEOS: CourtneyVideo[] = [
   {
     id: 'cb-4',
     youtubeId: 'V7W_Ww64v9A',
+    videoUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerMeltdowns.mp4',
     title: "Courtney Bee vs Black Squad | Wild 'N Out Roast Battles",
     show: "MTV Wild 'N Out",
     category: 'wildnout',
@@ -154,22 +157,40 @@ export default function CourtneyBeeWatchSection({ accent = '#D35400' }: { accent
           marginBottom: '32px'
         }}
       >
-        {/* Responsive 16:9 Iframe Screen */}
+        {/* Responsive 16:9 Screen (HTML5 Video for restricted embeds, Iframe for YouTube) */}
         <div style={{ position: 'relative', width: '100%', aspectRatio: '16/9', background: '#000' }}>
-          <iframe
-            key={selectedVideo.youtubeId}
-            src={`https://www.youtube.com/embed/${selectedVideo.youtubeId}?autoplay=1&rel=0&modestbranding=1`}
-            title={selectedVideo.title}
-            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-            allowFullScreen
-            style={{
-              position: 'absolute',
-              inset: 0,
-              width: '100%',
-              height: '100%',
-              border: 'none'
-            }}
-          />
+          {selectedVideo.videoUrl ? (
+            <video
+              key={selectedVideo.id}
+              src={selectedVideo.videoUrl}
+              controls
+              autoPlay
+              playsInline
+              style={{
+                position: 'absolute',
+                inset: 0,
+                width: '100%',
+                height: '100%',
+                border: 'none',
+                objectFit: 'cover'
+              }}
+            />
+          ) : (
+            <iframe
+              key={selectedVideo.youtubeId}
+              src={`https://www.youtube.com/embed/${selectedVideo.youtubeId}?autoplay=1&rel=0&modestbranding=1`}
+              title={selectedVideo.title}
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allowFullScreen
+              style={{
+                position: 'absolute',
+                inset: 0,
+                width: '100%',
+                height: '100%',
+                border: 'none'
+              }}
+            />
+          )}
         </div>
 
         {/* Video Info Bar */}
