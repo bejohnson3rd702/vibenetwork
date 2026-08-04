@@ -477,26 +477,49 @@ export default function N2NHome({ wlConfig, categories, user, activeVideo, setAc
     // { school: 'FINFIRE Channel', short: 'FINFIRE', subtitle: 'VIBE 100', copy: 'Empowering financial freedom, investment guides, and real estate strategy.', image: 'https://images.unsplash.com/photo-1559526324-4b87b5e36e44?auto=format&fit=crop&q=80&w=1200', link: '/?tenant=100e0000-c08f-4260-8540-a0cc8bed4e11' }
   ];
 
-  const HERO_SLIDES = (config?.theme?.heroSlider && config.theme.heroSlider.length > 0)
-    ? config.theme.heroSlider.map((slide: any) => {
-        return {
-          school: slide.title || config?.name || '',
-          short: slide.subtitle || slide.title || config?.name || '',
-          subtitle: slide.subtitle || 'Featured',
-          copy: slide.copy || slide.description || config?.theme?.heroCopy || '',
-          image: slide.imageUrl || slide.image || config?.theme?.heroImage || '',
-          link: slide.videoUrl || slide.link || config?.theme?.shopifyUrl || ''
-        };
-      })
-    : ((config?.theme?.heroImage || config?.theme?.heroCopy)
-      ? [{
-          school: config.name || '',
-          short: config.name || '',
-          subtitle: 'Welcome',
-          copy: config.theme.heroCopy || '',
-          image: config.theme.heroImage || '',
-          link: config.theme.shopifyUrl || ''
-        }]
+  const COURTNEY_BEE_HERO_SLIDES = [
+    {
+      school: "Wild 'N Out Special",
+      short: "Wild 'N Out",
+      subtitle: 'Season Highlights',
+      copy: "Watch Courtney Bee drop savage punchlines, roast the Black Squad, and dominate the Wild 'N Out stage on MTV.",
+      image: 'https://i.ytimg.com/vi/gC1V0uL_5xI/hqdefault.jpg',
+      videoUrl: 'https://www.youtube.com/embed/gC1V0uL_5xI?autoplay=1&mute=1&loop=1&playlist=gC1V0uL_5xI&controls=0&showinfo=0&rel=0',
+      link: '#whats-on-now'
+    },
+    {
+      school: "We Playin' Spades",
+      short: 'Playing Spades',
+      subtitle: 'Nick Cannon & Courtney Bee',
+      copy: 'High-stakes Spades, celebrity table talk, and hilarious arguments with guests like Tiffany Haddish and Karlous Miller.',
+      image: 'https://i.ytimg.com/vi/JwIHOk7b5sQ/hqdefault.jpg',
+      videoUrl: 'https://www.youtube.com/embed/JwIHOk7b5sQ?autoplay=1&mute=1&loop=1&playlist=JwIHOk7b5sQ&controls=0&showinfo=0&rel=0',
+      link: '#whats-on-now'
+    },
+    {
+      school: 'Courtney Bee Stand-Up',
+      short: 'Live Comedy',
+      subtitle: 'National Tour 2026',
+      copy: 'Unfiltered, hilarious stand-up comedy on dating, culture, and life live from top comedy clubs nationwide.',
+      image: '/n2n/comedy_club_bg.jpg',
+      videoUrl: 'https://www.youtube.com/embed/d8BFf32yDWQ?autoplay=1&mute=1&loop=1&playlist=d8BFf32yDWQ&controls=0&showinfo=0&rel=0',
+      link: '#whats-on-now'
+    }
+  ];
+
+  const HERO_SLIDES = isCourtneyBee
+    ? COURTNEY_BEE_HERO_SLIDES
+    : ((config?.theme?.heroSlider && config.theme.heroSlider.length > 0)
+      ? config.theme.heroSlider.map((slide: any) => {
+          return {
+            school: slide.title || config?.name || '',
+            short: slide.subtitle || slide.title || config?.name || '',
+            subtitle: slide.subtitle || 'Featured',
+            copy: slide.copy || slide.description || config?.theme?.heroCopy || '',
+            image: slide.imageUrl || slide.image || config?.theme?.heroImage || '',
+            link: slide.videoUrl || slide.link || config?.theme?.shopifyUrl || ''
+          };
+        })
       : (isOlympian 
         ? OLYMPIAN_HERO_SLIDES 
         : (isMf 
@@ -509,9 +532,7 @@ export default function N2NHome({ wlConfig, categories, user, activeVideo, setAc
                 ? BONAIRE_HERO_SLIDES
                 : (isVibe100 
                   ? VIBE_100_HERO_SLIDES 
-                  : (isCourtneyBee 
-                    ? COURTNEY_BEE_HERO_SLIDES 
-                    : AVO_HERO_SLIDES))))))));
+                  : AVO_HERO_SLIDES)))))));
 
   const [heroSlide, setHeroSlide] = useState(0);
 
