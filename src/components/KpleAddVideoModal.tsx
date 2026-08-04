@@ -491,7 +491,7 @@ export const KpleAddVideoModal: React.FC<KpleAddVideoModalProps> = ({
                       {uploadingVideoFile ? 'Uploading Video...' : directVideoUrl ? 'Video Uploaded ✓' : 'Upload Video File (.mp4)'}
                     </span>
                     <span style={{ fontSize: '11px', color: 'rgba(255,255,255,0.5)' }}>Click to browse computer</span>
-                    <input type="file" accept="video/*" onChange={handleVideoFileUpload} style={{ display: 'none' }} />
+                    <input type="file" accept="video/*,video/quicktime,video/mov,.mov,.mp4" onChange={handleVideoFileUpload} style={{ display: 'none' }} />
                   </label>
 
                   {/* Direct URL input */}

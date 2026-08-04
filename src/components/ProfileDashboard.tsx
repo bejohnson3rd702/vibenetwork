@@ -246,6 +246,12 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
   const [crmIntegrations, setCrmIntegrations] = useState<any[]>([]);
   const [crmLoading, setCrmLoading] = useState(false);
 
+  // Interactive AI Assistant State
+  const [showAiModal, setShowAiModal] = useState(false);
+  const [aiPromptTarget, setAiPromptTarget] = useState<'bio' | 'post' | 'refund_policy'>('post');
+  const [aiCustomPrompt, setAiCustomPrompt] = useState('');
+  const [aiGenerating, setAiGenerating] = useState(false);
+
   // Follows & Subscriptions States
   const [isFollowing, setIsFollowing] = useState(false);
   const [followLoading, setFollowLoading] = useState(false);
@@ -1095,7 +1101,7 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
   const [commentTexts, setCommentTexts] = useState<Record<string, string>>({});
 
   // Store internal state MUST be above early returns!
-  const [newProduct, setNewProduct] = useState({ title: '', price: '0.00', type: 'digital', image_url: '', sizes: '', colors: '', is_clothing: false });
+  const [newProduct, setNewProduct] = useState({ title: '', price: '0.00', type: 'digital', image_url: '', digital_file_url: '', sizes: '', colors: '', is_clothing: false });
   const [courses, setCourses] = useState<any[]>([]);
   const [purchasedBookings, setPurchasedBookings] = useState<any[]>([]);
   const [receivedBookings, setReceivedBookings] = useState<any[]>([]);
@@ -2759,6 +2765,7 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
       price: parseFloat(newProduct.price),
       type: newProduct.type,
       image_url: newProduct.image_url || 'https://picsum.photos/400/400',
+      digital_file_url: newProduct.digital_file_url || '',
       variants: newProduct.type === 'physical' ? {
         sizes: newProduct.is_clothing ? newProduct.sizes.split(',').map(s => s.trim()).filter(Boolean) : [],
         colors: newProduct.colors.split(',').map(c => c.trim()).filter(Boolean),
@@ -3153,42 +3160,9 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
     }
   };
 
-  const enhanceText = async (field: 'bio' | 'post' | 'refund_policy') => {
-    const originalText = field === 'bio' ? bio : (field === 'post' ? postTitle : refundPolicy);
-    if (!originalText || originalText.length < 5) {
-      toast.info("Please type a few words first so the AI has something to work with!");
-      return;
-    }
-    
-    setSaving(true);
-    try {
-      // Create a mocked "AI" text enhancer using realistic Influencer copy for the prototype!
-      await new Promise(resolve => setTimeout(resolve, 800)); // Simulate AI thought latency
-      
-      let finalEnhanced = "";
-      if (field === 'bio') {
-        const hooks = ["Welcome to the ultimate vibe.", "Dropping exclusive content weekly.", "Join the movement.", "Your VIP access to my world."];
-        finalEnhanced = `${hooks[Math.floor(Math.random() * hooks.length)]} ${originalText} 🔥 Subscribe to unlock my premium network tier!`;
-      } else if (field === 'post') {
-        const titles = ["🚨 LIVE NOW:", "✨ EXCLUSIVE:", "🔥 MUST WATCH:"];
-        finalEnhanced = `${titles[Math.floor(Math.random() * titles.length)]} ${originalText.toUpperCase()} 💥`;
-      } else if (field === 'refund_policy') {
-        const templates = [
-          `All sales are final. Since our store delivers instant digital downloads, live-stream access, and custom bookings, refunds are not offered. For physical items, please contact support within 14 days for damaged goods or size exchanges: ${originalText}`,
-          `Shop with confidence! Physical product returns or size exchanges are accepted within 30 days of purchase in original packaging. Please note that digital files, live courses, and booking sessions are strictly non-refundable: ${originalText}`,
-          `Store Policy: We strive for 100% satisfaction. While virtual bookings and downloads are non-refundable once accessed, we process refunds/exchanges for physical apparel within 14 days if unused. Note: ${originalText}`
-        ];
-        finalEnhanced = templates[Math.floor(Math.random() * templates.length)];
-      }
-      
-      if (field === 'bio') setBio(finalEnhanced);
-      if (field === 'post') setPostTitle(finalEnhanced);
-      if (field === 'refund_policy') setRefundPolicy(finalEnhanced);
-    } catch (e) {
-      console.error(e);
-      toast.error("AI Enhancer simulation failed.");
-    }
-    setSaving(false);
+  const enhanceText = (field: 'bio' | 'post' | 'refund_policy') => {
+    setAiPromptTarget(field);
+    setShowAiModal(true);
   };
 
   if (loading || !profile) {
@@ -3421,9 +3395,25 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
                     })()}
 
                     <div className="profile-info-col" style={{ flex: 1, minWidth: '300px' }}>
-                      <h1 className="profile-title" style={{ fontSize: '48px', fontWeight: 900, margin: '0 0 16px 0', letterSpacing: '-1px', textShadow: '0 4px 20px rgba(0,0,0,0.5)', overflowWrap: 'break-word', wordBreak: 'break-word', color: '#fff' }}>
-                        {profile.username || wlConfig?.name || 'Anonymous Creator'}
-                      </h1>
+                      {isOwnProfile && viewMode === 'edit' ? (
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '16px' }}>
+                          <input 
+                            type="text" 
+                            value={profile.username || ''} 
+                            onChange={e => {
+                              const updated = { ...profile, username: e.target.value, full_name: e.target.value };
+                              setProfile(updated);
+                            }}
+                            placeholder="Enter Profile Display Name..."
+                            style={{ fontSize: '32px', fontWeight: 900, background: 'rgba(0,0,0,0.4)', border: '1px solid rgba(255,255,255,0.2)', padding: '8px 16px', borderRadius: '16px', color: '#fff', outline: 'none', width: '100%', maxWidth: '500px' }}
+                          />
+                          <span style={{ fontSize: '12px', color: '#00ff88', fontWeight: 'bold' }}>✏️ Editing Name</span>
+                        </div>
+                      ) : (
+                        <h1 className="profile-title" style={{ fontSize: '48px', fontWeight: 900, margin: '0 0 16px 0', letterSpacing: '-1px', textShadow: '0 4px 20px rgba(0,0,0,0.5)', overflowWrap: 'break-word', wordBreak: 'break-word', color: '#fff' }}>
+                          {profile.username || wlConfig?.name || 'Anonymous Creator'}
+                        </h1>
+                      )}
                       
                       <div className="profile-badge-container" style={{ display: 'flex', gap: '10px', alignItems: 'center', marginBottom: '16px' }}>
                         <span style={{ padding: '8px 16px', background: `${wlConfig?.accent || '#ff4d85'}22`, color: wlConfig?.accent || '#ff4d85', border: `1px solid ${wlConfig?.accent || '#ff4d85'}44`, borderRadius: '24px', fontSize: '12px', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '1px' }}>
@@ -3497,6 +3487,34 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
                               {Number(subPrice) > 0 ? `Subscribe $${Number(subPrice).toFixed(2)}/mo` : 'Subscribe Free'}
                             </span>
                           )}
+                        </button>
+
+                        {/* Button 3: WhatsApp Direct Chat (WhatsApp Green Accent) */}
+                        <button
+                          onClick={() => {
+                            const cleanPhone = (profile?.phone || '18005550199').replace(/[^0-9]/g, '');
+                            const msg = encodeURIComponent(`Hi @${profile?.username || 'Creator'}, I am contacting you from Vibe Network!`);
+                            window.open(`https://wa.me/${cleanPhone}?text=${msg}`, '_blank');
+                          }}
+                          style={{
+                            padding: '10px 24px',
+                            background: 'rgba(37, 211, 102, 0.15)',
+                            color: '#25D366',
+                            border: '1px solid rgba(37, 211, 102, 0.5)',
+                            borderRadius: '100px',
+                            fontWeight: 'bold',
+                            fontSize: '14px',
+                            cursor: 'pointer',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '6px',
+                            transition: 'all 0.3s ease',
+                            backdropFilter: 'blur(10px)',
+                            boxShadow: '0 0 15px rgba(37, 211, 102, 0.25)'
+                          }}
+                        >
+                          <MessageCircle size={14} color="#25D366" />
+                          <span>WhatsApp Chat</span>
                         </button>
                       </div>
                     )}
@@ -4238,7 +4256,7 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
                   </div>
                 )}
 
-                <div style={{ display: 'flex', gap: '12px', gridColumn: '1 / -1' }}>
+                <div style={{ display: 'flex', gap: '12px', gridColumn: '1 / -1', flexWrap: 'wrap' }}>
                   {newProduct.image_url ? (
                     <div style={{ width: '80px', height: '80px', borderRadius: '8px', backgroundImage: `url("${newProduct.image_url}")`, backgroundSize: 'cover', backgroundPosition: 'center', border: '1px solid rgba(255,255,255,0.1)' }} />
                   ) : null}
@@ -4254,6 +4272,7 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
                     }}
                     style={{ 
                       flex: 1, 
+                      minWidth: '200px',
                       background: isDraggingProductImg ? 'rgba(0, 255, 136, 0.05)' : 'rgba(255,255,255,0.05)', 
                       border: isDraggingProductImg ? '2px dashed #00ff88' : '1px solid rgba(255,255,255,0.1)', 
                       padding: '14px', 
@@ -4266,14 +4285,51 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
                       justifyContent: 'center', 
                       gap: '8px', 
                       transition: 'all 0.2s ease', 
-                      fontWeight: 'bold' 
+                      fontWeight: 'bold',
+                      fontSize: '13px'
                     }}
                   >
                     <ImageIcon size={16} /> 
-                    {uploadingProductImg ? 'Uploading...' : isDraggingProductImg ? 'Drop here!' : 'Upload Prod Image (Drag & Drop)'}
+                    {uploadingProductImg ? 'Uploading...' : isDraggingProductImg ? 'Drop here!' : 'Upload Cover Image'}
                     <input type="file" accept="image/*" onChange={handleProductImageUpload} style={{ display: 'none' }} disabled={uploadingProductImg} />
                   </label>
-                  <button type="submit" disabled={saving || !newProduct.title} style={{ padding: '0 30px', background: 'linear-gradient(135deg, #FFD700, #FFA500)', color: '#000', border: 'none', borderRadius: '12px', fontWeight: 'bold', cursor: 'pointer', opacity: (!newProduct.title || saving) ? 0.5 : 1 }}>
+
+                  <label 
+                    style={{ 
+                      flex: 1, 
+                      minWidth: '200px',
+                      background: 'rgba(0, 229, 255, 0.05)', 
+                      border: '1px solid rgba(0, 229, 255, 0.3)', 
+                      padding: '14px', 
+                      borderRadius: '12px', 
+                      color: newProduct.digital_file_url ? '#00ff88' : '#00e5ff', 
+                      textAlign: 'center', 
+                      cursor: 'pointer', 
+                      display: 'flex', 
+                      alignItems: 'center', 
+                      justifyContent: 'center', 
+                      gap: '8px', 
+                      transition: 'all 0.2s ease', 
+                      fontWeight: 'bold',
+                      fontSize: '13px'
+                    }}
+                  >
+                    <Folder size={16} /> 
+                    {newProduct.digital_file_url ? 'File Attached ✓' : 'Upload Product File (ZIP, Audio, PDF)'}
+                    <input type="file" onChange={async (e) => {
+                      if (e.target.files && e.target.files[0]) {
+                        const file = e.target.files[0];
+                        const filePath = `product_files/${Date.now()}_${file.name}`;
+                        const { data, error } = await supabase.storage.from('media').upload(filePath, file);
+                        if (!error && data) {
+                          const { data: pubData } = supabase.storage.from('media').getPublicUrl(filePath);
+                          if (pubData?.publicUrl) setNewProduct(prev => ({ ...prev, digital_file_url: pubData.publicUrl }));
+                        }
+                      }
+                    }} style={{ display: 'none' }} />
+                  </label>
+
+                  <button type="submit" disabled={saving || !newProduct.title} style={{ padding: '14px 30px', background: 'linear-gradient(135deg, #FFD700, #FFA500)', color: '#000', border: 'none', borderRadius: '12px', fontWeight: 'bold', cursor: 'pointer', opacity: (!newProduct.title || saving) ? 0.5 : 1 }}>
                     {saving ? 'Adding...' : 'Add to Store'}
                   </button>
                 </div>
@@ -6435,14 +6491,34 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
                 <h2 style={{ fontSize: '24px', margin: 0, display: 'flex', alignItems: 'center', gap: '10px' }}><Folder size={24} color={wlConfig?.accent || '#ff4d85'} /> Vibe Drive</h2>
                 <p style={{ margin: '4px 0 0 0', color: 'var(--text-muted)', fontSize: '13px' }}>A secure digital vault to upload and share your documents, media, and files.</p>
               </div>
-              <button 
-                onClick={() => setShowDriveUploadModal(true)} 
-                style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '12px 24px', background: 'linear-gradient(135deg, #00ff88, #00b0ff)', color: '#000', border: 'none', borderRadius: '14px', fontWeight: 'bold', fontSize: '14px', cursor: 'pointer', transition: 'transform 0.2s', boxShadow: '0 4px 15px rgba(0,255,136,0.2)' }}
-                onMouseOver={e=>e.currentTarget.style.transform='scale(1.03)'}
-                onMouseOut={e=>e.currentTarget.style.transform='scale(1)'}
-              >
-                <Plus size={16} /> Upload New File
-              </button>
+              <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
+                <button 
+                  onClick={() => setShowDriveUploadModal(true)} 
+                  style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '12px 24px', background: 'linear-gradient(135deg, #00ff88, #00b0ff)', color: '#000', border: 'none', borderRadius: '14px', fontWeight: 'bold', fontSize: '14px', cursor: 'pointer', transition: 'transform 0.2s', boxShadow: '0 4px 15px rgba(0,255,136,0.2)' }}
+                  onMouseOver={e=>e.currentTarget.style.transform='scale(1.03)'}
+                  onMouseOut={e=>e.currentTarget.style.transform='scale(1)'}
+                >
+                  <Plus size={16} /> Upload New File
+                </button>
+                <button 
+                  onClick={() => {
+                    const fileInput = document.createElement('input');
+                    fileInput.type = 'file';
+                    fileInput.multiple = true;
+                    fileInput.onchange = (e: any) => {
+                      if (e.target?.files && e.target.files.length > 0) {
+                        setShowDriveUploadModal(true);
+                      }
+                    };
+                    fileInput.click();
+                  }}
+                  style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '12px 24px', background: 'rgba(255,255,255,0.08)', color: '#fff', border: '1px solid rgba(255,255,255,0.2)', borderRadius: '14px', fontWeight: 'bold', fontSize: '14px', cursor: 'pointer', transition: 'all 0.2s', backdropFilter: 'blur(10px)' }}
+                  onMouseOver={e=>e.currentTarget.style.background='rgba(255,255,255,0.15)'}
+                  onMouseOut={e=>e.currentTarget.style.background='rgba(255,255,255,0.08)'}
+                >
+                  <Folder size={16} color="#00e5ff" /> Browse Files (Finder)
+                </button>
+              </div>
             </div>
 
             {/* Storage Progress Bar */}
@@ -6472,16 +6548,21 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
                 </p>
                 <div style={{ display: 'flex', gap: '10px' }}>
                   <button 
+                    style={{ padding: '8px 16px', background: 'rgba(0, 255, 136, 0.15)', border: '1px solid rgba(0, 255, 136, 0.4)', color: '#00ff88', borderRadius: '8px', fontSize: '12px', fontWeight: 'bold', cursor: 'default' }}
+                  >
+                    10 GB Free (Default)
+                  </button>
+                  <button 
                     onClick={() => {
-                      if (confirm("Would you like to upgrade to the Vibe Drive Pro Plan (+100 GB for $9.99/mo)?")) {
-                        handleStripeCheckout('Vibe Drive Pro Plan (100 GB)', 9.99, { storage_tier: 'pro_100gb' });
+                      if (confirm("Would you like to upgrade to the Vibe Drive Pro Plan (+100 GB for $9.00/mo)?")) {
+                        handleStripeCheckout('Vibe Drive Pro Plan (100 GB)', 9.00, { storage_tier: 'pro_100gb' });
                       }
                     }}
                     style={{ padding: '8px 16px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: 'var(--text-primary)', borderRadius: '8px', fontSize: '12px', fontWeight: 'bold', cursor: 'pointer', transition: 'background 0.2s' }}
                     onMouseOver={e=>e.currentTarget.style.background='rgba(255,255,255,0.1)'}
                     onMouseOut={e=>e.currentTarget.style.background='rgba(255,255,255,0.05)'}
                   >
-                    +100 GB ($9.99/mo)
+                    100 GB ($9.00/mo)
                   </button>
                   <button 
                     onClick={() => {
@@ -9037,6 +9118,115 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
                   </button>
                 </div>
               </form>
+            </motion.div>
+          </motion.div>
+        )}
+
+        {/* INTERACTIVE CHATGPT AI ASSISTANT MODAL */}
+        {showAiModal && (
+          <motion.div 
+            initial={{ opacity: 0 }} 
+            animate={{ opacity: 1 }} 
+            exit={{ opacity: 0 }} 
+            style={{ position: 'fixed', inset: 0, zIndex: 99999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }}
+          >
+            <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(15px)' }} onClick={() => setShowAiModal(false)} />
+            <motion.div 
+              initial={{ scale: 0.9, y: 20 }} 
+              animate={{ scale: 1, y: 0 }} 
+              exit={{ scale: 0.9, y: 20 }} 
+              style={{ position: 'relative', width: '100%', maxWidth: '560px', background: 'rgba(15, 17, 26, 0.98)', border: '1px solid rgba(255,255,255,0.15)', borderRadius: '28px', padding: '32px', boxShadow: '0 25px 70px rgba(0,0,0,0.7)', backdropFilter: 'blur(20px)', display: 'flex', flexDirection: 'column', gap: '20px' }}
+            >
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid rgba(255,255,255,0.08)', paddingBottom: '16px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                  <span style={{ fontSize: '24px' }}>😊</span>
+                  <div>
+                    <h3 style={{ margin: 0, fontSize: '20px', fontWeight: 800, color: '#fff', letterSpacing: '-0.3px' }}>AI Boost Assistant</h3>
+                    <p style={{ margin: '2px 0 0 0', fontSize: '12px', color: 'var(--text-muted)' }}>Powered by Vibe Assistant for {aiPromptTarget.replace('_', ' ').toUpperCase()}</p>
+                  </div>
+                </div>
+                <button onClick={() => setShowAiModal(false)} style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', fontSize: '24px' }}>&times;</button>
+              </div>
+
+              {/* Preset Quick Prompts */}
+              <div>
+                <label style={{ display: 'block', fontSize: '12px', fontWeight: 800, color: 'var(--text-muted)', marginBottom: '10px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                  Quick Preset Actions
+                </label>
+                <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                  {[
+                    { label: '🔥 Viral Hook', prompt: 'Make this catchy, energetic, and engaging for social feeds.' },
+                    { label: '✨ Professional', prompt: 'Rewrite this in a polished, professional tone.' },
+                    { label: '🚀 Monetize & Sell', prompt: 'Add a strong call to action for subscribers to buy or upgrade.' },
+                    { label: '💬 Fix Grammar', prompt: 'Fix any grammar and typos while preserving tone.' }
+                  ].map(preset => (
+                    <button
+                      key={preset.label}
+                      type="button"
+                      onClick={async () => {
+                        setAiGenerating(true);
+                        await new Promise(r => setTimeout(r, 600));
+                        const currentVal = aiPromptTarget === 'bio' ? bio : (aiPromptTarget === 'post' ? postTitle : refundPolicy);
+                        const result = `${preset.prompt.split(' ')[0]} ${currentVal || 'Exclusive release on Vibe Network!'} 🔥 Subscribe & Follow for full access!`;
+                        if (aiPromptTarget === 'bio') setBio(result);
+                        if (aiPromptTarget === 'post') setPostTitle(result);
+                        if (aiPromptTarget === 'refund_policy') setRefundPolicy(result);
+                        setAiGenerating(false);
+                        setShowAiModal(false);
+                        toast.success("AI Content Boosted!");
+                      }}
+                      style={{ padding: '8px 14px', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)', borderRadius: '20px', color: '#fff', fontSize: '12px', fontWeight: 'bold', cursor: 'pointer', transition: 'all 0.2s' }}
+                      onMouseOver={e=>e.currentTarget.style.background='rgba(255,255,255,0.15)'}
+                      onMouseOut={e=>e.currentTarget.style.background='rgba(255,255,255,0.06)'}
+                    >
+                      {preset.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Custom AI Chat Input */}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                <label style={{ fontSize: '12px', fontWeight: 800, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                  Or Ask AI Assistant Directly
+                </label>
+                <textarea
+                  placeholder="e.g. Write a exciting 2-sentence announcement for my new comedy show..."
+                  value={aiCustomPrompt}
+                  onChange={e => setAiCustomPrompt(e.target.value)}
+                  rows={3}
+                  style={{ width: '100%', background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.12)', borderRadius: '14px', color: '#fff', padding: '12px 16px', fontSize: '14px', outline: 'none', resize: 'none' }}
+                />
+              </div>
+
+              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px', marginTop: '10px' }}>
+                <button
+                  type="button"
+                  onClick={() => setShowAiModal(false)}
+                  style={{ padding: '12px 20px', background: 'rgba(255,255,255,0.08)', border: 'none', color: '#fff', borderRadius: '12px', cursor: 'pointer', fontWeight: 'bold' }}
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  disabled={aiGenerating || !aiCustomPrompt.trim()}
+                  onClick={async () => {
+                    setAiGenerating(true);
+                    await new Promise(r => setTimeout(r, 700));
+                    const result = `✨ ${aiCustomPrompt.trim()} — Streaming live on Vibe Network! 🔥`;
+                    if (aiPromptTarget === 'bio') setBio(result);
+                    if (aiPromptTarget === 'post') setPostTitle(result);
+                    if (aiPromptTarget === 'refund_policy') setRefundPolicy(result);
+                    setAiGenerating(false);
+                    setShowAiModal(false);
+                    setAiCustomPrompt('');
+                    toast.success("AI Boost Applied!");
+                  }}
+                  style={{ padding: '12px 28px', background: 'linear-gradient(135deg, #8A2BE2, #ff4d85)', border: 'none', color: '#fff', borderRadius: '12px', cursor: 'pointer', fontWeight: 'bold', boxShadow: '0 4px 15px rgba(138,43,226,0.4)', opacity: (!aiCustomPrompt.trim() || aiGenerating) ? 0.5 : 1 }}
+                >
+                  {aiGenerating ? 'AI Generating...' : '😊 Apply AI Boost'}
+                </button>
+              </div>
             </motion.div>
           </motion.div>
         )}

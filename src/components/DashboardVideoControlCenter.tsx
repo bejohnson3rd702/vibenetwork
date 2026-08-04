@@ -434,7 +434,7 @@ export const DashboardVideoControlCenter: React.FC<DashboardVideoControlCenterPr
                 }}>
                   {uploadingVideo ? <Loader2 className="animate-spin" size={16} /> : <Upload size={16} />}
                   <span>{uploadingVideo ? 'Uploading...' : 'Browse File'}</span>
-                  <input type="file" accept="video/*" onChange={handleVideoFileUpload} style={{ display: 'none' }} />
+                  <input type="file" accept="video/*,video/quicktime,video/mov,.mov,.mp4" onChange={handleVideoFileUpload} style={{ display: 'none' }} />
                 </label>
               </div>
             </div>
