@@ -84,6 +84,75 @@ const STATIC_BONAIRE_CLIPS: VideoClip[] = [
   }
 ];
 
+const COURTNEY_BEE_FEEDS = [
+  { key: 'wildnout', label: '🔥 Wild \'N Out Episodes' },
+  { key: 'standup', label: '🎤 Courtney Stand-Up' },
+  { key: 'podcast', label: '📻 Culture Podcast' }
+];
+
+const STATIC_COURTNEY_BEE_CLIPS: VideoClip[] = [
+  {
+    id: 'courtney-wildnout-1',
+    headline: "Courtney Bee's Funniest Wild 'N Out Battles & Moments",
+    description: "Watch Courtney Bee drop savage punchlines and dominate the Wild 'N Out stage in this hilarious highlight reel.",
+    thumbnail: 'https://i.ytimg.com/vi/5gZg_r1s2d8/hqdefault.jpg',
+    videoUrl: 'https://www.youtube.com/watch?v=5gZg_r1s2d8',
+    duration: 720,
+    source: "Wild 'N Out",
+    sport: 'wildnout'
+  },
+  {
+    id: 'courtney-wildnout-2',
+    headline: "Courtney Bee vs DC Young Fly & Chico Bean Wild 'N Out Roast",
+    description: "Courtney Bee goes toe-to-toe with DC Young Fly, Chico Bean, and the Black Squad in Wild 'N Out's wild roast battles.",
+    thumbnail: 'https://images.unsplash.com/photo-1514525253161-7a46d19cd819?auto=format&fit=crop&q=80&w=800',
+    videoUrl: 'https://www.youtube.com/watch?v=5gZg_r1s2d8',
+    duration: 540,
+    source: "Wild 'N Out",
+    sport: 'wildnout'
+  },
+  {
+    id: 'courtney-standup-1',
+    headline: "Courtney Bee Live Stand-Up Special - Unfiltered",
+    description: "Courtney Bee takes the main stage with a hilarious, raw, and relatable stand-up comedy set on dating, culture, and life.",
+    thumbnail: '/n2n/comedy_club_bg.jpg',
+    videoUrl: 'https://www.youtube.com/watch?v=5gZg_r1s2d8',
+    duration: 1420,
+    source: "Courtney Bee Comedy",
+    sport: 'standup'
+  },
+  {
+    id: 'courtney-standup-2',
+    headline: "Courtney Bee Stand-Up - Modern Relationships & Red Flags",
+    description: "Live from the Comedy Club: Courtney Bee breaks down dating red flags, texting etiquette, and modern relationship drama.",
+    thumbnail: 'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?auto=format&fit=crop&q=80&w=800',
+    videoUrl: 'https://www.youtube.com/watch?v=5gZg_r1s2d8',
+    duration: 680,
+    source: "Courtney Bee Comedy",
+    sport: 'standup'
+  },
+  {
+    id: 'courtney-podcast-1',
+    headline: "Wild 'N Out & Culture Podcast Ep. 42 - Special Celebrity Guest",
+    description: "Courtney Bee sits down for an unfiltered conversation on pop culture, stand-up secrets, and behind-the-scenes Wild 'N Out stories.",
+    thumbnail: 'https://images.unsplash.com/photo-1590602847861-f357a9332bbc?auto=format&fit=crop&q=80&w=800',
+    videoUrl: 'https://www.youtube.com/watch?v=5gZg_r1s2d8',
+    duration: 2150,
+    source: "Courtney Bee Podcast",
+    sport: 'podcast'
+  },
+  {
+    id: 'courtney-podcast-2',
+    headline: "Culture Podcast: The Grind of Comedy & Building an Empire",
+    description: "Courtney Bee discusses her journey into stand-up comedy, joining Nick Cannon's Wild 'N Out crew, and scaling her digital media network.",
+    thumbnail: 'https://images.unsplash.com/photo-1523381210434-271e8be1f52b?auto=format&fit=crop&q=80&w=800',
+    videoUrl: 'https://www.youtube.com/watch?v=5gZg_r1s2d8',
+    duration: 1840,
+    source: "Courtney Bee Podcast",
+    sport: 'podcast'
+  }
+];
+
 const OLYMPIAN_FEEDS = [
   { key: 'olympiatv', label: '🏆 OlympiaTV', channelId: 'UCYukge4AuskD8xPjfrSoiBg' },
   { key: 'nicksnp', label: '💪 Nick\'s Strength & Power', channelId: 'UClfyDMfX-RhmExpVm-nCl4Q' },
@@ -1677,7 +1746,9 @@ export default function WatchLive({ accent = '#D35400', isOlympian = false, isMf
     }
   }, [showFanZone]);
 
-  const feedsToUse = isBonaire ? BONAIRE_FEEDS : (isOlympian ? OLYMPIAN_FEEDS : (isMf ? MUSCLE_FITNESS_FEEDS : (isB2K ? B2K_FEEDS : (isVibe100 ? VIBE_100_FEEDS : (isVibe ? VIBE_FEEDS : (isKple ? KPLE_FEEDS : (tenantId === 'wings-of-strength-tenant-id' ? WINGS_OF_STRENGTH_FEEDS : FEEDS)))))));
+  const isCourtneyBee = tenantId === 'cb000000-c08f-4260-8540-a0cc8bed4e11' || tenantId === 'courtney-bee-tenant-id' || wlConfig?.name?.toLowerCase().includes('courtney bee');
+
+  const feedsToUse = isCourtneyBee ? COURTNEY_BEE_FEEDS : (isBonaire ? BONAIRE_FEEDS : (isOlympian ? OLYMPIAN_FEEDS : (isMf ? MUSCLE_FITNESS_FEEDS : (isB2K ? B2K_FEEDS : (isVibe100 ? VIBE_100_FEEDS : (isVibe ? VIBE_FEEDS : (isKple ? KPLE_FEEDS : (tenantId === 'wings-of-strength-tenant-id' ? WINGS_OF_STRENGTH_FEEDS : FEEDS))))))));
 
   const handleClipClick = (clip: VideoClip) => {
     const isYouTube = clip.videoUrl.includes('youtube.com') || clip.videoUrl.includes('youtu.be');
@@ -1700,7 +1771,14 @@ export default function WatchLive({ accent = '#D35400', isOlympian = false, isMf
       const isHers = tenantId === 'mf-hers-tenant-id';
       const isFlex = tenantId === 'flex-online-tenant-id';
 
-      if (isBonaire) {
+      if (isCourtneyBee) {
+        for (const item of STATIC_COURTNEY_BEE_CLIPS) {
+          if (!seen.has(item.id)) {
+            seen.add(item.id);
+            allClips.push(item);
+          }
+        }
+      } else if (isBonaire) {
         for (const item of STATIC_BONAIRE_CLIPS) {
           if (!seen.has(item.id)) {
             seen.add(item.id);
