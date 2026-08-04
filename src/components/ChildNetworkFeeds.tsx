@@ -126,6 +126,71 @@ export default function ChildNetworkFeeds({ parentId, accent = 'var(--accent-pri
   const scrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
+    if (parentId === 'cb000000-c08f-4260-8540-a0cc8bed4e11' || parentId === 'courtney-bee-tenant-id') {
+      const cbPosts: PostItem[] = [
+        {
+          id: 'cb-post-1',
+          content: "“I'm Ovulating, Nick” with Tiffany Haddish: Courtney Bee & Nick Cannon host Tiffany Haddish at the turquoise table for high-stakes Spades, trash talk, and uncensored stories.",
+          image_url: 'https://i.ytimg.com/vi/CytqhMMV7sQ/hqdefault.jpg',
+          likes: 5420,
+          created_at: new Date().toISOString(),
+          creator_id: 'courtney-bee',
+          creator: {
+            username: 'courtneybee',
+            avatar_url: '/n2n/courtney_bee_avatar.jpg',
+            whitelabel_id: 'cb000000-c08f-4260-8540-a0cc8bed4e11',
+            whitelabel: {
+              id: 'cb000000-c08f-4260-8540-a0cc8bed4e11',
+              name: 'Courtney Bee Network',
+              domain: 'courtneybeenetwork.tv',
+              theme: { accent: '#D35400' }
+            }
+          }
+        },
+        {
+          id: 'cb-post-2',
+          content: "Standing on Boundaries and Wrestling with Mercedes Moné: Pro wrestling superstar Mercedes Moné hits the Spades table with Courtney Bee and Nick Cannon.",
+          image_url: 'https://i.ytimg.com/vi/pd5J_kQqLB0/hqdefault.jpg',
+          likes: 4890,
+          created_at: new Date().toISOString(),
+          creator_id: 'courtney-bee',
+          creator: {
+            username: 'courtneybee',
+            avatar_url: '/n2n/courtney_bee_avatar.jpg',
+            whitelabel_id: 'cb000000-c08f-4260-8540-a0cc8bed4e11',
+            whitelabel: {
+              id: 'cb000000-c08f-4260-8540-a0cc8bed4e11',
+              name: 'Courtney Bee Network',
+              domain: 'courtneybeenetwork.tv',
+              theme: { accent: '#D35400' }
+            }
+          }
+        },
+        {
+          id: 'cb-post-3',
+          content: "Best Of Courtney Bee Wild 'N Out Highlights: Watch Courtney Bee drop savage punchlines, roast the Black Squad, and dominate the Wild 'N Out stage on MTV.",
+          image_url: 'https://i.ytimg.com/vi/gC1V0uL_5xI/hqdefault.jpg',
+          likes: 6120,
+          created_at: new Date().toISOString(),
+          creator_id: 'courtney-bee',
+          creator: {
+            username: 'courtneybee',
+            avatar_url: '/n2n/courtney_bee_avatar.jpg',
+            whitelabel_id: 'cb000000-c08f-4260-8540-a0cc8bed4e11',
+            whitelabel: {
+              id: 'cb000000-c08f-4260-8540-a0cc8bed4e11',
+              name: 'Courtney Bee Network',
+              domain: 'courtneybeenetwork.tv',
+              theme: { accent: '#D35400' }
+            }
+          }
+        }
+      ];
+      setPosts(cbPosts);
+      setLoading(false);
+      return;
+    }
+
     if (isMf) {
       const mfArticles: PostItem[] = [
         {
