@@ -33,26 +33,6 @@ const COURTNEY_BEE_VIDEOS: CourtneyVideo[] = [
     description: "Pro wrestling superstar Mercedes Moné hits the Spades table with Courtney Bee and Nick Cannon.",
     duration: '25:40',
     thumbnail: 'https://i.ytimg.com/vi/pd5J_kQqLB0/hqdefault.jpg'
-  },
-  {
-    id: 'cb-3',
-    youtubeId: 'e5PyPssFC5U',
-    title: "90s TV, Parenting & Business with Raven-Symoné & Miranda Maday | We Playin' Spades",
-    show: "We Playin' Spades",
-    category: 'spades',
-    description: "Raven-Symoné and Miranda Maday join Courtney Bee and Nick Cannon for 90s nostalgia, laughter, and serious card table strategy.",
-    duration: '24:40',
-    thumbnail: 'https://i.ytimg.com/vi/e5PyPssFC5U/hqdefault.jpg'
-  },
-  {
-    id: 'cb-4',
-    youtubeId: 'TvJHIFotb3s',
-    title: "Shade, Strategy & Backyard Boogie with TS Madison & Rodney Chester | We Playin' Spades",
-    show: "We Playin' Spades",
-    category: 'spades',
-    description: "TS Madison and Rodney Chester bring hilarious energy, trash talk, and legendary Spades gameplay to Nick & Courtney's table.",
-    duration: '26:50',
-    thumbnail: 'https://i.ytimg.com/vi/TvJHIFotb3s/hqdefault.jpg'
   }
 ];
 
