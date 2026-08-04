@@ -36,25 +36,23 @@ const COURTNEY_BEE_VIDEOS: CourtneyVideo[] = [
   },
   {
     id: 'cb-3',
-    youtubeId: 'J8nO5P-5lqQ',
-    videoUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4',
-    title: "Best Of Courtney Bee | Wild 'N Out Freestyle & Roasts",
-    show: "MTV Wild 'N Out",
-    category: 'wildnout',
-    description: "Watch Courtney Bee drop savage punchlines, roast the Black Squad, and dominate the Wild 'N Out stage on MTV.",
-    duration: '12:15',
-    thumbnail: 'https://i.ytimg.com/vi/J8nO5P-5lqQ/hqdefault.jpg'
+    youtubeId: 'e5PyPssFC5U',
+    title: "90s TV, Parenting & Business with Raven-Symoné & Miranda Maday | We Playin' Spades",
+    show: "We Playin' Spades",
+    category: 'spades',
+    description: "Raven-Symoné and Miranda Maday join Courtney Bee and Nick Cannon for 90s nostalgia, laughter, and serious card table strategy.",
+    duration: '24:40',
+    thumbnail: 'https://i.ytimg.com/vi/e5PyPssFC5U/hqdefault.jpg'
   },
   {
     id: 'cb-4',
-    youtubeId: 'V7W_Ww64v9A',
-    videoUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerMeltdowns.mp4',
-    title: "Courtney Bee vs Black Squad | Wild 'N Out Roast Battles",
-    show: "MTV Wild 'N Out",
-    category: 'wildnout',
-    description: "Courtney Bee goes toe-to-toe with DC Young Fly, Chico Bean, and Nick Cannon in legendary Wild 'N Out roast battles.",
-    duration: '14:50',
-    thumbnail: 'https://i.ytimg.com/vi/V7W_Ww64v9A/hqdefault.jpg'
+    youtubeId: 'TvJHIFotb3s',
+    title: "Shade, Strategy & Backyard Boogie with TS Madison & Rodney Chester | We Playin' Spades",
+    show: "We Playin' Spades",
+    category: 'spades',
+    description: "TS Madison and Rodney Chester bring hilarious energy, trash talk, and legendary Spades gameplay to Nick & Courtney's table.",
+    duration: '26:50',
+    thumbnail: 'https://i.ytimg.com/vi/TvJHIFotb3s/hqdefault.jpg'
   }
 ];
 
@@ -157,40 +155,22 @@ export default function CourtneyBeeWatchSection({ accent = '#D35400' }: { accent
           marginBottom: '32px'
         }}
       >
-        {/* Responsive 16:9 Screen (HTML5 Video for restricted embeds, Iframe for YouTube) */}
+        {/* Responsive 16:9 Screen (YouTube Iframe) */}
         <div style={{ position: 'relative', width: '100%', aspectRatio: '16/9', background: '#000' }}>
-          {selectedVideo.videoUrl ? (
-            <video
-              key={selectedVideo.id}
-              src={selectedVideo.videoUrl}
-              controls
-              autoPlay
-              playsInline
-              style={{
-                position: 'absolute',
-                inset: 0,
-                width: '100%',
-                height: '100%',
-                border: 'none',
-                objectFit: 'cover'
-              }}
-            />
-          ) : (
-            <iframe
-              key={selectedVideo.youtubeId}
-              src={`https://www.youtube.com/embed/${selectedVideo.youtubeId}?autoplay=1&rel=0&modestbranding=1`}
-              title={selectedVideo.title}
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-              allowFullScreen
-              style={{
-                position: 'absolute',
-                inset: 0,
-                width: '100%',
-                height: '100%',
-                border: 'none'
-              }}
-            />
-          )}
+          <iframe
+            key={selectedVideo.youtubeId}
+            src={`https://www.youtube.com/embed/${selectedVideo.youtubeId}?autoplay=1&rel=0&modestbranding=1`}
+            title={selectedVideo.title}
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+            allowFullScreen
+            style={{
+              position: 'absolute',
+              inset: 0,
+              width: '100%',
+              height: '100%',
+              border: 'none'
+            }}
+          />
         </div>
 
         {/* Video Info Bar */}
