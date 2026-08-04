@@ -2696,9 +2696,7 @@ export default function WatchLive({ accent = '#D35400', isCourtneyBee = false, i
                             const parts = activeVideo.videoUrl.split('v=');
                             if (parts.length > 1) ytId = parts[1].substring(0, 11);
                           }
-                          if (!ytId || (isCourtneyBeeNet && ytId !== 'CytqhMMV7sQ' && ytId !== 'pd5J_kQqLB0')) {
-                            ytId = 'CytqhMMV7sQ';
-                          }
+                          if (!ytId) ytId = activeVideo.id;
                           
                           return (
                             <iframe
