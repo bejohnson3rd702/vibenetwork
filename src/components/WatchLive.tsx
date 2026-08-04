@@ -92,91 +92,91 @@ const COURTNEY_BEE_FEEDS = [
 
 const STATIC_COURTNEY_BEE_CLIPS: VideoClip[] = [
   {
-    id: 'cb-clip-1',
+    id: 'CytqhMMV7sQ',
     headline: "“I'm Ovulating, Nick” with Tiffany Haddish | We Playin' Spades",
     description: "Courtney Bee & Nick Cannon host Tiffany Haddish at the turquoise table for high-stakes Spades, trash talk, and uncensored stories.",
     thumbnail: 'https://i.ytimg.com/vi/CytqhMMV7sQ/hqdefault.jpg',
-    videoUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4',
+    videoUrl: 'https://www.youtube.com/watch?v=CytqhMMV7sQ',
     duration: 1650,
     source: "We Playin' Spades",
     sport: 'spades'
   },
   {
-    id: 'cb-clip-2',
+    id: 'pd5J_kQqLB0',
     headline: "Standing on Boundaries and Wrestling with Mercedes Moné | We Playin' Spades",
     description: "Pro wrestling superstar Mercedes Moné hits the Spades table with Courtney Bee and Nick Cannon.",
     thumbnail: 'https://i.ytimg.com/vi/pd5J_kQqLB0/hqdefault.jpg',
-    videoUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4',
+    videoUrl: 'https://www.youtube.com/watch?v=pd5J_kQqLB0',
     duration: 1540,
     source: "We Playin' Spades",
     sport: 'spades'
   },
   {
-    id: 'cb-clip-3',
+    id: 'J8nO5P-5lqQ',
     headline: "Best Of Courtney Bee | Wild 'N Out Highlights",
     description: "Watch Courtney Bee drop savage punchlines, roast the Black Squad, and dominate the Wild 'N Out stage on MTV.",
     thumbnail: 'https://i.ytimg.com/vi/J8nO5P-5lqQ/hqdefault.jpg',
-    videoUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4',
+    videoUrl: 'https://www.youtube.com/watch?v=J8nO5P-5lqQ',
     duration: 720,
     source: "Wild 'N Out",
     sport: 'wildnout'
   },
   {
-    id: 'cb-clip-4',
+    id: 'V7W_Ww64v9A',
     headline: "Courtney Bee Meets Comedy's Rising Stars | BET's ComicView",
     description: "Courtney Bee takes the spotlight on BET's ComicView Rooftop Series with hilarious stand-up comedy.",
     thumbnail: 'https://i.ytimg.com/vi/V7W_Ww64v9A/hqdefault.jpg',
-    videoUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerJoyrides.mp4',
+    videoUrl: 'https://www.youtube.com/watch?v=V7W_Ww64v9A',
     duration: 1420,
     source: "Courtney Bee Comedy",
     sport: 'standup'
   },
   {
-    id: 'cb-clip-5',
+    id: 'wX-y8G5z6L4',
     headline: "Courtney Bee Behind The Scenes | BET's ComicView",
     description: "Exclusive backstage footage and raw stand-up prep with Courtney Bee on BET's ComicView.",
     thumbnail: 'https://i.ytimg.com/vi/wX-y8G5z6L4/hqdefault.jpg',
-    videoUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerMeltdowns.mp4',
+    videoUrl: 'https://www.youtube.com/watch?v=wX-y8G5z6L4',
     duration: 680,
     source: "Courtney Bee Comedy",
     sport: 'standup'
   },
   {
-    id: 'cb-clip-6',
+    id: 'd_kH0N3K2V8',
     headline: "Comedians Lighting Up BET's ComicView | Courtney Bee",
     description: "Courtney Bee joins top Black stand-up comedians for a high-energy rooftop comedy showcase.",
     thumbnail: 'https://i.ytimg.com/vi/d_kH0N3K2V8/hqdefault.jpg',
-    videoUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/Sintel.mp4',
+    videoUrl: 'https://www.youtube.com/watch?v=d_kH0N3K2V8',
     duration: 540,
     source: "Courtney Bee Comedy",
     sport: 'standup'
   },
   {
-    id: 'cb-clip-7',
+    id: 'M2O5jR9yC3g',
     headline: "Inside BET's ComicView Rooftop Series | Courtney Bee",
     description: "Courtney Bee breaks down life, dating, and rising through the comedy scene on BET.",
     thumbnail: 'https://i.ytimg.com/vi/M2O5jR9yC3g/hqdefault.jpg',
-    videoUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/SubaruOutbackOnStreetPerformer.mp4',
+    videoUrl: 'https://www.youtube.com/watch?v=M2O5jR9yC3g',
     duration: 890,
     source: "Courtney Bee Comedy",
     sport: 'standup'
   },
   {
-    id: 'cb-clip-8',
+    id: 'x4Y-8g_T3P0',
     headline: "Flyana Boss & Courtney Bee On Black Mama Sayings | Cheers To That!",
     description: "Courtney Bee locks in with Flyana Boss for hilarious commentary on Black mother sayings and culture.",
     thumbnail: 'https://i.ytimg.com/vi/x4Y-8g_T3P0/hqdefault.jpg',
-    videoUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4',
+    videoUrl: 'https://www.youtube.com/watch?v=x4Y-8g_T3P0',
     duration: 610,
     source: "Courtney Bee Comedy",
     sport: 'standup'
   },
   {
-    id: 'cb-clip-9',
+    id: 'G9xR5q1w2M8',
     headline: "Does Body Count Matter? with Courtney Bee",
     description: "Courtney Bee shares hilarious and candid dating opinions on modern relationships.",
     thumbnail: 'https://i.ytimg.com/vi/G9xR5q1w2M8/hqdefault.jpg',
-    videoUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/WeAreGoingOnBullrun.mp4',
+    videoUrl: 'https://www.youtube.com/watch?v=G9xR5q1w2M8',
     duration: 840,
     source: "Courtney Bee Comedy",
     sport: 'standup'
@@ -2701,7 +2701,7 @@ export default function WatchLive({ accent = '#D35400', isCourtneyBee = false, i
                           return (
                             <iframe
                               id="watch-live-yt-iframe"
-                              src={`https://www.youtube-nocookie.com/embed/${ytId}?autoplay=1&controls=1&rel=0`}
+                              src={`https://www.youtube.com/embed/${ytId}?autoplay=1&controls=1&rel=0`}
                               title={activeVideo.headline}
                               frameBorder="0"
                               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
