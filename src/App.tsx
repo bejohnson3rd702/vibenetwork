@@ -781,6 +781,8 @@ function App() {
                    wlConfig?.parent_network_id === '7a017c4d-c08f-4260-8540-a0cc8bed4e11' ||
                    wlConfig?.theme?.parent_network_id === '7a017c4d-c08f-4260-8540-a0cc8bed4e11' ||
                    wlConfig?.id === 'adb92e36-5ebc-4dc3-ae96-429f3dc1bb30' ||
+                   wlConfig?.id === 'cb000000-c08f-4260-8540-a0cc8bed4e11' ||
+                   (wlConfig?.name || '').toLowerCase().includes('courtney bee') ||
                    wlConfig?.id === 'wings-of-strength-tenant-id' ||
                    wlConfig?.id === 'mf-hers-tenant-id' ||
                    wlConfig?.id === 'flex-online-tenant-id' ||
