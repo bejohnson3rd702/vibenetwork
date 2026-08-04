@@ -34,9 +34,14 @@ const Navbar: React.FC<NavbarProps> = ({ user, onLoginClick, onAdminClick }) => 
      wlConfig.id !== 'master')
   );
 
+  const isProfilePage = location.pathname.startsWith('/profile') || location.pathname.startsWith('/channel');
+
   const showBackToVibe = 
     isSubTenantChannel ||
+    isProfilePage ||
     new URLSearchParams(window.location.search).has('tenant') ||
+    new URLSearchParams(window.location.search).has('channel') ||
+    new URLSearchParams(window.location.search).has('creator') ||
     new URLSearchParams(window.location.search).get('fromVibe') === 'true';
 
   useEffect(() => {
@@ -128,7 +133,7 @@ const Navbar: React.FC<NavbarProps> = ({ user, onLoginClick, onAdminClick }) => 
       }}>
         {[
           { label: 'Home', path: '/' },
-          ...(showBackToVibe ? [{ label: `Return to ${parentName}`, path: 'parent' }] : []),
+          ...(showBackToVibe ? [{ label: parentName && parentName !== 'VIBE NETWORK' ? `Return to ${parentName}` : '🛸 Back to Vibe', path: 'parent' }] : []),
           { label: 'Marketplace', path: '/marketplace', hidden: Boolean(
             wlConfig?.domain && 
             wlConfig.id !== 'master' && 
