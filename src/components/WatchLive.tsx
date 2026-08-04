@@ -1778,7 +1778,7 @@ export default function WatchLive({ accent = '#D35400', isCourtneyBee = false, i
     }
   }, [showFanZone]);
 
-  const isCourtneyBeeNet = isCourtneyBee || tenantId === 'cb000000-c08f-4260-8540-a0cc8bed4e11' || tenantId === 'courtney-bee-tenant-id' || wlConfig?.name?.toLowerCase().includes('courtney bee');
+  const isCourtneyBeeNet = isCourtneyBee || tenantId === 'cb000000-c08f-4260-8540-a0cc8bed4e11' || tenantId === 'courtney-bee-tenant-id' || wlConfig?.id === 'cb000000-c08f-4260-8540-a0cc8bed4e11' || wlConfig?.id === 'courtney-bee-tenant-id' || wlConfig?.domain?.includes('courtney') || wlConfig?.name?.toLowerCase().includes('courtney bee');
 
   const feedsToUse = isCourtneyBeeNet ? COURTNEY_BEE_FEEDS : (isBonaire ? BONAIRE_FEEDS : (isOlympian ? OLYMPIAN_FEEDS : (isMf ? MUSCLE_FITNESS_FEEDS : (isB2K ? B2K_FEEDS : (isVibe100 ? VIBE_100_FEEDS : (isVibe ? VIBE_FEEDS : (isKple ? KPLE_FEEDS : (tenantId === 'wings-of-strength-tenant-id' ? WINGS_OF_STRENGTH_FEEDS : FEEDS))))))));
 
