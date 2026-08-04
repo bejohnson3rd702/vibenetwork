@@ -515,6 +515,24 @@ function App() {
               parent_network_id: 'adb92e36-5ebc-4dc3-ae96-429f3dc1bb30'
             }
           });
+        } else if (activeTenantId === 'adb92e36-5ebc-4dc3-ae96-429f3dc1bb30' || activeTenantId === 'vibe-network-tenant-id' || activeTenantId === 'master' || activeTenantId === 'vibe') {
+          loadedTenantId = 'adb92e36-5ebc-4dc3-ae96-429f3dc1bb30';
+          loadedConfig = normalizeWlConfig({
+            id: 'adb92e36-5ebc-4dc3-ae96-429f3dc1bb30',
+            name: 'VIBE NETWORK',
+            domain: 'vibenetwork.tv',
+            logo: 'https://vibenetwork.tv/wp-content/uploads/2026/02/white-vibe-black-tv-.png',
+            is_active: true,
+            n2n_enabled: true,
+            accent: '#D35400',
+            theme: {
+              accent: '#D35400',
+              heroCopy: 'Feel the Beat. Live the Vibe. Global Media, DJ Broadcasts & Live Entertainment Network.',
+              logoImage: 'https://vibenetwork.tv/wp-content/uploads/2026/02/white-vibe-black-tv-.png',
+              enableWatchLive: true,
+              n2n_enabled: true
+            }
+          });
         } else if (dbTenantData && dbTenantData.length > 0) {
           const dbConf = dbTenantData[0];
           loadedTenantId = dbConf.id;
@@ -705,6 +723,7 @@ function App() {
                    isKpleConfig(wlConfig) ||
                    wlConfig?.parent_network_id === '7a017c4d-c08f-4260-8540-a0cc8bed4e11' ||
                    wlConfig?.theme?.parent_network_id === '7a017c4d-c08f-4260-8540-a0cc8bed4e11' ||
+                   wlConfig?.id === 'adb92e36-5ebc-4dc3-ae96-429f3dc1bb30' ||
                    wlConfig?.id === 'wings-of-strength-tenant-id' ||
                    wlConfig?.id === 'mf-hers-tenant-id' ||
                    wlConfig?.id === 'flex-online-tenant-id' ||
