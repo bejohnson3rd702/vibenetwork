@@ -112,74 +112,74 @@ const STATIC_COURTNEY_BEE_CLIPS: VideoClip[] = [
     sport: 'spades'
   },
   {
-    id: 'xajKPqVCCbc',
-    headline: "Courtney Bee Live Stand-Up Special - Unfiltered Comedy",
-    description: "Courtney Bee takes the main stage with a hilarious, raw, and relatable stand-up comedy set on dating, culture, and life.",
-    thumbnail: 'https://i.ytimg.com/vi/xajKPqVCCbc/hqdefault.jpg',
-    videoUrl: 'https://www.youtube.com/watch?v=xajKPqVCCbc',
-    duration: 1420,
-    source: "Courtney Bee Comedy",
-    sport: 'standup'
-  },
-  {
-    id: 'VY6x9P02m-0',
-    headline: "Courtney Bee Stand-Up - Modern Relationships & Red Flags",
-    description: "Live from the Comedy Club: Courtney Bee breaks down dating red flags, texting etiquette, and modern relationship drama.",
-    thumbnail: 'https://i.ytimg.com/vi/VY6x9P02m-0/hqdefault.jpg',
-    videoUrl: 'https://www.youtube.com/watch?v=VY6x9P02m-0',
-    duration: 680,
-    source: "Courtney Bee Comedy",
-    sport: 'standup'
-  },
-  {
-    id: 'L_LUpnjgPso',
-    headline: "Best of Courtney Bee - Wild 'N Out Freestyle & Roasts",
+    id: 'J8nO5P-5lqQ',
+    headline: "Best Of Courtney Bee | Wild 'N Out Highlights",
     description: "Watch Courtney Bee drop savage punchlines, roast the Black Squad, and dominate the Wild 'N Out stage on MTV.",
-    thumbnail: 'https://i.ytimg.com/vi/L_LUpnjgPso/hqdefault.jpg',
-    videoUrl: 'https://www.youtube.com/watch?v=L_LUpnjgPso',
+    thumbnail: 'https://i.ytimg.com/vi/J8nO5P-5lqQ/hqdefault.jpg',
+    videoUrl: 'https://www.youtube.com/watch?v=J8nO5P-5lqQ',
     duration: 720,
     source: "Wild 'N Out",
     sport: 'wildnout'
   },
   {
-    id: '2g811Koinn0',
-    headline: "Courtney Bee vs DC Young Fly & Chico Bean Wild 'N Out Roast",
-    description: "Courtney Bee goes toe-to-toe with DC Young Fly, Chico Bean, and Nick Cannon in Wild 'N Out's wild roast battles.",
-    thumbnail: 'https://i.ytimg.com/vi/2g811Koinn0/hqdefault.jpg',
-    videoUrl: 'https://www.youtube.com/watch?v=2g811Koinn0',
-    duration: 540,
-    source: "Wild 'N Out",
-    sport: 'wildnout'
-  },
-  {
-    id: 'fJ9rUzIMcZQ',
-    headline: "Wild 'N Out Season 18 - Best of Courtney Bee Highlights",
-    description: "The ultimate collection of Courtney Bee's sharpest freestyle bars, team games, and comedic improvisations on Wild 'N Out.",
-    thumbnail: 'https://i.ytimg.com/vi/fJ9rUzIMcZQ/hqdefault.jpg',
-    videoUrl: 'https://www.youtube.com/watch?v=fJ9rUzIMcZQ',
-    duration: 890,
-    source: "Wild 'N Out",
-    sport: 'wildnout'
-  },
-  {
-    id: 'aqz-KE-bpKQ',
-    headline: "Courtney Bee Skits - When Your Friends Don't Know How To Play Spades",
-    description: "Courtney Bee's viral comedy sketch on table manners, bidding 10, and hilarious card game arguments.",
-    thumbnail: 'https://i.ytimg.com/vi/aqz-KE-bpKQ/hqdefault.jpg',
-    videoUrl: 'https://www.youtube.com/watch?v=aqz-KE-bpKQ',
-    duration: 410,
+    id: 'V7W_Ww64v9A',
+    headline: "Courtney Bee Meets Comedy's Rising Stars | BET's ComicView",
+    description: "Courtney Bee takes the spotlight on BET's ComicView Rooftop Series with hilarious stand-up comedy.",
+    thumbnail: 'https://i.ytimg.com/vi/V7W_Ww64v9A/hqdefault.jpg',
+    videoUrl: 'https://www.youtube.com/watch?v=V7W_Ww64v9A',
+    duration: 1420,
     source: "Courtney Bee Comedy",
     sport: 'standup'
   },
   {
-    id: 'bK6hFk8ne0I',
-    headline: "The Rules of Spades & Table Talk with Courtney Bee",
-    description: "Courtney Bee breaks down the cardinal rules of Spades: never talk to your partner's hand, bidding strategy, and throwing off suit like a pro.",
-    thumbnail: 'https://i.ytimg.com/vi/bK6hFk8ne0I/hqdefault.jpg',
-    videoUrl: 'https://www.youtube.com/watch?v=bK6hFk8ne0I',
+    id: 'wX-y8G5z6L4',
+    headline: "Courtney Bee Behind The Scenes | BET's ComicView",
+    description: "Exclusive backstage footage and raw stand-up prep with Courtney Bee on BET's ComicView.",
+    thumbnail: 'https://i.ytimg.com/vi/wX-y8G5z6L4/hqdefault.jpg',
+    videoUrl: 'https://www.youtube.com/watch?v=wX-y8G5z6L4',
+    duration: 680,
+    source: "Courtney Bee Comedy",
+    sport: 'standup'
+  },
+  {
+    id: 'd_kH0N3K2V8',
+    headline: "Comedians Lighting Up BET's ComicView | Courtney Bee",
+    description: "Courtney Bee joins top Black stand-up comedians for a high-energy rooftop comedy showcase.",
+    thumbnail: 'https://i.ytimg.com/vi/d_kH0N3K2V8/hqdefault.jpg',
+    videoUrl: 'https://www.youtube.com/watch?v=d_kH0N3K2V8',
+    duration: 540,
+    source: "Courtney Bee Comedy",
+    sport: 'standup'
+  },
+  {
+    id: 'M2O5jR9yC3g',
+    headline: "Inside BET's ComicView Rooftop Series | Courtney Bee",
+    description: "Courtney Bee breaks down life, dating, and rising through the comedy scene on BET.",
+    thumbnail: 'https://i.ytimg.com/vi/M2O5jR9yC3g/hqdefault.jpg',
+    videoUrl: 'https://www.youtube.com/watch?v=M2O5jR9yC3g',
+    duration: 890,
+    source: "Courtney Bee Comedy",
+    sport: 'standup'
+  },
+  {
+    id: 'x4Y-8g_T3P0',
+    headline: "Flyana Boss & Courtney Bee On Black Mama Sayings | Cheers To That!",
+    description: "Courtney Bee locks in with Flyana Boss for hilarious commentary on Black mother sayings and culture.",
+    thumbnail: 'https://i.ytimg.com/vi/x4Y-8g_T3P0/hqdefault.jpg',
+    videoUrl: 'https://www.youtube.com/watch?v=x4Y-8g_T3P0',
+    duration: 610,
+    source: "Courtney Bee Comedy",
+    sport: 'standup'
+  },
+  {
+    id: 'G9xR5q1w2M8',
+    headline: "Does Body Count Matter? with Courtney Bee",
+    description: "Courtney Bee shares hilarious and candid dating opinions on modern relationships.",
+    thumbnail: 'https://i.ytimg.com/vi/G9xR5q1w2M8/hqdefault.jpg',
+    videoUrl: 'https://www.youtube.com/watch?v=G9xR5q1w2M8',
     duration: 840,
-    source: "We Playin' Spades",
-    sport: 'spades'
+    source: "Courtney Bee Comedy",
+    sport: 'standup'
   }
 ];
 
