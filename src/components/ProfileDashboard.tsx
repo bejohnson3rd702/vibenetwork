@@ -3535,7 +3535,6 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
                 {[
                   { id: 'feed', label: 'Content Feed', icon: <Activity size={16} />, color: '#ff4d85' },
                   { id: 'store', label: 'Store', icon: <DollarSign size={16} />, color: '#00ff88' },
-                  { id: 'live', label: 'Live Stream', icon: <Video size={16} />, color: '#ff3b30' },
                   ...(wlConfig?.enableBooking !== false ? [{ id: 'booking', label: 'Schedule Appointment', icon: <Calendar size={16} />, color: '#b380ff' }] : []),
                   { id: 'series', label: 'Episodes', icon: <Video size={16} />, color: '#00e5ff' },
                   ...(!import.meta.env.PROD ? [{ id: 'courses', label: 'Sessions', icon: <CheckCircle size={16} />, color: '#ffb700' }] : []),
@@ -3545,6 +3544,7 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
                   ] : [])
                 ]
                   .concat(isNetworkLevel ? [
+                    { id: 'live', label: 'Live Stream', icon: <Video size={16} />, color: '#ff3b30' },
                     // { id: 'members', label: 'Network Profiles', icon: <Monitor size={16} />, color: '#9d4edd' },
                     { id: 'community', label: 'Community', icon: <MessageCircle size={16} />, color: '#3399ff' }
                   ] : [])
