@@ -93,31 +93,31 @@ const COURTNEY_BEE_FEEDS = [
 const STATIC_COURTNEY_BEE_CLIPS: VideoClip[] = [
   // ── Wild 'N Out ──
   {
-    id: 'k-V31d-Gv3E',
+    id: 'gC1V0uL_5xI',
     headline: "Best of Courtney Bee - Wild 'N Out Freestyle & Roasts",
     description: "Watch Courtney Bee drop savage punchlines, roast the Black Squad, and dominate the Wild 'N Out stage on MTV.",
-    thumbnail: 'https://i.ytimg.com/vi/k-V31d-Gv3E/hqdefault.jpg',
-    videoUrl: 'https://www.youtube.com/watch?v=k-V31d-Gv3E',
+    thumbnail: 'https://i.ytimg.com/vi/gC1V0uL_5xI/hqdefault.jpg',
+    videoUrl: 'https://www.youtube.com/watch?v=gC1V0uL_5xI',
     duration: 720,
     source: "Wild 'N Out",
     sport: 'wildnout'
   },
   {
-    id: 'Yp9a0sX_s04',
+    id: '5gZg_r1s2d8',
     headline: "Courtney Bee vs DC Young Fly & Chico Bean Wild 'N Out Roast",
     description: "Courtney Bee goes toe-to-toe with DC Young Fly, Chico Bean, and Nick Cannon in Wild 'N Out's wild roast battles.",
-    thumbnail: 'https://i.ytimg.com/vi/Yp9a0sX_s04/hqdefault.jpg',
-    videoUrl: 'https://www.youtube.com/watch?v=Yp9a0sX_s04',
+    thumbnail: 'https://i.ytimg.com/vi/5gZg_r1s2d8/hqdefault.jpg',
+    videoUrl: 'https://www.youtube.com/watch?v=5gZg_r1s2d8',
     duration: 540,
     source: "Wild 'N Out",
     sport: 'wildnout'
   },
   {
-    id: 'CytqhMMV7sQ',
+    id: 'AdJEg47RTZ4',
     headline: "Wild 'N Out Season 18 - Best of Courtney Bee Highlights",
     description: "The ultimate collection of Courtney Bee's sharpest freestyle bars, team games, and comedic improvisations on Wild 'N Out.",
-    thumbnail: 'https://i.ytimg.com/vi/CytqhMMV7sQ/hqdefault.jpg',
-    videoUrl: 'https://www.youtube.com/watch?v=CytqhMMV7sQ',
+    thumbnail: 'https://i.ytimg.com/vi/AdJEg47RTZ4/hqdefault.jpg',
+    videoUrl: 'https://www.youtube.com/watch?v=AdJEg47RTZ4',
     duration: 890,
     source: "Wild 'N Out",
     sport: 'wildnout'
@@ -125,31 +125,31 @@ const STATIC_COURTNEY_BEE_CLIPS: VideoClip[] = [
 
   // ── Courtney Bee Stand-Up ──
   {
-    id: 'courtney-standup-special',
+    id: 'xajKPqVCCbc',
     headline: "Courtney Bee Live Stand-Up Special - Unfiltered",
     description: "Courtney Bee takes the main stage with a hilarious, raw, and relatable stand-up comedy set on dating, culture, and life.",
-    thumbnail: 'https://i.ytimg.com/vi/CytqhMMV7sQ/hqdefault.jpg',
-    videoUrl: 'https://www.youtube.com/watch?v=CytqhMMV7sQ',
+    thumbnail: 'https://i.ytimg.com/vi/xajKPqVCCbc/hqdefault.jpg',
+    videoUrl: 'https://www.youtube.com/watch?v=xajKPqVCCbc',
     duration: 1420,
     source: "Courtney Bee Comedy",
     sport: 'standup'
   },
   {
-    id: 'courtney-standup-redflags',
+    id: 'M7lc1UVf-VE',
     headline: "Courtney Bee Stand-Up - Modern Relationships & Red Flags",
     description: "Live from the Comedy Club: Courtney Bee breaks down dating red flags, texting etiquette, and modern relationship drama.",
-    thumbnail: 'https://i.ytimg.com/vi/k-V31d-Gv3E/hqdefault.jpg',
-    videoUrl: 'https://www.youtube.com/watch?v=k-V31d-Gv3E',
+    thumbnail: 'https://i.ytimg.com/vi/M7lc1UVf-VE/hqdefault.jpg',
+    videoUrl: 'https://www.youtube.com/watch?v=M7lc1UVf-VE',
     duration: 680,
     source: "Courtney Bee Comedy",
     sport: 'standup'
   },
   {
-    id: 'courtney-standup-skit',
+    id: 'CgiX53hjAPc',
     headline: "Courtney Bee Skits - When Your Friends Don't Know How To Play Spades",
     description: "Courtney Bee's viral comedy sketch on table manners, bidding 10, and hilarious card game arguments.",
-    thumbnail: 'https://i.ytimg.com/vi/Yp9a0sX_s04/hqdefault.jpg',
-    videoUrl: 'https://www.youtube.com/watch?v=Yp9a0sX_s04',
+    thumbnail: 'https://i.ytimg.com/vi/CgiX53hjAPc/hqdefault.jpg',
+    videoUrl: 'https://www.youtube.com/watch?v=CgiX53hjAPc',
     duration: 410,
     source: "Courtney Bee Comedy",
     sport: 'standup'
@@ -157,7 +157,7 @@ const STATIC_COURTNEY_BEE_CLIPS: VideoClip[] = [
 
   // ── We Playin' Spades (Official Show with Nick Cannon & Courtney Bee) ──
   {
-    id: 'courtney-spades-ep1',
+    id: 'CytqhMMV7sQ',
     headline: "We Playin' Spades Ep. 1 - Nick Cannon & Courtney Bee ft. Tiffany Haddish",
     description: "Courtney Bee & Nick Cannon host Tiffany Haddish at the turquoise table for high-stakes Spades, trash talk, and uncensored stories.",
     thumbnail: 'https://i.ytimg.com/vi/CytqhMMV7sQ/hqdefault.jpg',
@@ -167,21 +167,21 @@ const STATIC_COURTNEY_BEE_CLIPS: VideoClip[] = [
     sport: 'spades'
   },
   {
-    id: 'courtney-spades-karlous',
-    headline: "We Playin' Spades - Courtney Bee vs Karlous Miller & Wild 'N Out Crew",
-    description: "Watch Courtney Bee lock in with Nick Cannon against Karlous Miller for the ultimate Spades championship battle.",
-    thumbnail: 'https://i.ytimg.com/vi/k-V31d-Gv3E/hqdefault.jpg',
-    videoUrl: 'https://www.youtube.com/watch?v=k-V31d-Gv3E',
+    id: 'JwIHOk7b5sQ',
+    headline: "We Playin' Spades - Courtney Bee & Nick Cannon",
+    description: "Watch Courtney Bee lock in with Nick Cannon for the ultimate Spades championship battle.",
+    thumbnail: 'https://i.ytimg.com/vi/JwIHOk7b5sQ/hqdefault.jpg',
+    videoUrl: 'https://www.youtube.com/watch?v=JwIHOk7b5sQ',
     duration: 1980,
     source: "We Playin' Spades",
     sport: 'spades'
   },
   {
-    id: 'courtney-spades-rules',
+    id: 'OJl-628FyIk',
     headline: "The Rules of Spades & Table Talk with Courtney Bee",
     description: "Courtney Bee breaks down the cardinal rules of Spades: never talk to your partner's hand, bidding strategy, and throwing off suit like a pro.",
-    thumbnail: 'https://i.ytimg.com/vi/Yp9a0sX_s04/hqdefault.jpg',
-    videoUrl: 'https://www.youtube.com/watch?v=Yp9a0sX_s04',
+    thumbnail: 'https://i.ytimg.com/vi/OJl-628FyIk/hqdefault.jpg',
+    videoUrl: 'https://www.youtube.com/watch?v=OJl-628FyIk',
     duration: 840,
     source: "We Playin' Spades",
     sport: 'spades'
