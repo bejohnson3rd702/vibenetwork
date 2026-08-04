@@ -925,7 +925,7 @@ const STATIC_VIBE_CLIPS: VideoClip[] = [
 
 const getAiThumbnail = (
   headline: string,
-  ctx: { isOlympian?: boolean; isMf?: boolean; isB2K?: boolean; isVibe?: boolean; isKple?: boolean; isVibe100?: boolean }
+  ctx: { isCourtneyBee?: boolean; isOlympian?: boolean; isMf?: boolean; isB2K?: boolean; isVibe?: boolean; isKple?: boolean; isVibe100?: boolean }
 ) => {
   const cleanHeadline = (headline || '').replace(/[#]/g, '').trim().substring(0, 150);
   let hash = 0;
@@ -935,8 +935,10 @@ const getAiThumbnail = (
   }
   const seed = Math.abs(hash);
 
-  let genrePrompt = 'breaking news broadcast style coverage';
-  if (ctx.isOlympian) {
+  let genrePrompt = 'Courtney Bee comedy club stand-up set, Wild N Out stage, high energy comedy show, vibrant stage lighting';
+  if (ctx.isCourtneyBee) {
+    genrePrompt = 'Courtney Bee comedy club stand-up set, Wild N Out stage, high energy comedy show, vibrant stage lighting';
+  } else if (ctx.isOlympian) {
     genrePrompt = 'Mr. Olympia bodybuilding competition coverage, professional bodybuilding stage photography, dramatic spotlighting, muscular bodybuilders';
   } else if (ctx.isMf) {
     genrePrompt = 'Muscle and Fitness style training workout in a premium gym, athletic modeling, weightlifting and nutrition tips, high-end commercial gym lighting';
@@ -2396,7 +2398,7 @@ export default function WatchLive({ accent = '#D35400', isCourtneyBee = false, i
     fetchClips(false);
     const interval = setInterval(() => fetchClips(true), 3600000); // refresh silently every hour
     return () => clearInterval(interval);
-  }, [isOlympian, isMf, isB2K, isVibe, isKple, isVibe100, isBonaire, tenantId]);
+  }, [isCourtneyBeeNet, isOlympian, isMf, isB2K, isVibe, isKple, isVibe100, isBonaire, tenantId]);
 
   useEffect(() => {
     if (activeVideo) {
@@ -2552,7 +2554,9 @@ export default function WatchLive({ accent = '#D35400', isCourtneyBee = false, i
               <div className="watch-featured-content" style={{ position: 'absolute', bottom: 0, left: 0, right: 0 }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '10px' }}>
                   <span style={{ padding: '4px 10px', borderRadius: '6px', background: accent, color: '#000', fontSize: '10px', fontWeight: 900, textTransform: 'uppercase', letterSpacing: '1px' }}>
-                    {isBonaire ? (
+                    {isCourtneyBeeNet ? (
+                      featured.sport === 'wildnout' ? '🔥 Wild \'N Out' : featured.sport === 'standup' ? '🎤 Courtney Bee Comedy' : '♠️ We Playin\' Spades'
+                    ) : isBonaire ? (
                       featured.sport === 'lifestyle' ? '🌴 Island Life' : featured.sport === 'diving' ? '🤿 Diving' : '🎣 Fishing'
                     ) : isOlympian 
                       ? '🏆 Mr. Olympia' 
@@ -2627,7 +2631,9 @@ export default function WatchLive({ accent = '#D35400', isCourtneyBee = false, i
                   </div>
                   <div style={{ padding: '12px 14px' }}>
                     <div style={{ fontSize: '9px', fontWeight: 700, color: accent, textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '4px' }}>
-                      {isBonaire ? (
+                      {isCourtneyBeeNet ? (
+                        clip.sport === 'wildnout' ? 'Wild \'N Out' : clip.sport === 'standup' ? 'Courtney Bee Comedy' : 'We Playin\' Spades'
+                      ) : isBonaire ? (
                         clip.sport === 'lifestyle' ? 'Island Life' : clip.sport === 'diving' ? 'Diving' : 'Fishing'
                       ) : isOlympian 
                         ? 'Bodybuilding' 
