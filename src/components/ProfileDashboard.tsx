@@ -3545,7 +3545,7 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
                   ] : [])
                 ]
                   .concat(isNetworkLevel ? [
-                    { id: 'members', label: 'Network Profiles', icon: <Monitor size={16} />, color: '#9d4edd' },
+                    // { id: 'members', label: 'Network Profiles', icon: <Monitor size={16} />, color: '#9d4edd' },
                     { id: 'community', label: 'Community', icon: <MessageCircle size={16} />, color: '#3399ff' }
                   ] : [])
                   .concat((myNetworks.length > 0 && !isNetworkLevel) ? [{ id: 'networks', label: 'My Networks', icon: <Monitor size={16} />, color: '#ff007f' }] : [])
