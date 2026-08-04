@@ -207,8 +207,8 @@ export default function WhiteLabelHome({ wlConfig, categories, user, activeVideo
           </div>
         )}
 
-        {/* Live Section if enabled */}
-        {wlConfig.enableWatchLive && (
+        {/* Live Section if enabled and on network level (not sub-tenant creator channels) */}
+        {wlConfig.enableWatchLive !== false && !wlConfig.parent_network_id && wlConfig.id !== 'courtney-bee-tenant-id' && (
           <div id="whats-on-now" style={{ position: 'relative', zIndex: 10, marginTop: '40px' }}>
             <Suspense fallback={null}>
               <WatchLive 

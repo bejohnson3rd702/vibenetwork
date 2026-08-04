@@ -507,6 +507,7 @@ function App() {
             platform_fee_percentage: 30,
             is_active: true,
             accent: '#ff4d85',
+            enableWatchLive: false,
             theme: {
               accent: '#ff4d85',
               heroCopy: 'Welcome to The Real Courtney Bee — Official Media, Broadcasts & Culture Stream.',
@@ -516,7 +517,7 @@ function App() {
               sliderCount: 4,
               enableBooking: true,
               heroLayoutMode: 'verbiage',
-              enableWatchLive: true,
+              enableWatchLive: false,
               parent_network_id: 'adb92e36-5ebc-4dc3-ae96-429f3dc1bb30'
             }
           });
