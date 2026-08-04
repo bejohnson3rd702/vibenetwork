@@ -11,6 +11,7 @@ import { supabase } from '../supabaseClient';
 import { isOlympianConfig, isMuscleFitnessConfig, isB2kConfig, isKpleConfig, isKpleOnlyConfig, isBonaireConfig } from '../lib/whitelabel';
 import { KpleWatchPlayer } from '../components/KpleWatchPlayer';
 import { KpleInlineWatchSection } from '../components/KpleInlineWatchSection';
+import CourtneyBeeWatchSection from '../components/CourtneyBeeWatchSection';
 const CollegeTicker = lazy(() => import('../components/CollegeTicker'));
 const CollegeNewsFeed = lazy(() => import('../components/CollegeNewsFeed'));
 const WatchLive = lazy(() => import('../components/WatchLive'));
@@ -1154,21 +1155,23 @@ export default function N2NHome({ wlConfig, categories, user, activeVideo, setAc
           </div>
         )}
 
-        {/* ── Watch Section: New KPLE Watch Cinema for KPLE & CRN ──────── */}
-        {isKple ? (
+        {/* ── Watch Section: Dedicated Player for Courtney Bee, KPLE & Others ──────── */}
+        {isCourtneyBee ? (
+          <CourtneyBeeWatchSection accent={config.accent || '#D35400'} />
+        ) : isKple ? (
           <KpleInlineWatchSection
             videos={kpleChannelVideos}
             accent={accent}
             networkName={config.name || 'Christian Revival Network'}
             onOpenModal={(vid) => setActiveVideo(vid)}
           />
-        ) : !isCourtneyBee ? (
+        ) : (
           <div id="whats-on-now">
             <Suspense fallback={null}>
               <WatchLive accent={config.accent} isCourtneyBee={isCourtneyBee} isOlympian={isOlympian} isMf={isMf} isB2K={isB2K} isVibe={isVibe} isKple={isKple} isVibe100={isVibe100} isBonaire={isBonaire} tenantId={config?.id} />
             </Suspense>
           </div>
-        ) : null}
+        )}
 
         {/* ── Wings of Strength Athletes Slider ────────────────── */}
         {isWings && (
