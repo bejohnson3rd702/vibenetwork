@@ -86,15 +86,16 @@ const STATIC_BONAIRE_CLIPS: VideoClip[] = [
 
 const COURTNEY_BEE_FEEDS = [
   { key: 'wildnout', label: '🔥 Wild \'N Out Episodes' },
-  { key: 'standup', label: '🎤 Courtney Stand-Up' },
-  { key: 'podcast', label: '📻 Culture Podcast' }
+  { key: 'standup', label: '🎤 Courtney Bee Comedy' },
+  { key: 'spades', label: '♠️ Playing Spades' }
 ];
 
 const STATIC_COURTNEY_BEE_CLIPS: VideoClip[] = [
+  // ── Wild 'N Out ──
   {
     id: 'courtney-wildnout-1',
-    headline: "Courtney Bee's Funniest Wild 'N Out Battles & Moments",
-    description: "Watch Courtney Bee drop savage punchlines and dominate the Wild 'N Out stage in this hilarious highlight reel.",
+    headline: "Courtney Bee's Funniest Wild 'N Out Battles & Freestyle Moments",
+    description: "Watch Courtney Bee drop savage punchlines, roast the Black Squad, and dominate the Wild 'N Out stage on MTV.",
     thumbnail: 'https://i.ytimg.com/vi/5gZg_r1s2d8/hqdefault.jpg',
     videoUrl: 'https://www.youtube.com/watch?v=5gZg_r1s2d8',
     duration: 720,
@@ -104,13 +105,25 @@ const STATIC_COURTNEY_BEE_CLIPS: VideoClip[] = [
   {
     id: 'courtney-wildnout-2',
     headline: "Courtney Bee vs DC Young Fly & Chico Bean Wild 'N Out Roast",
-    description: "Courtney Bee goes toe-to-toe with DC Young Fly, Chico Bean, and the Black Squad in Wild 'N Out's wild roast battles.",
+    description: "Courtney Bee goes toe-to-toe with DC Young Fly, Chico Bean, and Nick Cannon in Wild 'N Out's wild roast battles.",
     thumbnail: 'https://images.unsplash.com/photo-1514525253161-7a46d19cd819?auto=format&fit=crop&q=80&w=800',
     videoUrl: 'https://www.youtube.com/watch?v=5gZg_r1s2d8',
     duration: 540,
     source: "Wild 'N Out",
     sport: 'wildnout'
   },
+  {
+    id: 'courtney-wildnout-3',
+    headline: "Wild 'N Out Season Highlights - Best of Courtney Bee",
+    description: "The ultimate collection of Courtney Bee's sharpest freestyle bars, team games, and comedic improvisations on Wild 'N Out.",
+    thumbnail: 'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?auto=format&fit=crop&q=80&w=800',
+    videoUrl: 'https://www.youtube.com/watch?v=5gZg_r1s2d8',
+    duration: 890,
+    source: "Wild 'N Out",
+    sport: 'wildnout'
+  },
+
+  // ── Courtney Bee Stand-Up ──
   {
     id: 'courtney-standup-1',
     headline: "Courtney Bee Live Stand-Up Special - Unfiltered",
@@ -125,31 +138,53 @@ const STATIC_COURTNEY_BEE_CLIPS: VideoClip[] = [
     id: 'courtney-standup-2',
     headline: "Courtney Bee Stand-Up - Modern Relationships & Red Flags",
     description: "Live from the Comedy Club: Courtney Bee breaks down dating red flags, texting etiquette, and modern relationship drama.",
-    thumbnail: 'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?auto=format&fit=crop&q=80&w=800',
+    thumbnail: 'https://images.unsplash.com/photo-1590602847861-f357a9332bbc?auto=format&fit=crop&q=80&w=800',
     videoUrl: 'https://www.youtube.com/watch?v=5gZg_r1s2d8',
     duration: 680,
     source: "Courtney Bee Comedy",
     sport: 'standup'
   },
   {
-    id: 'courtney-podcast-1',
-    headline: "Wild 'N Out & Culture Podcast Ep. 42 - Special Celebrity Guest",
-    description: "Courtney Bee sits down for an unfiltered conversation on pop culture, stand-up secrets, and behind-the-scenes Wild 'N Out stories.",
-    thumbnail: 'https://images.unsplash.com/photo-1590602847861-f357a9332bbc?auto=format&fit=crop&q=80&w=800',
-    videoUrl: 'https://www.youtube.com/watch?v=5gZg_r1s2d8',
-    duration: 2150,
-    source: "Courtney Bee Podcast",
-    sport: 'podcast'
-  },
-  {
-    id: 'courtney-podcast-2',
-    headline: "Culture Podcast: The Grind of Comedy & Building an Empire",
-    description: "Courtney Bee discusses her journey into stand-up comedy, joining Nick Cannon's Wild 'N Out crew, and scaling her digital media network.",
+    id: 'courtney-standup-3',
+    headline: "Courtney Bee Skits - When Your Friends Don't Know How To Play Spades",
+    description: "Courtney Bee's viral comedy sketch on table manners, bidding 10, and hilarious card game arguments.",
     thumbnail: 'https://images.unsplash.com/photo-1523381210434-271e8be1f52b?auto=format&fit=crop&q=80&w=800',
     videoUrl: 'https://www.youtube.com/watch?v=5gZg_r1s2d8',
-    duration: 1840,
-    source: "Courtney Bee Podcast",
-    sport: 'podcast'
+    duration: 410,
+    source: "Courtney Bee Comedy",
+    sport: 'standup'
+  },
+
+  // ── Playing Spades ──
+  {
+    id: 'courtney-spades-1',
+    headline: "Courtney Bee & Crew Playing Spades - High-Stakes Table Game",
+    description: "Courtney Bee hosts an intense, hilarious round of Spades with celebrity guests, featuring non-stop trash talk, reneges, and Boston calls.",
+    thumbnail: 'https://images.unsplash.com/photo-1511193311914-0346f16efe90?auto=format&fit=crop&q=80&w=800',
+    videoUrl: 'https://www.youtube.com/watch?v=5gZg_r1s2d8',
+    duration: 1650,
+    source: "Playing Spades",
+    sport: 'spades'
+  },
+  {
+    id: 'courtney-spades-2',
+    headline: "Spades Tournament Finals - Courtney Bee vs Wild 'N Out Crew",
+    description: "Watch Courtney Bee lock in with her partner for the ultimate Spades championship battle. High stakes, wheeling and dealing, and classic card game banter.",
+    thumbnail: 'https://images.unsplash.com/photo-1541534741688-6078c6bfb5c5?auto=format&fit=crop&q=80&w=800',
+    videoUrl: 'https://www.youtube.com/watch?v=5gZg_r1s2d8',
+    duration: 1980,
+    source: "Playing Spades",
+    sport: 'spades'
+  },
+  {
+    id: 'courtney-spades-3',
+    headline: "The Rules of Spades & Table Talk with Courtney Bee",
+    description: "Courtney Bee breaks down the cardinal rules of Spades: never talk to your partner's hand, bidding strategy, and throwing off suit like a pro.",
+    thumbnail: 'https://images.unsplash.com/photo-1518310383802-640c2de311b2?auto=format&fit=crop&q=80&w=800',
+    videoUrl: 'https://www.youtube.com/watch?v=5gZg_r1s2d8',
+    duration: 840,
+    source: "Playing Spades",
+    sport: 'spades'
   }
 ];
 
