@@ -96,7 +96,7 @@ const STATIC_COURTNEY_BEE_CLIPS: VideoClip[] = [
     id: 'gC1V0uL_5xI',
     headline: "Best of Courtney Bee - Wild 'N Out Freestyle & Roasts",
     description: "Watch Courtney Bee drop savage punchlines, roast the Black Squad, and dominate the Wild 'N Out stage on MTV.",
-    thumbnail: 'https://images.unsplash.com/photo-1514525253161-7a46d19cd819?auto=format&fit=crop&q=80&w=1200',
+    thumbnail: 'https://img.youtube.com/vi/gC1V0uL_5xI/0.jpg',
     videoUrl: 'https://www.youtube.com/watch?v=gC1V0uL_5xI',
     duration: 720,
     source: "Wild 'N Out",
@@ -106,7 +106,7 @@ const STATIC_COURTNEY_BEE_CLIPS: VideoClip[] = [
     id: 'courtney-wildnout-roast',
     headline: "Courtney Bee vs DC Young Fly & Chico Bean Wild 'N Out Roast",
     description: "Courtney Bee goes toe-to-toe with DC Young Fly, Chico Bean, and Nick Cannon in Wild 'N Out's wild roast battles.",
-    thumbnail: 'https://images.unsplash.com/photo-1585699324551-f6c309eedeca?auto=format&fit=crop&q=80&w=800',
+    thumbnail: 'https://img.youtube.com/vi/gC1V0uL_5xI/hqdefault.jpg',
     videoUrl: 'https://www.youtube.com/watch?v=gC1V0uL_5xI',
     duration: 540,
     source: "Wild 'N Out",
@@ -116,7 +116,7 @@ const STATIC_COURTNEY_BEE_CLIPS: VideoClip[] = [
     id: 'courtney-wildnout-highlights',
     headline: "Wild 'N Out Season 18 - Best of Courtney Bee Highlights",
     description: "The ultimate collection of Courtney Bee's sharpest freestyle bars, team games, and comedic improvisations on Wild 'N Out.",
-    thumbnail: 'https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?auto=format&fit=crop&q=80&w=800',
+    thumbnail: 'https://img.youtube.com/vi/gC1V0uL_5xI/sddefault.jpg',
     videoUrl: 'https://www.youtube.com/watch?v=gC1V0uL_5xI',
     duration: 890,
     source: "Wild 'N Out",
@@ -128,7 +128,7 @@ const STATIC_COURTNEY_BEE_CLIPS: VideoClip[] = [
     id: 'courtney-standup-special',
     headline: "Courtney Bee Live Stand-Up Special - Unfiltered",
     description: "Courtney Bee takes the main stage with a hilarious, raw, and relatable stand-up comedy set on dating, culture, and life.",
-    thumbnail: '/n2n/comedy_club_bg.jpg',
+    thumbnail: 'https://img.youtube.com/vi/gC1V0uL_5xI/0.jpg',
     videoUrl: 'https://www.youtube.com/watch?v=gC1V0uL_5xI',
     duration: 1420,
     source: "Courtney Bee Comedy",
@@ -138,7 +138,7 @@ const STATIC_COURTNEY_BEE_CLIPS: VideoClip[] = [
     id: 'courtney-standup-redflags',
     headline: "Courtney Bee Stand-Up - Modern Relationships & Red Flags",
     description: "Live from the Comedy Club: Courtney Bee breaks down dating red flags, texting etiquette, and modern relationship drama.",
-    thumbnail: 'https://images.unsplash.com/photo-1590602847861-f357a9332bbc?auto=format&fit=crop&q=80&w=800',
+    thumbnail: 'https://img.youtube.com/vi/gC1V0uL_5xI/hqdefault.jpg',
     videoUrl: 'https://www.youtube.com/watch?v=gC1V0uL_5xI',
     duration: 680,
     source: "Courtney Bee Comedy",
@@ -148,7 +148,7 @@ const STATIC_COURTNEY_BEE_CLIPS: VideoClip[] = [
     id: 'courtney-standup-skit',
     headline: "Courtney Bee Skits - When Your Friends Don't Know How To Play Spades",
     description: "Courtney Bee's viral comedy sketch on table manners, bidding 10, and hilarious card game arguments.",
-    thumbnail: 'https://images.unsplash.com/photo-1523381210434-271e8be1f52b?auto=format&fit=crop&q=80&w=800',
+    thumbnail: 'https://img.youtube.com/vi/gC1V0uL_5xI/sddefault.jpg',
     videoUrl: 'https://www.youtube.com/watch?v=gC1V0uL_5xI',
     duration: 410,
     source: "Courtney Bee Comedy",
@@ -160,7 +160,7 @@ const STATIC_COURTNEY_BEE_CLIPS: VideoClip[] = [
     id: 'courtney-spades-ep1',
     headline: "We Playin' Spades Ep. 1 - Nick Cannon & Courtney Bee ft. Tiffany Haddish",
     description: "Courtney Bee & Nick Cannon host Tiffany Haddish at the turquoise table for high-stakes Spades, trash talk, and uncensored stories.",
-    thumbnail: 'https://images.unsplash.com/photo-1511193311914-0346f16efe90?auto=format&fit=crop&q=80&w=800',
+    thumbnail: 'https://img.youtube.com/vi/gC1V0uL_5xI/0.jpg',
     videoUrl: 'https://www.youtube.com/watch?v=gC1V0uL_5xI',
     duration: 1650,
     source: "We Playin' Spades",
@@ -170,7 +170,7 @@ const STATIC_COURTNEY_BEE_CLIPS: VideoClip[] = [
     id: 'courtney-spades-karlous',
     headline: "We Playin' Spades - Courtney Bee vs Karlous Miller & Wild 'N Out Crew",
     description: "Watch Courtney Bee lock in with Nick Cannon against Karlous Miller for the ultimate Spades championship battle.",
-    thumbnail: 'https://images.unsplash.com/photo-1541534741688-6078c6bfb5c5?auto=format&fit=crop&q=80&w=800',
+    thumbnail: 'https://img.youtube.com/vi/gC1V0uL_5xI/hqdefault.jpg',
     videoUrl: 'https://www.youtube.com/watch?v=gC1V0uL_5xI',
     duration: 1980,
     source: "We Playin' Spades",
@@ -180,7 +180,7 @@ const STATIC_COURTNEY_BEE_CLIPS: VideoClip[] = [
     id: 'courtney-spades-rules',
     headline: "The Rules of Spades & Table Talk with Courtney Bee",
     description: "Courtney Bee breaks down the cardinal rules of Spades: never talk to your partner's hand, bidding strategy, and throwing off suit like a pro.",
-    thumbnail: 'https://images.unsplash.com/photo-1518310383802-640c2de311b2?auto=format&fit=crop&q=80&w=800',
+    thumbnail: 'https://img.youtube.com/vi/gC1V0uL_5xI/sddefault.jpg',
     videoUrl: 'https://www.youtube.com/watch?v=gC1V0uL_5xI',
     duration: 840,
     source: "We Playin' Spades",
@@ -2725,7 +2725,7 @@ export default function WatchLive({ accent = '#D35400', isCourtneyBee = false, i
                           return (
                             <iframe
                               id="watch-live-yt-iframe"
-                              src={`https://www.youtube.com/embed/${ytId}?autoplay=1&controls=1&rel=0&enablejsapi=1&origin=${encodeURIComponent(typeof window !== 'undefined' ? window.location.origin : '')}`}
+                              src={`https://www.youtube.com/embed/${ytId}?autoplay=1&controls=1&rel=0`}
                               title={activeVideo.headline}
                               frameBorder="0"
                               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
