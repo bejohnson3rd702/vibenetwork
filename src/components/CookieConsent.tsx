@@ -8,24 +8,29 @@ const CookieConsent: React.FC = () => {
   const [isVisible, setIsVisible] = useState(false);
 
   useEffect(() => {
-    const consent = localStorage.getItem('vibe_cookie_consent');
-    if (!consent) {
-      const timer = setTimeout(() => setIsVisible(true), 1500);
-      return () => clearTimeout(timer);
+    try {
+      const consent = localStorage.getItem('vibe_cookie_consent') || sessionStorage.getItem('vibe_cookie_consent');
+      if (!consent) {
+        const timer = setTimeout(() => setIsVisible(true), 1500);
+        return () => clearTimeout(timer);
+      }
+    } catch (e) {
+      console.warn("Could not read cookie consent from storage", e);
     }
   }, []);
 
-  const handleAccept = () => {
-    localStorage.setItem('vibe_cookie_consent', 'accepted');
+  const handleDismiss = (choice: 'accepted' | 'declined' | 'dismissed') => {
+    try {
+      localStorage.setItem('vibe_cookie_consent', choice);
+      sessionStorage.setItem('vibe_cookie_consent', choice);
+    } catch (e) {
+      console.warn("Could not save cookie consent choice", e);
+    }
     setIsVisible(false);
   };
-  
-  const handleDecline = () => {
-    // In a strict compliance environment, this might block certain analytics scripts.
-    // For now, we dismiss the banner and record the preference.
-    localStorage.setItem('vibe_cookie_consent', 'declined');
-    setIsVisible(false);
-  }
+
+  const handleAccept = () => handleDismiss('accepted');
+  const handleDecline = () => handleDismiss('declined');
 
   const accentColor = wlConfig?.accent || 'var(--accent-primary)';
   const platformName = wlConfig?.name || 'Vibe Network';
@@ -106,7 +111,7 @@ const CookieConsent: React.FC = () => {
             </div>
             
             <button 
-              onClick={() => setIsVisible(false)}
+              onClick={() => handleDismiss('dismissed')}
               style={{ position: 'absolute', top: '12px', right: '12px', background: 'transparent', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', padding: '4px' }}
             >
               <X size={16} />
