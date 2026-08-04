@@ -1803,6 +1803,10 @@ export default function WatchLive({ accent = '#D35400', isCourtneyBee = false, i
             allClips.push(item);
           }
         }
+        setClips(allClips);
+        setLastChecked(new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }));
+        setLoading(false);
+        return;
       } else if (isBonaire) {
         for (const item of STATIC_BONAIRE_CLIPS) {
           if (!seen.has(item.id)) {
