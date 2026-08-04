@@ -26,23 +26,37 @@ const Navbar: React.FC<NavbarProps> = ({ user, onLoginClick, onAdminClick }) => 
   const appLogo = wlConfig?.logoImage || '';
   const [parentName, setParentName] = useState<string>('VIBE NETWORK');
 
+  const tenantParam = new URLSearchParams(window.location.search).get('tenant');
+  const isMainVibeTenant = 
+    tenantParam === 'adb92e36-5ebc-4dc3-ae96-429f3dc1bb30' || 
+    tenantParam === 'b0ea0000-c08f-4260-8540-a0cc8bed4e11' || 
+    tenantParam === 'master' || 
+    tenantParam === 'vibe' || 
+    wlConfig?.id === 'adb92e36-5ebc-4dc3-ae96-429f3dc1bb30' || 
+    wlConfig?.id === 'b0ea0000-c08f-4260-8540-a0cc8bed4e11' || 
+    wlConfig?.id === 'master' || 
+    wlConfig?.id === 'vibe';
+
   const isSubTenantChannel = Boolean(
-    wlConfig?.parent_network_id ||
-    (wlConfig?.id && 
-     wlConfig.id !== 'adb92e36-5ebc-4dc3-ae96-429f3dc1bb30' && 
-     wlConfig.id !== 'b0ea0000-c08f-4260-8540-a0cc8bed4e11' && 
-     wlConfig.id !== 'master')
+    (wlConfig?.parent_network_id && !isMainVibeTenant) ||
+    (wlConfig?.id && !isMainVibeTenant)
   );
 
   const isProfilePage = location.pathname.startsWith('/profile') || location.pathname.startsWith('/channel');
 
+  const hasSubTenantParam = Boolean(
+    tenantParam && !isMainVibeTenant
+  );
+
   const showBackToVibe = 
-    isSubTenantChannel ||
-    isProfilePage ||
-    new URLSearchParams(window.location.search).has('tenant') ||
-    new URLSearchParams(window.location.search).has('channel') ||
-    new URLSearchParams(window.location.search).has('creator') ||
-    new URLSearchParams(window.location.search).get('fromVibe') === 'true';
+    !isMainVibeTenant && (
+      isSubTenantChannel ||
+      isProfilePage ||
+      hasSubTenantParam ||
+      new URLSearchParams(window.location.search).has('channel') ||
+      new URLSearchParams(window.location.search).has('creator') ||
+      new URLSearchParams(window.location.search).get('fromVibe') === 'true'
+    );
 
   useEffect(() => {
     if (wlConfig?.parent_network_id) {
