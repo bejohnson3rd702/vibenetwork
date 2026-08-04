@@ -14,6 +14,7 @@ const ProfileDashboard = lazy(() => import('../components/ProfileDashboard'));
 const ShopifyStore = lazy(() => import('../components/ShopifyStore'));
 const WatchLive = lazy(() => import('../components/WatchLive'));
 const CollegeTicker = lazy(() => import('../components/CollegeTicker'));
+import CourtneyBeeWatchSection from '../components/CourtneyBeeWatchSection';
 
 interface WhiteLabelHomeProps {
   wlConfig: WhiteLabelConfig;
@@ -208,7 +209,9 @@ export default function WhiteLabelHome({ wlConfig, categories, user, activeVideo
         )}
 
         {/* Live Section if enabled and on network level (not sub-tenant creator channels) */}
-        {wlConfig.enableWatchLive !== false && !wlConfig.parent_network_id && wlConfig.id !== 'courtney-bee-tenant-id' && wlConfig.id !== 'cb000000-c08f-4260-8540-a0cc8bed4e11' && !(wlConfig.name || '').toLowerCase().includes('courtney bee') && (
+        {(wlConfig.id === 'courtney-bee-tenant-id' || wlConfig.id === 'cb000000-c08f-4260-8540-a0cc8bed4e11' || (wlConfig.name || '').toLowerCase().includes('courtney bee')) ? (
+          <CourtneyBeeWatchSection accent={wlConfig.accent || '#D35400'} />
+        ) : wlConfig.enableWatchLive !== false && !wlConfig.parent_network_id && (
           <div id="whats-on-now" style={{ position: 'relative', zIndex: 10, marginTop: '40px' }}>
             <Suspense fallback={null}>
               <WatchLive 
