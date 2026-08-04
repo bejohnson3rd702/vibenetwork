@@ -1199,8 +1199,8 @@ export default function N2NHome({ wlConfig, categories, user, activeVideo, setAc
                   />
                 ) : (
                   <img
-                    src={isMf ? "https://images.unsplash.com/photo-1541534741688-6078c6bfb5c5?auto=format&fit=crop&q=80&w=800" : isWings ? "/n2n/wings_rising_phoenix_poster.jpg" : (isB2K ? "https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?auto=format&fit=crop&q=80&w=800" : (isKple ? "https://images.unsplash.com/photo-1593113598332-cd288d649433?auto=format&fit=crop&q=80&w=800" : (isBonaire ? "https://images.unsplash.com/photo-1544551763-46a013bb70d5?auto=format&fit=crop&q=80&w=800" : (isVibe100 ? "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?auto=format&fit=crop&q=80&w=800" : "https://shopavo.la/cdn/shop/files/bama-desk-hp-1_1500x.jpg?v=1774210820"))))}
-                    alt={isMf ? "Workout Gear" : isWings ? "Wings Contest Event" : (isB2K ? "Official Tour Merch" : (isKple ? "Support CRN" : (isBonaire ? "Bonaire Chamber" : (isVibe100 ? "Official Merch" : "New Drop"))))}
+                    src={isCourtneyBee ? "/n2n/comedy_club_bg.jpg" : (isMf ? "https://images.unsplash.com/photo-1541534741688-6078c6bfb5c5?auto=format&fit=crop&q=80&w=800" : isWings ? "/n2n/wings_rising_phoenix_poster.jpg" : (isB2K ? "https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?auto=format&fit=crop&q=80&w=800" : (isKple ? "https://images.unsplash.com/photo-1593113598332-cd288d649433?auto=format&fit=crop&q=80&w=800" : (isBonaire ? "https://images.unsplash.com/photo-1544551763-46a013bb70d5?auto=format&fit=crop&q=80&w=800" : (isVibe100 ? "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?auto=format&fit=crop&q=80&w=800" : "https://shopavo.la/cdn/shop/files/bama-desk-hp-1_1500x.jpg?v=1774210820")))))}
+                    alt={isCourtneyBee ? "Courtney Bee Live Media" : (isMf ? "Workout Gear" : isWings ? "Wings Contest Event" : (isB2K ? "Official Tour Merch" : (isKple ? "Support CRN" : (isBonaire ? "Bonaire Chamber" : (isVibe100 ? "Official Merch" : "New Drop")))))}
                     style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
                   />
                 )}
@@ -1211,7 +1211,7 @@ export default function N2NHome({ wlConfig, categories, user, activeVideo, setAc
                   padding: '6px 14px', background: accent, color: '#000',
                   fontSize: '10px', fontWeight: 900, letterSpacing: '2px', textTransform: 'uppercase',
                 }}>
-                  {isOlympian || isVibe ? "Live Webcast" : isMf ? "Workout Gear" : isWings ? "Wings Contest" : (isB2K ? "Official Merch" : (isKple ? "Media Mission" : (isBonaire ? "Bonaire KvK" : (isVibe100 ? "Exclusive Gear" : "New Drop"))))}
+                  {isCourtneyBee ? "Comedy & Culture" : (isOlympian || isVibe ? "Live Webcast" : isMf ? "Workout Gear" : isWings ? "Wings Contest" : (isB2K ? "Official Merch" : (isKple ? "Media Mission" : (isBonaire ? "Bonaire KvK" : (isVibe100 ? "Exclusive Gear" : "New Drop")))))}
                 </div>
               </div>
 
@@ -1231,13 +1231,15 @@ export default function N2NHome({ wlConfig, categories, user, activeVideo, setAc
                   fontSize: '13px', fontWeight: 800, textTransform: 'uppercase',
                   letterSpacing: '3px', color: accent, margin: '0 0 12px 0',
                 }}>
-                  {isOlympian || isVibe ? "Olympia PPV Webcast" : isMf ? "Fitness Collection" : isWings ? "Wings of Strength" : (isB2K ? "Official Tour Merch" : (isKple ? "Support Our Mission" : (isBonaire ? "Local Commerce" : (isVibe100 ? "VIBE 100 Store" : "Summer 2026 Collection"))))}
+                  {isCourtneyBee ? "Courtney Bee Collection" : (isOlympian || isVibe ? "Olympia PPV Webcast" : isMf ? "Fitness Collection" : isWings ? "Wings of Strength" : (isB2K ? "Official Tour Merch" : (isKple ? "Support Our Mission" : (isBonaire ? "Local Commerce" : (isVibe100 ? "VIBE 100 Store" : "Summer 2026 Collection")))))}
                 </p>
                 <h2 style={{
                   fontSize: '44px', fontWeight: 900, color: '#fff', margin: '0 0 16px 0',
                   lineHeight: 1.15, letterSpacing: '-1px', textTransform: 'uppercase',
                 }}>
-                  {isOlympian || isVibe ? (
+                  {isCourtneyBee ? (
+                    <>Courtney Bee<br />Comedy & Merch</>
+                  ) : isOlympian || isVibe ? (
                     <>Watch Mr. Olympia<br />Live Webcast</>
                   ) : isMf ? (
                     <>Muscle & Fitness<br />Training Guides</>
@@ -1267,7 +1269,7 @@ export default function N2NHome({ wlConfig, categories, user, activeVideo, setAc
                   fontSize: '16px', color: 'rgba(255,255,255,0.7)', lineHeight: 1.7,
                   margin: '0 0 32px 0', maxWidth: '520px',
                 }}>
-                  {isOlympian || isVibe ? "Experience the pinnacle of bodybuilding live from anywhere in the world. Subscribe to the official webcast to stream the 62nd Mr. Olympia pre-judging, finals, and exclusive backstage interviews live in high-definition." : isMf ? "Explore premium workouts, digital training guides, and high-performance activewear designed to take your fitness to the next level." : isWings ? "Experience the pinnacle of professional women's bodybuilding. Purchase official pay-per-view live streams, secure event tickets, and browse the official Alina Popa & Rising Phoenix championship collections." : (isB2K ? "Pre-order exclusive Boys 4 Life tour hoodies, vintage graphic tees, and autographed vinyl. Rep the legendary boy band reunion in style." : (isKple ? "The Christian Revival Network is a 501(c)3 non-profit media mission. Your donations help us broadcast the Gospel 24/7 to Central Texas and the world. Support our ministry today." : (isBonaire ? "Explore local handcrafted products, authentic Caribbean diving apparel, guided eco-tours, and cactus-flavored spirits from local Bonaire chamber members." : (isVibe100 ? "Explore premium merchandise, albums, and exclusive releases from all Top 100 networks. Shop official gear and support your favorite channels." : "Premium collegiate apparel for every school in the AVO family. Rep your team with style — new colorways and exclusive designs just dropped."))))}
+                  {isCourtneyBee ? "Explore exclusive stand-up specials, uncensored culture streams, VIP tour passes, and official Courtney Bee merchandise drops." : (isOlympian || isVibe ? "Experience the pinnacle of bodybuilding live from anywhere in the world. Subscribe to the official webcast to stream the 62nd Mr. Olympia pre-judging, finals, and exclusive backstage interviews live in high-definition." : isMf ? "Explore premium workouts, digital training guides, and high-performance activewear designed to take your fitness to the next level." : isWings ? "Experience the pinnacle of professional women's bodybuilding. Purchase official pay-per-view live streams, secure event tickets, and browse the official Alina Popa & Rising Phoenix championship collections." : (isB2K ? "Pre-order exclusive Boys 4 Life tour hoodies, vintage graphic tees, and autographed vinyl. Rep the legendary boy band reunion in style." : (isKple ? "The Christian Revival Network is a 501(c)3 non-profit media mission. Your donations help us broadcast the Gospel 24/7 to Central Texas and the world. Support our ministry today." : (isBonaire ? "Explore local handcrafted products, authentic Caribbean diving apparel, guided eco-tours, and cactus-flavored spirits from local Bonaire chamber members." : (isVibe100 ? "Explore premium merchandise, albums, and exclusive releases from all Top 100 networks. Shop official gear and support your favorite channels." : "Premium collegiate apparel for every school in the AVO family. Rep your team with style — new colorways and exclusive designs just dropped.")))))}
                 </p>
                 <a
                   href={isOlympian || isVibe ? "https://www.olympiaproductions.com/" : (isWings ? "https://wingsofstrength.net/" : (isKple ? "https://www.paypal.com/donate/?hosted_button_id=A7WXAKZEAGBPA" : (isMf ? "https://www.muscleandfitness.com/" : ('/marketplace' + (typeof window !== 'undefined' ? window.location.search : '')))))}
@@ -1282,7 +1284,7 @@ export default function N2NHome({ wlConfig, categories, user, activeVideo, setAc
                   onMouseOver={e => { e.currentTarget.style.background = '#fff'; e.currentTarget.style.color = '#000'; }}
                   onMouseOut={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = '#fff'; }}
                 >
-                  {isOlympian || isVibe ? "Watch Webcast" : isMf ? "Shop Store" : isWings ? "Explore Shows" : (isB2K ? "Shop The Merch" : (isKple ? "Support Our Station" : (isBonaire ? "Shop Bonaire" : (isVibe100 ? "Shop The Collection" : "Shop The Drop"))))}
+                  {isCourtneyBee ? "Explore Merch" : (isOlympian || isVibe ? "Watch Webcast" : isMf ? "Shop Store" : isWings ? "Explore Shows" : (isB2K ? "Shop The Merch" : (isKple ? "Support Our Station" : (isBonaire ? "Shop Bonaire" : (isVibe100 ? "Shop The Collection" : "Shop The Drop")))))}
                 </a>
               </div>
             </div>
@@ -1474,7 +1476,10 @@ export default function N2NHome({ wlConfig, categories, user, activeVideo, setAc
                       ? "Get listed, connect with local merchants, gain access to business support programs, and reach customers worldwide with our digital network tools. Join KvK today."
                       : (isKple 
                         ? "Sometimes, all it takes is just one prayer to change everything. You are not alone, and our prayer warriors are here to stand with you. Call our prayer line or send a request."
-                        : "All 8 AVO schools go head-to-head. Which campus created the best branded hoodie? Browse the entries, rep your school, and cast your vote."
+                        : (isCourtneyBee
+                          ? "Check out Courtney Bee's signature apparel collection. Vote on upcoming merch colorways and unlock early access to new drops."
+                          : "All 8 AVO schools go head-to-head. Which campus created the best branded hoodie? Browse the entries, rep your school, and cast your vote."
+                        )
                       )
                     }
                   </p>
@@ -1589,19 +1594,19 @@ export default function N2NHome({ wlConfig, categories, user, activeVideo, setAc
                   fontSize: '10px', fontWeight: 900, letterSpacing: '2px', textTransform: 'uppercase',
                   marginBottom: '20px',
                 }}>
-                  {isMf || isOlympian ? "🏆 Joe Weider's Mr. Olympia Weekend" : (isB2K ? "🎤 The Millennium Tour" : "🎸 Summer 2026 Tour")}
+                  {isCourtneyBee ? "🎤 National Stand-Up Tour" : (isMf || isOlympian ? "🏆 Joe Weider's Mr. Olympia Weekend" : (isB2K ? "🎤 The Millennium Tour" : "🎸 Summer 2026 Tour"))}
                 </div>
                 <h2 style={{
                   fontSize: '38px', fontWeight: 900, color: '#fff', margin: '0 0 16px 0',
                   lineHeight: 1.1, letterSpacing: '-1px', textTransform: 'uppercase',
                 }}>
-                  {isMf || isOlympian ? <>62nd Mr. Olympia<br />Las Vegas 2026</> : (isB2K ? <>The Boys 4 Life<br />Reunion Tour</> : <>AVO Summer<br />Concert Tour</>)}
+                  {isCourtneyBee ? <>Courtney Bee<br />Comedy Tour 2026</> : (isMf || isOlympian ? <>62nd Mr. Olympia<br />Las Vegas 2026</> : (isB2K ? <>The Boys 4 Life<br />Reunion Tour</> : <>AVO Summer<br />Concert Tour</>))}
                 </h2>
                 <p style={{
                   fontSize: '15px', color: 'rgba(255,255,255,0.6)', lineHeight: 1.7,
                   margin: '0 0 28px 0',
                 }}>
-                  {isMf || isOlympian ? "The ultimate fitness event of the year returns to Las Vegas, Nevada on September 24-27, 2026. Get your tickets to witness bodybuilding history live as elite champions from around the globe battle for the prestigious Sandow Trophy." : (isB2K ? "B2K is back on stage celebrating their 25th anniversary. The 28-city reunion tour features Bow Wow, Jeremih, Pretty Ricky, Amerie, and more, kicking off in Columbia, SC, and routing across the country. Don't miss this historic R&B reunion live! " : "Catch the vibes live! AVO is hitting the road this summer, bringing your favorite bands and artists to collegiate campus parks nationwide. Grab your crew, rep your school colors, and experience the ultimate summer soundtrack.")}
+                  {isCourtneyBee ? "Catch Courtney Bee live on stage! The national comedy tour is hitting top comedy clubs and arenas nationwide. Get your tickets, VIP meet-and-greet passes, and exclusive tour merch live." : (isMf || isOlympian ? "The ultimate fitness event of the year returns to Las Vegas, Nevada on September 24-27, 2026. Get your tickets to witness bodybuilding history live as elite champions from around the globe battle for the prestigious Sandow Trophy." : (isB2K ? "B2K is back on stage celebrating their 25th anniversary. The 28-city reunion tour features Bow Wow, Jeremih, Pretty Ricky, Amerie, and more, kicking off in Columbia, SC, and routing across the country. Don't miss this historic R&B reunion live! " : "Catch the vibes live! AVO is hitting the road this summer, bringing your favorite bands and artists to collegiate campus parks nationwide. Grab your crew, rep your school colors, and experience the ultimate summer soundtrack."))}
                 </p>
                 <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap' }}>
                   <button
@@ -1885,7 +1890,7 @@ export default function N2NHome({ wlConfig, categories, user, activeVideo, setAc
               {/* Background image */}
               <div style={{
                 position: 'absolute', inset: 0,
-                backgroundImage: `url(${isOlympian || isMf ? "https://images.unsplash.com/photo-1517838277536-f5f99be501cd?auto=format&fit=crop&q=80&w=1200" : isWings ? "/n2n/wings_phoenix_iron_games.jpg" : (isB2K ? "https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?auto=format&fit=crop&q=80&w=1200" : (isKple ? "https://images.unsplash.com/photo-1510915228340-29c85a43dcfe?auto=format&fit=crop&q=80&w=1200" : (isBonaire ? "https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?auto=format&fit=crop&q=80&w=1200" : "https://shopavo.la/cdn/shop/files/Homepage_Vanderbilt_Desktop2_c7f572ef-cd7e-4de4-bb9c-160b99884e08_1500x.jpg?v=1776284877")))}`,
+                backgroundImage: `url(${isCourtneyBee ? "https://images.unsplash.com/photo-1590602847861-f357a9332bbc?auto=format&fit=crop&q=80&w=1200" : (isOlympian || isMf ? "https://images.unsplash.com/photo-1517838277536-f5f99be501cd?auto=format&fit=crop&q=80&w=1200" : isWings ? "/n2n/wings_phoenix_iron_games.jpg" : (isB2K ? "https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?auto=format&fit=crop&q=80&w=1200" : (isKple ? "https://images.unsplash.com/photo-1510915228340-29c85a43dcfe?auto=format&fit=crop&q=80&w=1200" : (isBonaire ? "https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?auto=format&fit=crop&q=80&w=1200" : "https://shopavo.la/cdn/shop/files/Homepage_Vanderbilt_Desktop2_c7f572ef-cd7e-4de4-bb9c-160b99884e08_1500x.jpg?v=1776284877"))))})}`,
                 backgroundSize: 'cover', backgroundPosition: 'center',
                 filter: 'brightness(0.3)',
               }} />
@@ -1897,13 +1902,15 @@ export default function N2NHome({ wlConfig, categories, user, activeVideo, setAc
                     fontSize: '11px', fontWeight: 800, textTransform: 'uppercase',
                     letterSpacing: '3px', color: accent, marginBottom: '12px',
                   }}>
-                    {isOlympian ? "Olympia Ambassadors" : isMf ? "Fitness Ambassadors" : isWings ? "Wings Ambassadors" : (isB2K ? "Street Team" : (isKple ? "Media Partner" : (isBonaire ? "Chamber Partners" : "Campus Ambassadors")))}
+                    {isCourtneyBee ? "VIP Fan Club" : (isOlympian ? "Olympia Ambassadors" : isMf ? "Fitness Ambassadors" : isWings ? "Wings Ambassadors" : (isB2K ? "Street Team" : (isKple ? "Media Partner" : (isBonaire ? "Chamber Partners" : "Campus Ambassadors"))))}
                   </p>
                   <h2 style={{
                     fontSize: '36px', fontWeight: 900, color: '#fff', margin: '0 0 16px 0',
                     lineHeight: 1.15, letterSpacing: '-1px', textTransform: 'uppercase',
                   }}>
-                    {isOlympian || isMf ? (
+                    {isCourtneyBee ? (
+                      <>Join Courtney Bee's<br />VIP Fan Club</>
+                    ) : isOlympian || isMf ? (
                       <>Represent {config?.name || 'Muscle & Fitness'}<br />In Your Community</>
                     ) : isWings ? (
                       <>Represent Wings<br />Everywhere You Go</>
@@ -1926,14 +1933,16 @@ export default function N2NHome({ wlConfig, categories, user, activeVideo, setAc
                   <p style={{
                     fontSize: '15px', color: 'rgba(255,255,255,0.55)', lineHeight: 1.7, margin: 0,
                   }}>
-                    {isOlympian || isMf 
-                      ? `Join the official ${config?.name || 'Muscle & Fitness'} Ambassador Program. Share fitness tips, review premium workout apparel, and earn exclusive event credentials, early access, and commissions.`
-                      : isWings
-                        ? "Join the official Wings of Strength Ambassador Program. Spread the passion for female bodybuilding, review premium strength gear, and earn exclusive event passes, backstage credentials, and athlete sponsorship perks."
-                        : (isB2K 
-                          ? "Join the official B2K Millennium Street Team. Promote the Boys 4 Life Tour, share new music updates, and earn exclusive backstage passes, VIP meet-and-greets, and limited edition merch."
-                          : (isKple ? "Become a supporting partner of the Christian Revival Network. Join our media mission to keep the Gospel broadcasting 24/7. Your support enables us to continue revealing the love of Jesus Christ." : (isBonaire ? "Become a supporting partner of the Bonaire Chamber of Commerce. Your collaboration helps us empower local businesses, run training workshops, and sustain a thriving island economy." : "Join the AVO Ambassador Program and bring premium college apparel to your school. Earn exclusive perks, early access to drops, and commissions on every sale."))
-                        )}
+                    {isCourtneyBee
+                      ? "Become an official Courtney Bee VIP Ambassador. Gain exclusive access to private live streams, behind-the-scenes recordings, subscriber discounts, and direct chat perks."
+                      : isOlympian || isMf 
+                        ? `Join the official ${config?.name || 'Muscle & Fitness'} Ambassador Program. Share fitness tips, review premium workout apparel, and earn exclusive event credentials, early access, and commissions.`
+                        : isWings
+                          ? "Join the official Wings of Strength Ambassador Program. Spread the passion for female bodybuilding, review premium strength gear, and earn exclusive event passes, backstage credentials, and athlete sponsorship perks."
+                          : (isB2K 
+                            ? "Join the official B2K Millennium Street Team. Promote the Boys 4 Life Tour, share new music updates, and earn exclusive backstage passes, VIP meet-and-greets, and limited edition merch."
+                            : (isKple ? "Become a supporting partner of the Christian Revival Network. Join our media mission to keep the Gospel broadcasting 24/7. Your support enables us to continue revealing the love of Jesus Christ." : (isBonaire ? "Become a supporting partner of the Bonaire Chamber of Commerce. Your collaboration helps us empower local businesses, run training workshops, and sustain a thriving island economy." : "Join the AVO Ambassador Program and bring premium college apparel to your school. Earn exclusive perks, early access to drops, and commissions on every sale."))
+                          )}
                   </p>
                 </div>
                 <button
