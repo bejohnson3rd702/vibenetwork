@@ -1131,7 +1131,7 @@ export default function WatchLive({ accent = '#D35400', isCourtneyBee = false, i
   // YouTube Iframe Player API Loader & Time Tracker
   useEffect(() => {
     if (!activeVideo) return;
-    const isYouTube = activeVideo.videoUrl?.includes('youtube.com') || activeVideo.videoUrl?.includes('youtu.be') || activeVideo.source === 'YouTube';
+    const isYouTube = (activeVideo.videoUrl?.includes('youtube.com') || activeVideo.videoUrl?.includes('youtu.be')) && !activeVideo.videoUrl?.endsWith('.mp4');
     if (!isYouTube) return;
     
     // Load YouTube API if not already loaded
@@ -2686,8 +2686,8 @@ export default function WatchLive({ accent = '#D35400', isCourtneyBee = false, i
                   <div className={showFanZone ? "watch-live-left-col-fanzone" : "watch-live-left-col"} style={{ flex: showFanZone ? '0 0 65%' : '1 1 100%', minWidth: '280px', transition: 'all 0.4s cubic-bezier(0.16, 1, 0.3, 1)', display: 'flex', flexDirection: 'column' }}>
                     <div style={{ borderRadius: '16px', overflow: 'hidden', background: '#000', aspectRatio: '16/9', position: 'relative', boxShadow: '0 20px 50px rgba(0,0,0,0.5)' }}>
                       {(() => {
-                        const isYouTube = activeVideo.videoUrl.includes('youtube.com') || activeVideo.videoUrl.includes('youtu.be') || activeVideo.source === 'YouTube' || activeVideo.source === "Wild 'N Out" || activeVideo.source === "Courtney Bee Comedy" || activeVideo.source === "We Playin' Spades";
-                        const isDailymotion = activeVideo.videoUrl.includes('dailymotion.com') || activeVideo.videoUrl.includes('dai.ly') || activeVideo.source === 'Dailymotion';
+                        const isYouTube = (activeVideo.videoUrl.includes('youtube.com') || activeVideo.videoUrl.includes('youtu.be')) && !activeVideo.videoUrl.endsWith('.mp4');
+                        const isDailymotion = (activeVideo.videoUrl.includes('dailymotion.com') || activeVideo.videoUrl.includes('dai.ly')) && !activeVideo.videoUrl.endsWith('.mp4');
                         
                         if (isYouTube) {
                           const match = activeVideo.videoUrl.match(/^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/);
