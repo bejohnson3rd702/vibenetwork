@@ -1014,7 +1014,7 @@ const generateFallbackTranscript = (title: string, description: string) => {
   ];
 };
 
-export default function WatchLive({ accent = '#D35400', isOlympian = false, isMf = false, isB2K = false, isVibe = false, isKple = false, isVibe100 = false, isBonaire = false, tenantId = '' }: { accent?: string; isOlympian?: boolean; isMf?: boolean; isB2K?: boolean; isVibe?: boolean; isKple?: boolean; isVibe100?: boolean; isBonaire?: boolean; tenantId?: string }) {
+export default function WatchLive({ accent = '#D35400', isCourtneyBee = false, isOlympian = false, isMf = false, isB2K = false, isVibe = false, isKple = false, isVibe100 = false, isBonaire = false, tenantId = '' }: { accent?: string; isCourtneyBee?: boolean; isOlympian?: boolean; isMf?: boolean; isB2K?: boolean; isVibe?: boolean; isKple?: boolean; isVibe100?: boolean; isBonaire?: boolean; tenantId?: string }) {
   const [clips, setClips] = useState<VideoClip[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeVideo, setActiveVideo] = useState<VideoClip | null>(null);
@@ -1781,9 +1781,9 @@ export default function WatchLive({ accent = '#D35400', isOlympian = false, isMf
     }
   }, [showFanZone]);
 
-  const isCourtneyBee = tenantId === 'cb000000-c08f-4260-8540-a0cc8bed4e11' || tenantId === 'courtney-bee-tenant-id' || wlConfig?.name?.toLowerCase().includes('courtney bee');
+  const isCourtneyBeeNet = isCourtneyBee || tenantId === 'cb000000-c08f-4260-8540-a0cc8bed4e11' || tenantId === 'courtney-bee-tenant-id' || wlConfig?.name?.toLowerCase().includes('courtney bee');
 
-  const feedsToUse = isCourtneyBee ? COURTNEY_BEE_FEEDS : (isBonaire ? BONAIRE_FEEDS : (isOlympian ? OLYMPIAN_FEEDS : (isMf ? MUSCLE_FITNESS_FEEDS : (isB2K ? B2K_FEEDS : (isVibe100 ? VIBE_100_FEEDS : (isVibe ? VIBE_FEEDS : (isKple ? KPLE_FEEDS : (tenantId === 'wings-of-strength-tenant-id' ? WINGS_OF_STRENGTH_FEEDS : FEEDS))))))));
+  const feedsToUse = isCourtneyBeeNet ? COURTNEY_BEE_FEEDS : (isBonaire ? BONAIRE_FEEDS : (isOlympian ? OLYMPIAN_FEEDS : (isMf ? MUSCLE_FITNESS_FEEDS : (isB2K ? B2K_FEEDS : (isVibe100 ? VIBE_100_FEEDS : (isVibe ? VIBE_FEEDS : (isKple ? KPLE_FEEDS : (tenantId === 'wings-of-strength-tenant-id' ? WINGS_OF_STRENGTH_FEEDS : FEEDS))))))));
 
   const handleClipClick = (clip: VideoClip) => {
     const isYouTube = clip.videoUrl.includes('youtube.com') || clip.videoUrl.includes('youtu.be');
@@ -1806,7 +1806,7 @@ export default function WatchLive({ accent = '#D35400', isOlympian = false, isMf
       const isHers = tenantId === 'mf-hers-tenant-id';
       const isFlex = tenantId === 'flex-online-tenant-id';
 
-      if (isCourtneyBee) {
+      if (isCourtneyBeeNet) {
         for (const item of STATIC_COURTNEY_BEE_CLIPS) {
           if (!seen.has(item.id)) {
             seen.add(item.id);

@@ -374,7 +374,7 @@ export default function N2NHome({ wlConfig, categories, user, activeVideo, setAc
                     config?.name?.toLowerCase().includes('vibe 100') ||
                     config?.domain?.includes('vibe100');
 
-  const isVibe = !isVibe100 && !isBonaire && !isKple && !isB2K && !isMfFamily && (config?.name?.toLowerCase().includes('vibe') || 
+  const isVibe = !isCourtneyBee && !isVibe100 && !isBonaire && !isKple && !isB2K && !isMfFamily && (config?.name?.toLowerCase().includes('vibe') || 
                  config?.domain?.includes('vibenetwork.tv') ||
                  config?.id === 'adb92e36-5ebc-4dc3-ae96-429f3dc1bb30');
 
@@ -1142,7 +1142,7 @@ export default function N2NHome({ wlConfig, categories, user, activeVideo, setAc
         ) : (
           <div id="whats-on-now">
             <Suspense fallback={null}>
-              <WatchLive accent={config.accent} isOlympian={isOlympian} isMf={isMf} isB2K={isB2K} isVibe={isVibe} isKple={isKple} isVibe100={isVibe100} isBonaire={isBonaire} tenantId={config?.id} />
+              <WatchLive accent={config.accent} isCourtneyBee={isCourtneyBee} isOlympian={isOlympian} isMf={isMf} isB2K={isB2K} isVibe={isVibe} isKple={isKple} isVibe100={isVibe100} isBonaire={isBonaire} tenantId={config?.id} />
             </Suspense>
           </div>
         )}
