@@ -85,19 +85,19 @@ const STATIC_BONAIRE_CLIPS: VideoClip[] = [
 ];
 
 const COURTNEY_BEE_FEEDS = [
-  { key: 'wildnout', label: '🔥 Wild \'N Out Episodes' },
-  { key: 'standup', label: '🎤 Courtney Bee Comedy' },
-  { key: 'spades', label: '♠️ Playing Spades' }
+  { key: 'wildnout', label: '🔥 Wild \'N Out Episodes', channelId: 'UC8P0dc0Zn2gf8L6tJi_k6xg' },
+  { key: 'spades', label: '♠️ We Playin\' Spades', channelId: 'UCi572gE-hKq_gPz9_l4_P-A' },
+  { key: 'standup', label: '🎤 Courtney Bee Stand-Up' }
 ];
 
 const STATIC_COURTNEY_BEE_CLIPS: VideoClip[] = [
   // ── Wild 'N Out ──
   {
-    id: 'L_LUpnjgPso',
+    id: 'AUZIYQFaMpE',
     headline: "Best of Courtney Bee - Wild 'N Out Freestyle & Roasts",
     description: "Watch Courtney Bee drop savage punchlines, roast the Black Squad, and dominate the Wild 'N Out stage on MTV.",
-    thumbnail: 'https://images.unsplash.com/photo-1514525253161-7a46d19cd819?auto=format&fit=crop&q=80&w=1200',
-    videoUrl: 'https://www.youtube.com/watch?v=L_LUpnjgPso',
+    thumbnail: 'https://i.ytimg.com/vi/AUZIYQFaMpE/hqdefault.jpg',
+    videoUrl: 'https://www.youtube.com/watch?v=AUZIYQFaMpE',
     duration: 720,
     source: "Wild 'N Out",
     sport: 'wildnout'
@@ -106,8 +106,8 @@ const STATIC_COURTNEY_BEE_CLIPS: VideoClip[] = [
     id: 'courtney-wildnout-roast',
     headline: "Courtney Bee vs DC Young Fly & Chico Bean Wild 'N Out Roast",
     description: "Courtney Bee goes toe-to-toe with DC Young Fly, Chico Bean, and Nick Cannon in Wild 'N Out's wild roast battles.",
-    thumbnail: 'https://images.unsplash.com/photo-1585699324551-f6c309eedeca?auto=format&fit=crop&q=80&w=800',
-    videoUrl: 'https://www.youtube.com/watch?v=L_LUpnjgPso',
+    thumbnail: 'https://i.ytimg.com/vi/AUZIYQFaMpE/mqdefault.jpg',
+    videoUrl: 'https://www.youtube.com/watch?v=AUZIYQFaMpE',
     duration: 540,
     source: "Wild 'N Out",
     sport: 'wildnout'
@@ -116,8 +116,8 @@ const STATIC_COURTNEY_BEE_CLIPS: VideoClip[] = [
     id: 'courtney-wildnout-highlights',
     headline: "Wild 'N Out Season 18 - Best of Courtney Bee Highlights",
     description: "The ultimate collection of Courtney Bee's sharpest freestyle bars, team games, and comedic improvisations on Wild 'N Out.",
-    thumbnail: 'https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?auto=format&fit=crop&q=80&w=800',
-    videoUrl: 'https://www.youtube.com/watch?v=L_LUpnjgPso',
+    thumbnail: 'https://i.ytimg.com/vi/AUZIYQFaMpE/hqdefault.jpg',
+    videoUrl: 'https://www.youtube.com/watch?v=AUZIYQFaMpE',
     duration: 890,
     source: "Wild 'N Out",
     sport: 'wildnout'
@@ -129,7 +129,7 @@ const STATIC_COURTNEY_BEE_CLIPS: VideoClip[] = [
     headline: "Courtney Bee Live Stand-Up Special - Unfiltered",
     description: "Courtney Bee takes the main stage with a hilarious, raw, and relatable stand-up comedy set on dating, culture, and life.",
     thumbnail: '/n2n/comedy_club_bg.jpg',
-    videoUrl: 'https://www.youtube.com/watch?v=L_LUpnjgPso',
+    videoUrl: 'https://www.youtube.com/watch?v=AUZIYQFaMpE',
     duration: 1420,
     source: "Courtney Bee Comedy",
     sport: 'standup'
@@ -138,8 +138,8 @@ const STATIC_COURTNEY_BEE_CLIPS: VideoClip[] = [
     id: 'courtney-standup-redflags',
     headline: "Courtney Bee Stand-Up - Modern Relationships & Red Flags",
     description: "Live from the Comedy Club: Courtney Bee breaks down dating red flags, texting etiquette, and modern relationship drama.",
-    thumbnail: 'https://images.unsplash.com/photo-1590602847861-f357a9332bbc?auto=format&fit=crop&q=80&w=800',
-    videoUrl: 'https://www.youtube.com/watch?v=L_LUpnjgPso',
+    thumbnail: 'https://i.ytimg.com/vi/AUZIYQFaMpE/hqdefault.jpg',
+    videoUrl: 'https://www.youtube.com/watch?v=AUZIYQFaMpE',
     duration: 680,
     source: "Courtney Bee Comedy",
     sport: 'standup'
@@ -148,8 +148,8 @@ const STATIC_COURTNEY_BEE_CLIPS: VideoClip[] = [
     id: 'courtney-standup-skit',
     headline: "Courtney Bee Skits - When Your Friends Don't Know How To Play Spades",
     description: "Courtney Bee's viral comedy sketch on table manners, bidding 10, and hilarious card game arguments.",
-    thumbnail: 'https://images.unsplash.com/photo-1523381210434-271e8be1f52b?auto=format&fit=crop&q=80&w=800',
-    videoUrl: 'https://www.youtube.com/watch?v=L_LUpnjgPso',
+    thumbnail: 'https://i.ytimg.com/vi/AUZIYQFaMpE/mqdefault.jpg',
+    videoUrl: 'https://www.youtube.com/watch?v=AUZIYQFaMpE',
     duration: 410,
     source: "Courtney Bee Comedy",
     sport: 'standup'
@@ -160,8 +160,8 @@ const STATIC_COURTNEY_BEE_CLIPS: VideoClip[] = [
     id: 'courtney-spades-ep1',
     headline: "We Playin' Spades Ep. 1 - Nick Cannon & Courtney Bee ft. Tiffany Haddish",
     description: "Courtney Bee & Nick Cannon host Tiffany Haddish at the turquoise table for high-stakes Spades, trash talk, and uncensored stories.",
-    thumbnail: 'https://images.unsplash.com/photo-1511193311914-0346f16efe90?auto=format&fit=crop&q=80&w=800',
-    videoUrl: 'https://www.youtube.com/watch?v=L_LUpnjgPso',
+    thumbnail: 'https://i.ytimg.com/vi/AUZIYQFaMpE/hqdefault.jpg',
+    videoUrl: 'https://www.youtube.com/watch?v=AUZIYQFaMpE',
     duration: 1650,
     source: "We Playin' Spades",
     sport: 'spades'
@@ -170,8 +170,8 @@ const STATIC_COURTNEY_BEE_CLIPS: VideoClip[] = [
     id: 'courtney-spades-karlous',
     headline: "We Playin' Spades - Courtney Bee vs Karlous Miller & Wild 'N Out Crew",
     description: "Watch Courtney Bee lock in with Nick Cannon against Karlous Miller for the ultimate Spades championship battle.",
-    thumbnail: 'https://images.unsplash.com/photo-1541534741688-6078c6bfb5c5?auto=format&fit=crop&q=80&w=800',
-    videoUrl: 'https://www.youtube.com/watch?v=L_LUpnjgPso',
+    thumbnail: 'https://i.ytimg.com/vi/AUZIYQFaMpE/mqdefault.jpg',
+    videoUrl: 'https://www.youtube.com/watch?v=AUZIYQFaMpE',
     duration: 1980,
     source: "We Playin' Spades",
     sport: 'spades'
@@ -180,8 +180,8 @@ const STATIC_COURTNEY_BEE_CLIPS: VideoClip[] = [
     id: 'courtney-spades-rules',
     headline: "The Rules of Spades & Table Talk with Courtney Bee",
     description: "Courtney Bee breaks down the cardinal rules of Spades: never talk to your partner's hand, bidding strategy, and throwing off suit like a pro.",
-    thumbnail: 'https://images.unsplash.com/photo-1518310383802-640c2de311b2?auto=format&fit=crop&q=80&w=800',
-    videoUrl: 'https://www.youtube.com/watch?v=L_LUpnjgPso',
+    thumbnail: 'https://i.ytimg.com/vi/AUZIYQFaMpE/hqdefault.jpg',
+    videoUrl: 'https://www.youtube.com/watch?v=AUZIYQFaMpE',
     duration: 840,
     source: "We Playin' Spades",
     sport: 'spades'
@@ -1809,6 +1809,41 @@ export default function WatchLive({ accent = '#D35400', isCourtneyBee = false, i
       const isFlex = tenantId === 'flex-online-tenant-id';
 
       if (isCourtneyBeeNet) {
+        const dynamicClips: VideoClip[] = [];
+        for (const feed of COURTNEY_BEE_FEEDS) {
+          if (!feed.channelId) continue;
+          try {
+            const res = await fetch(`/api/yt-rss/${feed.channelId}`);
+            if (!res.ok) continue;
+            const xmlText = await res.text();
+            const parser = new DOMParser();
+            const xml = parser.parseFromString(xmlText, 'text/xml');
+            const entries = xml.getElementsByTagName('entry');
+            for (let i = 0; i < entries.length; i++) {
+              const entry = entries[i];
+              const id = entry.getElementsByTagName('yt:videoId')[0]?.textContent || entry.getElementsByTagName('id')[0]?.textContent?.split(':').pop() || '';
+              const headline = entry.getElementsByTagName('title')[0]?.textContent || '';
+              const mediaGroup = entry.getElementsByTagName('media:group')[0];
+              const description = mediaGroup?.getElementsByTagName('media:description')[0]?.textContent || entry.getElementsByTagName('summary')[0]?.textContent || '';
+              const thumbnail = mediaGroup?.getElementsByTagName('media:thumbnail')[0]?.getAttribute('url') || `https://i.ytimg.com/vi/${id}/hqdefault.jpg`;
+              const videoUrl = `https://www.youtube.com/watch?v=${id}`;
+              const publishedText = entry.getElementsByTagName('published')[0]?.textContent || '';
+              const published = publishedText ? new Date(publishedText) : new Date(0);
+              if (id && !seen.has(id)) {
+                seen.add(id);
+                dynamicClips.push({
+                  id, headline, description, thumbnail, videoUrl,
+                  duration: 0, source: 'YouTube', sport: feed.key, published
+                });
+              }
+            }
+          } catch (e) {
+            console.warn(e);
+          }
+        }
+        dynamicClips.sort((a, b) => (b.published?.getTime() || 0) - (a.published?.getTime() || 0));
+        allClips.push(...dynamicClips);
+
         for (const item of STATIC_COURTNEY_BEE_CLIPS) {
           if (!seen.has(item.id)) {
             seen.add(item.id);
@@ -2720,7 +2755,7 @@ export default function WatchLive({ accent = '#D35400', isCourtneyBee = false, i
                             const parts = activeVideo.videoUrl.split('v=');
                             if (parts.length > 1) ytId = parts[1].substring(0, 11);
                           }
-                          if (!ytId || isCourtneyBeeNet) ytId = 'L_LUpnjgPso';
+                          if (!ytId) ytId = activeVideo.id;
                           
                           return (
                             <iframe
