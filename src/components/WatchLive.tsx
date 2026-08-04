@@ -112,22 +112,12 @@ const STATIC_COURTNEY_BEE_CLIPS: VideoClip[] = [
     sport: 'spades'
   },
   {
-    id: 'p1k8H32aB_w',
-    headline: "Life After Football, Freedom & Viral Moments with Antonio Brown | We Playin' Spades",
-    description: "NFL superstar Antonio Brown locks in with Courtney Bee and Nick Cannon for high-energy Spades play and uncensored debates.",
-    thumbnail: 'https://i.ytimg.com/vi/p1k8H32aB_w/hqdefault.jpg',
+    id: 'EWGs1CV8g_s',
+    headline: "Southern Wisdom, Stand-Up & Relationships with Karlous Miller | We Playin' Spades",
+    description: "Comedy star Karlous Miller & Chris Jones join Courtney Bee and Nick Cannon for non-stop laughs and competitive card battles.",
+    thumbnail: 'https://i.ytimg.com/vi/EWGs1CV8g_s/hqdefault.jpg',
     videoUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4',
-    duration: 1720,
-    source: "We Playin' Spades",
-    sport: 'spades'
-  },
-  {
-    id: 'e5PyPssFC5U',
-    headline: "90s TV, Parenting & Business with Raven-Symoné & Miranda Maday | We Playin' Spades",
-    description: "Raven-Symoné and Miranda Maday join Courtney Bee and Nick Cannon for 90s nostalgia, laughter, and serious card table strategy.",
-    thumbnail: 'https://i.ytimg.com/vi/e5PyPssFC5U/hqdefault.jpg',
-    videoUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerJoyrides.mp4',
-    duration: 1480,
+    duration: 1530,
     source: "We Playin' Spades",
     sport: 'spades'
   },
@@ -136,40 +126,50 @@ const STATIC_COURTNEY_BEE_CLIPS: VideoClip[] = [
     headline: "Shade, Strategy & Backyard Boogie with TS Madison & Rodney Chester | We Playin' Spades",
     description: "TS Madison and Rodney Chester bring hilarious energy, trash talk, and legendary Spades gameplay to Nick & Courtney's table.",
     thumbnail: 'https://i.ytimg.com/vi/TvJHIFotb3s/hqdefault.jpg',
-    videoUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerMeltdowns.mp4',
+    videoUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerJoyrides.mp4',
     duration: 1610,
     source: "We Playin' Spades",
     sport: 'spades'
   },
   {
-    id: 'EWGs1CV8g_s',
-    headline: "Southern Wisdom, Stand-Up & Relationships with Karlous Miller | We Playin' Spades",
-    description: "Comedy star Karlous Miller & Chris Jones join Courtney Bee and Nick Cannon for non-stop laughs and competitive card battles.",
-    thumbnail: 'https://i.ytimg.com/vi/EWGs1CV8g_s/hqdefault.jpg',
+    id: 'cb-clip-5',
+    headline: "Best Of Courtney Bee | Wild 'N Out Freestyle & Roasts",
+    description: "Watch Courtney Bee drop savage punchlines, roast the Black Squad, and dominate the Wild 'N Out stage on MTV.",
+    thumbnail: '/n2n/cb_wildnout_poster.jpg',
+    videoUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerMeltdowns.mp4',
+    duration: 720,
+    source: "Wild 'N Out",
+    sport: 'wildnout'
+  },
+  {
+    id: 'cb-clip-6',
+    headline: "Courtney Bee Live Stand-Up Special - Unfiltered Comedy",
+    description: "Courtney Bee takes the main stage with a hilarious, raw, and relatable stand-up comedy set on dating, culture, and life.",
+    thumbnail: '/n2n/cb_standup_poster.jpg',
     videoUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/Sintel.mp4',
-    duration: 1530,
-    source: "We Playin' Spades",
-    sport: 'spades'
+    duration: 1420,
+    source: "Courtney Bee Comedy",
+    sport: 'standup'
   },
   {
-    id: '9drtdb9zqy4',
-    headline: "Marriage, Faith & Industry Secrets with Warryn & Erica Campbell | We Playin' Spades",
-    description: "Gospel legends Warryn and Erica Campbell pull up to Courtney Bee and Nick Cannon's turquoise Spades table.",
-    thumbnail: 'https://i.ytimg.com/vi/9drtdb9zqy4/hqdefault.jpg',
+    id: 'e5PyPssFC5U',
+    headline: "90s TV, Parenting & Business with Raven-Symoné & Miranda Maday | We Playin' Spades",
+    description: "Raven-Symoné and Miranda Maday join Courtney Bee and Nick Cannon for 90s nostalgia, laughter, and serious card table strategy.",
+    thumbnail: 'https://i.ytimg.com/vi/e5PyPssFC5U/hqdefault.jpg',
     videoUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/SubaruOutbackOnStreetPerformer.mp4',
-    duration: 1490,
+    duration: 1480,
     source: "We Playin' Spades",
     sport: 'spades'
   },
   {
-    id: 'x2bt6n_Xkq8',
-    headline: "Reality TV & Hood 101 Lessons with Lil Scrappy & Momma Dee | We Playin' Spades",
-    description: "Lil Scrappy and Momma Dee bring legendary family energy and trash talk to Courtney Bee & Nick Cannon's Spades show.",
-    thumbnail: 'https://i.ytimg.com/vi/x2bt6n_Xkq8/hqdefault.jpg',
+    id: 'cb-clip-8',
+    headline: "Courtney Bee vs Black Squad | Wild 'N Out Battle",
+    description: "Courtney Bee goes toe-to-toe with DC Young Fly, Chico Bean, and Nick Cannon in Wild 'N Out roast battles.",
+    thumbnail: '/n2n/cb_spades_ep3.jpg',
     videoUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4',
-    duration: 1580,
-    source: "We Playin' Spades",
-    sport: 'spades'
+    duration: 540,
+    source: "Wild 'N Out",
+    sport: 'wildnout'
   },
   {
     id: 'Z5q63JNeAZs',
