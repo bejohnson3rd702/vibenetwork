@@ -24,36 +24,46 @@ const Navbar: React.FC<NavbarProps> = ({ user, onLoginClick, onAdminClick }) => 
   const appName = wlConfig?.name || '';
   const appAccent = wlConfig?.accent || '';
   const appLogo = wlConfig?.logoImage || '';
-  const [parentName, setParentName] = useState<string>('AVO Network');
+  const [parentName, setParentName] = useState<string>('VIBE NETWORK');
+
+  const isSubTenantChannel = Boolean(
+    wlConfig?.parent_network_id ||
+    (wlConfig?.id && 
+     wlConfig.id !== 'adb92e36-5ebc-4dc3-ae96-429f3dc1bb30' && 
+     wlConfig.id !== 'b0ea0000-c08f-4260-8540-a0cc8bed4e11' && 
+     wlConfig.id !== 'master')
+  );
 
   const showBackToVibe = 
-    new URLSearchParams(window.location.search).get('fromVibe') === 'true' &&
-    new URLSearchParams(window.location.search).has('tenant');
+    isSubTenantChannel ||
+    new URLSearchParams(window.location.search).has('tenant') ||
+    new URLSearchParams(window.location.search).get('fromVibe') === 'true';
 
   useEffect(() => {
     if (wlConfig?.parent_network_id) {
-      supabase
-        .from('whitelabel_configs')
-        .select('name')
-        .eq('id', wlConfig.parent_network_id)
-        .single()
-        .then(({ data }) => {
-          if (data?.name) {
-            setParentName(data.name);
-          }
-        });
+      if (wlConfig.parent_network_id === 'adb92e36-5ebc-4dc3-ae96-429f3dc1bb30' || wlConfig.parent_network_id === 'b0ea0000-c08f-4260-8540-a0cc8bed4e11') {
+        setParentName('VIBE NETWORK');
+      } else {
+        supabase
+          .from('whitelabel_configs')
+          .select('name')
+          .eq('id', wlConfig.parent_network_id)
+          .single()
+          .then(({ data }) => {
+            if (data?.name) {
+              setParentName(data.name);
+            }
+          });
+      }
     }
   }, [wlConfig?.parent_network_id]);
 
   const getParentNetworkUrl = () => {
-    const hostname = window.location.hostname;
-    const parentId = wlConfig?.parent_network_id || '3915f1e5-4c79-4b2a-ad41-7029ce8052d7';
-    const targetUrl = `/?tenant=${parentId}`;
-    if (hostname === 'localhost' || hostname === '127.0.0.1') {
-      return mergeQueryParams(targetUrl, window.location.search);
-    } else {
-      return mergeQueryParams(`https://vibenetwork.vercel.app${targetUrl}`, window.location.search);
+    const parentId = wlConfig?.parent_network_id;
+    if (!parentId || parentId === 'adb92e36-5ebc-4dc3-ae96-429f3dc1bb30' || parentId === 'b0ea0000-c08f-4260-8540-a0cc8bed4e11') {
+      return '/';
     }
+    return `/?tenant=${parentId}`;
   };
 
   const toggleTheme = () => {
@@ -118,8 +128,7 @@ const Navbar: React.FC<NavbarProps> = ({ user, onLoginClick, onAdminClick }) => 
       }}>
         {[
           { label: 'Home', path: '/' },
-          ...(showBackToVibe ? [{ label: 'Back to Vibe', path: 'back-to-vibe' }] : []),
-          ...(wlConfig?.parent_network_id ? [{ label: parentName, path: 'parent' }] : []),
+          ...(showBackToVibe ? [{ label: `Return to ${parentName}`, path: 'parent' }] : []),
           { label: 'Marketplace', path: '/marketplace', hidden: Boolean(
             wlConfig?.domain && 
             wlConfig.id !== 'master' && 
@@ -229,20 +238,9 @@ const Navbar: React.FC<NavbarProps> = ({ user, onLoginClick, onAdminClick }) => 
                 <>
                   <div onClick={() => {
                     setIsMenuOpen(false);
-                    const params = new URLSearchParams(window.location.search);
-                    params.delete('tenant');
-                    const searchStr = params.toString();
-                    window.location.href = searchStr ? `/?${searchStr}` : '/';
+                    window.location.href = getParentNetworkUrl();
                   }} style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '12px 16px', color: 'var(--accent-primary)', textDecoration: 'none', fontSize: '14px', borderRadius: '8px', cursor: 'pointer', transition: 'background 0.2s', fontWeight: 'bold' }} onMouseOver={e => e.currentTarget.style.background='rgba(255,255,255,0.1)'} onMouseOut={e => e.currentTarget.style.background='transparent'}>
-                    🛸 Back to Vibe
-                  </div>
-                  <div style={{ height: '1px', background: 'rgba(255,255,255,0.1)', margin: '4px 0' }} />
-                </>
-              )}
-              {wlConfig?.parent_network_id && (
-                <>
-                  <div onClick={() => { setIsMenuOpen(false); window.location.href = getParentNetworkUrl(); }} style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '12px 16px', color: 'var(--text-primary)', textDecoration: 'none', fontSize: '14px', borderRadius: '8px', cursor: 'pointer', transition: 'background 0.2s', fontWeight: 'bold' }} onMouseOver={e => e.currentTarget.style.background='rgba(255,255,255,0.1)'} onMouseOut={e => e.currentTarget.style.background='transparent'}>
-                    🌐 Go to {parentName}
+                    🌐 Return to {parentName}
                   </div>
                   <div style={{ height: '1px', background: 'rgba(255,255,255,0.1)', margin: '4px 0' }} />
                 </>
