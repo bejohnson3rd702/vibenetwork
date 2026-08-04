@@ -1784,13 +1784,17 @@ export default function WatchLive({ accent = '#D35400', isCourtneyBee = false, i
   const feedsToUse = isCourtneyBeeNet ? COURTNEY_BEE_FEEDS : (isBonaire ? BONAIRE_FEEDS : (isOlympian ? OLYMPIAN_FEEDS : (isMf ? MUSCLE_FITNESS_FEEDS : (isB2K ? B2K_FEEDS : (isVibe100 ? VIBE_100_FEEDS : (isVibe ? VIBE_FEEDS : (isKple ? KPLE_FEEDS : (tenantId === 'wings-of-strength-tenant-id' ? WINGS_OF_STRENGTH_FEEDS : FEEDS))))))));
 
   const handleClipClick = (clip: VideoClip) => {
-    const isYouTube = clip.videoUrl.includes('youtube.com') || clip.videoUrl.includes('youtu.be');
-    const isDailymotion = clip.videoUrl.includes('dailymotion.com') || clip.videoUrl.includes('dai.ly') || clip.source === 'Dailymotion';
-    const isMp4 = clip.videoUrl.toLowerCase().endsWith('.mp4');
-    if (!isYouTube && !isDailymotion && !isMp4) {
+    if (isCourtneyBeeNet) {
       window.open(clip.videoUrl, '_blank');
     } else {
-      setActiveVideo(clip);
+      const isYouTube = clip.videoUrl.includes('youtube.com') || clip.videoUrl.includes('youtu.be');
+      const isDailymotion = clip.videoUrl.includes('dailymotion.com') || clip.videoUrl.includes('dai.ly') || clip.source === 'Dailymotion';
+      const isMp4 = clip.videoUrl.toLowerCase().endsWith('.mp4');
+      if (!isYouTube && !isDailymotion && !isMp4) {
+        window.open(clip.videoUrl, '_blank');
+      } else {
+        setActiveVideo(clip);
+      }
     }
   };
 
