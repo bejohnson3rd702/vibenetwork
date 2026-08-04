@@ -96,7 +96,7 @@ const STATIC_COURTNEY_BEE_CLIPS: VideoClip[] = [
     id: 'cb-wildnout-1',
     headline: "Best of Courtney Bee - Wild 'N Out Freestyle & Roasts",
     description: "Watch Courtney Bee drop savage punchlines, roast the Black Squad, and dominate the Wild 'N Out stage on MTV.",
-    thumbnail: 'https://images.unsplash.com/photo-1514525253161-7a46d19cd819?auto=format&fit=crop&q=80&w=1200',
+    thumbnail: '/n2n/comedy_club_bg.jpg',
     videoUrl: 'https://www.youtube.com/watch?v=CytqhMMV7sQ',
     duration: 720,
     source: "Wild 'N Out",
@@ -106,7 +106,7 @@ const STATIC_COURTNEY_BEE_CLIPS: VideoClip[] = [
     id: 'cb-wildnout-2',
     headline: "Courtney Bee vs DC Young Fly & Chico Bean Wild 'N Out Roast",
     description: "Courtney Bee goes toe-to-toe with DC Young Fly, Chico Bean, and Nick Cannon in Wild 'N Out's wild roast battles.",
-    thumbnail: 'https://images.unsplash.com/photo-1585699324551-f6c309eedeca?auto=format&fit=crop&q=80&w=800',
+    thumbnail: 'https://i.ytimg.com/vi/CytqhMMV7sQ/hqdefault.jpg',
     videoUrl: 'https://www.youtube.com/watch?v=CytqhMMV7sQ',
     duration: 540,
     source: "Wild 'N Out",
@@ -116,7 +116,7 @@ const STATIC_COURTNEY_BEE_CLIPS: VideoClip[] = [
     id: 'cb-wildnout-3',
     headline: "Wild 'N Out Season 18 - Best of Courtney Bee Highlights",
     description: "The ultimate collection of Courtney Bee's sharpest freestyle bars, team games, and comedic improvisations on Wild 'N Out.",
-    thumbnail: 'https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?auto=format&fit=crop&q=80&w=800',
+    thumbnail: '/n2n/comedy_club_bg.jpg',
     videoUrl: 'https://www.youtube.com/watch?v=CytqhMMV7sQ',
     duration: 890,
     source: "Wild 'N Out",
@@ -138,7 +138,7 @@ const STATIC_COURTNEY_BEE_CLIPS: VideoClip[] = [
     id: 'cb-standup-2',
     headline: "Courtney Bee Stand-Up - Modern Relationships & Red Flags",
     description: "Live from the Comedy Club: Courtney Bee breaks down dating red flags, texting etiquette, and modern relationship drama.",
-    thumbnail: 'https://images.unsplash.com/photo-1590602847861-f357a9332bbc?auto=format&fit=crop&q=80&w=800',
+    thumbnail: 'https://i.ytimg.com/vi/CytqhMMV7sQ/hqdefault.jpg',
     videoUrl: 'https://www.youtube.com/watch?v=CytqhMMV7sQ',
     duration: 680,
     source: "Courtney Bee Comedy",
@@ -148,7 +148,7 @@ const STATIC_COURTNEY_BEE_CLIPS: VideoClip[] = [
     id: 'cb-standup-3',
     headline: "Courtney Bee Skits - When Your Friends Don't Know How To Play Spades",
     description: "Courtney Bee's viral comedy sketch on table manners, bidding 10, and hilarious card game arguments.",
-    thumbnail: 'https://images.unsplash.com/photo-1523381210434-271e8be1f52b?auto=format&fit=crop&q=80&w=800',
+    thumbnail: '/n2n/comedy_club_bg.jpg',
     videoUrl: 'https://www.youtube.com/watch?v=CytqhMMV7sQ',
     duration: 410,
     source: "Courtney Bee Comedy",
@@ -170,7 +170,7 @@ const STATIC_COURTNEY_BEE_CLIPS: VideoClip[] = [
     id: 'cb-spades-2',
     headline: "We Playin' Spades - Courtney Bee & Nick Cannon",
     description: "Watch Courtney Bee lock in with Nick Cannon for the ultimate Spades championship battle.",
-    thumbnail: 'https://images.unsplash.com/photo-1541534741688-6078c6bfb5c5?auto=format&fit=crop&q=80&w=800',
+    thumbnail: '/n2n/comedy_club_bg.jpg',
     videoUrl: 'https://www.youtube.com/watch?v=CytqhMMV7sQ',
     duration: 1980,
     source: "We Playin' Spades",
@@ -180,7 +180,7 @@ const STATIC_COURTNEY_BEE_CLIPS: VideoClip[] = [
     id: 'cb-spades-3',
     headline: "The Rules of Spades & Table Talk with Courtney Bee",
     description: "Courtney Bee breaks down the cardinal rules of Spades: never talk to your partner's hand, bidding strategy, and throwing off suit like a pro.",
-    thumbnail: 'https://images.unsplash.com/photo-1518310383802-640c2de311b2?auto=format&fit=crop&q=80&w=800',
+    thumbnail: 'https://i.ytimg.com/vi/CytqhMMV7sQ/hqdefault.jpg',
     videoUrl: 'https://www.youtube.com/watch?v=CytqhMMV7sQ',
     duration: 840,
     source: "We Playin' Spades",
@@ -2743,7 +2743,7 @@ export default function WatchLive({ accent = '#D35400', isCourtneyBee = false, i
                             const parts = activeVideo.videoUrl.split('v=');
                             if (parts.length > 1) ytId = parts[1].substring(0, 11);
                           }
-                          if (!ytId || isCourtneyBeeNet) ytId = 'CytqhMMV7sQ';
+                          if (!ytId) ytId = activeVideo.id;
                           
                           return (
                             <iframe
