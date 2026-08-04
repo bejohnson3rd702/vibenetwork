@@ -673,7 +673,7 @@ export default function N2NHome({ wlConfig, categories, user, activeVideo, setAc
             </button>
 
             {/* Fundraising / Legacy stat */}
-            {!isWings && !isHers && !isFlex && (
+            {!isWings && !isHers && !isFlex && !isCourtneyBee && (
               <div style={{
                 marginTop: '32px', padding: '16px 24px',
                 borderLeft: `3px solid ${accent}`,
