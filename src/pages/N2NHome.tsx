@@ -1430,7 +1430,7 @@ export default function N2NHome({ wlConfig, categories, user, activeVideo, setAc
         )}
 
         {/* ── Hoodie Competition Banner / Prayer Request Banner ── */}
-        {!isMfFamily && !isB2K && !isVibe100 && (
+        {!isMfFamily && !isB2K && !isVibe100 && !isCourtneyBee && (
           <section style={{ maxWidth: '1400px', margin: '40px auto', padding: '0 40px' }}>
             <div style={{
               position: 'relative', overflow: 'hidden',
