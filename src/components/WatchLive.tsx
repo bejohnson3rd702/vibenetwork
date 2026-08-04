@@ -93,7 +93,7 @@ const COURTNEY_BEE_FEEDS = [
 const STATIC_COURTNEY_BEE_CLIPS: VideoClip[] = [
   // ── Wild 'N Out ──
   {
-    id: 'courtney-wildnout-1',
+    id: '5gZg_r1s2d8',
     headline: "Courtney Bee's Funniest Wild 'N Out Battles & Freestyle Moments",
     description: "Watch Courtney Bee drop savage punchlines, roast the Black Squad, and dominate the Wild 'N Out stage on MTV.",
     thumbnail: 'https://i.ytimg.com/vi/5gZg_r1s2d8/hqdefault.jpg',
@@ -103,7 +103,7 @@ const STATIC_COURTNEY_BEE_CLIPS: VideoClip[] = [
     sport: 'wildnout'
   },
   {
-    id: 'courtney-wildnout-2',
+    id: 'VY6x9P02m-0',
     headline: "Courtney Bee vs DC Young Fly & Chico Bean Wild 'N Out Roast",
     description: "Courtney Bee goes toe-to-toe with DC Young Fly, Chico Bean, and Nick Cannon in Wild 'N Out's wild roast battles.",
     thumbnail: 'https://images.unsplash.com/photo-1514525253161-7a46d19cd819?auto=format&fit=crop&q=80&w=800',
@@ -113,7 +113,7 @@ const STATIC_COURTNEY_BEE_CLIPS: VideoClip[] = [
     sport: 'wildnout'
   },
   {
-    id: 'courtney-wildnout-3',
+    id: '6OihwykYdBc',
     headline: "Wild 'N Out Season Highlights - Best of Courtney Bee",
     description: "The ultimate collection of Courtney Bee's sharpest freestyle bars, team games, and comedic improvisations on Wild 'N Out.",
     thumbnail: 'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?auto=format&fit=crop&q=80&w=800',
@@ -125,7 +125,7 @@ const STATIC_COURTNEY_BEE_CLIPS: VideoClip[] = [
 
   // ── Courtney Bee Stand-Up ──
   {
-    id: 'courtney-standup-1',
+    id: 'k8fP9L-6sQ8',
     headline: "Courtney Bee Live Stand-Up Special - Unfiltered",
     description: "Courtney Bee takes the main stage with a hilarious, raw, and relatable stand-up comedy set on dating, culture, and life.",
     thumbnail: '/n2n/comedy_club_bg.jpg',
@@ -135,7 +135,7 @@ const STATIC_COURTNEY_BEE_CLIPS: VideoClip[] = [
     sport: 'standup'
   },
   {
-    id: 'courtney-standup-2',
+    id: 'd8BFf32yDWQ',
     headline: "Courtney Bee Stand-Up - Modern Relationships & Red Flags",
     description: "Live from the Comedy Club: Courtney Bee breaks down dating red flags, texting etiquette, and modern relationship drama.",
     thumbnail: 'https://images.unsplash.com/photo-1590602847861-f357a9332bbc?auto=format&fit=crop&q=80&w=800',
@@ -145,7 +145,7 @@ const STATIC_COURTNEY_BEE_CLIPS: VideoClip[] = [
     sport: 'standup'
   },
   {
-    id: 'courtney-standup-3',
+    id: 'AdJEg47RTZ4',
     headline: "Courtney Bee Skits - When Your Friends Don't Know How To Play Spades",
     description: "Courtney Bee's viral comedy sketch on table manners, bidding 10, and hilarious card game arguments.",
     thumbnail: 'https://images.unsplash.com/photo-1523381210434-271e8be1f52b?auto=format&fit=crop&q=80&w=800',
@@ -157,7 +157,7 @@ const STATIC_COURTNEY_BEE_CLIPS: VideoClip[] = [
 
   // ── Playing Spades ──
   {
-    id: 'courtney-spades-1',
+    id: 'CgiX53hjAPc',
     headline: "Courtney Bee & Crew Playing Spades - High-Stakes Table Game",
     description: "Courtney Bee hosts an intense, hilarious round of Spades with celebrity guests, featuring non-stop trash talk, reneges, and Boston calls.",
     thumbnail: 'https://images.unsplash.com/photo-1511193311914-0346f16efe90?auto=format&fit=crop&q=80&w=800',
@@ -167,7 +167,7 @@ const STATIC_COURTNEY_BEE_CLIPS: VideoClip[] = [
     sport: 'spades'
   },
   {
-    id: 'courtney-spades-2',
+    id: 'JwIHOk7b5sQ',
     headline: "Spades Tournament Finals - Courtney Bee vs Wild 'N Out Crew",
     description: "Watch Courtney Bee lock in with her partner for the ultimate Spades championship battle. High stakes, wheeling and dealing, and classic card game banter.",
     thumbnail: 'https://images.unsplash.com/photo-1541534741688-6078c6bfb5c5?auto=format&fit=crop&q=80&w=800',
@@ -177,7 +177,7 @@ const STATIC_COURTNEY_BEE_CLIPS: VideoClip[] = [
     sport: 'spades'
   },
   {
-    id: 'courtney-spades-3',
+    id: 'OJl-628FyIk',
     headline: "The Rules of Spades & Table Talk with Courtney Bee",
     description: "Courtney Bee breaks down the cardinal rules of Spades: never talk to your partner's hand, bidding strategy, and throwing off suit like a pro.",
     thumbnail: 'https://images.unsplash.com/photo-1518310383802-640c2de311b2?auto=format&fit=crop&q=80&w=800',
