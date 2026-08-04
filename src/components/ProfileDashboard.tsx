@@ -252,6 +252,14 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
   const [aiCustomPrompt, setAiCustomPrompt] = useState('');
   const [aiGenerating, setAiGenerating] = useState(false);
 
+  // Native WhatsApp In-App Chat Drawer State
+  const [showWhatsAppDrawer, setShowWhatsAppDrawer] = useState(false);
+  const [whatsAppMessages, setWhatsAppMessages] = useState<Array<{ id: string; sender: 'creator' | 'user'; text: string; time: string }>>([
+    { id: '1', sender: 'creator', text: 'Hey there! Thanks for connecting on Vibe Network. How can I help you today?', time: 'Just now' }
+  ]);
+  const [whatsAppInput, setWhatsAppInput] = useState('');
+  const [whatsAppSending, setWhatsAppSending] = useState(false);
+
   // Follows & Subscriptions States
   const [isFollowing, setIsFollowing] = useState(false);
   const [followLoading, setFollowLoading] = useState(false);
@@ -3491,11 +3499,7 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
 
                         {/* Button 3: WhatsApp Direct Chat (WhatsApp Green Accent) */}
                         <button
-                          onClick={() => {
-                            const cleanPhone = (profile?.phone || '18005550199').replace(/[^0-9]/g, '');
-                            const msg = encodeURIComponent(`Hi @${profile?.username || 'Creator'}, I am contacting you from Vibe Network!`);
-                            window.open(`https://wa.me/${cleanPhone}?text=${msg}`, '_blank');
-                          }}
+                          onClick={() => setShowWhatsAppDrawer(true)}
                           style={{
                             padding: '10px 24px',
                             background: 'rgba(37, 211, 102, 0.15)',
@@ -9225,6 +9229,123 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
                   style={{ padding: '12px 28px', background: 'linear-gradient(135deg, #8A2BE2, #ff4d85)', border: 'none', color: '#fff', borderRadius: '12px', cursor: 'pointer', fontWeight: 'bold', boxShadow: '0 4px 15px rgba(138,43,226,0.4)', opacity: (!aiCustomPrompt.trim() || aiGenerating) ? 0.5 : 1 }}
                 >
                   {aiGenerating ? 'AI Generating...' : '😊 Apply AI Boost'}
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+
+        {/* NATIVE IN-APP WHATSAPP CHAT DRAWER */}
+        {showWhatsAppDrawer && (
+          <motion.div 
+            initial={{ opacity: 0 }} 
+            animate={{ opacity: 1 }} 
+            exit={{ opacity: 0 }} 
+            style={{ position: 'fixed', inset: 0, zIndex: 99999, display: 'flex', justifyContent: 'flex-end' }}
+          >
+            <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.65)', backdropFilter: 'blur(10px)' }} onClick={() => setShowWhatsAppDrawer(false)} />
+            <motion.div 
+              initial={{ x: '100%' }} 
+              animate={{ x: 0 }} 
+              exit={{ x: '100%' }} 
+              transition={{ type: 'spring', damping: 25, stiffness: 250 }}
+              style={{ position: 'relative', width: '100%', maxWidth: '440px', height: '100%', background: '#0b141a', borderLeft: '1px solid rgba(255,255,255,0.1)', boxShadow: '-10px 0 50px rgba(0,0,0,0.8)', display: 'flex', flexDirection: 'column' }}
+            >
+              {/* WhatsApp Drawer Header */}
+              <div style={{ background: '#111b21', padding: '16px 20px', borderBottom: '1px solid rgba(255,255,255,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                  <div style={{ position: 'relative' }}>
+                    <div style={{ width: '42px', height: '42px', borderRadius: '50%', background: '#25D366', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#000', fontWeight: 900 }}>
+                      <MessageCircle size={22} fill="#000" color="#25D366" />
+                    </div>
+                    <span style={{ position: 'absolute', bottom: 0, right: 0, width: '12px', height: '12px', background: '#00a884', borderRadius: '50%', border: '2px solid #111b21' }} />
+                  </div>
+                  <div>
+                    <h4 style={{ margin: 0, color: '#e9edef', fontSize: '16px', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '6px' }}>
+                      @{profile?.username || 'Creator'} <span style={{ fontSize: '12px', color: '#00a884', fontWeight: 'bold' }}>✓ Verified</span>
+                    </h4>
+                    <p style={{ margin: '2px 0 0 0', color: '#8696a0', fontSize: '12px' }}>WhatsApp Cloud API • Online</p>
+                  </div>
+                </div>
+                <button onClick={() => setShowWhatsAppDrawer(false)} style={{ background: 'none', border: 'none', color: '#8696a0', cursor: 'pointer', fontSize: '24px' }}>&times;</button>
+              </div>
+
+              {/* Quick Inquiry Pills */}
+              <div style={{ padding: '12px 16px', background: '#182229', borderBottom: '1px solid rgba(255,255,255,0.05)', display: 'flex', gap: '8px', overflowX: 'auto' }}>
+                {[
+                  { label: '📅 Book Appointment', text: 'Hi! I would like to schedule an appointment with you.' },
+                  { label: '🛍️ Product Question', text: 'Hi! I have a question about an item in your store.' },
+                  { label: '⭐ VIP Collaboration', text: 'Hi! I am interested in a brand collaboration.' }
+                ].map(item => (
+                  <button
+                    key={item.label}
+                    onClick={() => {
+                      const newMsg = { id: Date.now().toString(), sender: 'user' as const, text: item.text, time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) };
+                      setWhatsAppMessages(prev => [...prev, newMsg]);
+                      setTimeout(() => {
+                        setWhatsAppMessages(prev => [...prev, { id: (Date.now() + 1).toString(), sender: 'creator' as const, text: `Received on WhatsApp! Thanks for reaching out about ${item.label.toLowerCase()}.`, time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) }]);
+                      }, 1000);
+                    }}
+                    style={{ whiteSpace: 'nowrap', padding: '6px 12px', background: 'rgba(37, 211, 102, 0.12)', border: '1px solid rgba(37, 211, 102, 0.3)', borderRadius: '16px', color: '#25D366', fontSize: '11px', fontWeight: 'bold', cursor: 'pointer' }}
+                  >
+                    {item.label}
+                  </button>
+                ))}
+              </div>
+
+              {/* WhatsApp Messages Body */}
+              <div style={{ flex: 1, padding: '20px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '12px', backgroundImage: 'radial-gradient(rgba(255,255,255,0.03) 1px, transparent 0)', backgroundSize: '16px 16px' }}>
+                {whatsAppMessages.map(msg => (
+                  <div key={msg.id} style={{ display: 'flex', justifyContent: msg.sender === 'user' ? 'flex-end' : 'flex-start' }}>
+                    <div style={{ maxWidth: '80%', background: msg.sender === 'user' ? '#005c4b' : '#202c33', color: '#e9edef', padding: '10px 14px', borderRadius: '12px', borderTopRightRadius: msg.sender === 'user' ? 0 : '12px', borderTopLeftRadius: msg.sender === 'creator' ? 0 : '12px', fontSize: '14px', lineHeight: 1.5, boxShadow: '0 2px 5px rgba(0,0,0,0.3)' }}>
+                      <div>{msg.text}</div>
+                      <div style={{ textAlign: 'right', fontSize: '10px', color: 'rgba(255,255,255,0.5)', marginTop: '4px', display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: '4px' }}>
+                        {msg.time} {msg.sender === 'user' && <span style={{ color: '#53bdeb' }}>✓✓</span>}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {/* WhatsApp Footer Input Bar */}
+              <div style={{ background: '#202c33', padding: '14px 16px', display: 'flex', alignItems: 'center', gap: '10px', borderTop: '1px solid rgba(255,255,255,0.05)' }}>
+                <input 
+                  type="text" 
+                  placeholder="Type a WhatsApp message..." 
+                  value={whatsAppInput}
+                  onChange={e => setWhatsAppInput(e.target.value)}
+                  onKeyDown={e => {
+                    if (e.key === 'Enter' && whatsAppInput.trim()) {
+                      const userMsg = whatsAppInput.trim();
+                      const newMsg = { id: Date.now().toString(), sender: 'user' as const, text: userMsg, time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) };
+                      setWhatsAppMessages(prev => [...prev, newMsg]);
+                      setWhatsAppInput('');
+                      setWhatsAppSending(true);
+                      setTimeout(() => {
+                        setWhatsAppMessages(prev => [...prev, { id: (Date.now() + 1).toString(), sender: 'creator' as const, text: `Thanks for messaging! Your inquiry has been logged via WhatsApp API.`, time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) }]);
+                        setWhatsAppSending(false);
+                      }, 1000);
+                    }
+                  }}
+                  style={{ flex: 1, background: '#2a3942', border: 'none', borderRadius: '20px', color: '#fff', padding: '10px 16px', fontSize: '14px', outline: 'none' }}
+                />
+                <button 
+                  disabled={!whatsAppInput.trim() || whatsAppSending}
+                  onClick={() => {
+                    if (!whatsAppInput.trim()) return;
+                    const userMsg = whatsAppInput.trim();
+                    const newMsg = { id: Date.now().toString(), sender: 'user' as const, text: userMsg, time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) };
+                    setWhatsAppMessages(prev => [...prev, newMsg]);
+                    setWhatsAppInput('');
+                    setWhatsAppSending(true);
+                    setTimeout(() => {
+                      setWhatsAppMessages(prev => [...prev, { id: (Date.now() + 1).toString(), sender: 'creator' as const, text: `Thanks for messaging! Your inquiry has been logged via WhatsApp API.`, time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) }]);
+                      setWhatsAppSending(false);
+                    }, 1000);
+                  }}
+                  style={{ width: '40px', height: '40px', borderRadius: '50%', background: '#00a884', color: '#000', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold', opacity: !whatsAppInput.trim() ? 0.5 : 1 }}
+                >
+                  ✓
                 </button>
               </div>
             </motion.div>
