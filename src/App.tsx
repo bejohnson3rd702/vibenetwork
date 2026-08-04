@@ -495,6 +495,57 @@ function App() {
               enableWatchLive: true
             }
           });
+        } else if (activeTenantId === 'cb000000-c08f-4260-8540-a0cc8bed4e11' || activeTenantId === 'courtney-bee-network-id' || activeTenantId === 'courtneybee.network' || activeTenantId === 'courtneybeenetwork') {
+          loadedTenantId = 'cb000000-c08f-4260-8540-a0cc8bed4e11';
+          loadedConfig = normalizeWlConfig({
+            id: 'cb000000-c08f-4260-8540-a0cc8bed4e11',
+            name: 'The Courtney Bee Network',
+            domain: 'courtneybee.network',
+            logo: 'https://static.wixstatic.com/media/066ffc_bb9bdff854db4b56bb3f6b58ee1ce532~mv2.png/v1/crop/x_0,y_261,w_1242,h_763/fill/w_860,h_528,al_c,q_90,usm_0.66_1.00_0.01,enc_avif,quality_auto/image%20(1).png',
+            shopifyUrl: 'https://f5c4e7-3.myshopify.com',
+            platform_fee_percentage: 30,
+            is_active: true,
+            n2n_enabled: true,
+            accent: '#ff4d85',
+            enableWatchLive: true,
+            theme: {
+              accent: '#ff4d85',
+              heroCopy: 'The Courtney Bee Network — Official Stand-Up Comedy Specials, Culture Podcasts, Broadcasts & Merch.',
+              heroImage: '/n2n/comedy_club_bg.jpg',
+              logoImage: 'https://static.wixstatic.com/media/066ffc_bb9bdff854db4b56bb3f6b58ee1ce532~mv2.png/v1/crop/x_0,y_261,w_1242,h_763/fill/w_860,h_528,al_c,q_90,usm_0.66_1.00_0.01,enc_avif,quality_auto/image%20(1).png',
+              shopifyUrl: 'https://f5c4e7-3.myshopify.com',
+              sliderCount: 4,
+              enableBooking: true,
+              heroLayoutMode: 'verbiage',
+              enableWatchLive: true,
+              heroSlider: [
+                {
+                  id: 'cb-slide-1',
+                  title: 'Wild \'N Out Live Stand-Up Special',
+                  subtitle: 'Courtney Bee Unfiltered Live',
+                  copy: 'Stream the hilarious new stand-up special direct from the national comedy tour.',
+                  imageUrl: '/n2n/comedy_club_bg.jpg',
+                  videoUrl: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ'
+                },
+                {
+                  id: 'cb-slide-2',
+                  title: 'Culture & Comedy Podcast',
+                  subtitle: 'Weekly Live Broadcasts',
+                  copy: 'Tune in every Tuesday for raw culture commentary, celebrity guest interviews, and behind-the-scenes vibes.',
+                  imageUrl: 'https://images.unsplash.com/photo-1590602847861-f357a9332bbc?w=1200&auto=format&fit=crop',
+                  videoUrl: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ'
+                },
+                {
+                  id: 'cb-slide-3',
+                  title: 'Official Merch & Digital Drops',
+                  subtitle: 'Courtney Bee Exclusive Apparel',
+                  copy: 'Shop signature hoodies, digital tickets, and VIP meet-and-greet passes directly on the network store.',
+                  imageUrl: 'https://images.unsplash.com/photo-1523381210434-271e8be1f52b?w=1200&auto=format&fit=crop',
+                  videoUrl: 'https://f5c4e7-3.myshopify.com'
+                }
+              ]
+            }
+          });
         } else if (activeTenantId === 'courtney-bee-tenant-id' || activeTenantId === 'c0071234-c08f-4260-8540-a0cc8bed4e11' || activeTenantId === 'therealcourtneybee.com' || activeTenantId?.includes('courtney')) {
           loadedTenantId = 'courtney-bee-tenant-id';
           loadedConfig = normalizeWlConfig({
@@ -503,7 +554,7 @@ function App() {
             domain: 'therealcourtneybee.com',
             logo: 'https://static.wixstatic.com/media/066ffc_bb9bdff854db4b56bb3f6b58ee1ce532~mv2.png/v1/crop/x_0,y_261,w_1242,h_763/fill/w_860,h_528,al_c,q_90,usm_0.66_1.00_0.01,enc_avif,quality_auto/image%20(1).png',
             shopifyUrl: 'https://f5c4e7-3.myshopify.com',
-            parent_network_id: 'adb92e36-5ebc-4dc3-ae96-429f3dc1bb30',
+            parent_network_id: 'cb000000-c08f-4260-8540-a0cc8bed4e11',
             platform_fee_percentage: 30,
             is_active: true,
             accent: '#ff4d85',
@@ -518,7 +569,7 @@ function App() {
               enableBooking: true,
               heroLayoutMode: 'verbiage',
               enableWatchLive: false,
-              parent_network_id: 'adb92e36-5ebc-4dc3-ae96-429f3dc1bb30'
+              parent_network_id: 'cb000000-c08f-4260-8540-a0cc8bed4e11'
             }
           });
         } else if (activeTenantId === 'adb92e36-5ebc-4dc3-ae96-429f3dc1bb30' || activeTenantId === 'vibe-network-tenant-id' || activeTenantId === 'master' || activeTenantId === 'vibe') {

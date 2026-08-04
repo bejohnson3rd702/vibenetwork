@@ -367,6 +367,9 @@ export default function N2NHome({ wlConfig, categories, user, activeVideo, setAc
   const isAvo = config?.id === '3915f1e5-4c79-4b2a-ad41-7029ce8052d7' ||
                 config?.name?.toLowerCase().includes('avo');
 
+  const isCourtneyBee = config?.id === 'cb000000-c08f-4260-8540-a0cc8bed4e11' ||
+                        config?.name?.toLowerCase().includes('courtney bee network');
+
   const isVibe100 = config?.id === 'e5c100aa-c08f-4260-8540-a0cc8bed4e11' || 
                     config?.name?.toLowerCase().includes('vibe 100') ||
                     config?.domain?.includes('vibe100');
