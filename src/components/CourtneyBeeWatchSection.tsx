@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Play } from 'lucide-react';
 
 export interface CourtneyVideo {
@@ -122,14 +122,14 @@ const COURTNEY_BEE_VIDEOS: CourtneyVideo[] = [
 
   // --- THE DAILY CANNON ---
   {
-    id: '6cQKtZtqXEk',
-    youtubeId: '6cQKtZtqXEk',
+    id: 'DesiNickIlluminati',
+    youtubeId: 'pujOwBc-tAE',
     title: 'Desi Banks Asks Nick Cannon If The Illuminati Is Real | The Daily Cannon Show',
     show: 'The Daily Cannon',
     category: 'dailycannon',
     description: 'Courtney Bee hosts The Daily Cannon as Desi Banks and Nick Cannon dive deep on conspiracies, comedy, and culture.',
     duration: '18:30',
-    thumbnail: 'https://i.ytimg.com/vi/6cQKtZtqXEk/hqdefault.jpg'
+    thumbnail: 'https://i.ytimg.com/vi/pujOwBc-tAE/hqdefault.jpg'
   },
   {
     id: 'pujOwBc-tAE',
@@ -163,6 +163,15 @@ const CATEGORY_ICON: Record<string, string> = {
 export default function CourtneyBeeWatchSection({ accent = '#D35400' }: { accent?: string }) {
   const [selectedVideo, setSelectedVideo] = useState<CourtneyVideo>(COURTNEY_BEE_VIDEOS[0]);
   const [filter, setFilter] = useState<'all' | 'spades' | 'wildnout' | 'standup' | 'dailycannon'>('all');
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const mq = window.matchMedia('(max-width: 768px)');
+    setIsMobile(mq.matches);
+    const handler = (e: MediaQueryListEvent) => setIsMobile(e.matches);
+    mq.addEventListener('change', handler);
+    return () => mq.removeEventListener('change', handler);
+  }, []);
 
   const filteredVideos = COURTNEY_BEE_VIDEOS.filter(v =>
     filter === 'all' ? true : v.category === filter
@@ -197,7 +206,7 @@ export default function CourtneyBeeWatchSection({ accent = '#D35400' }: { accent
         </div>
 
         {/* Filter Tabs */}
-        <div style={{ display: 'flex', gap: '8px', background: 'rgba(255,255,255,0.03)', padding: '4px', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.06)' }}>
+        <div style={{ display: 'flex', gap: '8px', background: 'rgba(255,255,255,0.03)', padding: '4px', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.06)', overflowX: 'auto', scrollbarWidth: 'none', WebkitOverflowScrolling: 'touch' } as React.CSSProperties}>
           {([['all', 'All Episodes'], ['spades', "♠️ We Playin' Spades"], ['wildnout', '🔥 Wild \'N Out'], ['standup', '🎤 Stand-Up'], ['dailycannon', '📡 Daily Cannon']] as const).map(([key, label]) => (
             <button
               key={key}
@@ -221,8 +230,8 @@ export default function CourtneyBeeWatchSection({ accent = '#D35400' }: { accent
         </div>
       </div>
 
-      {/* YouTube-style side-by-side layout */}
-      <div style={{ display: 'flex', gap: '20px', alignItems: 'flex-start' }}>
+      {/* Player + Sidebar: stacks vertically on mobile */}
+      <div style={{ display: 'flex', flexDirection: isMobile ? 'column' : 'row', gap: '20px', alignItems: 'flex-start' }}>
 
         {/* LEFT: Main Player */}
         <div style={{ flex: '1 1 0', minWidth: 0 }}>
@@ -265,22 +274,26 @@ export default function CourtneyBeeWatchSection({ accent = '#D35400' }: { accent
 
         {/* RIGHT: Scrollable Video Sidebar */}
         <div style={{
-          width: '320px',
+          width: isMobile ? '100%' : '320px',
           flexShrink: 0,
-          maxHeight: 'calc(9/16 * (100vw - 360px) + 110px)',
-          overflowY: 'auto',
+          maxHeight: isMobile ? 'none' : 'calc(9/16 * (100vw - 360px) + 110px)',
+          overflowY: isMobile ? 'visible' : 'auto',
           display: 'flex',
           flexDirection: 'column',
           gap: '10px',
-          paddingRight: '4px',
+          paddingRight: isMobile ? '0' : '4px',
           scrollbarWidth: 'thin',
           scrollbarColor: `${accent}44 transparent`
         }}>
           <p style={{ fontSize: '11px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '2px', color: '#555', margin: '0 0 4px 0' }}>
-            Up Next — {filteredVideos.length - 1} more
+            Up Next — {sidebarVideos.length} more
           </p>
 
-          {sidebarVideos.map(video => {
+          {sidebarVideos.length === 0 ? (
+            <div style={{ padding: '24px', textAlign: 'center', color: '#555', fontSize: '13px', background: 'rgba(255,255,255,0.02)', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.05)' }}>
+              No other videos in this category.
+            </div>
+          ) : sidebarVideos.map(video => {
             const icon = CATEGORY_ICON[video.category];
             return (
               <div

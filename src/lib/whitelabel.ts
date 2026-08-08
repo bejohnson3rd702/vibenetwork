@@ -52,6 +52,17 @@ export function isB2kConfig(config: any): boolean {
   return name.includes('b2k') || domain.includes('b2k.vibenetwork.tv');
 }
 
+export function isCourtneyBeeConfig(config: any): boolean {
+  if (!config) return false;
+  const id = config.id || '';
+  const name = config.name?.toLowerCase() || '';
+  const domain = config.domain?.toLowerCase() || '';
+  return id === 'cb000000-c08f-4260-8540-a0cc8bed4e11' ||
+         id === 'courtney-bee-tenant-id' ||
+         name.includes('courtney bee') ||
+         domain.includes('courtneybee');
+}
+
 export function isKpleConfig(config: any): boolean {
   if (!config) return false;
   const id = config.id || '';

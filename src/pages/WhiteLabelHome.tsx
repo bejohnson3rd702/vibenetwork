@@ -6,7 +6,7 @@ import SliderSection from '../components/SliderSection';
 import { supabase } from '../supabaseClient';
 import { ASSETS } from '../data';
 import type { WhiteLabelConfig, Category, VideoItem, User } from '../types';
-import { isOlympianConfig, isMuscleFitnessConfig, isB2kConfig, isKpleConfig } from '../lib/whitelabel';
+import { isOlympianConfig, isMuscleFitnessConfig, isB2kConfig, isKpleConfig, isCourtneyBeeConfig } from '../lib/whitelabel';
 
 import { OLYMPIA_CHAMPIONS } from '../lib/n2n';
 
@@ -27,6 +27,7 @@ interface WhiteLabelHomeProps {
 export default function WhiteLabelHome({ wlConfig, categories, user, activeVideo, setActiveVideo }: WhiteLabelHomeProps) {
   const navigate = useNavigate();
   const isOlympian = isOlympianConfig(wlConfig);
+  const isCourtneyBee = isCourtneyBeeConfig(wlConfig);
   const [showVideoTitle, setShowVideoTitle] = useState(true);
   const videoRef = useRef<HTMLVideoElement>(null);
 
@@ -209,8 +210,10 @@ export default function WhiteLabelHome({ wlConfig, categories, user, activeVideo
         )}
 
         {/* Live Section if enabled and on network level (not sub-tenant creator channels) */}
-        {(wlConfig.id === 'courtney-bee-tenant-id' || wlConfig.id === 'cb000000-c08f-4260-8540-a0cc8bed4e11' || (wlConfig.name || '').toLowerCase().includes('courtney bee')) ? (
-          <CourtneyBeeWatchSection accent={wlConfig.accent || '#D35400'} />
+        {(isCourtneyBee) ? (
+          <div id="whats-on-now" style={{ position: 'relative', zIndex: 10, marginTop: '40px', padding: '0 40px' }}>
+            <CourtneyBeeWatchSection accent={wlConfig.accent || '#D35400'} />
+          </div>
         ) : wlConfig.enableWatchLive !== false && !wlConfig.parent_network_id && (
           <div id="whats-on-now" style={{ position: 'relative', zIndex: 10, marginTop: '40px' }}>
             <Suspense fallback={null}>

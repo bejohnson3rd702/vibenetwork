@@ -8,7 +8,7 @@ import { getChildNetworks, mergeQueryParams, OLYMPIA_CHAMPIONS, WINGS_ATHLETES, 
 import { getN2NCategories } from '../api';
 import type { Category, VideoItem, User } from '../types';
 import { supabase } from '../supabaseClient';
-import { isOlympianConfig, isMuscleFitnessConfig, isB2kConfig, isKpleConfig, isKpleOnlyConfig, isBonaireConfig } from '../lib/whitelabel';
+import { isOlympianConfig, isMuscleFitnessConfig, isB2kConfig, isKpleConfig, isKpleOnlyConfig, isBonaireConfig, isCourtneyBeeConfig } from '../lib/whitelabel';
 import { KpleWatchPlayer } from '../components/KpleWatchPlayer';
 import { KpleInlineWatchSection } from '../components/KpleInlineWatchSection';
 import CourtneyBeeWatchSection from '../components/CourtneyBeeWatchSection';
@@ -368,10 +368,7 @@ export default function N2NHome({ wlConfig, categories, user, activeVideo, setAc
   const isAvo = config?.id === '3915f1e5-4c79-4b2a-ad41-7029ce8052d7' ||
                 config?.name?.toLowerCase().includes('avo');
 
-  const isCourtneyBee = config?.id === 'cb000000-c08f-4260-8540-a0cc8bed4e11' ||
-                        config?.id === 'courtney-bee-tenant-id' ||
-                        config?.domain?.includes('courtney') ||
-                        config?.name?.toLowerCase().includes('courtney bee');
+  const isCourtneyBee = isCourtneyBeeConfig(config);
 
   const isVibe100 = config?.id === 'e5c100aa-c08f-4260-8540-a0cc8bed4e11' || 
                     config?.name?.toLowerCase().includes('vibe 100') ||
