@@ -236,6 +236,108 @@ export async function getChildNetworks(parentId: string, includeInactive: boolea
           enableWatchLive: false,
           parent_network_id: 'cb000000-c08f-4260-8540-a0cc8bed4e11'
         }
+      }),
+
+      // ── Wild 'N Out Cast Channels ──────────────────────────────────
+      normalizeWlConfig({
+        id: 'wno-dc-young-fly',
+        name: 'DC Young Fly',
+        domain: 'dcyoungfly.wildnout.vibenetwork.tv',
+        logo: 'https://i.ytimg.com/vi/6cQKtZtqXEk/hqdefault.jpg',
+        parent_network_id: 'cb000000-c08f-4260-8540-a0cc8bed4e11',
+        platform_fee_percentage: 30,
+        is_active: true,
+        accent: '#00C2FF',
+        theme: {
+          accent: '#00C2FF',
+          heroCopy: "DC Young Fly — Atlanta's funniest, wildest rapper-comedian. Catch his best Wild 'N Out moments, stand-up clips & exclusive content.",
+          heroImage: 'https://images.unsplash.com/photo-1516280440614-37939bbacd81?auto=format&fit=crop&q=80&w=1200',
+          sliderCount: 4,
+          enableBooking: true,
+          heroLayoutMode: 'verbiage',
+          enableWatchLive: false,
+          parent_network_id: 'cb000000-c08f-4260-8540-a0cc8bed4e11'
+        }
+      }),
+      normalizeWlConfig({
+        id: 'wno-conceited',
+        name: 'Conceited',
+        domain: 'conceited.wildnout.vibenetwork.tv',
+        logo: 'https://i.ytimg.com/vi/NxjONMYd2O8/hqdefault.jpg',
+        parent_network_id: 'cb000000-c08f-4260-8540-a0cc8bed4e11',
+        platform_fee_percentage: 30,
+        is_active: true,
+        accent: '#FFD600',
+        theme: {
+          accent: '#FFD600',
+          heroCopy: "Conceited — New York's sharpest battle rapper. Watch him dismantle opponents with precision bars on Wild 'N Out & beyond.",
+          heroImage: 'https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?auto=format&fit=crop&q=80&w=1200',
+          sliderCount: 4,
+          enableBooking: true,
+          heroLayoutMode: 'verbiage',
+          enableWatchLive: false,
+          parent_network_id: 'cb000000-c08f-4260-8540-a0cc8bed4e11'
+        }
+      }),
+      normalizeWlConfig({
+        id: 'wno-chico-bean',
+        name: 'Chico Bean',
+        domain: 'chicobean.wildnout.vibenetwork.tv',
+        logo: 'https://i.ytimg.com/vi/ifB7zrLD09s/hqdefault.jpg',
+        parent_network_id: 'cb000000-c08f-4260-8540-a0cc8bed4e11',
+        platform_fee_percentage: 30,
+        is_active: true,
+        accent: '#FF6B00',
+        theme: {
+          accent: '#FF6B00',
+          heroCopy: "Chico Bean — The king of Wildstyle. Non-stop laughs, savage roasts, and unmatched energy straight from the Wild 'N Out stage.",
+          heroImage: 'https://images.unsplash.com/photo-1470229722913-7c0e2dbbafd3?auto=format&fit=crop&q=80&w=1200',
+          sliderCount: 4,
+          enableBooking: true,
+          heroLayoutMode: 'verbiage',
+          enableWatchLive: false,
+          parent_network_id: 'cb000000-c08f-4260-8540-a0cc8bed4e11'
+        }
+      }),
+      normalizeWlConfig({
+        id: 'wno-justina-valentine',
+        name: 'Justina Valentine',
+        domain: 'justinavalentine.wildnout.vibenetwork.tv',
+        logo: 'https://i.ytimg.com/vi/E_MKI9NQmQk/hqdefault.jpg',
+        parent_network_id: 'cb000000-c08f-4260-8540-a0cc8bed4e11',
+        platform_fee_percentage: 30,
+        is_active: true,
+        accent: '#E91E8C',
+        theme: {
+          accent: '#E91E8C',
+          heroCopy: "Justina Valentine — Rapper, singer, and Wild 'N Out fan favorite. Fire bars, bold fashion & unfiltered personality.",
+          heroImage: 'https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?auto=format&fit=crop&q=80&w=1200',
+          sliderCount: 4,
+          enableBooking: true,
+          heroLayoutMode: 'verbiage',
+          enableWatchLive: false,
+          parent_network_id: 'cb000000-c08f-4260-8540-a0cc8bed4e11'
+        }
+      }),
+      normalizeWlConfig({
+        id: 'wno-timothy-delaghetto',
+        name: 'Timothy DeLaGhetto',
+        domain: 'timothydelaghetto.wildnout.vibenetwork.tv',
+        logo: 'https://i.ytimg.com/vi/9EdpssHIbM8/hqdefault.jpg',
+        parent_network_id: 'cb000000-c08f-4260-8540-a0cc8bed4e11',
+        platform_fee_percentage: 30,
+        is_active: true,
+        accent: '#7C4DFF',
+        theme: {
+          accent: '#7C4DFF',
+          heroCopy: "Timothy DeLaGhetto — YouTube legend turned Wild 'N Out OG. Comedy, rap battles & Asian-American culture collide.",
+          heroImage: 'https://images.unsplash.com/photo-1598387993441-a364f854cfba?auto=format&fit=crop&q=80&w=1200',
+          sliderCount: 4,
+          enableBooking: true,
+          heroLayoutMode: 'verbiage',
+          enableWatchLive: false,
+          parent_network_id: 'cb000000-c08f-4260-8540-a0cc8bed4e11'
+        }
       })
     ];
   }
