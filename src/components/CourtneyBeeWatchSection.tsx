@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Play, ExternalLink, Sparkles, Tv, Flame, Mic, ChevronRight } from 'lucide-react';
+import { Play } from 'lucide-react';
 
 export interface CourtneyVideo {
   id: string;
@@ -7,47 +7,172 @@ export interface CourtneyVideo {
   videoUrl?: string;
   title: string;
   show: string;
-  category: 'spades' | 'wildnout' | 'standup';
+  category: 'spades' | 'wildnout' | 'standup' | 'dailycannon';
   description: string;
   duration: string;
   thumbnail: string;
 }
 
 const COURTNEY_BEE_VIDEOS: CourtneyVideo[] = [
+  // --- WE PLAYIN' SPADES ---
   {
-    id: 'cb-1',
-    youtubeId: 'CytqhMMV7sQ',
-    title: "“I'm Ovulating, Nick” with Tiffany Haddish | We Playin' Spades Ep. 1",
+    id: 'E_MKI9NQmQk',
+    youtubeId: 'E_MKI9NQmQk',
+    title: '"I\'m Ovulating, Nick" with Tiffany Haddish | We Playin\' Spades',
     show: "We Playin' Spades",
     category: 'spades',
     description: "Courtney Bee & Nick Cannon host Tiffany Haddish at the turquoise table for high-stakes Spades, trash talk, and uncensored stories.",
     duration: '27:30',
-    thumbnail: 'https://i.ytimg.com/vi/CytqhMMV7sQ/hqdefault.jpg'
+    thumbnail: 'https://i.ytimg.com/vi/E_MKI9NQmQk/hqdefault.jpg'
   },
   {
-    id: 'cb-2',
-    youtubeId: 'pd5J_kQqLB0',
+    id: '9EdpssHIbM8',
+    youtubeId: '9EdpssHIbM8',
     title: "Standing on Boundaries and Wrestling with Mercedes Moné | We Playin' Spades",
     show: "We Playin' Spades",
     category: 'spades',
     description: "Pro wrestling superstar Mercedes Moné hits the Spades table with Courtney Bee and Nick Cannon.",
     duration: '25:40',
-    thumbnail: 'https://i.ytimg.com/vi/pd5J_kQqLB0/hqdefault.jpg'
+    thumbnail: 'https://i.ytimg.com/vi/9EdpssHIbM8/hqdefault.jpg'
+  },
+  {
+    id: 't0Hpg8g1yRk',
+    youtubeId: 't0Hpg8g1yRk',
+    title: "SAG Awards, Geese Fights & the Comedy Hustle with Lavell Crawford | We Playin' Spades",
+    show: "We Playin' Spades",
+    category: 'spades',
+    description: "Lavell Crawford brings the laughs to the Spades table with Courtney Bee and Nick Cannon.",
+    duration: '22:15',
+    thumbnail: 'https://i.ytimg.com/vi/t0Hpg8g1yRk/hqdefault.jpg'
+  },
+  {
+    id: 'OfhFTOGPfdc',
+    youtubeId: 'OfhFTOGPfdc',
+    title: "Flex Alexander & Brian Hooks on Comedy, Culture & the Hollywood Hustle | We Playin' Spades",
+    show: "We Playin' Spades",
+    category: 'spades',
+    description: "Flex Alexander and Brian Hooks sit down at the turquoise table for laughs, culture, and Spades.",
+    duration: '24:00',
+    thumbnail: 'https://i.ytimg.com/vi/OfhFTOGPfdc/hqdefault.jpg'
+  },
+
+  // --- WILD 'N OUT ---
+  {
+    id: '6cQKtZtqXEk',
+    youtubeId: '6cQKtZtqXEk',
+    title: "Best Of Courtney Bee 🤣 Wild 'N Out",
+    show: "Wild 'N Out",
+    category: 'wildnout',
+    description: "Watch Courtney Bee's greatest Wild 'N Out moments — punchlines, roasts, and Wildstyle battles.",
+    duration: '12:00',
+    thumbnail: 'https://i.ytimg.com/vi/6cQKtZtqXEk/hqdefault.jpg'
+  },
+  {
+    id: 'ifB7zrLD09s',
+    youtubeId: 'ifB7zrLD09s',
+    title: "Courtney Bee Takes NO Disrespect 😤 Wild 'N Out",
+    show: "Wild 'N Out",
+    category: 'wildnout',
+    description: "Courtney Bee fires back hard and shuts down the competition on the Wild 'N Out stage.",
+    duration: '8:45',
+    thumbnail: 'https://i.ytimg.com/vi/ifB7zrLD09s/hqdefault.jpg'
+  },
+  {
+    id: 'NxjONMYd2O8',
+    youtubeId: 'NxjONMYd2O8',
+    title: "Courtney Bee DESTROYS the New School 🔥🤬 Wild N' Out",
+    show: "Wild 'N Out",
+    category: 'wildnout',
+    description: "Courtney Bee goes all out and destroys the new school cast in this Wild 'N Out battle.",
+    duration: '9:30',
+    thumbnail: 'https://i.ytimg.com/vi/NxjONMYd2O8/hqdefault.jpg'
+  },
+
+  // --- STAND-UP COMEDY ---
+  {
+    id: 'MMDuJxKq7yI',
+    youtubeId: 'MMDuJxKq7yI',
+    title: "Courtney Bee Takes Harlem Nights",
+    show: "Courtney Bee Comedy",
+    category: 'standup',
+    description: "Courtney Bee hits the stage at the legendary Harlem Nights for a hilarious live stand-up set.",
+    duration: '18:00',
+    thumbnail: 'https://i.ytimg.com/vi/MMDuJxKq7yI/hqdefault.jpg'
+  },
+  {
+    id: 'vc3JcMQS08A',
+    youtubeId: 'vc3JcMQS08A',
+    title: "Courtney Bee Runs a [Soul] Train: Uproarious Story and Song at Hollywood Improv",
+    show: "Courtney Bee Comedy",
+    category: 'standup',
+    description: "Courtney Bee takes the Hollywood Improv stage with an uproarious story and an original song.",
+    duration: '15:20',
+    thumbnail: 'https://i.ytimg.com/vi/vc3JcMQS08A/hqdefault.jpg'
+  },
+  {
+    id: 'cXBSpTi8Vbk',
+    youtubeId: 'cXBSpTi8Vbk',
+    title: "Courtney Bee Meets Comedy's Rising Stars: Amir K., Correy Bell, Darius Bennett & More",
+    show: "Courtney Bee Comedy",
+    category: 'standup',
+    description: "Courtney Bee links up with comedy's next generation in this hilarious roundup.",
+    duration: '20:00',
+    thumbnail: 'https://i.ytimg.com/vi/cXBSpTi8Vbk/hqdefault.jpg'
+  },
+
+  // --- THE DAILY CANNON ---
+  {
+    id: '6cQKtZtqXEk',
+    youtubeId: '6cQKtZtqXEk',
+    title: 'Desi Banks Asks Nick Cannon If The Illuminati Is Real | The Daily Cannon Show',
+    show: 'The Daily Cannon',
+    category: 'dailycannon',
+    description: 'Courtney Bee hosts The Daily Cannon as Desi Banks and Nick Cannon dive deep on conspiracies, comedy, and culture.',
+    duration: '18:30',
+    thumbnail: 'https://i.ytimg.com/vi/6cQKtZtqXEk/hqdefault.jpg'
+  },
+  {
+    id: 'pujOwBc-tAE',
+    youtubeId: 'pujOwBc-tAE',
+    title: 'Does Body Count Matter? with Courtney Bee | The Daily Cannon',
+    show: 'The Daily Cannon',
+    category: 'dailycannon',
+    description: 'Courtney Bee goes in on dating, body counts, and modern relationship culture on The Daily Cannon Show.',
+    duration: '12:45',
+    thumbnail: 'https://i.ytimg.com/vi/pujOwBc-tAE/hqdefault.jpg'
+  },
+  {
+    id: '5w0ybBRuifc',
+    youtubeId: '5w0ybBRuifc',
+    title: 'Your Dating History: How Many is Too Many? with Courtney Bee | The Daily Cannon',
+    show: 'The Daily Cannon',
+    category: 'dailycannon',
+    description: 'Courtney Bee and guests debate the hot topic of dating history and relationship standards on The Daily Cannon.',
+    duration: '14:20',
+    thumbnail: 'https://i.ytimg.com/vi/5w0ybBRuifc/hqdefault.jpg'
   }
 ];
 
+const CATEGORY_ICON: Record<string, string> = {
+  spades: '♠️',
+  wildnout: '🔥',
+  standup: '🎤',
+  dailycannon: '📡'
+};
+
 export default function CourtneyBeeWatchSection({ accent = '#D35400' }: { accent?: string }) {
   const [selectedVideo, setSelectedVideo] = useState<CourtneyVideo>(COURTNEY_BEE_VIDEOS[0]);
-  const [filter, setFilter] = useState<'all' | 'spades' | 'wildnout' | 'standup'>('all');
+  const [filter, setFilter] = useState<'all' | 'spades' | 'wildnout' | 'standup' | 'dailycannon'>('all');
 
-  const filteredVideos = COURTNEY_BEE_VIDEOS.filter(v => {
-    if (filter === 'all') return true;
-    return v.category === filter;
-  });
+  const filteredVideos = COURTNEY_BEE_VIDEOS.filter(v =>
+    filter === 'all' ? true : v.category === filter
+  );
+
+  const sidebarVideos = filteredVideos.filter(v => v.id !== selectedVideo.id);
 
   return (
-    <section 
-      id="whats-on-now" 
+    <section
+      id="whats-on-now"
       style={{
         position: 'relative',
         padding: '40px 0 60px 0',
@@ -57,7 +182,7 @@ export default function CourtneyBeeWatchSection({ accent = '#D35400' }: { accent
         boxSizing: 'border-box'
       }}
     >
-      {/* Section Title Header */}
+      {/* Section Header */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '24px', flexWrap: 'wrap', gap: '12px' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
           <div style={{ width: '4px', height: '28px', borderRadius: '2px', background: accent }} />
@@ -66,211 +191,159 @@ export default function CourtneyBeeWatchSection({ accent = '#D35400' }: { accent
               Courtney Bee <span style={{ color: accent }}>Watch Cinema</span>
             </h2>
             <p style={{ fontSize: '13px', color: '#999', margin: '4px 0 0 0' }}>
-              Official episodes of We Playin' Spades starring Nick Cannon & Courtney Bee
+              Official Wild 'N Out episodes & We Playin' Spades starring Nick Cannon & Courtney Bee
             </p>
           </div>
         </div>
 
         {/* Filter Tabs */}
         <div style={{ display: 'flex', gap: '8px', background: 'rgba(255,255,255,0.03)', padding: '4px', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.06)' }}>
-          <button
-            onClick={() => setFilter('all')}
-            style={{
-              padding: '6px 16px',
-              borderRadius: '8px',
-              border: 'none',
-              background: filter === 'all' ? accent : 'transparent',
-              color: filter === 'all' ? '#000' : '#888',
-              fontSize: '12px',
-              fontWeight: 800,
-              cursor: 'pointer',
-              transition: 'all 0.2s'
-            }}
-          >
-            All Episodes
-          </button>
-          <button
-            onClick={() => setFilter('spades')}
-            style={{
-              padding: '6px 16px',
-              borderRadius: '8px',
-              border: 'none',
-              background: filter === 'spades' ? accent : 'transparent',
-              color: filter === 'spades' ? '#000' : '#888',
-              fontSize: '12px',
-              fontWeight: 800,
-              cursor: 'pointer',
-              transition: 'all 0.2s'
-            }}
-          >
-            ♠️ We Playin' Spades
-          </button>
-          <button
-            onClick={() => setFilter('wildnout')}
-            style={{
-              padding: '6px 16px',
-              borderRadius: '8px',
-              border: 'none',
-              background: filter === 'wildnout' ? accent : 'transparent',
-              color: filter === 'wildnout' ? '#000' : '#888',
-              fontSize: '12px',
-              fontWeight: 800,
-              cursor: 'pointer',
-              transition: 'all 0.2s'
-            }}
-          >
-            🔥 Wild 'N Out
-          </button>
+          {([['all', 'All Episodes'], ['spades', "♠️ We Playin' Spades"], ['wildnout', '🔥 Wild \'N Out'], ['standup', '🎤 Stand-Up'], ['dailycannon', '📡 Daily Cannon']] as const).map(([key, label]) => (
+            <button
+              key={key}
+              onClick={() => setFilter(key)}
+              style={{
+                padding: '6px 14px',
+                borderRadius: '8px',
+                border: 'none',
+                background: filter === key ? accent : 'transparent',
+                color: filter === key ? '#000' : '#888',
+                fontSize: '12px',
+                fontWeight: 800,
+                cursor: 'pointer',
+                transition: 'all 0.2s',
+                whiteSpace: 'nowrap'
+              }}
+            >
+              {label}
+            </button>
+          ))}
         </div>
       </div>
 
-      {/* Main Video Player Box */}
-      <div 
-        style={{
-          borderRadius: '24px',
-          overflow: 'hidden',
-          background: '#09090b',
-          border: `1px solid ${accent}44`,
-          boxShadow: `0 20px 60px rgba(0,0,0,0.8), 0 0 40px ${accent}15`,
-          marginBottom: '32px'
-        }}
-      >
-        {/* Responsive 16:9 Screen (YouTube Iframe) */}
-        <div style={{ position: 'relative', width: '100%', aspectRatio: '16/9', background: '#000' }}>
-          <iframe
-            key={selectedVideo.youtubeId}
-            src={`https://www.youtube.com/embed/${selectedVideo.youtubeId}?autoplay=1&rel=0&modestbranding=1`}
-            title={selectedVideo.title}
-            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-            allowFullScreen
-            style={{
-              position: 'absolute',
-              inset: 0,
-              width: '100%',
-              height: '100%',
-              border: 'none'
-            }}
-          />
-        </div>
+      {/* YouTube-style side-by-side layout */}
+      <div style={{ display: 'flex', gap: '20px', alignItems: 'flex-start' }}>
 
-        {/* Video Info Bar */}
-        <div style={{ padding: '20px 24px', background: 'linear-gradient(180deg, rgba(20,20,25,0.95) 0%, rgba(10,10,12,0.98) 100%)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '16px' }}>
-          <div style={{ flex: '1 1 500px' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
-              <span style={{ padding: '4px 10px', borderRadius: '6px', background: accent, color: '#000', fontSize: '10px', fontWeight: 900, textTransform: 'uppercase', letterSpacing: '1px' }}>
-                ♠️ {selectedVideo.show}
-              </span>
-              <span style={{ fontSize: '12px', color: '#888' }}>
-                Duration: {selectedVideo.duration}
-              </span>
+        {/* LEFT: Main Player */}
+        <div style={{ flex: '1 1 0', minWidth: 0 }}>
+          {/* Player */}
+          <div style={{
+            borderRadius: '16px',
+            overflow: 'hidden',
+            background: '#000',
+            border: `1px solid ${accent}33`,
+            boxShadow: `0 16px 50px rgba(0,0,0,0.8), 0 0 30px ${accent}10`
+          }}>
+            <div style={{ position: 'relative', width: '100%', aspectRatio: '16/9' }}>
+              <iframe
+                key={selectedVideo.youtubeId}
+                src={`https://www.youtube.com/embed/${selectedVideo.youtubeId}?autoplay=1&rel=0&modestbranding=1`}
+                title={selectedVideo.title}
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowFullScreen
+                style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', border: 'none' }}
+              />
             </div>
-            <h3 style={{ fontSize: '18px', fontWeight: 900, color: '#fff', margin: '0 0 6px 0', lineHeight: 1.3 }}>
-              {selectedVideo.title}
-            </h3>
-            <p style={{ fontSize: '13px', color: '#aaa', margin: 0, lineHeight: 1.4 }}>
-              {selectedVideo.description}
-            </p>
+
+            {/* Video Info Bar */}
+            <div style={{ padding: '16px 20px', background: 'rgba(12,12,14,0.98)', borderTop: `1px solid ${accent}22` }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px' }}>
+                <span style={{ padding: '3px 10px', borderRadius: '6px', background: accent, color: '#000', fontSize: '10px', fontWeight: 900, textTransform: 'uppercase', letterSpacing: '1px' }}>
+                  {CATEGORY_ICON[selectedVideo.category]} {selectedVideo.show}
+                </span>
+                <span style={{ fontSize: '12px', color: '#666' }}>{selectedVideo.duration}</span>
+              </div>
+              <h3 style={{ fontSize: '16px', fontWeight: 800, color: '#fff', margin: '0 0 6px 0', lineHeight: 1.3 }}>
+                {selectedVideo.title}
+              </h3>
+              <p style={{ fontSize: '13px', color: '#999', margin: 0, lineHeight: 1.5 }}>
+                {selectedVideo.description}
+              </p>
+            </div>
           </div>
-
-          {/* External Fallback Link Button */}
-          <a
-            href={`https://www.youtube.com/watch?v=${selectedVideo.youtubeId}`}
-            target="_blank"
-            rel="noopener noreferrer"
-            style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: '8px',
-              padding: '10px 20px',
-              borderRadius: '12px',
-              background: 'rgba(255,255,255,0.06)',
-              border: '1px solid rgba(255,255,255,0.12)',
-              color: '#fff',
-              fontSize: '13px',
-              fontWeight: 700,
-              textDecoration: 'none',
-              transition: 'all 0.2s'
-            }}
-            onMouseOver={e => { e.currentTarget.style.background = `${accent}33`; e.currentTarget.style.borderColor = accent; }}
-            onMouseOut={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.06)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.12)'; }}
-          >
-            Watch on YouTube <ExternalLink size={14} />
-          </a>
         </div>
-      </div>
 
-      {/* Episode Carousel / Grid */}
-      <div>
-        <h3 style={{ fontSize: '14px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '2px', color: '#777', marginBottom: '16px' }}>
-          Select Episode
-        </h3>
+        {/* RIGHT: Scrollable Video Sidebar */}
+        <div style={{
+          width: '320px',
+          flexShrink: 0,
+          maxHeight: 'calc(9/16 * (100vw - 360px) + 110px)',
+          overflowY: 'auto',
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '10px',
+          paddingRight: '4px',
+          scrollbarWidth: 'thin',
+          scrollbarColor: `${accent}44 transparent`
+        }}>
+          <p style={{ fontSize: '11px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '2px', color: '#555', margin: '0 0 4px 0' }}>
+            Up Next — {filteredVideos.length - 1} more
+          </p>
 
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '16px' }}>
-          {filteredVideos.map(video => {
-            const isSelected = selectedVideo.id === video.id;
+          {sidebarVideos.map(video => {
+            const icon = CATEGORY_ICON[video.category];
             return (
               <div
                 key={video.id}
-                onClick={() => setSelectedVideo(video)}
+                onClick={() => { setSelectedVideo(video); window.scrollTo({ top: (document.getElementById('whats-on-now')?.offsetTop ?? 0) - 80, behavior: 'smooth' }); }}
                 style={{
-                  borderRadius: '16px',
+                  display: 'flex',
+                  gap: '10px',
+                  borderRadius: '12px',
                   overflow: 'hidden',
-                  background: isSelected ? `${accent}15` : 'rgba(255,255,255,0.02)',
-                  border: isSelected ? `2px solid ${accent}` : '1px solid rgba(255,255,255,0.06)',
+                  background: 'rgba(255,255,255,0.03)',
+                  border: '1px solid rgba(255,255,255,0.06)',
                   cursor: 'pointer',
-                  transition: 'all 0.25s cubic-bezier(0.16, 1, 0.3, 1)',
-                  boxShadow: isSelected ? `0 8px 24px ${accent}33` : 'none'
+                  transition: 'all 0.2s',
+                  flexShrink: 0
                 }}
-                onMouseOver={e => {
-                  if (!isSelected) {
-                    e.currentTarget.style.borderColor = `${accent}66`;
-                    e.currentTarget.style.transform = 'translateY(-3px)';
-                  }
-                }}
-                onMouseOut={e => {
-                  if (!isSelected) {
-                    e.currentTarget.style.borderColor = 'rgba(255,255,255,0.06)';
-                    e.currentTarget.style.transform = 'translateY(0)';
-                  }
-                }}
+                onMouseOver={e => { e.currentTarget.style.background = `${accent}12`; e.currentTarget.style.borderColor = `${accent}55`; }}
+                onMouseOut={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.03)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.06)'; }}
               >
-                {/* Thumbnail Image Box */}
-                <div style={{ position: 'relative', aspectRatio: '16/9', overflow: 'hidden' }}>
+                {/* Thumbnail */}
+                <div style={{ position: 'relative', width: '140px', flexShrink: 0, aspectRatio: '16/9' }}>
                   <img
                     src={video.thumbnail}
                     alt={video.title}
-                    style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                    style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
                   />
-                  <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                    <div
-                      style={{
-                        width: '44px',
-                        height: '44px',
-                        borderRadius: '50%',
-                        background: isSelected ? accent : 'rgba(0,0,0,0.7)',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        boxShadow: '0 4px 15px rgba(0,0,0,0.4)'
-                      }}
-                    >
-                      <Play size={18} color="#fff" fill="#fff" style={{ marginLeft: '2px' }} />
+                  {/* Play overlay */}
+                  <div style={{
+                    position: 'absolute', inset: 0,
+                    background: 'rgba(0,0,0,0.25)',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center'
+                  }}>
+                    <div style={{
+                      width: '30px', height: '30px', borderRadius: '50%',
+                      background: 'rgba(0,0,0,0.75)',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center'
+                    }}>
+                      <Play size={13} color="#fff" fill="#fff" style={{ marginLeft: '2px' }} />
                     </div>
                   </div>
-
-                  <span style={{ position: 'absolute', bottom: '8px', right: '8px', padding: '3px 8px', borderRadius: '6px', background: 'rgba(0,0,0,0.85)', fontSize: '11px', fontWeight: 800, color: '#fff' }}>
+                  {/* Duration badge */}
+                  <span style={{
+                    position: 'absolute', bottom: '4px', right: '4px',
+                    padding: '2px 5px', borderRadius: '4px',
+                    background: 'rgba(0,0,0,0.85)', fontSize: '10px', fontWeight: 800, color: '#fff'
+                  }}>
                     {video.duration}
                   </span>
                 </div>
 
-                {/* Card Content */}
-                <div style={{ padding: '12px 14px' }}>
-                  <div style={{ fontSize: '10px', fontWeight: 900, color: accent, textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '4px' }}>
-                    ♠️ {video.show}
+                {/* Text */}
+                <div style={{ padding: '10px 10px 10px 0', flex: 1, minWidth: 0 }}>
+                  <div style={{ fontSize: '9px', fontWeight: 900, color: accent, textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '4px' }}>
+                    {icon} {video.show}
                   </div>
-                  <h4 style={{ fontSize: '13px', fontWeight: 700, color: isSelected ? '#fff' : '#ccc', margin: 0, lineHeight: 1.4, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+                  <p style={{
+                    fontSize: '12px', fontWeight: 700, color: '#ddd',
+                    margin: 0, lineHeight: 1.35,
+                    display: '-webkit-box', WebkitLineClamp: 3,
+                    WebkitBoxOrient: 'vertical', overflow: 'hidden'
+                  }}>
                     {video.title}
-                  </h4>
+                  </p>
                 </div>
               </div>
             );

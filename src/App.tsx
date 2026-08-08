@@ -31,7 +31,7 @@ import { WhiteLabelContext } from './context/WhiteLabelContext';
 import { supabase, storageKey } from './supabaseClient';
 import { MASTER_DOMAIN, DEFAULT_PLATFORM_NAME } from './constants';
 const Home = lazy(() => import('./pages/Home'));
-import { normalizeWlConfig, isOlympianConfig, isMuscleFitnessConfig, isKpleConfig } from './lib/whitelabel';
+import { normalizeWlConfig, isOlympianConfig, isMuscleFitnessConfig, isKpleConfig, isBonaireConfig } from './lib/whitelabel';
 const WhiteLabelHome = lazy(() => import('./pages/WhiteLabelHome'));
 const N2NHome = lazy(() => import('./pages/N2NHome'));
 const AvoMarketplace = lazy(() => import('./components/AvoMarketplace'));
@@ -75,7 +75,7 @@ function App() {
     const params = new URLSearchParams(window.location.search);
     const tenantVal = params.get('tenant');
     const isMaster = checkIsMasterHost(hostname);
-    const isMainVibeTenant = tenantVal === 'adb92e36-5ebc-4dc3-ae96-429f3dc1bb30' || tenantVal === 'b0ea0000-c08f-4260-8540-a0cc8bed4e11' || tenantVal === 'master' || tenantVal === 'vibe';
+    const isMainVibeTenant = tenantVal === 'adb92e36-5ebc-4dc3-ae96-429f3dc1bb30' || tenantVal === 'master' || tenantVal === 'vibe';
     if (isMainVibeTenant) return false;
     return (params.has('tenant') && !isMainVibeTenant) || !isMaster;
   });
@@ -381,7 +381,7 @@ function App() {
         let configPromise;
         let categoriesPromise;
 
-        const isMainVibeTenant = activeTenantId === 'adb92e36-5ebc-4dc3-ae96-429f3dc1bb30' || activeTenantId === 'b0ea0000-c08f-4260-8540-a0cc8bed4e11' || activeTenantId === 'master' || activeTenantId === 'vibe';
+        const isMainVibeTenant = activeTenantId === 'adb92e36-5ebc-4dc3-ae96-429f3dc1bb30' || activeTenantId === 'master' || activeTenantId === 'vibe';
 
         if (activeTenantId && !isMainVibeTenant) {
           isTenant = true;
@@ -778,10 +778,12 @@ function App() {
               <Route path="/" element={
                  (wlConfig?.n2n_enabled || 
                    isKpleConfig(wlConfig) ||
+                   isBonaireConfig(wlConfig) ||
                    wlConfig?.parent_network_id === '7a017c4d-c08f-4260-8540-a0cc8bed4e11' ||
                    wlConfig?.theme?.parent_network_id === '7a017c4d-c08f-4260-8540-a0cc8bed4e11' ||
                    wlConfig?.id === 'adb92e36-5ebc-4dc3-ae96-429f3dc1bb30' ||
                    wlConfig?.id === 'cb000000-c08f-4260-8540-a0cc8bed4e11' ||
+                   wlConfig?.id === 'courtney-bee-tenant-id' ||
                    (wlConfig?.name || '').toLowerCase().includes('courtney bee') ||
                    wlConfig?.id === 'wings-of-strength-tenant-id' ||
                    wlConfig?.id === 'mf-hers-tenant-id' ||

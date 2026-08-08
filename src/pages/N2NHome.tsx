@@ -483,32 +483,46 @@ export default function N2NHome({ wlConfig, categories, user, activeVideo, setAc
   const COURTNEY_BEE_HERO_SLIDES = [
     {
       school: "We Playin' Spades",
-      short: 'Playing Spades',
+      short: 'Tiffany Haddish',
       subtitle: 'Nick Cannon & Courtney Bee',
-      copy: 'High-stakes Spades, celebrity table talk, and hilarious arguments with guests like Tiffany Haddish and Karlous Miller.',
-      image: 'https://i.ytimg.com/vi/CytqhMMV7sQ/hqdefault.jpg',
-      videoUrl: 'https://www.youtube.com/embed/CytqhMMV7sQ?autoplay=1&mute=1&loop=1&playlist=CytqhMMV7sQ&controls=0&showinfo=0&rel=0',
-      link: '#whats-on-now'
+      copy: '"I\'m Ovulating, Nick" — High-stakes Spades, trash talk, and uncensored stories with Tiffany Haddish.',
+      image: 'https://i.ytimg.com/vi/E_MKI9NQmQk/hqdefault.jpg',
+      link: '#whats-on-now',
+      buttonText: 'Watch Episode'
     },
     {
-      school: "Wild 'N Out Special",
-      short: "Wild 'N Out",
-      subtitle: 'Season Highlights',
+      school: "Wild 'N Out",
+      short: "Best Of Courtney Bee",
+      subtitle: 'Courtney Bee Roasts & Wildstyle',
       copy: "Watch Courtney Bee drop savage punchlines, roast the Black Squad, and dominate the Wild 'N Out stage on MTV.",
-      image: 'https://i.ytimg.com/vi/J8nO5P-5lqQ/hqdefault.jpg',
-      videoUrl: 'https://www.youtube.com/embed/J8nO5P-5lqQ?autoplay=1&mute=1&loop=1&playlist=J8nO5P-5lqQ&controls=0&showinfo=0&rel=0',
-      link: '#whats-on-now'
+      image: 'https://i.ytimg.com/vi/6cQKtZtqXEk/hqdefault.jpg',
+      link: '#whats-on-now',
+      buttonText: 'Watch Show'
     },
     {
-      school: 'Courtney Bee Stand-Up',
-      short: 'Live Comedy',
-      subtitle: 'National Tour 2026',
-      copy: 'Unfiltered, hilarious stand-up comedy on dating, culture, and life live from top comedy clubs nationwide.',
-      image: '/n2n/comedy_club_bg.jpg',
-      videoUrl: 'https://www.youtube.com/embed/V7W_Ww64v9A?autoplay=1&mute=1&loop=1&playlist=V7W_Ww64v9A&controls=0&showinfo=0&rel=0',
-      link: '#whats-on-now'
+      school: "We Playin' Spades",
+      short: 'Mercedes Moné',
+      subtitle: 'The CEO Is In The Building',
+      copy: 'Pro wrestling superstar Mercedes Moné hits the turquoise Spades table with Courtney Bee and Nick Cannon.',
+      image: 'https://i.ytimg.com/vi/9EdpssHIbM8/hqdefault.jpg',
+      link: '#whats-on-now',
+      buttonText: 'Watch Episode'
+    },
+    {
+      school: "Wild 'N Out",
+      short: 'Courtney Bee',
+      subtitle: 'Takes NO Disrespect',
+      copy: "Courtney Bee fires back hard — watch her shut down the competition on the Wild 'N Out stage.",
+      image: 'https://i.ytimg.com/vi/ifB7zrLD09s/hqdefault.jpg',
+      link: '#whats-on-now',
+      buttonText: 'Watch Now'
     }
   ];
+
+
+
+
+
 
   const HERO_SLIDES = isCourtneyBee
     ? COURTNEY_BEE_HERO_SLIDES
@@ -1225,7 +1239,8 @@ export default function N2NHome({ wlConfig, categories, user, activeVideo, setAc
                   />
                 ) : (
                   <img
-                    src={isCourtneyBee ? "/n2n/comedy_club_bg.jpg" : (isMf ? "https://images.unsplash.com/photo-1541534741688-6078c6bfb5c5?auto=format&fit=crop&q=80&w=800" : isWings ? "/n2n/wings_rising_phoenix_poster.jpg" : (isB2K ? "https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?auto=format&fit=crop&q=80&w=800" : (isKple ? "https://images.unsplash.com/photo-1593113598332-cd288d649433?auto=format&fit=crop&q=80&w=800" : (isBonaire ? "https://images.unsplash.com/photo-1544551763-46a013bb70d5?auto=format&fit=crop&q=80&w=800" : (isVibe100 ? "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?auto=format&fit=crop&q=80&w=800" : "https://shopavo.la/cdn/shop/files/bama-desk-hp-1_1500x.jpg?v=1774210820")))))}
+                    src={isCourtneyBee ? "https://i.ytimg.com/vi/E_MKI9NQmQk/hqdefault.jpg" : (isMf ? "https://images.unsplash.com/photo-1541534741688-6078c6bfb5c5?auto=format&fit=crop&q=80&w=800" : isWings ? "/n2n/wings_rising_phoenix_poster.jpg" : (isB2K ? "https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?auto=format&fit=crop&q=80&w=800" : (isKple ? "https://images.unsplash.com/photo-1593113598332-cd288d649433?auto=format&fit=crop&q=80&w=800" : (isBonaire ? "https://images.unsplash.com/photo-1544551763-46a013bb70d5?auto=format&fit=crop&q=80&w=800" : (isVibe100 ? "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?auto=format&fit=crop&q=80&w=800" : "https://shopavo.la/cdn/shop/files/bama-desk-hp-1_1500x.jpg?v=1774210820")))))}
+
                     alt={isCourtneyBee ? "Courtney Bee Live Media" : (isMf ? "Workout Gear" : isWings ? "Wings Contest Event" : (isB2K ? "Official Tour Merch" : (isKple ? "Support CRN" : (isBonaire ? "Bonaire Chamber" : (isVibe100 ? "Official Merch" : "New Drop")))))}
                     style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
                   />
@@ -1237,7 +1252,7 @@ export default function N2NHome({ wlConfig, categories, user, activeVideo, setAc
                   padding: '6px 14px', background: accent, color: '#000',
                   fontSize: '10px', fontWeight: 900, letterSpacing: '2px', textTransform: 'uppercase',
                 }}>
-                  {isCourtneyBee ? "Comedy & Culture" : (isOlympian || isVibe ? "Live Webcast" : isMf ? "Workout Gear" : isWings ? "Wings Contest" : (isB2K ? "Official Merch" : (isKple ? "Media Mission" : (isBonaire ? "Bonaire KvK" : (isVibe100 ? "Exclusive Gear" : "New Drop")))))}
+                  {isCourtneyBee ? "Now Streaming" : (isOlympian || isVibe ? "Live Webcast" : isMf ? "Workout Gear" : isWings ? "Wings Contest" : (isB2K ? "Official Merch" : (isKple ? "Media Mission" : (isBonaire ? "Bonaire KvK" : (isVibe100 ? "Exclusive Gear" : "New Drop")))))}
                 </div>
               </div>
 
@@ -1257,14 +1272,14 @@ export default function N2NHome({ wlConfig, categories, user, activeVideo, setAc
                   fontSize: '13px', fontWeight: 800, textTransform: 'uppercase',
                   letterSpacing: '3px', color: accent, margin: '0 0 12px 0',
                 }}>
-                  {isCourtneyBee ? "Courtney Bee Collection" : (isOlympian || isVibe ? "Olympia PPV Webcast" : isMf ? "Fitness Collection" : isWings ? "Wings of Strength" : (isB2K ? "Official Tour Merch" : (isKple ? "Support Our Mission" : (isBonaire ? "Local Commerce" : (isVibe100 ? "VIBE 100 Store" : "Summer 2026 Collection")))))}
+                  {isCourtneyBee ? "Courtney Bee Network" : (isOlympian || isVibe ? "Olympia PPV Webcast" : isMf ? "Fitness Collection" : isWings ? "Wings of Strength" : (isB2K ? "Official Tour Merch" : (isKple ? "Support Our Mission" : (isBonaire ? "Local Commerce" : (isVibe100 ? "VIBE 100 Store" : "Summer 2026 Collection")))))}
                 </p>
                 <h2 style={{
                   fontSize: '44px', fontWeight: 900, color: '#fff', margin: '0 0 16px 0',
                   lineHeight: 1.15, letterSpacing: '-1px', textTransform: 'uppercase',
                 }}>
                   {isCourtneyBee ? (
-                    <>Courtney Bee<br />Comedy & Merch</>
+                    <>Watch. Laugh.<br />Join The Network.</>
                   ) : isOlympian || isVibe ? (
                     <>Watch Mr. Olympia<br />Live Webcast</>
                   ) : isMf ? (
@@ -1295,7 +1310,7 @@ export default function N2NHome({ wlConfig, categories, user, activeVideo, setAc
                   fontSize: '16px', color: 'rgba(255,255,255,0.7)', lineHeight: 1.7,
                   margin: '0 0 32px 0', maxWidth: '520px',
                 }}>
-                  {isCourtneyBee ? "Explore exclusive stand-up specials, uncensored culture streams, VIP tour passes, and official Courtney Bee merchandise drops." : (isOlympian || isVibe ? "Experience the pinnacle of bodybuilding live from anywhere in the world. Subscribe to the official webcast to stream the 62nd Mr. Olympia pre-judging, finals, and exclusive backstage interviews live in high-definition." : isMf ? "Explore premium workouts, digital training guides, and high-performance activewear designed to take your fitness to the next level." : isWings ? "Experience the pinnacle of professional women's bodybuilding. Purchase official pay-per-view live streams, secure event tickets, and browse the official Alina Popa & Rising Phoenix championship collections." : (isB2K ? "Pre-order exclusive Boys 4 Life tour hoodies, vintage graphic tees, and autographed vinyl. Rep the legendary boy band reunion in style." : (isKple ? "The Christian Revival Network is a 501(c)3 non-profit media mission. Your donations help us broadcast the Gospel 24/7 to Central Texas and the world. Support our ministry today." : (isBonaire ? "Explore local handcrafted products, authentic Caribbean diving apparel, guided eco-tours, and cactus-flavored spirits from local Bonaire chamber members." : (isVibe100 ? "Explore premium merchandise, albums, and exclusive releases from all Top 100 networks. Shop official gear and support your favorite channels." : "Premium collegiate apparel for every school in the AVO family. Rep your team with style — new colorways and exclusive designs just dropped.")))))}
+                  {isCourtneyBee ? "Stream We Playin' Spades, Wild 'N Out highlights, and exclusive stand-up specials — all on the Courtney Bee Network. New episodes drop every week." : (isOlympian || isVibe ? "Experience the pinnacle of bodybuilding live from anywhere in the world. Subscribe to the official webcast to stream the 62nd Mr. Olympia pre-judging, finals, and exclusive backstage interviews live in high-definition." : isMf ? "Explore premium workouts, digital training guides, and high-performance activewear designed to take your fitness to the next level." : isWings ? "Experience the pinnacle of professional women's bodybuilding. Purchase official pay-per-view live streams, secure event tickets, and browse the official Alina Popa & Rising Phoenix championship collections." : (isB2K ? "Pre-order exclusive Boys 4 Life tour hoodies, vintage graphic tees, and autographed vinyl. Rep the legendary boy band reunion in style." : (isKple ? "The Christian Revival Network is a 501(c)3 non-profit media mission. Your donations help us broadcast the Gospel 24/7 to Central Texas and the world. Support our ministry today." : (isBonaire ? "Explore local handcrafted products, authentic Caribbean diving apparel, guided eco-tours, and cactus-flavored spirits from local Bonaire chamber members." : (isVibe100 ? "Explore premium merchandise, albums, and exclusive releases from all Top 100 networks. Shop official gear and support your favorite channels." : "Premium collegiate apparel for every school in the AVO family. Rep your team with style — new colorways and exclusive designs just dropped.")))))}
                 </p>
                 <a
                   href={isOlympian || isVibe ? "https://www.olympiaproductions.com/" : (isWings ? "https://wingsofstrength.net/" : (isKple ? "https://www.paypal.com/donate/?hosted_button_id=A7WXAKZEAGBPA" : (isMf ? "https://www.muscleandfitness.com/" : ('/marketplace' + (typeof window !== 'undefined' ? window.location.search : '')))))}
@@ -1310,7 +1325,7 @@ export default function N2NHome({ wlConfig, categories, user, activeVideo, setAc
                   onMouseOver={e => { e.currentTarget.style.background = '#fff'; e.currentTarget.style.color = '#000'; }}
                   onMouseOut={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = '#fff'; }}
                 >
-                  {isCourtneyBee ? "Explore Merch" : (isOlympian || isVibe ? "Watch Webcast" : isMf ? "Shop Store" : isWings ? "Explore Shows" : (isB2K ? "Shop The Merch" : (isKple ? "Support Our Station" : (isBonaire ? "Shop Bonaire" : (isVibe100 ? "Shop The Collection" : "Shop The Drop")))))}
+                  {isCourtneyBee ? "Watch Now" : (isOlympian || isVibe ? "Watch Webcast" : isMf ? "Shop Store" : isWings ? "Explore Shows" : (isB2K ? "Shop The Merch" : (isKple ? "Support Our Station" : (isBonaire ? "Shop Bonaire" : (isVibe100 ? "Shop The Collection" : "Shop The Drop")))))}
                 </a>
               </div>
             </div>
@@ -1341,7 +1356,7 @@ export default function N2NHome({ wlConfig, categories, user, activeVideo, setAc
 
 
         {/* ── Child Network Feeds (Trending Moments) ────────────── */}
-        {childItems.length > 0 && (
+        {childItems.length > 0 && !isCourtneyBee && (
           <Suspense fallback={null}>
             <ChildNetworkFeeds parentId={config.id} accent={accent} isOlympian={isOlympian} isMf={isMf} isB2K={isB2K} isBonaire={isBonaire} />
           </Suspense>
@@ -1916,7 +1931,7 @@ export default function N2NHome({ wlConfig, categories, user, activeVideo, setAc
               {/* Background image */}
               <div style={{
                 position: 'absolute', inset: 0,
-                backgroundImage: `url(${isCourtneyBee ? "https://images.unsplash.com/photo-1590602847861-f357a9332bbc?auto=format&fit=crop&q=80&w=1200" : (isOlympian || isMf ? "https://images.unsplash.com/photo-1517838277536-f5f99be501cd?auto=format&fit=crop&q=80&w=1200" : isWings ? "/n2n/wings_phoenix_iron_games.jpg" : (isB2K ? "https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?auto=format&fit=crop&q=80&w=1200" : (isKple ? "https://images.unsplash.com/photo-1510915228340-29c85a43dcfe?auto=format&fit=crop&q=80&w=1200" : (isBonaire ? "https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?auto=format&fit=crop&q=80&w=1200" : "https://shopavo.la/cdn/shop/files/Homepage_Vanderbilt_Desktop2_c7f572ef-cd7e-4de4-bb9c-160b99884e08_1500x.jpg?v=1776284877"))))})}`,
+                backgroundImage: `url(${isCourtneyBee ? "https://images.unsplash.com/photo-1516280440614-37939bbacd81?auto=format&fit=crop&q=80&w=1200" : (isOlympian || isMf ? "https://images.unsplash.com/photo-1517838277536-f5f99be501cd?auto=format&fit=crop&q=80&w=1200" : isWings ? "/n2n/wings_phoenix_iron_games.jpg" : (isB2K ? "https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?auto=format&fit=crop&q=80&w=1200" : (isKple ? "https://images.unsplash.com/photo-1510915228340-29c85a43dcfe?auto=format&fit=crop&q=80&w=1200" : (isBonaire ? "https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?auto=format&fit=crop&q=80&w=1200" : "https://shopavo.la/cdn/shop/files/Homepage_Vanderbilt_Desktop2_c7f572ef-cd7e-4de4-bb9c-160b99884e08_1500x.jpg?v=1776284877"))))})}`,
                 backgroundSize: 'cover', backgroundPosition: 'center',
                 filter: 'brightness(0.3)',
               }} />
@@ -1928,14 +1943,14 @@ export default function N2NHome({ wlConfig, categories, user, activeVideo, setAc
                     fontSize: '11px', fontWeight: 800, textTransform: 'uppercase',
                     letterSpacing: '3px', color: accent, marginBottom: '12px',
                   }}>
-                    {isCourtneyBee ? "VIP Fan Club" : (isOlympian ? "Olympia Ambassadors" : isMf ? "Fitness Ambassadors" : isWings ? "Wings Ambassadors" : (isB2K ? "Street Team" : (isKple ? "Media Partner" : (isBonaire ? "Chamber Partners" : "Campus Ambassadors"))))}
+                    {isCourtneyBee ? "The Bee Hive" : (isOlympian ? "Olympia Ambassadors" : isMf ? "Fitness Ambassadors" : isWings ? "Wings Ambassadors" : (isB2K ? "Street Team" : (isKple ? "Media Partner" : (isBonaire ? "Chamber Partners" : "Campus Ambassadors"))))}
                   </p>
                   <h2 style={{
                     fontSize: '36px', fontWeight: 900, color: '#fff', margin: '0 0 16px 0',
                     lineHeight: 1.15, letterSpacing: '-1px', textTransform: 'uppercase',
                   }}>
                     {isCourtneyBee ? (
-                      <>Join Courtney Bee's<br />VIP Fan Club</>
+                      <>Join The Bee Hive —<br />Courtney's Inner Circle</>
                     ) : isOlympian || isMf ? (
                       <>Represent {config?.name || 'Muscle & Fitness'}<br />In Your Community</>
                     ) : isWings ? (
@@ -1960,7 +1975,7 @@ export default function N2NHome({ wlConfig, categories, user, activeVideo, setAc
                     fontSize: '15px', color: 'rgba(255,255,255,0.55)', lineHeight: 1.7, margin: 0,
                   }}>
                     {isCourtneyBee
-                      ? "Become an official Courtney Bee VIP Ambassador. Gain exclusive access to private live streams, behind-the-scenes recordings, subscriber discounts, and direct chat perks."
+                      ? "Get inside access to Courtney Bee's world. Members of The Bee Hive get early drops, exclusive live stream invites, meet-and-greet offers, and direct community access. Come get in where you fit in."
                       : isOlympian || isMf 
                         ? `Join the official ${config?.name || 'Muscle & Fitness'} Ambassador Program. Share fitness tips, review premium workout apparel, and earn exclusive event credentials, early access, and commissions.`
                         : isWings
@@ -1993,7 +2008,7 @@ export default function N2NHome({ wlConfig, categories, user, activeVideo, setAc
                   onMouseOver={e => { e.currentTarget.style.background = '#fff'; e.currentTarget.style.color = '#000'; }}
                   onMouseOut={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = '#fff'; }}
                 >
-                  {isKple ? "Join Now" : isWings ? "Become An Ambassador" : (isBonaire ? "Visit Chamber" : "More Info")}
+                  {isCourtneyBee ? "Join The Bee Hive" : isKple ? "Join Now" : isWings ? "Become An Ambassador" : (isBonaire ? "Visit Chamber" : "More Info")}
                 </button>
               </div>
             </div>

@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from '../supabaseClient';
 import { isOlympianConfig, isMuscleFitnessConfig, isB2kConfig, isKpleConfig, isBonaireConfig } from '../lib/whitelabel';
 import { getWwtcLanguages, translateText } from '../lib/wwtc';
+import { useWhiteLabel } from '../context/WhiteLabelContext';
 
 interface VideoClip {
   id: string;
@@ -96,7 +97,7 @@ const STATIC_COURTNEY_BEE_CLIPS: VideoClip[] = [
     headline: "“I'm Ovulating, Nick” with Tiffany Haddish | We Playin' Spades",
     description: "Courtney Bee & Nick Cannon host Tiffany Haddish at the turquoise table for high-stakes Spades, trash talk, and uncensored stories.",
     thumbnail: 'https://i.ytimg.com/vi/CytqhMMV7sQ/hqdefault.jpg',
-    videoUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4',
+    videoUrl: 'https://www.youtube.com/watch?v=CytqhMMV7sQ',
     duration: 1650,
     source: "We Playin' Spades",
     sport: 'spades'
@@ -106,82 +107,13 @@ const STATIC_COURTNEY_BEE_CLIPS: VideoClip[] = [
     headline: "Standing on Boundaries and Wrestling with Mercedes Moné | We Playin' Spades",
     description: "Pro wrestling superstar Mercedes Moné hits the Spades table with Courtney Bee and Nick Cannon.",
     thumbnail: 'https://i.ytimg.com/vi/pd5J_kQqLB0/hqdefault.jpg',
-    videoUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4',
+    videoUrl: 'https://www.youtube.com/watch?v=pd5J_kQqLB0',
     duration: 1540,
-    source: "We Playin' Spades",
-    sport: 'spades'
-  },
-  {
-    id: 'EWGs1CV8g_s',
-    headline: "Southern Wisdom, Stand-Up & Relationships with Karlous Miller | We Playin' Spades",
-    description: "Comedy star Karlous Miller & Chris Jones join Courtney Bee and Nick Cannon for non-stop laughs and competitive card battles.",
-    thumbnail: 'https://i.ytimg.com/vi/EWGs1CV8g_s/hqdefault.jpg',
-    videoUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4',
-    duration: 1530,
-    source: "We Playin' Spades",
-    sport: 'spades'
-  },
-  {
-    id: 'TvJHIFotb3s',
-    headline: "Shade, Strategy & Backyard Boogie with TS Madison & Rodney Chester | We Playin' Spades",
-    description: "TS Madison and Rodney Chester bring hilarious energy, trash talk, and legendary Spades gameplay to Nick & Courtney's table.",
-    thumbnail: 'https://i.ytimg.com/vi/TvJHIFotb3s/hqdefault.jpg',
-    videoUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerJoyrides.mp4',
-    duration: 1610,
-    source: "We Playin' Spades",
-    sport: 'spades'
-  },
-  {
-    id: 'cb-clip-5',
-    headline: "Best Of Courtney Bee | Wild 'N Out Freestyle & Roasts",
-    description: "Watch Courtney Bee drop savage punchlines, roast the Black Squad, and dominate the Wild 'N Out stage on MTV.",
-    thumbnail: '/n2n/cb_wildnout_poster.jpg',
-    videoUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerMeltdowns.mp4',
-    duration: 720,
-    source: "Wild 'N Out",
-    sport: 'wildnout'
-  },
-  {
-    id: 'cb-clip-6',
-    headline: "Courtney Bee Live Stand-Up Special - Unfiltered Comedy",
-    description: "Courtney Bee takes the main stage with a hilarious, raw, and relatable stand-up comedy set on dating, culture, and life.",
-    thumbnail: '/n2n/cb_standup_poster.jpg',
-    videoUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/Sintel.mp4',
-    duration: 1420,
-    source: "Courtney Bee Comedy",
-    sport: 'standup'
-  },
-  {
-    id: 'e5PyPssFC5U',
-    headline: "90s TV, Parenting & Business with Raven-Symoné & Miranda Maday | We Playin' Spades",
-    description: "Raven-Symoné and Miranda Maday join Courtney Bee and Nick Cannon for 90s nostalgia, laughter, and serious card table strategy.",
-    thumbnail: 'https://i.ytimg.com/vi/e5PyPssFC5U/hqdefault.jpg',
-    videoUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/SubaruOutbackOnStreetPerformer.mp4',
-    duration: 1480,
-    source: "We Playin' Spades",
-    sport: 'spades'
-  },
-  {
-    id: 'cb-clip-8',
-    headline: "Courtney Bee vs Black Squad | Wild 'N Out Battle",
-    description: "Courtney Bee goes toe-to-toe with DC Young Fly, Chico Bean, and Nick Cannon in Wild 'N Out roast battles.",
-    thumbnail: '/n2n/cb_spades_ep3.jpg',
-    videoUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4',
-    duration: 540,
-    source: "Wild 'N Out",
-    sport: 'wildnout'
-  },
-  {
-    id: 'Z5q63JNeAZs',
-    headline: "Hollywood Hustle & Stand-Up Secrets with Page Kennedy | We Playin' Spades",
-    description: "Page Kennedy and Dannon Green sit down at the turquoise table with Courtney Bee and Nick Cannon for high-stakes cards.",
-    thumbnail: 'https://i.ytimg.com/vi/Z5q63JNeAZs/hqdefault.jpg',
-    videoUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/WeAreGoingOnBullrun.mp4',
-    duration: 1640,
     source: "We Playin' Spades",
     sport: 'spades'
   }
 ];
+
 
 const OLYMPIAN_FEEDS = [
   { key: 'olympiatv', label: '🏆 OlympiaTV', channelId: 'UCYukge4AuskD8xPjfrSoiBg' },
@@ -1012,6 +944,7 @@ const generateFallbackTranscript = (title: string, description: string) => {
 };
 
 export default function WatchLive({ accent = '#D35400', isCourtneyBee = false, isOlympian = false, isMf = false, isB2K = false, isVibe = false, isKple = false, isVibe100 = false, isBonaire = false, tenantId = '' }: { accent?: string; isCourtneyBee?: boolean; isOlympian?: boolean; isMf?: boolean; isB2K?: boolean; isVibe?: boolean; isKple?: boolean; isVibe100?: boolean; isBonaire?: boolean; tenantId?: string }) {
+  const { wlConfig } = useWhiteLabel();
   const [clips, setClips] = useState<VideoClip[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeVideo, setActiveVideo] = useState<VideoClip | null>(null);
