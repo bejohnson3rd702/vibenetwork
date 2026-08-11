@@ -58,9 +58,12 @@ export function isCourtneyBeeConfig(config: any): boolean {
   const name = config.name?.toLowerCase() || '';
   const domain = config.domain?.toLowerCase() || '';
   return id === 'cb000000-c08f-4260-8540-a0cc8bed4e11' ||
+         id === 'c0071234-c08f-4260-8540-a0cc8bed4e11' ||
          id === 'courtney-bee-tenant-id' ||
          name.includes('courtney bee') ||
-         domain.includes('courtneybee');
+         name.includes('courtney') ||
+         domain.includes('courtneybee') ||
+         domain.includes('therealcourtneybee');
 }
 
 export function isKpleConfig(config: any): boolean {

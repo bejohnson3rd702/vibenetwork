@@ -869,7 +869,7 @@ export default function N2NHome({ wlConfig, categories, user, activeVideo, setAc
       </div>
 
       {/* NCAA College Ticker — bottom of hero */}
-      {!isKple && !isBonaire && (
+      {!isKple && !isBonaire && !isCourtneyBee && (
         <div style={{ position: 'relative', zIndex: 10 }}>
           <Suspense fallback={null}>
             <CollegeTicker accent={config.accent} isOlympian={isOlympian} isB2K={isB2K} isKple={isKple} isWings={config?.id === 'wings-of-strength-tenant-id'} />
@@ -1845,7 +1845,7 @@ export default function N2NHome({ wlConfig, categories, user, activeVideo, setAc
         )}
 
         {/* ── College Sports News Feed ──────────────────────── */}
-        {!isMfFamily && !isB2K && !isKple && !isBonaire && (
+        {!isMfFamily && !isB2K && !isKple && !isBonaire && !isCourtneyBee && (
           <Suspense fallback={null}>
             <CollegeNewsFeed accent={config.accent} />
           </Suspense>
