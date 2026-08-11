@@ -2826,13 +2826,24 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
       
       const newUrls: string[] = [];
       for (const file of filesToUpload) {
-        toast.info(`✨ Vibe is enhancing and auto-cropping your post media: ${file.name}...`);
-        const enhancedFile = await processAndEnhanceImage(file, 'post');
-
-        const filePath = `${user?.id}/post_${Math.random()}.${enhancedFile.name.split('.').pop()}`;
-        await supabase!.storage.from('images').upload(filePath, enhancedFile);
-        const { data } = supabase!.storage.from('images').getPublicUrl(filePath);
-        newUrls.push(data.publicUrl);
+        const isVideo = file.type.startsWith('video/');
+        if (isVideo) {
+          // Videos: skip image processing, upload directly
+          toast.info(`🎬 Uploading video: ${file.name}...`);
+          const ext = file.name.split('.').pop() || 'mp4';
+          const filePath = `${user?.id}/post_video_${Math.random()}.${ext}`;
+          await supabase!.storage.from('images').upload(filePath, file, { contentType: file.type });
+          const { data } = supabase!.storage.from('images').getPublicUrl(filePath);
+          newUrls.push(data.publicUrl);
+        } else {
+          // Images: run through the AI enhancer
+          toast.info(`✨ Vibe is enhancing and auto-cropping your post media: ${file.name}...`);
+          const enhancedFile = await processAndEnhanceImage(file, 'post');
+          const filePath = `${user?.id}/post_${Math.random()}.${enhancedFile.name.split('.').pop()}`;
+          await supabase!.storage.from('images').upload(filePath, enhancedFile);
+          const { data } = supabase!.storage.from('images').getPublicUrl(filePath);
+          newUrls.push(data.publicUrl);
+        }
       }
       
       setPostMediaUrls(prev => [...prev, ...newUrls]);
@@ -3819,31 +3830,38 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
                   onMouseOver={e => { if(!isDraggingPostMedia) e.currentTarget.style.background = 'rgba(255,255,255,0.08)'; }}
                   onMouseOut={e => { if(!isDraggingPostMedia) e.currentTarget.style.background = 'rgba(255,255,255,0.04)'; }}
                 >
-                  <input type="file" accept="image/*" multiple onChange={handlePostMediaUpload} style={{ display: 'none' }} disabled={uploadingPostMedia} />
+                  <input type="file" accept="image/*,video/*" multiple onChange={handlePostMediaUpload} style={{ display: 'none' }} disabled={uploadingPostMedia} />
                   <ImageIcon size={18} color={wlConfig?.accent || '#ff4d85'} /> {uploadingPostMedia ? 'Uploading...' : isDraggingPostMedia ? 'Drop Here!' : 'Attach Images/Video'}
                 </label>
                 
                 {postMediaUrls.length > 0 && (
                   <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-                    {postMediaUrls.map((url, index) => (
-                      <div key={`preview-${index}`} style={{ position: 'relative', width: '44px', height: '44px', borderRadius: '10px', overflow: 'hidden', border: '1.5px solid rgba(255,255,255,0.2)' }}>
-                        <img src={url} alt={`Preview ${index}`} loading="lazy" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                        <button 
-                          type="button" 
-                          onClick={() => setPostMediaUrls(prev => prev.filter((_, i) => i !== index))} 
-                          style={{ 
-                            position: 'absolute', top: 2, right: 2, 
-                            background: 'rgba(0,0,0,0.8)', color: '#fff', 
-                            border: 'none', borderRadius: '50%', 
-                            width: '18px', height: '18px', 
-                            display: 'flex', alignItems: 'center', justifyContent: 'center', 
-                            cursor: 'pointer', fontSize: '10px', fontWeight: 'bold' 
-                          }}
-                        >
-                          ×
-                        </button>
-                      </div>
-                    ))}
+                    {postMediaUrls.map((url, index) => {
+                      const isVideoUrl = /\.(mp4|mov|webm|ogg|avi|mkv)(\?|$)/i.test(url);
+                      return (
+                        <div key={`preview-${index}`} style={{ position: 'relative', width: '44px', height: '44px', borderRadius: '10px', overflow: 'hidden', border: '1.5px solid rgba(255,255,255,0.2)', background: 'rgba(0,0,0,0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                          {isVideoUrl ? (
+                            <Video size={20} color="#fff" />
+                          ) : (
+                            <img src={url} alt={`Preview ${index}`} loading="lazy" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                          )}
+                          <button 
+                            type="button" 
+                            onClick={() => setPostMediaUrls(prev => prev.filter((_, i) => i !== index))} 
+                            style={{ 
+                              position: 'absolute', top: 2, right: 2, 
+                              background: 'rgba(0,0,0,0.8)', color: '#fff', 
+                              border: 'none', borderRadius: '50%', 
+                              width: '18px', height: '18px', 
+                              display: 'flex', alignItems: 'center', justifyContent: 'center', 
+                              cursor: 'pointer', fontSize: '10px', fontWeight: 'bold' 
+                            }}
+                          >
+                            ×
+                          </button>
+                        </div>
+                      );
+                    })}
                   </div>
                 )}
               </div>
@@ -4001,12 +4019,20 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
                   {post.imgs && post.imgs.length > 0 && (
                     <div style={{ width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', background: 'rgba(0,0,0,0.3)', padding: '20px 0', borderTop: '1px solid rgba(255,255,255,0.02)', borderBottom: '1px solid rgba(255,255,255,0.02)', position: 'relative' }}>
                       {post.imgs.length === 1 ? (
-                        <img src={post.imgs[0]} alt="Post content" loading="lazy" style={{ maxWidth: '100%', width: 'auto', height: 'auto', maxHeight: '550px', objectFit: 'contain', borderRadius: '12px', boxShadow: '0 10px 30px rgba(0,0,0,0.4)', padding: '0 16px' }} />
+                        /\.(mp4|mov|webm|ogg|avi|mkv)(\?|$)/i.test(post.imgs[0]) ? (
+                          <video src={post.imgs[0]} controls playsInline style={{ maxWidth: '100%', width: 'auto', maxHeight: '550px', borderRadius: '12px', boxShadow: '0 10px 30px rgba(0,0,0,0.4)', padding: '0 16px', background: '#000' }} />
+                        ) : (
+                          <img src={post.imgs[0]} alt="Post content" loading="lazy" style={{ maxWidth: '100%', width: 'auto', height: 'auto', maxHeight: '550px', objectFit: 'contain', borderRadius: '12px', boxShadow: '0 10px 30px rgba(0,0,0,0.4)', padding: '0 16px' }} />
+                        )
                       ) : (
                         <div style={{ position: 'relative', width: '100%', maxWidth: '100%', padding: '0 16px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                           {/* Slide Container */}
                           <div style={{ position: 'relative', width: '100%', height: '500px', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', borderRadius: '12px', background: 'rgba(0,0,0,0.2)' }}>
-                            <img src={post.imgs[postImageIndexes[post.id] || 0]} alt={`Post content ${(postImageIndexes[post.id] || 0) + 1}`} loading="lazy" style={{ maxWidth: '100%', maxHeight: '100%', width: 'auto', height: 'auto', objectFit: 'contain', borderRadius: '12px', boxShadow: '0 10px 30px rgba(0,0,0,0.4)' }} />
+                            {/\.(mp4|mov|webm|ogg|avi|mkv)(\?|$)/i.test(post.imgs[postImageIndexes[post.id] || 0]) ? (
+                              <video src={post.imgs[postImageIndexes[post.id] || 0]} controls playsInline style={{ maxWidth: '100%', maxHeight: '100%', borderRadius: '12px', background: '#000' }} />
+                            ) : (
+                              <img src={post.imgs[postImageIndexes[post.id] || 0]} alt={`Post content ${(postImageIndexes[post.id] || 0) + 1}`} loading="lazy" style={{ maxWidth: '100%', maxHeight: '100%', width: 'auto', height: 'auto', objectFit: 'contain', borderRadius: '12px', boxShadow: '0 10px 30px rgba(0,0,0,0.4)' }} />
+                            )}
                           </div>
 
                           {/* Left Arrow Button */}
