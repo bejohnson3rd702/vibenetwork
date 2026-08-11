@@ -1192,9 +1192,12 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
 
     async function loadProfile() {
       // Phase 1: Core Identity (Blocks UI)
+      const isUuid = (str: string) => Boolean(str && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(str));
+      let queryId = targetProfileId === 'courtney-bee-tenant-id' ? 'c0071234-c08f-4260-8540-a0cc8bed4e11' : targetProfileId;
+
       // If isNetworkLevel is true and we have a wlConfig.id, load the profile associated with this whitelabel config
       let profilePromise;
-      if (isNetworkLevel && wlConfig?.id) {
+      if (isNetworkLevel && wlConfig?.id && isUuid(wlConfig.id)) {
         profilePromise = supabase!.from('profiles')
           .select('*')
           .eq('whitelabel_id', wlConfig.id)
@@ -1204,15 +1207,21 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
             if (!infErr && infData) return { data: infData, error: null };
             return supabase!.from('profiles').select('*').eq('whitelabel_id', wlConfig.id).limit(1).single();
           });
-      } else if (targetProfileId) {
-        profilePromise = supabase!.from('profiles').select('*').eq('id', targetProfileId).single();
+      } else if (queryId && isUuid(queryId)) {
+        profilePromise = supabase!.from('profiles').select('*').eq('id', queryId).single();
       } else {
-        profilePromise = supabase!.from('profiles').select('*').eq('id', 'none').single();
+        profilePromise = Promise.resolve({ data: null, error: null });
       }
 
       let postsQuery = supabase!.from('posts').select('*, creator:profiles!inner(username, avatar_url, whitelabel_id), post_likes(user_id), post_comments(*, user:profiles(username, avatar_url))');
-      if (isNetworkLevel && wlConfig?.id) postsQuery = postsQuery.eq('creator.whitelabel_id', wlConfig.id).eq('is_locked', false);
-      else postsQuery = postsQuery.eq('creator_id', targetProfileId);
+      if (isNetworkLevel && wlConfig?.id && isUuid(wlConfig.id)) {
+        postsQuery = postsQuery.eq('creator.whitelabel_id', wlConfig.id).eq('is_locked', false);
+      } else if (queryId && isUuid(queryId)) {
+        postsQuery = postsQuery.eq('creator_id', queryId);
+      } else {
+        postsQuery = postsQuery.eq('is_locked', false).limit(10);
+      }
+
       const postsPromise = postsQuery
         .order('is_pinned', { ascending: false })
         .order('created_at', { ascending: false })
@@ -1223,19 +1232,25 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
         postsPromise
       ]);
 
-      const isCourtney = targetProfileId === 'courtney-bee-tenant-id' || targetProfileId?.toLowerCase().includes('courtney') || wlConfig?.id === 'courtney-bee-tenant-id' || wlConfig?.domain?.includes('courtney');
+      const isCourtney = targetProfileId === 'courtney-bee-tenant-id' || 
+                         targetProfileId === 'c0071234-c08f-4260-8540-a0cc8bed4e11' || 
+                         targetProfileId?.toLowerCase().includes('courtney') || 
+                         wlConfig?.id === 'courtney-bee-tenant-id' || 
+                         wlConfig?.id === 'cb000000-c08f-4260-8540-a0cc8bed4e11' ||
+                         (wlConfig?.name || '').toLowerCase().includes('courtney') ||
+                         wlConfig?.domain?.includes('courtney');
       
       let targetProfile = data;
       if (!targetProfile) {
         if (isCourtney) {
           targetProfile = {
-            id: 'courtney-bee-tenant-id',
+            id: 'c0071234-c08f-4260-8540-a0cc8bed4e11',
             username: 'The Real Courtney Bee',
             bio: 'Courtney Bee is a star on the NYC comedy scene (Wild \'N Out Season 18, HBO Max "That Damn Michael Che"). With her hometown Detroit roots, aggressive punchlines, and hilarious wit, she opens for Michael Che and Dulcé Sloan nationwide.',
             avatar_url: 'https://static.wixstatic.com/media/066ffc_bb9bdff854db4b56bb3f6b58ee1ce532~mv2.png/v1/crop/x_0,y_261,w_1242,h_763/fill/w_860,h_528,al_c,q_90,usm_0.66_1.00_0.01,enc_avif,quality_auto/image%20(1).png',
             homepage_image_url: '/n2n/comedy_club_bg.jpg',
             sub_price: 9.99,
-            whitelabel_id: 'courtney-bee-tenant-id'
+            whitelabel_id: 'cb000000-c08f-4260-8540-a0cc8bed4e11'
           };
         } else if (isNetworkLevel && wlConfig?.id) {
           targetProfile = {
