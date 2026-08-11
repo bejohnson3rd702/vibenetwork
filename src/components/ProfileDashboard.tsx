@@ -1280,8 +1280,11 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
       );
       setViewMode(isOwn ? 'edit' : 'public');
 
-      setProfile(targetProfile);
-      setBio(targetProfile.bio !== null && targetProfile.bio !== undefined ? targetProfile.bio : (wlConfig?.theme?.defaultBio || 'Welcome to my official channel!'));
+      let rawBio = targetProfile.bio !== null && targetProfile.bio !== undefined ? targetProfile.bio : (wlConfig?.theme?.defaultBio || 'Welcome to my official channel!');
+      if (typeof rawBio === 'string' && (rawBio.includes('schemaname') || rawBio.includes('policyname'))) {
+        rawBio = wlConfig?.theme?.defaultBio || 'Welcome to the official channel media & culture stream.';
+      }
+      setBio(rawBio);
       setAvatarUrl(targetProfile.avatar_url || '');
       setHomepageImageUrl(targetProfile.homepage_image_url || '');
       setFlipbookImages(targetProfile.flipbook_images || wlConfig?.theme?.flipbook_images || '');
