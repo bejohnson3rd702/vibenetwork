@@ -169,15 +169,28 @@ export default function N2NHome({ wlConfig, categories, user, activeVideo, setAc
       const childIds = children.map((c: any) => c.id);
 
       setChildItems(
-        children.map((child: any) => ({
-          id: child.id,
-          title: child.name,
-          image: child.logoImage || child.logo || child.theme?.logoImage || child.heroImage || child.theme?.heroImage || `https://ui-avatars.com/api/?name=${encodeURIComponent(child.name)}&background=111&color=fff&size=400`,
-          tags: ['Network'],
-          videoUrl: '',
-          linkUrl: '/?tenant=' + child.id,
-          accent: child.accent,
-        }))
+        children.map((child: any) => {
+          const isCourtneyChannel = child.id === 'courtney-bee-tenant-id' || child.id === 'c0071234-c08f-4260-8540-a0cc8bed4e11' || (child.name || '').toLowerCase().includes('courtney');
+          
+          let castImage = '';
+          const nameLower = (child.name || '').toLowerCase();
+          if (nameLower.includes('dc young fly')) castImage = '/n2n/wno_dc_young_fly.jpg';
+          else if (nameLower.includes('conceited')) castImage = '/n2n/wno_conceited.jpg';
+          else if (nameLower.includes('chico bean')) castImage = '/n2n/wno_chico_bean.jpg';
+          else if (nameLower.includes('justina valentine')) castImage = '/n2n/wno_justina_valentine.jpg';
+          else if (nameLower.includes('timothy delaghetto')) castImage = '/n2n/wno_timothy_delaghetto.jpg';
+          else if (isCourtneyChannel) castImage = 'https://static.wixstatic.com/media/066ffc_bb9bdff854db4b56bb3f6b58ee1ce532~mv2.png/v1/crop/x_0,y_261,w_1242,h_763/fill/w_860,h_528,al_c,q_90,usm_0.66_1.00_0.01,enc_avif,quality_auto/image%20(1).png';
+
+          return {
+            id: child.id,
+            title: child.name,
+            image: castImage || child.logoImage || child.logo || child.theme?.logoImage || child.heroImage || child.theme?.heroImage || `https://ui-avatars.com/api/?name=${encodeURIComponent(child.name)}&background=111&color=fff&size=400`,
+            tags: ['Creator'],
+            videoUrl: '',
+            linkUrl: isCourtneyChannel ? '/profile/courtney-bee-tenant-id' : '/?tenant=' + child.id,
+            accent: child.accent,
+          };
+        })
       );
 
       // Fetch content from child networks only
@@ -951,6 +964,46 @@ export default function N2NHome({ wlConfig, categories, user, activeVideo, setAc
 
       <main style={{ background: 'var(--bg-color)', paddingBottom: '100px', zIndex: 10, position: 'relative', width: '100%' }}>
 
+        {/* ── Channel Admin Edit Controls Sticky Bar ── */}
+        {isAdmin && (
+          <div style={{
+            position: 'sticky', top: '80px', zIndex: 99,
+            background: 'rgba(12, 12, 16, 0.95)', backdropFilter: 'blur(12px)',
+            borderBottom: `1px solid ${accent}44`, borderTop: `1px solid ${accent}22`,
+            padding: '12px 32px', display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+            gap: '16px', boxShadow: `0 10px 30px rgba(0,0,0,0.8), 0 0 20px ${accent}15`
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+              <div style={{ width: '10px', height: '10px', borderRadius: '50%', background: accent, boxShadow: `0 0 10px ${accent}` }} />
+              <span style={{ fontSize: '12px', fontWeight: 800, color: '#fff', textTransform: 'uppercase', letterSpacing: '1px' }}>
+                Channel Admin Mode Active: {config?.name || 'Network Admin'}
+              </span>
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+              <button
+                onClick={() => window.dispatchEvent(new CustomEvent('open_admin_panel'))}
+                style={{
+                  padding: '8px 18px', borderRadius: '8px', background: accent, color: '#000',
+                  border: 'none', fontSize: '11px', fontWeight: 900, textTransform: 'uppercase',
+                  letterSpacing: '1px', cursor: 'pointer', transition: 'all 0.2s'
+                }}
+              >
+                ⚙️ Customize Channel & Branding
+              </button>
+              <button
+                onClick={() => navigate('/profile' + window.location.search)}
+                style={{
+                  padding: '8px 18px', borderRadius: '8px', background: 'rgba(255,255,255,0.1)', color: '#fff',
+                  border: '1px solid rgba(255,255,255,0.2)', fontSize: '11px', fontWeight: 900, textTransform: 'uppercase',
+                  letterSpacing: '1px', cursor: 'pointer'
+                }}
+              >
+                ✏️ Edit Bio & Profile
+              </button>
+            </div>
+          </div>
+        )}
+
         {/* ── Mr. & Mrs. Olympia Slider ──────────────────────── */}
         {isOlympian && (
           <div id="olympia-champions-slider">
@@ -1333,8 +1386,8 @@ export default function N2NHome({ wlConfig, categories, user, activeVideo, setAc
 
 
 
-        {/* ── Courtney Bee Channels / AVO Campus Athletes / KPLE Channel Profiles Slider ── */}
-        {(((isCourtneyBee || isAvo || isKple) && !isBonaire) && athleteItems.length > 0) && (
+        {/* ── AVO Campus Athletes / KPLE Channel Profiles Slider ── */}
+        {(((isAvo || isKple) && !isCourtneyBee && !isBonaire) && athleteItems.length > 0) && (
           <div id="avo-athletes-slider">
             <SliderSection
               title={isCourtneyBee ? "COURTNEY BEE CHANNELS" : (isKple ? "KPLE-TV CHANNELS" : (isBonaire ? "LOCAL MERCHANTS" : "CAMPUS ATHLETES"))}
@@ -1615,9 +1668,9 @@ export default function N2NHome({ wlConfig, categories, user, activeVideo, setAc
               {/* Background Image */}
               <div style={{
                 position: 'absolute', inset: 0,
-                backgroundImage: `url(${(isMf || isOlympian) ? "/n2n/derek.jpeg" : (isB2K ? "https://images.unsplash.com/photo-1470225620780-dba8ba36b745?auto=format&fit=crop&q=80&w=1200" : "/n2n/concert_in_the_park.png")})`,
-                backgroundSize: 'cover', backgroundPosition: (isMf || isOlympian) ? '125% center' : 'center 35%',
-                filter: 'brightness(0.35)'
+                backgroundImage: `url(${isCourtneyBee ? "/n2n/comedy_club_bg.jpg" : ((isMf || isOlympian) ? "/n2n/derek.jpeg" : (isB2K ? "https://images.unsplash.com/photo-1470225620780-dba8ba36b745?auto=format&fit=crop&q=80&w=1200" : "/n2n/concert_in_the_park.png"))})`,
+                backgroundSize: 'cover', backgroundPosition: isCourtneyBee ? 'center' : ((isMf || isOlympian) ? '125% center' : 'center 35%'),
+                filter: isCourtneyBee ? 'brightness(0.5)' : 'brightness(0.35)'
               }} />
               {/* Gradient Overlay */}
               <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to right, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.4) 60%, transparent 100%)' }} />
@@ -1928,11 +1981,16 @@ export default function N2NHome({ wlConfig, categories, user, activeVideo, setAc
               {/* Background image */}
               <div style={{
                 position: 'absolute', inset: 0,
-                backgroundImage: `url(${isCourtneyBee ? "https://images.unsplash.com/photo-1516280440614-37939bbacd81?auto=format&fit=crop&q=80&w=1200" : (isOlympian || isMf ? "https://images.unsplash.com/photo-1517838277536-f5f99be501cd?auto=format&fit=crop&q=80&w=1200" : isWings ? "/n2n/wings_phoenix_iron_games.jpg" : (isB2K ? "https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?auto=format&fit=crop&q=80&w=1200" : (isKple ? "https://images.unsplash.com/photo-1510915228340-29c85a43dcfe?auto=format&fit=crop&q=80&w=1200" : (isBonaire ? "https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?auto=format&fit=crop&q=80&w=1200" : "https://shopavo.la/cdn/shop/files/Homepage_Vanderbilt_Desktop2_c7f572ef-cd7e-4de4-bb9c-160b99884e08_1500x.jpg?v=1776284877"))))})}`,
-                backgroundSize: 'cover', backgroundPosition: 'center',
-                filter: 'brightness(0.3)',
+                backgroundImage: `url(${isCourtneyBee ? "/n2n/cb_wildnout_poster.jpg" : (isOlympian || isMf ? "https://images.unsplash.com/photo-1517838277536-f5f99be501cd?auto=format&fit=crop&q=80&w=1200" : isWings ? "/n2n/wings_phoenix_iron_games.jpg" : (isB2K ? "https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?auto=format&fit=crop&q=80&w=1200" : (isKple ? "https://images.unsplash.com/photo-1510915228340-29c85a43dcfe?auto=format&fit=crop&q=80&w=1200" : (isBonaire ? "https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?auto=format&fit=crop&q=80&w=1200" : "https://shopavo.la/cdn/shop/files/Homepage_Vanderbilt_Desktop2_c7f572ef-cd7e-4de4-bb9c-160b99884e08_1500x.jpg?v=1776284877"))))})}`,
+                backgroundSize: 'cover', backgroundPosition: isCourtneyBee ? 'center 25%' : 'center',
+                filter: isCourtneyBee ? 'brightness(0.65)' : 'brightness(0.3)',
               }} />
-              <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to right, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.5) 60%, transparent 100%)' }} />
+              <div style={{
+                position: 'absolute', inset: 0,
+                background: isCourtneyBee 
+                  ? 'linear-gradient(110deg, rgba(10,10,12,0.95) 0%, rgba(211,84,0,0.35) 55%, rgba(10,10,12,0.85) 100%)' 
+                  : 'linear-gradient(to right, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.5) 60%, transparent 100%)'
+              }} />
 
               <div className="banner-cta-container" style={{ position: 'relative', zIndex: 2, padding: '80px 60px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '40px' }}>
                 <div className="banner-cta-content" style={{ maxWidth: '550px' }}>
@@ -1969,7 +2027,7 @@ export default function N2NHome({ wlConfig, categories, user, activeVideo, setAc
                     )}
                   </h2>
                   <p style={{
-                    fontSize: '15px', color: 'rgba(255,255,255,0.55)', lineHeight: 1.7, margin: 0,
+                    fontSize: '15px', color: isCourtneyBee ? 'rgba(255,255,255,0.85)' : 'rgba(255,255,255,0.55)', lineHeight: 1.7, margin: 0,
                   }}>
                     {isCourtneyBee
                       ? "Get inside access to Courtney Bee's world. Members of The Bee Hive get early drops, exclusive live stream invites, meet-and-greet offers, and direct community access. Come get in where you fit in."
@@ -1997,13 +2055,32 @@ export default function N2NHome({ wlConfig, categories, user, activeVideo, setAc
                   style={{
                     display: 'inline-block', padding: '15px 48px', fontSize: '11px', fontWeight: 800,
                     textTransform: 'uppercase', letterSpacing: '2.5px',
-                    background: 'transparent', color: '#fff',
-                    border: '1.5px solid #fff', textDecoration: 'none',
+                    background: isCourtneyBee ? accent : 'transparent',
+                    color: isCourtneyBee ? '#000' : '#fff',
+                    border: isCourtneyBee ? `1.5px solid ${accent}` : '1.5px solid #fff',
+                    boxShadow: isCourtneyBee ? `0 0 25px ${accent}66` : 'none',
+                    textDecoration: 'none',
                     transition: 'all 0.25s', flexShrink: 0,
                     cursor: 'pointer'
                   }}
-                  onMouseOver={e => { e.currentTarget.style.background = '#fff'; e.currentTarget.style.color = '#000'; }}
-                  onMouseOut={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = '#fff'; }}
+                  onMouseOver={e => {
+                    if (isCourtneyBee) {
+                      e.currentTarget.style.opacity = '0.9';
+                      e.currentTarget.style.transform = 'translateY(-2px)';
+                    } else {
+                      e.currentTarget.style.background = '#fff';
+                      e.currentTarget.style.color = '#000';
+                    }
+                  }}
+                  onMouseOut={e => {
+                    if (isCourtneyBee) {
+                      e.currentTarget.style.opacity = '1';
+                      e.currentTarget.style.transform = 'translateY(0)';
+                    } else {
+                      e.currentTarget.style.background = 'transparent';
+                      e.currentTarget.style.color = '#fff';
+                    }
+                  }}
                 >
                   {isCourtneyBee ? "Join The Bee Hive" : isKple ? "Join Now" : isWings ? "Become An Ambassador" : (isBonaire ? "Visit Chamber" : "More Info")}
                 </button>

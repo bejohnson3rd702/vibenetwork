@@ -163,6 +163,7 @@ const CATEGORY_ICON: Record<string, string> = {
 export default function CourtneyBeeWatchSection({ accent = '#D35400' }: { accent?: string }) {
   const [selectedVideo, setSelectedVideo] = useState<CourtneyVideo>(COURTNEY_BEE_VIDEOS[0]);
   const [filter, setFilter] = useState<'all' | 'spades' | 'wildnout' | 'standup' | 'dailycannon'>('all');
+  const [isPlaying, setIsPlaying] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
 
   useEffect(() => {
@@ -244,14 +245,38 @@ export default function CourtneyBeeWatchSection({ accent = '#D35400' }: { accent
             boxShadow: `0 16px 50px rgba(0,0,0,0.8), 0 0 30px ${accent}10`
           }}>
             <div style={{ position: 'relative', width: '100%', aspectRatio: '16/9' }}>
-              <iframe
-                key={selectedVideo.youtubeId}
-                src={`https://www.youtube.com/embed/${selectedVideo.youtubeId}?autoplay=1&rel=0&modestbranding=1`}
-                title={selectedVideo.title}
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                allowFullScreen
-                style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', border: 'none' }}
-              />
+              {isPlaying ? (
+                <iframe
+                  key={selectedVideo.youtubeId}
+                  src={`https://www.youtube.com/embed/${selectedVideo.youtubeId}?autoplay=1&rel=0&modestbranding=1`}
+                  title={selectedVideo.title}
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allowFullScreen
+                  style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', border: 'none' }}
+                />
+              ) : (
+                <div
+                  onClick={() => setIsPlaying(true)}
+                  style={{
+                    position: 'absolute', inset: 0, cursor: 'pointer', overflow: 'hidden',
+                    backgroundImage: `url(${selectedVideo.thumbnail})`,
+                    backgroundSize: 'cover', backgroundPosition: 'center'
+                  }}
+                >
+                  <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.4)', backdropFilter: 'blur(2px)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+                    <div style={{
+                      width: '72px', height: '72px', borderRadius: '50%',
+                      background: accent, display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      boxShadow: `0 0 30px ${accent}`, transition: 'transform 0.2s ease'
+                    }}>
+                      <Play size={32} color="#000" fill="#000" style={{ marginLeft: '4px' }} />
+                    </div>
+                    <span style={{ marginTop: '16px', color: '#fff', fontWeight: 800, fontSize: '14px', textTransform: 'uppercase', letterSpacing: '1.5px' }}>
+                      Click To Play Video
+                    </span>
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* Video Info Bar */}
@@ -298,7 +323,7 @@ export default function CourtneyBeeWatchSection({ accent = '#D35400' }: { accent
             return (
               <div
                 key={video.id}
-                onClick={() => { setSelectedVideo(video); window.scrollTo({ top: (document.getElementById('whats-on-now')?.offsetTop ?? 0) - 80, behavior: 'smooth' }); }}
+                onClick={() => { setSelectedVideo(video); setIsPlaying(true); window.scrollTo({ top: (document.getElementById('whats-on-now')?.offsetTop ?? 0) - 80, behavior: 'smooth' }); }}
                 style={{
                   display: 'flex',
                   gap: '10px',

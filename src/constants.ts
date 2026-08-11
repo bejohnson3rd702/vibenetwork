@@ -1,5 +1,13 @@
-export const MASTER_DOMAIN = import.meta.env.VITE_MASTER_DOMAIN || 'vibenetwork.vercel.app';
-export const DEFAULT_PLATFORM_NAME = import.meta.env.VITE_PLATFORM_NAME || 'Vibe Network';
+const getEnv = (key: string, viteValue?: string): string => {
+  if (viteValue) return viteValue;
+  if (typeof process !== 'undefined' && process.env && process.env[key]) {
+    return process.env[key] || '';
+  }
+  return '';
+};
+
+export const MASTER_DOMAIN = getEnv('VITE_MASTER_DOMAIN', import.meta.env?.VITE_MASTER_DOMAIN) || 'vibenetwork.vercel.app';
+export const DEFAULT_PLATFORM_NAME = getEnv('VITE_PLATFORM_NAME', import.meta.env?.VITE_PLATFORM_NAME) || 'Vibe Network';
 
 export const FALLBACK_HERO_COPY = 'The premiere destination for high quality digital content.';
 export const FALLBACK_CONTACT_EMAIL = 'enterprise@vibenetwork.tv';

@@ -143,7 +143,7 @@ export async function getChildNetworks(parentId: string, includeInactive: boolea
   }
 
   // Courtney Bee Parent Network Channels
-  if (parentId === 'cb000000-c08f-4260-8540-a0cc8bed4e11' || parentId === 'courtney-bee-network-id') {
+  if (parentId === 'cb000000-c08f-4260-8540-a0cc8bed4e11' || parentId === 'courtney-bee-tenant-id' || parentId === 'courtney-bee-network-id' || parentId?.toLowerCase().includes('courtney')) {
     return [
       normalizeWlConfig({
         id: 'courtney-bee-tenant-id',
@@ -168,75 +168,7 @@ export async function getChildNetworks(parentId: string, includeInactive: boolea
           parent_network_id: 'cb000000-c08f-4260-8540-a0cc8bed4e11'
         }
       }),
-      normalizeWlConfig({
-        id: 'courtney-bee-comedy-club',
-        name: 'Courtney Bee Comedy Club',
-        domain: 'comedy.therealcourtneybee.com',
-        logo: 'https://static.wixstatic.com/media/066ffc_bb9bdff854db4b56bb3f6b58ee1ce532~mv2.png/v1/crop/x_0,y_261,w_1242,h_763/fill/w_860,h_528,al_c,q_90,usm_0.66_1.00_0.01,enc_avif,quality_auto/image%20(1).png',
-        shopifyUrl: 'https://f5c4e7-3.myshopify.com',
-        parent_network_id: 'cb000000-c08f-4260-8540-a0cc8bed4e11',
-        platform_fee_percentage: 30,
-        is_active: true,
-        accent: '#ff4d85',
-        theme: {
-          accent: '#ff4d85',
-          heroCopy: 'Courtney Bee Comedy Club — Live Stand-Up Specials, Sketch Comedy & Uncensored Laughs.',
-          heroImage: '/n2n/comedy_club_bg.jpg',
-          logoImage: 'https://static.wixstatic.com/media/066ffc_bb9bdff854db4b56bb3f6b58ee1ce532~mv2.png/v1/crop/x_0,y_261,w_1242,h_763/fill/w_860,h_528,al_c,q_90,usm_0.66_1.00_0.01,enc_avif,quality_auto/image%20(1).png',
-          shopifyUrl: 'https://f5c4e7-3.myshopify.com',
-          sliderCount: 4,
-          enableBooking: true,
-          heroLayoutMode: 'verbiage',
-          enableWatchLive: false,
-          parent_network_id: 'cb000000-c08f-4260-8540-a0cc8bed4e11'
-        }
-      }),
-      normalizeWlConfig({
-        id: 'courtney-bee-podcast',
-        name: 'Wild \'N Out & Culture Podcast',
-        domain: 'podcast.therealcourtneybee.com',
-        logo: 'https://static.wixstatic.com/media/066ffc_bb9bdff854db4b56bb3f6b58ee1ce532~mv2.png/v1/crop/x_0,y_261,w_1242,h_763/fill/w_860,h_528,al_c,q_90,usm_0.66_1.00_0.01,enc_avif,quality_auto/image%20(1).png',
-        shopifyUrl: 'https://f5c4e7-3.myshopify.com',
-        parent_network_id: 'cb000000-c08f-4260-8540-a0cc8bed4e11',
-        platform_fee_percentage: 30,
-        is_active: true,
-        accent: '#ff4d85',
-        theme: {
-          accent: '#ff4d85',
-          heroCopy: 'Wild \'N Out & Culture Podcast — Weekly Live Episodes, Behind-The-Scenes & Guest Interviews.',
-          heroImage: 'https://images.unsplash.com/photo-1590602847861-f357a9332bbc?w=1200&auto=format&fit=crop',
-          logoImage: 'https://static.wixstatic.com/media/066ffc_bb9bdff854db4b56bb3f6b58ee1ce532~mv2.png/v1/crop/x_0,y_261,w_1242,h_763/fill/w_860,h_528,al_c,q_90,usm_0.66_1.00_0.01,enc_avif,quality_auto/image%20(1).png',
-          shopifyUrl: 'https://f5c4e7-3.myshopify.com',
-          sliderCount: 4,
-          enableBooking: true,
-          heroLayoutMode: 'verbiage',
-          enableWatchLive: false,
-          parent_network_id: 'cb000000-c08f-4260-8540-a0cc8bed4e11'
-        }
-      }),
-      normalizeWlConfig({
-        id: 'courtney-bee-store',
-        name: 'Courtney Bee Merch & Fashion',
-        domain: 'store.therealcourtneybee.com',
-        logo: 'https://static.wixstatic.com/media/066ffc_bb9bdff854db4b56bb3f6b58ee1ce532~mv2.png/v1/crop/x_0,y_261,w_1242,h_763/fill/w_860,h_528,al_c,q_90,usm_0.66_1.00_0.01,enc_avif,quality_auto/image%20(1).png',
-        shopifyUrl: 'https://f5c4e7-3.myshopify.com',
-        parent_network_id: 'cb000000-c08f-4260-8540-a0cc8bed4e11',
-        platform_fee_percentage: 30,
-        is_active: true,
-        accent: '#ff4d85',
-        theme: {
-          accent: '#ff4d85',
-          heroCopy: 'Official Courtney Bee Merch — Signature Hoodies, Digital Tickets & VIP Pass Drops.',
-          heroImage: 'https://images.unsplash.com/photo-1523381210434-271e8be1f52b?w=1200&auto=format&fit=crop',
-          logoImage: 'https://static.wixstatic.com/media/066ffc_bb9bdff854db4b56bb3f6b58ee1ce532~mv2.png/v1/crop/x_0,y_261,w_1242,h_763/fill/w_860,h_528,al_c,q_90,usm_0.66_1.00_0.01,enc_avif,quality_auto/image%20(1).png',
-          shopifyUrl: 'https://f5c4e7-3.myshopify.com',
-          sliderCount: 4,
-          enableBooking: false,
-          heroLayoutMode: 'verbiage',
-          enableWatchLive: false,
-          parent_network_id: 'cb000000-c08f-4260-8540-a0cc8bed4e11'
-        }
-      }),
+
 
       // ── Wild 'N Out Cast Channels ──────────────────────────────────
       normalizeWlConfig({
@@ -251,7 +183,8 @@ export async function getChildNetworks(parentId: string, includeInactive: boolea
         theme: {
           accent: '#00C2FF',
           heroCopy: "DC Young Fly — Atlanta's funniest, wildest rapper-comedian. Catch his best Wild 'N Out moments, stand-up clips & exclusive content.",
-          heroImage: 'https://images.unsplash.com/photo-1516280440614-37939bbacd81?auto=format&fit=crop&q=80&w=1200',
+          heroImage: '/n2n/wno_dc_young_fly.jpg',
+          logoImage: '/n2n/wno_dc_young_fly.jpg',
           sliderCount: 4,
           enableBooking: true,
           heroLayoutMode: 'verbiage',
@@ -271,7 +204,8 @@ export async function getChildNetworks(parentId: string, includeInactive: boolea
         theme: {
           accent: '#FFD600',
           heroCopy: "Conceited — New York's sharpest battle rapper. Watch him dismantle opponents with precision bars on Wild 'N Out & beyond.",
-          heroImage: 'https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?auto=format&fit=crop&q=80&w=1200',
+          heroImage: '/n2n/wno_conceited.jpg',
+          logoImage: '/n2n/wno_conceited.jpg',
           sliderCount: 4,
           enableBooking: true,
           heroLayoutMode: 'verbiage',
@@ -291,7 +225,8 @@ export async function getChildNetworks(parentId: string, includeInactive: boolea
         theme: {
           accent: '#FF6B00',
           heroCopy: "Chico Bean — The king of Wildstyle. Non-stop laughs, savage roasts, and unmatched energy straight from the Wild 'N Out stage.",
-          heroImage: 'https://images.unsplash.com/photo-1470229722913-7c0e2dbbafd3?auto=format&fit=crop&q=80&w=1200',
+          heroImage: '/n2n/wno_chico_bean.jpg',
+          logoImage: '/n2n/wno_chico_bean.jpg',
           sliderCount: 4,
           enableBooking: true,
           heroLayoutMode: 'verbiage',
@@ -311,7 +246,8 @@ export async function getChildNetworks(parentId: string, includeInactive: boolea
         theme: {
           accent: '#E91E8C',
           heroCopy: "Justina Valentine — Rapper, singer, and Wild 'N Out fan favorite. Fire bars, bold fashion & unfiltered personality.",
-          heroImage: 'https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?auto=format&fit=crop&q=80&w=1200',
+          heroImage: '/n2n/wno_justina_valentine.jpg',
+          logoImage: '/n2n/wno_justina_valentine.jpg',
           sliderCount: 4,
           enableBooking: true,
           heroLayoutMode: 'verbiage',
@@ -331,7 +267,8 @@ export async function getChildNetworks(parentId: string, includeInactive: boolea
         theme: {
           accent: '#7C4DFF',
           heroCopy: "Timothy DeLaGhetto — YouTube legend turned Wild 'N Out OG. Comedy, rap battles & Asian-American culture collide.",
-          heroImage: 'https://images.unsplash.com/photo-1598387993441-a364f854cfba?auto=format&fit=crop&q=80&w=1200',
+          heroImage: '/n2n/wno_timothy_delaghetto.jpg',
+          logoImage: '/n2n/wno_timothy_delaghetto.jpg',
           sliderCount: 4,
           enableBooking: true,
           heroLayoutMode: 'verbiage',
@@ -395,7 +332,14 @@ export async function getChildNetworks(parentId: string, includeInactive: boolea
     return true;
   });
 
-  return filtered.map((row: any) => normalizeWlConfig(row));
+  const mapped = filtered.map((row: any) => normalizeWlConfig(row));
+  const uniqueMap = new Map();
+  mapped.forEach((item: any) => {
+    if (!uniqueMap.has(item.id)) {
+      uniqueMap.set(item.id, item);
+    }
+  });
+  return Array.from(uniqueMap.values());
 }
 
 /** Fetch all network IDs in the N2N tree (parent + children) */

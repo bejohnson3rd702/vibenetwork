@@ -29,6 +29,7 @@ export async function getCategoriesWithVideos(tenantId?: string) {
   const whitelabels = whitelabelsResult.data || [];
 
   const APPROVED_N2N_PARENT_IDS = [
+    'cb000000-c08f-4260-8540-a0cc8bed4e11', // Courtney Bee Network
     'b0ea0000-c08f-4260-8540-a0cc8bed4e11', // Bonaire Chamber of Commerce
     'e5c100aa-c08f-4260-8540-a0cc8bed4e11', // VIBE 100
     '3915f1e5-4c79-4b2a-ad41-7029ce8052d7', // AVO NETWORK
@@ -36,7 +37,6 @@ export async function getCategoriesWithVideos(tenantId?: string) {
     '7a017c4d-c08f-4260-8540-a0cc8bed4e11', // Mr. Olympia
     '33742e2f-430b-4c2d-9cba-42507891ef02', // KPLE TV
     '00000000-0000-0000-0000-000000000001', // Jamie's Girls
-    // 'faa887c6-e49b-4f5a-97e4-bc117572e82f', // FINFIRE
     '074ac2e4-8ca2-486c-ab94-8537d0dc1fab', // Life is good LLC
   ];
 
@@ -75,29 +75,54 @@ export async function getCategoriesWithVideos(tenantId?: string) {
     const normalized = normalizeWlConfig(wl);
     const heroImg = normalized.theme?.heroImage || '';
     const isVibe100 = normalized.id === 'e5c100aa-c08f-4260-8540-a0cc8bed4e11';
-    const isLogo = isVibe100 || heroImg.includes('logo') || (normalized.logo && normalized.logo.includes('logo'));
+    const isCourtneyNetwork = normalized.id === 'cb000000-c08f-4260-8540-a0cc8bed4e11' || normalized.id === 'courtney-bee-tenant-id' || (normalized.name || '').toLowerCase().includes('courtney bee network');
+    const isLogo = isVibe100 || isCourtneyNetwork || heroImg.includes('logo') || (normalized.logo && normalized.logo.includes('logo'));
     return {
       id: 'wl_' + normalized.id,
-      title: normalized.name,
-      image: isVibe100
-        ? (normalized.logo || normalized.theme?.logoImage || normalized.theme?.heroImage)
-        : (normalized.theme?.heroImage || normalized.logo || `https://ui-avatars.com/api/?name=${encodeURIComponent(normalized.name || 'W')}&background=0D8ABC&color=fff`),
+      title: isCourtneyNetwork ? 'Courtney Bee Network' : normalized.name,
+      image: isCourtneyNetwork
+        ? 'https://static.wixstatic.com/media/066ffc_bb9bdff854db4b56bb3f6b58ee1ce532~mv2.png/v1/crop/x_0,y_261,w_1242,h_763/fill/w_860,h_528,al_c,q_90,usm_0.66_1.00_0.01,enc_avif,quality_auto/image%20(1).png'
+        : (isVibe100
+          ? (normalized.logo || normalized.theme?.logoImage || normalized.theme?.heroImage)
+          : (normalized.theme?.heroImage || normalized.logo || `https://ui-avatars.com/api/?name=${encodeURIComponent(normalized.name || 'W')}&background=0D8ABC&color=fff`)),
       tags: isLogo ? ['Network'] : ['Firm'],
-      accent: normalized.theme?.accent || normalized.accent || '#D35400',
+      accent: isCourtneyNetwork ? '#D35400' : (normalized.theme?.accent || normalized.accent || '#D35400'),
       linkUrl: `/?tenant=${normalized.id}`
     };
   });
 
-  // Sort Bonaire Chamber of Commerce to the absolute top, and VIBE 100 next
+  const courtneyNetworkCard = {
+    id: 'wl_cb000000-c08f-4260-8540-a0cc8bed4e11',
+    title: 'Courtney Bee Network',
+    image: 'https://static.wixstatic.com/media/066ffc_bb9bdff854db4b56bb3f6b58ee1ce532~mv2.png/v1/crop/x_0,y_261,w_1242,h_763/fill/w_860,h_528,al_c,q_90,usm_0.66_1.00_0.01,enc_avif,quality_auto/image%20(1).png',
+    tags: ['Network'],
+    accent: '#D35400',
+    linkUrl: '/?tenant=cb000000-c08f-4260-8540-a0cc8bed4e11'
+  };
+
+  const cbIdx = mappedNetworks.findIndex((n: any) => n.id === 'wl_cb000000-c08f-4260-8540-a0cc8bed4e11' || n.id === 'wl_courtney-bee-tenant-id' || (n.title || '').toLowerCase().includes('courtney bee network'));
+  if (cbIdx > -1) {
+    mappedNetworks[cbIdx].tags = ['Network'];
+    mappedNetworks[cbIdx].title = 'Courtney Bee Network';
+    mappedNetworks[cbIdx].image = 'https://static.wixstatic.com/media/066ffc_bb9bdff854db4b56bb3f6b58ee1ce532~mv2.png/v1/crop/x_0,y_261,w_1242,h_763/fill/w_860,h_528,al_c,q_90,usm_0.66_1.00_0.01,enc_avif,quality_auto/image%20(1).png';
+    mappedNetworks[cbIdx].linkUrl = '/?tenant=cb000000-c08f-4260-8540-a0cc8bed4e11';
+  } else {
+    mappedNetworks.push(courtneyNetworkCard);
+  }
+
+  // Sort Bonaire Chamber of Commerce to top, VIBE 100 second, and Courtney Bee Network third
   mappedNetworks.sort((a: any, b: any) => {
     const bonaireId = 'wl_b0ea0000-c08f-4260-8540-a0cc8bed4e11';
     const vibe100Id = 'wl_e5c100aa-c08f-4260-8540-a0cc8bed4e11';
+    const cbId = 'wl_cb000000-c08f-4260-8540-a0cc8bed4e11';
     
-    if (a.id === bonaireId) return -1;
-    if (b.id === bonaireId) return 1;
-    if (a.id === vibe100Id) return -1;
-    if (b.id === vibe100Id) return 1;
-    return 0;
+    const getOrder = (id: string) => {
+      if (id === bonaireId) return 1;
+      if (id === vibe100Id) return 2;
+      if (id === cbId || id.includes('courtney')) return 3;
+      return 99;
+    };
+    return getOrder(a.id) - getOrder(b.id);
   });
 
 
@@ -116,14 +141,14 @@ export async function getCategoriesWithVideos(tenantId?: string) {
     title: 'The Real Courtney Bee',
     image: 'https://static.wixstatic.com/media/066ffc_bb9bdff854db4b56bb3f6b58ee1ce532~mv2.png/v1/crop/x_0,y_261,w_1242,h_763/fill/w_860,h_528,al_c,q_90,usm_0.66_1.00_0.01,enc_avif,quality_auto/image%20(1).png',
     tags: ['Creator'],
-    linkUrl: '/?tenant=courtney-bee-tenant-id'
+    linkUrl: '/profile/courtney-bee-tenant-id'
   };
 
   const courtneyIdx = mappedProfiles.findIndex((p: any) => p.id === 'courtney-bee-tenant-id' || (p.title || '').toLowerCase().includes('courtney bee'));
   if (courtneyIdx > -1) {
     const [c] = mappedProfiles.splice(courtneyIdx, 1);
     c.image = 'https://static.wixstatic.com/media/066ffc_bb9bdff854db4b56bb3f6b58ee1ce532~mv2.png/v1/crop/x_0,y_261,w_1242,h_763/fill/w_860,h_528,al_c,q_90,usm_0.66_1.00_0.01,enc_avif,quality_auto/image%20(1).png';
-    c.linkUrl = '/?tenant=courtney-bee-tenant-id';
+    c.linkUrl = '/profile/courtney-bee-tenant-id';
     mappedProfiles.unshift(c);
   } else {
     mappedProfiles.unshift(courtneyProfileItem);

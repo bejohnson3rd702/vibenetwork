@@ -234,7 +234,8 @@ function App() {
       }
     );
 
-
+    const handleOpenAdmin = () => setShowAdminPanel(true);
+    window.addEventListener('open_admin_panel', handleOpenAdmin);
 
     const handleCommit = async (e: any) => {
        try {
