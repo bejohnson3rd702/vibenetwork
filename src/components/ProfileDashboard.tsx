@@ -130,7 +130,7 @@ const BookingRateInput: React.FC<{ value: string; onChange: (val: string) => voi
   );
 };
 
-const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetworkLevel?: boolean }> = ({ user, creatorIdOverride, isNetworkLevel }) => {
+const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetworkLevel?: boolean, onAuthRequest?: () => void }> = ({ user, creatorIdOverride, isNetworkLevel, onAuthRequest }) => {
   const navigate = useNavigate();
   const { creatorId: paramCreatorId } = useParams();
   const creatorId = creatorIdOverride || paramCreatorId;
@@ -7101,7 +7101,7 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
         {/* --- COMMUNITY TAB --- */}
         {activeTab === 'community' && isNetworkLevel && (
            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} style={{ marginTop: '20px' }}>
-              <Community user={user} />
+              <Community user={user} onAuthRequest={onAuthRequest} />
            </motion.div>
         )}
 

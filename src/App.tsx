@@ -816,8 +816,8 @@ function App() {
               <Route path="/terms" element={<TermsOfService />} />
               <Route path="/privacy" element={<PrivacyPolicy />} />
               <Route path="/product/:productId" element={<ProductPage />} />
-              <Route path="/profile" element={<ProfileDashboard user={user} />} />
-              <Route path="/profile/:creatorId" element={<ProfileDashboard user={user} />} />
+              <Route path="/profile" element={<ProfileDashboard user={user} onAuthRequest={() => setShowEndUserAuthModal(true)} />} />
+              <Route path="/profile/:creatorId" element={<ProfileDashboard user={user} onAuthRequest={() => setShowEndUserAuthModal(true)} />} />
               <Route path="/call/:callId" element={<VirtualCallRoom />} />
               <Route path="/food-truck" element={<FoodTruck />} />
               <Route path="/reset-password" element={<ResetPassword />} />
@@ -919,8 +919,8 @@ function App() {
                       <Route path="/contact" element={<Contact />} />
                       <Route path="/terms" element={<TermsOfService />} />
                       <Route path="/privacy" element={<PrivacyPolicy />} />
-                      <Route path="/profile" element={<ProfileDashboard user={user} />} />
-                      <Route path="/profile/:creatorId" element={<ProfileDashboard user={user} />} />
+                      <Route path="/profile" element={<ProfileDashboard user={user} onAuthRequest={() => setShowAuthModal(true)} />} />
+                      <Route path="/profile/:creatorId" element={<ProfileDashboard user={user} onAuthRequest={() => setShowAuthModal(true)} />} />
                       <Route path="/call/:callId" element={<VirtualCallRoom />} />
                       <Route path="/food-truck" element={<FoodTruck />} />
                       <Route path="/reset-password" element={<ResetPassword />} />
