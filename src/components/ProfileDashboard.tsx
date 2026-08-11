@@ -139,20 +139,36 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
   const { wlConfig } = useWhiteLabel();
   const toast = useToast();
   
-  const [profile, setProfile] = useState<any>(null);
-  const [isSub, setIsSub] = useState(false);
-  const [showSubModal, setShowSubModal] = useState(false);
-  const [showBgSettingsModal, setShowBgSettingsModal] = useState(false);
-  const targetProfileId = profile?.id || creatorId || user?.id; // Determine which profile to load
+  const rawCreatorId = creatorIdOverride || paramCreatorId;
   const isCourtney = Boolean(
-    targetProfileId === 'courtney-bee-tenant-id' ||
-    targetProfileId === 'c0071234-c08f-4260-8540-a0cc8bed4e11' ||
-    (targetProfileId || '').toLowerCase().includes('courtney') ||
+    rawCreatorId === 'courtney-bee-tenant-id' ||
+    rawCreatorId === 'c0071234-c08f-4260-8540-a0cc8bed4e11' ||
+    (rawCreatorId || '').toLowerCase().includes('courtney') ||
     wlConfig?.id === 'courtney-bee-tenant-id' ||
     wlConfig?.id === 'cb000000-c08f-4260-8540-a0cc8bed4e11' ||
     (wlConfig?.name || '').toLowerCase().includes('courtney') ||
     wlConfig?.domain?.includes('courtney')
   );
+
+  const [profile, setProfile] = useState<any>(() => {
+    if (isCourtney) {
+      return {
+        id: 'c0071234-c08f-4260-8540-a0cc8bed4e11',
+        username: 'The Real Courtney Bee',
+        bio: 'Courtney Bee is a star on the NYC comedy scene (Wild \'N Out Season 18, HBO Max "That Damn Michael Che"). With her hometown Detroit roots, aggressive punchlines, and hilarious wit, she opens for Michael Che and Dulcé Sloan nationwide.',
+        avatar_url: 'https://static.wixstatic.com/media/066ffc_bb9bdff854db4b56bb3f6b58ee1ce532~mv2.png/v1/crop/x_0,y_261,w_1242,h_763/fill/w_860,h_528,al_c,q_90,usm_0.66_1.00_0.01,enc_avif,quality_auto/image%20(1).png',
+        homepage_image_url: '/n2n/comedy_club_bg.jpg',
+        sub_price: 9.99,
+        whitelabel_id: 'cb000000-c08f-4260-8540-a0cc8bed4e11'
+      };
+    }
+    return null;
+  });
+
+  const [isSub, setIsSub] = useState(false);
+  const [showSubModal, setShowSubModal] = useState(false);
+  const [showBgSettingsModal, setShowBgSettingsModal] = useState(false);
+  const targetProfileId = profile?.id || rawCreatorId || user?.id; // Determine which profile to load
 
   const isOwnProfile = Boolean(
     user && (
