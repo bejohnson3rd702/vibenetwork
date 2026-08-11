@@ -659,7 +659,12 @@ export function mergeQueryParams(targetUrl: string, currentSearch: string): stri
   const targetParams = new URLSearchParams(targetSearch || '');
   const currentParams = new URLSearchParams(currentSearch || '');
   
+  const isProfileRoute = path.startsWith('/profile') || path.startsWith('/channel');
+
   currentParams.forEach((value, key) => {
+    if (isProfileRoute && key === 'tenant' && !targetParams.has('tenant')) {
+      return; // Profile routes manage their own creator identity and tenant context
+    }
     if (!targetParams.has(key)) {
       targetParams.set(key, value);
     }

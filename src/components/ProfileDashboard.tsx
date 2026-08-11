@@ -1195,9 +1195,9 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
       const isUuid = (str: string) => Boolean(str && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(str));
       let queryId = targetProfileId === 'courtney-bee-tenant-id' ? 'c0071234-c08f-4260-8540-a0cc8bed4e11' : targetProfileId;
 
-      // If isNetworkLevel is true and we have a wlConfig.id, load the profile associated with this whitelabel config
+      // If isNetworkLevel is true and NO specific creatorId parameter is in the URL route, load the network profile
       let profilePromise;
-      if (isNetworkLevel && wlConfig?.id && isUuid(wlConfig.id)) {
+      if (isNetworkLevel && !paramCreatorId && wlConfig?.id && isUuid(wlConfig.id)) {
         profilePromise = supabase!.from('profiles')
           .select('*')
           .eq('whitelabel_id', wlConfig.id)
@@ -1214,7 +1214,7 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
       }
 
       let postsQuery = supabase!.from('posts').select('*, creator:profiles!inner(username, avatar_url, whitelabel_id), post_likes(user_id), post_comments(*, user:profiles(username, avatar_url))');
-      if (isNetworkLevel && wlConfig?.id && isUuid(wlConfig.id)) {
+      if (isNetworkLevel && !paramCreatorId && wlConfig?.id && isUuid(wlConfig.id)) {
         postsQuery = postsQuery.eq('creator.whitelabel_id', wlConfig.id).eq('is_locked', false);
       } else if (queryId && isUuid(queryId)) {
         postsQuery = postsQuery.eq('creator_id', queryId);
