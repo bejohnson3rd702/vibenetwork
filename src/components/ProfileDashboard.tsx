@@ -1245,8 +1245,6 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
       let postsQuery = supabase!.from('posts').select('*, creator:profiles(username, avatar_url, whitelabel_id), post_likes(user_id), post_comments(*, user:profiles(username, avatar_url))');
       if (isNetworkLevel && !paramCreatorId && wlConfig?.id && isUuid(wlConfig.id)) {
         postsQuery = postsQuery.eq('creator.whitelabel_id', wlConfig.id).eq('is_locked', false);
-      } else if (queryId === 'db7af833-2f7a-40b0-ad46-57ff8fbd4744' || queryId === '8c409557-a48c-41d4-8133-9d9788aebe0d' || queryId === '33742e2f-430b-4c2d-9cba-42507891ef02') {
-        postsQuery = postsQuery.in('creator_id', ['db7af833-2f7a-40b0-ad46-57ff8fbd4744', '8c409557-a48c-41d4-8133-9d9788aebe0d', '8e0994e2-4351-422c-8da0-3aff8ae4e13d', '987120ed-9a7d-4320-8020-88785f4267b0', 'a0f7c22e-152e-4b47-b846-9fa84a5697d4']);
       } else if (queryId && isUuid(queryId)) {
         postsQuery = postsQuery.eq('creator_id', queryId);
       } else {
@@ -1393,9 +1391,7 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
         if (postsError) {
              let fallbackQuery = supabase!.from('posts').select('*, creator:profiles!inner(username, avatar_url, whitelabel_id)');
              if (isNetworkLevel && wlConfig?.id) fallbackQuery = fallbackQuery.eq('creator.whitelabel_id', wlConfig.id).eq('is_locked', false);
-             else if (loadedProfileId === 'db7af833-2f7a-40b0-ad46-57ff8fbd4744' || loadedProfileId === '8c409557-a48c-41d4-8133-9d9788aebe0d' || loadedProfileId === '33742e2f-430b-4c2d-9cba-42507891ef02') {
-               fallbackQuery = fallbackQuery.in('creator_id', ['db7af833-2f7a-40b0-ad46-57ff8fbd4744', '8c409557-a48c-41d4-8133-9d9788aebe0d', '8e0994e2-4351-422c-8da0-3aff8ae4e13d', '987120ed-9a7d-4320-8020-88785f4267b0', 'a0f7c22e-152e-4b47-b846-9fa84a5697d4']);
-             } else fallbackQuery = fallbackQuery.eq('creator_id', loadedProfileId);
+             else fallbackQuery = fallbackQuery.eq('creator_id', loadedProfileId);
              
              const fallback = await fallbackQuery
                .order('is_pinned', { ascending: false })
