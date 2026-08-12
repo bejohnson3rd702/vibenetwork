@@ -187,7 +187,7 @@ export default function N2NHome({ wlConfig, categories, user, activeVideo, setAc
             image: castImage || child.logoImage || child.logo || child.theme?.logoImage || child.heroImage || child.theme?.heroImage || `https://ui-avatars.com/api/?name=${encodeURIComponent(child.name)}&background=111&color=fff&size=400`,
             tags: ['Creator'],
             videoUrl: '',
-            linkUrl: isCourtneyChannel ? '/profile/courtney-bee-tenant-id' : '/?tenant=' + child.id,
+            linkUrl: isCourtneyChannel ? '/profile/courtney-bee-tenant-id' : '/profile/' + child.id,
             accent: child.accent,
           };
         })

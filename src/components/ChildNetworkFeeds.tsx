@@ -548,12 +548,7 @@ export default function ChildNetworkFeeds({ parentId, accent = 'var(--accent-pri
           const schoolName = post.creator?.whitelabel?.name || 'College Network';
           const shortSchool = schoolName.replace('University of ', '').replace(' University', '');
           const params = new URLSearchParams(window.location.search);
-          const targetTenant = post.creator?.whitelabel_id || post.creator?.whitelabel?.id;
-          const isCourtneyCrew = parentId === 'cb000000-c08f-4260-8540-a0cc8bed4e11' || parentId === 'courtney-bee-tenant-id';
-          if (targetTenant) {
-            params.set('tenant', targetTenant);
-          }
-          const cleanLink = (isCourtneyCrew && targetTenant) ? `/?tenant=${targetTenant}` : `/profile/${post.creator_id}?${params.toString()}`;
+          const cleanLink = `/profile/${post.creator_id}?${params.toString()}`;
 
           return (
             <motion.div

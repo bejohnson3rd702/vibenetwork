@@ -1281,6 +1281,56 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
             sub_price: 9.99,
             whitelabel_id: 'cb000000-c08f-4260-8540-a0cc8bed4e11'
           };
+        } else if (rawCreatorId === 'd1000000-c08f-4260-8540-a0cc8bed4e11' || (rawCreatorId || '').toLowerCase().includes('dc-young-fly')) {
+          targetProfile = {
+            id: 'd1000000-c08f-4260-8540-a0cc8bed4e11',
+            username: 'DC Young Fly',
+            bio: 'Official DC Young Fly Channel — Live Unfiltered Stage Rants, Stand-Up Comedy & 85 South Show.',
+            avatar_url: '/n2n/wno_dc_young_fly.jpg',
+            homepage_image_url: '/n2n/comedy_club_bg.jpg',
+            sub_price: 9.99,
+            whitelabel_id: 'cb000000-c08f-4260-8540-a0cc8bed4e11'
+          };
+        } else if (rawCreatorId === 'd3000000-c08f-4260-8540-a0cc8bed4e11' || (rawCreatorId || '').toLowerCase().includes('chico-bean')) {
+          targetProfile = {
+            id: 'd3000000-c08f-4260-8540-a0cc8bed4e11',
+            username: 'Chico Bean',
+            bio: 'Official Chico Bean Channel — 85 South Show Backstage Roasts, Stand-Up Specials & Live Comedy.',
+            avatar_url: '/n2n/wno_chico_bean.jpg',
+            homepage_image_url: '/n2n/comedy_club_bg.jpg',
+            sub_price: 9.99,
+            whitelabel_id: 'cb000000-c08f-4260-8540-a0cc8bed4e11'
+          };
+        } else if (rawCreatorId === 'd2000000-c08f-4260-8540-a0cc8bed4e11' || (rawCreatorId || '').toLowerCase().includes('conceited')) {
+          targetProfile = {
+            id: 'd2000000-c08f-4260-8540-a0cc8bed4e11',
+            username: 'Conceited',
+            bio: 'Official Conceited Channel — Savage Battle Rap Punchlines, Wild \'N Out Highlights & Sneaker Drops.',
+            avatar_url: '/n2n/wno_conceited.jpg',
+            homepage_image_url: '/n2n/comedy_club_bg.jpg',
+            sub_price: 9.99,
+            whitelabel_id: 'cb000000-c08f-4260-8540-a0cc8bed4e11'
+          };
+        } else if (rawCreatorId === 'd4000000-c08f-4260-8540-a0cc8bed4e11' || (rawCreatorId || '').toLowerCase().includes('justina-valentine')) {
+          targetProfile = {
+            id: 'd4000000-c08f-4260-8540-a0cc8bed4e11',
+            username: 'Justina Valentine',
+            bio: 'Official Justina Valentine Channel — Red Hair Freestyles, Music Videos & Wild \'N Out Comedy.',
+            avatar_url: '/n2n/wno_justina_valentine.jpg',
+            homepage_image_url: '/n2n/comedy_club_bg.jpg',
+            sub_price: 9.99,
+            whitelabel_id: 'cb000000-c08f-4260-8540-a0cc8bed4e11'
+          };
+        } else if (rawCreatorId === 'd5000000-c08f-4260-8540-a0cc8bed4e11' || (rawCreatorId || '').toLowerCase().includes('timothy-delaghetto')) {
+          targetProfile = {
+            id: 'd5000000-c08f-4260-8540-a0cc8bed4e11',
+            username: 'Timothy DeLaGhetto',
+            bio: 'Official Timothy DeLaGhetto Channel — Food Reviews, Stand-Up Vlogs & Wild \'N Out Commentary.',
+            avatar_url: '/n2n/wno_timothy_delaghetto.jpg',
+            homepage_image_url: '/n2n/comedy_club_bg.jpg',
+            sub_price: 9.99,
+            whitelabel_id: 'cb000000-c08f-4260-8540-a0cc8bed4e11'
+          };
         } else if (isNetworkLevel && wlConfig?.id) {
           targetProfile = {
             id: wlConfig?.owner_id || wlConfig?.id || 'default-tenant-id',
