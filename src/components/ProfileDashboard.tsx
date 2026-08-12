@@ -1261,13 +1261,16 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
         postsPromise
       ]);
 
-      const isCourtney = targetProfileId === 'courtney-bee-tenant-id' || 
-                         targetProfileId === 'c0071234-c08f-4260-8540-a0cc8bed4e11' || 
-                         targetProfileId?.toLowerCase().includes('courtney') || 
-                         wlConfig?.id === 'courtney-bee-tenant-id' || 
-                         wlConfig?.id === 'cb000000-c08f-4260-8540-a0cc8bed4e11' ||
-                         (wlConfig?.name || '').toLowerCase().includes('courtney') ||
-                         wlConfig?.domain?.includes('courtney');
+      const isCastMemberId = ['d1000000-c08f-4260-8540-a0cc8bed4e11', 'd2000000-c08f-4260-8540-a0cc8bed4e11', 'd3000000-c08f-4260-8540-a0cc8bed4e11', 'd4000000-c08f-4260-8540-a0cc8bed4e11', 'd5000000-c08f-4260-8540-a0cc8bed4e11'].includes(targetProfileId || '');
+      const isCourtney = !isCastMemberId && (
+                           targetProfileId === 'courtney-bee-tenant-id' || 
+                           targetProfileId === 'c0071234-c08f-4260-8540-a0cc8bed4e11' || 
+                           targetProfileId?.toLowerCase().includes('courtney') || 
+                           wlConfig?.id === 'courtney-bee-tenant-id' || 
+                           wlConfig?.id === 'cb000000-c08f-4260-8540-a0cc8bed4e11' ||
+                           (wlConfig?.name || '').toLowerCase().includes('courtney') ||
+                           wlConfig?.domain?.includes('courtney')
+                         );
       
       let targetProfile = data;
       if (!targetProfile) {

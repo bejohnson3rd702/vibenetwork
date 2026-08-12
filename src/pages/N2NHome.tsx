@@ -1396,7 +1396,11 @@ export default function N2NHome({ wlConfig, categories, user, activeVideo, setAc
               aspectRatio="1/1"
               onItemClick={(item) => {
                 if (item.linkUrl) {
-                  window.location.href = mergeQueryParams(item.linkUrl, window.location.search);
+                  if (item.linkUrl.startsWith('/profile/')) {
+                    window.location.href = item.linkUrl;
+                  } else {
+                    window.location.href = mergeQueryParams(item.linkUrl, window.location.search);
+                  }
                 }
               }}
             />
