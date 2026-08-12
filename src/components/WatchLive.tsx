@@ -147,6 +147,7 @@ const VIBE_FEEDS = [
 
 const KPLE_FEEDS = [
   { key: 'tct_network', label: '📺 TCT Network', channelId: 'UCQjstwROWgM16K9V7HNH0vA' },
+  { key: 'doc_wales', label: '🩺 Doc Wales Diaries' },
   { key: 'act_local', label: '🎥 ACT Local', channelId: 'UCdorw7uL4mZnPby7T78bT7A' },
   { key: 'the_walk', label: '🚶 The Walk TV', channelId: 'UCdorw7uL4mZnPby7T78bT7A' },
   { key: 'enlace_usa', label: '🌎 Enlace USA', channelId: 'UCdorw7uL4mZnPby7T78bT7A' },
@@ -2069,52 +2070,143 @@ export default function WatchLive({ accent = '#D35400', isCourtneyBee = false, i
           }
         }
         
-        // 2. Fetch KPLE child network videos from Supabase
+        // 2. Fetch KPLE station videos & Doc Wales Diaries episodes from Supabase
         try {
-          const { data: vidsData, error: vidsErr } = await supabase
-            .from('videos')
-            .select('*, creator:profiles!inner(whitelabel_id, whitelabel:whitelabel_configs!inner(name, parent_network_id))')
-            .eq('creator.whitelabel.parent_network_id', '33742e2f-430b-4c2d-9cba-42507891ef02')
-            .order('created_at', { ascending: false });
+          const [vidsRes, epsRes] = await Promise.all([
+            supabase.from('videos').select('*').order('created_at', { ascending: false }),
+            supabase.from('episodes').select('*, series:series(title)').order('created_at', { ascending: true })
+          ]);
 
-          if (!vidsErr && vidsData) {
-            for (const v of vidsData) {
-              const netName = v.creator?.whitelabel?.name || '';
-              let feedKey = 'tct_network';
-              if (netName.toLowerCase().includes('attention') || netName.toLowerCase().includes('act')) {
-                feedKey = 'act_local';
-              } else if (netName.toLowerCase().includes('positiv')) {
-                feedKey = 'positiv_movies';
-              } else if (netName.toLowerCase().includes('smile')) {
-                feedKey = 'smile_kids';
-              } else if (netName.toLowerCase().includes('enlace')) {
-                feedKey = 'enlace_usa';
-              } else if (netName.toLowerCase().includes('walk')) {
-                feedKey = 'the_walk';
+          const now = new Date();
+          const todayStr = now.toISOString().split('T')[0];
+
+          // A) Process videos table
+          if (vidsRes.data) {
+            for (const v of vidsRes.data) {
+              const tags = Array.isArray(v.tags) ? v.tags : [];
+              let airDate = v.scheduled_air_date;
+              let airTime = v.scheduled_air_time;
+              let timeSlot = v.air_time_slot || '1 Hour';
+              let recurrence = v.recurrence;
+              let commercialBreakEnabled = v.commercial_break_enabled || false;
+              let commercialFrequency = v.commercial_frequency;
+              let commercialMediaUrl = v.commercial_media_url;
+              let adSponsorName = v.ad_sponsor_name;
+
+              tags.forEach((t: string) => {
+                if (typeof t === 'string') {
+                  if (t.startsWith('air_date:')) airDate = t.replace('air_date:', '');
+                  else if (t.startsWith('air_time:')) airTime = t.replace('air_time:', '');
+                  else if (t.startsWith('slot:')) timeSlot = t.replace('slot:', '');
+                  else if (t.startsWith('recurrence:')) recurrence = t.replace('recurrence:', '');
+                  else if (t === 'commercials:true') commercialBreakEnabled = true;
+                  else if (t.startsWith('ad_freq:')) commercialFrequency = t.replace('ad_freq:', '');
+                  else if (t.startsWith('ad_url:')) commercialMediaUrl = t.replace('ad_url:', '');
+                  else if (t.startsWith('ad_sponsor:')) adSponsorName = t.replace('ad_sponsor:', '');
+                }
+              });
+
+              let isLiveOnAir = false;
+              if (airDate && airTime) {
+                try {
+                  const airDateObj = new Date(`${airDate}T${airTime}:00`);
+                  let slotMs = 3600000;
+                  if (timeSlot === '30 mins') slotMs = 1800000;
+                  else if (timeSlot === '2 Hours') slotMs = 7200000;
+                  else if (timeSlot === '4 Hours') slotMs = 14400000;
+
+                  const diff = now.getTime() - airDateObj.getTime();
+                  if (diff >= 0 && diff < slotMs) {
+                    isLiveOnAir = true;
+                  }
+                } catch {}
               }
-              
+
               if (!seen.has(v.id)) {
                 seen.add(v.id);
                 dynamicClips.push({
                   id: v.id,
                   headline: v.title,
-                  description: v.title || '',
+                  description: v.description || v.title || '',
                   thumbnail: v.image_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(v.title)}`,
                   videoUrl: v.video_url,
-                  duration: v.preview_duration || 0,
-                  source: netName,
-                  sport: feedKey,
+                  duration: v.duration ? parseInt(v.duration) || 0 : 0,
+                  source: 'KPLE-TV Station',
+                  sport: 'kple',
                   published: v.created_at ? new Date(v.created_at) : new Date(0),
+                  scheduledAirDate: airDate,
+                  scheduledAirTime: airTime,
+                  airTimeSlot: timeSlot,
+                  recurrence: recurrence,
+                  commercialBreakEnabled: commercialBreakEnabled,
+                  commercialFrequency: commercialFrequency,
+                  commercialMediaUrl: commercialMediaUrl,
+                  adSponsorName: adSponsorName,
+                  isCurrentlyLive: isLiveOnAir
                 });
               }
             }
           }
+
+          // B) Process Doc Wales Diaries episodes with timed broadcast schedules
+          if (epsRes.data) {
+            let docWalesIndex = 0;
+            for (const ep of epsRes.data) {
+              const isDocWales = (ep.title || '').toLowerCase().includes('wales') || 
+                                 (ep.description || '').toLowerCase().includes('wales') || 
+                                 (ep.series?.title || '').toLowerCase().includes('wales');
+
+              if (isDocWales && !seen.has(ep.id)) {
+                seen.add(ep.id);
+
+                // Assign timed airtime slots for Doc Wales episodes across the daily broadcast grid
+                const startHour = (7 + (docWalesIndex % 16)); // 7:00 AM to 10:00 PM
+                const airTimeStr = `${startHour < 10 ? '0' : ''}${startHour}:00`;
+                const airDateObj = new Date(`${todayStr}T${airTimeStr}:00`);
+                const slotMs = 3600000; // 1 hour slot
+                const diff = now.getTime() - airDateObj.getTime();
+                const isLiveOnAir = diff >= 0 && diff < slotMs;
+
+                dynamicClips.push({
+                  id: ep.id,
+                  headline: ep.title,
+                  description: ep.description || 'Doc Wales Diaries episode featuring Dr. Steve Price on medical missions around the world.',
+                  thumbnail: ep.thumbnail_url || ep.image_url || 'https://st1-fs.cdn01.net/subchannels/0000027/0027085/0027085b2.jpg?v=3',
+                  videoUrl: ep.video_url,
+                  duration: ep.duration || 1800,
+                  source: 'Doc Wales Diaries',
+                  sport: 'doc_wales',
+                  published: ep.created_at ? new Date(ep.created_at) : new Date(0),
+                  scheduledAirDate: todayStr,
+                  scheduledAirTime: airTimeStr,
+                  airTimeSlot: '1 Hour',
+                  recurrence: 'Daily',
+                  commercialBreakEnabled: true,
+                  commercialFrequency: 'Every 15 Minutes',
+                  adSponsorName: 'Medical Mission Partners',
+                  isCurrentlyLive: isLiveOnAir
+                });
+
+                docWalesIndex++;
+              }
+            }
+          }
+
         } catch (err) {
-          console.warn("Failed to load dynamic KPLE clips:", err);
+          console.warn("Failed to load dynamic KPLE & Doc Wales clips:", err);
         }
         
-        // Sort dynamic clips by date descending
-        dynamicClips.sort((a, b) => (b.published?.getTime() || 0) - (a.published?.getTime() || 0));
+        // Sort dynamic clips: Live On-Air first, then by scheduled air time, then by date published
+        dynamicClips.sort((a, b) => {
+          if (a.isCurrentlyLive && !b.isCurrentlyLive) return -1;
+          if (!a.isCurrentlyLive && b.isCurrentlyLive) return 1;
+          if (a.scheduledAirDate && b.scheduledAirDate) {
+            const timeA = new Date(`${a.scheduledAirDate}T${a.scheduledAirTime || '00:00'}:00`).getTime();
+            const timeB = new Date(`${b.scheduledAirDate}T${b.scheduledAirTime || '00:00'}:00`).getTime();
+            return timeB - timeA;
+          }
+          return (b.published?.getTime() || 0) - (a.published?.getTime() || 0);
+        });
         allClips.push(...dynamicClips);
         
         // Append static KPLE fallbacks
@@ -2447,14 +2539,33 @@ export default function WatchLive({ accent = '#D35400', isCourtneyBee = false, i
             onMouseOut={e => { e.currentTarget.style.transform = 'scale(1)'; }}
           >
             <div className="watch-featured-container" style={{ position: 'relative', width: '100%', overflow: 'hidden' }}>
-              <img 
-                src={featured.thumbnail || '/n2n/comedy_club_bg.jpg'} 
-                alt={featured.headline} 
-                onError={(e) => {
-                  e.currentTarget.src = '/n2n/comedy_club_bg.jpg';
-                }}
-                style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
-              />
+              {(() => {
+                const isYt = (featured.videoUrl.includes('youtube.com') || featured.videoUrl.includes('youtu.be')) && !featured.videoUrl.endsWith('.mp4');
+                if (isYt) {
+                  const match = featured.videoUrl.match(/^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/);
+                  let ytId = (match && match[2].length === 11) ? match[2] : (featured.id.length === 11 ? featured.id : '');
+                  if (ytId) {
+                    return (
+                      <iframe
+                        src={`https://www.youtube.com/embed/${ytId}?autoplay=1&mute=1&controls=0&loop=1&playlist=${ytId}&modestbranding=1&playsinline=1`}
+                        title={featured.headline}
+                        style={{ width: '100%', height: '100%', border: 'none', objectFit: 'cover', pointerEvents: 'none' }}
+                      />
+                    );
+                  }
+                }
+                return (
+                  <video
+                    src={featured.videoUrl}
+                    autoPlay
+                    muted
+                    loop
+                    playsInline
+                    poster={featured.thumbnail}
+                    style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+                  />
+                );
+              })()}
               <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(0,0,0,0.95) 0%, rgba(0,0,0,0.3) 50%, transparent 70%)' }} />
               {/* Play / Link button */}
               <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -2471,16 +2582,33 @@ export default function WatchLive({ accent = '#D35400', isCourtneyBee = false, i
                 </div>
               </div>
               <div className="watch-featured-content" style={{ position: 'absolute', bottom: 0, left: 0, right: 0 }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '10px' }}>
-                  <span style={{ padding: '4px 10px', borderRadius: '6px', background: accent, color: '#000', fontSize: '10px', fontWeight: 900, textTransform: 'uppercase', letterSpacing: '1px' }}>
-                    {isCourtneyBeeNet ? (
-                      featured.sport === 'wildnout' ? '🔥 Wild \'N Out' : featured.sport === 'standup' ? '🎤 Courtney Bee Comedy' : '♠️ We Playin\' Spades'
-                    ) : isBonaire ? (
-                      featured.sport === 'lifestyle' ? '🌴 Island Life' : featured.sport === 'diving' ? '🤿 Diving' : '🎣 Fishing'
-                    ) : isOlympian 
-                      ? '🏆 Mr. Olympia' 
-                      : (isMf ? '💪 Muscle & Fitness' : (isB2K ? '🎤 R&B Music' : (isKple ? (featured.sport === 'tct_network' ? '📺 TCT Network' : featured.sport === 'act_local' ? '🎥 ACT Local' : featured.sport === 'the_walk' ? '🚶 The Walk TV' : featured.sport === 'enlace_usa' ? '🌎 Enlace USA' : featured.sport === 'positiv_movies' ? '🎬 Positiv Family' : '👶 Smile of a Child') : (isVibe ? (featured.sport === 'news' ? '📰 News' : featured.sport === 'foxnews' ? '🦊 Fox News' : featured.sport === 'politics' ? '⚖️ Politics' : featured.sport === 'entertainment' ? '🎭 Entertainment' : featured.sport === 'money' ? '💵 Money' : '🏈 Sports') : (isVibe100 ? (featured.sport === 'avo' ? '🎒 AVO Channel' : featured.sport === 'olympia' ? '🏆 Muscle & Fitness' : featured.sport === 'b2k' ? '🎤 B2K Channel' : featured.sport === 'kple' ? '📺 Christian Revival' : '📺 VIBE 100') : (featured.sport === 'cfb' ? '🏈 Football' : featured.sport === 'cbb' ? '🏀 Basketball' : '⚾ Baseball'))))))}
-                  </span>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '10px', flexWrap: 'wrap' }}>
+                  {featured.isCurrentlyLive ? (
+                    <span style={{ padding: '4px 10px', borderRadius: '6px', background: '#ff0050', color: '#fff', fontSize: '10px', fontWeight: 900, textTransform: 'uppercase', letterSpacing: '1px', boxShadow: '0 0 15px rgba(255,0,80,0.6)' }}>
+                      🔴 LIVE ON AIR NOW
+                    </span>
+                  ) : featured.scheduledAirDate ? (
+                    <span style={{ padding: '4px 10px', borderRadius: '6px', background: 'rgba(0,212,255,0.2)', color: '#00d4ff', border: '1px solid rgba(0,212,255,0.4)', fontSize: '10px', fontWeight: 900, textTransform: 'uppercase', letterSpacing: '1px' }}>
+                      📅 AIRS {featured.scheduledAirDate} @ {featured.scheduledAirTime || '20:00'} ({featured.airTimeSlot || '1 Hr'})
+                    </span>
+                  ) : (
+                    <span style={{ padding: '4px 10px', borderRadius: '6px', background: accent, color: '#000', fontSize: '10px', fontWeight: 900, textTransform: 'uppercase', letterSpacing: '1px' }}>
+                      {isCourtneyBeeNet ? (
+                        featured.sport === 'wildnout' ? '🔥 Wild \'N Out' : featured.sport === 'standup' ? '🎤 Courtney Bee Comedy' : '♠️ We Playin\' Spades'
+                      ) : isBonaire ? (
+                        featured.sport === 'lifestyle' ? '🌴 Island Life' : featured.sport === 'diving' ? '🤿 Diving' : '🎣 Fishing'
+                      ) : isOlympian 
+                        ? '🏆 Mr. Olympia' 
+                        : (isMf ? '💪 Muscle & Fitness' : (isB2K ? '🎤 R&B Music' : (isKple ? (featured.sport === 'doc_wales' ? '🩺 Doc Wales Diaries' : featured.sport === 'tct_network' ? '📺 TCT Network' : featured.sport === 'act_local' ? '🎥 ACT Local' : featured.sport === 'the_walk' ? '🚶 The Walk TV' : featured.sport === 'enlace_usa' ? '🌎 Enlace USA' : featured.sport === 'positiv_movies' ? '🎬 Positiv Family' : '👶 Smile of a Child') : (isVibe ? (featured.sport === 'news' ? '📰 News' : featured.sport === 'foxnews' ? '🦊 Fox News' : featured.sport === 'politics' ? '⚖️ Politics' : featured.sport === 'entertainment' ? '🎭 Entertainment' : featured.sport === 'money' ? '💵 Money' : '🏈 Sports') : (isVibe100 ? (featured.sport === 'avo' ? '🎒 AVO Channel' : featured.sport === 'olympia' ? '🏆 Muscle & Fitness' : featured.sport === 'b2k' ? '🎤 B2K Channel' : featured.sport === 'kple' ? '📺 Christian Revival' : '📺 VIBE 100') : (featured.sport === 'cfb' ? '🏈 Football' : featured.sport === 'cbb' ? '🏀 Basketball' : '⚾ Baseball'))))))}
+                    </span>
+                  )}
+
+                  {featured.commercialBreakEnabled && (
+                    <span style={{ padding: '4px 10px', borderRadius: '6px', background: 'rgba(0,255,136,0.2)', color: '#00ff88', border: '1px solid rgba(0,255,136,0.4)', fontSize: '10px', fontWeight: 900, textTransform: 'uppercase', letterSpacing: '1px' }}>
+                      📣 Commercials: {featured.commercialFrequency || 'Every 15m'} {featured.adSponsorName ? `(${featured.adSponsorName})` : ''}
+                    </span>
+                  )}
+
                   {featured.duration > 0 && (
                     <span style={{ fontSize: '11px', color: '#888', display: 'flex', alignItems: 'center', gap: '4px' }}>
                       <Clock size={11} /> {formatDuration(featured.duration)}
@@ -2638,7 +2766,7 @@ export default function WatchLive({ accent = '#D35400', isCourtneyBee = false, i
                           return (
                             <iframe
                               id="watch-live-yt-iframe"
-                              src={`https://www.youtube.com/embed/${ytId}?autoplay=1&controls=1&rel=0`}
+                              src={`https://www.youtube.com/embed/${ytId}?autoplay=1&mute=1&controls=1&rel=0`}
                               title={activeVideo.headline}
                               frameBorder="0"
                               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
@@ -2651,7 +2779,7 @@ export default function WatchLive({ accent = '#D35400', isCourtneyBee = false, i
                           const dmId = match ? match[1] : activeVideo.id;
                           return (
                             <iframe
-                              src={`https://www.dailymotion.com/embed/video/${dmId}?autoplay=1`}
+                              src={`https://www.dailymotion.com/embed/video/${dmId}?autoplay=1&mute=1`}
                               title={activeVideo.headline}
                               frameBorder="0"
                               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
@@ -2667,6 +2795,7 @@ export default function WatchLive({ accent = '#D35400', isCourtneyBee = false, i
                               src={activeVideo.videoUrl}
                               controls
                               autoPlay
+                              muted
                               playsInline
                               preload="auto"
                               style={{ width: '100%', display: 'block', height: '100%', objectFit: 'contain' }}

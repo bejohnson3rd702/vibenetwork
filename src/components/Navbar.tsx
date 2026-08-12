@@ -105,6 +105,28 @@ const Navbar: React.FC<NavbarProps> = ({ user, onLoginClick, onAdminClick }) => 
 
   const isBonaire = isBonaireConfig(wlConfig);
 
+  const [userAvatar, setUserAvatar] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (user?.id) {
+      const metaAvatar = user.user_metadata?.avatar_url || user.avatar_url;
+      if (metaAvatar) {
+        setUserAvatar(metaAvatar);
+      } else {
+        supabase
+          .from('profiles')
+          .select('avatar_url')
+          .eq('id', user.id)
+          .single()
+          .then(({ data }) => {
+            if (data?.avatar_url) setUserAvatar(data.avatar_url);
+          });
+      }
+    } else {
+      setUserAvatar(null);
+    }
+  }, [user]);
+
   return (
     <nav className="px-mobile-sm gap-mobile-sm" style={{
       position: 'fixed',
@@ -133,7 +155,7 @@ const Navbar: React.FC<NavbarProps> = ({ user, onLoginClick, onAdminClick }) => 
       <ul className="hide-on-mobile hide-on-tablet" style={{ 
         display: 'flex', 
         listStyle: 'none', 
-        gap: '32px',
+        gap: '28px',
         margin: 0,
         padding: 0,
         fontFamily: 'var(--font-heading)',
@@ -210,7 +232,7 @@ const Navbar: React.FC<NavbarProps> = ({ user, onLoginClick, onAdminClick }) => 
         <div className="hide-on-mobile hide-on-tablet" style={{ display: 'flex', alignItems: 'center', gap: '8px', borderLeft: '1px solid rgba(255,255,255,0.2)', paddingLeft: '24px' }}>
           {user ? (
             <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
-              {((wlConfig?.owner_id && user?.id === wlConfig?.owner_id) || (!wlConfig?.owner_id && user?.user_metadata?.role === 'business') || user?.email?.toLowerCase().includes('bennie') || user?.email?.toLowerCase().includes('admin') || user?.user_metadata?.role === 'admin') && onAdminClick && (
+              {((wlConfig?.owner_id && user?.id === wlConfig?.owner_id) || (!wlConfig?.owner_id && user?.user_metadata?.role === 'business') || user?.email?.toLowerCase().includes('bennie') || user?.email?.toLowerCase().includes('joe') || user?.email?.toLowerCase().includes('admin') || user?.user_metadata?.role === 'admin') && onAdminClick && (
                 <button 
                   onClick={onAdminClick}
                   style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', background: appAccent || '#D35400', padding: '6px 14px', borderRadius: '8px', border: 'none' }}
@@ -221,8 +243,12 @@ const Navbar: React.FC<NavbarProps> = ({ user, onLoginClick, onAdminClick }) => 
                 </button>
               )}
               <Link to={`/profile${window.location.search}`} style={{ display: 'flex', alignItems: 'center', gap: '12px', cursor: 'pointer', textDecoration: 'none' }}>
-                <div style={{ width: '30px', height: '30px', borderRadius: '50%', background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  <span style={{ color: '#000', fontWeight: 'bold' }}>{user.email?.[0].toUpperCase()}</span>
+                <div style={{ width: '32px', height: '32px', borderRadius: '50%', background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', border: '1.5px solid rgba(255,255,255,0.3)', boxShadow: '0 2px 8px rgba(0,0,0,0.3)' }}>
+                  {userAvatar ? (
+                    <img src={userAvatar} alt="Profile" style={{ width: '100%', height: '100%', objectFit: 'cover' }} onError={() => setUserAvatar(null)} />
+                  ) : (
+                    <span style={{ color: '#000', fontWeight: 'bold', fontSize: '13px' }}>{user.email?.[0].toUpperCase()}</span>
+                  )}
                 </div>
                 <span style={{ fontFamily: 'var(--font-heading)', fontWeight: 600, fontSize: '12px', color: 'white', letterSpacing: '1px' }}>
                   Profile
@@ -244,8 +270,12 @@ const Navbar: React.FC<NavbarProps> = ({ user, onLoginClick, onAdminClick }) => 
               style={{ display: 'flex', alignItems: 'center', textDecoration: 'none' }}
               title="View Profile"
             >
-              <div style={{ width: '28px', height: '28px', borderRadius: '50%', background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1px solid rgba(255,255,255,0.15)' }}>
-                <span style={{ color: '#000', fontWeight: 'bold', fontSize: '11px' }}>{user.email?.[0].toUpperCase()}</span>
+              <div style={{ width: '30px', height: '30px', borderRadius: '50%', background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', border: '1px solid rgba(255,255,255,0.2)' }}>
+                {userAvatar ? (
+                  <img src={userAvatar} alt="Profile" style={{ width: '100%', height: '100%', objectFit: 'cover' }} onError={() => setUserAvatar(null)} />
+                ) : (
+                  <span style={{ color: '#000', fontWeight: 'bold', fontSize: '11px' }}>{user.email?.[0].toUpperCase()}</span>
+                )}
               </div>
             </Link>
           )}
@@ -270,7 +300,7 @@ const Navbar: React.FC<NavbarProps> = ({ user, onLoginClick, onAdminClick }) => 
                      System Options
                   </div>
                   
-                  {((wlConfig?.owner_id && user?.id === wlConfig?.owner_id) || (!wlConfig?.owner_id && user?.user_metadata?.role === 'business') || user?.email?.toLowerCase().includes('bennie') || user?.email?.toLowerCase().includes('admin') || user?.user_metadata?.role === 'admin') && onAdminClick && (
+                  {((wlConfig?.owner_id && user?.id === wlConfig?.owner_id) || (!wlConfig?.owner_id && user?.user_metadata?.role === 'business') || user?.email?.toLowerCase().includes('bennie') || user?.email?.toLowerCase().includes('joe') || user?.email?.toLowerCase().includes('admin') || user?.user_metadata?.role === 'admin') && onAdminClick && (
                     <div onClick={() => { setIsMenuOpen(false); onAdminClick(); }} style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '12px 16px', color: 'var(--text-primary)', textDecoration: 'none', fontSize: '14px', borderRadius: '8px', cursor: 'pointer', transition: 'background 0.2s' }} onMouseOver={e => e.currentTarget.style.background='rgba(255,255,255,0.1)'} onMouseOut={e => e.currentTarget.style.background='transparent'}>
                       <Settings size={16} /> Business Dashboard
                     </div>

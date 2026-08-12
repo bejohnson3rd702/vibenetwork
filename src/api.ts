@@ -52,12 +52,12 @@ export async function getCategoriesWithVideos(tenantId?: string) {
     // Filter out child networks
     if (wl.parent_network_id || wl.theme?.parent_network_id) return false;
     
-    // Filter out test networks (Noelani, Bennie, Leilani, Leiloe, etc.) and deleted/finfire networks
+    // Filter out test networks (Noelani, Leilani, Leiloe, etc.) and deleted/finfire networks
     if (
-      nameLower.includes('bennie') || nameLower.includes('noelani') || 
+      nameLower.includes('noelani') || 
       nameLower.includes('leilani') || nameLower.includes('leiloe') ||
       nameLower.includes('deleted') || nameLower.includes('finfire') ||
-      domainLower.includes('bennie') || domainLower.includes('noelani') ||
+      domainLower.includes('noelani') ||
       domainLower.includes('deleted') || domainLower.includes('finfire')
     ) {
       return false;

@@ -53,7 +53,7 @@ export default function BookingModal({ onClose, profile }: { onClose: () => void
       <div style={{ background: 'var(--bg-color)', width: '100%', maxWidth: '500px', maxHeight: '90vh', overflowY: 'auto', borderRadius: '24px', border: '1px solid rgba(255,255,255,0.1)', boxShadow: '0 25px 50px rgba(0,0,0,0.5)' }}>
         
         <div style={{ padding: '24px 30px', borderBottom: '1px solid rgba(255,255,255,0.05)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-           <h2 style={{ margin: 0, fontSize: '24px', fontWeight: 'bold' }}>Book Studio Time</h2>
+           <h2 style={{ margin: 0, fontSize: '24px', fontWeight: 'bold' }}>Schedule Appointment</h2>
            <button onClick={onClose} style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', padding: '8px' }}>
               <X size={24} />
            </button>
@@ -65,7 +65,7 @@ export default function BookingModal({ onClose, profile }: { onClose: () => void
                  <Calendar color="#00ff88" size={30} />
               </div>
               <h3 style={{ fontSize: '24px', margin: '0 0 10px 0' }}>Request Submitted</h3>
-              <p style={{ color: 'var(--text-muted)' }}>We have received your booking request. We will confirm your hourly slot shortly.</p>
+              <p style={{ color: 'var(--text-muted)' }}>We have received your appointment request. We will confirm your hourly slot shortly.</p>
            </div>
         ) : (
            <form onSubmit={handleSubmit} style={{ padding: '30px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
@@ -99,7 +99,7 @@ export default function BookingModal({ onClose, profile }: { onClose: () => void
               </div>
 
               <div style={{ marginTop: '10px' }}>
-                 <label style={{ display: 'block', marginBottom: '8px', fontWeight: 'bold', fontSize: '14px', color: '#ccc' }}>Would you like to add an image for your booking reference?</label>
+                 <label style={{ display: 'block', marginBottom: '8px', fontWeight: 'bold', fontSize: '14px', color: '#ccc' }}>Would you like to add an image for your appointment reference?</label>
                   <label 
                      onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
                      onDragLeave={() => setIsDragging(false)}

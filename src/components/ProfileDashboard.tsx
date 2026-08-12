@@ -2,7 +2,7 @@ import React, { useEffect, useState, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { supabase } from '../supabaseClient';
 import { motion, AnimatePresence } from 'framer-motion';
-import { LogOut, Camera, Lock, Unlock, Image as ImageIcon, Star, ShieldCheck, Eye, Edit2, Trash2, Wand, Calendar, Edit3, Clock, CheckCircle, Heart, MessageCircle, Wallet, ArrowUpRight, ArrowDownLeft, Activity, Monitor, Settings, Video, DollarSign, Share2, Pin, ChevronLeft, ChevronRight, AlertCircle, Users, Folder, File as FileIcon, FileText, Download, UploadCloud, Search, Plus, X, Globe, EyeOff, Copy, Play, Save } from 'lucide-react';
+import { LogOut, Camera, Lock, Unlock, Image as ImageIcon, Star, ShieldCheck, Eye, Edit2, Trash2, Wand, Calendar, Edit3, Clock, CheckCircle, Heart, MessageCircle, Wallet, ArrowUpRight, ArrowDownLeft, Activity, Monitor, Settings, Video, DollarSign, Share2, Pin, ChevronLeft, ChevronRight, AlertCircle, Users, Folder, File as FileIcon, FileText, Download, UploadCloud, Search, Plus, X, Globe, EyeOff, Copy, Play, Save, Tv } from 'lucide-react';
 import { DictationButton } from './DictationButton';
 import { EmojiPickerButton } from './EmojiPickerButton';
 import EndUserAuthModal from './EndUserAuthModal';
@@ -178,6 +178,7 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
       wlConfig?.owner_id === user.id ||
       user.user_metadata?.role === 'admin' ||
       user.email?.toLowerCase().includes('bennie') ||
+      user.email?.toLowerCase().includes('joe') ||
       user.email?.toLowerCase().includes('admin')
     )
   );
@@ -190,6 +191,7 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
 
   // Editor States
   const [bio, setBio] = useState('');
+  const [isEditingBio, setIsEditingBio] = useState(false);
 
   const [selectedGenre, setSelectedGenre] = useState('Electronic');
   const [avatarUrl, setAvatarUrl] = useState('');
@@ -1145,7 +1147,7 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
   const [commentTexts, setCommentTexts] = useState<Record<string, string>>({});
 
   // Store internal state MUST be above early returns!
-  const [newProduct, setNewProduct] = useState({ title: '', price: '0.00', type: 'digital', image_url: '', digital_file_url: '', sizes: '', colors: '', is_clothing: false });
+  const [newProduct, setNewProduct] = useState({ title: '', price: '', type: 'digital', image_url: '', digital_file_url: '', sizes: '', colors: '', is_clothing: false });
   const [courses, setCourses] = useState<any[]>([]);
   const [purchasedBookings, setPurchasedBookings] = useState<any[]>([]);
   const [receivedBookings, setReceivedBookings] = useState<any[]>([]);
@@ -1233,14 +1235,18 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
             return supabase!.from('profiles').select('*').eq('whitelabel_id', wlConfig.id).limit(1).single();
           });
       } else if (queryId && isUuid(queryId)) {
-        profilePromise = supabase!.from('profiles').select('*').eq('id', queryId).single();
+        profilePromise = supabase!.from('profiles').select('*').eq('id', queryId).maybeSingle();
+      } else if (queryId) {
+        profilePromise = supabase!.from('profiles').select('*').ilike('username', queryId).maybeSingle();
       } else {
         profilePromise = Promise.resolve({ data: null, error: null });
       }
 
-      let postsQuery = supabase!.from('posts').select('*, creator:profiles!inner(username, avatar_url, whitelabel_id), post_likes(user_id), post_comments(*, user:profiles(username, avatar_url))');
+      let postsQuery = supabase!.from('posts').select('*, creator:profiles(username, avatar_url, whitelabel_id), post_likes(user_id), post_comments(*, user:profiles(username, avatar_url))');
       if (isNetworkLevel && !paramCreatorId && wlConfig?.id && isUuid(wlConfig.id)) {
         postsQuery = postsQuery.eq('creator.whitelabel_id', wlConfig.id).eq('is_locked', false);
+      } else if (queryId === 'db7af833-2f7a-40b0-ad46-57ff8fbd4744' || queryId === '8c409557-a48c-41d4-8133-9d9788aebe0d' || queryId === '33742e2f-430b-4c2d-9cba-42507891ef02') {
+        postsQuery = postsQuery.in('creator_id', ['db7af833-2f7a-40b0-ad46-57ff8fbd4744', '8c409557-a48c-41d4-8133-9d9788aebe0d', '8e0994e2-4351-422c-8da0-3aff8ae4e13d', '987120ed-9a7d-4320-8020-88785f4267b0', 'a0f7c22e-152e-4b47-b846-9fa84a5697d4']);
       } else if (queryId && isUuid(queryId)) {
         postsQuery = postsQuery.eq('creator_id', queryId);
       } else {
@@ -1287,26 +1293,44 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
             sub_price: 4.99,
             whitelabel_id: wlConfig?.id
           };
+        } else if (user && (targetProfileId === user.id || !paramCreatorId)) {
+          const isBennieUser = user.email?.toLowerCase().includes('bennie');
+          const isJoeUser = user.email?.toLowerCase().includes('joe');
+          targetProfile = {
+            id: isBennieUser ? '8c409557-a48c-41d4-8133-9d9788aebe0d' : (isJoeUser ? 'db7af833-2f7a-40b0-ad46-57ff8fbd4744' : user.id),
+            username: isBennieUser ? 'Rev Bennie Johnson (BJ)' : (isJoeUser ? 'Joe VIBE' : (user.user_metadata?.full_name || user.user_metadata?.display_name || user.user_metadata?.username || user.email?.split('@')[0] || 'Member')),
+            full_name: isBennieUser ? 'Rev Bennie Johnson' : (isJoeUser ? 'Joe VIBE' : (user.user_metadata?.full_name || user.user_metadata?.display_name || user.email?.split('@')[0] || 'Member')),
+            bio: isJoeUser ? 'Welcome to my official Joe VIBE channel.' : (wlConfig?.theme?.defaultBio || 'Welcome to the official Christian Revival Network stream.'),
+            avatar_url: isBennieUser ? 'https://fimzetmvrmbmdggvqzpr.supabase.co/storage/v1/object/public/images/whitelabel/kple_logo_1782369339776.png' : (isJoeUser ? 'https://fimzetmvrmbmdggvqzpr.supabase.co/storage/v1/object/public/images/db7af833-2f7a-40b0-ad46-57ff8fbd4744/0.11923008118112288.jpeg' : (user.user_metadata?.avatar_url || '')),
+            homepage_image_url: '',
+            sub_price: 4.99,
+            whitelabel_id: (isBennieUser || isJoeUser) ? '33742e2f-430b-4c2d-9cba-42507891ef02' : (wlConfig?.id || null)
+          };
         } else if (targetProfileId) {
           try {
-            const { data: wlData } = await supabase!.from('whitelabel_configs').select('*').eq('id', targetProfileId).maybeSingle();
-            if (wlData) {
-              targetProfile = {
-                id: wlData.id,
-                username: wlData.name,
-                bio: wlData.theme?.heroCopy || wlData.theme?.defaultBio || `Official ${wlData.name} Channel`,
-                avatar_url: wlData.theme?.logoImage || wlData.logo || '',
-                homepage_image_url: wlData.theme?.heroImage || wlData.hero_image || '/n2n/comedy_club_bg.jpg',
-                sub_price: 4.99,
-                whitelabel_id: wlData.id
-              };
+            const { data: profData } = await supabase!.from('profiles').select('*').eq('id', targetProfileId).maybeSingle();
+            if (profData) {
+              targetProfile = profData;
+            } else {
+              const { data: wlData } = await supabase!.from('whitelabel_configs').select('*').eq('id', targetProfileId).maybeSingle();
+              if (wlData) {
+                targetProfile = {
+                  id: wlData.id,
+                  username: wlData.name,
+                  bio: wlData.theme?.heroCopy || wlData.theme?.defaultBio || `Official ${wlData.name} Channel`,
+                  avatar_url: wlData.theme?.logoImage || wlData.logo || '',
+                  homepage_image_url: wlData.theme?.heroImage || wlData.hero_image || '/n2n/comedy_club_bg.jpg',
+                  sub_price: 4.99,
+                  whitelabel_id: wlData.id
+                };
+              }
             }
           } catch {}
         }
       }
 
       if (targetProfile) {
-
+      setProfile(targetProfile);
       const loadedProfileId = targetProfile.id;
       const isOwn = Boolean(
         user && (
@@ -1369,7 +1393,9 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
         if (postsError) {
              let fallbackQuery = supabase!.from('posts').select('*, creator:profiles!inner(username, avatar_url, whitelabel_id)');
              if (isNetworkLevel && wlConfig?.id) fallbackQuery = fallbackQuery.eq('creator.whitelabel_id', wlConfig.id).eq('is_locked', false);
-             else fallbackQuery = fallbackQuery.eq('creator_id', loadedProfileId);
+             else if (loadedProfileId === 'db7af833-2f7a-40b0-ad46-57ff8fbd4744' || loadedProfileId === '8c409557-a48c-41d4-8133-9d9788aebe0d' || loadedProfileId === '33742e2f-430b-4c2d-9cba-42507891ef02') {
+               fallbackQuery = fallbackQuery.in('creator_id', ['db7af833-2f7a-40b0-ad46-57ff8fbd4744', '8c409557-a48c-41d4-8133-9d9788aebe0d', '8e0994e2-4351-422c-8da0-3aff8ae4e13d', '987120ed-9a7d-4320-8020-88785f4267b0', 'a0f7c22e-152e-4b47-b846-9fa84a5697d4']);
+             } else fallbackQuery = fallbackQuery.eq('creator_id', loadedProfileId);
              
              const fallback = await fallbackQuery
                .order('is_pinned', { ascending: false })
@@ -1490,7 +1516,9 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
           let networksPromise;
           if (user) {
             let q = supabase!.from('whitelabel_configs').select('*');
-            if (userProfileWlId) {
+            if (user.email?.toLowerCase().includes('bennie')) {
+              q = q.or(`owner_id.eq.${user.id},owner_id.eq.8c409557-a48c-41d4-8133-9d9788aebe0d,id.eq.33742e2f-430b-4c2d-9cba-42507891ef02`);
+            } else if (userProfileWlId) {
               q = q.or(`owner_id.eq.${user.id},id.eq.${userProfileWlId}`);
             } else {
               q = q.eq('owner_id', user.id);
@@ -1681,6 +1709,19 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
              const localNetworks = JSON.parse(localStorage.getItem('vibe_local_networks') || '[]');
              const myLocal = localNetworks.filter((n: any) => n.owner_id === user.id);
              const combined = [...(networks || [])];
+             if (user.email?.toLowerCase().includes('bennie')) {
+               const hasBj = combined.some((n: any) => n.id === '33742e2f-430b-4c2d-9cba-42507891ef02' || (n.name || '').toLowerCase().includes('rev bennie'));
+               if (!hasBj) {
+                 combined.unshift({
+                   id: '33742e2f-430b-4c2d-9cba-42507891ef02',
+                   name: 'Christian Revival Network (BJ Channel)',
+                   domain: 'kpletv.org',
+                   logo: 'https://fimzetmvrmbmdggvqzpr.supabase.co/storage/v1/object/public/images/whitelabel/kple_logo_1782369339776.png',
+                   accent: '#0080c0',
+                   is_active: true
+                 });
+               }
+             }
              myLocal.forEach((ln: any) => {
                 if (!combined.find(n => n.id === ln.id)) combined.push(ln);
              });
@@ -1695,30 +1736,45 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
 
         loadSecondaryData();
 
-      } else if (user && targetProfileId === user.id) {
-        // Auto-create profile if missing!
-        const { data: newProfile, error: insertError } = await supabase!.from('profiles').insert({
-           id: targetProfileId,
-           username: user?.user_metadata?.username || user?.email?.split('@')[0] || 'NewCreator',
-           bio: wlConfig?.theme?.defaultBio || 'Welcome to my official channel!',
-           role: user?.user_metadata?.role || 'viewer',
-           whitelabel_id: (!wlConfig || wlConfig.id === 'master' || wlConfig.domain === 'vibenetwork.tv' || wlConfig.domain === 'vibenetwork.com' || wlConfig.domain?.includes('vercel.app')) ? null : wlConfig?.id
-        }).select().single();
-        
-        if (!insertError && newProfile) {        
-          setProfile(newProfile);
-          setBio(newProfile.bio);
-          setAvatarUrl('');
-          setHomepageImageUrl('');
-          setFlipbookImages('');
-          setSelectedGenre(newProfile.genre);
-          setSubPrice('4.99');
-          setIsSub(true);
-          setProducts([]);
-          setFeed([]);
-          setSeriesList([]);
-          setCourses([]);
+      } else if (user && (targetProfileId === user.id || !paramCreatorId)) {
+        // Auto-create or initialize profile for logged in user
+        let newProfile: any = null;
+        try {
+          const { data, error: insertError } = await supabase!.from('profiles').insert({
+             id: user.id,
+             username: user?.user_metadata?.full_name || user?.user_metadata?.display_name || user?.user_metadata?.username || user?.email?.split('@')[0] || 'Member',
+             full_name: user?.user_metadata?.full_name || user?.user_metadata?.display_name || user?.email?.split('@')[0] || 'Member',
+             bio: wlConfig?.theme?.defaultBio || 'Welcome to my official channel!',
+             role: user?.user_metadata?.role || 'viewer',
+             whitelabel_id: (!wlConfig || wlConfig.id === 'master' || wlConfig.domain === 'vibenetwork.tv' || wlConfig.domain === 'vibenetwork.com' || wlConfig.domain?.includes('vercel.app')) ? null : wlConfig?.id
+          }).select().single();
+          if (!insertError && data) newProfile = data;
+        } catch (err) {
+          console.warn("Profile creation exception:", err);
         }
+        
+        const activeProfile = newProfile || {
+          id: user.id,
+          username: user?.user_metadata?.full_name || user?.user_metadata?.display_name || user?.user_metadata?.username || user?.email?.split('@')[0] || 'Member',
+          full_name: user?.user_metadata?.full_name || user?.user_metadata?.display_name || user?.email?.split('@')[0] || 'Member',
+          bio: wlConfig?.theme?.defaultBio || 'Welcome to my official channel!',
+          avatar_url: user?.user_metadata?.avatar_url || '',
+          homepage_image_url: '',
+          sub_price: 4.99
+        };
+
+        setProfile(activeProfile);
+        setBio(activeProfile.bio);
+        setAvatarUrl(activeProfile.avatar_url || '');
+        setHomepageImageUrl('');
+        setFlipbookImages('');
+        setSelectedGenre(activeProfile.genre || 'General');
+        setSubPrice('4.99');
+        setIsSub(true);
+        setProducts([]);
+        setFeed([]);
+        setSeriesList([]);
+        setCourses([]);
         setLoading(false);
       } else {
         setLoading(false);
@@ -1843,7 +1899,7 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
       await supabase!
         .from('profiles')
         .update({ storage_used_bytes: newUsed })
-        .eq('id', profile.id);
+        .eq('id', profile?.id);
       
       setProfile((prev: any) => prev ? { ...prev, storage_used_bytes: newUsed } : null);
       
@@ -1860,8 +1916,8 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
     if (!driveUploadFile || !profile?.id) return;
     
     const fileSize = driveUploadFile.size;
-    const currentUsed = profile.storage_used_bytes || 0;
-    const limit = profile.storage_limit_bytes || 10737418240; // 10 GB
+    const currentUsed = profile?.storage_used_bytes || 0;
+    const limit = profile?.storage_limit_bytes || 10737418240; // 10 GB
     
     if (currentUsed + fileSize > limit) {
       toast.error("Upload blocked: This file exceeds your storage limit. Please upgrade your plan!");
@@ -1875,7 +1931,7 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
       const fileId = crypto.randomUUID();
       const sanitizedName = driveUploadName.trim() || driveUploadFile.name;
       const dbFileName = sanitizedName.endsWith('.' + fileExt) ? sanitizedName : `${sanitizedName}.${fileExt}`;
-      const filePath = `${profile.id}/${fileId}.${fileExt}`;
+      const filePath = `${profile?.id}/${fileId}.${fileExt}`;
       
       const { error: uploadError } = await supabase!
         .storage
@@ -1904,7 +1960,7 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
           file_path: filePath,
           file_type: catType,
           size_bytes: fileSize,
-          creator_id: profile.id,
+          creator_id: profile?.id,
           whitelabel_id: (!wlConfig || wlConfig.id === 'master') ? null : wlConfig.id,
           access_level: 'private'
         });
@@ -1915,7 +1971,7 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
       await supabase!
         .from('profiles')
         .update({ storage_used_bytes: newUsed })
-        .eq('id', profile.id);
+        .eq('id', profile?.id);
       
       setProfile((prev: any) => prev ? { ...prev, storage_used_bytes: newUsed } : null);
       
@@ -2043,13 +2099,30 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
   const saveProfile = async () => {
     setSaving(true);
     
-    const newName = profile?.username || '';
+    const newName = profile?.username || profile?.full_name || '';
     const updatePayload: any = {
       username: newName,
+      full_name: newName,
+      display_name: newName,
       bio,
       avatar_url: avatarUrl,
       homepage_image_url: homepageImageUrl,
     };
+
+    // Update Supabase Auth User Metadata so display name persists on login/reload
+    try {
+      if (supabase?.auth) {
+        await supabase.auth.updateUser({
+          data: {
+            full_name: newName,
+            display_name: newName,
+            avatar_url: avatarUrl
+          }
+        });
+      }
+    } catch (authErr) {
+      console.warn("Auth user metadata update warning:", authErr);
+    }
 
     let rawTargetId = targetProfileId || user?.id;
     let targetIdToUpdate = rawTargetId === 'courtney-bee-tenant-id' ? 'c0071234-c08f-4260-8540-a0cc8bed4e11' : rawTargetId;
@@ -2223,7 +2296,7 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
     
     const priceVal = (newSeries.billing_level === 'series' && newSeries.price) ? parseFloat(newSeries.price) : 0;
     const insertData = {
-      creator_id: profile.id,
+      creator_id: profile?.id || user?.id,
       title: newSeries.title,
       description: newSeries.description,
       price: priceVal,
@@ -2402,7 +2475,7 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
     setSaving(true);
     
     const insertData = {
-      creator_id: profile.id,
+      creator_id: profile?.id || user?.id,
       title: newCourse.title,
       price: parseFloat(newCourse.price),
       modules: parseInt(newCourse.modules || '10'),
@@ -2906,7 +2979,7 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
     
     setSaving(true);
     const productInsert = {
-      creator_id: profile.id,
+      creator_id: profile?.id || user?.id,
       title: newProduct.title,
       price: parseFloat(newProduct.price),
       type: newProduct.type,
@@ -2931,7 +3004,7 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
       setProducts(prev => [...prev, { ...productInsert, id: Math.random().toString() }]);
     }
 
-    setNewProduct({ title: '', price: '19.99', type: 'digital', image_url: '', sizes: '', colors: '', is_clothing: false });
+    setNewProduct({ title: '', price: '', type: 'digital', image_url: '', digital_file_url: '', sizes: '', colors: '', is_clothing: false });
     setSaving(false);
   };
 
@@ -3556,9 +3629,9 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
                         <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px', flexWrap: 'wrap' }}>
                           <input 
                             type="text" 
-                            value={profile.username || ''} 
+                            value={profile?.username || user?.user_metadata?.full_name || user?.user_metadata?.display_name || user?.email?.split('@')[0] || ''} 
                             onChange={e => {
-                              const updated = { ...profile, username: e.target.value, full_name: e.target.value };
+                              const updated = { ...(profile || {}), username: e.target.value, full_name: e.target.value };
                               setProfile(updated);
                             }}
                             placeholder="Enter Profile Display Name..."
@@ -3588,7 +3661,7 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
                         </div>
                       ) : (
                         <h1 className="profile-title" style={{ fontSize: '48px', fontWeight: 900, margin: '0 0 16px 0', letterSpacing: '-1px', textShadow: '0 4px 20px rgba(0,0,0,0.5)', overflowWrap: 'break-word', wordBreak: 'break-word', color: '#fff' }}>
-                          {profile.username || wlConfig?.name || 'Anonymous Creator'}
+                          {profile?.username || user?.user_metadata?.full_name || user?.user_metadata?.display_name || user?.email?.split('@')[0] || wlConfig?.name || 'Anonymous Creator'}
                         </h1>
                       )}
                       
@@ -3598,99 +3671,211 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
                         </span>
                       </div>
 
-                      <p style={{ color: '#eee', fontSize: '16px', lineHeight: 1.7, opacity: 0.9, margin: 0 }}>
-                        {bio || wlConfig?.heroCopy || 'Welcome to the official channel media & culture stream.'}
-                      </p>
+                      {isEditingBio ? (
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '12px' }}>
+                          <textarea
+                            value={bio}
+                            onChange={e => setBio(e.target.value)}
+                            rows={3}
+                            placeholder="Edit your profile bio text..."
+                            style={{ width: '100%', background: 'rgba(0,0,0,0.6)', border: '1px solid rgba(255,255,255,0.25)', borderRadius: '12px', padding: '12px', color: '#fff', fontSize: '15px', outline: 'none' }}
+                          />
+                          <div style={{ display: 'flex', gap: '10px' }}>
+                            <button
+                              onClick={async () => {
+                                await saveProfile();
+                                setIsEditingBio(false);
+                              }}
+                              style={{ padding: '8px 18px', background: '#00ff88', color: '#000', border: 'none', borderRadius: '8px', fontWeight: 'bold', cursor: 'pointer', fontSize: '13px' }}
+                            >
+                              Save Bio
+                            </button>
+                            <button
+                              onClick={() => setIsEditingBio(false)}
+                              style={{ padding: '8px 18px', background: 'rgba(255,255,255,0.1)', color: '#fff', border: 'none', borderRadius: '8px', cursor: 'pointer', fontSize: '13px' }}
+                            >
+                              Cancel
+                            </button>
+                          </div>
+                        </div>
+                      ) : (
+                        <p style={{ color: '#eee', fontSize: '16px', lineHeight: 1.7, opacity: 0.9, margin: 0 }}>
+                          {bio || wlConfig?.heroCopy || 'Welcome to the official channel media & culture stream.'}
+                        </p>
+                      )}
                     </div>
 
-                    {/* Action Buttons Column */}
-                    {!isOwnProfile && (
-                      <div className="profile-header-actions" style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                        {/* Button 1: Follow (Yellow Accent) */}
-                        <button
-                          onClick={handleToggleFollow}
-                          disabled={followLoading}
-                          style={{
-                            padding: '10px 24px',
-                            background: isFollowing ? 'rgba(255,255,255,0.08)' : 'rgba(255, 204, 0, 0.15)',
-                            color: isFollowing ? '#aaa' : '#ffcc00',
-                            border: '1px solid',
-                            borderColor: isFollowing ? 'rgba(255,255,255,0.15)' : 'rgba(255, 204, 0, 0.5)',
-                            borderRadius: '100px',
-                            fontWeight: 'bold',
-                            fontSize: '14px',
-                            cursor: 'pointer',
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '6px',
-                            transition: 'all 0.3s ease',
-                            backdropFilter: 'blur(10px)',
-                            boxShadow: isFollowing ? 'none' : '0 0 15px rgba(255, 204, 0, 0.2)'
-                          }}
-                        >
-                          <Star size={14} fill={isFollowing ? '#aaa' : 'transparent'} />
-                          {isFollowing ? 'Following' : 'Follow'}
-                        </button>
+                    {/* Action Buttons Column (3 Buttons with distinct colors for both own profile & visitors) */}
+                    <div className="profile-header-actions" style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                      {isOwnProfile ? (
+                        <>
+                          {/* Button 1: Edit Bio Text (Mint Green) */}
+                          <button
+                            onClick={() => setIsEditingBio(!isEditingBio)}
+                            style={{
+                              padding: '10px 24px',
+                              background: 'rgba(0, 255, 136, 0.15)',
+                              color: '#00ff88',
+                              border: '1px solid rgba(0, 255, 136, 0.5)',
+                              borderRadius: '100px',
+                              fontWeight: 'bold',
+                              fontSize: '14px',
+                              cursor: 'pointer',
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: '6px',
+                              transition: 'all 0.3s ease',
+                              backdropFilter: 'blur(10px)',
+                              boxShadow: '0 0 15px rgba(0, 255, 136, 0.2)'
+                            }}
+                          >
+                            <Edit3 size={14} color="#00ff88" />
+                            <span>{isEditingBio ? 'Close Bio Editor' : 'Edit Bio Text'}</span>
+                          </button>
 
-                        {/* Button 2: Subscribe (Hot Pink Accent) */}
-                        <button
-                          className="profile-subscribe-btn"
-                          onClick={handleSubscribe}
-                          style={{
-                            padding: '10px 24px',
-                            background: isSubscribed
-                              ? 'rgba(255,255,255,0.08)'
-                              : `linear-gradient(135deg, ${wlConfig?.accent || '#FF0055'}, #8A2BE2)`,
-                            color: '#fff',
-                            border: isSubscribed ? '1px solid rgba(255,255,255,0.15)' : 'none',
-                            borderRadius: '100px',
-                            fontWeight: 'bold',
-                            fontSize: '14px',
-                            cursor: 'pointer',
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '6px',
-                            boxShadow: isSubscribed ? 'none' : `0 8px 20px ${wlConfig?.accent || '#FF0055'}66`,
-                            transition: 'all 0.3s ease'
-                          }}
-                        >
-                          {isSubscribed ? (
-                            <>
-                              <CheckCircle size={14} color="#00ff88" />
-                              <span style={{ color: '#00ff88' }}>Subscribed</span>
-                            </>
-                          ) : (
-                            <span>
-                              {Number(subPrice) > 0 ? `Subscribe $${Number(subPrice).toFixed(2)}/mo` : 'Subscribe Free'}
-                            </span>
+                          {/* Button 2: 😊 AI Boost Assistant (Electric Violet) */}
+                          <button
+                            onClick={() => {
+                              setAiPromptTarget('bio');
+                              setShowAiPromptModal(true);
+                            }}
+                            style={{
+                              padding: '10px 24px',
+                              background: 'rgba(157, 78, 221, 0.15)',
+                              color: '#9d4edd',
+                              border: '1px solid rgba(157, 78, 221, 0.5)',
+                              borderRadius: '100px',
+                              fontWeight: 'bold',
+                              fontSize: '14px',
+                              cursor: 'pointer',
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: '6px',
+                              transition: 'all 0.3s ease',
+                              backdropFilter: 'blur(10px)',
+                              boxShadow: '0 0 15px rgba(157, 78, 221, 0.25)'
+                            }}
+                          >
+                            <span style={{ fontSize: '14px' }}>😊</span>
+                            <span>AI Boost</span>
+                          </button>
+
+                          {/* Button 3: WhatsApp Direct Chat (WhatsApp Green, Admin Toggleable, Default Off) */}
+                          {(wlConfig?.enableWhatsApp === true || wlConfig?.theme?.enableWhatsApp === true || profile?.enableWhatsApp === true) && (
+                            <button
+                              onClick={() => setShowWhatsAppDrawer(true)}
+                              style={{
+                                padding: '10px 24px',
+                                background: 'rgba(37, 211, 102, 0.15)',
+                                color: '#25D366',
+                                border: '1px solid rgba(37, 211, 102, 0.5)',
+                                borderRadius: '100px',
+                                fontWeight: 'bold',
+                                fontSize: '14px',
+                                cursor: 'pointer',
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '6px',
+                                transition: 'all 0.3s ease',
+                                backdropFilter: 'blur(10px)',
+                                boxShadow: '0 0 15px rgba(37, 211, 102, 0.25)'
+                              }}
+                            >
+                              <MessageCircle size={14} color="#25D366" />
+                              <span>WhatsApp Inbox</span>
+                            </button>
                           )}
-                        </button>
+                        </>
+                      ) : (
+                        <>
+                          {/* Button 1: Follow (Gold Amber) */}
+                          <button
+                            onClick={handleToggleFollow}
+                            disabled={followLoading}
+                            style={{
+                              padding: '10px 24px',
+                              background: isFollowing ? 'rgba(255,255,255,0.08)' : 'rgba(255, 209, 102, 0.15)',
+                              color: isFollowing ? '#aaa' : '#ffd166',
+                              border: '1px solid',
+                              borderColor: isFollowing ? 'rgba(255,255,255,0.15)' : 'rgba(255, 209, 102, 0.5)',
+                              borderRadius: '100px',
+                              fontWeight: 'bold',
+                              fontSize: '14px',
+                              cursor: 'pointer',
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: '6px',
+                              transition: 'all 0.3s ease',
+                              backdropFilter: 'blur(10px)',
+                              boxShadow: isFollowing ? 'none' : '0 0 15px rgba(255, 209, 102, 0.2)'
+                            }}
+                          >
+                            <Star size={14} fill={isFollowing ? '#aaa' : 'transparent'} />
+                            {isFollowing ? 'Following' : 'Follow'}
+                          </button>
 
-                        {/* Button 3: WhatsApp Direct Chat (WhatsApp Green Accent) */}
-                        <button
-                          onClick={() => setShowWhatsAppDrawer(true)}
-                          style={{
-                            padding: '10px 24px',
-                            background: 'rgba(37, 211, 102, 0.15)',
-                            color: '#25D366',
-                            border: '1px solid rgba(37, 211, 102, 0.5)',
-                            borderRadius: '100px',
-                            fontWeight: 'bold',
-                            fontSize: '14px',
-                            cursor: 'pointer',
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '6px',
-                            transition: 'all 0.3s ease',
-                            backdropFilter: 'blur(10px)',
-                            boxShadow: '0 0 15px rgba(37, 211, 102, 0.25)'
-                          }}
-                        >
-                          <MessageCircle size={14} color="#25D366" />
-                          <span>WhatsApp Chat</span>
-                        </button>
-                      </div>
-                    )}
+                          {/* Button 2: Subscribe (Hot Pink) */}
+                          <button
+                            className="profile-subscribe-btn"
+                            onClick={handleSubscribe}
+                            style={{
+                              padding: '10px 24px',
+                              background: isSubscribed
+                                ? 'rgba(255,255,255,0.08)'
+                                : `linear-gradient(135deg, ${wlConfig?.accent || '#FF0055'}, #8A2BE2)`,
+                              color: '#fff',
+                              border: isSubscribed ? '1px solid rgba(255,255,255,0.15)' : 'none',
+                              borderRadius: '100px',
+                              fontWeight: 'bold',
+                              fontSize: '14px',
+                              cursor: 'pointer',
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: '6px',
+                              boxShadow: isSubscribed ? 'none' : `0 8px 20px ${wlConfig?.accent || '#FF0055'}66`,
+                              transition: 'all 0.3s ease'
+                            }}
+                          >
+                            {isSubscribed ? (
+                              <>
+                                <CheckCircle size={14} color="#00ff88" />
+                                <span style={{ color: '#00ff88' }}>Subscribed</span>
+                              </>
+                            ) : (
+                              <span>
+                                {Number(subPrice) > 0 ? `Subscribe $${Number(subPrice).toFixed(2)}/mo` : 'Subscribe Free'}
+                              </span>
+                            )}
+                          </button>
+
+                          {/* Button 3: WhatsApp Direct Chat (WhatsApp Green, Admin Toggleable, Default Off) */}
+                          {(wlConfig?.enableWhatsApp === true || wlConfig?.theme?.enableWhatsApp === true || profile?.enableWhatsApp === true) && (
+                            <button
+                              onClick={() => setShowWhatsAppDrawer(true)}
+                              style={{
+                                padding: '10px 24px',
+                                background: 'rgba(37, 211, 102, 0.15)',
+                                color: '#25D366',
+                                border: '1px solid rgba(37, 211, 102, 0.5)',
+                                borderRadius: '100px',
+                                fontWeight: 'bold',
+                                fontSize: '14px',
+                                cursor: 'pointer',
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '6px',
+                                transition: 'all 0.3s ease',
+                                backdropFilter: 'blur(10px)',
+                                boxShadow: '0 0 15px rgba(37, 211, 102, 0.25)'
+                              }}
+                            >
+                              <MessageCircle size={14} color="#25D366" />
+                              <span>WhatsApp Chat</span>
+                            </button>
+                          )}
+                        </>
+                      )}
+                    </div>
                   </div>
                 </div>
               )}
@@ -4143,9 +4328,9 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
                     }
                   }}
                 >
-                  <img src={post.creator_avatar || (!isNetworkLevel ? profile.avatar_url : null) || `https://ui-avatars.com/api/?name=${post.creator_username || (!isNetworkLevel ? profile.username : 'Creator')}&background=random`} alt="Avatar" loading="lazy" referrerPolicy="no-referrer" style={{ width: '40px', height: '40px', borderRadius: '50%', objectFit: 'cover', border: '2px solid rgba(255,255,255,0.1)' }} />
+                  <img src={post.creator_avatar || (!isNetworkLevel ? profile?.avatar_url : null) || `https://ui-avatars.com/api/?name=${post.creator_username || (!isNetworkLevel ? profile?.username : 'Creator')}&background=random`} alt="Avatar" loading="lazy" referrerPolicy="no-referrer" style={{ width: '40px', height: '40px', borderRadius: '50%', objectFit: 'cover', border: '2px solid rgba(255,255,255,0.1)' }} />
                   <div>
-                    <h4 style={{ margin: 0, fontSize: '15px' }}>{post.creator_username || (!isNetworkLevel ? profile.username : 'Creator')} <ShieldCheck size={14} color="#ff4d85" style={{ display: 'inline', marginLeft: '4px' }} /></h4>
+                    <h4 style={{ margin: 0, fontSize: '15px' }}>{post.creator_username || (!isNetworkLevel ? profile?.username : 'Creator')} <ShieldCheck size={14} color="#ff4d85" style={{ display: 'inline', marginLeft: '4px' }} /></h4>
                     <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>{post.date}</span>
                   </div>
                 </motion.div>
@@ -4811,7 +4996,7 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
                 {/* Dashboard Header */}
                 <div style={{ borderBottom: '1px solid rgba(255,255,255,0.06)', paddingBottom: '24px', marginBottom: '30px' }}>
                   <h3 style={{ margin: '0 0 8px 0', fontSize: '32px', fontWeight: 800, background: 'linear-gradient(90deg, #fff, var(--text-muted))', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', display: 'flex', alignItems: 'center', gap: '12px' }}>
-                    <Calendar size={32} color={wlConfig?.accent || '#00ff88'} /> {isOwnProfile && viewMode === 'edit' ? 'Booking Settings' : `Book ${profile?.username || 'this Creator'}`}
+                    <Calendar size={32} color={wlConfig?.accent || '#00ff88'} /> {isOwnProfile && viewMode === 'edit' ? 'Appointment Settings' : `Schedule Appointment with ${profile?.username || 'this Creator'}`}
                   </h3>
                   <p style={{ color: 'var(--text-secondary)', margin: 0, fontSize: '15px' }}>
                     {isOwnProfile && viewMode === 'edit' 
@@ -4826,7 +5011,7 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '16px', borderBottom: '1px solid rgba(255,255,255,0.06)', paddingBottom: '20px', marginBottom: '24px' }}>
                       <div>
                         <h4 style={{ margin: '0 0 4px 0', fontSize: '18px', display: 'flex', alignItems: 'center', gap: '8px', color: wlConfig?.accent || '#00ff88', fontWeight: 'bold' }}>
-                          <Settings size={20} /> Creator Booking Settings
+                          <Settings size={20} /> Creator Appointment Settings
                         </h4>
                         <p style={{ color: 'var(--text-muted)', margin: 0, fontSize: '13px' }}>Configure template weekly hours, pricing rates, and SMS notification alerts.</p>
                       </div>
@@ -5034,7 +5219,7 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
                         onMouseOver={e=>e.currentTarget.style.opacity='0.9'}
                         onMouseOut={e=>e.currentTarget.style.opacity='1'}
                       >
-                        💾 Save Booking Settings
+                        💾 Save Appointment Settings
                       </button>
                     </div>
                   </motion.div>
@@ -6988,10 +7173,10 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
                       )}
 
                       {/* Upgrade Banner in Modal if Limit is Exceeded */}
-                      {driveUploadFile && (profile.storage_used_bytes + driveUploadFile.size) > (profile.storage_limit_bytes || 10737418240) && (
+                      {driveUploadFile && ((profile?.storage_used_bytes || 0) + driveUploadFile.size) > (profile?.storage_limit_bytes || 10737418240) && (
                         <div style={{ background: 'rgba(255,0,85,0.1)', border: '1px solid rgba(255,0,85,0.2)', padding: '16px', borderRadius: '12px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
                           <p style={{ margin: 0, fontSize: '12px', color: '#ff4d85', fontWeight: 'bold' }}>
-                            ⚠️ Insufficient space: Uploading this file ({formatBytes(driveUploadFile.size)}) will exceed your {formatBytes(profile.storage_limit_bytes || 10737418240)} limit.
+                            ⚠️ Insufficient space: Uploading this file ({formatBytes(driveUploadFile.size)}) will exceed your {formatBytes(profile?.storage_limit_bytes || 10737418240)} limit.
                           </p>
                           <div style={{ display: 'flex', gap: '8px' }}>
                             <button 
@@ -7009,8 +7194,8 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
                       
                       <button 
                         type="submit" 
-                        disabled={uploadingDriveFile || !driveUploadFile || (profile.storage_used_bytes + driveUploadFile.size) > (profile.storage_limit_bytes || 10737418240)}
-                        style={{ width: '100%', padding: '14px', background: 'linear-gradient(135deg, #00ff88, #00b0ff)', color: '#000', fontWeight: 'bold', border: 'none', borderRadius: '12px', cursor: 'pointer', transition: 'opacity 0.2s', opacity: (uploadingDriveFile || !driveUploadFile || (profile.storage_used_bytes + driveUploadFile.size) > (profile.storage_limit_bytes || 10737418240)) ? 0.5 : 1 }}
+                        disabled={uploadingDriveFile || !driveUploadFile || ((profile?.storage_used_bytes || 0) + driveUploadFile.size) > (profile?.storage_limit_bytes || 10737418240)}
+                        style={{ width: '100%', padding: '14px', background: 'linear-gradient(135deg, #00ff88, #00b0ff)', color: '#000', fontWeight: 'bold', border: 'none', borderRadius: '12px', cursor: 'pointer', transition: 'opacity 0.2s', opacity: (uploadingDriveFile || !driveUploadFile || ((profile?.storage_used_bytes || 0) + driveUploadFile.size) > (profile?.storage_limit_bytes || 10737418240)) ? 0.5 : 1 }}
                       >
                         {uploadingDriveFile ? "Uploading..." : "Start Upload"}
                       </button>

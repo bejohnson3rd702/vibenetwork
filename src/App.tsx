@@ -901,6 +901,7 @@ function App() {
           <Suspense fallback={<div style={{ height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-secondary)' }}>Loading platform...</div>}>
             <Routes>
               <Route path="/master-admin" element={<MasterAdminDashboard />} />
+              <Route path="/admin" element={<MasterAdminDashboard />} />
               <Route path="/admin-login" element={<AdminLogin />} />
               {/* <Route path="/director" element={<DirectorStudio />} /> */}
               <Route path="*" element={

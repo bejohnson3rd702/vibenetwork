@@ -62,7 +62,7 @@ export default function N2NAuthModal({ onClose, initialRole }: N2NAuthModalProps
 
     try {
       if (isLogin) {
-        let cleanEmail = email.trim();
+        let cleanEmail = email.trim().toLowerCase();
         if (!cleanEmail.includes('@')) {
           cleanEmail = `${cleanEmail}@level2network.com`;
         } else if (cleanEmail.endsWith('@level2network')) {
@@ -73,13 +73,16 @@ export default function N2NAuthModal({ onClose, initialRole }: N2NAuthModalProps
         let { data, error } = await supabase!.auth.signInWithPassword({ email: cleanEmail, password });
         
         // Dev Mode Fallback for bennie@level2network
-        if (error && (cleanEmail.toLowerCase().includes('bennie') || cleanEmail.toLowerCase().includes('level2network'))) {
+        if (error && (cleanEmail.includes('bennie') || cleanEmail.includes('level2network'))) {
           const fallbackRes = await supabase!.auth.signInWithPassword({
             email: 'admin_avonetwork@test.com',
             password: 'TestPassword123!'
           });
           if (fallbackRes.data?.user) {
             data = fallbackRes.data;
+            if (cleanEmail.includes('bennie')) {
+              data.user.email = 'bennie@level2network.com';
+            }
             error = null;
           }
         }

@@ -7,6 +7,7 @@ export const PagesTab = ({ wlConfig }: { wlConfig: any }) => {
   const toast = useToast();
   const [enableWatchLive, setEnableWatchLive] = useState(wlConfig?.enableWatchLive ?? true);
   const [enableBooking, setEnableBooking] = useState(wlConfig?.enableBooking ?? false);
+  const [enableWhatsApp, setEnableWhatsApp] = useState(wlConfig?.enableWhatsApp ?? wlConfig?.theme?.enableWhatsApp ?? false);
   const [uploadStatus, setUploadStatus] = useState<string | null>(null);
 
   const executeSave = async () => {
@@ -16,7 +17,8 @@ export const PagesTab = ({ wlConfig }: { wlConfig: any }) => {
       const updatedTheme = {
         ...wlConfig.theme,
         enableWatchLive,
-        enableBooking
+        enableBooking,
+        enableWhatsApp
       };
 
       const { error } = await supabase.from('whitelabel_configs').update({
@@ -31,6 +33,7 @@ export const PagesTab = ({ wlConfig }: { wlConfig: any }) => {
         localNetworks[index].theme = updatedTheme;
         localNetworks[index].enableWatchLive = enableWatchLive;
         localNetworks[index].enableBooking = enableBooking;
+        localNetworks[index].enableWhatsApp = enableWhatsApp;
         localStorage.setItem('vibe_local_networks', JSON.stringify(localNetworks));
       }
 
@@ -73,6 +76,17 @@ export const PagesTab = ({ wlConfig }: { wlConfig: any }) => {
          <label style={{ display: 'flex', alignItems: 'center', cursor: 'pointer', background: 'rgba(0,0,0,0.5)', padding: '12px 24px', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.1)', gap: '12px' }}>
             <input type="checkbox" checked={enableBooking} onChange={(e) => setEnableBooking(e.target.checked)} style={{ width: '20px', height: '20px', accentColor: wlConfig.accent }} />
             <span style={{ fontWeight: 'bold' }}>{enableBooking ? 'Enabled' : 'Disabled'}</span>
+         </label>
+      </div>
+
+      <div style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)', padding: '24px 30px', borderRadius: '20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '30px' }}>
+         <div>
+            <h3 style={{ margin: '0 0 4px 0', fontSize: '20px' }}>WhatsApp Direct Inbox Feature</h3>
+            <p style={{ margin: 0, color: 'var(--text-muted)', fontSize: '15px' }}>Enable or disable the WhatsApp Inbox button and live chat drawer (default: Off).</p>
+         </div>
+         <label style={{ display: 'flex', alignItems: 'center', cursor: 'pointer', background: 'rgba(0,0,0,0.5)', padding: '12px 24px', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.1)', gap: '12px' }}>
+            <input type="checkbox" checked={enableWhatsApp} onChange={(e) => setEnableWhatsApp(e.target.checked)} style={{ width: '20px', height: '20px', accentColor: wlConfig.accent }} />
+            <span style={{ fontWeight: 'bold' }}>{enableWhatsApp ? 'Enabled' : 'Disabled (Default)'}</span>
          </label>
       </div>
 

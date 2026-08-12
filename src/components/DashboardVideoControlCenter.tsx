@@ -791,57 +791,90 @@ export const DashboardVideoControlCenter: React.FC<DashboardVideoControlCenterPr
           </div>
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
-            {publishedVideos.map((vid) => (
-              <div
-                key={vid.id}
-                style={{
-                  background: 'rgba(255,255,255,0.03)',
-                  border: '1px solid rgba(255,255,255,0.08)',
-                  borderRadius: '16px',
-                  padding: '16px',
-                  display: 'flex',
-                  gap: '16px',
-                  alignItems: 'center',
-                  justifyContent: 'space-between',
-                  flexWrap: 'wrap'
-                }}
-              >
-                <div style={{ display: 'flex', gap: '16px', alignItems: 'center', flex: 1, minWidth: '280px' }}>
-                  <div style={{ width: '100px', height: '60px', borderRadius: '10px', overflow: 'hidden', background: '#000', flexShrink: 0 }}>
-                    <img src={vid.image_url} alt={vid.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                  </div>
-                  <div>
-                    <h4 style={{ fontSize: '15px', fontWeight: 800, color: '#fff', margin: '0 0 4px 0' }}>{vid.title}</h4>
-                    <p style={{ fontSize: '12px', color: 'rgba(255,255,255,0.6)', margin: 0, display: '-webkit-box', WebkitLineClamp: 1, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
-                      {vid.description || 'No description provided'}
-                    </p>
-                  </div>
-                </div>
+            {publishedVideos.map((vid) => {
+              const tags = Array.isArray(vid.tags) ? vid.tags : [];
+              let airDate = vid.scheduled_air_date;
+              let airTime = vid.scheduled_air_time;
+              let timeSlot = vid.air_time_slot || '1 Hour';
+              let commercialBreakEnabled = vid.commercial_break_enabled || false;
+              let commercialFrequency = vid.commercial_frequency;
+              let adSponsorName = vid.ad_sponsor_name;
 
-                <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
-                  <button
-                    type="button"
-                    onClick={() => handleDeleteVideo(vid.id)}
-                    style={{
-                      background: 'rgba(255,59,48,0.12)',
-                      color: '#ff4d85',
-                      border: '1px solid rgba(255,59,48,0.3)',
-                      padding: '8px 16px',
-                      borderRadius: '12px',
-                      fontSize: '12px',
-                      fontWeight: 700,
-                      cursor: 'pointer',
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '6px'
-                    }}
-                  >
-                    <Trash2 size={14} />
-                    <span>Delete</span>
-                  </button>
+              tags.forEach((t: string) => {
+                if (typeof t === 'string') {
+                  if (t.startsWith('air_date:')) airDate = t.replace('air_date:', '');
+                  else if (t.startsWith('air_time:')) airTime = t.replace('air_time:', '');
+                  else if (t.startsWith('slot:')) timeSlot = t.replace('slot:', '');
+                  else if (t === 'commercials:true') commercialBreakEnabled = true;
+                  else if (t.startsWith('ad_freq:')) commercialFrequency = t.replace('ad_freq:', '');
+                  else if (t.startsWith('ad_sponsor:')) adSponsorName = t.replace('ad_sponsor:', '');
+                }
+              });
+
+              return (
+                <div
+                  key={vid.id}
+                  style={{
+                    background: 'rgba(255,255,255,0.03)',
+                    border: '1px solid rgba(255,255,255,0.08)',
+                    borderRadius: '16px',
+                    padding: '16px',
+                    display: 'flex',
+                    gap: '16px',
+                    alignItems: 'center',
+                    justify: 'space-between',
+                    flexWrap: 'wrap'
+                  }}
+                >
+                  <div style={{ display: 'flex', gap: '16px', alignItems: 'center', flex: 1, minWidth: '280px' }}>
+                    <div style={{ width: '100px', height: '60px', borderRadius: '10px', overflow: 'hidden', background: '#000', flexShrink: 0 }}>
+                      <img src={vid.image_url} alt={vid.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                    </div>
+                    <div>
+                      <h4 style={{ fontSize: '15px', fontWeight: 800, color: '#fff', margin: '0 0 4px 0' }}>{vid.title}</h4>
+                      <p style={{ fontSize: '12px', color: 'rgba(255,255,255,0.6)', margin: '0 0 6px 0', display: '-webkit-box', WebkitLineClamp: 1, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+                        {vid.description || 'No description provided'}
+                      </p>
+                      <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
+                        {airDate && (
+                          <span style={{ fontSize: '11px', background: 'rgba(0,78,152,0.3)', color: '#00d4ff', padding: '2px 8px', borderRadius: '6px', fontWeight: 'bold', border: '1px solid rgba(0,212,255,0.3)' }}>
+                            📅 Airs {airDate} @ {airTime || '20:00'} ({timeSlot})
+                          </span>
+                        )}
+                        {commercialBreakEnabled && (
+                          <span style={{ fontSize: '11px', background: 'rgba(0,255,136,0.15)', color: '#00ff88', padding: '2px 8px', borderRadius: '6px', fontWeight: 'bold', border: '1px solid rgba(0,255,136,0.3)' }}>
+                            📣 Commercials: {commercialFrequency || 'Every 15m'} {adSponsorName ? `(${adSponsorName})` : ''}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+                    <button
+                      type="button"
+                      onClick={() => handleDeleteVideo(vid.id)}
+                      style={{
+                        background: 'rgba(255,59,48,0.12)',
+                        color: '#ff4d85',
+                        border: '1px solid rgba(255,59,48,0.3)',
+                        padding: '8px 16px',
+                        borderRadius: '12px',
+                        fontSize: '12px',
+                        fontWeight: 700,
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '6px'
+                      }}
+                    >
+                      <Trash2 size={14} />
+                      <span>Delete</span>
+                    </button>
+                  </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
       </div>

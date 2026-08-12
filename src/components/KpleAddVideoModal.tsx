@@ -54,6 +54,46 @@ export const KpleAddVideoModal: React.FC<KpleAddVideoModalProps> = ({
   const [errorMsg, setErrorMsg] = useState('');
   const [successMsg, setSuccessMsg] = useState('');
 
+  // Station Broadcast Airtime Scheduling State
+  const [scheduledAirDate, setScheduledAirDate] = useState(() => new Date().toISOString().split('T')[0]);
+  const [scheduledAirTime, setScheduledAirTime] = useState('20:00');
+  const [airTimeSlot, setAirTimeSlot] = useState('1 Hour');
+  const [recurrence, setRecurrence] = useState('Once');
+
+  // Commercial & Ad Break State
+  const [enableCommercials, setEnableCommercials] = useState(false);
+  const [commercialFrequency, setCommercialFrequency] = useState('Every 15 Minutes');
+  const [commercialMediaUrl, setCommercialMediaUrl] = useState('');
+  const [sponsorName, setSponsorName] = useState('');
+  const [duration, setDuration] = useState('30 mins');
+  const [uploadingCommercialFile, setUploadingCommercialFile] = useState(false);
+
+  // ── Handle Commercial File Upload ─────────────────────────────────────
+  const handleCommercialFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setUploadingCommercialFile(true);
+    setErrorMsg('');
+
+    try {
+      const fileExt = file.name.split('.').pop();
+      const filePath = `kple_commercials/ad_${Date.now()}_${Math.random().toString(36).substring(2, 8)}.${fileExt}`;
+
+      const { error: uploadError } = await supabase!.storage.from('videos').upload(filePath, file);
+      if (uploadError) throw uploadError;
+
+      const { data } = supabase!.storage.from('videos').getPublicUrl(filePath);
+      setCommercialMediaUrl(data.publicUrl);
+      setSuccessMsg('✅ Commercial video clip uploaded!');
+    } catch (err: any) {
+      console.error('Commercial upload failed:', err);
+      setErrorMsg('Failed to upload commercial clip: ' + (err.message || 'Storage error'));
+    } finally {
+      setUploadingCommercialFile(false);
+    }
+  };
+
   // ── Auto-fetch YouTube Video Data ──────────────────────────────────────
   const handleFetchYouTubeData = async (urlToFetch?: string) => {
     const targetUrl = urlToFetch || youtubeUrl;
@@ -112,6 +152,28 @@ export const KpleAddVideoModal: React.FC<KpleAddVideoModalProps> = ({
 
     setUploadingVideoFile(true);
     setErrorMsg('');
+
+    // Auto-detect runtime duration using temporary video element
+    try {
+      const tempVideo = document.createElement('video');
+      tempVideo.preload = 'metadata';
+      tempVideo.onloadedmetadata = () => {
+        window.URL.revokeObjectURL(tempVideo.src);
+        const durationSec = Math.round(tempVideo.duration);
+        if (durationSec && !isNaN(durationSec)) {
+          const hrs = Math.floor(durationSec / 3600);
+          const mins = Math.floor((durationSec % 3600) / 60);
+          const secs = durationSec % 60;
+          const formattedDuration = hrs > 0 
+            ? `${hrs}h ${mins}m` 
+            : `${mins}:${secs < 10 ? '0' : ''}${secs}`;
+          setDuration(formattedDuration);
+        }
+      };
+      tempVideo.src = URL.createObjectURL(file);
+    } catch (detErr) {
+      console.warn("Could not auto-detect video duration:", detErr);
+    }
 
     try {
       const fileExt = file.name.split('.').pop();
@@ -220,6 +282,20 @@ export const KpleAddVideoModal: React.FC<KpleAddVideoModalProps> = ({
         .map(t => t.trim())
         .filter(t => t.length > 0);
 
+      const scheduleTags = [
+        ...tagArray,
+        `air_date:${scheduledAirDate}`,
+        `air_time:${scheduledAirTime}`,
+        `slot:${airTimeSlot}`,
+        `recurrence:${recurrence}`,
+        ...(enableCommercials ? [
+          `commercials:true`,
+          `ad_freq:${commercialFrequency}`,
+          `ad_url:${commercialMediaUrl}`,
+          `ad_sponsor:${sponsorName}`
+        ] : [])
+      ];
+
       const videoPayload = {
         title: title.trim(),
         description: description.trim(),
@@ -228,7 +304,7 @@ export const KpleAddVideoModal: React.FC<KpleAddVideoModalProps> = ({
         video_url: finalVideoUrl,
         whitelabel_id: whitelabelId,
         creator_id: currentUserId,
-        tags: tagArray.length > 0 ? tagArray : ['KPLE-TV', 'Video'],
+        tags: scheduleTags,
         created_at: new Date().toISOString()
       };
 
@@ -655,6 +731,231 @@ export const KpleAddVideoModal: React.FC<KpleAddVideoModalProps> = ({
                   </div>
                 </div>
               </div>
+            </div>
+
+            {/* ── TV STATION BROADCAST AIRTIME SCHEDULER ───────────── */}
+            <div style={{ background: 'rgba(0, 78, 152, 0.15)', border: '1px solid rgba(0, 78, 152, 0.35)', padding: '20px', borderRadius: '16px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <label style={{ fontSize: '14px', fontWeight: 800, color: '#fff', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <span>📺 KPLE-TV Station Airtime Scheduler</span>
+                </label>
+                <span style={{ fontSize: '11px', background: accent, color: '#fff', padding: '4px 10px', borderRadius: '12px', fontWeight: 700 }}>
+                  Station Airtime Controls
+                </span>
+              </div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: '12px' }}>
+                <div>
+                  <label style={{ fontSize: '12px', fontWeight: 700, color: 'rgba(255,255,255,0.8)', display: 'block', marginBottom: '6px' }}>
+                    Scheduled Air Date
+                  </label>
+                  <input
+                    type="date"
+                    value={scheduledAirDate}
+                    onChange={e => setScheduledAirDate(e.target.value)}
+                    style={{
+                      width: '100%',
+                      background: 'rgba(255,255,255,0.08)',
+                      border: '1px solid rgba(255,255,255,0.18)',
+                      color: '#fff',
+                      padding: '10px 12px',
+                      borderRadius: '10px',
+                      fontSize: '13px',
+                      outline: 'none',
+                      boxSizing: 'border-box'
+                    }}
+                  />
+                </div>
+
+                <div>
+                  <label style={{ fontSize: '12px', fontWeight: 700, color: 'rgba(255,255,255,0.8)', display: 'block', marginBottom: '6px' }}>
+                    Airtime (EST)
+                  </label>
+                  <input
+                    type="time"
+                    value={scheduledAirTime}
+                    onChange={e => setScheduledAirTime(e.target.value)}
+                    style={{
+                      width: '100%',
+                      background: 'rgba(255,255,255,0.08)',
+                      border: '1px solid rgba(255,255,255,0.18)',
+                      color: '#fff',
+                      padding: '10px 12px',
+                      borderRadius: '10px',
+                      fontSize: '13px',
+                      outline: 'none',
+                      boxSizing: 'border-box'
+                    }}
+                  />
+                </div>
+
+                <div>
+                  <label style={{ fontSize: '12px', fontWeight: 700, color: 'rgba(255,255,255,0.8)', display: 'block', marginBottom: '6px' }}>
+                    Time Slot
+                  </label>
+                  <select
+                    value={airTimeSlot}
+                    onChange={e => setAirTimeSlot(e.target.value)}
+                    style={{
+                      width: '100%',
+                      background: 'rgba(255,255,255,0.08)',
+                      border: '1px solid rgba(255,255,255,0.18)',
+                      color: '#fff',
+                      padding: '10px 12px',
+                      borderRadius: '10px',
+                      fontSize: '13px',
+                      outline: 'none',
+                      boxSizing: 'border-box',
+                      cursor: 'pointer'
+                    }}
+                  >
+                    <option value="30 mins" style={{ background: '#000' }}>30 Minutes Slot</option>
+                    <option value="1 Hour" style={{ background: '#000' }}>1 Hour Slot</option>
+                    <option value="2 Hours" style={{ background: '#000' }}>2 Hours Slot</option>
+                    <option value="4 Hours" style={{ background: '#000' }}>4 Hours Slot</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label style={{ fontSize: '12px', fontWeight: 700, color: 'rgba(255,255,255,0.8)', display: 'block', marginBottom: '6px' }}>
+                    Recurrence
+                  </label>
+                  <select
+                    value={recurrence}
+                    onChange={e => setRecurrence(e.target.value)}
+                    style={{
+                      width: '100%',
+                      background: 'rgba(255,255,255,0.08)',
+                      border: '1px solid rgba(255,255,255,0.18)',
+                      color: '#fff',
+                      padding: '10px 12px',
+                      borderRadius: '10px',
+                      fontSize: '13px',
+                      outline: 'none',
+                      boxSizing: 'border-box',
+                      cursor: 'pointer'
+                    }}
+                  >
+                    <option value="Once" style={{ background: '#000' }}>Once (Single)</option>
+                    <option value="Daily" style={{ background: '#000' }}>Daily Broadcast</option>
+                    <option value="Weekly Sunday Service" style={{ background: '#000' }}>Weekly Sunday</option>
+                    <option value="Weekly Midweek" style={{ background: '#000' }}>Weekly Midweek</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            {/* ── COMMERCIAL & AD BREAK MANAGER ─────────────────────── */}
+            <div style={{ background: enableCommercials ? 'rgba(0, 255, 136, 0.08)' : 'rgba(255,255,255,0.02)', border: enableCommercials ? '1px solid rgba(0, 255, 136, 0.3)' : '1px solid rgba(255,255,255,0.06)', padding: '20px', borderRadius: '16px', display: 'flex', flexDirection: 'column', gap: '16px', transition: 'all 0.3s ease' }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <label style={{ fontSize: '14px', fontWeight: 800, color: '#fff', display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer' }}>
+                  <input
+                    type="checkbox"
+                    checked={enableCommercials}
+                    onChange={e => setEnableCommercials(e.target.checked)}
+                    style={{ width: '18px', height: '18px', accentColor: '#00ff88', cursor: 'pointer' }}
+                  />
+                  <span>📣 Enable Commercial Ad Breaks & Sponsor Overlays</span>
+                </label>
+                <span style={{ fontSize: '11px', color: enableCommercials ? '#00ff88' : 'rgba(255,255,255,0.5)', fontWeight: 700 }}>
+                  {enableCommercials ? 'Ad Breaks Active' : 'Off (Default)'}
+                </span>
+              </div>
+
+              {enableCommercials && (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '14px', marginTop: '4px' }}>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+                    <div>
+                      <label style={{ fontSize: '12px', fontWeight: 700, color: 'rgba(255,255,255,0.85)', display: 'block', marginBottom: '6px' }}>
+                        Commercial Frequency
+                      </label>
+                      <select
+                        value={commercialFrequency}
+                        onChange={e => setCommercialFrequency(e.target.value)}
+                        style={{
+                          width: '100%',
+                          background: 'rgba(255,255,255,0.08)',
+                          border: '1px solid rgba(255,255,255,0.18)',
+                          color: '#fff',
+                          padding: '10px 14px',
+                          borderRadius: '10px',
+                          fontSize: '13px',
+                          outline: 'none',
+                          cursor: 'pointer'
+                        }}
+                      >
+                        <option value="Every 15 Minutes" style={{ background: '#000' }}>Every 15 Minutes</option>
+                        <option value="Pre-Roll & Post-Roll" style={{ background: '#000' }}>Pre-Roll & Post-Roll</option>
+                        <option value="Mid-Roll (50%)" style={{ background: '#000' }}>Mid-Roll at 50% Runtime</option>
+                      </select>
+                    </div>
+
+                    <div>
+                      <label style={{ fontSize: '12px', fontWeight: 700, color: 'rgba(255,255,255,0.85)', display: 'block', marginBottom: '6px' }}>
+                        Sponsor / Advertiser Name
+                      </label>
+                      <input
+                        type="text"
+                        placeholder="e.g. Kingdom Media Partners"
+                        value={sponsorName}
+                        onChange={e => setSponsorName(e.target.value)}
+                        style={{
+                          width: '100%',
+                          background: 'rgba(255,255,255,0.08)',
+                          border: '1px solid rgba(255,255,255,0.18)',
+                          color: '#fff',
+                          padding: '10px 14px',
+                          borderRadius: '10px',
+                          fontSize: '13px',
+                          outline: 'none',
+                          boxSizing: 'border-box'
+                        }}
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label style={{ fontSize: '12px', fontWeight: 700, color: 'rgba(255,255,255,0.85)', display: 'block', marginBottom: '6px' }}>
+                      Commercial Video Clip (File Upload or Direct URL)
+                    </label>
+                    <div style={{ display: 'flex', gap: '10px' }}>
+                      <input
+                        type="url"
+                        placeholder="Commercial Clip URL (e.g. https://example.com/ad.mp4)"
+                        value={commercialMediaUrl}
+                        onChange={e => setCommercialMediaUrl(e.target.value)}
+                        style={{
+                          flex: 1,
+                          background: 'rgba(255,255,255,0.08)',
+                          border: '1px solid rgba(255,255,255,0.18)',
+                          color: '#fff',
+                          padding: '10px 14px',
+                          borderRadius: '10px',
+                          fontSize: '13px',
+                          outline: 'none'
+                        }}
+                      />
+                      <label style={{
+                        background: 'rgba(255,255,255,0.1)',
+                        color: '#fff',
+                        padding: '10px 16px',
+                        borderRadius: '10px',
+                        fontSize: '12px',
+                        fontWeight: 700,
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '6px',
+                        whiteSpace: 'nowrap'
+                      }}>
+                        <Upload size={14} />
+                        <span>{uploadingCommercialFile ? 'Uploading...' : 'Upload Ad Clip'}</span>
+                        <input type="file" accept="video/*" onChange={handleCommercialFileUpload} style={{ display: 'none' }} />
+                      </label>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* ── TRANSCRIPT EDITOR FIELD ("we will create the transcript") ── */}
