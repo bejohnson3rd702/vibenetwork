@@ -134,60 +134,134 @@ export default function ChildNetworkFeeds({ parentId, accent = 'var(--accent-pri
           image_url: 'https://i.ytimg.com/vi/CytqhMMV7sQ/hqdefault.jpg',
           likes: 5420,
           created_at: new Date().toISOString(),
-          creator_id: 'courtney-bee',
+          creator_id: 'c0071234-c08f-4260-8540-a0cc8bed4e11',
           creator: {
-            username: 'courtneybee',
-            avatar_url: '/n2n/courtney_bee_avatar.jpg',
-            whitelabel_id: 'cb000000-c08f-4260-8540-a0cc8bed4e11',
+            username: 'The Real Courtney Bee',
+            avatar_url: 'https://static.wixstatic.com/media/066ffc_bb9bdff854db4b56bb3f6b58ee1ce532~mv2.png/v1/crop/x_0,y_261,w_1242,h_763/fill/w_860,h_528,al_c,q_90,usm_0.66_1.00_0.01,enc_avif,quality_auto/image%20(1).png',
+            whitelabel_id: 'c0071234-c08f-4260-8540-a0cc8bed4e11',
             whitelabel: {
-              id: 'cb000000-c08f-4260-8540-a0cc8bed4e11',
-              name: 'Courtney Bee Network',
-              domain: 'courtneybeenetwork.tv',
-              theme: { accent: '#D35400' }
+              id: 'c0071234-c08f-4260-8540-a0cc8bed4e11',
+              name: 'The Real Courtney Bee',
+              domain: 'therealcourtneybee.com',
+              theme: { accent: '#ff4d85' }
             }
           }
         },
         {
-          id: 'cb-post-2',
-          content: "Standing on Boundaries and Wrestling with Mercedes Moné: Pro wrestling superstar Mercedes Moné hits the Spades table with Courtney Bee and Nick Cannon.",
-          image_url: 'https://i.ytimg.com/vi/pd5J_kQqLB0/hqdefault.jpg',
-          likes: 4890,
-          created_at: new Date().toISOString(),
-          creator_id: 'courtney-bee',
+          id: 'dc-post-1',
+          content: "DC Young Fly Live Unfiltered Stage Rant & Freestyle Comedy Session: Catch DC Young Fly dropping hilarious freestyles and roasting the audience live on tour.",
+          image_url: 'https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?auto=format&fit=crop&q=80&w=800',
+          likes: 8930,
+          created_at: new Date(Date.now() - 3600000).toISOString(),
+          creator_id: 'd1000000-c08f-4260-8540-a0cc8bed4e11',
           creator: {
-            username: 'courtneybee',
-            avatar_url: '/n2n/courtney_bee_avatar.jpg',
-            whitelabel_id: 'cb000000-c08f-4260-8540-a0cc8bed4e11',
+            username: 'DC Young Fly',
+            avatar_url: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=100&w=100',
+            whitelabel_id: 'd1000000-c08f-4260-8540-a0cc8bed4e11',
             whitelabel: {
-              id: 'cb000000-c08f-4260-8540-a0cc8bed4e11',
-              name: 'Courtney Bee Network',
-              domain: 'courtneybeenetwork.tv',
-              theme: { accent: '#D35400' }
+              id: 'd1000000-c08f-4260-8540-a0cc8bed4e11',
+              name: 'DC Young Fly',
+              domain: 'dcyoungfly.wildnout.vibenetwork.tv',
+              theme: { accent: '#ff9900' }
             }
           }
         },
         {
-          id: 'cb-post-3',
-          content: "Best Of Courtney Bee Wild 'N Out Highlights: Watch Courtney Bee drop savage punchlines, roast the Black Squad, and dominate the Wild 'N Out stage on MTV.",
-          image_url: 'https://i.ytimg.com/vi/gC1V0uL_5xI/hqdefault.jpg',
-          likes: 6120,
-          created_at: new Date().toISOString(),
-          creator_id: 'courtney-bee',
+          id: 'chico-post-1',
+          content: "Chico Bean 85 South Show Backstage Roast & Tour Highlights: Behind-the-scenes moments, comedy banter, and stage highlights from Chico Bean.",
+          image_url: 'https://images.unsplash.com/photo-1514525253161-7a46d19cd819?auto=format&fit=crop&q=80&w=800',
+          likes: 7410,
+          created_at: new Date(Date.now() - 7200000).toISOString(),
+          creator_id: 'd3000000-c08f-4260-8540-a0cc8bed4e11',
           creator: {
-            username: 'courtneybee',
-            avatar_url: '/n2n/courtney_bee_avatar.jpg',
-            whitelabel_id: 'cb000000-c08f-4260-8540-a0cc8bed4e11',
+            username: 'Chico Bean',
+            avatar_url: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&q=100&w=100',
+            whitelabel_id: 'd3000000-c08f-4260-8540-a0cc8bed4e11',
             whitelabel: {
-              id: 'cb000000-c08f-4260-8540-a0cc8bed4e11',
-              name: 'Courtney Bee Network',
-              domain: 'courtneybeenetwork.tv',
-              theme: { accent: '#D35400' }
+              id: 'd3000000-c08f-4260-8540-a0cc8bed4e11',
+              name: 'Chico Bean',
+              domain: 'chicobean.wildnout.vibenetwork.tv',
+              theme: { accent: '#00e5ff' }
+            }
+          }
+        },
+        {
+          id: 'conceited-post-1',
+          content: "Conceited Savage Punchline Battle & Exclusive Sneaker Drop: Conceited drops his legendary Slow It Down punchlines and previews his latest rare sneaker pickups.",
+          image_url: 'https://images.unsplash.com/photo-1552346154-21d32810aba3?auto=format&fit=crop&q=80&w=800',
+          likes: 6240,
+          created_at: new Date(Date.now() - 10800000).toISOString(),
+          creator_id: 'd2000000-c08f-4260-8540-a0cc8bed4e11',
+          creator: {
+            username: 'Conceited',
+            avatar_url: 'https://images.unsplash.com/photo-1492562080023-ab3db95bfbce?auto=format&fit=crop&q=100&w=100',
+            whitelabel_id: 'd2000000-c08f-4260-8540-a0cc8bed4e11',
+            whitelabel: {
+              id: 'd2000000-c08f-4260-8540-a0cc8bed4e11',
+              name: 'Conceited',
+              domain: 'conceited.wildnout.vibenetwork.tv',
+              theme: { accent: '#7c4dff' }
+            }
+          }
+        },
+        {
+          id: 'justina-post-1',
+          content: "Justina Valentine Red Hair Rap Freestyle & New Music Video Drop: Watch Justina Valentine spit fire bars and preview her newest single.",
+          image_url: 'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?auto=format&fit=crop&q=80&w=800',
+          likes: 6980,
+          created_at: new Date(Date.now() - 14400000).toISOString(),
+          creator_id: 'd4000000-c08f-4260-8540-a0cc8bed4e11',
+          creator: {
+            username: 'Justina Valentine',
+            avatar_url: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=100&w=100',
+            whitelabel_id: 'd4000000-c08f-4260-8540-a0cc8bed4e11',
+            whitelabel: {
+              id: 'd4000000-c08f-4260-8540-a0cc8bed4e11',
+              name: 'Justina Valentine',
+              domain: 'justinavalentine.wildnout.vibenetwork.tv',
+              theme: { accent: '#ff1744' }
+            }
+          }
+        },
+        {
+          id: 'timothy-post-1',
+          content: "Timothy DeLaGhetto Food & Comedy Vlog: Join Timothy DeLaGhetto for a hilarious food review tour and stand-up comedy commentary.",
+          image_url: 'https://images.unsplash.com/photo-1555396273-367ea4eb4db5?auto=format&fit=crop&q=80&w=800',
+          likes: 5120,
+          created_at: new Date(Date.now() - 18000000).toISOString(),
+          creator_id: 'd5000000-c08f-4260-8540-a0cc8bed4e11',
+          creator: {
+            username: 'Timothy DeLaGhetto',
+            avatar_url: 'https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?auto=format&fit=crop&q=100&w=100',
+            whitelabel_id: 'd5000000-c08f-4260-8540-a0cc8bed4e11',
+            whitelabel: {
+              id: 'd5000000-c08f-4260-8540-a0cc8bed4e11',
+              name: 'Timothy DeLaGhetto',
+              domain: 'timothydelaghetto.wildnout.vibenetwork.tv',
+              theme: { accent: '#00e676' }
             }
           }
         }
       ];
-      setPosts(cbPosts);
-      setLoading(false);
+
+      // Query Supabase to prepend any live DB posts from Courtney Bee N2N crew
+      supabase.from('posts')
+        .select('*, creator:profiles(username, avatar_url, whitelabel_id, whitelabel:whitelabel_configs(name, theme, parent_network_id))')
+        .or(`creator.whitelabel_id.eq.cb000000-c08f-4260-8540-a0cc8bed4e11,creator.whitelabel_id.eq.c0071234-c08f-4260-8540-a0cc8bed4e11,creator.whitelabel_id.eq.d1000000-c08f-4260-8540-a0cc8bed4e11,creator.whitelabel_id.eq.d2000000-c08f-4260-8540-a0cc8bed4e11,creator.whitelabel_id.eq.d3000000-c08f-4260-8540-a0cc8bed4e11,creator.whitelabel_id.eq.d4000000-c08f-4260-8540-a0cc8bed4e11,creator.whitelabel_id.eq.d5000000-c08f-4260-8540-a0cc8bed4e11`)
+        .order('created_at', { ascending: false })
+        .then(({ data: dbPosts }) => {
+          if (dbPosts && dbPosts.length > 0) {
+            setPosts([...(dbPosts as PostItem[]), ...cbPosts]);
+          } else {
+            setPosts(cbPosts);
+          }
+          setLoading(false);
+        })
+        .catch(() => {
+          setPosts(cbPosts);
+          setLoading(false);
+        });
+
       return;
     }
 
