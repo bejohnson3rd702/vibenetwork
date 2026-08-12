@@ -143,11 +143,16 @@ const Navbar: React.FC<NavbarProps> = ({ user, onLoginClick, onAdminClick }) => 
       transition: 'all 0.4s ease'
     }}>
       <Link to={`/${window.location.search}`} style={{ textDecoration: 'none', display: 'flex', alignItems: 'center' }}>
-        {appLogo && wlConfig?.id !== 'courtney-bee-tenant-id' && wlConfig?.id !== 'adb92e36-5ebc-4dc3-ae96-429f3dc1bb30' && wlConfig?.id !== 'b0ea0000-c08f-4260-8540-a0cc8bed4e11' ? (
+        {appLogo && wlConfig?.id !== 'courtney-bee-tenant-id' && wlConfig?.id !== 'cb000000-c08f-4260-8540-a0cc8bed4e11' && wlConfig?.id !== 'c0071234-c08f-4260-8540-a0cc8bed4e11' && wlConfig?.id !== 'adb92e36-5ebc-4dc3-ae96-429f3dc1bb30' && wlConfig?.id !== 'b0ea0000-c08f-4260-8540-a0cc8bed4e11' ? (
           <img referrerPolicy="no-referrer" src={appLogo} alt={appName} onError={(e) => e.currentTarget.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(appName || 'Vibe')}&background=random`} style={{ height: appName.toLowerCase().includes('olympia') ? '80px' : appName.toLowerCase().includes('vibe 100') ? '55px' : appName.toLowerCase().includes('bonaire') ? '60px' : '36px', objectFit: 'contain', cursor: 'pointer', borderRadius: '4px' }} />
         ) : (
-          <h1 style={{ margin: 0, fontSize: '24px', color: '#fff', fontWeight: 900, textTransform: 'uppercase', letterSpacing: '2px', fontFamily: "'RNS Miles', sans-serif" }}>
-            {wlConfig?.id === 'courtney-bee-tenant-id' ? appName : 'VIBE NETWORK'}
+          <h1 style={{ margin: 0, fontSize: (wlConfig?.id === 'courtney-bee-tenant-id' || wlConfig?.id === 'cb000000-c08f-4260-8540-a0cc8bed4e11' || wlConfig?.id === 'c0071234-c08f-4260-8540-a0cc8bed4e11') ? '22px' : '24px', color: '#fff', fontWeight: 900, textTransform: 'uppercase', letterSpacing: '1.5px', fontFamily: "'Outfit', 'Anton', sans-serif", display: 'flex', alignItems: 'center', gap: '8px' }}>
+            {(wlConfig?.id === 'courtney-bee-tenant-id' || wlConfig?.id === 'cb000000-c08f-4260-8540-a0cc8bed4e11' || wlConfig?.id === 'c0071234-c08f-4260-8540-a0cc8bed4e11') ? (
+              <>
+                <span style={{ color: '#ff4d85', fontWeight: 900 }}>COURTNEY BEE</span>
+                <span style={{ fontSize: '12px', fontWeight: 800, padding: '2px 8px', borderRadius: '4px', background: 'rgba(255,77,133,0.15)', border: '1px solid rgba(255,77,133,0.4)', color: '#fff', letterSpacing: '1px' }}>NETWORK</span>
+              </>
+            ) : 'VIBE NETWORK'}
           </h1>
         )}
       </Link>
