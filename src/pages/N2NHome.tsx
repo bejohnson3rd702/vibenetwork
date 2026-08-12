@@ -1386,8 +1386,8 @@ export default function N2NHome({ wlConfig, categories, user, activeVideo, setAc
 
 
 
-        {/* ── AVO Campus Athletes / KPLE Channel Profiles Slider ── */}
-        {(((isAvo || isKple) && !isCourtneyBee && !isBonaire) && athleteItems.length > 0) && (
+        {/* ── AVO Campus Athletes / KPLE Channel Profiles / Courtney Bee Channels Slider ── */}
+        {(((isAvo || isKple || isCourtneyBee) && !isBonaire) && athleteItems.length > 0) && (
           <div id="avo-athletes-slider">
             <SliderSection
               title={isCourtneyBee ? "COURTNEY BEE CHANNELS" : (isKple ? "KPLE-TV CHANNELS" : (isBonaire ? "LOCAL MERCHANTS" : "CAMPUS ATHLETES"))}
@@ -1403,10 +1403,8 @@ export default function N2NHome({ wlConfig, categories, user, activeVideo, setAc
           </div>
         )}
 
-
-
         {/* ── Child Network Feeds (Trending Moments) ────────────── */}
-        {childItems.length > 0 && !isCourtneyBee && (
+        {(childItems.length > 0 || isCourtneyBee) && (
           <Suspense fallback={null}>
             <ChildNetworkFeeds parentId={config.id} accent={accent} isOlympian={isOlympian} isMf={isMf} isB2K={isB2K} isBonaire={isBonaire} />
           </Suspense>
