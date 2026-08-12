@@ -1387,11 +1387,11 @@ export default function N2NHome({ wlConfig, categories, user, activeVideo, setAc
 
 
         {/* ── AVO Campus Athletes / KPLE Channel Profiles / Courtney Bee Channels Slider ── */}
-        {(((isAvo || isKple || isCourtneyBee) && !isBonaire) && athleteItems.length > 0) && (
+        {(((isAvo || isKple || isCourtneyBee) && !isBonaire) && (isCourtneyBee ? childItems.length > 0 : athleteItems.length > 0)) && (
           <div id="avo-athletes-slider">
             <SliderSection
               title={isCourtneyBee ? "COURTNEY BEE CHANNELS" : (isKple ? "KPLE-TV CHANNELS" : (isBonaire ? "LOCAL MERCHANTS" : "CAMPUS ATHLETES"))}
-              items={athleteItems}
+              items={isCourtneyBee ? childItems : athleteItems}
               delay={0.1}
               aspectRatio="1/1"
               onItemClick={(item) => {
