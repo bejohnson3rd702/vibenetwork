@@ -45,6 +45,9 @@ export const DashboardVideoControlCenter: React.FC<DashboardVideoControlCenterPr
   const [videoFileUrl, setVideoFileUrl] = useState('');
   const [selectedGenre, setSelectedGenre] = useState('Religious');
   const [selectedCategoryId, setSelectedCategoryId] = useState('');
+  const [scheduledAirDate, setScheduledAirDate] = useState('');
+  const [scheduledAirTime, setScheduledAirTime] = useState('10:00');
+  const [airTimeSlot, setAirTimeSlot] = useState('1 Hour');
 
   const [loadingYt, setLoadingYt] = useState(false);
   const [uploadingImage, setUploadingImage] = useState(false);
@@ -229,12 +232,15 @@ export const DashboardVideoControlCenter: React.FC<DashboardVideoControlCenterPr
     setPublishing(true);
 
     try {
+      const streamTimeFormatted = scheduledAirDate ? `${scheduledAirDate} ${scheduledAirTime} EST (${airTimeSlot})` : '';
+
       const { data, error } = await supabase.from('videos').insert({
         title: title.trim(),
         description: description.trim(),
         transcript: transcript.trim(),
         image_url: coverImageUrl.trim(),
         video_url: finalVideoUrl.trim(),
+        stream_time: streamTimeFormatted || null,
         whitelabel_id: whitelabelId,
         category_id: selectedCategoryId || null,
         tags: [selectedGenre, mode === 'youtube' ? 'YouTube Import' : 'Uploaded Broadcast']
@@ -602,6 +608,92 @@ export const DashboardVideoControlCenter: React.FC<DashboardVideoControlCenterPr
                   <option key={c.id} value={c.id} style={{ background: '#111' }}>{c.title}</option>
                 ))}
               </select>
+            </div>
+          </div>
+
+          {/* ── KPLE-TV Station Airtime & Scheduled Broadcast Time Scheduler ── */}
+          <div style={{ background: 'rgba(0,0,0,0.4)', border: `1px solid ${accent}44`, padding: '20px', borderRadius: '16px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' }}>
+              <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '14px', fontWeight: 800, color: '#fff' }}>
+                <Calendar size={18} color={accent} />
+                <span>📺 Station Airtime & Broadcast Scheduler</span>
+              </label>
+              <span style={{ fontSize: '11px', background: accent, color: '#fff', padding: '4px 10px', borderRadius: '12px', fontWeight: 700 }}>
+                Set Video Play Time
+              </span>
+            </div>
+
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '16px' }}>
+              <div>
+                <label style={{ fontSize: '12px', fontWeight: 700, color: 'rgba(255,255,255,0.8)', display: 'block', marginBottom: '6px' }}>
+                  Scheduled Air Date
+                </label>
+                <input
+                  type="date"
+                  value={scheduledAirDate}
+                  onChange={e => setScheduledAirDate(e.target.value)}
+                  style={{
+                    width: '100%',
+                    background: 'rgba(255,255,255,0.08)',
+                    border: '1px solid rgba(255,255,255,0.18)',
+                    color: '#fff',
+                    padding: '12px 14px',
+                    borderRadius: '12px',
+                    fontSize: '13px',
+                    outline: 'none',
+                    boxSizing: 'border-box'
+                  }}
+                />
+              </div>
+
+              <div>
+                <label style={{ fontSize: '12px', fontWeight: 700, color: 'rgba(255,255,255,0.8)', display: 'block', marginBottom: '6px' }}>
+                  Broadcast Start Time (EST)
+                </label>
+                <input
+                  type="time"
+                  value={scheduledAirTime}
+                  onChange={e => setScheduledAirTime(e.target.value)}
+                  style={{
+                    width: '100%',
+                    background: 'rgba(255,255,255,0.08)',
+                    border: '1px solid rgba(255,255,255,0.18)',
+                    color: '#fff',
+                    padding: '12px 14px',
+                    borderRadius: '12px',
+                    fontSize: '13px',
+                    outline: 'none',
+                    boxSizing: 'border-box'
+                  }}
+                />
+              </div>
+
+              <div>
+                <label style={{ fontSize: '12px', fontWeight: 700, color: 'rgba(255,255,255,0.8)', display: 'block', marginBottom: '6px' }}>
+                  Time Slot Duration
+                </label>
+                <select
+                  value={airTimeSlot}
+                  onChange={e => setAirTimeSlot(e.target.value)}
+                  style={{
+                    width: '100%',
+                    background: 'rgba(255,255,255,0.08)',
+                    border: '1px solid rgba(255,255,255,0.18)',
+                    color: '#fff',
+                    padding: '12px 14px',
+                    borderRadius: '12px',
+                    fontSize: '13px',
+                    outline: 'none',
+                    boxSizing: 'border-box',
+                    cursor: 'pointer'
+                  }}
+                >
+                  <option value="30 mins" style={{ background: '#000' }}>30 Minutes Slot</option>
+                  <option value="1 Hour" style={{ background: '#000' }}>1 Hour Slot</option>
+                  <option value="2 Hours" style={{ background: '#000' }}>2 Hours Slot</option>
+                  <option value="4 Hours" style={{ background: '#000' }}>4 Hours Slot</option>
+                </select>
+              </div>
             </div>
           </div>
 
