@@ -20,6 +20,9 @@ export const VideosTab = ({ wlConfig }: { wlConfig: any }) => {
   const [videoUrl, setVideoUrl] = useState('');
   const [imageUrl, setImageUrl] = useState('');
   const [categoryId, setCategoryId] = useState('');
+  const [scheduledAirDate, setScheduledAirDate] = useState('');
+  const [scheduledAirTime, setScheduledAirTime] = useState('10:00');
+  const [airTimeSlot, setAirTimeSlot] = useState('1 Hour');
   const [savingVideo, setSavingVideo] = useState(false);
 
   // Form states - Category
@@ -113,11 +116,14 @@ export const VideosTab = ({ wlConfig }: { wlConfig: any }) => {
 
     setSavingVideo(true);
     try {
+      const streamTimeFormatted = scheduledAirDate ? `${scheduledAirDate} ${scheduledAirTime} EST (${airTimeSlot})` : null;
+
       const payload = {
         title: title.trim(),
         video_url: videoUrl.trim(),
         image_url: imageUrl.trim() || 'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?auto=format&fit=crop&q=80&w=800',
         category_id: categoryId,
+        stream_time: streamTimeFormatted,
         creator_id: currentUser.id,
         whitelabel_id: wlConfig?.id && wlConfig.id !== 'master' ? wlConfig.id : null,
         tags: ['Custom', wlConfig?.name || 'White Label']
@@ -207,6 +213,27 @@ export const VideosTab = ({ wlConfig }: { wlConfig: any }) => {
     return <div style={{ color: 'var(--text-muted)', textAlign: 'center', padding: '60px' }}>Loading Video Dashboard...</div>;
   }
 
+  const isKple = Boolean(
+    wlConfig?.id === '33742e2f-430b-4c2d-9cba-42507891ef02' ||
+    isKpleOnlyConfig(wlConfig) ||
+    wlConfig?.name?.toLowerCase().includes('kple') ||
+    wlConfig?.name?.toLowerCase().includes('christian revival')
+  );
+
+  if (isKple) {
+    return (
+      <div style={{ maxWidth: '1200px' }}>
+        <DashboardVideoControlCenter
+          whitelabelId={wlConfig?.id || '33742e2f-430b-4c2d-9cba-42507891ef02'}
+          accent={accent}
+          onVideoPublished={() => {
+            if (currentUser) loadData(currentUser.id);
+          }}
+        />
+      </div>
+    );
+  }
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '32px', maxWidth: '1200px' }}>
       <div>
@@ -274,6 +301,60 @@ export const VideosTab = ({ wlConfig }: { wlConfig: any }) => {
                   <option key={cat.id} value={cat.id}>{cat.title}</option>
                 ))}
               </select>
+            </div>
+
+            {/* ── Station Airtime & Scheduled Broadcast Time Scheduler ── */}
+            <div style={{ background: 'rgba(0,0,0,0.4)', border: `1px solid ${accent}44`, padding: '16px', borderRadius: '14px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <span style={{ fontSize: '13px', fontWeight: 800, color: '#fff', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  📺 Station Airtime & Broadcast Scheduler
+                </span>
+                <span style={{ fontSize: '11px', background: accent, color: '#fff', padding: '2px 8px', borderRadius: '10px', fontWeight: 700 }}>
+                  Set Video Play Time
+                </span>
+              </div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '12px' }}>
+                <div>
+                  <label style={{ fontSize: '11px', fontWeight: 700, color: 'rgba(255,255,255,0.7)', display: 'block', marginBottom: '4px' }}>
+                    Air Date
+                  </label>
+                  <input
+                    type="date"
+                    value={scheduledAirDate}
+                    onChange={e => setScheduledAirDate(e.target.value)}
+                    style={{ ...inputStyle, padding: '10px 12px', fontSize: '12px' }}
+                  />
+                </div>
+
+                <div>
+                  <label style={{ fontSize: '11px', fontWeight: 700, color: 'rgba(255,255,255,0.7)', display: 'block', marginBottom: '4px' }}>
+                    Start Time (EST)
+                  </label>
+                  <input
+                    type="time"
+                    value={scheduledAirTime}
+                    onChange={e => setScheduledAirTime(e.target.value)}
+                    style={{ ...inputStyle, padding: '10px 12px', fontSize: '12px' }}
+                  />
+                </div>
+
+                <div>
+                  <label style={{ fontSize: '11px', fontWeight: 700, color: 'rgba(255,255,255,0.7)', display: 'block', marginBottom: '4px' }}>
+                    Slot Duration
+                  </label>
+                  <select
+                    value={airTimeSlot}
+                    onChange={e => setAirTimeSlot(e.target.value)}
+                    style={{ ...inputStyle, padding: '10px 12px', fontSize: '12px', cursor: 'pointer' }}
+                  >
+                    <option value="30 mins" style={{ background: '#000' }}>30 Mins</option>
+                    <option value="1 Hour" style={{ background: '#000' }}>1 Hour</option>
+                    <option value="2 Hours" style={{ background: '#000' }}>2 Hours</option>
+                    <option value="4 Hours" style={{ background: '#000' }}>4 Hours</option>
+                  </select>
+                </div>
+              </div>
             </div>
 
             <button
