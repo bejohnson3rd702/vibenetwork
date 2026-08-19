@@ -19,7 +19,7 @@ import { Network, BookUser, Receipt, Palette, Brain, Languages } from 'lucide-re
 import { EnterpriseAiTab } from './admin/EnterpriseAiTab';
 import { TranslationTab } from './admin/TranslationTab';
 
-import { isKpleOnlyConfig } from '../lib/whitelabel';
+import { isKpleConfig, isKpleOnlyConfig } from '../lib/whitelabel';
 
 export default function BusinessAdminDashboard({ onClose }: { onClose: () => void }) {
   const { wlConfig } = useWhiteLabel();
@@ -63,7 +63,7 @@ export default function BusinessAdminDashboard({ onClose }: { onClose: () => voi
                 <Sparkles size={22} /> Global Branding
              </button>
 
-             {isKpleOnlyConfig(wlConfig) && (
+             {(isKpleConfig(wlConfig) || isKpleOnlyConfig(wlConfig) || wlConfig?.id === '33742e2f-430b-4c2d-9cba-42507891ef02' || wlConfig?.name?.toLowerCase().includes('kple') || wlConfig?.name?.toLowerCase().includes('christian revival')) && (
                <button onClick={() => setActiveTab('videos')} style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '16px 20px', background: activeTab === 'videos' ? wlConfig.accent : 'transparent', color: activeTab === 'videos' ? '#fff' : '#888', border: 'none', borderRadius: '12px', cursor: 'pointer', textAlign: 'left', fontWeight: 'bold', transition: '0.2s' }}>
                   <Film size={22} /> Videos & Playlists
                </button>
