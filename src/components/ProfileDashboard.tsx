@@ -1560,7 +1560,7 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
           const coursesPromise = supabase!.from('courses').select('*').eq('creator_id', loadedProfileId);
           const slotsPromise = supabase!.from('available_slots').select('*').eq('creator_id', loadedProfileId).eq('is_booked', false);
 
-          const pBookingsPromise = user ? supabase!.from('bookings').select('*, creator:profiles!creator_id(username, full_name, avatar_url)').eq('buyer_id', user.id) : Promise.resolve({ data: null });
+          const pBookingsPromise = user ? supabase!.from('bookings').select('*, creator:profiles!creator_id(username, avatar_url)').eq('buyer_id', user.id) : Promise.resolve({ data: null });
           
           let networksPromise;
           if (user) {
@@ -1577,7 +1577,7 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
             networksPromise = Promise.resolve({ data: null });
           }
 
-          const rBookingsPromise = (isOwn && user) ? supabase!.from('bookings').select('*, buyer:profiles!buyer_id(username, full_name, avatar_url)').eq('creator_id', user.id) : Promise.resolve({ data: null });
+          const rBookingsPromise = (isOwn && user) ? supabase!.from('bookings').select('*, buyer:profiles!buyer_id(username, avatar_url)').eq('creator_id', user.id) : Promise.resolve({ data: null });
           const progressPromise = user ? supabase!.from('user_course_progress').select('*').eq('user_id', user.id) : Promise.resolve({ data: null });
 
           const [
@@ -2261,11 +2261,31 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
       }
     }
 
+    // Persist new name to localStorage overrides so it displays immediately on reload
+    try {
+      const storeId = targetWlId || profile?.id || user?.id;
+      if (storeId) {
+        const existingOverrides = JSON.parse(localStorage.getItem('vibe_child_branding_overrides') || '{}');
+        existingOverrides[storeId] = {
+          ...(existingOverrides[storeId] || {}),
+          name: newName,
+          logo: avatarUrl,
+          updated_at: Date.now()
+        };
+        localStorage.setItem('vibe_child_branding_overrides', JSON.stringify(existingOverrides));
+      }
+    } catch (e) {
+      console.warn("Failed to save name override to localStorage:", e);
+    }
+
     setSaving(false);
     
     if (error && (error.message.includes('column') || error.message.includes('schema cache'))) {
       console.warn("Profile DB update note:", error.message);
       toast.success('Channel Profile & Name Successfully Saved!');
+      setTimeout(() => {
+        window.location.reload();
+      }, 300);
     } else if (error) {
       console.error("Save profile error:", error);
       toast.error(`Failed to save profile: ${error.message}`);
@@ -2274,6 +2294,9 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
       if (wlError) {
         toast.warning('Note: Custom branding and refund policy could not be synced.');
       }
+      setTimeout(() => {
+        window.location.reload();
+      }, 300);
     }
   };
 
