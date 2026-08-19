@@ -2412,8 +2412,9 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
 
   const handleVideoFileUpload = async (file: File) => {
     if (!file) return;
+    const sizeMB = (file.size / (1024 * 1024)).toFixed(1);
     setUploadingVideo(true);
-    toast.info("Uploading video and detecting runtime...");
+    toast.info(`Uploading video (${sizeMB} MB) & detecting runtime... Please keep this page open.`);
 
     const detectVideoDuration = (videoFile: File): Promise<number> => {
       return new Promise((resolve) => {
@@ -2433,12 +2434,15 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
     };
 
     const durationSeconds = await detectVideoDuration(file);
-    const fileExt = file.name.split('.').pop();
+    const fileExt = file.name.split('.').pop() || 'mp4';
     const fileName = `episodes/video_${Date.now()}.${fileExt}`;
     const filePath = `${fileName}`;
 
     try {
-      const { error: uploadError } = await supabase!.storage.from('videos').upload(filePath, file);
+      const { error: uploadError } = await supabase!.storage.from('videos').upload(filePath, file, {
+        cacheControl: '3600',
+        upsert: true
+      });
       if (uploadError) throw uploadError;
       
       const { data } = supabase!.storage.from('videos').getPublicUrl(filePath);
@@ -2449,11 +2453,16 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
           duration: durationSeconds > 0 ? durationSeconds : prev.duration
         }));
         const durationFormatted = durationSeconds > 0 ? ` (${Math.floor(durationSeconds/60)}m ${durationSeconds%60}s)` : '';
-        toast.success(`Video uploaded successfully!${durationFormatted}`);
+        toast.success(`Video uploaded successfully (${sizeMB} MB)!${durationFormatted}`);
       }
     } catch (err: any) {
       console.error(err);
-      toast.error('Video upload failed: ' + (err.message || 'Storage error'));
+      const errMsg = err.message || '';
+      if (errMsg.includes('exceed') || errMsg.includes('size') || errMsg.includes('payload')) {
+        toast.error(`Upload blocked (${sizeMB} MB): File exceeds Supabase bucket size limit. Please run the 5GB bucket script or paste an external video link.`);
+      } else {
+        toast.error('Video upload failed: ' + (errMsg || 'Storage error'));
+      }
     } finally {
       setUploadingVideo(false);
     }
@@ -3023,8 +3032,9 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
         file = eventOrFile.target.files[0];
       }
       if (!file) return;
+      const sizeMB = (file.size / (1024 * 1024)).toFixed(1);
       setUploadingEditEpisodeVideo(true);
-      toast.info('Uploading video file and detecting runtime...');
+      toast.info(`Uploading video (${sizeMB} MB) & detecting runtime... Please keep this page open.`);
 
       const detectVideoDuration = (videoFile: File): Promise<number> => {
         return new Promise((resolve) => {
@@ -3044,11 +3054,14 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
       };
 
       const durationSeconds = await detectVideoDuration(file);
-      const fileExt = file.name.split('.').pop();
+      const fileExt = file.name.split('.').pop() || 'mp4';
       const fileName = `video_${Math.random()}.${fileExt}`;
       const filePath = `${user?.id}/${fileName}`;
 
-      const { error: uploadError } = await supabase!.storage.from('videos').upload(filePath, file);
+      const { error: uploadError } = await supabase!.storage.from('videos').upload(filePath, file, {
+        cacheControl: '3600',
+        upsert: true
+      });
       if (uploadError) throw uploadError;
 
       const { data } = supabase!.storage.from('videos').getPublicUrl(filePath);
@@ -3058,10 +3071,15 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
         duration: durationSeconds > 0 ? durationSeconds : prev?.duration
       }));
       const durationFormatted = durationSeconds > 0 ? ` (${Math.floor(durationSeconds/60)}m ${durationSeconds%60}s)` : '';
-      toast.success(`Video uploaded successfully!${durationFormatted}`);
+      toast.success(`Video uploaded successfully (${sizeMB} MB)!${durationFormatted}`);
     } catch (err: any) {
       console.error(err);
-      toast.error('Video upload failed: ' + (err.message || 'Storage error'));
+      const errMsg = err.message || '';
+      if (errMsg.includes('exceed') || errMsg.includes('size') || errMsg.includes('payload')) {
+        toast.error(`Upload blocked: File exceeds Supabase bucket size limit. Please run the 5GB bucket script or paste an external video link.`);
+      } else {
+        toast.error('Video upload failed: ' + (errMsg || 'Storage error'));
+      }
     } finally {
       setUploadingEditEpisodeVideo(false);
     }
