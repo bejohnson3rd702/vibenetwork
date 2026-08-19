@@ -3770,7 +3770,7 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
                     })()}
 
                     <div className="profile-info-col" style={{ flex: 1, minWidth: '300px' }}>
-                      {isOwnProfile && viewMode === 'edit' ? (
+                      {isOwnProfile && viewMode === 'edit' && !(user?.email?.toLowerCase().includes('bennie')) ? (
                         <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px', flexWrap: 'wrap' }}>
                           <input 
                             type="text" 
