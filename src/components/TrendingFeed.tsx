@@ -335,10 +335,10 @@ export default function TrendingFeed() {
                       <Eye size={14} /> {formatCount(post.views)}
                     </span>
                     <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }} title={`${post.likesCount} likes`}>
-                      <Heart size={14} /> {formatCount(post.likesCount)}
+                      <span style={{ fontSize: '13px' }}>❤️</span> {formatCount(post.likesCount)}
                     </span>
                     <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }} title={`${post.commentsCount} comments`}>
-                      <MessageSquare size={14} /> {formatCount(post.commentsCount)}
+                      <span style={{ fontSize: '13px' }}>💬</span> {formatCount(post.commentsCount)}
                     </span>
                   </div>
                 </motion.div>

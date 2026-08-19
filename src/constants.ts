@@ -15,7 +15,7 @@ export const FALLBACK_LEGAL_EMAIL = 'legal@vibenetwork.tv';
 export const FALLBACK_PRIVACY_EMAIL = 'privacy@vibenetwork.tv';
 
 export const DEFAULT_SUB_PRICE = 4.99;
-export const DEFAULT_PRODUCT_PRICE = '19.99';
+export const DEFAULT_PRODUCT_PRICE = '0.00';
 export const DEFAULT_WHITELABEL_MONTHLY_FEE = 99.00;
 export const DEFAULT_WHITELABEL_SETUP_FEE = 199.00;
 

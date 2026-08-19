@@ -2267,12 +2267,12 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
       }).eq('id', user.id);
 
       if (error) {
-        toast.error(`Failed to save booking settings: ${error.message}`);
+        toast.error(`Failed to save appointment settings: ${error.message}`);
       } else {
-        toast.success("Booking settings saved successfully!");
+        toast.success("Appointment settings saved successfully!");
       }
     } catch (err: any) {
-      toast.error(err.message || "Failed to save booking settings");
+      toast.error(err.message || "Failed to save appointment settings");
     } finally {
       setSaving(false);
     }
@@ -2313,7 +2313,7 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
     return scheduledDate.toISOString();
   };
 
-  const handleProductImageUpload = async (eventOrFile: React.ChangeEvent<HTMLInputElement> | File) => {
+  const handleProductImageUpload = async (eventOrFile: React.ChangeEvent<HTMLInputElement> | File): Promise<string | null> => {
     try {
       let file: File | undefined;
       if (eventOrFile instanceof File) {
@@ -2321,7 +2321,7 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
       } else if (eventOrFile.target?.files && eventOrFile.target.files.length > 0) {
         file = eventOrFile.target.files[0];
       }
-      if (!file) return;
+      if (!file) return null;
       setUploadingProductImg(true);
       
       toast.info("✨ Vibe is enhancing and auto-cropping your product photo...");
@@ -2331,10 +2331,62 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
       await supabase!.storage.from('images').upload(filePath, enhancedFile);
       const { data } = supabase!.storage.from('images').getPublicUrl(filePath);
       setNewProduct(prev => ({ ...prev, image_url: data.publicUrl }));
+      toast.success('Product image uploaded successfully!');
+      return data.publicUrl;
     } catch {
       toast.error('Upload failed. Did you run the storage buckets script?');
+      return null;
     } finally {
       setUploadingProductImg(false);
+    }
+  };
+
+  const handleVideoFileUpload = async (file: File) => {
+    if (!file) return;
+    setUploadingVideo(true);
+    toast.info("Uploading video and detecting runtime...");
+
+    const detectVideoDuration = (videoFile: File): Promise<number> => {
+      return new Promise((resolve) => {
+        try {
+          const tempVideo = document.createElement('video');
+          tempVideo.preload = 'metadata';
+          tempVideo.src = URL.createObjectURL(videoFile);
+          tempVideo.onloadedmetadata = () => {
+            URL.revokeObjectURL(tempVideo.src);
+            resolve(Math.round(tempVideo.duration || 0));
+          };
+          tempVideo.onerror = () => resolve(0);
+        } catch {
+          resolve(0);
+        }
+      });
+    };
+
+    const durationSeconds = await detectVideoDuration(file);
+    const fileExt = file.name.split('.').pop();
+    const fileName = `episodes/video_${Date.now()}.${fileExt}`;
+    const filePath = `${fileName}`;
+
+    try {
+      const { error: uploadError } = await supabase!.storage.from('videos').upload(filePath, file);
+      if (uploadError) throw uploadError;
+      
+      const { data } = supabase!.storage.from('videos').getPublicUrl(filePath);
+      if (data && data.publicUrl) {
+        setNewEpisode(prev => ({ 
+          ...prev, 
+          video_url: data.publicUrl,
+          duration: durationSeconds > 0 ? durationSeconds : prev.duration
+        }));
+        const durationFormatted = durationSeconds > 0 ? ` (${Math.floor(durationSeconds/60)}m ${durationSeconds%60}s)` : '';
+        toast.success(`Video uploaded successfully!${durationFormatted}`);
+      }
+    } catch (err: any) {
+      console.error(err);
+      toast.error('Video upload failed: ' + (err.message || 'Storage error'));
+    } finally {
+      setUploadingVideo(false);
     }
   };
 
@@ -2927,8 +2979,26 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
       }
       if (!file) return;
       setUploadingEditEpisodeVideo(true);
-      toast.info('Uploading video file to videos storage bucket...');
+      toast.info('Uploading video file and detecting runtime...');
 
+      const detectVideoDuration = (videoFile: File): Promise<number> => {
+        return new Promise((resolve) => {
+          try {
+            const tempVideo = document.createElement('video');
+            tempVideo.preload = 'metadata';
+            tempVideo.src = URL.createObjectURL(videoFile);
+            tempVideo.onloadedmetadata = () => {
+              URL.revokeObjectURL(tempVideo.src);
+              resolve(Math.round(tempVideo.duration || 0));
+            };
+            tempVideo.onerror = () => resolve(0);
+          } catch {
+            resolve(0);
+          }
+        });
+      };
+
+      const durationSeconds = await detectVideoDuration(file);
       const fileExt = file.name.split('.').pop();
       const fileName = `video_${Math.random()}.${fileExt}`;
       const filePath = `${user?.id}/${fileName}`;
@@ -2937,8 +3007,13 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
       if (uploadError) throw uploadError;
 
       const { data } = supabase!.storage.from('videos').getPublicUrl(filePath);
-      setEditingEpisode((prev: any) => ({ ...prev, video_url: data.publicUrl }));
-      toast.success('Video uploaded successfully!');
+      setEditingEpisode((prev: any) => ({ 
+        ...prev, 
+        video_url: data.publicUrl,
+        duration: durationSeconds > 0 ? durationSeconds : prev?.duration
+      }));
+      const durationFormatted = durationSeconds > 0 ? ` (${Math.floor(durationSeconds/60)}m ${durationSeconds%60}s)` : '';
+      toast.success(`Video uploaded successfully!${durationFormatted}`);
     } catch (err: any) {
       console.error(err);
       toast.error('Video upload failed: ' + (err.message || 'Storage error'));
@@ -3621,7 +3696,7 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
               )}
 
               {/* Glassmorphic Creator Header */}
-              {profile && (
+              {profile && activeTab !== 'wallet' && (
                 <div className={`profile-header-card ${isOwnProfile ? 'own-profile' : ''}`} style={{ background: 'rgba(15, 15, 15, 0.4)', backdropFilter: 'blur(24px)', padding: '40px', borderRadius: '32px', border: `1px solid ${wlConfig?.accent || '#00ff88'}22`, position: 'relative', boxShadow: '0 20px 40px rgba(0,0,0,0.4)', marginBottom: '16px' }}>
                   <div className="profile-header-layout">
                     {/* Profile Picture with Glow */}
@@ -4392,11 +4467,11 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
 
                 {((post.creator_id === user?.id) || (isOwnProfile && !isNetworkLevel) || (isNetworkLevel && targetProfileId === user?.id)) && viewMode === 'edit' && (
                   <div style={{ display: 'flex', gap: '8px' }}>
-                    <button onClick={() => handleTogglePin(post.id, post.is_pinned)} style={{ background: post.is_pinned ? 'rgba(255, 215, 0, 0.15)' : 'rgba(255,255,255,0.05)', border: 'none', color: post.is_pinned ? '#ffd700' : 'var(--text-primary)', cursor: 'pointer', padding: '8px', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: '0.2s' }} onMouseOver={e=>e.currentTarget.style.background=post.is_pinned ? 'rgba(255, 215, 0, 0.25)' : 'rgba(255,255,255,0.1)'} onMouseOut={e=>e.currentTarget.style.background=post.is_pinned ? 'rgba(255, 215, 0, 0.15)' : 'rgba(255,255,255,0.05)'} title={post.is_pinned ? "Unpin Post" : "Pin Post"}>
-                      <Pin size={16} fill={post.is_pinned ? "#ffd700" : "none"} />
+                    <button onClick={() => handleTogglePin(post.id, post.is_pinned)} style={{ background: post.is_pinned ? 'rgba(255, 0, 255, 0.25)' : 'rgba(255, 0, 255, 0.1)', border: '1px solid rgba(255, 0, 255, 0.4)', color: '#ff4d85', cursor: 'pointer', padding: '8px', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: '0.2s' }} onMouseOver={e=>e.currentTarget.style.background='rgba(255, 0, 255, 0.3)'} onMouseOut={e=>e.currentTarget.style.background=post.is_pinned ? 'rgba(255, 0, 255, 0.25)' : 'rgba(255, 0, 255, 0.1)'} title={post.is_pinned ? "Unpin Post" : "Pin Post"}>
+                      <Pin size={16} color="#ff00ff" fill={post.is_pinned ? "#ff00ff" : "none"} />
                     </button>
-                    <button onClick={() => handleEditPost(post.id, post.title)} style={{ background: 'rgba(255,255,255,0.05)', border: 'none', color: 'var(--text-primary)', cursor: 'pointer', padding: '8px', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: '0.2s' }} onMouseOver={e=>e.currentTarget.style.background='rgba(255,255,255,0.1)'} onMouseOut={e=>e.currentTarget.style.background='rgba(255,255,255,0.05)'} title="Edit Post">
-                      <Edit2 size={16} />
+                    <button onClick={() => handleEditPost(post.id, post.title)} style={{ background: 'rgba(255, 215, 0, 0.15)', border: '1px solid rgba(255, 215, 0, 0.4)', color: '#ffd700', cursor: 'pointer', padding: '8px', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: '0.2s' }} onMouseOver={e=>e.currentTarget.style.background='rgba(255, 215, 0, 0.25)'} onMouseOut={e=>e.currentTarget.style.background='rgba(255, 215, 0, 0.15)'} title="Edit Post">
+                      <Edit2 size={16} color="#ffd700" />
                     </button>
                     <button onClick={() => handleDeletePost(post.id)} style={{ background: 'rgba(255,50,50,0.1)', border: 'none', color: '#ff4444', cursor: 'pointer', padding: '8px', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: '0.2s' }} onMouseOver={e=>e.currentTarget.style.background='rgba(255,50,50,0.2)'} onMouseOut={e=>e.currentTarget.style.background='rgba(255,50,50,0.1)'} title="Delete Post">
                       <Trash2 size={16} />
@@ -4510,14 +4585,14 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
                   <div style={{ display: 'flex', gap: '24px', marginBottom: '16px' }}>
                     <button 
                       onClick={() => handleLike(post.id)}
-                      style={{ background: 'none', border: 'none', color: post.hasLiked ? '#ff4d85' : 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontWeight: 'bold', transition: 'color 0.2s' }}
+                      style={{ background: 'none', border: 'none', color: post.hasLiked ? '#ff4d85' : 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontWeight: 'bold', fontSize: '15px', transition: 'transform 0.2s' }}
                     >
-                      <Heart size={20} fill={post.hasLiked ? '#ff4d85' : 'none'} /> {post.likes || 0}
+                      <span style={{ fontSize: '18px' }}>{post.hasLiked ? '❤️' : '🤍'}</span> {post.likes || 0}
                     </button>
                     <button 
-                      style={{ background: 'none', border: 'none', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontWeight: 'bold' }}
+                      style={{ background: 'none', border: 'none', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontWeight: 'bold', fontSize: '15px' }}
                     >
-                      <MessageCircle size={20} /> {post.comments?.length || 0}
+                      <span style={{ fontSize: '18px' }}>💬</span> {post.comments?.length || 0}
                     </button>
                     <button 
                       onClick={() => handleSharePost(post)}
@@ -5834,7 +5909,7 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
                         {/* Booking Refund Policy Disclaimer */}
                         <div style={{ marginTop: '16px', padding: '10px 14px', background: 'rgba(255,255,255,0.01)', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.03)' }}>
                           <p style={{ margin: 0, fontSize: '11px', color: 'var(--text-muted)', fontStyle: 'italic', textAlign: 'center', lineHeight: 1.4 }}>
-                            🛡️ Booking Terms: {refundPolicy || 'All bookings are final. Rescheduling requests must be received at least 24 hours prior to the session start.'}
+                            🛡️ Appointment Terms: {refundPolicy || 'All appointment bookings are final. Rescheduling requests must be received at least 24 hours prior to the session start.'}
                           </p>
                         </div>
                       </motion.div>
@@ -6643,7 +6718,7 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
                                 <div>
                                   {uploadingVideo ? 'Uploading Video...' : isDraggingVideo ? 'Drop here!' : (newEpisode.video_url && newEpisode.video_url.includes("episodes/video_")) ? 'Video File Uploaded ✓' : 'Upload Video File (Drag & Drop)'}
                                 </div>
-                                <input type="file" accept="video/*" onChange={async (e) => {
+                                <input type="file" accept="video/*,video/quicktime,video/mov,.mov,.mp4,.m4v,.webm" onChange={async (e) => {
                                   if (e.target.files && e.target.files[0]) {
                                     await handleVideoFileUpload(e.target.files[0]);
                                   }
@@ -9115,7 +9190,7 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                     <label style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', padding: '12px', borderRadius: '10px', color: '#ccc', textAlign: 'center', cursor: 'pointer', fontWeight: 'bold', fontSize: '13px' }}>
                       {uploadingEditEpisodeVideo ? 'Uploading Video...' : (editingEpisode.video_url && editingEpisode.video_url.includes('videos/')) ? 'Video File Uploaded ✓' : 'Upload Video File'}
-                      <input type="file" accept="video/*" onChange={handleEditEpisodeVideoUpload} style={{ display: 'none' }} disabled={uploadingEditEpisodeVideo} />
+                      <input type="file" accept="video/*,video/quicktime,video/mov,.mov,.mp4,.m4v,.webm" onChange={handleEditEpisodeVideoUpload} style={{ display: 'none' }} disabled={uploadingEditEpisodeVideo} />
                     </label>
                     <input 
                       type="text" 
