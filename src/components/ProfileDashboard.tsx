@@ -2297,25 +2297,31 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
       console.warn("Failed to save name override to localStorage:", e);
     }
 
+    // Update local React state instantly so profile name updates immediately on screen without page reload
+    if (newName) {
+      setProfile((prev: any) => ({
+        ...(prev || {}),
+        username: newName,
+        full_name: newName
+      }));
+      if (wlConfig) {
+        wlConfig.name = newName;
+      }
+    }
+
     setSaving(false);
     
     if (error && (error.message.includes('column') || error.message.includes('schema cache'))) {
       console.warn("Profile DB update note:", error.message);
-      toast.success('Channel Profile & Name Successfully Saved!');
-      setTimeout(() => {
-        window.location.reload();
-      }, 300);
+      toast.success('Channel Name & Profile Updated!');
     } else if (error) {
       console.error("Save profile error:", error);
       toast.error(`Failed to save profile: ${error.message}`);
     } else {
-      toast.success('Channel Profile & Name Successfully Saved!');
+      toast.success('Channel Name & Profile Updated!');
       if (wlError) {
-        toast.warning('Note: Custom branding and refund policy could not be synced.');
+        toast.warning('Note: Custom branding could not be synced.');
       }
-      setTimeout(() => {
-        window.location.reload();
-      }, 300);
     }
   };
 
