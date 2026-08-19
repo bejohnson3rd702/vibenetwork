@@ -1381,8 +1381,25 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
       }
 
       if (targetProfile) {
-      setProfile(targetProfile);
-      const loadedProfileId = targetProfile.id;
+        // Merge saved name & branding overrides from localStorage
+        try {
+          const localOverrides = JSON.parse(localStorage.getItem('vibe_child_branding_overrides') || '{}');
+          const ov = localOverrides[targetProfile.id] || (targetProfileId ? localOverrides[targetProfileId] : null);
+          if (ov) {
+            if (ov.name) {
+              targetProfile.username = ov.name;
+              targetProfile.full_name = ov.name;
+            }
+            if (ov.logo) targetProfile.avatar_url = ov.logo;
+            if (ov.heroCopy) targetProfile.bio = ov.heroCopy;
+            if (ov.heroImage) targetProfile.homepage_image_url = ov.heroImage;
+          }
+        } catch (ovErr) {
+          console.warn("Failed to apply local profile overrides:", ovErr);
+        }
+
+        setProfile(targetProfile);
+        const loadedProfileId = targetProfile.id;
       const isOwn = Boolean(
         user && (
           loadedProfileId === user.id ||
@@ -2263,15 +2280,17 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
 
     // Persist new name to localStorage overrides so it displays immediately on reload
     try {
-      const storeId = targetWlId || profile?.id || user?.id;
-      if (storeId) {
+      const keysToStore = [targetWlId, profile?.id, targetProfileId, user?.id].filter(Boolean) as string[];
+      if (keysToStore.length > 0) {
         const existingOverrides = JSON.parse(localStorage.getItem('vibe_child_branding_overrides') || '{}');
-        existingOverrides[storeId] = {
-          ...(existingOverrides[storeId] || {}),
-          name: newName,
-          logo: avatarUrl,
-          updated_at: Date.now()
-        };
+        keysToStore.forEach(storeId => {
+          existingOverrides[storeId] = {
+            ...(existingOverrides[storeId] || {}),
+            name: newName,
+            logo: avatarUrl,
+            updated_at: Date.now()
+          };
+        });
         localStorage.setItem('vibe_child_branding_overrides', JSON.stringify(existingOverrides));
       }
     } catch (e) {
