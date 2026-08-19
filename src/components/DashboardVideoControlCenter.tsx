@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Upload, Sparkles, CheckCircle2, Image as ImageIcon, Video as VideoIcon, FileText, Loader2, Trash2, Edit3, Plus, Play } from 'lucide-react';
+import { Upload, Sparkles, CheckCircle2, Image as ImageIcon, Video as VideoIcon, FileText, Loader2, Trash2, Edit3, Plus, Play, Calendar } from 'lucide-react';
 import { supabase } from '../supabaseClient';
 import { extractYouTubeId } from './KpleAddVideoModal';
 
