@@ -2496,30 +2496,6 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
     }
   };
 
-  const handleVideoFileUpload = async (file: File) => {
-    if (!file) return;
-    setUploadingVideo(true);
-    const fileExt = file.name.split('.').pop();
-    const fileName = `episodes/video_${Date.now()}.${fileExt}`;
-    const filePath = `${fileName}`;
-
-    try {
-      const { error: uploadError } = await supabase!.storage.from('videos').upload(filePath, file);
-      if (uploadError) throw uploadError;
-      
-      const { data } = supabase!.storage.from('videos').getPublicUrl(filePath);
-      if (data && data.publicUrl) {
-        setNewEpisode(prev => ({ ...prev, video_url: data.publicUrl }));
-        toast.success('Video uploaded successfully!');
-      }
-    } catch (err: any) {
-      console.error(err);
-      toast.error('Video upload failed: ' + (err.message || 'Storage error'));
-    } finally {
-      setUploadingVideo(false);
-    }
-  };
-
   const handleAddEpisode = async (seriesId: string) => {
     if (!newEpisode.title || !newEpisode.video_url) {
       toast.error('Episode Title and Video are required.');
