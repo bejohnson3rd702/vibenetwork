@@ -964,46 +964,6 @@ export default function N2NHome({ wlConfig, categories, user, activeVideo, setAc
 
       <main style={{ background: 'var(--bg-color)', paddingBottom: '100px', zIndex: 10, position: 'relative', width: '100%' }}>
 
-        {/* ── Channel Admin Edit Controls Sticky Bar ── */}
-        {isAdmin && (
-          <div style={{
-            position: 'sticky', top: '80px', zIndex: 99,
-            background: 'rgba(12, 12, 16, 0.95)', backdropFilter: 'blur(12px)',
-            borderBottom: `1px solid ${accent}44`, borderTop: `1px solid ${accent}22`,
-            padding: '12px 32px', display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-            gap: '16px', boxShadow: `0 10px 30px rgba(0,0,0,0.8), 0 0 20px ${accent}15`
-          }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-              <div style={{ width: '10px', height: '10px', borderRadius: '50%', background: accent, boxShadow: `0 0 10px ${accent}` }} />
-              <span style={{ fontSize: '12px', fontWeight: 800, color: '#fff', textTransform: 'uppercase', letterSpacing: '1px' }}>
-                Channel Admin Mode Active: {config?.name || 'Network Admin'}
-              </span>
-            </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-              <button
-                onClick={() => window.dispatchEvent(new CustomEvent('open_admin_panel'))}
-                style={{
-                  padding: '8px 18px', borderRadius: '8px', background: accent, color: '#000',
-                  border: 'none', fontSize: '11px', fontWeight: 900, textTransform: 'uppercase',
-                  letterSpacing: '1px', cursor: 'pointer', transition: 'all 0.2s'
-                }}
-              >
-                ⚙️ Customize Channel & Branding
-              </button>
-              <button
-                onClick={() => navigate('/profile' + window.location.search)}
-                style={{
-                  padding: '8px 18px', borderRadius: '8px', background: 'rgba(255,255,255,0.1)', color: '#fff',
-                  border: '1px solid rgba(255,255,255,0.2)', fontSize: '11px', fontWeight: 900, textTransform: 'uppercase',
-                  letterSpacing: '1px', cursor: 'pointer'
-                }}
-              >
-                ✏️ Edit Bio & Profile
-              </button>
-            </div>
-          </div>
-        )}
-
         {/* ── Mr. & Mrs. Olympia Slider ──────────────────────── */}
         {isOlympian && (
           <div id="olympia-champions-slider">
