@@ -2152,7 +2152,6 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
     const updatePayload: any = {
       username: newName,
       full_name: newName,
-      display_name: newName,
       bio,
       avatar_url: avatarUrl,
       homepage_image_url: homepageImageUrl,
@@ -2184,7 +2183,7 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
 
     let error: any = null;
 
-    // Attempt to update all fields on profiles table if targetIdToUpdate is a valid UUID
+    // Attempt to update fields on profiles table if targetIdToUpdate is a valid UUID
     if (isUuid(targetIdToUpdate)) {
       let { error: initialError } = await supabase!.from('profiles').update({
         ...updatePayload,
@@ -2196,15 +2195,31 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
 
       // If it failed because columns don't exist, fallback to core existing columns
       if (initialError && (initialError.message.includes('column') || initialError.message.includes('schema cache'))) {
-        console.warn("Retrying profile update with core columns only...");
+        console.warn("Retrying profile update with core safe columns...", initialError.message);
+        
+        // Stage 1: Core safe columns (username, full_name, bio, avatar_url, homepage_image_url)
         const { error: retryError } = await supabase!.from('profiles').update(updatePayload).eq('id', targetIdToUpdate);
         error = retryError;
 
-        // If username column is also not in profiles, try with bio & avatar_url
-        if (retryError && (retryError.message.includes('username') || retryError.message.includes('column'))) {
-          const { username: _u, ...coreOnly } = updatePayload;
-          const { error: coreErr } = await supabase!.from('profiles').update(coreOnly).eq('id', targetIdToUpdate);
-          error = coreErr;
+        // Stage 2: Minimal columns (username, bio, avatar_url)
+        if (retryError && (retryError.message.includes('column') || retryError.message.includes('schema cache'))) {
+          const minimalPayload: any = {
+            ...(newName && { username: newName }),
+            ...(bio !== undefined && { bio }),
+            ...(avatarUrl && { avatar_url: avatarUrl }),
+          };
+          const { error: minErr } = await supabase!.from('profiles').update(minimalPayload).eq('id', targetIdToUpdate);
+          error = minErr;
+
+          // Stage 3: Absolute minimal (bio & avatar_url)
+          if (minErr && (minErr.message.includes('column') || minErr.message.includes('schema cache'))) {
+            const bioAvatarOnly: any = {
+              ...(bio !== undefined && { bio }),
+              ...(avatarUrl && { avatar_url: avatarUrl }),
+            };
+            const { error: finalErr } = await supabase!.from('profiles').update(bioAvatarOnly).eq('id', targetIdToUpdate);
+            error = finalErr;
+          }
         }
       }
     }
