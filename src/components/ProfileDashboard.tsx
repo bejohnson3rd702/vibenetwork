@@ -7,6 +7,7 @@ import { DictationButton } from './DictationButton';
 import { EmojiPickerButton } from './EmojiPickerButton';
 import EndUserAuthModal from './EndUserAuthModal';
 import { ProfileLive } from './ProfileLive';
+import { DashboardVideoControlCenter } from './DashboardVideoControlCenter';
 import { ErrorBoundary } from './ErrorBoundary';
 import { BackgroundSettingsModal } from './BackgroundSettingsModal';
 import { SubscriptionSettingsModal } from './SubscriptionSettingsModal';
@@ -4166,6 +4167,21 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
                 <div className="creator-tools-list">
                   {[
                     { id: 'my_bookings', label: 'Schedule Appointment', icon: <Calendar size={16} />, color: '#b380ff', bg: 'rgba(179,128,255,0.12)', border: 'rgba(179,128,255,0.4)', show: !!user },
+                    { 
+                      id: 'kple_tv_publisher', 
+                      label: 'KPLE-TV Video Publisher', 
+                      icon: <Video size={16} />, 
+                      color: '#00e5ff', 
+                      bg: 'rgba(0,229,255,0.12)', 
+                      border: 'rgba(0,229,255,0.4)', 
+                      show: Boolean(
+                        wlConfig?.id === '33742e2f-430b-4c2d-9cba-42507891ef02' || 
+                        profile?.whitelabel_id === '33742e2f-430b-4c2d-9cba-42507891ef02' || 
+                        user?.email?.toLowerCase().includes('bennie') || 
+                        wlConfig?.name?.toLowerCase().includes('kple') || 
+                        wlConfig?.name?.toLowerCase().includes('revival')
+                      ) 
+                    },
                     { id: 'subscriptions', label: 'Following & Subs', icon: <Star size={16} />, color: '#ffcc00', bg: 'rgba(255,204,0,0.12)', border: 'rgba(255,204,0,0.4)', show: !!user },
                     { id: 'whatsapp', label: 'WhatsApp Live Inbox', icon: <MessageCircle size={16} />, color: '#25D366', bg: 'rgba(37,211,102,0.12)', border: 'rgba(37,211,102,0.4)', show: true },
                     { id: 'ai_report', label: 'AI Creator Report', icon: <Activity size={16} />, color: '#3399ff', bg: 'rgba(51,153,255,0.12)', border: 'rgba(51,153,255,0.4)', show: isInfluencer },
@@ -7826,6 +7842,20 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
             <h2 style={{ fontSize: '24px', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '16px', margin: 0 }}>Security Settings</h2>
             <SecuritySettingsForm accentColor={wlConfig?.theme?.accent || wlConfig?.accent || '#ff4d85'} />
+          </motion.div>
+        )}
+
+        {/* --- KPLE-TV VIDEO PUBLISHER & STATION AIRTIME EDITOR --- */}
+        {activeTab === 'kple_tv_publisher' && isOwnProfile && viewMode === 'edit' && (
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+            <DashboardVideoControlCenter
+              whitelabelId={wlConfig?.id || '33742e2f-430b-4c2d-9cba-42507891ef02'}
+              accent={wlConfig?.accent || '#00e5ff'}
+              onVideoPublished={() => {
+                toast.success("Broadcast video published to KPLE-TV Network!");
+                loadSecondaryData();
+              }}
+            />
           </motion.div>
         )}
 
