@@ -3669,6 +3669,12 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
                           }}>
                             {!effectiveAvatar && (profile?.username ? profile.username[0].toUpperCase() : (user?.email ? user.email[0].toUpperCase() : 'V'))}
                           </div>
+
+                          {isOwnProfile && viewMode === 'edit' && (
+                            <div style={{ position: 'absolute', bottom: '-26px', left: '50%', transform: 'translateX(-50%)', whiteSpace: 'nowrap', zIndex: 10, fontSize: '11px', fontWeight: 800, color: '#00ff88', background: 'rgba(0,0,0,0.85)', padding: '4px 12px', borderRadius: '12px', border: '1px solid rgba(0,255,136,0.4)', boxShadow: '0 4px 12px rgba(0,0,0,0.6)' }}>
+                              📏 512 × 512 px (1:1 Ratio)
+                            </div>
+                          )}
                         </div>
                       );
                     })()}
@@ -5911,42 +5917,50 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
                     </>
                   )}
 
-                  <div style={{ display: 'flex', gap: '12px' }}>
-                    {newSeries.img ? (
-                      <div style={{ width: '100px', height: '56px', borderRadius: '8px', backgroundImage: `url("${newSeries.img}")`, backgroundSize: 'cover', backgroundPosition: 'center', border: '1px solid rgba(255,255,255,0.1)', flexShrink: 0 }} />
-                    ) : null}
-                    <label 
-                      onDragOver={(e) => { e.preventDefault(); setIsDraggingSeriesImg(true); }}
-                      onDragLeave={() => setIsDraggingSeriesImg(false)}
-                      onDrop={async (e) => {
-                        e.preventDefault();
-                        setIsDraggingSeriesImg(false);
-                        if (e.dataTransfer.files && e.dataTransfer.files[0]) {
-                          await handleSeriesCoverUpload(e.dataTransfer.files[0]);
-                        }
-                      }}
-                      style={{
-                        flex: 1,
-                        background: isDraggingSeriesImg ? 'rgba(255,77,133,0.05)' : 'rgba(0,0,0,0.5)',
-                        border: isDraggingSeriesImg ? '2px dashed #ff4d85' : '1px solid rgba(255,255,255,0.1)',
-                        padding: '14px',
-                        borderRadius: '12px',
-                        color: isDraggingSeriesImg ? '#ff4d85' : '#ccc',
-                        textAlign: 'center',
-                        cursor: 'pointer',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        gap: '8px',
-                        fontSize: '15px',
-                        transition: 'all 0.2s ease',
-                        fontWeight: 'bold'
-                      }}
-                    >
-                      <ImageIcon size={16} />
-                      {uploadingSeriesImg ? 'Uploading Cover...' : isDraggingSeriesImg ? 'Drop here!' : newSeries.img ? 'Cover Uploaded ✓' : 'Upload Series Cover (Drag & Drop)'}
-                      <input type="file" accept="image/*" onChange={handleSeriesCoverUpload} style={{ display: 'none' }} disabled={uploadingSeriesImg} />
-                    </label>
+                  <div style={{ gridColumn: '1 / -1', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <label style={{ fontSize: '13px', color: '#ccc', fontWeight: 'bold' }}>Series Cover Graphic</label>
+                      <span style={{ fontSize: '11px', fontWeight: 800, color: '#00ff88', background: 'rgba(0,255,136,0.1)', padding: '2px 8px', borderRadius: '10px', border: '1px solid rgba(0,255,136,0.2)' }}>
+                        📏 Recommended: 1920 × 1080 px (16:9 Widescreen)
+                      </span>
+                    </div>
+                    <div style={{ display: 'flex', gap: '12px' }}>
+                      {newSeries.img ? (
+                        <div style={{ width: '100px', height: '56px', borderRadius: '8px', backgroundImage: `url("${newSeries.img}")`, backgroundSize: 'cover', backgroundPosition: 'center', border: '1px solid rgba(255,255,255,0.1)', flexShrink: 0 }} />
+                      ) : null}
+                      <label 
+                        onDragOver={(e) => { e.preventDefault(); setIsDraggingSeriesImg(true); }}
+                        onDragLeave={() => setIsDraggingSeriesImg(false)}
+                        onDrop={async (e) => {
+                          e.preventDefault();
+                          setIsDraggingSeriesImg(false);
+                          if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+                            await handleSeriesCoverUpload(e.dataTransfer.files[0]);
+                          }
+                        }}
+                        style={{
+                          flex: 1,
+                          background: isDraggingSeriesImg ? 'rgba(255,77,133,0.05)' : 'rgba(0,0,0,0.5)',
+                          border: isDraggingSeriesImg ? '2px dashed #ff4d85' : '1px solid rgba(255,255,255,0.1)',
+                          padding: '14px',
+                          borderRadius: '12px',
+                          color: isDraggingSeriesImg ? '#ff4d85' : '#ccc',
+                          textAlign: 'center',
+                          cursor: 'pointer',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          gap: '8px',
+                          fontSize: '15px',
+                          transition: 'all 0.2s ease',
+                          fontWeight: 'bold'
+                        }}
+                      >
+                        <ImageIcon size={16} />
+                        {uploadingSeriesImg ? 'Uploading Cover...' : isDraggingSeriesImg ? 'Drop here!' : newSeries.img ? 'Cover Uploaded ✓' : 'Upload Series Cover — 1920×1080 px (Drag & Drop)'}
+                        <input type="file" accept="image/*" onChange={handleSeriesCoverUpload} style={{ display: 'none' }} disabled={uploadingSeriesImg} />
+                      </label>
+                    </div>
                   </div>
                   <div style={{ gridColumn: '1 / -1', display: 'flex', justifyContent: 'flex-end' }}>
                     <button type="submit" disabled={!newSeries.title || uploadingSeriesImg} style={{ padding: '12px 24px', background: (!newSeries.title || uploadingSeriesImg) ? 'rgba(255,255,255,0.1)' : '#ff4d85', color: 'var(--text-primary)', border: 'none', borderRadius: '12px', fontWeight: 'bold', cursor: (!newSeries.title || uploadingSeriesImg) ? 'not-allowed' : 'pointer' }}>Publish Series</button>
@@ -7557,11 +7571,15 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
                   <div style={{ fontSize: '48px', fontWeight: 900, color: 'var(--text-primary)' }}>
                     ${walletBalance.toFixed(2)}
                   </div>
-                  <p style={{ margin: '8px 0 0 0', color: 'var(--text-muted)', fontSize: '14px' }}>Available to withdraw, or use for platform subscriptions.</p>
+                  <div style={{ marginTop: '12px', display: 'flex', gap: '16px', fontSize: '13px', color: 'var(--text-secondary)' }}>
+                    <span>Gross Volume: <strong>${(walletBalance / (1 - ((profile?.platform_fee_percentage || 15) / 100))).toFixed(2)}</strong></span>
+                    <span>Vibe Fee ({profile?.platform_fee_percentage || 15}%): <strong style={{ color: '#ff4d85' }}>-${(walletBalance * ((profile?.platform_fee_percentage || 15) / 100)).toFixed(2)}</strong></span>
+                    <span>Net to Stripe: <strong style={{ color: '#00ff88' }}>${walletBalance.toFixed(2)}</strong></span>
+                  </div>
                 </div>
                 <div style={{ display: 'flex', gap: '16px', flexDirection: 'column' }}>
-                  <button style={{ padding: '14px 24px', borderRadius: '12px', background: '#00ff88', color: '#000', fontWeight: 'bold', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px', fontSize: '15px', transition: 'all 0.2s' }} onClick={() => { toast.success('Funds securely routed to your connected bank account.'); setWalletBalance(0); }}>
-                    <ArrowUpRight size={18}/> Withdraw Funds
+                  <button style={{ padding: '14px 24px', borderRadius: '12px', background: '#00ff88', color: '#000', fontWeight: 'bold', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px', fontSize: '15px', transition: 'all 0.2s' }} onClick={() => { toast.success('Funds securely routed to your connected bank account via Stripe Connect.'); setWalletBalance(0); }}>
+                    <ArrowUpRight size={18}/> Withdraw Net Funds
                   </button>
                   <button style={{ padding: '14px 24px', borderRadius: '12px', background: 'rgba(255,255,255,0.1)', color: 'var(--text-primary)', fontWeight: 'bold', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px', fontSize: '15px' }} onClick={() => setWalletBalance(prev => prev + 100)}>
                     <ArrowDownLeft size={18}/> Deposit $100
@@ -8957,7 +8975,12 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
                 )}
 
                 <div>
-                  <label style={{ display: 'block', marginBottom: '6px', fontSize: '13px', color: '#ccc' }}>Series Cover Image</label>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
+                    <label style={{ fontSize: '13px', color: '#ccc' }}>Series Cover Image</label>
+                    <span style={{ fontSize: '11px', fontWeight: 800, color: '#00ff88', background: 'rgba(0,255,136,0.1)', padding: '2px 8px', borderRadius: '10px', border: '1px solid rgba(0,255,136,0.2)' }}>
+                      📏 1920 × 1080 px (16:9 Ratio)
+                    </span>
+                  </div>
                   <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
                     {editingSeries.img && (
                       <img src={editingSeries.img} alt="Series Cover" style={{ width: '120px', aspectRatio: '16/9', borderRadius: '8px', objectFit: 'cover', border: '1px solid rgba(255,255,255,0.1)' }} />

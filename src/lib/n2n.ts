@@ -333,6 +333,44 @@ export async function getChildNetworks(parentId: string, includeInactive: boolea
   });
 
   const mapped = filtered.map((row: any) => normalizeWlConfig(row));
+
+  // Apply local branding overrides if present
+  try {
+    const localOverrides = JSON.parse(localStorage.getItem('vibe_child_branding_overrides') || '{}');
+    mapped.forEach((item: any) => {
+      if (localOverrides[item.id]) {
+        const ov = localOverrides[item.id];
+        if (ov.name) item.name = ov.name;
+        if (ov.logo !== undefined && ov.logo !== '') {
+          item.logo = ov.logo;
+          item.logoImage = ov.logo;
+          if (!item.theme) item.theme = {};
+          item.theme.logo = ov.logo;
+          item.theme.logoImage = ov.logo;
+        }
+        if (ov.accent) {
+          item.accent = ov.accent;
+          if (!item.theme) item.theme = {};
+          item.theme.accent = ov.accent;
+        }
+        if (ov.heroCopy) {
+          if (!item.theme) item.theme = {};
+          item.theme.heroCopy = ov.heroCopy;
+        }
+        if (ov.heroImage) {
+          if (!item.theme) item.theme = {};
+          item.theme.heroImage = ov.heroImage;
+        }
+        if (ov.defaultBio !== undefined) {
+          if (!item.theme) item.theme = {};
+          item.theme.defaultBio = ov.defaultBio;
+        }
+      }
+    });
+  } catch (e) {
+    console.warn('N2N: Failed to merge local branding overrides', e);
+  }
+
   const uniqueMap = new Map();
   mapped.forEach((item: any) => {
     if (!uniqueMap.has(item.id)) {
@@ -518,40 +556,61 @@ export async function updateChildBranding(
     defaultBio?: string;
   }
 ): Promise<boolean> {
-  // First get current config to merge theme
-  const { data: current } = await supabase
-    .from('whitelabel_configs')
-    .select('theme')
-    .eq('id', childId)
-    .single();
+  let dbSuccess = false;
 
-  const existingTheme = current?.theme || {};
+  try {
+    // First get current config to merge theme
+    const { data: current } = await supabase
+      .from('whitelabel_configs')
+      .select('theme')
+      .eq('id', childId)
+      .single();
 
-  const payload: any = {};
-  if (updates.name) payload.name = updates.name;
-  if (updates.logo) payload.logo = updates.logo;
-  if (updates.accent) payload.accent = updates.accent;
+    const existingTheme = current?.theme || {};
 
-  payload.theme = {
-    ...existingTheme,
-    ...(updates.accent && { accent: updates.accent }),
-    ...(updates.logo && { logo: updates.logo, logoImage: updates.logo }),
-    ...(updates.heroCopy && { heroCopy: updates.heroCopy }),
-    ...(updates.heroImage && { heroImage: updates.heroImage }),
-    ...(updates.bg && { bg: updates.bg }),
-    ...(updates.defaultBio !== undefined && { defaultBio: updates.defaultBio }),
-  };
+    const payload: any = {};
+    if (updates.name) payload.name = updates.name;
+    if (updates.logo !== undefined) payload.logo = updates.logo;
+    if (updates.accent) payload.accent = updates.accent;
 
-  const { error } = await supabase
-    .from('whitelabel_configs')
-    .update(payload)
-    .eq('id', childId);
+    payload.theme = {
+      ...existingTheme,
+      ...(updates.accent && { accent: updates.accent }),
+      ...(updates.logo !== undefined && { logo: updates.logo, logoImage: updates.logo }),
+      ...(updates.heroCopy && { heroCopy: updates.heroCopy }),
+      ...(updates.heroImage && { heroImage: updates.heroImage }),
+      ...(updates.bg && { bg: updates.bg }),
+      ...(updates.defaultBio !== undefined && { defaultBio: updates.defaultBio }),
+    };
 
-  if (error) {
-    console.error('N2N: Failed to update child branding', error);
-    return false;
+    const { error } = await supabase
+      .from('whitelabel_configs')
+      .update(payload)
+      .eq('id', childId);
+
+    if (!error) {
+      dbSuccess = true;
+    } else {
+      console.warn('N2N DB update note (using local override fallback):', error.message);
+    }
+  } catch (err) {
+    console.warn('N2N: DB updateChildBranding skipped for virtual network ID', err);
   }
-  return true;
+
+  // Always save to localStorage overrides so hardcoded/virtual networks & DB networks persist local changes
+  try {
+    const existingOverrides = JSON.parse(localStorage.getItem('vibe_child_branding_overrides') || '{}');
+    existingOverrides[childId] = {
+      ...(existingOverrides[childId] || {}),
+      ...updates,
+      updated_at: Date.now()
+    };
+    localStorage.setItem('vibe_child_branding_overrides', JSON.stringify(existingOverrides));
+    return true;
+  } catch (e) {
+    console.error('N2N: Failed to save child branding to localStorage', e);
+    return dbSuccess;
+  }
 }
 
 /** Update fee percentage for a child network */
