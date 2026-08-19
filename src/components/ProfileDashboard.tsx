@@ -2239,13 +2239,13 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
       const updatedTheme = {
         ...(wlConfig?.theme || {}),
         heroCopy: bio,
+        ...(homepageImageUrl && { heroImage: homepageImageUrl }),
         flipbook_images: flipbookImages,
         refund_policy: refundPolicy,
       };
       const { error: themeError } = await supabase!.from('whitelabel_configs').update({
         name: newName || wlConfig?.name,
         logo: avatarUrl,
-        hero_image: homepageImageUrl,
         theme: updatedTheme
       }).eq('id', targetWlId);
       
