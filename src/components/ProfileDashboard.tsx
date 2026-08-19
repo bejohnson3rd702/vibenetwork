@@ -2151,7 +2151,6 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
     const newName = profile?.username || profile?.full_name || '';
     const updatePayload: any = {
       username: newName,
-      full_name: newName,
       bio,
       avatar_url: avatarUrl,
       homepage_image_url: homepageImageUrl,
