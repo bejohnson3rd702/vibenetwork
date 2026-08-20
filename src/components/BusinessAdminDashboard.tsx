@@ -46,9 +46,9 @@ export default function BusinessAdminDashboard({ onClose }: { onClose: () => voi
        </div>
 
        {/* Body Workspace */}
-       <div style={{ flex: 1, display: 'flex', overflow: 'hidden' }}>
+       <div className="admin-dashboard-container" style={{ flex: 1, display: 'flex', overflow: 'hidden' }}>
           {/* Sidebar */}
-          <div style={{ width: '280px', borderRight: '1px solid rgba(255,255,255,0.05)', padding: '20px', display: 'flex', flexDirection: 'column', gap: '8px', overflowY: 'auto' }}>
+          <div className="admin-sidebar" style={{ width: '280px', borderRight: '1px solid rgba(255,255,255,0.05)', padding: '20px', display: 'flex', flexDirection: 'column', gap: '8px', overflowY: 'auto' }}>
              <button onClick={() => setActiveTab('analytics')} style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '16px 20px', background: activeTab === 'analytics' ? wlConfig.accent : 'transparent', color: activeTab === 'analytics' ? '#fff' : '#888', border: 'none', borderRadius: '12px', cursor: 'pointer', textAlign: 'left', fontWeight: 'bold', transition: '0.2s' }}>
                 <BarChart3 size={22} /> Analytics Engine
              </button>
@@ -126,7 +126,7 @@ export default function BusinessAdminDashboard({ onClose }: { onClose: () => voi
           </div>
           
           {/* Main Workspace */}
-          <div style={{ flex: 1, padding: '60px 80px', overflowY: 'auto' }}>
+          <div className="admin-workspace" style={{ flex: 1, padding: '60px 80px', overflowY: 'auto' }}>
             {activeTab === 'analytics' && <AnalyticsTab wlConfig={wlConfig} />}
             {activeTab === 'hero' && <HeroEditorTab wlConfig={wlConfig} />}
             {activeTab === 'branding' && <BrandingTab wlConfig={wlConfig} />}
