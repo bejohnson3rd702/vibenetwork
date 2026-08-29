@@ -458,6 +458,57 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
     }
   }, [activeTab]);
 
+  useEffect(() => {
+    if (!targetProfileId) return;
+
+    const fetchCreatorBalance = async () => {
+      try {
+        const { data: ledgerTx } = await supabase
+          .from('ledger')
+          .select('*')
+          .eq('creator_id', targetProfileId);
+
+        if (ledgerTx && ledgerTx.length > 0) {
+          const fee = wlConfig?.theme?.creator_splits?.[targetProfileId] ?? profile?.platform_fee_percentage ?? wlConfig?.platform_fee_percentage ?? 15;
+          const creatorPayoutPercent = (100 - fee) / 100;
+
+          const totalNet = ledgerTx.reduce((sum: number, tx: any) => {
+            const gross = Number(tx.amount || 0);
+            if (tx.type === 'WITHDRAWAL' || tx.type === 'PAYOUT') {
+              return sum - gross;
+            }
+            return sum + (gross * creatorPayoutPercent);
+          }, 0);
+
+          setWalletBalance(Math.max(0, totalNet));
+        }
+      } catch (e) {
+        console.warn('Realtime creator ledger load warning:', e);
+      }
+    };
+
+    fetchCreatorBalance();
+
+    const channel = supabase
+      .channel(`realtime-profile-ledger-${targetProfileId}`)
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'ledger' },
+        (payload: any) => {
+          console.log('⚡ [Profile Realtime Ledger] Event:', payload);
+          fetchCreatorBalance();
+          if (payload.eventType === 'INSERT') {
+            toast.success(`⚡ Transaction Received! Balance updated.`);
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [targetProfileId, wlConfig?.id, profile?.platform_fee_percentage]);
+
   // Forms for adding CRM records
   const [newContact, setNewContact] = useState({ first_name: '', last_name: '', email: '', phone: '', source: 'manual', tagString: '' });
   const [newOpportunity, setNewOpportunity] = useState({ title: '', value: '', contact_id: '', stage_id: '', status: 'open' });
@@ -3702,6 +3753,8 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
                 onClick={() => {
                   setViewMode('public');
                   setActiveTab('feed');
+                  setIsEditingBio(false);
+                  setShowCreatorPanel(false);
                 }}
                 style={{ padding: '8px 24px', borderRadius: '30px', border: 'none', background: viewMode === 'public' ? 'rgba(255,0,85,1)' : 'transparent', color: 'var(--text-primary)', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px', transition: 'all 0.3s ease' }}
               >
@@ -3901,7 +3954,7 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
 
                     {/* Action Buttons Column (3 Buttons with distinct colors for both own profile & visitors) */}
                     <div className="profile-header-actions" style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                      {isOwnProfile ? (
+                      {isOwnProfile && viewMode === 'edit' ? (
                         <>
                           {/* Button 1: Edit Bio Text (Mint Green) */}
                           <button
