@@ -3936,44 +3936,14 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
 
                       {isEditingBio ? (
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginTop: '12px' }}>
-                          <div style={{ position: 'relative' }}>
-                            <textarea
-                              value={bio}
-                              onChange={e => setBio(e.target.value)}
-                              rows={3}
-                              placeholder="Edit your profile bio text..."
-                              style={{ width: '100%', background: 'rgba(0,0,0,0.6)', border: '1px solid rgba(255,255,255,0.25)', borderRadius: '12px', padding: '12px 12px 48px 12px', color: '#fff', fontSize: '15px', outline: 'none', boxSizing: 'border-box' }}
-                            />
-                            <button
-                              type="button"
-                              onClick={() => {
-                                setAiPromptTarget('bio');
-                                setShowAiPromptModal(true);
-                              }}
-                              style={{
-                                position: 'absolute',
-                                right: '12px',
-                                bottom: '12px',
-                                padding: '6px 14px',
-                                background: 'linear-gradient(135deg, #8A2BE2, #ff4d85)',
-                                color: '#fff',
-                                border: 'none',
-                                borderRadius: '10px',
-                                fontWeight: 'bold',
-                                fontSize: '12px',
-                                cursor: 'pointer',
-                                display: 'flex',
-                                alignItems: 'center',
-                                gap: '6px',
-                                boxShadow: '0 2px 10px rgba(138,43,226,0.4)',
-                                transition: 'all 0.2s ease'
-                              }}
-                            >
-                              <span style={{ fontSize: '13px' }}>😊</span>
-                              <span>AI Boost</span>
-                            </button>
-                          </div>
-                          <div style={{ display: 'flex', gap: '10px' }}>
+                          <textarea
+                            value={bio}
+                            onChange={e => setBio(e.target.value)}
+                            rows={3}
+                            placeholder="Edit your profile bio text..."
+                            style={{ width: '100%', background: 'rgba(0,0,0,0.6)', border: '1px solid rgba(255,255,255,0.25)', borderRadius: '12px', padding: '14px', color: '#fff', fontSize: '15px', outline: 'none', boxSizing: 'border-box' }}
+                          />
+                          <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
                             <button
                               onClick={async () => {
                                 await saveProfile();
@@ -3982,6 +3952,31 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
                               style={{ padding: '8px 18px', background: '#00ff88', color: '#000', border: 'none', borderRadius: '8px', fontWeight: 'bold', cursor: 'pointer', fontSize: '13px' }}
                             >
                               Save Bio
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setAiPromptTarget('bio');
+                                setShowAiPromptModal(true);
+                              }}
+                              style={{
+                                padding: '8px 18px',
+                                background: 'linear-gradient(135deg, #8A2BE2, #ff4d85)',
+                                color: '#fff',
+                                border: 'none',
+                                borderRadius: '8px',
+                                fontWeight: 'bold',
+                                fontSize: '13px',
+                                cursor: 'pointer',
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '6px',
+                                boxShadow: '0 2px 10px rgba(138,43,226,0.3)',
+                                transition: 'all 0.2s ease'
+                              }}
+                            >
+                              <span style={{ fontSize: '13px' }}>😊</span>
+                              <span>AI Boost</span>
                             </button>
                             <button
                               onClick={() => setIsEditingBio(false)}
