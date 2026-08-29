@@ -4218,6 +4218,7 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
                   <span>{isInfluencer ? 'Creator Control Dashboard' : 'User Control Dashboard'}</span>
                 </div>
                 <div className="creator-tools-list">
+                  {[
                     { 
                       id: 'kple_tv_publisher', 
                       label: 'KPLE-TV Video Publisher', 
