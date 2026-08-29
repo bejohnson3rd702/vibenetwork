@@ -3935,14 +3935,44 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
                       </div>
 
                       {isEditingBio ? (
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '12px' }}>
-                          <textarea
-                            value={bio}
-                            onChange={e => setBio(e.target.value)}
-                            rows={3}
-                            placeholder="Edit your profile bio text..."
-                            style={{ width: '100%', background: 'rgba(0,0,0,0.6)', border: '1px solid rgba(255,255,255,0.25)', borderRadius: '12px', padding: '12px', color: '#fff', fontSize: '15px', outline: 'none' }}
-                          />
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginTop: '12px' }}>
+                          <div style={{ position: 'relative' }}>
+                            <textarea
+                              value={bio}
+                              onChange={e => setBio(e.target.value)}
+                              rows={3}
+                              placeholder="Edit your profile bio text..."
+                              style={{ width: '100%', background: 'rgba(0,0,0,0.6)', border: '1px solid rgba(255,255,255,0.25)', borderRadius: '12px', padding: '12px 12px 48px 12px', color: '#fff', fontSize: '15px', outline: 'none', boxSizing: 'border-box' }}
+                            />
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setAiPromptTarget('bio');
+                                setShowAiPromptModal(true);
+                              }}
+                              style={{
+                                position: 'absolute',
+                                right: '12px',
+                                bottom: '12px',
+                                padding: '6px 14px',
+                                background: 'linear-gradient(135deg, #8A2BE2, #ff4d85)',
+                                color: '#fff',
+                                border: 'none',
+                                borderRadius: '10px',
+                                fontWeight: 'bold',
+                                fontSize: '12px',
+                                cursor: 'pointer',
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '6px',
+                                boxShadow: '0 2px 10px rgba(138,43,226,0.4)',
+                                transition: 'all 0.2s ease'
+                              }}
+                            >
+                              <span style={{ fontSize: '13px' }}>😊</span>
+                              <span>AI Boost</span>
+                            </button>
+                          </div>
                           <div style={{ display: 'flex', gap: '10px' }}>
                             <button
                               onClick={async () => {
@@ -3996,34 +4026,7 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
                             <span>{isEditingBio ? 'Close Bio Editor' : 'Edit Bio Text'}</span>
                           </button>
 
-                          {/* Button 2: 😊 AI Boost Assistant (Electric Violet) */}
-                          <button
-                            onClick={() => {
-                              setAiPromptTarget('bio');
-                              setShowAiPromptModal(true);
-                            }}
-                            style={{
-                              padding: '10px 24px',
-                              background: 'rgba(157, 78, 221, 0.15)',
-                              color: '#9d4edd',
-                              border: '1px solid rgba(157, 78, 221, 0.5)',
-                              borderRadius: '100px',
-                              fontWeight: 'bold',
-                              fontSize: '14px',
-                              cursor: 'pointer',
-                              display: 'flex',
-                              alignItems: 'center',
-                              gap: '6px',
-                              transition: 'all 0.3s ease',
-                              backdropFilter: 'blur(10px)',
-                              boxShadow: '0 0 15px rgba(157, 78, 221, 0.25)'
-                            }}
-                          >
-                            <span style={{ fontSize: '14px' }}>😊</span>
-                            <span>AI Boost</span>
-                          </button>
-
-                          {/* Button 3: WhatsApp Direct Chat (WhatsApp Green, Admin Toggleable, Default Off) */}
+                          {/* Button 2: WhatsApp Direct Chat (WhatsApp Green, Admin Toggleable, Default Off) */}
                           {(wlConfig?.enableWhatsApp === true || wlConfig?.theme?.enableWhatsApp === true || profile?.enableWhatsApp === true) && (
                             <button
                               onClick={() => setShowWhatsAppDrawer(true)}
