@@ -166,6 +166,7 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
     return null;
   });
 
+  const [savedName, setSavedName] = useState<string>('');
   const [isSub, setIsSub] = useState(false);
   const [showSubModal, setShowSubModal] = useState(false);
   const [showBgSettingsModal, setShowBgSettingsModal] = useState(false);
@@ -1451,6 +1452,7 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
         }
 
         setProfile(targetProfile);
+        setSavedName(targetProfile.username || targetProfile.full_name || '');
         const loadedProfileId = targetProfile.id;
       const isOwn = Boolean(
         user && (
@@ -1882,6 +1884,7 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
         };
 
         setProfile(activeProfile);
+        setSavedName(activeProfile.username || activeProfile.full_name || '');
         setBio(activeProfile.bio);
         setAvatarUrl(activeProfile.avatar_url || '');
         setHomepageImageUrl('');
@@ -2356,6 +2359,7 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
         username: newName,
         full_name: newName
       }));
+      setSavedName(newName);
       if (wlConfig) {
         wlConfig.name = newName;
       }
@@ -3884,27 +3888,39 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
                             placeholder="Enter Profile Display Name..."
                             style={{ fontSize: '28px', fontWeight: 900, background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.25)', padding: '10px 18px', borderRadius: '16px', color: '#fff', outline: 'none', flex: 1, minWidth: '280px', maxWidth: '500px' }}
                           />
-                          <button
-                            onClick={saveProfile}
-                            disabled={saving}
-                            style={{
-                              padding: '10px 20px',
-                              borderRadius: '16px',
-                              background: saving ? '#555' : (wlConfig?.accent || '#00ff88'),
-                              color: '#000',
-                              fontWeight: 900,
-                              fontSize: '13px',
-                              border: 'none',
-                              cursor: saving ? 'wait' : 'pointer',
-                              display: 'flex',
-                              alignItems: 'center',
-                              gap: '6px',
-                              boxShadow: `0 4px 15px ${wlConfig?.accent || '#00ff88'}66`,
-                              transition: 'all 0.2s ease'
-                            }}
-                          >
-                            <Save size={16} /> {saving ? 'Saving...' : 'Save Name'}
-                          </button>
+                          {(() => {
+                            const currentName = profile?.username || '';
+                            const initialBaseline = savedName || user?.user_metadata?.full_name || user?.user_metadata?.display_name || user?.email?.split('@')[0] || '';
+                            const isNameDirty = Boolean(currentName && initialBaseline && currentName.trim() !== initialBaseline.trim());
+                            return (
+                              <button
+                                onClick={saveProfile}
+                                disabled={saving || !isNameDirty}
+                                style={{
+                                  padding: '10px 22px',
+                                  borderRadius: '16px',
+                                  background: saving 
+                                    ? '#555' 
+                                    : isNameDirty 
+                                    ? '#fb8c00' 
+                                    : 'rgba(251, 140, 0, 0.15)',
+                                  color: saving ? '#ccc' : isNameDirty ? '#000' : '#fb8c00',
+                                  fontWeight: 900,
+                                  fontSize: '13px',
+                                  border: isNameDirty ? 'none' : '1px solid rgba(251, 140, 0, 0.3)',
+                                  cursor: (saving || !isNameDirty) ? 'default' : 'pointer',
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  gap: '6px',
+                                  boxShadow: isNameDirty ? '0 4px 20px rgba(251, 140, 0, 0.6)' : 'none',
+                                  transition: 'all 0.3s ease',
+                                  opacity: isNameDirty ? 1 : 0.65
+                                }}
+                              >
+                                <Save size={16} color={isNameDirty ? '#000' : '#fb8c00'} /> {saving ? 'Saving...' : 'Save Name'}
+                              </button>
+                            );
+                          })()}
                         </div>
                       ) : (
                         <h1 className="profile-title" style={{ fontSize: '48px', fontWeight: 900, margin: '0 0 16px 0', letterSpacing: '-1px', textShadow: '0 4px 20px rgba(0,0,0,0.5)', overflowWrap: 'break-word', wordBreak: 'break-word', color: '#fff' }}>
