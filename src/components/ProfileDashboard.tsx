@@ -4218,8 +4218,6 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
                   <span>{isInfluencer ? 'Creator Control Dashboard' : 'User Control Dashboard'}</span>
                 </div>
                 <div className="creator-tools-list">
-                  {[
-                    { id: 'my_bookings', label: 'Schedule Appointment', icon: <Calendar size={16} />, color: '#b380ff', bg: 'rgba(179,128,255,0.12)', border: 'rgba(179,128,255,0.4)', show: !!user },
                     { 
                       id: 'kple_tv_publisher', 
                       label: 'KPLE-TV Video Publisher', 
@@ -5486,6 +5484,104 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
                     </div>
                   </motion.div>
                 )}
+
+                {/* Scheduled Sessions & Client Appointments History (Creator Edit Mode) */}
+                {isOwnProfile && viewMode === 'edit' && user && (() => {
+                  const allBookingsMap = new Map();
+                  purchasedBookings.forEach(b => allBookingsMap.set(b.id, { ...b, isIncoming: false }));
+                  receivedBookings.forEach(b => allBookingsMap.set(b.id, { ...b, isIncoming: true }));
+                  const allBookings = Array.from(allBookingsMap.values()).sort((a, b) => {
+                    return new Date(a.scheduled_at || 0) - new Date(b.scheduled_at || 0);
+                  });
+
+                  return (
+                    <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} style={{ background: 'rgba(255,255,255,0.01)', padding: '28px', borderRadius: '24px', border: '1px solid rgba(255,255,255,0.08)', marginBottom: '30px', backdropFilter: 'blur(20px)' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '16px', borderBottom: '1px solid rgba(255,255,255,0.06)', paddingBottom: '20px', marginBottom: '24px' }}>
+                        <div>
+                          <h4 style={{ margin: '0 0 4px 0', fontSize: '18px', display: 'flex', alignItems: 'center', gap: '8px', color: wlConfig?.accent || '#00ff88', fontWeight: 'bold' }}>
+                            <Calendar size={20} /> Scheduled Appointments & Client Sessions ({allBookings.length})
+                          </h4>
+                          <p style={{ color: 'var(--text-muted)', margin: 0, fontSize: '13px' }}>View upcoming client calls, host virtual sessions, and download call recordings.</p>
+                        </div>
+                      </div>
+
+                      {allBookings.length === 0 ? (
+                        <p style={{ color: 'var(--text-muted)', fontStyle: 'italic', margin: 0 }}>You have no scheduled client appointments yet.</p>
+                      ) : (
+                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '20px' }}>
+                          {allBookings.map((b, i) => {
+                            const isIncoming = b.isIncoming;
+                            const avatarLetter = isIncoming ? (b.buyer?.full_name?.charAt(0) || b.guest_name?.charAt(0) || '?') : (b.creator?.full_name?.charAt(0) || '?');
+                            const displayName = isIncoming ? (b.buyer?.full_name || b.guest_name) : b.creator?.full_name;
+                            const roleLabel = isIncoming ? 'Client Call' : `Host: @${b.creator?.username}`;
+                            const avatarBg = isIncoming ? '#00ff88' : '#ff4d85';
+                            const avatarColor = isIncoming ? '#000' : '#fff';
+                            
+                            return (
+                              <div key={b.id || i} style={{ background: 'rgba(0,0,0,0.4)', borderRadius: '16px', padding: '20px', border: '1px solid rgba(255,255,255,0.05)' }}>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px' }}>
+                                  <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: avatarBg, display: 'flex', alignItems: 'center', justifyContent: 'center', color: avatarColor, fontWeight: 'bold' }}>
+                                     {avatarLetter}
+                                  </div>
+                                  <div>
+                                    <div style={{ color: 'var(--text-primary)', fontWeight: 'bold' }}>{displayName}</div>
+                                    <div style={{ color: 'var(--text-muted)', fontSize: '13px' }}>{roleLabel}</div>
+                                  </div>
+                                </div>
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '20px' }}>
+                                  <div style={{ color: 'var(--text-primary)', fontSize: '14px', display: 'flex', alignItems: 'center', gap: '8px' }}><Calendar size={14} color="#aaa" /> {b.date}</div>
+                                  <div style={{ color: 'var(--text-primary)', fontSize: '14px', display: 'flex', alignItems: 'center', gap: '8px' }}><Clock size={14} color="#aaa" /> {b.time}</div>
+                                  <div style={{ color: isIncoming ? '#00ff88' : '#ff4d85', fontSize: '14px', display: 'flex', alignItems: 'center', gap: '8px', fontWeight: 'bold' }}><Video size={14} /> {b.meeting_type?.replace('_', ' ')}</div>
+                                </div>
+                                
+                                {b.meeting_type?.includes('virtual') && (
+                                  <button 
+                                    onClick={() => {
+                                      window.open(`/call/${b.id}?type=${b.meeting_type?.includes('audio') ? 'audio' : 'video'}`, '_blank');
+                                    }} 
+                                    style={isIncoming ? {
+                                      width: '100%', padding: '12px', background: 'transparent', border: '1px solid #00ff88', color: '#00ff88', borderRadius: '12px', fontWeight: 'bold', cursor: 'pointer', transition: '0.2s', marginBottom: b.record_call ? '12px' : '0'
+                                    } : {
+                                      width: '100%', padding: '12px', background: '#00ff88', color: '#000', border: 'none', borderRadius: '12px', fontWeight: 'bold', cursor: 'pointer', transition: '0.2s', marginBottom: b.record_call ? '12px' : '0'
+                                    }}
+                                  >
+                                    {isIncoming ? 'Host' : 'Join'} {b.meeting_type?.includes('audio') ? 'Audio' : 'Video'} Call
+                                  </button>
+                                )}
+                                
+                                {b.record_call && (
+                                  <div style={{ marginTop: '10px' }}>
+                                    {b.recording_url ? (
+                                      <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                                        <span style={{ fontSize: '12px', color: '#00ff88', fontWeight: 'bold', display: 'block' }}>✅ Recording:</span>
+                                        <video src={b.recording_url} controls style={{ width: '100%', borderRadius: '8px', background: '#000', height: b.meeting_type?.includes('audio') ? '50px' : 'auto' }} />
+                                        {!isIncoming && (
+                                          <a href={b.recording_url} download target="_blank" rel="noopener noreferrer" style={{ display: 'block', textDecoration: 'none', background: 'rgba(255,255,255,0.05)', color: '#fff', border: '1px solid rgba(255,255,255,0.1)', padding: '8px', borderRadius: '8px', fontSize: '13px', fontWeight: 'bold', textAlign: 'center' }}>
+                                            📥 Download Recording
+                                          </a>
+                                        )}
+                                      </div>
+                                    ) : (
+                                      isIncoming ? (
+                                        <div style={{ padding: '8px 12px', background: 'rgba(255,68,68,0.1)', border: '1px solid rgba(255,68,68,0.2)', borderRadius: '8px', fontSize: '12px', color: '#ff4d4d', fontWeight: 'bold', textAlign: 'center', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}>
+                                          <span>🔴 Recording requested by customer</span>
+                                        </div>
+                                      ) : (
+                                        <div style={{ padding: '8px 12px', background: 'rgba(255,255,255,0.02)', border: '1px dashed rgba(255,255,255,0.1)', borderRadius: '8px', fontSize: '12px', color: 'var(--text-muted)', textAlign: 'center' }}>
+                                          ⏳ Call recording will be delivered here after the session.
+                                        </div>
+                                      )
+                                    )}
+                                  </div>
+                                )}
+                              </div>
+                            );
+                          })}
+                        </div>
+                      )}
+                    </motion.div>
+                  );
+                })()}
 
                 {/* Main Client/Guest Booking Layout */}
                 {!(isOwnProfile && viewMode === 'edit') && (
@@ -7558,115 +7654,6 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
 
 
 
-        {/* --- MY BOOKINGS TAB --- */}
-        {activeTab === 'my_bookings' && user && viewMode === 'edit' && (() => {
-          const allBookingsMap = new Map();
-          purchasedBookings.forEach(b => allBookingsMap.set(b.id, { ...b, isIncoming: false }));
-          receivedBookings.forEach(b => allBookingsMap.set(b.id, { ...b, isIncoming: true }));
-          const allBookings = Array.from(allBookingsMap.values()).sort((a, b) => {
-            return new Date(a.scheduled_at || 0) - new Date(b.scheduled_at || 0);
-          });
-
-          return (
-            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} style={{ display: 'flex', flexDirection: 'column', gap: '30px' }}>
-              <div style={{ background: 'rgba(255,255,255,0.03)', borderRadius: '24px', padding: '30px', border: '1px solid rgba(255,255,255,0.05)' }}>
-                <h2 style={{ fontSize: '24px', margin: '0 0 20px 0', color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '10px' }}>
-                  <Calendar size={24} color={wlConfig?.accent || "#ff4d85"} /> Schedule Appointment
-                </h2>
-                {allBookings.length === 0 ? (
-                  <p style={{ color: 'var(--text-muted)', fontStyle: 'italic' }}>You have no scheduled appointments yet.</p>
-                ) : (
-                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '20px' }}>
-                    {allBookings.map((b, i) => {
-                      const isIncoming = b.isIncoming;
-                      const avatarLetter = isIncoming ? (b.buyer?.full_name?.charAt(0) || b.guest_name?.charAt(0) || '?') : (b.creator?.full_name?.charAt(0) || '?');
-                      const displayName = isIncoming ? (b.buyer?.full_name || b.guest_name) : b.creator?.full_name;
-                      const roleLabel = isIncoming ? 'Client Call' : `Host: @${b.creator?.username}`;
-                      const avatarBg = isIncoming ? '#00ff88' : '#ff4d85';
-                      const avatarColor = isIncoming ? '#000' : '#fff';
-                      
-                      return (
-                        <div key={b.id || i} style={{ background: 'rgba(0,0,0,0.4)', borderRadius: '16px', padding: '20px', border: '1px solid rgba(255,255,255,0.05)' }}>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px' }}>
-                            <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: avatarBg, display: 'flex', alignItems: 'center', justifyContent: 'center', color: avatarColor, fontWeight: 'bold' }}>
-                               {avatarLetter}
-                            </div>
-                            <div>
-                              <div style={{ color: 'var(--text-primary)', fontWeight: 'bold' }}>{displayName}</div>
-                              <div style={{ color: 'var(--text-muted)', fontSize: '13px' }}>{roleLabel}</div>
-                            </div>
-                          </div>
-                          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '20px' }}>
-                            <div style={{ color: 'var(--text-primary)', fontSize: '14px', display: 'flex', alignItems: 'center', gap: '8px' }}><Calendar size={14} color="#aaa" /> {b.date}</div>
-                            <div style={{ color: 'var(--text-primary)', fontSize: '14px', display: 'flex', alignItems: 'center', gap: '8px' }}><Clock size={14} color="#aaa" /> {b.time}</div>
-                            <div style={{ color: isIncoming ? '#00ff88' : '#ff4d85', fontSize: '14px', display: 'flex', alignItems: 'center', gap: '8px', fontWeight: 'bold' }}><Video size={14} /> {b.meeting_type?.replace('_', ' ')}</div>
-                          </div>
-                          
-                          {b.meeting_type?.includes('virtual') && (
-                            <button 
-                              onClick={() => {
-                                window.open(`/call/${b.id}?type=${b.meeting_type?.includes('audio') ? 'audio' : 'video'}`, '_blank');
-                              }} 
-                              style={isIncoming ? {
-                                width: '100%', padding: '12px', background: 'transparent', border: '1px solid #00ff88', color: '#00ff88', borderRadius: '12px', fontWeight: 'bold', cursor: 'pointer', transition: '0.2s', marginBottom: b.record_call ? '12px' : '0'
-                              } : {
-                                width: '100%', padding: '12px', background: '#00ff88', color: '#000', border: 'none', borderRadius: '12px', fontWeight: 'bold', cursor: 'pointer', transition: '0.2s', marginBottom: b.record_call ? '12px' : '0'
-                              }}
-                              onMouseOver={e=>{
-                                if (isIncoming) {
-                                  e.currentTarget.style.background='#00ff88'; 
-                                  e.currentTarget.style.color='#000';
-                                } else {
-                                  e.currentTarget.style.transform='scale(1.02)';
-                                }
-                              }} 
-                              onMouseOut={e=>{
-                                if (isIncoming) {
-                                  e.currentTarget.style.background='transparent'; 
-                                  e.currentTarget.style.color='#00ff88';
-                                } else {
-                                  e.currentTarget.style.transform='scale(1)';
-                                }
-                              }}
-                            >
-                              {isIncoming ? 'Host' : 'Join'} {b.meeting_type?.includes('audio') ? 'Audio' : 'Video'} Call
-                            </button>
-                          )}
-                          
-                          {b.record_call && (
-                            <div style={{ marginTop: '10px' }}>
-                              {b.recording_url ? (
-                                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                                  <span style={{ fontSize: '12px', color: '#00ff88', fontWeight: 'bold', display: 'block' }}>✅ Recording:</span>
-                                  <video src={b.recording_url} controls style={{ width: '100%', borderRadius: '8px', background: '#000', height: b.meeting_type?.includes('audio') ? '50px' : 'auto' }} />
-                                  {!isIncoming && (
-                                    <a href={b.recording_url} download target="_blank" rel="noopener noreferrer" style={{ display: 'block', textDecoration: 'none', background: 'rgba(255,255,255,0.05)', color: '#fff', border: '1px solid rgba(255,255,255,0.1)', padding: '8px', borderRadius: '8px', fontSize: '13px', fontWeight: 'bold', textAlign: 'center' }}>
-                                      📥 Download Recording
-                                    </a>
-                                  )}
-                                </div>
-                              ) : (
-                                isIncoming ? (
-                                  <div style={{ padding: '8px 12px', background: 'rgba(255,68,68,0.1)', border: '1px solid rgba(255,68,68,0.2)', borderRadius: '8px', fontSize: '12px', color: '#ff4d4d', fontWeight: 'bold', textAlign: 'center', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}>
-                                    <span>🔴 Recording requested by customer</span>
-                                  </div>
-                                ) : (
-                                  <div style={{ padding: '8px 12px', background: 'rgba(255,255,255,0.02)', border: '1px dashed rgba(255,255,255,0.1)', borderRadius: '8px', fontSize: '12px', color: 'var(--text-muted)', textAlign: 'center' }}>
-                                    ⏳ Call recording will be delivered here after the session.
-                                  </div>
-                                )
-                              )}
-                            </div>
-                          )}
-                        </div>
-                      );
-                    })}
-                  </div>
-                )}
-              </div>
-            </motion.div>
-          );
-        })()}
         {/* --- NETWORK PROFILES TAB --- */}
         {activeTab === 'members' && isNetworkLevel && (
            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} style={{ display: 'flex', flexDirection: 'column', gap: '24px', padding: '20px' }}>
