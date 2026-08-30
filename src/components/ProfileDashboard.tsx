@@ -1474,6 +1474,7 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
         rawBio = wlConfig?.theme?.defaultBio || 'Welcome to the official channel media & culture stream.';
       }
       setBio(rawBio);
+      setSavedBio(rawBio);
       setAvatarUrl(targetProfile.avatar_url || '');
       setHomepageImageUrl(targetProfile.homepage_image_url || '');
       setFlipbookImages(targetProfile.flipbook_images || wlConfig?.theme?.flipbook_images || '');
@@ -2334,6 +2335,7 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
       } else if (wlConfig) {
         if (newName) wlConfig.name = newName;
         wlConfig.theme = updatedTheme;
+        if (bio !== undefined) wlConfig.heroCopy = bio;
       }
     }
 
@@ -2375,6 +2377,7 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
       }
     }
     if (bio !== undefined) {
+      setBio(bio);
       setSavedBio(bio);
     }
 
@@ -4124,7 +4127,7 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
                         </div>
                       ) : (
                         <p style={{ color: '#eee', fontSize: '16px', lineHeight: 1.7, opacity: 0.9, margin: 0 }}>
-                          {profile?.bio || bio || wlConfig?.heroCopy || 'Welcome to the official channel media & culture stream.'}
+                          {bio || profile?.bio || wlConfig?.theme?.heroCopy || wlConfig?.heroCopy || 'Welcome to the official channel media & culture stream.'}
                         </p>
                       )}
                     </div>
