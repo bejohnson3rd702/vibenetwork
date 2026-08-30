@@ -4192,9 +4192,9 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
                     )}
                   </div>
 
-                  {/* Under-Card Action Buttons Centered across the ENTIRE Glassmorphic Card */}
+                  {/* Under-Card Action Buttons: Right-Justified for Edit Bio in Edit Mode, Centered for Visitor Buttons */}
                   {!isEditingBio && (
-                    <div style={{ display: 'flex', gap: '14px', alignItems: 'center', justifyContent: 'center', flexWrap: 'wrap', marginTop: '24px', width: '100%' }}>
+                    <div style={{ display: 'flex', gap: '14px', alignItems: 'center', justifyContent: (isOwnProfile && viewMode === 'edit') ? 'flex-end' : 'center', flexWrap: 'wrap', marginTop: '24px', width: '100%' }}>
                       {isOwnProfile && viewMode === 'edit' ? (
                         <button
                           onClick={() => {
