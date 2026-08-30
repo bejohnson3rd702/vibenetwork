@@ -5586,8 +5586,8 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
                     </div>
                     <div style={{ padding: '20px', display: 'flex', flexDirection: 'column', flex: 1, opacity: product.hidden_from_network ? 0.5 : 1 }}>
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '8px' }}>
-                        <div style={{ fontSize: '10px', textTransform: 'uppercase', color: product.type === 'physical' ? '#ff4d85' : '#8A2BE2', fontWeight: 'bold', letterSpacing: '1px' }}>
-                          {product.type === 'physical' ? 'Physical Merch' : 'Digital Release'}
+                        <div style={{ fontSize: '10px', textTransform: 'uppercase', color: (product.type || '').toLowerCase() === 'physical' ? '#ff4d85' : ((product.type || '').toLowerCase() === 'beat' ? '#00e5ff' : '#8A2BE2'), fontWeight: 'bold', letterSpacing: '1px' }}>
+                          {(product.type || '').toLowerCase() === 'physical' ? 'Physical Merch' : ((product.type || '').toLowerCase() === 'beat' ? 'Beat / Audio' : 'Digital Release')}
                         </div>
                         {(() => {
                           const creatorUsername = product.creator?.username || (product.creator_id === profile?.id ? profile?.username : '') || 'Creator';
