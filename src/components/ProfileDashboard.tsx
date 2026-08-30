@@ -4172,7 +4172,7 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
                               </button>
                             </div>
                           ) : (
-                            <div style={{ display: 'flex', gap: '12px', alignItems: 'center', flexWrap: 'wrap', marginTop: '4px' }}>
+                            <div style={{ display: 'flex', gap: '12px', alignItems: 'center', justifyContent: 'center', flexWrap: 'wrap', marginTop: '4px' }}>
                               {/* Visitor Follow Button */}
                               <button
                                 onClick={handleToggleFollow}
