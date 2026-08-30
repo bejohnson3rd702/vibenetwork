@@ -60,17 +60,35 @@ const ProductPage: React.FC = () => {
 
       if (targetProduct) {
         // If creator profile object is missing username/full_name, attempt lookup by creator_id
-        if ((!targetProduct.creator || (!targetProduct.creator.username && !targetProduct.creator.full_name)) && targetProduct.creator_id) {
+        const creatorIdToFetch = targetProduct.creator_id || targetProduct.creator?.id;
+        if (creatorIdToFetch && (!targetProduct.creator?.username && !targetProduct.creator?.full_name)) {
           try {
             const { data: profData } = await supabase
               .from('profiles')
               .select('id, username, avatar_url, full_name')
-              .eq('id', targetProduct.creator_id)
+              .eq('id', creatorIdToFetch)
               .maybeSingle();
             if (profData) {
               targetProduct.creator = profData;
             }
           } catch {}
+        }
+
+        // Apply known creator profile aliases for Bennie and Joe
+        if (creatorIdToFetch === '8c409557-a48c-41d4-8133-9d9788aebe0d' || String(creatorIdToFetch).toLowerCase().includes('bennie')) {
+          targetProduct.creator = {
+            id: '8c409557-a48c-41d4-8133-9d9788aebe0d',
+            username: 'Rev Bennie Johnson (BJ)',
+            full_name: 'Rev Bennie Johnson',
+            avatar_url: targetProduct.creator?.avatar_url || 'https://fimzetmvrmbmdggvqzpr.supabase.co/storage/v1/object/public/images/whitelabel/kple_logo_1782369339776.png'
+          };
+        } else if (creatorIdToFetch === 'db7af833-2f7a-40b0-ad46-57ff8fbd4744' || String(creatorIdToFetch).toLowerCase().includes('joe')) {
+          targetProduct.creator = {
+            id: 'db7af833-2f7a-40b0-ad46-57ff8fbd4744',
+            username: 'Joe VIBE',
+            full_name: 'Joe VIBE',
+            avatar_url: targetProduct.creator?.avatar_url || 'https://fimzetmvrmbmdggvqzpr.supabase.co/storage/v1/object/public/images/db7af833-2f7a-40b0-ad46-57ff8fbd4744/0.11923008118112288.jpeg'
+          };
         }
 
         // If creator is still missing, fallback to active session user if creator_id matches
@@ -211,8 +229,8 @@ const ProductPage: React.FC = () => {
       <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '0 5%' }}>
         
         {(() => {
-          const sellerName = product?.creator?.full_name || product?.creator?.username || wlConfig?.name || '';
-          const backLabel = sellerName ? `Back to ${sellerName}'s Store` : 'Back to Store';
+          const sellerName = product?.creator?.full_name || product?.creator?.username || product?.creator_name || 'Store Creator';
+          const backLabel = sellerName && sellerName !== 'Store Creator' ? `Back to ${sellerName}'s Store` : 'Back to Store';
 
           return (
             <button onClick={() => navigate(-1)} style={{ display: 'flex', alignItems: 'center', gap: '8px', background: 'transparent', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', marginBottom: '40px', fontSize: '16px', fontWeight: 600 }}>
@@ -287,9 +305,9 @@ const ProductPage: React.FC = () => {
             </h1>
 
             {(() => {
-              const sellerName = product?.creator?.full_name || product?.creator?.username || wlConfig?.name || 'Seller';
+              const sellerName = product?.creator?.full_name || product?.creator?.username || product?.creator_name || 'Store Creator';
               const sellerHandle = product?.creator?.username ? `@${product.creator.username}` : '';
-              const sellerAvatar = product?.creator?.avatar_url || wlConfig?.logoImage || wlConfig?.logo || `https://ui-avatars.com/api/?name=${encodeURIComponent(sellerName)}&background=random`;
+              const sellerAvatar = product?.creator?.avatar_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(sellerName)}&background=random`;
 
               return (
                 <div 
