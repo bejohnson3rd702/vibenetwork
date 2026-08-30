@@ -9572,7 +9572,12 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
                   <div>
                     <label style={{ display: 'block', marginBottom: '6px', fontSize: '13px', color: 'var(--text-muted)' }}>Product Title</label>
-                    <input type="text" value={editingProduct.title} onChange={e => setEditingProduct({ ...editingProduct, title: e.target.value })} style={{ width: '100%', background: 'rgba(0,0,0,0.4)', border: '1px solid rgba(255,255,255,0.1)', padding: '12px', borderRadius: '10px', color: 'var(--text-primary)', outline: 'none' }} />
+                    <div style={{ display: 'flex', gap: '10px' }}>
+                      <input type="text" value={editingProduct.title} onChange={e => setEditingProduct({ ...editingProduct, title: e.target.value })} style={{ flex: 1, background: 'rgba(0,0,0,0.4)', border: '1px solid rgba(255,255,255,0.1)', padding: '12px', borderRadius: '10px', color: 'var(--text-primary)', outline: 'none' }} />
+                      <button type="button" onClick={() => enhanceText('product_title')} style={{ background: 'linear-gradient(135deg, #8A2BE2, #ff4d85)', color: '#fff', border: 'none', borderRadius: '12px', padding: '0 16px', fontSize: '13px', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', whiteSpace: 'nowrap' }}>
+                        <Wand size={14} /> AI Boost
+                      </button>
+                    </div>
                   </div>
 
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
@@ -10666,8 +10671,20 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
                           setPostTitle(`${preset.prompt.split(' ')[0]} ${postTitle || 'Exclusive release on Vibe Network!'} 🔥`);
                           toast.success("AI Post Boost Applied!");
                         } else if (aiPromptTarget === 'product_title') {
-                          const baseTitle = editingProduct ? editingProduct.title : newProduct.title;
-                          const result = `${preset.prompt.split(' ')[0]} ${baseTitle || 'Exclusive Release'} 🔥`;
+                          const baseTitle = (editingProduct ? editingProduct.title : newProduct.title).trim();
+                          const titleWords = baseTitle ? baseTitle.split(/\s+/).map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ') : 'Digital Release';
+                          let result = '';
+
+                          if (preset.id === 'viral') {
+                            result = `🔥 ${titleWords} [Official Exclusive Drop]`;
+                          } else if (preset.id === 'pro') {
+                            result = `✨ ${titleWords} — Master Edition`;
+                          } else if (preset.id === 'monetize') {
+                            result = `🚀 VIP Access Pass: ${titleWords}`;
+                          } else {
+                            result = titleWords;
+                          }
+
                           if (editingProduct) setEditingProduct(prev => prev ? { ...prev, title: result } : null);
                           else setNewProduct(prev => ({ ...prev, title: result }));
                           toast.success("AI Product Title Boost Applied!");
@@ -10735,7 +10752,10 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
                       setPostTitle(`✨ ${instr} — Streaming live on Vibe Network! 🔥`);
                       toast.success("AI Post Boost Applied!");
                     } else if (aiPromptTarget === 'product_title') {
-                      const result = `✨ ${instr}`;
+                      const baseTitle = (editingProduct ? editingProduct.title : newProduct.title).trim();
+                      const titleWords = baseTitle ? baseTitle.split(/\s+/).map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ') : 'Digital Release';
+                      const cleanInstr = instr.replace(/^(make|rewrite|create|turn|change|add)\s+(this|my|the|product|title)\s+/i, '');
+                      const result = `✨ ${titleWords} (${cleanInstr.charAt(0).toUpperCase() + cleanInstr.slice(1)})`;
                       if (editingProduct) setEditingProduct(prev => prev ? { ...prev, title: result } : null);
                       else setNewProduct(prev => ({ ...prev, title: result }));
                       toast.success("AI Product Title Boost Applied!");
