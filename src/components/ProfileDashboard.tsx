@@ -2701,27 +2701,47 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
     const filePath = `${fileName}`;
 
     try {
-      const { error: uploadError } = await supabase!.storage.from('videos').upload(filePath, file, {
-        cacheControl: '3600',
-        upsert: true
-      });
-      if (uploadError) throw uploadError;
-      
-      const { data } = supabase!.storage.from('videos').getPublicUrl(filePath);
-      if (data && data.publicUrl) {
+      const possibleBuckets = ['videos', 'media', 'images'];
+      let uploadedPublicUrl = '';
+      let lastError: any = null;
+
+      for (const bucketName of possibleBuckets) {
+        try {
+          const { data, error: uploadError } = await supabase!.storage.from(bucketName).upload(filePath, file, {
+            cacheControl: '3600',
+            upsert: true
+          });
+          if (!uploadError && data) {
+            const { data: pubData } = supabase!.storage.from(bucketName).getPublicUrl(filePath);
+            if (pubData?.publicUrl) {
+              uploadedPublicUrl = pubData.publicUrl;
+              break;
+            }
+          } else if (uploadError) {
+            lastError = uploadError;
+            console.warn(`Bucket "${bucketName}" video upload note:`, uploadError.message);
+          }
+        } catch (bErr) {
+          lastError = bErr;
+        }
+      }
+
+      if (uploadedPublicUrl) {
         setNewEpisode(prev => ({ 
           ...prev, 
-          video_url: data.publicUrl,
+          video_url: uploadedPublicUrl,
           duration: durationSeconds > 0 ? durationSeconds : prev.duration
         }));
         const durationFormatted = durationSeconds > 0 ? ` (${Math.floor(durationSeconds/60)}m ${durationSeconds%60}s)` : '';
         toast.success(`Video uploaded successfully (${sizeMB} MB)!${durationFormatted}`);
+      } else {
+        throw lastError || new Error('Storage bucket upload failed');
       }
     } catch (err: any) {
       console.error(err);
-      const errMsg = err.message || '';
+      const errMsg = err?.message || '';
       if (errMsg.includes('exceed') || errMsg.includes('size') || errMsg.includes('payload')) {
-        toast.error(`Upload blocked (${sizeMB} MB): File exceeds Supabase bucket size limit. Please run the 5GB bucket script or paste an external video link.`);
+        toast.error(`Upload note (${sizeMB} MB): Supabase bucket payload limit hit. You can also paste any direct video link (MP4, HLS, Vimeo, S3).`);
       } else {
         toast.error('Video upload failed: ' + (errMsg || 'Storage error'));
       }
