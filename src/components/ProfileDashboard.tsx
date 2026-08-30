@@ -2,7 +2,7 @@ import React, { useEffect, useState, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { supabase } from '../supabaseClient';
 import { motion, AnimatePresence } from 'framer-motion';
-import { LogOut, Camera, Lock, Unlock, Image as ImageIcon, Star, ShieldCheck, Eye, Edit2, Trash2, Wand, Calendar, Edit3, Clock, CheckCircle, Heart, MessageCircle, Wallet, ArrowUpRight, ArrowDownLeft, Activity, Monitor, Settings, Video, DollarSign, Share2, Pin, ChevronLeft, ChevronRight, AlertCircle, Users, Folder, File as FileIcon, FileText, Download, UploadCloud, Search, Plus, X, Globe, EyeOff, Copy, Play, Save, Tv } from 'lucide-react';
+import { LogOut, Camera, Lock, Unlock, Image as ImageIcon, Star, ShieldCheck, Eye, Edit2, Trash2, Wand, Calendar, Edit3, Clock, CheckCircle, Heart, MessageCircle, Wallet, ArrowUpRight, ArrowDownLeft, Activity, Monitor, Settings, Video, DollarSign, Share2, Pin, ChevronLeft, ChevronRight, AlertCircle, Users, Folder, File as FileIcon, FileText, Download, UploadCloud, Search, Plus, X, XCircle, Globe, EyeOff, Copy, Play, Save, Tv } from 'lucide-react';
 import { DictationButton } from './DictationButton';
 import { EmojiPickerButton } from './EmojiPickerButton';
 import EndUserAuthModal from './EndUserAuthModal';
@@ -4081,14 +4081,15 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
                                     display: 'flex',
                                     alignItems: 'center',
                                     justifyContent: 'center',
-                                    gap: '5px',
+                                    textAlign: 'center',
+                                    gap: '6px',
                                     whiteSpace: 'nowrap',
                                     boxShadow: isBioDirty ? '0 4px 20px rgba(251, 140, 0, 0.6)' : 'none',
                                     transition: 'all 0.3s ease',
                                     opacity: isBioDirty ? 1 : 0.65
                                   }}
                                 >
-                                  <Save size={14} color={isBioDirty ? '#000' : '#fb8c00'} /> <span>{saving ? 'Saving...' : 'Save Bio'}</span>
+                                  <Save size={14} color={isBioDirty ? '#000' : '#fb8c00'} style={{ flexShrink: 0 }} /><span>{saving ? 'Saving...' : 'Save Bio'}</span>
                                 </button>
                               );
                             })()}
@@ -4113,14 +4114,14 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
                                 display: 'flex',
                                 alignItems: 'center',
                                 justifyContent: 'center',
-                                gap: '5px',
+                                textAlign: 'center',
+                                gap: '6px',
                                 whiteSpace: 'nowrap',
                                 boxShadow: '0 2px 10px rgba(138,43,226,0.3)',
                                 transition: 'all 0.2s ease'
                               }}
                             >
-                              <span style={{ fontSize: '12px' }}>😊</span>
-                              <span>AI Boost</span>
+                              <Wand size={14} color="#fff" style={{ flexShrink: 0 }} /><span>AI Boost</span>
                             </button>
                             <button
                               type="button"
@@ -4143,13 +4144,13 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
                                 display: 'flex',
                                 alignItems: 'center',
                                 justifyContent: 'center',
-                                gap: '5px',
+                                textAlign: 'center',
+                                gap: '6px',
                                 whiteSpace: 'nowrap',
                                 transition: 'all 0.2s ease'
                               }}
                             >
-                              <X size={14} color="#ff4d4d" />
-                              <span>Cancel</span>
+                              <XCircle size={15} color="#ff4d85" style={{ flexShrink: 0 }} /><span>Cancel</span>
                             </button>
                           </div>
                         </div>
