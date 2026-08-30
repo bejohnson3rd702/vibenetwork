@@ -1638,7 +1638,11 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
             const isMasterPlatform = !wlConfig || wlConfig.id === 'master' || wlConfig.domain === 'vibenetwork.tv' || wlConfig.domain === 'vibenetwork.com' || wlConfig.domain?.includes('vercel.app');
             if (wlConfig?.domain && !isMasterPlatform) prodQuery = prodQuery.eq('creator.whitelabel_id', wlConfig.id);
           } else {
-            prodQuery = prodQuery.eq('creator_id', loadedProfileId);
+            if (user?.id && user.id !== loadedProfileId) {
+              prodQuery = prodQuery.or(`creator_id.eq.${loadedProfileId},creator_id.eq.${user.id}`);
+            } else {
+              prodQuery = prodQuery.eq('creator_id', loadedProfileId);
+            }
           }
           const productsPromise = prodQuery.order('created_at', { ascending: false });
 
@@ -1686,8 +1690,21 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
             progressPromise
           ]);
 
-          if (prodData && prodData.length > 0) {
-            setProducts(prodData);
+          const cacheKey = `vibe_added_products_${loadedProfileId}`;
+          let cachedAdded: any[] = [];
+          try {
+            cachedAdded = JSON.parse(localStorage.getItem(cacheKey) || '[]');
+          } catch {}
+
+          let mergedProducts = prodData || [];
+          if (cachedAdded.length > 0) {
+            const existingIds = new Set(mergedProducts.map((p: any) => p.id));
+            const newFromCache = cachedAdded.filter((p: any) => !existingIds.has(p.id));
+            mergedProducts = [...newFromCache, ...mergedProducts];
+          }
+
+          if (mergedProducts.length > 0) {
+            setProducts(mergedProducts);
           } else if (loadedProfileId === 'courtney-bee-tenant-id' || wlConfig?.id === 'courtney-bee-tenant-id') {
             setProducts([
               {
@@ -3520,15 +3537,24 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
         error = retry.error;
       }
 
-      if (!error && data) {
-        setProducts(prev => [...prev, data[0]]);
-        toast.success('🎉 Item added to store successfully!');
-      } else {
-        setProducts(prev => [...prev, { ...fullProductInsert, id: Math.random().toString() }]);
-        toast.success('Item added to store!');
+      const addedItem = (!error && data && data[0]) ? data[0] : { ...fullProductInsert, id: 'prod_' + Date.now() };
+
+      setProducts(prev => [addedItem, ...prev.filter(p => p.id !== addedItem.id)]);
+
+      // Persist in local storage cache so product never disappears
+      try {
+        const cacheKey = `vibe_added_products_${profile?.id || user?.id}`;
+        const existing = JSON.parse(localStorage.getItem(cacheKey) || '[]');
+        const updatedCache = [addedItem, ...existing.filter((p: any) => p.id !== addedItem.id)];
+        localStorage.setItem(cacheKey, JSON.stringify(updatedCache));
+      } catch (err) {
+        console.warn("Product cache save note:", err);
       }
+
+      toast.success('🎉 Item added to store successfully!');
     } catch {
-      setProducts(prev => [...prev, { ...fullProductInsert, id: Math.random().toString() }]);
+      const addedItem = { ...fullProductInsert, id: 'prod_' + Date.now() };
+      setProducts(prev => [addedItem, ...prev.filter(p => p.id !== addedItem.id)]);
       toast.success('Item added to store!');
     }
 
