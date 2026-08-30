@@ -5350,7 +5350,7 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
                     <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap', alignItems: 'center' }}>
                       {(newProduct.image_urls?.length ? newProduct.image_urls : [newProduct.image_url]).filter(Boolean).map((imgUrl, idx) => (
                         <div key={idx} style={{ position: 'relative', width: '80px', height: '80px', borderRadius: '12px', overflow: 'hidden', border: idx === 0 ? '2px solid #FFD700' : '1px solid rgba(255,255,255,0.15)', background: '#000' }}>
-                          <img src={imgUrl} alt={`Product ${idx + 1}`} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                          <img src={imgUrl} alt={`Product ${idx + 1}`} style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
                           {idx === 0 && (
                             <span style={{ position: 'absolute', bottom: '4px', left: '4px', background: 'rgba(0,0,0,0.85)', color: '#FFD700', fontSize: '9px', fontWeight: 900, padding: '2px 5px', borderRadius: '4px' }}>
                               COVER
@@ -5562,7 +5562,9 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
                         {product.hidden_from_network ? 'Hidden' : 'Hide from Network'}
                       </button>
                     )}
-                    <div style={{ width: '100%', aspectRatio: '1/1', background: `url("${product.image_url}")`, backgroundSize: 'cover', backgroundPosition: 'center', filter: product.hidden_from_network ? 'grayscale(100%) opacity(0.5)' : 'none' }} />
+                    <div style={{ width: '100%', aspectRatio: '1/1', background: '#000', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
+                      <img src={product.image_url} alt={product.title} style={{ width: '100%', height: '100%', objectFit: 'contain', filter: product.hidden_from_network ? 'grayscale(100%) opacity(0.5)' : 'none' }} />
+                    </div>
                     <div style={{ padding: '20px', display: 'flex', flexDirection: 'column', flex: 1, opacity: product.hidden_from_network ? 0.5 : 1 }}>
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '8px' }}>
                         <div style={{ fontSize: '10px', textTransform: 'uppercase', color: product.type === 'physical' ? '#ff4d85' : '#8A2BE2', fontWeight: 'bold', letterSpacing: '1px' }}>
@@ -9523,7 +9525,7 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
                             <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap', alignItems: 'center' }}>
                               {editImages.filter(Boolean).map((imgUrl: string, idx: number) => (
                                 <div key={idx} style={{ position: 'relative', width: '70px', height: '70px', borderRadius: '10px', overflow: 'hidden', border: idx === 0 ? '2px solid #FFD700' : '1px solid rgba(255,255,255,0.15)', background: '#000' }}>
-                                  <img src={imgUrl} alt={`Cover ${idx + 1}`} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                  <img src={imgUrl} alt={`Cover ${idx + 1}`} style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
                                   {idx === 0 && (
                                     <span style={{ position: 'absolute', bottom: '2px', left: '2px', background: 'rgba(0,0,0,0.85)', color: '#FFD700', fontSize: '8px', fontWeight: 900, padding: '1px 4px', borderRadius: '3px' }}>
                                       COVER

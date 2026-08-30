@@ -346,10 +346,9 @@ const Marketplace: React.FC = () => {
                   }
                 }}
               >
-                {/* Product Image */}
-                <div style={{ width: '100%', aspectRatio: '1/1', background: 'var(--bg-surface)', position: 'relative', overflow: 'hidden' }}>
+                <div style={{ width: '100%', aspectRatio: '1/1', background: '#000', position: 'relative', overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                    {product.image_url ? (
-                     <img src={product.image_url} alt={product.title} loading="lazy" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                     <img src={product.image_url} alt={product.title} loading="lazy" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
                    ) : (
                      <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'linear-gradient(45deg, #1a1a1a, #2a2a2a)' }}>
                        <ShoppingBag size={48} color="#333" />

@@ -174,9 +174,9 @@ const ProductPage: React.FC = () => {
 
             return (
               <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} style={{ flex: '1 1 500px', minWidth: '300px' }}>
-                <div style={{ width: '100%', aspectRatio: '1/1', background: 'rgba(255,255,255,0.02)', borderRadius: '32px', overflow: 'hidden', border: '1px solid rgba(255,255,255,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <div style={{ width: '100%', aspectRatio: '1/1', background: '#000', borderRadius: '32px', overflow: 'hidden', border: '1px solid rgba(255,255,255,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                   {currentMainImage ? (
-                    <img src={currentMainImage} alt={product.title} loading="lazy" style={{ width: '100%', height: '100%', objectFit: 'cover', transition: 'all 0.3s ease' }} />
+                    <img src={currentMainImage} alt={product.title} loading="lazy" style={{ width: '100%', height: '100%', objectFit: 'contain', transition: 'all 0.3s ease' }} />
                   ) : (
                     <ShoppingBag size={64} color="#333" />
                   )}
@@ -202,7 +202,7 @@ const ProductPage: React.FC = () => {
                           flexShrink: 0
                         }}
                       >
-                        <img src={imgUrl} alt={`${product.title} thumbnail ${idx + 1}`} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                        <img src={imgUrl} alt={`${product.title} thumbnail ${idx + 1}`} style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
                       </button>
                     ))}
                   </div>
