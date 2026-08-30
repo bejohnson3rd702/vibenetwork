@@ -1446,7 +1446,7 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
               targetProfile.full_name = ov.name;
             }
             if (ov.logo) targetProfile.avatar_url = ov.logo;
-            if (ov.heroCopy) targetProfile.bio = ov.heroCopy;
+            if (ov.heroCopy || ov.bio) targetProfile.bio = ov.heroCopy || ov.bio;
             if (ov.heroImage) targetProfile.homepage_image_url = ov.heroImage;
           }
         } catch (ovErr) {
@@ -2337,7 +2337,7 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
       }
     }
 
-    // Persist new name to localStorage overrides so it displays immediately on reload
+    // Persist new name & bio to localStorage overrides so it displays immediately on reload
     try {
       const keysToStore = [targetWlId, profile?.id, targetProfileId, user?.id].filter(Boolean) as string[];
       if (keysToStore.length > 0) {
@@ -2346,6 +2346,8 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
           existingOverrides[storeId] = {
             ...(existingOverrides[storeId] || {}),
             name: newName,
+            bio: bio,
+            heroCopy: bio,
             logo: avatarUrl,
             updated_at: Date.now()
           };
@@ -2353,21 +2355,27 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
         localStorage.setItem('vibe_child_branding_overrides', JSON.stringify(existingOverrides));
       }
     } catch (e) {
-      console.warn("Failed to save name override to localStorage:", e);
+      console.warn("Failed to save profile overrides to localStorage:", e);
     }
 
-    // Update local React state instantly so profile name updates immediately on screen without page reload
+    // Update local React state instantly so profile name & bio update immediately on screen without page reload
+    setProfile((prev: any) => ({
+      ...(prev || {}),
+      username: newName || prev?.username,
+      full_name: newName || prev?.full_name,
+      bio: bio !== undefined ? bio : prev?.bio,
+      avatar_url: avatarUrl || prev?.avatar_url,
+      homepage_image_url: homepageImageUrl || prev?.homepage_image_url
+    }));
+
     if (newName) {
-      setProfile((prev: any) => ({
-        ...(prev || {}),
-        username: newName,
-        full_name: newName
-      }));
       setSavedName(newName);
-      setSavedBio(bio);
       if (wlConfig) {
         wlConfig.name = newName;
       }
+    }
+    if (bio !== undefined) {
+      setSavedBio(bio);
     }
 
     setSaving(false);
