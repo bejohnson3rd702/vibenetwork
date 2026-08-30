@@ -3866,41 +3866,39 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
                               border: isDraggingDirectAvatar ? '4px dashed #00ff88' : '4px solid rgba(255,255,255,0.2)', 
                               boxShadow: isDraggingDirectAvatar ? '0 0 35px rgba(0,255,136,0.6)' : '0 10px 30px rgba(0,0,0,0.5)',
                               transition: 'all 0.3s ease',
-                              overflow: 'hidden'
-                            }}>
-                              {!effectiveAvatar && (profile?.username ? profile.username[0].toUpperCase() : (user?.email ? user.email[0].toUpperCase() : 'V'))}
-
-                              {/* Suggested Size Badge Overlay directly ON TOP OF Bio Pic in Edit Mode */}
-                              {isOwnProfile && viewMode === 'edit' && (
-                                <div 
-                                  style={{
-                                    position: 'absolute',
-                                    bottom: '8px',
-                                    left: '50%',
-                                    transform: 'translateX(-50%)',
-                                    zIndex: 10,
-                                    background: 'rgba(0,0,0,0.85)',
-                                    backdropFilter: 'blur(8px)',
-                                    color: '#00ff88',
-                                    fontSize: '10px',
-                                    fontWeight: 900,
-                                    padding: '3px 10px',
-                                    borderRadius: '12px',
-                                    border: '1px solid rgba(0,255,136,0.5)',
-                                    boxShadow: '0 4px 12px rgba(0,0,0,0.6)',
-                                    whiteSpace: 'nowrap',
-                                    pointerEvents: 'none',
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    gap: '4px',
-                                    transition: 'all 0.2s ease'
-                                  }}
-                                >
-                                  <Camera size={11} color="#00ff88" />
-                                  <span>512 × 512 px</span>
-                                </div>
-                              )}
                             </div>
+
+                            {/* Floating Tooltip Badge on Mouse Hover OVER Bio Pic */}
+                            {isOwnProfile && viewMode === 'edit' && (isAvatarHovered || isDraggingDirectAvatar) && (
+                              <motion.div 
+                                initial={{ opacity: 0, y: 6, scale: 0.95 }}
+                                animate={{ opacity: 1, y: 0, scale: 1 }}
+                                exit={{ opacity: 0, y: 6, scale: 0.95 }}
+                                style={{
+                                  position: 'absolute',
+                                  bottom: '-34px',
+                                  left: '50%',
+                                  transform: 'translateX(-50%)',
+                                  zIndex: 20,
+                                  background: 'rgba(0,0,0,0.92)',
+                                  backdropFilter: 'blur(12px)',
+                                  color: '#00ff88',
+                                  fontSize: '11px',
+                                  fontWeight: 800,
+                                  padding: '5px 14px',
+                                  borderRadius: '14px',
+                                  border: '1px solid rgba(0,255,136,0.5)',
+                                  boxShadow: '0 8px 20px rgba(0,0,0,0.7), 0 0 15px rgba(0,255,136,0.2)',
+                                  whiteSpace: 'nowrap',
+                                  pointerEvents: 'none',
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  gap: '6px'
+                                }}
+                              >
+                                <span>📏 Suggested Size: 512 × 512 px (1:1 Ratio)</span>
+                              </motion.div>
+                            )}
                           </div>
 
                           <div className="profile-badge-container" style={{ display: 'flex', justifyContent: 'center' }}>
