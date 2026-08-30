@@ -1201,8 +1201,17 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
   // Interactions
   const [commentTexts, setCommentTexts] = useState<Record<string, string>>({});
 
-  // Store internal state MUST be above early returns!
-  const [newProduct, setNewProduct] = useState({ title: '', price: '', type: 'digital', image_url: '', digital_file_url: '', sizes: '', colors: '', is_clothing: false });
+  const [newProduct, setNewProduct] = useState<{
+    title: string;
+    price: string;
+    type: string;
+    image_url: string;
+    image_urls: string[];
+    digital_file_url: string;
+    sizes: string;
+    colors: string;
+    is_clothing: boolean;
+  }>({ title: '', price: '', type: 'digital', image_url: '', image_urls: [], digital_file_url: '', sizes: '', colors: '', is_clothing: false });
   const [courses, setCourses] = useState<any[]>([]);
   const [purchasedBookings, setPurchasedBookings] = useState<any[]>([]);
   const [receivedBookings, setReceivedBookings] = useState<any[]>([]);
@@ -2455,28 +2464,72 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
     return scheduledDate.toISOString();
   };
 
-  const handleProductImageUpload = async (eventOrFile: React.ChangeEvent<HTMLInputElement> | File): Promise<string | null> => {
+  const handleProductImageUpload = async (eventOrFiles: React.ChangeEvent<HTMLInputElement> | FileList | File[] | File, targetProduct: 'new' | 'edit' = 'new'): Promise<string[] | null> => {
     try {
-      let file: File | undefined;
-      if (eventOrFile instanceof File) {
-        file = eventOrFile;
-      } else if (eventOrFile.target?.files && eventOrFile.target.files.length > 0) {
-        file = eventOrFile.target.files[0];
+      let filesToUpload: File[] = [];
+      if (eventOrFiles instanceof File) {
+        filesToUpload = [eventOrFiles];
+      } else if (eventOrFiles instanceof FileList) {
+        filesToUpload = Array.from(eventOrFiles);
+      } else if (Array.isArray(eventOrFiles)) {
+        filesToUpload = eventOrFiles;
+      } else if (eventOrFiles && 'target' in eventOrFiles && (eventOrFiles as any).target?.files) {
+        filesToUpload = Array.from((eventOrFiles as any).target.files);
       }
-      if (!file) return null;
+
+      if (filesToUpload.length === 0) return null;
       setUploadingProductImg(true);
       
-      toast.info("✨ Vibe is enhancing and auto-cropping your product photo...");
-      const enhancedFile = await processAndEnhanceImage(file, 'product');
+      toast.info(`✨ Processing and auto-enhancing ${filesToUpload.length} product image(s)...`);
+      const uploadedUrls: string[] = [];
 
-      const filePath = `${user?.id}/prod_${Math.random()}.${enhancedFile.name.split('.').pop()}`;
-      await supabase!.storage.from('images').upload(filePath, enhancedFile);
-      const { data } = supabase!.storage.from('images').getPublicUrl(filePath);
-      setNewProduct(prev => ({ ...prev, image_url: data.publicUrl }));
-      toast.success('Product image uploaded successfully!');
-      return data.publicUrl;
-    } catch {
-      toast.error('Upload failed. Did you run the storage buckets script?');
+      for (const file of filesToUpload) {
+        try {
+          const enhancedFile = await processAndEnhanceImage(file, 'product');
+          const filePath = `${user?.id}/prod_${Date.now()}_${Math.random().toString(36).substring(2, 7)}.${enhancedFile.name.split('.').pop()}`;
+          await supabase!.storage.from('images').upload(filePath, enhancedFile);
+          const { data } = supabase!.storage.from('images').getPublicUrl(filePath);
+          if (data?.publicUrl) {
+            uploadedUrls.push(data.publicUrl);
+          }
+        } catch (err) {
+          console.warn("Product image upload warning:", err);
+        }
+      }
+
+      if (uploadedUrls.length > 0) {
+        if (targetProduct === 'new') {
+          setNewProduct(prev => {
+            const currentImages = prev.image_urls || (prev.image_url ? [prev.image_url] : []);
+            const updatedImages = [...currentImages, ...uploadedUrls];
+            return {
+              ...prev,
+              image_urls: updatedImages,
+              image_url: updatedImages[0] || prev.image_url
+            };
+          });
+        } else if (targetProduct === 'edit') {
+          setEditingProduct((prev: any) => {
+            if (!prev) return prev;
+            const currentImages = prev.image_urls || prev.variants?.image_urls || (prev.image_url ? [prev.image_url] : []);
+            const updatedImages = [...currentImages, ...uploadedUrls];
+            return {
+              ...prev,
+              image_urls: updatedImages,
+              image_url: updatedImages[0] || prev.image_url,
+              variants: {
+                ...(prev.variants || {}),
+                image_urls: updatedImages
+              }
+            };
+          });
+        }
+        toast.success(`Successfully uploaded ${uploadedUrls.length} product image(s)!`);
+        return uploadedUrls;
+      }
+      return null;
+    } catch (err: any) {
+      toast.error('Product image upload failed: ' + (err?.message || 'Storage error'));
       return null;
     } finally {
       setUploadingProductImg(false);
@@ -3158,7 +3211,44 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
     }
   };
 
+  const validateProductFields = (product: any): { isValid: boolean; missingFields: string[] } => {
+    const missing: string[] = [];
+    
+    if (!product?.title || !product.title.trim()) {
+      missing.push('Product Title');
+    }
+    
+    const priceVal = String(product?.price ?? '').trim();
+    const numericPrice = parseFloat(priceVal);
+    if (!priceVal || isNaN(numericPrice) || numericPrice < 0) {
+      missing.push('Valid Product Price ($)');
+    }
+    
+    const imagesArr = product?.image_urls || product?.variants?.image_urls || (product?.image_url ? [product.image_url] : []);
+    if (!imagesArr || imagesArr.length === 0 || !imagesArr.some((u: string) => u && u.trim())) {
+      missing.push('Product Cover Image (at least 1 photo)');
+    }
+
+    if (product?.type === 'digital' && (!product?.digital_file_url || !product.digital_file_url.trim())) {
+      missing.push('Product Content File (ZIP, PDF, Audio/Video)');
+    }
+
+    return {
+      isValid: missing.length === 0,
+      missingFields: missing
+    };
+  };
+
   const handleUpdateProduct = async (updatedProduct: any) => {
+    // Required fields validation popup
+    const validation = validateProductFields(updatedProduct);
+    if (!validation.isValid) {
+      const popupText = `⚠️ Missing Required Fields to Complete Item:\n\n• ${validation.missingFields.join('\n• ')}`;
+      toast.error(popupText, { duration: 7000 });
+      alert(popupText);
+      return;
+    }
+
     setSaving(true);
     try {
       const colorsArr = typeof updatedProduct.colors === 'string'
@@ -3168,19 +3258,32 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
         ? updatedProduct.sizes.split(',').map((s: string) => s.trim()).filter(Boolean)
         : updatedProduct.sizes;
 
+      const finalImages = updatedProduct.image_urls?.length 
+        ? updatedProduct.image_urls 
+        : (updatedProduct.variants?.image_urls?.length 
+          ? updatedProduct.variants.image_urls 
+          : (updatedProduct.image_url ? [updatedProduct.image_url] : []));
+
+      const primaryCover = finalImages[0] || updatedProduct.image_url || 'https://picsum.photos/400/400';
+
+      const updatedPayload = {
+        title: updatedProduct.title.trim(),
+        price: parseFloat(updatedProduct.price),
+        image_url: primaryCover,
+        digital_file_url: updatedProduct.digital_file_url || '',
+        type: updatedProduct.type,
+        variants: {
+          ...(updatedProduct.variants || {}),
+          image_urls: finalImages,
+          is_clothing: updatedProduct.is_clothing,
+          colors: colorsArr,
+          sizes: sizesArr
+        }
+      };
+
       const { error } = await supabase!
         .from('products')
-        .update({
-          title: updatedProduct.title,
-          price: parseFloat(updatedProduct.price),
-          image_url: updatedProduct.image_url,
-          type: updatedProduct.type,
-          variants: {
-            is_clothing: updatedProduct.is_clothing,
-            colors: colorsArr,
-            sizes: sizesArr
-          }
-        })
+        .update(updatedPayload)
         .eq('id', updatedProduct.id);
 
       if (error) {
@@ -3189,15 +3292,7 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
         toast.success('Product updated successfully!');
         setProducts(prev => prev.map(p => p.id === updatedProduct.id ? {
           ...p,
-          title: updatedProduct.title,
-          price: parseFloat(updatedProduct.price),
-          image_url: updatedProduct.image_url,
-          type: updatedProduct.type,
-          variants: {
-            is_clothing: updatedProduct.is_clothing,
-            colors: colorsArr,
-            sizes: sizesArr
-          }
+          ...updatedPayload
         } : p));
         setShowEditModal(false);
         setEditingProduct(null);
@@ -3235,36 +3330,54 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
 
   const handleAddProduct = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newProduct.title || !newProduct.price) return;
+    
+    // Required fields validation popup
+    const validation = validateProductFields(newProduct);
+    if (!validation.isValid) {
+      const popupText = `⚠️ Missing Required Fields to Complete Item:\n\n• ${validation.missingFields.join('\n• ')}`;
+      toast.error(popupText, { duration: 7000 });
+      alert(popupText);
+      return;
+    }
     
     setSaving(true);
+    const finalImages = newProduct.image_urls?.length 
+      ? newProduct.image_urls 
+      : (newProduct.image_url ? [newProduct.image_url] : []);
+    const primaryCover = finalImages[0] || newProduct.image_url || 'https://picsum.photos/400/400';
+
     const productInsert = {
       creator_id: profile?.id || user?.id,
-      title: newProduct.title,
+      title: newProduct.title.trim(),
       price: parseFloat(newProduct.price),
       type: newProduct.type,
-      image_url: newProduct.image_url || 'https://picsum.photos/400/400',
+      image_url: primaryCover,
       digital_file_url: newProduct.digital_file_url || '',
-      variants: newProduct.type === 'physical' ? {
-        sizes: newProduct.is_clothing ? newProduct.sizes.split(',').map(s => s.trim()).filter(Boolean) : [],
-        colors: newProduct.colors.split(',').map(c => c.trim()).filter(Boolean),
-        is_clothing: newProduct.is_clothing
-      } : {}
+      variants: {
+        image_urls: finalImages,
+        ...(newProduct.type === 'physical' ? {
+          sizes: newProduct.is_clothing ? newProduct.sizes.split(',').map(s => s.trim()).filter(Boolean) : [],
+          colors: newProduct.colors.split(',').map(c => c.trim()).filter(Boolean),
+          is_clothing: newProduct.is_clothing
+        } : {})
+      }
     };
 
     try {
       const { data, error } = await supabase!.from('products').insert([productInsert]).select();
       if (!error && data) {
         setProducts(prev => [...prev, data[0]]);
+        toast.success('🎉 Item added to store successfully!');
       } else {
-        // Fallback if table doesn't exist yet
         setProducts(prev => [...prev, { ...productInsert, id: Math.random().toString() }]);
+        toast.success('Item added to store!');
       }
     } catch {
       setProducts(prev => [...prev, { ...productInsert, id: Math.random().toString() }]);
+      toast.success('Item added to store!');
     }
 
-    setNewProduct({ title: '', price: '', type: 'digital', image_url: '', digital_file_url: '', sizes: '', colors: '', is_clothing: false });
+    setNewProduct({ title: '', price: '', type: 'digital', image_url: '', image_urls: [], digital_file_url: '', sizes: '', colors: '', is_clothing: false });
     setSaving(false);
   };
 
@@ -5080,18 +5193,54 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
                   </div>
                 )}
 
+                {/* Multi-Image Gallery Thumbnails Preview */}
+                {((newProduct.image_urls && newProduct.image_urls.length > 0) || newProduct.image_url) && (
+                  <div style={{ gridColumn: '1 / -1', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                    <label style={{ fontSize: '13px', color: 'var(--text-muted)', fontWeight: 'bold' }}>
+                      Product Images Gallery ({newProduct.image_urls?.length || (newProduct.image_url ? 1 : 0)})
+                    </label>
+                    <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap', alignItems: 'center' }}>
+                      {(newProduct.image_urls?.length ? newProduct.image_urls : [newProduct.image_url]).filter(Boolean).map((imgUrl, idx) => (
+                        <div key={idx} style={{ position: 'relative', width: '80px', height: '80px', borderRadius: '12px', overflow: 'hidden', border: idx === 0 ? '2px solid #FFD700' : '1px solid rgba(255,255,255,0.15)', background: '#000' }}>
+                          <img src={imgUrl} alt={`Product ${idx + 1}`} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                          {idx === 0 && (
+                            <span style={{ position: 'absolute', bottom: '4px', left: '4px', background: 'rgba(0,0,0,0.85)', color: '#FFD700', fontSize: '9px', fontWeight: 900, padding: '2px 5px', borderRadius: '4px' }}>
+                              COVER
+                            </span>
+                          )}
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setNewProduct(prev => {
+                                const current = prev.image_urls?.length ? [...prev.image_urls] : (prev.image_url ? [prev.image_url] : []);
+                                current.splice(idx, 1);
+                                return {
+                                  ...prev,
+                                  image_urls: current,
+                                  image_url: current[0] || ''
+                                };
+                              });
+                            }}
+                            style={{ position: 'absolute', top: '4px', right: '4px', background: 'rgba(0,0,0,0.8)', border: 'none', color: '#ff4d4d', borderRadius: '50%', width: '20px', height: '20px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', fontSize: '12px', fontWeight: 'bold' }}
+                            title="Remove image"
+                          >
+                            &times;
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
                 <div style={{ display: 'flex', gap: '12px', gridColumn: '1 / -1', flexWrap: 'wrap' }}>
-                  {newProduct.image_url ? (
-                    <div style={{ width: '80px', height: '80px', borderRadius: '8px', backgroundImage: `url("${newProduct.image_url}")`, backgroundSize: 'cover', backgroundPosition: 'center', border: '1px solid rgba(255,255,255,0.1)' }} />
-                  ) : null}
                   <label 
                     onDragOver={(e) => { e.preventDefault(); setIsDraggingProductImg(true); }}
                     onDragLeave={() => setIsDraggingProductImg(false)}
                     onDrop={(e) => {
                       e.preventDefault();
                       setIsDraggingProductImg(false);
-                      if (e.dataTransfer.files && e.dataTransfer.files[0]) {
-                        handleProductImageUpload(e.dataTransfer.files[0]);
+                      if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+                        handleProductImageUpload(e.dataTransfer.files, 'new');
                       }
                     }}
                     style={{ 
@@ -5114,8 +5263,8 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
                     }}
                   >
                     <ImageIcon size={16} /> 
-                    {uploadingProductImg ? 'Uploading...' : isDraggingProductImg ? 'Drop here!' : 'Upload Cover Image'}
-                    <input type="file" accept="image/*" onChange={handleProductImageUpload} style={{ display: 'none' }} disabled={uploadingProductImg} />
+                    {uploadingProductImg ? 'Uploading Images...' : isDraggingProductImg ? 'Drop Images Here!' : '🖼️ Upload Product Images (Multiple)'}
+                    <input type="file" accept="image/*" multiple onChange={(e) => handleProductImageUpload(e, 'new')} style={{ display: 'none' }} disabled={uploadingProductImg} />
                   </label>
 
                   <label 
@@ -5153,7 +5302,7 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
                     }} style={{ display: 'none' }} />
                   </label>
 
-                  <button type="submit" disabled={saving || !newProduct.title} style={{ padding: '14px 30px', background: 'linear-gradient(135deg, #FFD700, #FFA500)', color: '#000', border: 'none', borderRadius: '12px', fontWeight: 'bold', cursor: 'pointer', opacity: (!newProduct.title || saving) ? 0.5 : 1 }}>
+                  <button type="submit" disabled={saving} style={{ padding: '14px 30px', background: 'linear-gradient(135deg, #FFD700, #FFA500)', color: '#000', border: 'none', borderRadius: '12px', fontWeight: 'bold', cursor: 'pointer', opacity: saving ? 0.5 : 1 }}>
                     {saving ? 'Adding...' : 'Add to Store'}
                   </button>
                 </div>
@@ -9177,20 +9326,58 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
                   </div>
 
                   <div>
-                    <label style={{ display: 'block', marginBottom: '6px', fontSize: '13px', color: 'var(--text-muted)' }}>Product Image URL & Cover Art</label>
-                    <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
-                      <input type="text" value={editingProduct.image_url || ''} onChange={e => setEditingProduct({ ...editingProduct, image_url: e.target.value })} style={{ flex: 1, background: 'rgba(0,0,0,0.4)', border: '1px solid rgba(255,255,255,0.1)', padding: '12px', borderRadius: '10px', color: 'var(--text-primary)', outline: 'none' }} />
-                      <label style={{ padding: '10px 16px', background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.2)', borderRadius: '10px', color: '#fff', fontSize: '12px', fontWeight: 'bold', cursor: 'pointer', whiteSpace: 'nowrap' }}>
-                        🖼️ Change Image
-                        <input type="file" accept="image/*" onChange={(e) => {
-                          if (e.target.files && e.target.files[0]) {
-                            handleProductImageUpload(e.target.files[0]).then(url => {
-                              if (url) setEditingProduct((prev: any) => ({ ...prev, image_url: url }));
-                            });
-                          }
-                        }} style={{ display: 'none' }} />
-                      </label>
-                    </div>
+                    <label style={{ display: 'block', marginBottom: '6px', fontSize: '13px', color: 'var(--text-muted)' }}>Product Images & Gallery (Multiple Photos Supported)</label>
+                    {(() => {
+                      const editImages = editingProduct.image_urls || editingProduct.variants?.image_urls || (editingProduct.image_url ? [editingProduct.image_url] : []);
+                      return (
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                          {editImages.length > 0 && (
+                            <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap', alignItems: 'center' }}>
+                              {editImages.filter(Boolean).map((imgUrl: string, idx: number) => (
+                                <div key={idx} style={{ position: 'relative', width: '70px', height: '70px', borderRadius: '10px', overflow: 'hidden', border: idx === 0 ? '2px solid #FFD700' : '1px solid rgba(255,255,255,0.15)', background: '#000' }}>
+                                  <img src={imgUrl} alt={`Cover ${idx + 1}`} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                  {idx === 0 && (
+                                    <span style={{ position: 'absolute', bottom: '2px', left: '2px', background: 'rgba(0,0,0,0.85)', color: '#FFD700', fontSize: '8px', fontWeight: 900, padding: '1px 4px', borderRadius: '3px' }}>
+                                      COVER
+                                    </span>
+                                  )}
+                                  <button
+                                    type="button"
+                                    onClick={() => {
+                                      setEditingProduct((prev: any) => {
+                                        if (!prev) return prev;
+                                        const current = prev.image_urls || prev.variants?.image_urls || (prev.image_url ? [prev.image_url] : []);
+                                        const updated = [...current];
+                                        updated.splice(idx, 1);
+                                        return {
+                                          ...prev,
+                                          image_urls: updated,
+                                          image_url: updated[0] || '',
+                                          variants: {
+                                            ...(prev.variants || {}),
+                                            image_urls: updated
+                                          }
+                                        };
+                                      });
+                                    }}
+                                    style={{ position: 'absolute', top: '3px', right: '3px', background: 'rgba(0,0,0,0.85)', border: 'none', color: '#ff4d4d', borderRadius: '50%', width: '18px', height: '18px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', fontSize: '11px', fontWeight: 'bold' }}
+                                  >
+                                    &times;
+                                  </button>
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                          <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+                            <input type="text" placeholder="Paste image URL..." value={editingProduct.image_url || ''} onChange={e => setEditingProduct({ ...editingProduct, image_url: e.target.value })} style={{ flex: 1, background: 'rgba(0,0,0,0.4)', border: '1px solid rgba(255,255,255,0.1)', padding: '12px', borderRadius: '10px', color: 'var(--text-primary)', outline: 'none' }} />
+                            <label style={{ padding: '10px 16px', background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.2)', borderRadius: '10px', color: '#fff', fontSize: '12px', fontWeight: 'bold', cursor: 'pointer', whiteSpace: 'nowrap' }}>
+                              🖼️ Add Images
+                              <input type="file" accept="image/*" multiple onChange={(e) => handleProductImageUpload(e, 'edit')} style={{ display: 'none' }} />
+                            </label>
+                          </div>
+                        </div>
+                      );
+                    })()}
                   </div>
 
                   <div>

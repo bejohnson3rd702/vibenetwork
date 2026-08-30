@@ -18,9 +18,10 @@ const ProductPage: React.FC = () => {
   const [purchasing, setPurchasing] = useState(false);
   const [error, setError] = useState('');
   
-  // Physical Product Variants
+  // Physical Product Variants & Multi-Image Gallery
   const [selectedSize, setSelectedSize] = useState('');
   const [selectedColor, setSelectedColor] = useState('');
+  const [selectedImgIndex, setSelectedImgIndex] = useState(0);
   
   const defaultSizes = ['S', 'M', 'L', 'XL', '2XL'];
   const defaultColors = ['Black', 'White', 'Navy', 'Red'];
@@ -161,16 +162,54 @@ const ProductPage: React.FC = () => {
 
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: '60px' }}>
           
-          {/* Left: Image Viewer */}
-          <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} style={{ flex: '1 1 500px', minWidth: '300px' }}>
-            <div style={{ width: '100%', aspectRatio: '1/1', background: 'rgba(255,255,255,0.02)', borderRadius: '32px', overflow: 'hidden', border: '1px solid rgba(255,255,255,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              {product.image_url ? (
-                <img src={product.image_url} alt={product.title} loading="lazy" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-              ) : (
-                <ShoppingBag size={64} color="#333" />
-              )}
-            </div>
-          </motion.div>
+          {/* Left: Multi-Image Viewer */}
+          {(() => {
+            const productImages: string[] = Array.isArray(product?.variants?.image_urls) && product.variants.image_urls.length > 0
+              ? product.variants.image_urls
+              : (Array.isArray(product?.image_urls) && product.image_urls.length > 0
+                ? product.image_urls
+                : (product?.image_url ? [product.image_url] : []));
+
+            const currentMainImage = productImages[selectedImgIndex] || product?.image_url;
+
+            return (
+              <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} style={{ flex: '1 1 500px', minWidth: '300px' }}>
+                <div style={{ width: '100%', aspectRatio: '1/1', background: 'rgba(255,255,255,0.02)', borderRadius: '32px', overflow: 'hidden', border: '1px solid rgba(255,255,255,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  {currentMainImage ? (
+                    <img src={currentMainImage} alt={product.title} loading="lazy" style={{ width: '100%', height: '100%', objectFit: 'cover', transition: 'all 0.3s ease' }} />
+                  ) : (
+                    <ShoppingBag size={64} color="#333" />
+                  )}
+                </div>
+
+                {productImages.length > 1 && (
+                  <div style={{ display: 'flex', gap: '12px', marginTop: '16px', overflowX: 'auto', paddingBottom: '8px' }}>
+                    {productImages.map((imgUrl, idx) => (
+                      <button
+                        key={idx}
+                        onClick={() => setSelectedImgIndex(idx)}
+                        style={{
+                          width: '72px',
+                          height: '72px',
+                          borderRadius: '14px',
+                          overflow: 'hidden',
+                          border: selectedImgIndex === idx ? `2px solid ${wlConfig?.accent || 'var(--accent-primary)'}` : '1px solid rgba(255,255,255,0.1)',
+                          background: '#000',
+                          cursor: 'pointer',
+                          padding: 0,
+                          opacity: selectedImgIndex === idx ? 1 : 0.5,
+                          transition: 'all 0.2s ease',
+                          flexShrink: 0
+                        }}
+                      >
+                        <img src={imgUrl} alt={`${product.title} thumbnail ${idx + 1}`} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </motion.div>
+            );
+          })()}
 
           {/* Right: Product Details */}
           <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} style={{ flex: '1 1 400px', minWidth: '300px', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
