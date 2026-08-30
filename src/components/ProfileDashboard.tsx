@@ -897,6 +897,10 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
       }
     }
     
+    if (params.get('view') === 'public') {
+      setViewMode('public');
+    }
+
     // Auto-mount as guest from invite links
     if (params.get('guest_invite') === 'true') {
       setActiveTab('live');

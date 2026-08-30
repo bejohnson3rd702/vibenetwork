@@ -232,8 +232,21 @@ const ProductPage: React.FC = () => {
           const sellerName = product?.creator?.full_name || product?.creator?.username || product?.creator_name || 'Store Creator';
           const backLabel = sellerName && sellerName !== 'Store Creator' ? `Back to ${sellerName}'s Store` : 'Back to Store';
 
+          const handleBackToStore = () => {
+            const creatorId = product?.creator?.id || product?.creator_id;
+            const currentParams = new URLSearchParams(window.location.search);
+            currentParams.set('tab', 'store');
+            currentParams.set('view', 'public');
+
+            if (creatorId) {
+              navigate(`/profile/${creatorId}?${currentParams.toString()}`);
+            } else {
+              navigate(`/profile?${currentParams.toString()}`);
+            }
+          };
+
           return (
-            <button onClick={() => navigate(-1)} style={{ display: 'flex', alignItems: 'center', gap: '8px', background: 'transparent', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', marginBottom: '40px', fontSize: '16px', fontWeight: 600 }}>
+            <button onClick={handleBackToStore} style={{ display: 'flex', alignItems: 'center', gap: '8px', background: 'transparent', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', marginBottom: '40px', fontSize: '16px', fontWeight: 600 }}>
               <ArrowLeft size={20} /> {backLabel}
             </button>
           );
