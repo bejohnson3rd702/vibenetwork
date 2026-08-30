@@ -2539,6 +2539,18 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
 
   const handleDigitalFileUpload = async (file: File, target: 'new' | 'edit' = 'new') => {
     if (!file) return;
+
+    // Block executable & script file extensions for security
+    const ext = file.name.split('.').pop()?.toLowerCase() || '';
+    const forbiddenExtensions = ['exe', 'bat', 'cmd', 'sh', 'msi', 'scr', 'vbs', 'com', 'pif', 'application', 'gadget', 'app', 'dmg', 'pkg', 'sys', 'dll', 'bin', 'jar', 'vbe', 'jse', 'wsf', 'wsh'];
+    
+    if (forbiddenExtensions.includes(ext) || file.type.includes('executable') || file.type.includes('msdownload') || file.type.includes('x-sh')) {
+      const securityError = `⛔ Executable files (.${ext.toUpperCase()}) are blocked for safety.\n\nPlease upload valid Images, Videos, Audio tracks, Documents, or ZIP archives.`;
+      toast.error(securityError, { duration: 7000 });
+      alert(securityError);
+      return;
+    }
+
     const sizeMB = (file.size / (1024 * 1024)).toFixed(1);
     setUploadingDigitalFile(true);
     toast.info(`⏳ Uploading digital product file "${file.name}" (${sizeMB} MB)... Please keep this open.`);
