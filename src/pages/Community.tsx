@@ -3,6 +3,7 @@ import { supabase } from '../supabaseClient';
 import { useWhiteLabel } from '../context/WhiteLabelContext';
 import { MessageSquare, Hash, Image as ImageIcon, Send, Lock, Unlock, Plus, Trash2, Settings, X } from 'lucide-react';
 import toast from 'react-hot-toast';
+import { validateFileSafety } from '../lib/fileSecurity';
 
 interface CommunityProps {
   user: any;
@@ -81,6 +82,13 @@ export default function Community({ user, onAuthRequest }: CommunityProps) {
     const file = e.target.files?.[0];
     if (!file || !user) return;
     if (fileInputRef.current) fileInputRef.current.value = '';
+
+    const safety = validateFileSafety(file);
+    if (!safety.safe) {
+      toast.error(`⛔ Security Blocked: Executable files (${safety.blockedFileName}) are forbidden across the platform!`);
+      return;
+    }
+
     if (file.size > 50 * 1024 * 1024) { toast.error('File too large. Max 50MB.'); return; }
     try {
       setUploadingMedia(true);

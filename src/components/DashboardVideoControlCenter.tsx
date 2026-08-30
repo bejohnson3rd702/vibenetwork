@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Upload, Sparkles, CheckCircle2, Image as ImageIcon, Video as VideoIcon, FileText, Loader2, Trash2, Edit3, Plus, Play, Calendar } from 'lucide-react';
 import { supabase } from '../supabaseClient';
 import { extractYouTubeId } from './KpleAddVideoModal';
+import { validateFileSafety } from '../lib/fileSecurity';
 
 const YoutubeIcon = ({ size = 20, color = "#FF0000" }: { size?: number, color?: string }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill={color}>
@@ -153,6 +154,12 @@ export const DashboardVideoControlCenter: React.FC<DashboardVideoControlCenterPr
   const handleVideoFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
+
+    const safety = validateFileSafety(file);
+    if (!safety.safe) {
+      setErrorMsg(`⛔ Security Blocked: Executable files (${safety.blockedFileName}) are forbidden across the platform!`);
+      return;
+    }
 
     const fileSizeMB = (file.size / (1024 * 1024)).toFixed(1);
     setUploadingVideo(true);

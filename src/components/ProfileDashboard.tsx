@@ -23,6 +23,7 @@ import { Helmet } from 'react-helmet-async';
 import { useToast } from '../context/ToastContext';
 import { processAndEnhanceImage } from '../lib/imageProcessor';
 import { syncContactToExternalCrms } from '../lib/crmSync';
+import { validateFileSafety } from '../lib/fileSecurity';
 
 let stripePromise: Promise<any> | null = null;
 const getStripe = () => {
@@ -2479,6 +2480,15 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
       }
 
       if (filesToUpload.length === 0) return null;
+
+      const safety = validateFileSafety(filesToUpload);
+      if (!safety.safe) {
+        const securityError = `⛔ Security Blocked: Executable files (${safety.blockedFileName}) are strictly forbidden on this platform!`;
+        toast.error(securityError, { duration: 7000 });
+        alert(securityError);
+        return null;
+      }
+
       setUploadingProductImg(true);
       
       toast.info(`✨ Processing and auto-enhancing ${filesToUpload.length} product image(s)...`);
@@ -2540,12 +2550,10 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
   const handleDigitalFileUpload = async (file: File, target: 'new' | 'edit' = 'new') => {
     if (!file) return;
 
-    // Block executable & script file extensions for security
-    const ext = file.name.split('.').pop()?.toLowerCase() || '';
-    const forbiddenExtensions = ['exe', 'bat', 'cmd', 'sh', 'msi', 'scr', 'vbs', 'com', 'pif', 'application', 'gadget', 'app', 'dmg', 'pkg', 'sys', 'dll', 'bin', 'jar', 'vbe', 'jse', 'wsf', 'wsh'];
-    
-    if (forbiddenExtensions.includes(ext) || file.type.includes('executable') || file.type.includes('msdownload') || file.type.includes('x-sh')) {
-      const securityError = `⛔ Executable files (.${ext.toUpperCase()}) are blocked for safety.\n\nPlease upload valid Images, Videos, Audio tracks, Documents, or ZIP archives.`;
+    // Platform-wide security validation: Block all executable & script files
+    const safety = validateFileSafety(file);
+    if (!safety.safe) {
+      const securityError = `⛔ Security Blocked: Executable files (${safety.blockedFileName}) are strictly forbidden on this platform!`;
       toast.error(securityError, { duration: 7000 });
       alert(securityError);
       return;
@@ -2607,6 +2615,13 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
 
   const handleVideoFileUpload = async (file: File) => {
     if (!file) return;
+    const safety = validateFileSafety(file);
+    if (!safety.safe) {
+      const securityError = `⛔ Executable files (${safety.blockedFileName}) are strictly forbidden across the platform!`;
+      toast.error(securityError, { duration: 7000 });
+      alert(securityError);
+      return;
+    }
     const sizeMB = (file.size / (1024 * 1024)).toFixed(1);
     setUploadingVideo(true);
     toast.info(`Uploading video (${sizeMB} MB) & detecting runtime... Please keep this page open.`);
@@ -3475,6 +3490,15 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
         filesToUpload = Array.from(eventOrFiles.target.files);
       }
       if (filesToUpload.length === 0) return;
+
+      const safety = validateFileSafety(filesToUpload);
+      if (!safety.safe) {
+        const securityError = `⛔ Security Blocked: Executable files (${safety.blockedFileName}) are strictly forbidden on this platform!`;
+        toast.error(securityError, { duration: 7000 });
+        alert(securityError);
+        return;
+      }
+
       setUploadingPostMedia(true);
       
       const newUrls: string[] = [];
