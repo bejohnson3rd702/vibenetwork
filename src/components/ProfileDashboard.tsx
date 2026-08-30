@@ -3770,7 +3770,7 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
                   borderRadius: '30px', 
                   border: viewMode === 'edit' ? 'none' : '1px solid rgba(253, 216, 53, 0.4)', 
                   background: viewMode === 'edit' ? '#fdd835' : 'rgba(253, 216, 53, 0.15)', 
-                  color: viewMode === 'edit' ? '#000' : '#fdd835', 
+                  color: '#fff', 
                   fontWeight: 900, 
                   fontSize: '14px',
                   cursor: 'pointer', 
@@ -3781,7 +3781,7 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
                   transition: 'all 0.3s ease' 
                 }}
               >
-                <Edit2 size={16} color={viewMode === 'edit' ? '#000' : '#fdd835'} /> Edit Channel
+                <Edit2 size={16} color="#fff" /> Edit Channel
               </button>
               <button 
                 onClick={() => {
@@ -3795,7 +3795,7 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
                   borderRadius: '30px', 
                   border: viewMode === 'public' ? 'none' : '1px solid rgba(21, 101, 192, 0.4)', 
                   background: viewMode === 'public' ? '#1565c0' : 'rgba(21, 101, 192, 0.15)', 
-                  color: viewMode === 'public' ? '#fff' : '#1565c0', 
+                  color: '#fff', 
                   fontWeight: 900, 
                   fontSize: '14px',
                   cursor: 'pointer', 
@@ -3806,7 +3806,7 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
                   transition: 'all 0.3s ease' 
                 }}
               >
-                <Eye size={16} color={viewMode === 'public' ? '#fff' : '#1565c0'} /> Public Preview
+                <Eye size={16} color="#fff" /> Public Preview
               </button>
             </div>
           </div>
