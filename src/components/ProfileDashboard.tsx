@@ -10114,10 +10114,10 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
                 </label>
                 <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
                   {[
-                    { label: '🔥 Viral Hook', prompt: 'Make this catchy, energetic, and engaging for social feeds.' },
-                    { label: '✨ Professional', prompt: 'Rewrite this in a polished, professional tone.' },
-                    { label: '🚀 Monetize & Sell', prompt: 'Add a strong call to action for subscribers to buy or upgrade.' },
-                    { label: '💬 Fix Grammar', prompt: 'Fix any grammar and typos while preserving tone.' }
+                    { id: 'viral', label: '🔥 Viral Hook', prompt: 'Make this catchy, energetic, and engaging for social feeds.' },
+                    { id: 'pro', label: '✨ Professional', prompt: 'Rewrite this in a polished, professional tone.' },
+                    { id: 'monetize', label: '🚀 Monetize & Sell', prompt: 'Add a strong call to action for subscribers to buy or upgrade.' },
+                    { id: 'grammar', label: '💬 Fix Grammar', prompt: 'Fix any grammar and typos while preserving tone.' }
                   ].map(preset => (
                     <button
                       key={preset.label}
@@ -10125,14 +10125,32 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
                       onClick={async () => {
                         setAiGenerating(true);
                         await new Promise(r => setTimeout(r, 600));
-                        const currentVal = aiPromptTarget === 'bio' ? bio : (aiPromptTarget === 'post' ? postTitle : refundPolicy);
-                        const result = `${preset.prompt.split(' ')[0]} ${currentVal || 'Exclusive release on Vibe Network!'} 🔥 Subscribe & Follow for full access!`;
-                        if (aiPromptTarget === 'bio') setBio(result);
-                        if (aiPromptTarget === 'post') setPostTitle(result);
-                        if (aiPromptTarget === 'refund_policy') setRefundPolicy(result);
+                        const currentVal = (bio || profile?.bio || wlConfig?.theme?.heroCopy || wlConfig?.heroCopy || '').trim();
+                        let result = '';
+                        if (aiPromptTarget === 'bio') {
+                          const base = currentVal || 'Welcome to the official channel media & culture stream.';
+                          if (preset.id === 'viral') {
+                            result = `🔥 ${base.replace(/[\.\s]+$/, '')}! High-energy original streams, exclusive content drops, and culture in real time. Follow & Subscribe for VIP access!`;
+                          } else if (preset.id === 'pro') {
+                            result = `✨ ${base.replace(/[\.\s]+$/, '')}. Premium broadcasts, exclusive digital releases, and live community streams. Follow for official channel updates.`;
+                          } else if (preset.id === 'monetize') {
+                            result = `🚀 ${base.replace(/[\.\s]+$/, '')}! Join our channel community — Subscribe for exclusive member access, behind-the-scenes streams, and full episodes.`;
+                          } else {
+                            let cleaned = base.charAt(0).toUpperCase() + base.slice(1);
+                            if (!cleaned.endsWith('.')) cleaned += '.';
+                            result = cleaned;
+                          }
+                          setBio(result);
+                        } else if (aiPromptTarget === 'post') {
+                          result = `${preset.prompt.split(' ')[0]} ${postTitle || 'Exclusive release on Vibe Network!'} 🔥`;
+                          setPostTitle(result);
+                        } else {
+                          result = `${preset.prompt.split(' ')[0]} ${refundPolicy || 'All sales final.'}`;
+                          setRefundPolicy(result);
+                        }
                         setAiGenerating(false);
                         setShowAiModal(false);
-                        toast.success("AI Content Boosted!");
+                        toast.success("AI Bio Boost Applied!");
                       }}
                       style={{ padding: '8px 14px', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)', borderRadius: '20px', color: '#fff', fontSize: '12px', fontWeight: 'bold', cursor: 'pointer', transition: 'all 0.2s' }}
                       onMouseOver={e=>e.currentTarget.style.background='rgba(255,255,255,0.15)'}
@@ -10150,7 +10168,7 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
                   Or Ask AI Assistant Directly
                 </label>
                 <textarea
-                  placeholder="e.g. Write a exciting 2-sentence announcement for my new comedy show..."
+                  placeholder="e.g. Make my bio sound like an inspiring music & culture creator..."
                   value={aiCustomPrompt}
                   onChange={e => setAiCustomPrompt(e.target.value)}
                   rows={3}
@@ -10172,18 +10190,24 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
                   onClick={async () => {
                     setAiGenerating(true);
                     await new Promise(r => setTimeout(r, 700));
-                    const result = `✨ ${aiCustomPrompt.trim()} — Streaming live on Vibe Network! 🔥`;
-                    if (aiPromptTarget === 'bio') setBio(result);
-                    if (aiPromptTarget === 'post') setPostTitle(result);
-                    if (aiPromptTarget === 'refund_policy') setRefundPolicy(result);
+                    if (aiPromptTarget === 'bio') {
+                      const base = (bio || profile?.bio || wlConfig?.theme?.heroCopy || wlConfig?.heroCopy || 'Welcome to the official channel media & culture stream.').trim();
+                      const instr = aiCustomPrompt.trim();
+                      const result = `✨ ${base.replace(/[\.\s]+$/, '')}. ${instr.charAt(0).toUpperCase() + instr.slice(1)} 🔥`;
+                      setBio(result);
+                    } else if (aiPromptTarget === 'post') {
+                      setPostTitle(`✨ ${aiCustomPrompt.trim()} — Streaming live on Vibe Network! 🔥`);
+                    } else {
+                      setRefundPolicy(`✨ ${aiCustomPrompt.trim()}`);
+                    }
                     setAiGenerating(false);
                     setShowAiModal(false);
                     setAiCustomPrompt('');
-                    toast.success("AI Boost Applied!");
+                    toast.success("AI Bio Boost Applied!");
                   }}
                   style={{ padding: '12px 28px', background: 'linear-gradient(135deg, #8A2BE2, #ff4d85)', border: 'none', color: '#fff', borderRadius: '12px', cursor: 'pointer', fontWeight: 'bold', boxShadow: '0 4px 15px rgba(138,43,226,0.4)', opacity: (!aiCustomPrompt.trim() || aiGenerating) ? 0.5 : 1 }}
                 >
-                  {aiGenerating ? 'AI Generating...' : '😊 Apply AI Boost'}
+                  {aiGenerating ? 'AI Generating...' : '✨ Apply AI Boost'}
                 </button>
               </div>
             </motion.div>
