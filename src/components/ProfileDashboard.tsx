@@ -1633,7 +1633,7 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
             }
           }
 
-          let prodQuery = supabase!.from('products').select(isNetworkLevel ? '*, creator:profiles!inner(username, avatar_url, whitelabel_id)' : '*');
+          let prodQuery = supabase!.from('products').select('*, creator:profiles(id, username, avatar_url, full_name, whitelabel_id)');
           if (isNetworkLevel) {
             const isMasterPlatform = !wlConfig || wlConfig.id === 'master' || wlConfig.domain === 'vibenetwork.tv' || wlConfig.domain === 'vibenetwork.com' || wlConfig.domain?.includes('vercel.app');
             if (wlConfig?.domain && !isMasterPlatform) prodQuery = prodQuery.eq('creator.whitelabel_id', wlConfig.id);
@@ -2392,6 +2392,22 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
       setSavedBio(bio);
       setIsEditingBio(false);
     }
+
+    // Sync updated channel/profile name and avatar across all loaded product cards
+    setProducts(prev => prev.map(p => {
+      if (p.creator_id === loadedProfileId || p.creator_id === user?.id) {
+        return {
+          ...p,
+          creator: {
+            ...(p.creator || {}),
+            username: bioUsername || p.creator?.username,
+            full_name: newName || p.creator?.full_name,
+            avatar_url: avatarUrl || p.creator?.avatar_url
+          }
+        };
+      }
+      return p;
+    }));
 
     setSaving(false);
     
@@ -5570,12 +5586,17 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
                         <div style={{ fontSize: '10px', textTransform: 'uppercase', color: product.type === 'physical' ? '#ff4d85' : '#8A2BE2', fontWeight: 'bold', letterSpacing: '1px' }}>
                           {product.type === 'physical' ? 'Physical Merch' : 'Digital Release'}
                         </div>
-                        {product.creator && (
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                            <img src={product.creator.avatar_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(product.creator.username || 'C')}&background=random`} alt={product.creator.username} loading="lazy" style={{ width: '20px', height: '20px', borderRadius: '50%', border: '1px solid rgba(255,255,255,0.2)' }} />
-                            <span style={{ color: 'var(--text-secondary)', fontSize: '12px', fontWeight: 500 }}>@{product.creator.username}</span>
-                          </div>
-                        )}
+                        {(() => {
+                          const creatorUsername = product.creator?.username || (product.creator_id === profile?.id ? profile?.username : '') || 'Creator';
+                          const creatorAvatar = (product.creator_id === profile?.id ? profile?.avatar_url : null) || product.creator?.avatar_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(creatorUsername)}&background=random`;
+                          
+                          return (
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                              <img src={creatorAvatar} alt={creatorUsername} loading="lazy" style={{ width: '20px', height: '20px', borderRadius: '50%', border: '1px solid rgba(255,255,255,0.2)', objectFit: 'cover' }} />
+                              <span style={{ color: 'var(--text-secondary)', fontSize: '12px', fontWeight: 500 }}>@{creatorUsername}</span>
+                            </div>
+                          );
+                        })()}
                       </div>
                       <h4 style={{ margin: '0 0 12px 0', fontSize: '16px', lineHeight: 1.4, flex: 1 }}>{product.title}</h4>
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
