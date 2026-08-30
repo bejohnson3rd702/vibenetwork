@@ -3765,9 +3765,23 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
             <div style={{ display: 'flex', background: 'rgba(0,0,0,0.4)', backdropFilter: 'blur(12px)', borderRadius: '30px', padding: '4px', border: '1px solid rgba(255,255,255,0.1)', boxShadow: '0 8px 32px rgba(0,0,0,0.2)' }}>
               <button 
                 onClick={() => setViewMode('edit')}
-                style={{ padding: '8px 24px', borderRadius: '30px', border: 'none', background: viewMode === 'edit' ? '#fff' : 'transparent', color: viewMode === 'edit' ? '#000' : '#fff', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px', transition: 'all 0.3s ease' }}
+                style={{ 
+                  padding: '8px 24px', 
+                  borderRadius: '30px', 
+                  border: viewMode === 'edit' ? 'none' : '1px solid rgba(253, 216, 53, 0.4)', 
+                  background: viewMode === 'edit' ? '#fdd835' : 'rgba(253, 216, 53, 0.15)', 
+                  color: viewMode === 'edit' ? '#000' : '#fdd835', 
+                  fontWeight: 900, 
+                  fontSize: '14px',
+                  cursor: 'pointer', 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  gap: '8px', 
+                  boxShadow: viewMode === 'edit' ? '0 4px 20px rgba(253, 216, 53, 0.6)' : 'none',
+                  transition: 'all 0.3s ease' 
+                }}
               >
-                <Edit2 size={16} /> Edit Channel
+                <Edit2 size={16} color={viewMode === 'edit' ? '#000' : '#fdd835'} /> Edit Channel
               </button>
               <button 
                 onClick={() => {
