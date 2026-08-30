@@ -3870,31 +3870,34 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
                             }}>
                               {!effectiveAvatar && (profile?.username ? profile.username[0].toUpperCase() : (user?.email ? user.email[0].toUpperCase() : 'V'))}
 
-                              {/* Hover Overlay with Suggested Size OVER Bio Pic in Edit Mode */}
+                              {/* Suggested Size Badge Overlay directly ON TOP OF Bio Pic in Edit Mode */}
                               {isOwnProfile && viewMode === 'edit' && (
-                                <div style={{
-                                  position: 'absolute',
-                                  inset: 0,
-                                  borderRadius: '50%',
-                                  background: 'rgba(0, 0, 0, 0.78)',
-                                  backdropFilter: 'blur(4px)',
-                                  display: 'flex',
-                                  flexDirection: 'column',
-                                  alignItems: 'center',
-                                  justifyContent: 'center',
-                                  gap: '4px',
-                                  opacity: (isAvatarHovered || isDraggingDirectAvatar) ? 1 : 0,
-                                  transition: 'opacity 0.25s ease',
-                                  pointerEvents: 'none',
-                                  zIndex: 10,
-                                  padding: '8px',
-                                  textAlign: 'center'
-                                }}>
-                                  <Camera size={20} color="#00ff88" />
-                                  <span style={{ fontSize: '11px', fontWeight: 900, color: '#fff', lineHeight: 1.1 }}>Change Photo</span>
-                                  <span style={{ fontSize: '10px', fontWeight: 800, color: '#00ff88', background: 'rgba(0,0,0,0.6)', padding: '2px 8px', borderRadius: '10px', border: '1px solid rgba(0,255,136,0.4)' }}>
-                                    📏 512 × 512 px
-                                  </span>
+                                <div 
+                                  style={{
+                                    position: 'absolute',
+                                    bottom: '8px',
+                                    left: '50%',
+                                    transform: 'translateX(-50%)',
+                                    zIndex: 10,
+                                    background: 'rgba(0,0,0,0.85)',
+                                    backdropFilter: 'blur(8px)',
+                                    color: '#00ff88',
+                                    fontSize: '10px',
+                                    fontWeight: 900,
+                                    padding: '3px 10px',
+                                    borderRadius: '12px',
+                                    border: '1px solid rgba(0,255,136,0.5)',
+                                    boxShadow: '0 4px 12px rgba(0,0,0,0.6)',
+                                    whiteSpace: 'nowrap',
+                                    pointerEvents: 'none',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: '4px',
+                                    transition: 'all 0.2s ease'
+                                  }}
+                                >
+                                  <Camera size={11} color="#00ff88" />
+                                  <span>512 × 512 px</span>
                                 </div>
                               )}
                             </div>
