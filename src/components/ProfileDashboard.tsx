@@ -3796,7 +3796,7 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
                   borderRadius: '30px', 
                   border: viewMode === 'public' ? 'none' : '1px solid rgba(100, 181, 246, 0.4)', 
                   background: viewMode === 'public' ? '#1565c0' : 'rgba(21, 101, 192, 0.15)', 
-                  color: viewMode === 'public' ? '#fff' : '#64b5f6', 
+                  color: '#64b5f6', 
                   textShadow: 'none',
                   fontWeight: 900, 
                   fontSize: '14px',
@@ -3808,7 +3808,7 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
                   transition: 'all 0.3s ease' 
                 }}
               >
-                <Eye size={16} color={viewMode === 'public' ? '#fff' : '#64b5f6'} /> Public Preview
+                <Eye size={16} color="#64b5f6" /> Public Preview
               </button>
             </div>
           </div>
