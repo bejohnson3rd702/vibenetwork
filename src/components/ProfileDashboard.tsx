@@ -3365,14 +3365,6 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
 
       const primaryCover = finalImages[0] || updatedProduct.image_url || 'https://picsum.photos/400/400';
 
-      const updatedPayload = {
-        title: updatedProduct.title.trim(),
-        price: parseFloat(updatedProduct.price),
-        image_url: primaryCover,
-        digital_file_url: updatedProduct.digital_file_url || '',
-        type: updatedProduct.type,
-        variants: {
-          ...(updatedProduct.variants || {}),
       const variantsPayload = {
         ...(updatedProduct.variants || {}),
         digital_file_url: updatedProduct.digital_file_url || '',
