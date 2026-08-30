@@ -4099,7 +4099,7 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
                               type="button"
                               onClick={() => {
                                 setAiPromptTarget('bio');
-                                setShowAiPromptModal(true);
+                                setShowAiModal(true);
                               }}
                               style={{
                                 flex: 1,
