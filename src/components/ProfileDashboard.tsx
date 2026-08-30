@@ -167,6 +167,7 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
   });
 
   const [savedName, setSavedName] = useState<string>('');
+  const [isAvatarHovered, setIsAvatarHovered] = useState<boolean>(false);
   const [isSub, setIsSub] = useState(false);
   const [showSubModal, setShowSubModal] = useState(false);
   const [showBgSettingsModal, setShowBgSettingsModal] = useState(false);
@@ -3825,9 +3826,11 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
                       const isCourtney = profile?.id === 'courtney-bee-tenant-id' || wlConfig?.id === 'courtney-bee-tenant-id' || creatorIdOverride === 'courtney-bee-tenant-id';
                       const effectiveAvatar = avatarUrl || profile?.avatar_url || (isCourtney ? 'https://static.wixstatic.com/media/066ffc_bb9bdff854db4b56bb3f6b58ee1ce532~mv2.png/v1/crop/x_0,y_261,w_1242,h_763/fill/w_860,h_528,al_c,q_90,usm_0.66_1.00_0.01,enc_avif,quality_auto/image%20(1).png' : (wlConfig?.logoImage || wlConfig?.logo || ''));
                       return (
-                        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: isOwnProfile && viewMode === 'edit' ? '32px' : '12px' }}>
+                        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '12px' }}>
                           <div 
                             className="group" 
+                            onMouseEnter={() => setIsAvatarHovered(true)}
+                            onMouseLeave={() => setIsAvatarHovered(false)}
                             onDragOver={(e) => {
                               if (isOwnProfile && viewMode === 'edit') {
                                 e.preventDefault();
@@ -3862,16 +3865,39 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
                               fontSize: '56px', fontWeight: 'bold', 
                               border: isDraggingDirectAvatar ? '4px dashed #00ff88' : '4px solid rgba(255,255,255,0.2)', 
                               boxShadow: isDraggingDirectAvatar ? '0 0 35px rgba(0,255,136,0.6)' : '0 10px 30px rgba(0,0,0,0.5)',
-                              transition: 'all 0.3s ease'
+                              transition: 'all 0.3s ease',
+                              overflow: 'hidden'
                             }}>
                               {!effectiveAvatar && (profile?.username ? profile.username[0].toUpperCase() : (user?.email ? user.email[0].toUpperCase() : 'V'))}
-                            </div>
 
-                            {isOwnProfile && viewMode === 'edit' && (
-                              <div style={{ position: 'absolute', bottom: '-26px', left: '50%', transform: 'translateX(-50%)', whiteSpace: 'nowrap', zIndex: 10, fontSize: '11px', fontWeight: 800, color: '#00ff88', background: 'rgba(0,0,0,0.85)', padding: '4px 12px', borderRadius: '12px', border: '1px solid rgba(0,255,136,0.4)', boxShadow: '0 4px 12px rgba(0,0,0,0.6)' }}>
-                                📏 512 × 512 px (1:1 Ratio)
-                              </div>
-                            )}
+                              {/* Hover Overlay with Suggested Size OVER Bio Pic in Edit Mode */}
+                              {isOwnProfile && viewMode === 'edit' && (
+                                <div style={{
+                                  position: 'absolute',
+                                  inset: 0,
+                                  borderRadius: '50%',
+                                  background: 'rgba(0, 0, 0, 0.78)',
+                                  backdropFilter: 'blur(4px)',
+                                  display: 'flex',
+                                  flexDirection: 'column',
+                                  alignItems: 'center',
+                                  justifyContent: 'center',
+                                  gap: '4px',
+                                  opacity: (isAvatarHovered || isDraggingDirectAvatar) ? 1 : 0,
+                                  transition: 'opacity 0.25s ease',
+                                  pointerEvents: 'none',
+                                  zIndex: 10,
+                                  padding: '8px',
+                                  textAlign: 'center'
+                                }}>
+                                  <Camera size={20} color="#00ff88" />
+                                  <span style={{ fontSize: '11px', fontWeight: 900, color: '#fff', lineHeight: 1.1 }}>Change Photo</span>
+                                  <span style={{ fontSize: '10px', fontWeight: 800, color: '#00ff88', background: 'rgba(0,0,0,0.6)', padding: '2px 8px', borderRadius: '10px', border: '1px solid rgba(0,255,136,0.4)' }}>
+                                    📏 512 × 512 px
+                                  </span>
+                                </div>
+                              )}
+                            </div>
                           </div>
 
                           <div className="profile-badge-container" style={{ display: 'flex', justifyContent: 'center' }}>
