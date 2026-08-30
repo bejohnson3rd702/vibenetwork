@@ -10689,7 +10689,18 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
                           else setNewProduct(prev => ({ ...prev, title: result }));
                           toast.success("AI Product Title Boost Applied!");
                         } else if (aiPromptTarget === 'product_desc') {
-                          const result = `🔥 Premium item! ${preset.prompt} Includes instant access / tracking upon purchase.`;
+                          const currentDesc = (editingProduct ? editingProduct.description : newProduct.description) || '';
+                          let result = '';
+                          if (preset.id === 'viral') {
+                            result = `🔥 Exclusive release! Instant digital access & priority delivery. ${currentDesc || 'Get official access now!'}`;
+                          } else if (preset.id === 'pro') {
+                            result = `✨ Premium Official Channel Item. High quality digital deliverable / tracked merch. ${currentDesc || 'Includes full access upon purchase.'}`;
+                          } else if (preset.id === 'monetize') {
+                            result = `🚀 VIP Channel Release! Upgrade your collection with instant download access and member perks. ${currentDesc || 'Order now!'}`;
+                          } else {
+                            result = currentDesc ? currentDesc.charAt(0).toUpperCase() + currentDesc.slice(1) : 'Official digital release.';
+                          }
+
                           if (editingProduct) setEditingProduct(prev => prev ? { ...prev, description: result } : null);
                           else setNewProduct(prev => ({ ...prev, description: result }));
                           toast.success("AI Product Description Boost Applied!");
