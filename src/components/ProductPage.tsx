@@ -31,7 +31,7 @@ const ProductPage: React.FC = () => {
       setLoading(true);
       const { data, error } = await supabase
         .from('products')
-        .select('*, creator:profiles!inner(id, username, avatar_url)')
+        .select('*, creator:profiles(id, username, avatar_url, full_name)')
         .eq('id', productId)
         .single();
         
@@ -156,9 +156,16 @@ const ProductPage: React.FC = () => {
     <div style={{ minHeight: '100vh', background: 'var(--bg-color)', paddingTop: '100px', paddingBottom: '80px', color: 'var(--text-primary)' }}>
       <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '0 5%' }}>
         
-        <button onClick={() => navigate(-1)} style={{ display: 'flex', alignItems: 'center', gap: '8px', background: 'transparent', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', marginBottom: '40px', fontSize: '16px', fontWeight: 600 }}>
-          <ArrowLeft size={20} /> Back to Marketplace
-        </button>
+        {(() => {
+          const creatorDisplayName = product?.creator?.full_name || (product?.creator?.username ? `@${product.creator.username}` : '');
+          const backLabel = creatorDisplayName ? `Back to ${creatorDisplayName}'s Store` : 'Back to Store';
+
+          return (
+            <button onClick={() => navigate(-1)} style={{ display: 'flex', alignItems: 'center', gap: '8px', background: 'transparent', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', marginBottom: '40px', fontSize: '16px', fontWeight: 600 }}>
+              <ArrowLeft size={20} /> {backLabel}
+            </button>
+          );
+        })()}
 
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: '60px' }}>
           
