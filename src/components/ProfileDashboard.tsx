@@ -2572,6 +2572,27 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
     }
   };
 
+  const getDigitalFileTypeBadge = (fileUrl: string) => {
+    if (!fileUrl) return { label: 'File Attached ✓', icon: '📁' };
+    const ext = fileUrl.split('?')[0].split('.').pop()?.toLowerCase() || '';
+    if (['png', 'jpg', 'jpeg', 'webp', 'gif', 'svg', 'avif'].includes(ext)) {
+      return { label: 'Image File Attached ✓', icon: '🖼️' };
+    }
+    if (['mp4', 'mov', 'avi', 'mkv', 'webm', 'm4v'].includes(ext)) {
+      return { label: 'Video File Attached ✓', icon: '🎬' };
+    }
+    if (['mp3', 'wav', 'aac', 'flac', 'm4a', 'ogg'].includes(ext)) {
+      return { label: 'Audio File Attached ✓', icon: '🎵' };
+    }
+    if (['pdf', 'doc', 'docx', 'txt', 'epub', 'xls', 'xlsx'].includes(ext)) {
+      return { label: 'Document Attached ✓', icon: '📄' };
+    }
+    if (['zip', 'rar', 'tar', 'gz', '7z'].includes(ext)) {
+      return { label: 'Archive Pack Attached ✓', icon: '📦' };
+    }
+    return { label: 'Product File Attached ✓', icon: '📁' };
+  };
+
   const handleVideoFileUpload = async (file: File) => {
     if (!file) return;
     const sizeMB = (file.size / (1024 * 1024)).toFixed(1);
@@ -5307,36 +5328,39 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
                   {uploadingDigitalFile ? (
                     <div style={{ flex: 1, minWidth: '240px', padding: '14px', background: 'rgba(0, 229, 255, 0.08)', border: '1px solid rgba(0, 229, 255, 0.4)', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px' }}>
                       <div style={{ width: '16px', height: '16px', border: '2px solid rgba(0,229,255,0.3)', borderTop: '2px solid #00e5ff', borderRadius: '50%', animation: 'spin 1s linear infinite' }} />
-                      <span style={{ color: '#00e5ff', fontSize: '13px', fontWeight: 'bold' }}>⏳ Uploading File... Please wait...</span>
+                      <span style={{ color: '#00e5ff', fontSize: '13px', fontWeight: 'bold' }}>⏳ Uploading Digital File... Please wait...</span>
                     </div>
-                  ) : newProduct.digital_file_url ? (
-                    <div style={{ flex: 1, minWidth: '260px', padding: '10px 14px', background: 'rgba(0, 255, 136, 0.08)', border: '1px solid rgba(0, 255, 136, 0.4)', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px' }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '10px', minWidth: 0 }}>
-                        <Folder size={18} color="#00ff88" style={{ flexShrink: 0 }} />
-                        <div style={{ minWidth: 0 }}>
-                          <div style={{ color: '#00ff88', fontSize: '10px', fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-                            File Attached ✓
-                          </div>
-                          <div style={{ color: '#fff', fontSize: '12px', fontWeight: 'bold', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '160px' }}>
-                            {newProduct.digital_file_url.split('/').pop()?.replace(/^\d+_/, '') || 'digital_product_file'}
+                  ) : newProduct.digital_file_url ? (() => {
+                    const badge = getDigitalFileTypeBadge(newProduct.digital_file_url);
+                    return (
+                      <div style={{ flex: 1, minWidth: '260px', padding: '10px 14px', background: 'rgba(0, 255, 136, 0.08)', border: '1px solid rgba(0, 255, 136, 0.4)', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', minWidth: 0 }}>
+                          <span style={{ fontSize: '18px', flexShrink: 0 }}>{badge.icon}</span>
+                          <div style={{ minWidth: 0 }}>
+                            <div style={{ color: '#00ff88', fontSize: '10px', fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                              {badge.label}
+                            </div>
+                            <div style={{ color: '#fff', fontSize: '12px', fontWeight: 'bold', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '160px' }}>
+                              {newProduct.digital_file_url.split('/').pop()?.replace(/^\d+_/, '') || 'digital_product_file'}
+                            </div>
                           </div>
                         </div>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                          <a href={newProduct.digital_file_url} target="_blank" rel="noopener noreferrer" style={{ padding: '5px 10px', background: 'rgba(255,255,255,0.1)', color: '#fff', borderRadius: '6px', fontSize: '11px', fontWeight: 'bold', textDecoration: 'none', whiteSpace: 'nowrap' }}>
+                            👁️ Test
+                          </a>
+                          <button
+                            type="button"
+                            onClick={() => setNewProduct(prev => ({ ...prev, digital_file_url: '' }))}
+                            style={{ padding: '5px 8px', background: 'rgba(255,77,77,0.2)', border: '1px solid rgba(255,77,77,0.4)', color: '#ff4d4d', borderRadius: '6px', fontSize: '11px', fontWeight: 'bold', cursor: 'pointer' }}
+                            title="Remove file"
+                          >
+                            ✕
+                          </button>
+                        </div>
                       </div>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                        <a href={newProduct.digital_file_url} target="_blank" rel="noopener noreferrer" style={{ padding: '5px 10px', background: 'rgba(255,255,255,0.1)', color: '#fff', borderRadius: '6px', fontSize: '11px', fontWeight: 'bold', textDecoration: 'none', whiteSpace: 'nowrap' }}>
-                          👁️ Test
-                        </a>
-                        <button
-                          type="button"
-                          onClick={() => setNewProduct(prev => ({ ...prev, digital_file_url: '' }))}
-                          style={{ padding: '5px 8px', background: 'rgba(255,77,77,0.2)', border: '1px solid rgba(255,77,77,0.4)', color: '#ff4d4d', borderRadius: '6px', fontSize: '11px', fontWeight: 'bold', cursor: 'pointer' }}
-                          title="Remove file"
-                        >
-                          ✕
-                        </button>
-                      </div>
-                    </div>
-                  ) : (
+                    );
+                  })() : (
                     <label 
                       style={{ 
                         flex: 1, 
@@ -5358,12 +5382,17 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
                       }}
                     >
                       <Folder size={16} /> 
-                      Upload Product File (ZIP, Audio, PDF)
-                      <input type="file" onChange={(e) => {
-                        if (e.target.files && e.target.files[0]) {
-                          handleDigitalFileUpload(e.target.files[0], 'new');
-                        }
-                      }} style={{ display: 'none' }} />
+                      Upload Product File (Image, Video, Audio, Doc, ZIP)
+                      <input 
+                        type="file" 
+                        accept="image/*,video/*,audio/*,.pdf,.zip,.rar,.tar,.gz,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.csv,.epub"
+                        onChange={(e) => {
+                          if (e.target.files && e.target.files[0]) {
+                            handleDigitalFileUpload(e.target.files[0], 'new');
+                          }
+                        }} 
+                        style={{ display: 'none' }} 
+                      />
                     </label>
                   )}
 
@@ -9446,62 +9475,75 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
                   </div>
 
                   <div>
-                    <label style={{ display: 'block', marginBottom: '6px', fontSize: '13px', color: 'var(--text-muted)' }}>Product Content File (ZIP, PDF, Audio, Video)</label>
+                    <label style={{ display: 'block', marginBottom: '6px', fontSize: '13px', color: 'var(--text-muted)' }}>Product Content File (Image, Video, Audio, Doc, ZIP)</label>
                     {uploadingDigitalFile ? (
                       <div style={{ padding: '14px', background: 'rgba(0, 229, 255, 0.08)', border: '1px solid rgba(0, 229, 255, 0.4)', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px' }}>
                         <div style={{ width: '16px', height: '16px', border: '2px solid rgba(0,229,255,0.3)', borderTop: '2px solid #00e5ff', borderRadius: '50%', animation: 'spin 1s linear infinite' }} />
-                        <span style={{ color: '#00e5ff', fontSize: '13px', fontWeight: 'bold' }}>⏳ Uploading File... Please wait...</span>
+                        <span style={{ color: '#00e5ff', fontSize: '13px', fontWeight: 'bold' }}>⏳ Uploading Digital File... Please wait...</span>
                       </div>
-                    ) : editingProduct.digital_file_url ? (
-                      <div style={{ padding: '12px 16px', background: 'rgba(0, 255, 136, 0.08)', border: '1px solid rgba(0, 255, 136, 0.3)', borderRadius: '12px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px' }}>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', minWidth: 0 }}>
-                            <Folder size={18} color="#00ff88" style={{ flexShrink: 0 }} />
-                            <div style={{ minWidth: 0 }}>
-                              <div style={{ color: '#00ff88', fontSize: '10px', fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-                                File Attached & Ready ✓
-                              </div>
-                              <div style={{ color: '#fff', fontSize: '12px', fontWeight: 'bold', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '240px' }}>
-                                {editingProduct.digital_file_url.split('/').pop()?.replace(/^\d+_/, '') || 'digital_product_file'}
+                    ) : editingProduct.digital_file_url ? (() => {
+                      const badge = getDigitalFileTypeBadge(editingProduct.digital_file_url);
+                      return (
+                        <div style={{ padding: '12px 16px', background: 'rgba(0, 255, 136, 0.08)', border: '1px solid rgba(0, 255, 136, 0.3)', borderRadius: '12px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', minWidth: 0 }}>
+                              <span style={{ fontSize: '18px', flexShrink: 0 }}>{badge.icon}</span>
+                              <div style={{ minWidth: 0 }}>
+                                <div style={{ color: '#00ff88', fontSize: '10px', fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                                  {badge.label}
+                                </div>
+                                <div style={{ color: '#fff', fontSize: '12px', fontWeight: 'bold', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '240px' }}>
+                                  {editingProduct.digital_file_url.split('/').pop()?.replace(/^\d+_/, '') || 'digital_product_file'}
+                                </div>
                               </div>
                             </div>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                              <a href={editingProduct.digital_file_url} target="_blank" rel="noopener noreferrer" style={{ padding: '5px 10px', background: 'rgba(255,255,255,0.1)', color: '#fff', borderRadius: '6px', fontSize: '11px', fontWeight: 'bold', textDecoration: 'none' }}>
+                                👁️ Test
+                              </a>
+                              <button
+                                type="button"
+                                onClick={() => setEditingProduct((prev: any) => ({ ...prev, digital_file_url: '' }))}
+                                style={{ padding: '5px 8px', background: 'rgba(255,77,77,0.2)', border: '1px solid rgba(255,77,77,0.4)', color: '#ff4d4d', borderRadius: '6px', fontSize: '11px', fontWeight: 'bold', cursor: 'pointer' }}
+                                title="Remove file"
+                              >
+                                ✕
+                              </button>
+                            </div>
                           </div>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                            <a href={editingProduct.digital_file_url} target="_blank" rel="noopener noreferrer" style={{ padding: '5px 10px', background: 'rgba(255,255,255,0.1)', color: '#fff', borderRadius: '6px', fontSize: '11px', fontWeight: 'bold', textDecoration: 'none' }}>
-                              👁️ Test
-                            </a>
-                            <button
-                              type="button"
-                              onClick={() => setEditingProduct((prev: any) => ({ ...prev, digital_file_url: '' }))}
-                              style={{ padding: '5px 8px', background: 'rgba(255,77,77,0.2)', border: '1px solid rgba(255,77,77,0.4)', color: '#ff4d4d', borderRadius: '6px', fontSize: '11px', fontWeight: 'bold', cursor: 'pointer' }}
-                              title="Remove file"
-                            >
-                              ✕
-                            </button>
+                          <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+                            <input type="text" placeholder="https://... file attachment link" value={editingProduct.digital_file_url || ''} onChange={e => setEditingProduct({ ...editingProduct, digital_file_url: e.target.value })} style={{ flex: 1, background: 'rgba(0,0,0,0.4)', border: '1px solid rgba(255,255,255,0.1)', padding: '10px', borderRadius: '8px', color: 'var(--text-primary)', outline: 'none', fontSize: '12px' }} />
+                            <label style={{ padding: '8px 14px', background: 'rgba(0, 229, 255, 0.15)', border: '1px solid rgba(0, 229, 255, 0.4)', borderRadius: '8px', color: '#00e5ff', fontSize: '11px', fontWeight: 'bold', cursor: 'pointer', whiteSpace: 'nowrap' }}>
+                              📁 Replace
+                              <input 
+                                type="file" 
+                                accept="image/*,video/*,audio/*,.pdf,.zip,.rar,.tar,.gz,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.csv,.epub"
+                                onChange={(e) => {
+                                  if (e.target.files && e.target.files[0]) {
+                                    handleDigitalFileUpload(e.target.files[0], 'edit');
+                                  }
+                                }} 
+                                style={{ display: 'none' }} 
+                              />
+                            </label>
                           </div>
                         </div>
-                        <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
-                          <input type="text" placeholder="https://... file attachment link" value={editingProduct.digital_file_url || ''} onChange={e => setEditingProduct({ ...editingProduct, digital_file_url: e.target.value })} style={{ flex: 1, background: 'rgba(0,0,0,0.4)', border: '1px solid rgba(255,255,255,0.1)', padding: '10px', borderRadius: '8px', color: 'var(--text-primary)', outline: 'none', fontSize: '12px' }} />
-                          <label style={{ padding: '8px 14px', background: 'rgba(0, 229, 255, 0.15)', border: '1px solid rgba(0, 229, 255, 0.4)', borderRadius: '8px', color: '#00e5ff', fontSize: '11px', fontWeight: 'bold', cursor: 'pointer', whiteSpace: 'nowrap' }}>
-                            📁 Replace
-                            <input type="file" onChange={(e) => {
-                              if (e.target.files && e.target.files[0]) {
-                                handleDigitalFileUpload(e.target.files[0], 'edit');
-                              }
-                            }} style={{ display: 'none' }} />
-                          </label>
-                        </div>
-                      </div>
-                    ) : (
+                      );
+                    })() : (
                       <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
                         <input type="text" placeholder="https://... file attachment link" value={editingProduct.digital_file_url || ''} onChange={e => setEditingProduct({ ...editingProduct, digital_file_url: e.target.value })} style={{ flex: 1, background: 'rgba(0,0,0,0.4)', border: '1px solid rgba(255,255,255,0.1)', padding: '12px', borderRadius: '10px', color: 'var(--text-primary)', outline: 'none' }} />
                         <label style={{ padding: '10px 16px', background: 'rgba(0, 229, 255, 0.15)', border: '1px solid rgba(0, 229, 255, 0.4)', borderRadius: '10px', color: '#00e5ff', fontSize: '12px', fontWeight: 'bold', cursor: 'pointer', whiteSpace: 'nowrap' }}>
                           📁 Upload File
-                          <input type="file" onChange={(e) => {
-                            if (e.target.files && e.target.files[0]) {
-                              handleDigitalFileUpload(e.target.files[0], 'edit');
-                            }
-                          }} style={{ display: 'none' }} />
+                          <input 
+                            type="file" 
+                            accept="image/*,video/*,audio/*,.pdf,.zip,.rar,.tar,.gz,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.csv,.epub"
+                            onChange={(e) => {
+                              if (e.target.files && e.target.files[0]) {
+                                handleDigitalFileUpload(e.target.files[0], 'edit');
+                              }
+                            }} 
+                            style={{ display: 'none' }} 
+                          />
                         </label>
                       </div>
                     )}
