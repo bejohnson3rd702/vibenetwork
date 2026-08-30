@@ -4093,7 +4093,10 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
                             </button>
                             <button
                               type="button"
-                              onClick={() => setIsEditingBio(false)}
+                              onClick={() => {
+                                setBio(savedBio || profile?.bio || bio);
+                                setIsEditingBio(false);
+                              }}
                               style={{
                                 flex: 1,
                                 minWidth: 0,
@@ -4121,7 +4124,7 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
                         </div>
                       ) : (
                         <p style={{ color: '#eee', fontSize: '16px', lineHeight: 1.7, opacity: 0.9, margin: 0 }}>
-                          {bio || wlConfig?.heroCopy || 'Welcome to the official channel media & culture stream.'}
+                          {profile?.bio || bio || wlConfig?.heroCopy || 'Welcome to the official channel media & culture stream.'}
                         </p>
                       )}
                     </div>
@@ -4132,7 +4135,12 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
                         <>
                           {/* Button 1: Edit Bio Text (Mint Green) */}
                           <button
-                            onClick={() => setIsEditingBio(!isEditingBio)}
+                            onClick={() => {
+                              if (!isEditingBio) {
+                                setBio(profile?.bio || bio);
+                              }
+                              setIsEditingBio(!isEditingBio);
+                            }}
                             style={{
                               padding: '10px 24px',
                               background: 'rgba(0, 255, 136, 0.15)',
