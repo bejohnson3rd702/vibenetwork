@@ -4011,7 +4011,7 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
                             placeholder="Edit your profile bio text..."
                             style={{ width: '100%', background: 'rgba(0,0,0,0.6)', border: '1px solid rgba(255,255,255,0.25)', borderRadius: '12px', padding: '14px', color: '#fff', fontSize: '15px', outline: 'none', boxSizing: 'border-box' }}
                           />
-                          <div style={{ display: 'flex', gap: '10px', alignItems: 'center', flexWrap: 'wrap', marginTop: '4px' }}>
+                          <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'nowrap', width: '100%', marginTop: '6px' }}>
                             {(() => {
                               const currentBio = bio || '';
                               const initialBioBaseline = savedBio || '';
@@ -4024,8 +4024,10 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
                                   }}
                                   disabled={saving || !isBioDirty}
                                   style={{
+                                    flex: 1,
+                                    minWidth: 0,
                                     height: '38px',
-                                    padding: '8px 16px',
+                                    padding: '8px 10px',
                                     borderRadius: '12px',
                                     background: saving 
                                       ? '#555' 
@@ -4040,7 +4042,7 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
                                     display: 'flex',
                                     alignItems: 'center',
                                     justifyContent: 'center',
-                                    gap: '6px',
+                                    gap: '5px',
                                     whiteSpace: 'nowrap',
                                     boxShadow: isBioDirty ? '0 4px 20px rgba(251, 140, 0, 0.6)' : 'none',
                                     transition: 'all 0.3s ease',
@@ -4058,8 +4060,10 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
                                 setShowAiPromptModal(true);
                               }}
                               style={{
+                                flex: 1,
+                                minWidth: 0,
                                 height: '38px',
-                                padding: '8px 16px',
+                                padding: '8px 10px',
                                 borderRadius: '12px',
                                 background: 'linear-gradient(135deg, #8A2BE2, #ff4d85)',
                                 color: '#fff',
@@ -4070,7 +4074,7 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
                                 display: 'flex',
                                 alignItems: 'center',
                                 justifyContent: 'center',
-                                gap: '6px',
+                                gap: '5px',
                                 whiteSpace: 'nowrap',
                                 boxShadow: '0 2px 10px rgba(138,43,226,0.3)',
                                 transition: 'all 0.2s ease'
@@ -4083,8 +4087,10 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
                               type="button"
                               onClick={() => setIsEditingBio(false)}
                               style={{
+                                flex: 1,
+                                minWidth: 0,
                                 height: '38px',
-                                padding: '8px 16px',
+                                padding: '8px 10px',
                                 borderRadius: '12px',
                                 background: 'rgba(255, 255, 255, 0.08)',
                                 color: '#fff',
@@ -4095,10 +4101,12 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
                                 display: 'flex',
                                 alignItems: 'center',
                                 justifyContent: 'center',
+                                gap: '5px',
                                 whiteSpace: 'nowrap',
                                 transition: 'all 0.2s ease'
                               }}
                             >
+                              <X size={14} color="#ff4d4d" />
                               <span>Cancel</span>
                             </button>
                           </div>
