@@ -4011,7 +4011,7 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
                             placeholder="Edit your profile bio text..."
                             style={{ width: '100%', background: 'rgba(0,0,0,0.6)', border: '1px solid rgba(255,255,255,0.25)', borderRadius: '12px', padding: '14px', color: '#fff', fontSize: '15px', outline: 'none', boxSizing: 'border-box' }}
                           />
-                          <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+                          <div style={{ display: 'flex', gap: '10px', alignItems: 'center', flexWrap: 'wrap', marginTop: '4px' }}>
                             {(() => {
                               const currentBio = bio || '';
                               const initialBioBaseline = savedBio || '';
@@ -4024,27 +4024,30 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
                                   }}
                                   disabled={saving || !isBioDirty}
                                   style={{
-                                    padding: '10px 22px',
-                                    borderRadius: '16px',
+                                    height: '38px',
+                                    padding: '8px 16px',
+                                    borderRadius: '12px',
                                     background: saving 
                                       ? '#555' 
                                       : isBioDirty 
                                       ? '#fb8c00' 
                                       : 'rgba(251, 140, 0, 0.15)',
                                     color: saving ? '#ccc' : isBioDirty ? '#000' : '#fb8c00',
-                                    fontWeight: 900,
-                                    fontSize: '13px',
+                                    fontWeight: 800,
+                                    fontSize: '12px',
                                     border: isBioDirty ? 'none' : '1px solid rgba(251, 140, 0, 0.3)',
                                     cursor: (saving || !isBioDirty) ? 'default' : 'pointer',
                                     display: 'flex',
                                     alignItems: 'center',
+                                    justifyContent: 'center',
                                     gap: '6px',
+                                    whiteSpace: 'nowrap',
                                     boxShadow: isBioDirty ? '0 4px 20px rgba(251, 140, 0, 0.6)' : 'none',
                                     transition: 'all 0.3s ease',
                                     opacity: isBioDirty ? 1 : 0.65
                                   }}
                                 >
-                                  <Save size={16} color={isBioDirty ? '#000' : '#fb8c00'} /> {saving ? 'Saving...' : 'Save Bio'}
+                                  <Save size={14} color={isBioDirty ? '#000' : '#fb8c00'} /> <span>{saving ? 'Saving...' : 'Save Bio'}</span>
                                 </button>
                               );
                             })()}
@@ -4055,29 +4058,48 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
                                 setShowAiPromptModal(true);
                               }}
                               style={{
-                                padding: '8px 18px',
+                                height: '38px',
+                                padding: '8px 16px',
+                                borderRadius: '12px',
                                 background: 'linear-gradient(135deg, #8A2BE2, #ff4d85)',
                                 color: '#fff',
                                 border: 'none',
-                                borderRadius: '8px',
-                                fontWeight: 'bold',
-                                fontSize: '13px',
+                                fontWeight: 800,
+                                fontSize: '12px',
                                 cursor: 'pointer',
                                 display: 'flex',
                                 alignItems: 'center',
+                                justifyContent: 'center',
                                 gap: '6px',
+                                whiteSpace: 'nowrap',
                                 boxShadow: '0 2px 10px rgba(138,43,226,0.3)',
                                 transition: 'all 0.2s ease'
                               }}
                             >
-                              <span style={{ fontSize: '13px' }}>😊</span>
+                              <span style={{ fontSize: '12px' }}>😊</span>
                               <span>AI Boost</span>
                             </button>
                             <button
+                              type="button"
                               onClick={() => setIsEditingBio(false)}
-                              style={{ padding: '8px 18px', background: 'rgba(255,255,255,0.1)', color: '#fff', border: 'none', borderRadius: '8px', cursor: 'pointer', fontSize: '13px' }}
+                              style={{
+                                height: '38px',
+                                padding: '8px 16px',
+                                borderRadius: '12px',
+                                background: 'rgba(255, 255, 255, 0.08)',
+                                color: '#fff',
+                                border: '1px solid rgba(255, 255, 255, 0.12)',
+                                fontWeight: 800,
+                                fontSize: '12px',
+                                cursor: 'pointer',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                whiteSpace: 'nowrap',
+                                transition: 'all 0.2s ease'
+                              }}
                             >
-                              Cancel
+                              <span>Cancel</span>
                             </button>
                           </div>
                         </div>
