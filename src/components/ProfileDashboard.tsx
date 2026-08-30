@@ -3373,17 +3373,43 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
         type: updatedProduct.type,
         variants: {
           ...(updatedProduct.variants || {}),
-          image_urls: finalImages,
-          is_clothing: updatedProduct.is_clothing,
-          colors: colorsArr,
-          sizes: sizesArr
-        }
+      const variantsPayload = {
+        ...(updatedProduct.variants || {}),
+        digital_file_url: updatedProduct.digital_file_url || '',
+        image_urls: finalImages,
+        is_clothing: updatedProduct.is_clothing,
+        colors: colorsArr,
+        sizes: sizesArr
       };
 
-      const { error } = await supabase!
+      const updatedPayload = {
+        title: updatedProduct.title.trim(),
+        price: parseFloat(updatedProduct.price),
+        image_url: primaryCover,
+        digital_file_url: updatedProduct.digital_file_url || '',
+        type: updatedProduct.type,
+        variants: variantsPayload
+      };
+
+      // Stage 1: Attempt update with top-level digital_file_url
+      let { error } = await supabase!
         .from('products')
         .update(updatedPayload)
         .eq('id', updatedProduct.id);
+
+      // Stage 2: Fallback to core safe columns if digital_file_url column isn't in SQL schema cache
+      if (error && (error.message.includes('column') || error.message.includes('schema cache'))) {
+        console.warn("Retrying product update with core safe schema columns (storing digital_file_url inside variants)...", error.message);
+        const safePayload = {
+          title: updatedProduct.title.trim(),
+          price: parseFloat(updatedProduct.price),
+          image_url: primaryCover,
+          type: updatedProduct.type,
+          variants: variantsPayload
+        };
+        const { error: retryError } = await supabase!.from('products').update(safePayload).eq('id', updatedProduct.id);
+        error = retryError;
+      }
 
       if (error) {
         toast.error('Error updating product: ' + error.message);
@@ -3391,7 +3417,8 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
         toast.success('Product updated successfully!');
         setProducts(prev => prev.map(p => p.id === updatedProduct.id ? {
           ...p,
-          ...updatedPayload
+          ...updatedPayload,
+          digital_file_url: updatedProduct.digital_file_url || ''
         } : p));
         setShowEditModal(false);
         setEditingProduct(null);
@@ -3445,34 +3472,55 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
       : (newProduct.image_url ? [newProduct.image_url] : []);
     const primaryCover = finalImages[0] || newProduct.image_url || 'https://picsum.photos/400/400';
 
-    const productInsert = {
+    const variantsPayload = {
+      digital_file_url: newProduct.digital_file_url || '',
+      image_urls: finalImages,
+      ...(newProduct.type === 'physical' ? {
+        sizes: newProduct.is_clothing ? newProduct.sizes.split(',').map(s => s.trim()).filter(Boolean) : [],
+        colors: newProduct.colors.split(',').map(c => c.trim()).filter(Boolean),
+        is_clothing: newProduct.is_clothing
+      } : {})
+    };
+
+    const fullProductInsert = {
       creator_id: profile?.id || user?.id,
       title: newProduct.title.trim(),
       price: parseFloat(newProduct.price),
       type: newProduct.type,
       image_url: primaryCover,
       digital_file_url: newProduct.digital_file_url || '',
-      variants: {
-        image_urls: finalImages,
-        ...(newProduct.type === 'physical' ? {
-          sizes: newProduct.is_clothing ? newProduct.sizes.split(',').map(s => s.trim()).filter(Boolean) : [],
-          colors: newProduct.colors.split(',').map(c => c.trim()).filter(Boolean),
-          is_clothing: newProduct.is_clothing
-        } : {})
-      }
+      variants: variantsPayload
+    };
+
+    const safeProductInsert = {
+      creator_id: profile?.id || user?.id,
+      title: newProduct.title.trim(),
+      price: parseFloat(newProduct.price),
+      type: newProduct.type,
+      image_url: primaryCover,
+      variants: variantsPayload
     };
 
     try {
-      const { data, error } = await supabase!.from('products').insert([productInsert]).select();
+      let { data, error } = await supabase!.from('products').insert([fullProductInsert]).select();
+      
+      // Fallback if digital_file_url is not in SQL schema cache
+      if (error && (error.message.includes('column') || error.message.includes('schema cache'))) {
+        console.warn("Retrying product insert with core safe schema columns...", error.message);
+        const retry = await supabase!.from('products').insert([safeProductInsert]).select();
+        data = retry.data;
+        error = retry.error;
+      }
+
       if (!error && data) {
         setProducts(prev => [...prev, data[0]]);
         toast.success('🎉 Item added to store successfully!');
       } else {
-        setProducts(prev => [...prev, { ...productInsert, id: Math.random().toString() }]);
+        setProducts(prev => [...prev, { ...fullProductInsert, id: Math.random().toString() }]);
         toast.success('Item added to store!');
       }
     } catch {
-      setProducts(prev => [...prev, { ...productInsert, id: Math.random().toString() }]);
+      setProducts(prev => [...prev, { ...fullProductInsert, id: Math.random().toString() }]);
       toast.success('Item added to store!');
     }
 
@@ -5542,7 +5590,10 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
                           <button 
                             onClick={(e) => {
                               e.stopPropagation();
-                              setEditingProduct(product);
+                              setEditingProduct({
+                                ...product,
+                                digital_file_url: product.digital_file_url || product.variants?.digital_file_url || ''
+                              });
                               setShowEditModal(true);
                             }} 
                             style={{ padding: '6px 12px', background: 'rgba(255,255,255,0.1)', border: 'none', borderRadius: '8px', color: 'var(--text-primary)', fontSize: '12px', fontWeight: 'bold', cursor: 'pointer' }}
