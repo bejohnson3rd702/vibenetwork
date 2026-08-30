@@ -4142,20 +4142,20 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
                                   setIsEditingBio(true);
                                 }}
                                 onMouseOver={(e) => {
-                                  e.currentTarget.style.background = '#ff4d85';
+                                  e.currentTarget.style.background = '#fdd835';
                                   e.currentTarget.style.color = '#000';
-                                  e.currentTarget.style.boxShadow = '0 4px 20px rgba(255, 77, 133, 0.6)';
+                                  e.currentTarget.style.boxShadow = '0 4px 20px rgba(253, 216, 53, 0.6)';
                                 }}
                                 onMouseOut={(e) => {
-                                  e.currentTarget.style.background = 'rgba(255, 77, 133, 0.15)';
-                                  e.currentTarget.style.color = '#ff4d85';
+                                  e.currentTarget.style.background = 'rgba(253, 216, 53, 0.15)';
+                                  e.currentTarget.style.color = '#fdd835';
                                   e.currentTarget.style.boxShadow = 'none';
                                 }}
                                 style={{
                                   padding: '10px 24px',
-                                  background: 'rgba(255, 77, 133, 0.15)',
-                                  color: '#ff4d85',
-                                  border: '1px solid rgba(255, 77, 133, 0.4)',
+                                  background: 'rgba(253, 216, 53, 0.15)',
+                                  color: '#fdd835',
+                                  border: '1px solid rgba(253, 216, 53, 0.4)',
                                   borderRadius: '100px',
                                   fontWeight: 'bold',
                                   fontSize: '14px',
