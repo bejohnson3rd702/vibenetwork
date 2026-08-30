@@ -4018,9 +4018,9 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
                           <textarea
                             value={bio}
                             onChange={e => setBio(e.target.value)}
-                            rows={3}
+                            rows={4}
                             placeholder="Edit your profile bio text..."
-                            style={{ width: '100%', background: 'rgba(0,0,0,0.6)', border: '1px solid rgba(255,255,255,0.25)', borderRadius: '12px', padding: '14px', color: '#fff', fontSize: '15px', outline: 'none', boxSizing: 'border-box' }}
+                            style={{ width: '100%', minHeight: '120px', background: 'rgba(0,0,0,0.6)', border: '1px solid rgba(255,255,255,0.25)', borderRadius: '16px', padding: '16px', color: '#fff', fontSize: '16px', lineHeight: 1.6, outline: 'none', boxSizing: 'border-box' }}
                           />
                           <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'nowrap', width: '100%', marginTop: '6px' }}>
                             {(() => {
@@ -4126,161 +4126,145 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
                           </div>
                         </div>
                       ) : (
-                        <p style={{ color: '#eee', fontSize: '16px', lineHeight: 1.7, opacity: 0.9, margin: 0 }}>
-                          {bio || profile?.bio || wlConfig?.theme?.heroCopy || wlConfig?.heroCopy || 'Welcome to the official channel media & culture stream.'}
-                        </p>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', marginTop: '12px' }}>
+                          <p style={{ color: '#eee', fontSize: '18px', lineHeight: 1.8, opacity: 0.95, margin: 0 }}>
+                            {bio || profile?.bio || wlConfig?.theme?.heroCopy || wlConfig?.heroCopy || 'Welcome to the official channel media & culture stream.'}
+                          </p>
+
+                          {/* Action Buttons directly under the Bio */}
+                          {isOwnProfile && viewMode === 'edit' ? (
+                            <div style={{ display: 'flex', gap: '12px', alignItems: 'center', marginTop: '4px' }}>
+                              <button
+                                onClick={() => {
+                                  if (!isEditingBio) {
+                                    setBio(profile?.bio || bio);
+                                  }
+                                  setIsEditingBio(true);
+                                }}
+                                onMouseOver={(e) => {
+                                  e.currentTarget.style.background = '#ff4d85';
+                                  e.currentTarget.style.color = '#000';
+                                  e.currentTarget.style.boxShadow = '0 4px 20px rgba(255, 77, 133, 0.6)';
+                                }}
+                                onMouseOut={(e) => {
+                                  e.currentTarget.style.background = 'rgba(255, 77, 133, 0.15)';
+                                  e.currentTarget.style.color = '#ff4d85';
+                                  e.currentTarget.style.boxShadow = 'none';
+                                }}
+                                style={{
+                                  padding: '10px 24px',
+                                  background: 'rgba(255, 77, 133, 0.15)',
+                                  color: '#ff4d85',
+                                  border: '1px solid rgba(255, 77, 133, 0.4)',
+                                  borderRadius: '100px',
+                                  fontWeight: 'bold',
+                                  fontSize: '14px',
+                                  cursor: 'pointer',
+                                  display: 'inline-flex',
+                                  alignItems: 'center',
+                                  gap: '8px',
+                                  transition: 'all 0.3s ease',
+                                  backdropFilter: 'blur(10px)'
+                                }}
+                              >
+                                <Edit3 size={16} />
+                                <span>Edit Bio Text</span>
+                              </button>
+                            </div>
+                          ) : (
+                            <div style={{ display: 'flex', gap: '12px', alignItems: 'center', flexWrap: 'wrap', marginTop: '4px' }}>
+                              {/* Visitor Follow Button */}
+                              <button
+                                onClick={handleToggleFollow}
+                                disabled={followLoading}
+                                style={{
+                                  padding: '10px 24px',
+                                  background: isFollowing ? 'rgba(255,255,255,0.08)' : 'rgba(255, 209, 102, 0.15)',
+                                  color: isFollowing ? '#aaa' : '#ffd166',
+                                  border: '1px solid',
+                                  borderColor: isFollowing ? 'rgba(255,255,255,0.15)' : 'rgba(255, 209, 102, 0.5)',
+                                  borderRadius: '100px',
+                                  fontWeight: 'bold',
+                                  fontSize: '14px',
+                                  cursor: 'pointer',
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  gap: '6px',
+                                  transition: 'all 0.3s ease',
+                                  backdropFilter: 'blur(10px)',
+                                  boxShadow: isFollowing ? 'none' : '0 0 15px rgba(255, 209, 102, 0.2)'
+                                }}
+                              >
+                                <Star size={14} fill={isFollowing ? '#aaa' : 'transparent'} />
+                                {isFollowing ? 'Following' : 'Follow'}
+                              </button>
+
+                              {/* Visitor Subscribe Button */}
+                              <button
+                                className="profile-subscribe-btn"
+                                onClick={handleSubscribe}
+                                style={{
+                                  padding: '10px 24px',
+                                  background: isSubscribed
+                                    ? 'rgba(255,255,255,0.08)'
+                                    : `linear-gradient(135deg, ${wlConfig?.accent || '#FF0055'}, #8A2BE2)`,
+                                  color: '#fff',
+                                  border: isSubscribed ? '1px solid rgba(255,255,255,0.15)' : 'none',
+                                  borderRadius: '100px',
+                                  fontWeight: 'bold',
+                                  fontSize: '14px',
+                                  cursor: 'pointer',
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  gap: '6px',
+                                  boxShadow: isSubscribed ? 'none' : `0 8px 20px ${wlConfig?.accent || '#FF0055'}66`,
+                                  transition: 'all 0.3s ease'
+                                }}
+                              >
+                                {isSubscribed ? (
+                                  <>
+                                    <CheckCircle size={14} color="#00ff88" />
+                                    <span style={{ color: '#00ff88' }}>Subscribed</span>
+                                  </>
+                                ) : (
+                                  <span>
+                                    {Number(subPrice) > 0 ? `Subscribe $${Number(subPrice).toFixed(2)}/mo` : 'Subscribe Free'}
+                                  </span>
+                                )}
+                              </button>
+                            </div>
+                          )}
+                        </div>
                       )}
                     </div>
 
-                    {/* Action Buttons Column (3 Buttons with distinct colors for both own profile & visitors) */}
-                    <div className="profile-header-actions" style={{ display: 'flex', flexDirection: 'column', gap: '12px', alignSelf: isEditingBio ? 'flex-start' : 'center', transition: 'all 0.3s ease' }}>
-                      {isOwnProfile && viewMode === 'edit' ? (
-                        <>
-                          {/* Button 1: Edit Bio Text (Mint Green) */}
-                          <button
-                            onClick={() => {
-                              if (!isEditingBio) {
-                                setBio(profile?.bio || bio);
-                              }
-                              setIsEditingBio(!isEditingBio);
-                            }}
-                            style={{
-                              padding: '10px 24px',
-                              background: 'rgba(0, 255, 136, 0.15)',
-                              color: '#00ff88',
-                              border: '1px solid rgba(0, 255, 136, 0.5)',
-                              borderRadius: '100px',
-                              fontWeight: 'bold',
-                              fontSize: '14px',
-                              cursor: 'pointer',
-                              display: 'flex',
-                              alignItems: 'center',
-                              gap: '6px',
-                              transition: 'all 0.3s ease',
-                              backdropFilter: 'blur(10px)',
-                              boxShadow: '0 0 15px rgba(0, 255, 136, 0.2)'
-                            }}
-                          >
-                            <Edit3 size={14} color="#00ff88" />
-                            <span>{isEditingBio ? 'Close Bio Editor' : 'Edit Bio Text'}</span>
-                          </button>
-
-                          {/* Button 2: WhatsApp Direct Chat (WhatsApp Green, Admin Toggleable, Default Off) */}
-                          {(wlConfig?.enableWhatsApp === true || wlConfig?.theme?.enableWhatsApp === true || profile?.enableWhatsApp === true) && (
-                            <button
-                              onClick={() => setShowWhatsAppDrawer(true)}
-                              style={{
-                                padding: '10px 24px',
-                                background: 'rgba(37, 211, 102, 0.15)',
-                                color: '#25D366',
-                                border: '1px solid rgba(37, 211, 102, 0.5)',
-                                borderRadius: '100px',
-                                fontWeight: 'bold',
-                                fontSize: '14px',
-                                cursor: 'pointer',
-                                display: 'flex',
-                                alignItems: 'center',
-                                gap: '6px',
-                                transition: 'all 0.3s ease',
-                                backdropFilter: 'blur(10px)',
-                                boxShadow: '0 0 15px rgba(37, 211, 102, 0.25)'
-                              }}
-                            >
-                              <MessageCircle size={14} color="#25D366" />
-                              <span>WhatsApp Inbox</span>
-                            </button>
-                          )}
-                        </>
-                      ) : (
-                        <>
-                          {/* Button 1: Follow (Gold Amber) */}
-                          <button
-                            onClick={handleToggleFollow}
-                            disabled={followLoading}
-                            style={{
-                              padding: '10px 24px',
-                              background: isFollowing ? 'rgba(255,255,255,0.08)' : 'rgba(255, 209, 102, 0.15)',
-                              color: isFollowing ? '#aaa' : '#ffd166',
-                              border: '1px solid',
-                              borderColor: isFollowing ? 'rgba(255,255,255,0.15)' : 'rgba(255, 209, 102, 0.5)',
-                              borderRadius: '100px',
-                              fontWeight: 'bold',
-                              fontSize: '14px',
-                              cursor: 'pointer',
-                              display: 'flex',
-                              alignItems: 'center',
-                              gap: '6px',
-                              transition: 'all 0.3s ease',
-                              backdropFilter: 'blur(10px)',
-                              boxShadow: isFollowing ? 'none' : '0 0 15px rgba(255, 209, 102, 0.2)'
-                            }}
-                          >
-                            <Star size={14} fill={isFollowing ? '#aaa' : 'transparent'} />
-                            {isFollowing ? 'Following' : 'Follow'}
-                          </button>
-
-                          {/* Button 2: Subscribe (Hot Pink) */}
-                          <button
-                            className="profile-subscribe-btn"
-                            onClick={handleSubscribe}
-                            style={{
-                              padding: '10px 24px',
-                              background: isSubscribed
-                                ? 'rgba(255,255,255,0.08)'
-                                : `linear-gradient(135deg, ${wlConfig?.accent || '#FF0055'}, #8A2BE2)`,
-                              color: '#fff',
-                              border: isSubscribed ? '1px solid rgba(255,255,255,0.15)' : 'none',
-                              borderRadius: '100px',
-                              fontWeight: 'bold',
-                              fontSize: '14px',
-                              cursor: 'pointer',
-                              display: 'flex',
-                              alignItems: 'center',
-                              gap: '6px',
-                              boxShadow: isSubscribed ? 'none' : `0 8px 20px ${wlConfig?.accent || '#FF0055'}66`,
-                              transition: 'all 0.3s ease'
-                            }}
-                          >
-                            {isSubscribed ? (
-                              <>
-                                <CheckCircle size={14} color="#00ff88" />
-                                <span style={{ color: '#00ff88' }}>Subscribed</span>
-                              </>
-                            ) : (
-                              <span>
-                                {Number(subPrice) > 0 ? `Subscribe $${Number(subPrice).toFixed(2)}/mo` : 'Subscribe Free'}
-                              </span>
-                            )}
-                          </button>
-
-                          {/* Button 3: WhatsApp Direct Chat (WhatsApp Green, Admin Toggleable, Default Off) */}
-                          {(wlConfig?.enableWhatsApp === true || wlConfig?.theme?.enableWhatsApp === true || profile?.enableWhatsApp === true) && (
-                            <button
-                              onClick={() => setShowWhatsAppDrawer(true)}
-                              style={{
-                                padding: '10px 24px',
-                                background: 'rgba(37, 211, 102, 0.15)',
-                                color: '#25D366',
-                                border: '1px solid rgba(37, 211, 102, 0.5)',
-                                borderRadius: '100px',
-                                fontWeight: 'bold',
-                                fontSize: '14px',
-                                cursor: 'pointer',
-                                display: 'flex',
-                                alignItems: 'center',
-                                gap: '6px',
-                                transition: 'all 0.3s ease',
-                                backdropFilter: 'blur(10px)',
-                                boxShadow: '0 0 15px rgba(37, 211, 102, 0.25)'
-                              }}
-                            >
-                              <MessageCircle size={14} color="#25D366" />
-                              <span>WhatsApp Chat</span>
-                            </button>
-                          )}
-                        </>
-                      )}
-                    </div>
+                    {/* Side Action Column (WhatsApp Chat if enabled) */}
+                    {(wlConfig?.enableWhatsApp === true || wlConfig?.theme?.enableWhatsApp === true || profile?.enableWhatsApp === true) && (
+                      <div className="profile-header-actions" style={{ display: 'flex', flexDirection: 'column', gap: '12px', alignSelf: 'center' }}>
+                        <button
+                          onClick={() => setShowWhatsAppDrawer(true)}
+                          style={{
+                            padding: '10px 24px',
+                            background: 'rgba(37, 211, 102, 0.15)',
+                            color: '#25D366',
+                            border: '1px solid rgba(37, 211, 102, 0.5)',
+                            borderRadius: '100px',
+                            fontWeight: 'bold',
+                            fontSize: '14px',
+                            cursor: 'pointer',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '6px',
+                            transition: 'all 0.3s ease',
+                            backdropFilter: 'blur(10px)',
+                            boxShadow: '0 0 15px rgba(37, 211, 102, 0.25)'
+                          }}
+                        >
+                          <MessageCircle size={14} color="#25D366" />
+                          <span>WhatsApp Inbox</span>
+                        </button>
+                      </div>
+                    )}
                   </div>
                 </div>
               )}
