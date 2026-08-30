@@ -4133,7 +4133,7 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
 
                           {/* Action Buttons directly under the Bio */}
                           {isOwnProfile && viewMode === 'edit' ? (
-                            <div style={{ display: 'flex', gap: '12px', alignItems: 'center', justifyContent: 'center', marginTop: '4px' }}>
+                            <div style={{ display: 'flex', gap: '12px', alignItems: 'center', justifyContent: 'center', marginTop: '4px', transform: 'translateX(-3px)' }}>
                               <button
                                 onClick={() => {
                                   if (!isEditingBio) {
@@ -4172,7 +4172,7 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
                               </button>
                             </div>
                           ) : (
-                            <div style={{ display: 'flex', gap: '12px', alignItems: 'center', justifyContent: 'center', flexWrap: 'wrap', marginTop: '4px' }}>
+                            <div style={{ display: 'flex', gap: '12px', alignItems: 'center', justifyContent: 'center', flexWrap: 'wrap', marginTop: '4px', transform: 'translateX(-3px)' }}>
                               {/* Visitor Follow Button */}
                               <button
                                 onClick={handleToggleFollow}
