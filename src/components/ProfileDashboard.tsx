@@ -1217,6 +1217,7 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
   const [receivedBookings, setReceivedBookings] = useState<any[]>([]);
   const [newCourse, setNewCourse] = useState({ title: '', price: '', modules: '', hours: '', img: '' });
   const [uploadingProductImg, setUploadingProductImg] = useState(false);
+  const [uploadingDigitalFile, setUploadingDigitalFile] = useState(false);
   const [myNetworks, setMyNetworks] = useState<any[]>([]);
 
 
@@ -2533,6 +2534,41 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
       return null;
     } finally {
       setUploadingProductImg(false);
+    }
+  };
+
+  const handleDigitalFileUpload = async (file: File, target: 'new' | 'edit' = 'new') => {
+    if (!file) return;
+    const sizeMB = (file.size / (1024 * 1024)).toFixed(1);
+    setUploadingDigitalFile(true);
+    toast.info(`⏳ Uploading digital product file "${file.name}" (${sizeMB} MB)... Please keep this open.`);
+
+    try {
+      const cleanFileName = file.name.replace(/[^a-zA-Z0-9_.-]/g, '_');
+      const filePath = `product_files/${Date.now()}_${cleanFileName}`;
+      const { data, error } = await supabase!.storage.from('media').upload(filePath, file);
+
+      if (error) {
+        toast.error('Product file upload failed: ' + error.message);
+        return;
+      }
+
+      if (data) {
+        const { data: pubData } = supabase!.storage.from('media').getPublicUrl(filePath);
+        const fileUrl = pubData?.publicUrl || '';
+        if (fileUrl) {
+          if (target === 'new') {
+            setNewProduct(prev => ({ ...prev, digital_file_url: fileUrl }));
+          } else {
+            setEditingProduct((prev: any) => ({ ...prev, digital_file_url: fileUrl }));
+          }
+          toast.success(`🎉 Product file "${file.name}" (${sizeMB} MB) uploaded successfully!`);
+        }
+      }
+    } catch (err: any) {
+      toast.error('File upload failed: ' + (err?.message || 'Storage error'));
+    } finally {
+      setUploadingDigitalFile(false);
     }
   };
 
@@ -5267,40 +5303,69 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
                     <input type="file" accept="image/*" multiple onChange={(e) => handleProductImageUpload(e, 'new')} style={{ display: 'none' }} disabled={uploadingProductImg} />
                   </label>
 
-                  <label 
-                    style={{ 
-                      flex: 1, 
-                      minWidth: '200px',
-                      background: 'rgba(0, 229, 255, 0.05)', 
-                      border: '1px solid rgba(0, 229, 255, 0.3)', 
-                      padding: '14px', 
-                      borderRadius: '12px', 
-                      color: newProduct.digital_file_url ? '#00ff88' : '#00e5ff', 
-                      textAlign: 'center', 
-                      cursor: 'pointer', 
-                      display: 'flex', 
-                      alignItems: 'center', 
-                      justifyContent: 'center', 
-                      gap: '8px', 
-                      transition: 'all 0.2s ease', 
-                      fontWeight: 'bold',
-                      fontSize: '13px'
-                    }}
-                  >
-                    <Folder size={16} /> 
-                    {newProduct.digital_file_url ? 'File Attached ✓' : 'Upload Product File (ZIP, Audio, PDF)'}
-                    <input type="file" onChange={async (e) => {
-                      if (e.target.files && e.target.files[0]) {
-                        const file = e.target.files[0];
-                        const filePath = `product_files/${Date.now()}_${file.name}`;
-                        const { data, error } = await supabase.storage.from('media').upload(filePath, file);
-                        if (!error && data) {
-                          const { data: pubData } = supabase.storage.from('media').getPublicUrl(filePath);
-                          if (pubData?.publicUrl) setNewProduct(prev => ({ ...prev, digital_file_url: pubData.publicUrl }));
+                  {/* Digital Product File Upload & Preview Card */}
+                  {uploadingDigitalFile ? (
+                    <div style={{ flex: 1, minWidth: '240px', padding: '14px', background: 'rgba(0, 229, 255, 0.08)', border: '1px solid rgba(0, 229, 255, 0.4)', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px' }}>
+                      <div style={{ width: '16px', height: '16px', border: '2px solid rgba(0,229,255,0.3)', borderTop: '2px solid #00e5ff', borderRadius: '50%', animation: 'spin 1s linear infinite' }} />
+                      <span style={{ color: '#00e5ff', fontSize: '13px', fontWeight: 'bold' }}>⏳ Uploading File... Please wait...</span>
+                    </div>
+                  ) : newProduct.digital_file_url ? (
+                    <div style={{ flex: 1, minWidth: '260px', padding: '10px 14px', background: 'rgba(0, 255, 136, 0.08)', border: '1px solid rgba(0, 255, 136, 0.4)', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '10px', minWidth: 0 }}>
+                        <Folder size={18} color="#00ff88" style={{ flexShrink: 0 }} />
+                        <div style={{ minWidth: 0 }}>
+                          <div style={{ color: '#00ff88', fontSize: '10px', fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                            File Attached ✓
+                          </div>
+                          <div style={{ color: '#fff', fontSize: '12px', fontWeight: 'bold', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '160px' }}>
+                            {newProduct.digital_file_url.split('/').pop()?.replace(/^\d+_/, '') || 'digital_product_file'}
+                          </div>
+                        </div>
+                      </div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                        <a href={newProduct.digital_file_url} target="_blank" rel="noopener noreferrer" style={{ padding: '5px 10px', background: 'rgba(255,255,255,0.1)', color: '#fff', borderRadius: '6px', fontSize: '11px', fontWeight: 'bold', textDecoration: 'none', whiteSpace: 'nowrap' }}>
+                          👁️ Test
+                        </a>
+                        <button
+                          type="button"
+                          onClick={() => setNewProduct(prev => ({ ...prev, digital_file_url: '' }))}
+                          style={{ padding: '5px 8px', background: 'rgba(255,77,77,0.2)', border: '1px solid rgba(255,77,77,0.4)', color: '#ff4d4d', borderRadius: '6px', fontSize: '11px', fontWeight: 'bold', cursor: 'pointer' }}
+                          title="Remove file"
+                        >
+                          ✕
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    <label 
+                      style={{ 
+                        flex: 1, 
+                        minWidth: '200px',
+                        background: 'rgba(0, 229, 255, 0.05)', 
+                        border: '1px solid rgba(0, 229, 255, 0.3)', 
+                        padding: '14px', 
+                        borderRadius: '12px', 
+                        color: '#00e5ff', 
+                        textAlign: 'center', 
+                        cursor: 'pointer', 
+                        display: 'flex', 
+                        alignItems: 'center', 
+                        justifyContent: 'center', 
+                        gap: '8px', 
+                        transition: 'all 0.2s ease', 
+                        fontWeight: 'bold',
+                        fontSize: '13px'
+                      }}
+                    >
+                      <Folder size={16} /> 
+                      Upload Product File (ZIP, Audio, PDF)
+                      <input type="file" onChange={(e) => {
+                        if (e.target.files && e.target.files[0]) {
+                          handleDigitalFileUpload(e.target.files[0], 'new');
                         }
-                      }
-                    }} style={{ display: 'none' }} />
-                  </label>
+                      }} style={{ display: 'none' }} />
+                    </label>
+                  )}
 
                   <button type="submit" disabled={saving} style={{ padding: '14px 30px', background: 'linear-gradient(135deg, #FFD700, #FFA500)', color: '#000', border: 'none', borderRadius: '12px', fontWeight: 'bold', cursor: 'pointer', opacity: saving ? 0.5 : 1 }}>
                     {saving ? 'Adding...' : 'Add to Store'}
@@ -9382,23 +9447,64 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
 
                   <div>
                     <label style={{ display: 'block', marginBottom: '6px', fontSize: '13px', color: 'var(--text-muted)' }}>Product Content File (ZIP, PDF, Audio, Video)</label>
-                    <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
-                      <input type="text" placeholder="https://... file attachment link" value={editingProduct.digital_file_url || ''} onChange={e => setEditingProduct({ ...editingProduct, digital_file_url: e.target.value })} style={{ flex: 1, background: 'rgba(0,0,0,0.4)', border: '1px solid rgba(255,255,255,0.1)', padding: '12px', borderRadius: '10px', color: 'var(--text-primary)', outline: 'none' }} />
-                      <label style={{ padding: '10px 16px', background: 'rgba(0, 229, 255, 0.15)', border: '1px solid rgba(0, 229, 255, 0.4)', borderRadius: '10px', color: '#00e5ff', fontSize: '12px', fontWeight: 'bold', cursor: 'pointer', whiteSpace: 'nowrap' }}>
-                        📁 Replace File
-                        <input type="file" onChange={async (e) => {
-                          if (e.target.files && e.target.files[0]) {
-                            const file = e.target.files[0];
-                            const filePath = `product_files/${Date.now()}_${file.name}`;
-                            const { data, error } = await supabase.storage.from('media').upload(filePath, file);
-                            if (!error && data) {
-                              const { data: pubData } = supabase.storage.from('media').getPublicUrl(filePath);
-                              if (pubData?.publicUrl) setEditingProduct((prev: any) => ({ ...prev, digital_file_url: pubData.publicUrl }));
+                    {uploadingDigitalFile ? (
+                      <div style={{ padding: '14px', background: 'rgba(0, 229, 255, 0.08)', border: '1px solid rgba(0, 229, 255, 0.4)', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px' }}>
+                        <div style={{ width: '16px', height: '16px', border: '2px solid rgba(0,229,255,0.3)', borderTop: '2px solid #00e5ff', borderRadius: '50%', animation: 'spin 1s linear infinite' }} />
+                        <span style={{ color: '#00e5ff', fontSize: '13px', fontWeight: 'bold' }}>⏳ Uploading File... Please wait...</span>
+                      </div>
+                    ) : editingProduct.digital_file_url ? (
+                      <div style={{ padding: '12px 16px', background: 'rgba(0, 255, 136, 0.08)', border: '1px solid rgba(0, 255, 136, 0.3)', borderRadius: '12px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', minWidth: 0 }}>
+                            <Folder size={18} color="#00ff88" style={{ flexShrink: 0 }} />
+                            <div style={{ minWidth: 0 }}>
+                              <div style={{ color: '#00ff88', fontSize: '10px', fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                                File Attached & Ready ✓
+                              </div>
+                              <div style={{ color: '#fff', fontSize: '12px', fontWeight: 'bold', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '240px' }}>
+                                {editingProduct.digital_file_url.split('/').pop()?.replace(/^\d+_/, '') || 'digital_product_file'}
+                              </div>
+                            </div>
+                          </div>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                            <a href={editingProduct.digital_file_url} target="_blank" rel="noopener noreferrer" style={{ padding: '5px 10px', background: 'rgba(255,255,255,0.1)', color: '#fff', borderRadius: '6px', fontSize: '11px', fontWeight: 'bold', textDecoration: 'none' }}>
+                              👁️ Test
+                            </a>
+                            <button
+                              type="button"
+                              onClick={() => setEditingProduct((prev: any) => ({ ...prev, digital_file_url: '' }))}
+                              style={{ padding: '5px 8px', background: 'rgba(255,77,77,0.2)', border: '1px solid rgba(255,77,77,0.4)', color: '#ff4d4d', borderRadius: '6px', fontSize: '11px', fontWeight: 'bold', cursor: 'pointer' }}
+                              title="Remove file"
+                            >
+                              ✕
+                            </button>
+                          </div>
+                        </div>
+                        <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+                          <input type="text" placeholder="https://... file attachment link" value={editingProduct.digital_file_url || ''} onChange={e => setEditingProduct({ ...editingProduct, digital_file_url: e.target.value })} style={{ flex: 1, background: 'rgba(0,0,0,0.4)', border: '1px solid rgba(255,255,255,0.1)', padding: '10px', borderRadius: '8px', color: 'var(--text-primary)', outline: 'none', fontSize: '12px' }} />
+                          <label style={{ padding: '8px 14px', background: 'rgba(0, 229, 255, 0.15)', border: '1px solid rgba(0, 229, 255, 0.4)', borderRadius: '8px', color: '#00e5ff', fontSize: '11px', fontWeight: 'bold', cursor: 'pointer', whiteSpace: 'nowrap' }}>
+                            📁 Replace
+                            <input type="file" onChange={(e) => {
+                              if (e.target.files && e.target.files[0]) {
+                                handleDigitalFileUpload(e.target.files[0], 'edit');
+                              }
+                            }} style={{ display: 'none' }} />
+                          </label>
+                        </div>
+                      </div>
+                    ) : (
+                      <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+                        <input type="text" placeholder="https://... file attachment link" value={editingProduct.digital_file_url || ''} onChange={e => setEditingProduct({ ...editingProduct, digital_file_url: e.target.value })} style={{ flex: 1, background: 'rgba(0,0,0,0.4)', border: '1px solid rgba(255,255,255,0.1)', padding: '12px', borderRadius: '10px', color: 'var(--text-primary)', outline: 'none' }} />
+                        <label style={{ padding: '10px 16px', background: 'rgba(0, 229, 255, 0.15)', border: '1px solid rgba(0, 229, 255, 0.4)', borderRadius: '10px', color: '#00e5ff', fontSize: '12px', fontWeight: 'bold', cursor: 'pointer', whiteSpace: 'nowrap' }}>
+                          📁 Upload File
+                          <input type="file" onChange={(e) => {
+                            if (e.target.files && e.target.files[0]) {
+                              handleDigitalFileUpload(e.target.files[0], 'edit');
                             }
-                          }
-                        }} style={{ display: 'none' }} />
-                      </label>
-                    </div>
+                          }} style={{ display: 'none' }} />
+                        </label>
+                      </div>
+                    )}
                   </div>
 
                   {editingProduct.type === 'physical' && (() => {
