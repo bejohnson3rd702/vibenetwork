@@ -167,6 +167,7 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
   });
 
   const [savedName, setSavedName] = useState<string>('');
+  const [savedBio, setSavedBio] = useState<string>('');
   const [isAvatarHovered, setIsAvatarHovered] = useState<boolean>(false);
   const [isSub, setIsSub] = useState(false);
   const [showSubModal, setShowSubModal] = useState(false);
@@ -1454,6 +1455,7 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
 
         setProfile(targetProfile);
         setSavedName(targetProfile.username || targetProfile.full_name || '');
+        setSavedBio(targetProfile.bio || '');
         const loadedProfileId = targetProfile.id;
       const isOwn = Boolean(
         user && (
@@ -1886,6 +1888,7 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
 
         setProfile(activeProfile);
         setSavedName(activeProfile.username || activeProfile.full_name || '');
+        setSavedBio(activeProfile.bio || '');
         setBio(activeProfile.bio);
         setAvatarUrl(activeProfile.avatar_url || '');
         setHomepageImageUrl('');
@@ -2361,6 +2364,7 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
         full_name: newName
       }));
       setSavedName(newName);
+      setSavedBio(bio);
       if (wlConfig) {
         wlConfig.name = newName;
       }
@@ -4008,15 +4012,42 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
                             style={{ width: '100%', background: 'rgba(0,0,0,0.6)', border: '1px solid rgba(255,255,255,0.25)', borderRadius: '12px', padding: '14px', color: '#fff', fontSize: '15px', outline: 'none', boxSizing: 'border-box' }}
                           />
                           <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
-                            <button
-                              onClick={async () => {
-                                await saveProfile();
-                                setIsEditingBio(false);
-                              }}
-                              style={{ padding: '8px 18px', background: '#00ff88', color: '#000', border: 'none', borderRadius: '8px', fontWeight: 'bold', cursor: 'pointer', fontSize: '13px' }}
-                            >
-                              Save Bio
-                            </button>
+                            {(() => {
+                              const currentBio = bio || '';
+                              const initialBioBaseline = savedBio || '';
+                              const isBioDirty = Boolean(currentBio && currentBio.trim() !== initialBioBaseline.trim());
+                              return (
+                                <button
+                                  onClick={async () => {
+                                    await saveProfile();
+                                    setIsEditingBio(false);
+                                  }}
+                                  disabled={saving || !isBioDirty}
+                                  style={{
+                                    padding: '10px 22px',
+                                    borderRadius: '16px',
+                                    background: saving 
+                                      ? '#555' 
+                                      : isBioDirty 
+                                      ? '#fb8c00' 
+                                      : 'rgba(251, 140, 0, 0.15)',
+                                    color: saving ? '#ccc' : isBioDirty ? '#000' : '#fb8c00',
+                                    fontWeight: 900,
+                                    fontSize: '13px',
+                                    border: isBioDirty ? 'none' : '1px solid rgba(251, 140, 0, 0.3)',
+                                    cursor: (saving || !isBioDirty) ? 'default' : 'pointer',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: '6px',
+                                    boxShadow: isBioDirty ? '0 4px 20px rgba(251, 140, 0, 0.6)' : 'none',
+                                    transition: 'all 0.3s ease',
+                                    opacity: isBioDirty ? 1 : 0.65
+                                  }}
+                                >
+                                  <Save size={16} color={isBioDirty ? '#000' : '#fb8c00'} /> {saving ? 'Saving...' : 'Save Bio'}
+                                </button>
+                              );
+                            })()}
                             <button
                               type="button"
                               onClick={() => {
