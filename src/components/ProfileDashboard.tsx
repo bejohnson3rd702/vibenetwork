@@ -4133,7 +4133,7 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
 
                           {/* Action Buttons directly under the Bio */}
                           {isOwnProfile && viewMode === 'edit' ? (
-                            <div style={{ display: 'flex', gap: '12px', alignItems: 'center', marginTop: '4px' }}>
+                            <div style={{ display: 'flex', gap: '12px', alignItems: 'center', justifyContent: 'center', marginTop: '4px' }}>
                               <button
                                 onClick={() => {
                                   if (!isEditingBio) {
