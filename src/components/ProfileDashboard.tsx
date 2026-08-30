@@ -2566,24 +2566,39 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
     try {
       const cleanFileName = file.name.replace(/[^a-zA-Z0-9_.-]/g, '_');
       const filePath = `product_files/${Date.now()}_${cleanFileName}`;
-      const { data, error } = await supabase!.storage.from('media').upload(filePath, file);
 
-      if (error) {
-        toast.error('Product file upload failed: ' + error.message);
-        return;
+      // Try active buckets with automatic fallback retries to prevent "Bucket not found" error
+      const possibleBuckets = ['images', 'media', 'videos'];
+      let uploadedPublicUrl = '';
+      let lastError: any = null;
+
+      for (const bucketName of possibleBuckets) {
+        try {
+          const { data, error } = await supabase!.storage.from(bucketName).upload(filePath, file, { upsert: true });
+          if (!error && data) {
+            const { data: pubData } = supabase!.storage.from(bucketName).getPublicUrl(filePath);
+            if (pubData?.publicUrl) {
+              uploadedPublicUrl = pubData.publicUrl;
+              break; // Upload succeeded!
+            }
+          } else if (error) {
+            lastError = error;
+            console.warn(`Bucket "${bucketName}" upload note:`, error.message);
+          }
+        } catch (bucketErr) {
+          lastError = bucketErr;
+        }
       }
 
-      if (data) {
-        const { data: pubData } = supabase!.storage.from('media').getPublicUrl(filePath);
-        const fileUrl = pubData?.publicUrl || '';
-        if (fileUrl) {
-          if (target === 'new') {
-            setNewProduct(prev => ({ ...prev, digital_file_url: fileUrl }));
-          } else {
-            setEditingProduct((prev: any) => ({ ...prev, digital_file_url: fileUrl }));
-          }
-          toast.success(`🎉 Product file "${file.name}" (${sizeMB} MB) uploaded successfully!`);
+      if (uploadedPublicUrl) {
+        if (target === 'new') {
+          setNewProduct(prev => ({ ...prev, digital_file_url: uploadedPublicUrl }));
+        } else {
+          setEditingProduct((prev: any) => ({ ...prev, digital_file_url: uploadedPublicUrl }));
         }
+        toast.success(`🎉 Product file "${file.name}" (${sizeMB} MB) uploaded successfully!`);
+      } else {
+        toast.error('Product file upload failed: ' + (lastError?.message || 'Bucket error. Please check storage bucket permissions.'));
       }
     } catch (err: any) {
       toast.error('File upload failed: ' + (err?.message || 'Storage error'));
