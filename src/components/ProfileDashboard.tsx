@@ -4133,7 +4133,7 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
                     </div>
 
                     {/* Action Buttons Column (3 Buttons with distinct colors for both own profile & visitors) */}
-                    <div className="profile-header-actions" style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                    <div className="profile-header-actions" style={{ display: 'flex', flexDirection: 'column', gap: '12px', alignSelf: 'flex-start' }}>
                       {isOwnProfile && viewMode === 'edit' ? (
                         <>
                           {/* Button 1: Edit Bio Text (Mint Green) */}
