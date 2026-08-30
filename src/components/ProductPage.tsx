@@ -141,7 +141,7 @@ const ProductPage: React.FC = () => {
           'Authorization': `Bearer ${session.access_token}`
         },
         body: JSON.stringify({
-          creatorId: product.creator.id,
+          creatorId: product.creator?.id || product.creator_id || wlConfig?.owner_id || '',
           amount: product.price,
           productTitle: product.title,
           returnUrl: window.location.href,
@@ -156,10 +156,11 @@ const ProductPage: React.FC = () => {
         })
       });
 
-      const result = await response.json();
-      if (result.error) throw new Error(result.error);
-      if (result.url) {
-        window.location.href = result.url;
+      const data = await response.json();
+      if (data.url) {
+        window.location.href = data.url;
+      } else {
+        throw new Error(data.error || 'Failed to create checkout session');
       }
     } catch (err: any) {
       console.error('Checkout error:', err);
@@ -248,26 +249,29 @@ const ProductPage: React.FC = () => {
 
           {/* Right: Product Details */}
           <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} style={{ flex: '1 1 400px', minWidth: '300px', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
-             
-             <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', padding: '8px 16px', background: 'rgba(255,255,255,0.05)', borderRadius: '30px', marginBottom: '24px', border: `1px solid ${wlConfig?.accent || 'var(--accent-primary)'}44`, width: 'fit-content' }}>
-               {getTypeIcon()}
-               <span style={{ fontSize: '13px', fontWeight: 'bold', letterSpacing: '1px', color: wlConfig?.accent || 'var(--accent-primary)', textTransform: 'uppercase' }}>
-                 {product.type}
-               </span>
-             </div>
+            
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px' }}>
+              <span style={{ padding: '6px 14px', background: `${wlConfig?.accent || 'var(--accent-primary)'}15`, color: wlConfig?.accent || 'var(--accent-primary)', borderRadius: '20px', fontSize: '13px', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '1px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                {getTypeIcon()}
+                {product.type}
+              </span>
+            </div>
 
-             <h1 style={{ fontSize: '48px', margin: '0 0 16px 0', fontWeight: 900, lineHeight: 1.1, letterSpacing: '-1px' }}>
-               {product.title}
-             </h1>
+            <h1 style={{ fontSize: '48px', margin: '0 0 16px 0', fontWeight: 900, lineHeight: 1.1, letterSpacing: '-1px' }}>
+              {product.title}
+            </h1>
 
-             <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '40px', cursor: 'pointer' }} onClick={() => navigate(`/profile/${product.creator.id}${window.location.search}`)}>
-               <img 
-                 src={product.creator.avatar_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(product.creator.username || 'C')}&background=random`} 
-                 alt={product.creator.username}
-                 style={{ width: '32px', height: '32px', borderRadius: '50%', border: '1px solid rgba(255,255,255,0.2)' }}
-               />
-               <span style={{ color: 'var(--text-secondary)', fontSize: '16px', fontWeight: 500 }}>By @{product.creator.username}</span>
-             </div>
+            <div 
+              style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '40px', cursor: (product?.creator?.id || product?.creator_id) ? 'pointer' : 'default' }} 
+              onClick={() => (product?.creator?.id || product?.creator_id) && navigate(`/profile/${product.creator?.id || product.creator_id}${window.location.search}`)}
+            >
+              <img 
+                src={product?.creator?.avatar_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(product?.creator?.username || product?.creator?.full_name || 'Creator')}&background=random`} 
+                alt={product?.creator?.username || 'Creator'}
+                style={{ width: '32px', height: '32px', borderRadius: '50%', border: '1px solid rgba(255,255,255,0.2)', objectFit: 'cover' }}
+              />
+              <span style={{ color: 'var(--text-secondary)', fontSize: '16px', fontWeight: 500 }}>By @{product?.creator?.username || product?.creator?.full_name || 'Creator'}</span>
+            </div>
 
              <div style={{ padding: '32px', background: 'rgba(255,255,255,0.02)', borderRadius: '24px', border: '1px solid rgba(255,255,255,0.05)', marginBottom: '32px' }}>
                
