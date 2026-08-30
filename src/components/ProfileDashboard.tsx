@@ -905,9 +905,44 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
     if (params.get('guest_invite') === 'true') {
       setActiveTab('live');
       setStreamSource('camera');
-      setGuestSetup({ show: true, name: '', title: '' }); // Show Green Room Prompt
     }
   }, [location.search, isNetworkLevel, wlConfig]);
+
+  // Real-time duration metadata auto-detector for old video uploads and pasted URLs
+  useEffect(() => {
+    if (!seriesList || seriesList.length === 0) return;
+
+    seriesList.forEach(series => {
+      (series.episodes || []).forEach((ep: any) => {
+        if ((!ep.duration || ep.duration === 0) && (!ep.length || ep.length === 'TBD') && ep.video_url) {
+          const tempVideo = document.createElement('video');
+          tempVideo.preload = 'metadata';
+          tempVideo.src = ep.video_url;
+          tempVideo.onloadedmetadata = () => {
+            const durationSec = Math.round(tempVideo.duration || 0);
+            if (durationSec > 0) {
+              const formatted = `${Math.floor(durationSec / 60)}m ${durationSec % 60}s`;
+              setSeriesList(prev => prev.map(s => {
+                if (s.id === series.id) {
+                  return {
+                    ...s,
+                    episodes: (s.episodes || []).map((e: any) => e.id === ep.id ? { ...e, duration: durationSec, length: formatted } : e)
+                  };
+                }
+                return s;
+              }));
+
+              try {
+                supabase!.from('episodes').update({ duration: durationSec, length: formatted }).eq('id', ep.id);
+              } catch (err) {
+                console.warn('Silently backfilling episode duration failed:', err);
+              }
+            }
+          };
+        }
+      });
+    });
+  }, [seriesList.length]);
 
   useEffect(() => {
     if (isNetworkLevel && wlConfig?.id) {
@@ -7107,7 +7142,7 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
                                 }}
                               >
                                 <div style={{ position: 'absolute', bottom: 8, right: 8, background: 'rgba(0,0,0,0.85)', padding: '2px 6px', borderRadius: '4px', fontSize: '11px', fontWeight: 'bold' }}>
-                                  {episode.length || 'TBD'}
+                                  {episode.length || (episode.duration ? `${Math.floor(episode.duration / 60)}m ${episode.duration % 60}s` : 'TBD')}
                                 </div>
                               </div>
 
@@ -10355,7 +10390,7 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
                               </span>
                             </div>
                             <h4 style={{ margin: 0, fontSize: '15px', color: isActive ? '#fff' : '#ccc' }}>{ep.title}</h4>
-                            <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>⏱️ Length: {ep.length || 'TBD'}</span>
+                            <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>⏱️ Length: {ep.length || (ep.duration ? `${Math.floor(ep.duration / 60)}m ${ep.duration % 60}s` : 'TBD')}</span>
                           </div>
                         );
                       })}
