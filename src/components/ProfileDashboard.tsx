@@ -3857,16 +3857,18 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
                           >
                             <div style={{ position: 'absolute', inset: '-10px', background: isDraggingDirectAvatar ? 'radial-gradient(circle at 50% 50%, rgba(0, 255, 136, 0.6), transparent 70%)' : `radial-gradient(circle at 50% 50%, ${wlConfig?.accent || '#ff4d85'}, transparent 70%)`, borderRadius: '50%', zIndex: 0, filter: 'blur(10px)', transition: 'all 0.3s ease' }} />
                             <div style={{ 
-                              position: 'relative', zIndex: 1,
-                              width: '140px', height: '140px', borderRadius: '50%', 
-                              backgroundImage: effectiveAvatar ? `url("${effectiveAvatar}")` : `linear-gradient(135deg, ${wlConfig?.accent || '#FF0055'}, #8A2BE2)`,
-                              backgroundSize: 'cover', backgroundPosition: 'center',
-                              display: 'flex', alignItems: 'center', justifyContent: 'center',
-                              fontSize: '56px', fontWeight: 'bold', 
-                              border: isDraggingDirectAvatar ? '4px dashed #00ff88' : '4px solid rgba(255,255,255,0.2)', 
-                              boxShadow: isDraggingDirectAvatar ? '0 0 35px rgba(0,255,136,0.6)' : '0 10px 30px rgba(0,0,0,0.5)',
-                              transition: 'all 0.3s ease',
-                            </div>
+                               position: 'relative', zIndex: 1,
+                               width: '140px', height: '140px', borderRadius: '50%', 
+                               backgroundImage: effectiveAvatar ? `url("${effectiveAvatar}")` : `linear-gradient(135deg, ${wlConfig?.accent || '#FF0055'}, #8A2BE2)`,
+                               backgroundSize: 'cover', backgroundPosition: 'center',
+                               display: 'flex', alignItems: 'center', justifyContent: 'center',
+                               fontSize: '56px', fontWeight: 'bold', 
+                               border: isDraggingDirectAvatar ? '4px dashed #00ff88' : '4px solid rgba(255,255,255,0.2)', 
+                               boxShadow: isDraggingDirectAvatar ? '0 0 35px rgba(0,255,136,0.6)' : '0 10px 30px rgba(0,0,0,0.5)',
+                               transition: 'all 0.3s ease'
+                             }}>
+                               {!effectiveAvatar && (profile?.username ? profile.username[0].toUpperCase() : (user?.email ? user.email[0].toUpperCase() : 'V'))}
+                             </div>
 
                             {/* Floating Tooltip Badge on Mouse Hover OVER Bio Pic */}
                             {isOwnProfile && viewMode === 'edit' && (isAvatarHovered || isDraggingDirectAvatar) && (
