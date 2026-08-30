@@ -3870,36 +3870,34 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
                                {!effectiveAvatar && (profile?.username ? profile.username[0].toUpperCase() : (user?.email ? user.email[0].toUpperCase() : 'V'))}
                              </div>
 
-                            {/* Floating Tooltip Badge on Mouse Hover OVER Bio Pic */}
-                            {isOwnProfile && viewMode === 'edit' && (isAvatarHovered || isDraggingDirectAvatar) && (
-                              <motion.div 
-                                initial={{ opacity: 0, y: 6, scale: 0.95 }}
-                                animate={{ opacity: 1, y: 0, scale: 1 }}
-                                exit={{ opacity: 0, y: 6, scale: 0.95 }}
+                            {/* Suggested Size Badge Overlay ALWAYS VISIBLE OVER Bio Pic in Edit Mode */}
+                            {isOwnProfile && viewMode === 'edit' && (
+                              <div 
                                 style={{
                                   position: 'absolute',
-                                  bottom: '-34px',
+                                  bottom: '10px',
                                   left: '50%',
                                   transform: 'translateX(-50%)',
                                   zIndex: 20,
-                                  background: 'rgba(0,0,0,0.92)',
-                                  backdropFilter: 'blur(12px)',
+                                  background: 'rgba(0, 0, 0, 0.88)',
+                                  backdropFilter: 'blur(8px)',
                                   color: '#00ff88',
-                                  fontSize: '11px',
-                                  fontWeight: 800,
-                                  padding: '5px 14px',
-                                  borderRadius: '14px',
-                                  border: '1px solid rgba(0,255,136,0.5)',
-                                  boxShadow: '0 8px 20px rgba(0,0,0,0.7), 0 0 15px rgba(0,255,136,0.2)',
+                                  fontSize: '10px',
+                                  fontWeight: 900,
+                                  padding: '4px 10px',
+                                  borderRadius: '12px',
+                                  border: '1px solid rgba(0, 255, 136, 0.5)',
+                                  boxShadow: '0 4px 14px rgba(0, 0, 0, 0.7), 0 0 10px rgba(0, 255, 136, 0.2)',
                                   whiteSpace: 'nowrap',
                                   pointerEvents: 'none',
                                   display: 'flex',
                                   alignItems: 'center',
-                                  gap: '6px'
+                                  gap: '4px'
                                 }}
                               >
-                                <span>📏 Suggested Size: 512 × 512 px (1:1 Ratio)</span>
-                              </motion.div>
+                                <Camera size={11} color="#00ff88" />
+                                <span>📏 512 × 512 px</span>
+                              </div>
                             )}
                           </div>
 
