@@ -29,28 +29,20 @@ const ProductPage: React.FC = () => {
   useEffect(() => {
     const fetchProduct = async () => {
       setLoading(true);
-      const { data, error } = await supabase
-        .from('products')
-        .select('*, creator:profiles(id, username, avatar_url, full_name)')
-        .eq('id', productId)
-        .single();
+      let targetProduct: any = null;
+
+      try {
+        const { data } = await supabase
+          .from('products')
+          .select('*, creator:profiles(id, username, avatar_url, full_name)')
+          .eq('id', productId)
+          .maybeSingle();
+
+        if (data) targetProduct = data;
+      } catch {}
         
-      if (data && !error) {
-        setProduct(data);
-        const shouldShowSizesProduct = data.type?.toLowerCase() === 'physical' && (
-          data.variants?.is_clothing === true || 
-          data.variants?.sizes?.length > 0 ||
-          (data.variants?.is_clothing !== false && 
-            /shirt|tee|hoodie|hoody|sweatshirt|sweater|jacket|pants|shorts|socks|apparel|clothing/i.test(data.title || '')
-          )
-        );
-        const initialSizes = data.variants?.sizes?.length ? data.variants.sizes : defaultSizes;
-        const initialColors = data.variants?.colors?.length ? data.variants.colors : defaultColors;
-        setSelectedSize(shouldShowSizesProduct ? (initialSizes[0] || '') : '');
-        setSelectedColor(initialColors[0] || '');
-      } else {
+      if (!targetProduct) {
         // Fallback: Check local storage cache for newly added products
-        let cachedProd: any = null;
         try {
           for (let i = 0; i < localStorage.length; i++) {
             const key = localStorage.key(i);
@@ -58,26 +50,59 @@ const ProductPage: React.FC = () => {
               const items = JSON.parse(localStorage.getItem(key) || '[]');
               const found = items.find((item: any) => String(item.id) === String(productId));
               if (found) {
-                cachedProd = found;
+                targetProduct = found;
                 break;
               }
             }
           }
         } catch {}
+      }
 
-        if (cachedProd) {
-          setProduct(cachedProd);
-          const shouldShowSizesProduct = cachedProd.type?.toLowerCase() === 'physical' && (
-            cachedProd.variants?.is_clothing === true || 
-            cachedProd.variants?.sizes?.length > 0
-          );
-          const initialSizes = cachedProd.variants?.sizes?.length ? cachedProd.variants.sizes : defaultSizes;
-          const initialColors = cachedProd.variants?.colors?.length ? cachedProd.variants.colors : defaultColors;
-          setSelectedSize(shouldShowSizesProduct ? (initialSizes[0] || '') : '');
-          setSelectedColor(initialColors[0] || '');
-        } else {
-          setError('Product not found or unavailable.');
+      if (targetProduct) {
+        // If creator profile object is missing username/full_name, attempt lookup by creator_id
+        if ((!targetProduct.creator || (!targetProduct.creator.username && !targetProduct.creator.full_name)) && targetProduct.creator_id) {
+          try {
+            const { data: profData } = await supabase
+              .from('profiles')
+              .select('id, username, avatar_url, full_name')
+              .eq('id', targetProduct.creator_id)
+              .maybeSingle();
+            if (profData) {
+              targetProduct.creator = profData;
+            }
+          } catch {}
         }
+
+        // If creator is still missing, fallback to active session user if creator_id matches
+        if (!targetProduct.creator?.username && !targetProduct.creator?.full_name) {
+          try {
+            const { data: { session } } = await supabase.auth.getSession();
+            const currUser = session?.user;
+            if (currUser && (!targetProduct.creator_id || targetProduct.creator_id === currUser.id)) {
+              targetProduct.creator = {
+                id: currUser.id,
+                username: currUser.user_metadata?.username || currUser.user_metadata?.display_name || currUser.email?.split('@')[0] || 'Seller',
+                full_name: currUser.user_metadata?.full_name || currUser.user_metadata?.display_name || currUser.email?.split('@')[0] || 'Seller',
+                avatar_url: currUser.user_metadata?.avatar_url || ''
+              };
+            }
+          } catch {}
+        }
+
+        setProduct(targetProduct);
+        const shouldShowSizesProduct = targetProduct.type?.toLowerCase() === 'physical' && (
+          targetProduct.variants?.is_clothing === true || 
+          targetProduct.variants?.sizes?.length > 0 ||
+          (targetProduct.variants?.is_clothing !== false && 
+            /shirt|tee|hoodie|hoody|sweatshirt|sweater|jacket|pants|shorts|socks|apparel|clothing/i.test(targetProduct.title || '')
+          )
+        );
+        const initialSizes = targetProduct.variants?.sizes?.length ? targetProduct.variants.sizes : defaultSizes;
+        const initialColors = targetProduct.variants?.colors?.length ? targetProduct.variants.colors : defaultColors;
+        setSelectedSize(shouldShowSizesProduct ? (initialSizes[0] || '') : '');
+        setSelectedColor(initialColors[0] || '');
+      } else {
+        setError('Product not found or unavailable.');
       }
       setLoading(false);
     };
@@ -186,8 +211,8 @@ const ProductPage: React.FC = () => {
       <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '0 5%' }}>
         
         {(() => {
-          const creatorDisplayName = product?.creator?.full_name || (product?.creator?.username ? `@${product.creator.username}` : '');
-          const backLabel = creatorDisplayName ? `Back to ${creatorDisplayName}'s Store` : 'Back to Store';
+          const sellerName = product?.creator?.full_name || product?.creator?.username || wlConfig?.name || '';
+          const backLabel = sellerName ? `Back to ${sellerName}'s Store` : 'Back to Store';
 
           return (
             <button onClick={() => navigate(-1)} style={{ display: 'flex', alignItems: 'center', gap: '8px', background: 'transparent', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', marginBottom: '40px', fontSize: '16px', fontWeight: 600 }}>
@@ -261,17 +286,30 @@ const ProductPage: React.FC = () => {
               {product.title}
             </h1>
 
-            <div 
-              style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '40px', cursor: (product?.creator?.id || product?.creator_id) ? 'pointer' : 'default' }} 
-              onClick={() => (product?.creator?.id || product?.creator_id) && navigate(`/profile/${product.creator?.id || product.creator_id}${window.location.search}`)}
-            >
-              <img 
-                src={product?.creator?.avatar_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(product?.creator?.username || product?.creator?.full_name || 'Creator')}&background=random`} 
-                alt={product?.creator?.username || 'Creator'}
-                style={{ width: '32px', height: '32px', borderRadius: '50%', border: '1px solid rgba(255,255,255,0.2)', objectFit: 'cover' }}
-              />
-              <span style={{ color: 'var(--text-secondary)', fontSize: '16px', fontWeight: 500 }}>By @{product?.creator?.username || product?.creator?.full_name || 'Creator'}</span>
-            </div>
+            {(() => {
+              const sellerName = product?.creator?.full_name || product?.creator?.username || wlConfig?.name || 'Seller';
+              const sellerHandle = product?.creator?.username ? `@${product.creator.username}` : '';
+              const sellerAvatar = product?.creator?.avatar_url || wlConfig?.logoImage || wlConfig?.logo || `https://ui-avatars.com/api/?name=${encodeURIComponent(sellerName)}&background=random`;
+
+              return (
+                <div 
+                  style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '40px', cursor: (product?.creator?.id || product?.creator_id) ? 'pointer' : 'default' }} 
+                  onClick={() => (product?.creator?.id || product?.creator_id) && navigate(`/profile/${product.creator?.id || product.creator_id}${window.location.search}`)}
+                >
+                  <img 
+                    src={sellerAvatar} 
+                    alt={sellerName}
+                    style={{ width: '40px', height: '40px', borderRadius: '50%', border: '1.5px solid rgba(255,255,255,0.2)', objectFit: 'cover' }}
+                  />
+                  <div style={{ display: 'flex', flexDirection: 'column' }}>
+                    <span style={{ color: '#fff', fontSize: '16px', fontWeight: 'bold' }}>By {sellerName}</span>
+                    {sellerHandle && sellerHandle !== `@${sellerName}` && (
+                      <span style={{ color: 'var(--text-muted)', fontSize: '13px', fontWeight: 500 }}>{sellerHandle}</span>
+                    )}
+                  </div>
+                </div>
+              );
+            })()}
 
              <div style={{ padding: '32px', background: 'rgba(255,255,255,0.02)', borderRadius: '24px', border: '1px solid rgba(255,255,255,0.05)', marginBottom: '32px' }}>
                
