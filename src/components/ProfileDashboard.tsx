@@ -291,7 +291,7 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
 
   // Interactive AI Assistant State
   const [showAiModal, setShowAiModal] = useState(false);
-  const [aiPromptTarget, setAiPromptTarget] = useState<'bio' | 'post' | 'refund_policy'>('post');
+  const [aiPromptTarget, setAiPromptTarget] = useState<'bio' | 'post' | 'refund_policy' | 'product_title' | 'product_desc'>('post');
   const [aiCustomPrompt, setAiCustomPrompt] = useState('');
   const [aiGenerating, setAiGenerating] = useState(false);
 
@@ -3957,7 +3957,7 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
     }
   };
 
-  const enhanceText = (field: 'bio' | 'post' | 'refund_policy') => {
+  const enhanceText = (field: 'bio' | 'post' | 'refund_policy' | 'product_title' | 'product_desc') => {
     setAiPromptTarget(field);
     setShowAiModal(true);
   };
@@ -5346,8 +5346,11 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
             <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} style={{ background: 'rgba(255,255,255,0.03)', padding: '24px', borderRadius: '24px', border: '1px dashed rgba(255,255,255,0.15)' }}>
               <h3 style={{ margin: '0 0 16px 0', fontSize: '18px', display: 'flex', alignItems: 'center', gap: '8px' }}>Add New Product to Store</h3>
               <form onSubmit={handleAddProduct} className="responsive-form-two-col">
-                <div style={{ gridColumn: '1 / -1' }}>
-                  <input type="text" placeholder="Product Title (e.g. VIP Meet & Greet, Drum Kit Vol 1)" value={newProduct.title} onChange={e => setNewProduct({...newProduct, title: e.target.value})} style={{ width: '100%', background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.1)', padding: '14px', borderRadius: '12px', color: 'var(--text-primary)', outline: 'none', fontSize: '15px' }} />
+                <div style={{ gridColumn: '1 / -1', display: 'flex', gap: '10px' }}>
+                  <input type="text" placeholder="Product Title (e.g. VIP Meet & Greet, Drum Kit Vol 1)" value={newProduct.title} onChange={e => setNewProduct({...newProduct, title: e.target.value})} style={{ flex: 1, background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.1)', padding: '14px', borderRadius: '12px', color: 'var(--text-primary)', outline: 'none', fontSize: '15px' }} />
+                  <button type="button" onClick={() => enhanceText('product_title')} style={{ background: 'linear-gradient(135deg, #8A2BE2, #ff4d85)', color: '#fff', border: 'none', borderRadius: '12px', padding: '0 16px', fontSize: '13px', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', whiteSpace: 'nowrap' }}>
+                    <Wand size={14} /> AI Boost
+                  </button>
                 </div>
                 
                 <div style={{ display: 'flex', background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px', overflow: 'hidden' }}>
@@ -10628,32 +10631,55 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
                       onClick={async () => {
                         setAiGenerating(true);
                         await new Promise(r => setTimeout(r, 600));
-                        const currentVal = (bio || profile?.bio || wlConfig?.theme?.heroCopy || wlConfig?.heroCopy || '').trim();
-                        let result = '';
+                        
                         if (aiPromptTarget === 'bio') {
-                          const base = currentVal || 'Welcome to the official channel media & culture stream.';
+                          const currentVal = (bio || profile?.bio || wlConfig?.theme?.heroCopy || wlConfig?.heroCopy || 'Welcome to the official channel media & culture stream.').trim();
+                          let result = '';
                           if (preset.id === 'viral') {
-                            result = `🔥 ${base.replace(/[\.\s]+$/, '')}! High-energy original streams, exclusive content drops, and culture in real time. Follow & Subscribe for VIP access!`;
+                            result = `🔥 ${currentVal.replace(/[\.\s]+$/, '')}! High-energy original streams, exclusive content drops, and culture in real time. Follow & Subscribe for VIP access!`;
                           } else if (preset.id === 'pro') {
-                            result = `✨ ${base.replace(/[\.\s]+$/, '')}. Premium broadcasts, exclusive digital releases, and live community streams. Follow for official channel updates.`;
+                            result = `✨ ${currentVal.replace(/[\.\s]+$/, '')}. Premium broadcasts, exclusive digital releases, and live community streams. Follow for official channel updates.`;
                           } else if (preset.id === 'monetize') {
-                            result = `🚀 ${base.replace(/[\.\s]+$/, '')}! Join our channel community — Subscribe for exclusive member access, behind-the-scenes streams, and full episodes.`;
+                            result = `🚀 ${currentVal.replace(/[\.\s]+$/, '')}! Join our channel community — Subscribe for exclusive member access, behind-the-scenes streams, and full episodes.`;
                           } else {
-                            let cleaned = base.charAt(0).toUpperCase() + base.slice(1);
+                            let cleaned = currentVal.charAt(0).toUpperCase() + currentVal.slice(1);
                             if (!cleaned.endsWith('.')) cleaned += '.';
                             result = cleaned;
                           }
                           setBio(result);
-                        } else if (aiPromptTarget === 'post') {
-                          result = `${preset.prompt.split(' ')[0]} ${postTitle || 'Exclusive release on Vibe Network!'} 🔥`;
-                          setPostTitle(result);
-                        } else {
-                          result = `${preset.prompt.split(' ')[0]} ${refundPolicy || 'All sales final.'}`;
+                          setSavedBio(result);
+                          toast.success("AI Bio Boost Applied!");
+                        } else if (aiPromptTarget === 'refund_policy') {
+                          let result = '';
+                          if (preset.id === 'viral') {
+                            result = `🔥 Fast processing & instant digital access! All sales final on digital downloads. For physical merch, contact support within 14 days.`;
+                          } else if (preset.id === 'pro') {
+                            result = `✨ Official Store Policy: Digital downloads and virtual ticket access are non-refundable upon delivery. For physical merchandise inquiries, contact channel support.`;
+                          } else if (preset.id === 'monetize') {
+                            result = `🚀 Satisfaction Guaranteed! Instant digital content delivery with every purchase. Contact channel support for order tracking and merch inquiries.`;
+                          } else {
+                            result = `✨ All sales final. Contact channel support for order inquiries.`;
+                          }
                           setRefundPolicy(result);
+                          toast.success("AI Store Policy Boost Applied!");
+                        } else if (aiPromptTarget === 'post') {
+                          setPostTitle(`${preset.prompt.split(' ')[0]} ${postTitle || 'Exclusive release on Vibe Network!'} 🔥`);
+                          toast.success("AI Post Boost Applied!");
+                        } else if (aiPromptTarget === 'product_title') {
+                          const baseTitle = editingProduct ? editingProduct.title : newProduct.title;
+                          const result = `${preset.prompt.split(' ')[0]} ${baseTitle || 'Exclusive Release'} 🔥`;
+                          if (editingProduct) setEditingProduct(prev => prev ? { ...prev, title: result } : null);
+                          else setNewProduct(prev => ({ ...prev, title: result }));
+                          toast.success("AI Product Title Boost Applied!");
+                        } else if (aiPromptTarget === 'product_desc') {
+                          const result = `🔥 Premium item! ${preset.prompt} Includes instant access / tracking upon purchase.`;
+                          if (editingProduct) setEditingProduct(prev => prev ? { ...prev, description: result } : null);
+                          else setNewProduct(prev => ({ ...prev, description: result }));
+                          toast.success("AI Product Description Boost Applied!");
                         }
+
                         setAiGenerating(false);
                         setShowAiModal(false);
-                        toast.success("AI Bio Boost Applied!");
                       }}
                       style={{ padding: '8px 14px', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)', borderRadius: '20px', color: '#fff', fontSize: '12px', fontWeight: 'bold', cursor: 'pointer', transition: 'all 0.2s' }}
                       onMouseOver={e=>e.currentTarget.style.background='rgba(255,255,255,0.15)'}
@@ -10693,20 +10719,36 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
                   onClick={async () => {
                     setAiGenerating(true);
                     await new Promise(r => setTimeout(r, 700));
+                    const instr = aiCustomPrompt.trim();
+
                     if (aiPromptTarget === 'bio') {
                       const base = (bio || profile?.bio || wlConfig?.theme?.heroCopy || wlConfig?.heroCopy || 'Welcome to the official channel media & culture stream.').trim();
-                      const instr = aiCustomPrompt.trim();
                       const result = `✨ ${base.replace(/[\.\s]+$/, '')}. ${instr.charAt(0).toUpperCase() + instr.slice(1)} 🔥`;
                       setBio(result);
+                      setSavedBio(result);
+                      toast.success("AI Bio Boost Applied!");
+                    } else if (aiPromptTarget === 'refund_policy') {
+                      const result = `✨ ${instr}`;
+                      setRefundPolicy(result);
+                      toast.success("AI Store Policy Boost Applied!");
                     } else if (aiPromptTarget === 'post') {
-                      setPostTitle(`✨ ${aiCustomPrompt.trim()} — Streaming live on Vibe Network! 🔥`);
-                    } else {
-                      setRefundPolicy(`✨ ${aiCustomPrompt.trim()}`);
+                      setPostTitle(`✨ ${instr} — Streaming live on Vibe Network! 🔥`);
+                      toast.success("AI Post Boost Applied!");
+                    } else if (aiPromptTarget === 'product_title') {
+                      const result = `✨ ${instr}`;
+                      if (editingProduct) setEditingProduct(prev => prev ? { ...prev, title: result } : null);
+                      else setNewProduct(prev => ({ ...prev, title: result }));
+                      toast.success("AI Product Title Boost Applied!");
+                    } else if (aiPromptTarget === 'product_desc') {
+                      const result = `✨ ${instr}`;
+                      if (editingProduct) setEditingProduct(prev => prev ? { ...prev, description: result } : null);
+                      else setNewProduct(prev => ({ ...prev, description: result }));
+                      toast.success("AI Product Description Boost Applied!");
                     }
+
                     setAiGenerating(false);
                     setShowAiModal(false);
                     setAiCustomPrompt('');
-                    toast.success("AI Bio Boost Applied!");
                   }}
                   style={{ padding: '12px 28px', background: 'linear-gradient(135deg, #8A2BE2, #ff4d85)', border: 'none', color: '#fff', borderRadius: '12px', cursor: 'pointer', fontWeight: 'bold', boxShadow: '0 4px 15px rgba(138,43,226,0.4)', opacity: (!aiCustomPrompt.trim() || aiGenerating) ? 0.5 : 1 }}
                 >
