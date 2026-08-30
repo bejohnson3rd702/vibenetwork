@@ -3752,7 +3752,7 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
                 onClick={() => setViewMode('edit')}
                 style={{ padding: '8px 24px', borderRadius: '30px', border: 'none', background: viewMode === 'edit' ? '#fff' : 'transparent', color: viewMode === 'edit' ? '#000' : '#fff', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px', transition: 'all 0.3s ease' }}
               >
-                <Edit2 size={16} /> Edit Profile
+                <Edit2 size={16} /> Edit Channel
               </button>
               <button 
                 onClick={() => {
