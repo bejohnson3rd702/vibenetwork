@@ -49,7 +49,35 @@ const ProductPage: React.FC = () => {
         setSelectedSize(shouldShowSizesProduct ? (initialSizes[0] || '') : '');
         setSelectedColor(initialColors[0] || '');
       } else {
-        setError('Product not found or unavailable.');
+        // Fallback: Check local storage cache for newly added products
+        let cachedProd: any = null;
+        try {
+          for (let i = 0; i < localStorage.length; i++) {
+            const key = localStorage.key(i);
+            if (key && (key.startsWith('vibe_added_products_') || key.startsWith('vibe_user_added_products_'))) {
+              const items = JSON.parse(localStorage.getItem(key) || '[]');
+              const found = items.find((item: any) => String(item.id) === String(productId));
+              if (found) {
+                cachedProd = found;
+                break;
+              }
+            }
+          }
+        } catch {}
+
+        if (cachedProd) {
+          setProduct(cachedProd);
+          const shouldShowSizesProduct = cachedProd.type?.toLowerCase() === 'physical' && (
+            cachedProd.variants?.is_clothing === true || 
+            cachedProd.variants?.sizes?.length > 0
+          );
+          const initialSizes = cachedProd.variants?.sizes?.length ? cachedProd.variants.sizes : defaultSizes;
+          const initialColors = cachedProd.variants?.colors?.length ? cachedProd.variants.colors : defaultColors;
+          setSelectedSize(shouldShowSizesProduct ? (initialSizes[0] || '') : '');
+          setSelectedColor(initialColors[0] || '');
+        } else {
+          setError('Product not found or unavailable.');
+        }
       }
       setLoading(false);
     };

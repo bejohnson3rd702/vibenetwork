@@ -5598,7 +5598,24 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
             return (
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))', gap: '20px' }}>
                 {visibleProducts.map(product => (
-                  <motion.div onClick={() => navigate(`/product/${product.id}${window.location.search}`)} initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} key={product.id} className="store-card" style={{ background: 'var(--bg-surface)', borderRadius: '16px', border: `1px solid ${wlConfig?.accent || '#00ff88'}22`, overflow: 'hidden', display: 'flex', flexDirection: 'column', transition: 'all 0.3s ease', cursor: 'pointer', position: 'relative' }}>
+                  <motion.div 
+                    onClick={() => {
+                      if (viewMode === 'edit') {
+                        setEditingProduct({
+                          ...product,
+                          digital_file_url: product.digital_file_url || product.variants?.digital_file_url || ''
+                        });
+                        setShowEditModal(true);
+                      } else {
+                        navigate(`/product/${product.id}${window.location.search}`);
+                      }
+                    }} 
+                    initial={{ opacity: 0, scale: 0.95 }} 
+                    animate={{ opacity: 1, scale: 1 }} 
+                    key={product.id} 
+                    className="store-card" 
+                    style={{ background: 'var(--bg-surface)', borderRadius: '16px', border: `1px solid ${wlConfig?.accent || '#00ff88'}22`, overflow: 'hidden', display: 'flex', flexDirection: 'column', transition: 'all 0.3s ease', cursor: 'pointer', position: 'relative' }}
+                  >
                     {isNetworkLevel && isOwnProfile && viewMode === 'edit' && (
                       <button 
                         onClick={(e) => handleToggleProductVisibility(e, product.id, product.hidden_from_network)}
