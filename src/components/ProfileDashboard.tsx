@@ -4177,6 +4177,20 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
                               <button
                                 onClick={handleToggleFollow}
                                 disabled={followLoading}
+                                onMouseOver={(e) => {
+                                  if (!isFollowing) {
+                                    e.currentTarget.style.background = '#ffd166';
+                                    e.currentTarget.style.color = '#000';
+                                    e.currentTarget.style.boxShadow = '0 4px 20px rgba(255, 209, 102, 0.6)';
+                                  }
+                                }}
+                                onMouseOut={(e) => {
+                                  if (!isFollowing) {
+                                    e.currentTarget.style.background = 'rgba(255, 209, 102, 0.15)';
+                                    e.currentTarget.style.color = '#ffd166';
+                                    e.currentTarget.style.boxShadow = 'none';
+                                  }
+                                }}
                                 style={{
                                   padding: '10px 24px',
                                   background: isFollowing ? 'rgba(255,255,255,0.08)' : 'rgba(255, 209, 102, 0.15)',
@@ -4191,8 +4205,7 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
                                   alignItems: 'center',
                                   gap: '6px',
                                   transition: 'all 0.3s ease',
-                                  backdropFilter: 'blur(10px)',
-                                  boxShadow: isFollowing ? 'none' : '0 0 15px rgba(255, 209, 102, 0.2)'
+                                  backdropFilter: 'blur(10px)'
                                 }}
                               >
                                 <Star size={14} fill={isFollowing ? '#aaa' : 'transparent'} />
