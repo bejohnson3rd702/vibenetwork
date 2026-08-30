@@ -3870,33 +3870,37 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
                                {!effectiveAvatar && (profile?.username ? profile.username[0].toUpperCase() : (user?.email ? user.email[0].toUpperCase() : 'V'))}
                              </div>
 
-                            {/* Suggested Size Badge Overlay ALWAYS VISIBLE OVER Bio Pic in Edit Mode */}
+                            {/* Suggested Size Badge Overlay ALWAYS VISIBLE CENTERED OVER Bio Pic in Edit Mode (2px larger on each side = 144px) */}
                             {isOwnProfile && viewMode === 'edit' && (
                               <div 
                                 style={{
                                   position: 'absolute',
-                                  bottom: '10px',
-                                  left: '50%',
-                                  transform: 'translateX(-50%)',
-                                  zIndex: 20,
-                                  background: 'rgba(0, 0, 0, 0.88)',
-                                  backdropFilter: 'blur(8px)',
-                                  color: '#00ff88',
-                                  fontSize: '10px',
-                                  fontWeight: 900,
-                                  padding: '4px 10px',
-                                  borderRadius: '12px',
-                                  border: '1px solid rgba(0, 255, 136, 0.5)',
-                                  boxShadow: '0 4px 14px rgba(0, 0, 0, 0.7), 0 0 10px rgba(0, 255, 136, 0.2)',
-                                  whiteSpace: 'nowrap',
-                                  pointerEvents: 'none',
+                                  top: '-2px',
+                                  left: '-2px',
+                                  width: '144px',
+                                  height: '144px',
+                                  borderRadius: '50%',
+                                  zIndex: 10,
+                                  background: 'rgba(0, 0, 0, 0.72)',
+                                  backdropFilter: 'blur(4px)',
+                                  border: '2px dashed rgba(0, 255, 136, 0.7)',
+                                  boxShadow: '0 0 20px rgba(0, 255, 136, 0.3)',
                                   display: 'flex',
+                                  flexDirection: 'column',
                                   alignItems: 'center',
-                                  gap: '4px'
+                                  justifyContent: 'center',
+                                  gap: '4px',
+                                  padding: '8px',
+                                  textAlign: 'center',
+                                  pointerEvents: 'none',
+                                  boxSizing: 'border-box'
                                 }}
                               >
-                                <Camera size={11} color="#00ff88" />
-                                <span>📏 512 × 512 px</span>
+                                <Camera size={22} color="#00ff88" />
+                                <span style={{ fontSize: '11px', fontWeight: 900, color: '#fff', lineHeight: 1.1 }}>Change Photo</span>
+                                <span style={{ fontSize: '10px', fontWeight: 800, color: '#00ff88', background: 'rgba(0,0,0,0.6)', padding: '2px 8px', borderRadius: '10px', border: '1px solid rgba(0,255,136,0.4)', marginTop: '2px' }}>
+                                  📏 512 × 512 px
+                                </span>
                               </div>
                             )}
                           </div>
