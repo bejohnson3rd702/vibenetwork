@@ -256,7 +256,7 @@ const Navbar: React.FC<NavbarProps> = ({ user, onLoginClick, onAdminClick }) => 
                   )}
                 </div>
                 <span style={{ fontFamily: 'var(--font-heading)', fontWeight: 600, fontSize: '12px', color: 'white', letterSpacing: '1px' }}>
-                  Profile
+                  Channel
                 </span>
               </Link>
             </div>
@@ -273,7 +273,7 @@ const Navbar: React.FC<NavbarProps> = ({ user, onLoginClick, onAdminClick }) => 
               to={`/profile${window.location.search}`} 
               className="show-on-mobile-tablet"
               style={{ display: 'flex', alignItems: 'center', textDecoration: 'none' }}
-              title="View Profile"
+              title="View Channel"
             >
               <div style={{ width: '30px', height: '30px', borderRadius: '50%', background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', border: '1px solid rgba(255,255,255,0.2)' }}>
                 {userAvatar ? (
