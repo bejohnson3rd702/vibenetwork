@@ -3834,8 +3834,8 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
 
               {/* Glassmorphic Creator Header */}
               {profile && activeTab !== 'wallet' && (
-                <div className={`profile-header-card ${isOwnProfile ? 'own-profile' : ''}`} style={{ background: 'rgba(15, 15, 15, 0.4)', backdropFilter: 'blur(24px)', padding: '40px', borderRadius: '32px', border: `1px solid ${wlConfig?.accent || '#00ff88'}22`, position: 'relative', boxShadow: '0 20px 40px rgba(0,0,0,0.4)', marginBottom: '16px' }}>
-                  <div className="profile-header-layout">
+                <div className={`profile-header-card ${isOwnProfile ? 'own-profile' : ''}`} style={{ background: 'rgba(15, 15, 15, 0.4)', backdropFilter: 'blur(24px)', padding: '40px', borderRadius: '32px', border: `1px solid ${wlConfig?.accent || '#00ff88'}22`, position: 'relative', boxShadow: '0 20px 40px rgba(0,0,0,0.4)', marginBottom: '16px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                  <div className="profile-header-layout" style={{ width: '100%' }}>
                     {/* Profile Picture with Glow & Verified Channel Banner */}
                     {(() => {
                       const isCourtney = profile?.id === 'courtney-bee-tenant-id' || wlConfig?.id === 'courtney-bee-tenant-id' || creatorIdOverride === 'courtney-bee-tenant-id';
@@ -4130,123 +4130,6 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
                           <p style={{ color: '#eee', fontSize: '18px', lineHeight: 1.8, opacity: 0.95, margin: 0 }}>
                             {bio || profile?.bio || wlConfig?.theme?.heroCopy || wlConfig?.heroCopy || 'Welcome to the official channel media & culture stream.'}
                           </p>
-
-                          {/* Action Buttons directly under the Bio */}
-                          {isOwnProfile && viewMode === 'edit' ? (
-                            <div style={{ display: 'flex', gap: '12px', alignItems: 'center', justifyContent: 'center', marginTop: '4px', transform: 'translateX(-3px)' }}>
-                              <button
-                                onClick={() => {
-                                  if (!isEditingBio) {
-                                    setBio(profile?.bio || bio);
-                                  }
-                                  setIsEditingBio(true);
-                                }}
-                                onMouseOver={(e) => {
-                                  e.currentTarget.style.background = '#fdd835';
-                                  e.currentTarget.style.color = '#000';
-                                  e.currentTarget.style.boxShadow = '0 4px 20px rgba(253, 216, 53, 0.6)';
-                                }}
-                                onMouseOut={(e) => {
-                                  e.currentTarget.style.background = 'rgba(253, 216, 53, 0.15)';
-                                  e.currentTarget.style.color = '#fdd835';
-                                  e.currentTarget.style.boxShadow = 'none';
-                                }}
-                                style={{
-                                  padding: '10px 24px',
-                                  background: 'rgba(253, 216, 53, 0.15)',
-                                  color: '#fdd835',
-                                  border: '1px solid rgba(253, 216, 53, 0.4)',
-                                  borderRadius: '100px',
-                                  fontWeight: 'bold',
-                                  fontSize: '14px',
-                                  cursor: 'pointer',
-                                  display: 'inline-flex',
-                                  alignItems: 'center',
-                                  gap: '8px',
-                                  transition: 'all 0.3s ease',
-                                  backdropFilter: 'blur(10px)'
-                                }}
-                              >
-                                <Edit3 size={16} />
-                                <span>Edit Bio Text</span>
-                              </button>
-                            </div>
-                          ) : (
-                            <div style={{ display: 'flex', gap: '12px', alignItems: 'center', justifyContent: 'center', flexWrap: 'wrap', marginTop: '4px', transform: 'translateX(-3px)' }}>
-                              {/* Visitor Follow Button */}
-                              <button
-                                onClick={handleToggleFollow}
-                                disabled={followLoading}
-                                onMouseOver={(e) => {
-                                  if (!isFollowing) {
-                                    e.currentTarget.style.background = '#ffd166';
-                                    e.currentTarget.style.color = '#000';
-                                    e.currentTarget.style.boxShadow = '0 4px 20px rgba(255, 209, 102, 0.6)';
-                                  }
-                                }}
-                                onMouseOut={(e) => {
-                                  if (!isFollowing) {
-                                    e.currentTarget.style.background = 'rgba(255, 209, 102, 0.15)';
-                                    e.currentTarget.style.color = '#ffd166';
-                                    e.currentTarget.style.boxShadow = 'none';
-                                  }
-                                }}
-                                style={{
-                                  padding: '10px 24px',
-                                  background: isFollowing ? 'rgba(255,255,255,0.08)' : 'rgba(255, 209, 102, 0.15)',
-                                  color: isFollowing ? '#aaa' : '#ffd166',
-                                  border: '1px solid',
-                                  borderColor: isFollowing ? 'rgba(255,255,255,0.15)' : 'rgba(255, 209, 102, 0.5)',
-                                  borderRadius: '100px',
-                                  fontWeight: 'bold',
-                                  fontSize: '14px',
-                                  cursor: 'pointer',
-                                  display: 'flex',
-                                  alignItems: 'center',
-                                  gap: '6px',
-                                  transition: 'all 0.3s ease',
-                                  backdropFilter: 'blur(10px)'
-                                }}
-                              >
-                                <Star size={14} fill={isFollowing ? '#aaa' : 'transparent'} />
-                                {isFollowing ? 'Following' : 'Follow'}
-                              </button>
-
-                              {/* Visitor Subscribe Button */}
-                              <button
-                                className="profile-subscribe-btn"
-                                onClick={handleSubscribe}
-                                style={{
-                                  padding: '10px 24px',
-                                  background: isSubscribed
-                                    ? 'rgba(255,255,255,0.08)'
-                                    : `linear-gradient(135deg, ${wlConfig?.accent || '#FF0055'}, #8A2BE2)`,
-                                  color: '#fff',
-                                  border: isSubscribed ? '1px solid rgba(255,255,255,0.15)' : 'none',
-                                  borderRadius: '100px',
-                                  fontWeight: 'bold',
-                                  fontSize: '14px',
-                                  cursor: 'pointer',
-                                  display: 'flex',
-                                  alignItems: 'center',
-                                  gap: '6px',
-                                  boxShadow: isSubscribed ? 'none' : `0 8px 20px ${wlConfig?.accent || '#FF0055'}66`,
-                                  transition: 'all 0.3s ease'
-                                }}
-                              >
-                                {isSubscribed ? (
-                                  <>
-                                    <CheckCircle size={14} color="#00ff88" />
-                                    <span style={{ color: '#00ff88' }}>Subscribed</span>
-                                  </>
-                                ) : (
-                                  <span>
-                                    {Number(subPrice) > 0 ? `Subscribe $${Number(subPrice).toFixed(2)}/mo` : 'Subscribe Free'}
-                                  </span>
-                                )}
-                              </button>
-                            </div>
-                          )}
                         </div>
                       )}
                     </div>
@@ -4279,6 +4162,125 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
                       </div>
                     )}
                   </div>
+
+                  {/* Under-Card Action Buttons Centered across the ENTIRE Glassmorphic Card */}
+                  {!isEditingBio && (
+                    <div style={{ display: 'flex', gap: '14px', alignItems: 'center', justifyContent: 'center', flexWrap: 'wrap', marginTop: '24px', width: '100%' }}>
+                      {isOwnProfile && viewMode === 'edit' ? (
+                        <button
+                          onClick={() => {
+                            if (!isEditingBio) {
+                              setBio(profile?.bio || bio);
+                            }
+                            setIsEditingBio(true);
+                          }}
+                          onMouseOver={(e) => {
+                            e.currentTarget.style.background = '#fdd835';
+                            e.currentTarget.style.color = '#000';
+                            e.currentTarget.style.boxShadow = '0 4px 20px rgba(253, 216, 53, 0.6)';
+                          }}
+                          onMouseOut={(e) => {
+                            e.currentTarget.style.background = 'rgba(253, 216, 53, 0.15)';
+                            e.currentTarget.style.color = '#fdd835';
+                            e.currentTarget.style.boxShadow = 'none';
+                          }}
+                          style={{
+                            padding: '10px 28px',
+                            background: 'rgba(253, 216, 53, 0.15)',
+                            color: '#fdd835',
+                            border: '1px solid rgba(253, 216, 53, 0.4)',
+                            borderRadius: '100px',
+                            fontWeight: 'bold',
+                            fontSize: '14px',
+                            cursor: 'pointer',
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: '8px',
+                            transition: 'all 0.3s ease',
+                            backdropFilter: 'blur(10px)'
+                          }}
+                        >
+                          <Edit3 size={16} />
+                          <span>Edit Bio Text</span>
+                        </button>
+                      ) : (
+                        <>
+                          {/* Visitor Follow Button */}
+                          <button
+                            onClick={handleToggleFollow}
+                            disabled={followLoading}
+                            onMouseOver={(e) => {
+                              if (!isFollowing) {
+                                e.currentTarget.style.background = '#ffd166';
+                                e.currentTarget.style.color = '#000';
+                                e.currentTarget.style.boxShadow = '0 4px 20px rgba(255, 209, 102, 0.6)';
+                              }
+                            }}
+                            onMouseOut={(e) => {
+                              if (!isFollowing) {
+                                e.currentTarget.style.background = 'rgba(255, 209, 102, 0.15)';
+                                e.currentTarget.style.color = '#ffd166';
+                                e.currentTarget.style.boxShadow = 'none';
+                              }
+                            }}
+                            style={{
+                              padding: '10px 28px',
+                              background: isFollowing ? 'rgba(255,255,255,0.08)' : 'rgba(255, 209, 102, 0.15)',
+                              color: isFollowing ? '#aaa' : '#ffd166',
+                              border: '1px solid',
+                              borderColor: isFollowing ? 'rgba(255,255,255,0.15)' : 'rgba(255, 209, 102, 0.5)',
+                              borderRadius: '100px',
+                              fontWeight: 'bold',
+                              fontSize: '14px',
+                              cursor: 'pointer',
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: '6px',
+                              transition: 'all 0.3s ease',
+                              backdropFilter: 'blur(10px)'
+                            }}
+                          >
+                            <Star size={14} fill={isFollowing ? '#aaa' : 'transparent'} />
+                            {isFollowing ? 'Following' : 'Follow'}
+                          </button>
+
+                          {/* Visitor Subscribe Button */}
+                          <button
+                            className="profile-subscribe-btn"
+                            onClick={handleSubscribe}
+                            style={{
+                              padding: '10px 28px',
+                              background: isSubscribed
+                                ? 'rgba(255,255,255,0.08)'
+                                : `linear-gradient(135deg, ${wlConfig?.accent || '#FF0055'}, #8A2BE2)`,
+                              color: '#fff',
+                              border: isSubscribed ? '1px solid rgba(255,255,255,0.15)' : 'none',
+                              borderRadius: '100px',
+                              fontWeight: 'bold',
+                              fontSize: '14px',
+                              cursor: 'pointer',
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: '6px',
+                              boxShadow: isSubscribed ? 'none' : `0 8px 20px ${wlConfig?.accent || '#FF0055'}66`,
+                              transition: 'all 0.3s ease'
+                            }}
+                          >
+                            {isSubscribed ? (
+                              <>
+                                <CheckCircle size={14} color="#00ff88" />
+                                <span style={{ color: '#00ff88' }}>Subscribed</span>
+                              </>
+                            ) : (
+                              <span>
+                                {Number(subPrice) > 0 ? `Subscribe $${Number(subPrice).toFixed(2)}/mo` : 'Subscribe Free'}
+                              </span>
+                            )}
+                          </button>
+                        </>
+                      )}
+                    </div>
+                  )}
                 </div>
               )}
             </>
