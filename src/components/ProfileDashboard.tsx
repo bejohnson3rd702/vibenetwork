@@ -2379,6 +2379,7 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
     if (bio !== undefined) {
       setBio(bio);
       setSavedBio(bio);
+      setIsEditingBio(false);
     }
 
     setSaving(false);
