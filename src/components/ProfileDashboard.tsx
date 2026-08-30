@@ -3790,9 +3790,23 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
                   setIsEditingBio(false);
                   setShowCreatorPanel(false);
                 }}
-                style={{ padding: '8px 24px', borderRadius: '30px', border: 'none', background: viewMode === 'public' ? 'rgba(255,0,85,1)' : 'transparent', color: 'var(--text-primary)', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px', transition: 'all 0.3s ease' }}
+                style={{ 
+                  padding: '8px 24px', 
+                  borderRadius: '30px', 
+                  border: viewMode === 'public' ? 'none' : '1px solid rgba(21, 101, 192, 0.4)', 
+                  background: viewMode === 'public' ? '#1565c0' : 'rgba(21, 101, 192, 0.15)', 
+                  color: viewMode === 'public' ? '#fff' : '#1565c0', 
+                  fontWeight: 900, 
+                  fontSize: '14px',
+                  cursor: 'pointer', 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  gap: '8px', 
+                  boxShadow: viewMode === 'public' ? '0 4px 20px rgba(21, 101, 192, 0.6)' : 'none',
+                  transition: 'all 0.3s ease' 
+                }}
               >
-                <Eye size={16} /> Public Preview
+                <Eye size={16} color={viewMode === 'public' ? '#fff' : '#1565c0'} /> Public Preview
               </button>
             </div>
           </div>
