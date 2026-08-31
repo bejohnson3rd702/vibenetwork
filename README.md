@@ -1,73 +1,39 @@
-# React + TypeScript + Vite
+# The VIBE NETWORK – UI & Streaming Platform
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+## Environments & Stripe Setup
 
-Currently, two official plugins are available:
+The platform uses environment separation so that **Stripe is exclusively enabled on the Staging server**, while **Dev** and **Prod** operate with Stripe completely disabled (using seamless demo unlocks).
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+---
 
-## React Compiler
+### Environment Commands
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+| Command | Environment | Port | Stripe Status | Purpose |
+| :--- | :--- | :--- | :--- | :--- |
+| `npm run staging` | **Staging (`stg`)** | `5174` | **ENABLED (Test Mode)** | Testing live Stripe Checkout, PPV stream unlocks, subscription tiers, Stripe Connect onboarding, and test cards (`4242 4242 4242 4242`). |
+| `npm run dev` | **Development (`dev`)** | `5173` | **DISABLED** | Local feature development with instant simulated purchases and demo mode. |
+| `npm run build:stg` | **Staging Build** | — | **ENABLED** | Production-grade staging bundle with Stripe enabled. |
+| `npm run build:prod` | **Production Build** | — | **DISABLED** | Clean production bundle free of test Stripe keys and calls. |
+| `npm run preview:stg` | **Staging Preview** | `5174` | **ENABLED** | Previews the staging build on port 5174. |
 
-## Expanding the ESLint configuration
+---
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+### Environment Files
+- `.env.staging`: Contains `VITE_ENABLE_STRIPE="true"`, `VITE_STRIPE_PUBLIC_KEY`, and `STRIPE_SECRET_KEY` for live test mode transactions.
+- `.env.development`: Contains `VITE_ENABLE_STRIPE="false"` and blank keys.
+- `.env.production`: Contains `VITE_ENABLE_STRIPE="false"` and blank keys.
+- `.env`: Local fallback default.
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+---
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+### Feature Gate Utility
+Import helper functions anywhere in the codebase:
+```typescript
+import { isStripeEnabled, getStripeClient, getStripeEnv } from './lib/stripeConfig';
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
-
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
-
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+if (isStripeEnabled()) {
+  // Stripe is enabled (Staging mode)
+} else {
+  // Stripe is disabled (Dev & Prod)
+}
 ```
