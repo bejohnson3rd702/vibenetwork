@@ -37,6 +37,7 @@ const N2NHome = lazy(() => import('./pages/N2NHome'));
 const AvoMarketplace = lazy(() => import('./components/AvoMarketplace'));
 const ShopifyStore = lazy(() => import('./components/ShopifyStore'));
 const BibleDrawer = lazy(() => import('./components/BibleDrawer'));
+const StripeConnectV2Demo = lazy(() => import('./components/StripeConnectV2Demo'));
 import { motion, AnimatePresence } from 'framer-motion';
 import { X } from 'lucide-react';
 
@@ -926,6 +927,7 @@ function App() {
                       <Route path="/call/:callId" element={<VirtualCallRoom />} />
                       <Route path="/food-truck" element={<FoodTruck />} />
                       <Route path="/reset-password" element={<ResetPassword />} />
+                      <Route path="/stripe-connect-v2" element={<StripeConnectV2Demo />} />
                     </Routes>
                   </Suspense>
                 </>

@@ -21,18 +21,11 @@ async function sendTwilioSMS(to: string, body: string) {
   const username = apiKeySid || accountSid;
   const password = apiKeySecret || authToken;
   
-  if (!password) {
-    console.warn("⚠️ Twilio authentication credential (secret or token) missing. Skipping SMS.");
-    return;
-  }
-  
-  if (!to || to.trim() === '') {
-    console.warn("⚠️ Recipient phone number is empty. Skipping SMS.");
+  if (!password || !to || to.trim() === '') {
     return;
   }
 
   const url = `https://api.twilio.com/2010-04-01/Accounts/${accountSid}/Messages.json`;
-  // btoa is built-in in Deno
   const auth = btoa(`${username}:${password}`);
   
   try {
@@ -42,11 +35,7 @@ async function sendTwilioSMS(to: string, body: string) {
         'Authorization': `Basic ${auth}`,
         'Content-Type': 'application/x-www-form-urlencoded'
       },
-      body: new URLSearchParams({
-        To: to,
-        From: from,
-        Body: body
-      }).toString()
+      body: new URLSearchParams({ To: to, From: from, Body: body }).toString()
     });
     
     if (!res.ok) {
@@ -70,31 +59,92 @@ serve(async (req) => {
 
   try {
     const body = await req.text();
-    const event = stripe.webhooks.constructEvent(body, signature, webhookSecret);
-
     const supabaseUrl = Deno.env.get("SUPABASE_URL") ?? "";
     const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
     const supabase = createClient(supabaseUrl, supabaseKey);
 
-    // Handle Successful Payment
+    // 1. Check for Thin V2 Events
+    let thinEvent: any = null;
+    try {
+      if (typeof (stripe as any).parseThinEvent === 'function') {
+        thinEvent = (stripe as any).parseThinEvent(body, signature, webhookSecret);
+      }
+    } catch (_err) {
+      // Not a thin event signature format; fall back to standard V1 event construct
+    }
+
+    if (thinEvent && thinEvent.id) {
+      // Retrieve full event data from V2 Events API
+      const event = await (stripe as any).v2.core.events.retrieve(thinEvent.id);
+      console.log(`📩 [V2 THIN WEBHOOK] Processing thin event ${event.id}: ${event.type}`);
+
+      if (event.type === 'v2.core.account[requirements].updated' || 
+          event.type.includes('capability_status_updated')) {
+        const accountId = event.related_object?.id;
+        if (accountId) {
+          try {
+            const acc = await (stripe as any).v2.core.accounts.retrieve(accountId, {
+              include: ["configuration.merchant", "requirements"],
+            });
+            const isReady = acc?.configuration?.merchant?.capabilities?.card_payments?.status === "active";
+            console.log(`✅ V2 Account ${accountId} card_payments capability status: ${isReady ? 'active' : 'pending'}`);
+          } catch (err: any) {
+            console.warn(`Failed to inspect V2 account ${accountId}:`, err.message);
+          }
+        }
+      }
+
+      return new Response(JSON.stringify({ received: true, thinEventId: event.id }), { status: 200 });
+    }
+
+    // 2. Standard V1 Webhook Events
+    const event = stripe.webhooks.constructEvent(body, signature, webhookSecret);
+
+    // Handle Subscription Updated (V2 Account Subscriptions use subscription.customer_account)
+    if (event.type === "customer.subscription.updated") {
+      const subscription = event.data.object as any;
+      const connectedAccountId = subscription.customer_account || subscription.customer;
+      const currentPriceId = subscription.items?.data?.[0]?.price?.id;
+      const isCanceled = subscription.cancel_at_period_end;
+
+      console.log(`📊 Subscription updated for connected account: ${connectedAccountId} (Price: ${currentPriceId}, CancelAtEnd: ${isCanceled})`);
+    } else if (event.type === "customer.subscription.deleted") {
+      const subscription = event.data.object as any;
+      const connectedAccountId = subscription.customer_account || subscription.customer;
+      console.log(`🚫 Subscription canceled for connected account: ${connectedAccountId}`);
+    }
+
+    // Handle Payment Intent Succeeded
     if (event.type === "payment_intent.succeeded") {
       const paymentIntent = event.data.object;
-      const metadata = paymentIntent.metadata;
+      const metadata = paymentIntent.metadata || {};
 
-      console.log(`Payment Success! $${paymentIntent.amount / 100} for ${metadata.product_title}`);
+      console.log(`Payment Success! $${paymentIntent.amount / 100} for ${metadata.product_title || 'Purchase'}`);
+
+      // Lookup whitelabel_id from metadata or fallback to creator profile
+      let whitelabelId = metadata.whitelabel_id || null;
+      if (!whitelabelId && metadata.creator_id) {
+        const { data: creatorProf } = await supabase
+          .from('profiles')
+          .select('whitelabel_id')
+          .eq('id', metadata.creator_id)
+          .maybeSingle();
+        whitelabelId = creatorProf?.whitelabel_id || null;
+      }
 
       await supabase.from('ledger').insert({
         amount: paymentIntent.amount / 100,
-        buyer_id: metadata.buyer_id,
-        creator_id: metadata.creator_id,
-        product_title: metadata.product_title,
-        transaction_type: 'PPV',
+        buyer_id: metadata.buyer_id || null,
+        creator_id: metadata.creator_id || null,
+        whitelabel_id: whitelabelId,
+        product_title: metadata.product_title || 'Vibe Network Purchase',
+        transaction_type: metadata.transaction_type || 'PPV',
         stripe_payment_intent: paymentIntent.id
       });
 
-      // Handle Storage Upgrades
+      // Storage Limit Upgrades
       if (metadata.storage_tier) {
-        let newLimit = 10737418240; // Default 10 GB fallback
+        let newLimit = 10737418240; // Default 10 GB
         if (metadata.storage_tier === 'pro_100gb') {
           newLimit = 107374182400; // 100 GB
         } else if (metadata.storage_tier === 'studio_500gb') {
@@ -103,35 +153,16 @@ serve(async (req) => {
           newLimit = 2199023255552; // 2 TB
         }
 
-        console.log(`Upgrading storage limit for creator ${metadata.creator_id} to ${newLimit} bytes`);
-        const { error: updateError } = await supabase
+        await supabase
           .from('profiles')
           .update({ storage_limit_bytes: newLimit })
           .eq('id', metadata.creator_id);
-
-        if (updateError) {
-          console.error("❌ Failed to update storage limit:", updateError.message);
-        } else {
-          console.log("✅ Storage limit updated successfully.");
-        }
       }
 
+      // Booking Confirmed
       if (metadata.is_booking === 'true' || metadata.is_booking === true) {
-         // Create the booking entry
          const bookingId = crypto.randomUUID();
-         
-         // Custom call link (routing to our custom WebRTC client call room)
          const customCallRoomUrl = `https://vibenetwork.tv/call/${bookingId}`;
-         
-         // Format Jitsi fallback link
-         let jitsiLink = `https://meet.jit.si/vibe_${bookingId}`;
-         if (metadata.meeting_type === 'virtual_audio') {
-           jitsiLink += '#config.startWithVideoMuted=true&config.startAudioOnly=true';
-         }
-         
-         // Determine which meeting link to store
-         const meetLink = customCallRoomUrl;
-
          const guestName = metadata.guest_name || 'Customer';
          const guestPhone = metadata.guest_phone || '';
          const meetingPurpose = metadata.meeting_purpose || '';
@@ -139,8 +170,7 @@ serve(async (req) => {
          const recordCall = metadata.record_call === 'true' || metadata.record_call === true;
          const recordingPrice = Number(metadata.recording_price || 0);
 
-         // Insert booking
-         const { error: insertError } = await supabase.from('bookings').insert({
+         await supabase.from('bookings').insert({
              id: bookingId,
              creator_id: metadata.creator_id,
              buyer_id: metadata.buyer_id,
@@ -151,41 +181,26 @@ serve(async (req) => {
              time: metadata.time,
              price: paymentIntent.amount / 100,
              meeting_type: metadata.meeting_type,
-             meeting_link: meetLink,
+             meeting_link: customCallRoomUrl,
              scheduled_at: scheduledAt,
              record_call: recordCall,
              recording_price: recordingPrice,
              status: 'confirmed'
          });
 
-         if (insertError) {
-           console.error("❌ Failed to insert booking:", insertError.message);
-         } else {
-           console.log("✅ Booking inserted successfully.");
-           
-           // Fetch creator's profile details for SMS notifications
-           const { data: creatorProfile } = await supabase
-             .from('profiles')
-             .select('username, sms_enabled, sms_phone')
-             .eq('id', metadata.creator_id)
-             .single();
+         const { data: creatorProfile } = await supabase
+           .from('profiles')
+           .select('username, sms_enabled, sms_phone')
+           .eq('id', metadata.creator_id)
+           .single();
 
-           const isAudio = metadata.meeting_type?.includes('audio');
-           const isVideo = metadata.meeting_type?.includes('video');
-           const isVirtual = isAudio || isVideo;
-           
-           const callTypeDisplay = isAudio ? 'Audio Call' : isVideo ? 'Video Call' : 'Physical Meeting';
-           const recordingAlert = recordCall ? ' (Call Recording purchased)' : '';
+         const callTypeDisplay = metadata.meeting_type?.includes('audio') ? 'Audio Call' : 'Video Call';
+         const guestMsg = `Hi ${guestName}, your ${callTypeDisplay} with @${creatorProfile?.username || 'Creator'} is confirmed for ${metadata.date} at ${metadata.time}! Join: ${customCallRoomUrl}`;
+         await sendTwilioSMS(guestPhone, guestMsg);
 
-           // 1. Send SMS to Guest
-           const guestMsg = `Hi ${guestName}, your 1-on-1 ${callTypeDisplay} with @${creatorProfile?.username || 'Creator'} is confirmed for ${metadata.date} at ${metadata.time}! ${isVirtual ? `Join room: ${customCallRoomUrl}` : ''}${recordingAlert}`;
-           await sendTwilioSMS(guestPhone, guestMsg);
-
-           // 2. Send SMS to Creator (if enabled and phone number exists)
-           if (creatorProfile?.sms_enabled && creatorProfile?.sms_phone) {
-             const creatorMsg = `Hi @${creatorProfile.username}, you have a new ${callTypeDisplay} booked by ${guestName} for ${metadata.date} at ${metadata.time}. Purpose: ${meetingPurpose}. ${isVirtual ? `Host room: ${customCallRoomUrl}` : ''}${recordingAlert}`;
-             await sendTwilioSMS(creatorProfile.sms_phone, creatorMsg);
-           }
+         if (creatorProfile?.sms_enabled && creatorProfile?.sms_phone) {
+           const creatorMsg = `Hi @${creatorProfile.username}, new ${callTypeDisplay} booked by ${guestName} for ${metadata.date} at ${metadata.time}. Host: ${customCallRoomUrl}`;
+           await sendTwilioSMS(creatorProfile.sms_phone, creatorMsg);
          }
       }
     }

@@ -58,14 +58,31 @@ serve(async (req) => {
     const globalVibeFee = globalSettings ? Number(globalSettings.global_vibe_fee) : 15;
     const globalWlFee = globalSettings ? Number(globalSettings.global_whitelabel_fee) : 15;
 
-    // 2. Calculate Total Platform Fee (Vibe Base + Potential Whitelabel)
-    let totalFeePercent = Number(creator.platform_fee_percentage ?? globalVibeFee);
-    
-    // If they belong to an Enterprise Whitelabel, pull that fee too
+    // 2. Calculate Total Platform Fee (Vibe Base + Potential Whitelabel / Creator Override)
+    let totalFeePercent = globalVibeFee;
+
     if (creator.whitelabel_id) {
-       const { data: wl } = await supabase.from('whitelabel_configs').select('platform_fee_percentage').eq('id', creator.whitelabel_id).single();
-       totalFeePercent += Number(wl?.platform_fee_percentage ?? globalWlFee);
+       const { data: wl } = await supabase
+         .from('whitelabel_configs')
+         .select('platform_fee_percentage, theme')
+         .eq('id', creator.whitelabel_id)
+         .maybeSingle();
+
+       if (wl?.theme?.creator_splits?.[creatorId] !== undefined) {
+         totalFeePercent = Number(wl.theme.creator_splits[creatorId]);
+       } else if (creator.platform_fee_percentage !== null && creator.platform_fee_percentage !== undefined) {
+         totalFeePercent = Number(creator.platform_fee_percentage);
+       } else if (wl?.platform_fee_percentage !== null && wl?.platform_fee_percentage !== undefined) {
+         totalFeePercent = Number(wl.platform_fee_percentage);
+       } else {
+         totalFeePercent = globalWlFee;
+       }
+    } else if (creator.platform_fee_percentage !== null && creator.platform_fee_percentage !== undefined) {
+       totalFeePercent = Number(creator.platform_fee_percentage);
     }
+
+    // Clamp fee percentage between 0% and 100%
+    totalFeePercent = Math.max(0, Math.min(100, totalFeePercent));
 
     // Amount is in cents
     const amountInCents = Math.round(Number(amount) * 100);
@@ -73,14 +90,15 @@ serve(async (req) => {
 
     // 3. Create Stripe Checkout Session with Destination Charge
     const session = await stripe.checkout.sessions.create({
-      payment_method_types: ["card"],
       mode: "payment",
+      managed_payments: { enabled: false } as any,
       line_items: [
         {
           price_data: {
             currency: "usd",
             product_data: {
               name: productTitle || "Vibe Network Purchase",
+              tax_code: "txcd_10000000",
             },
             unit_amount: amountInCents,
           },
@@ -95,7 +113,10 @@ serve(async (req) => {
         metadata: {
            buyer_id: user.id,
            creator_id: creatorId,
-           product_title: productTitle,
+           whitelabel_id: creator.whitelabel_id || '',
+           product_title: productTitle || "Vibe Network Purchase",
+           fee_percentage: totalFeePercent.toString(),
+           application_fee_amount: applicationFeeInCents.toString(),
            ...(extraMetadata || {})
         }
       },

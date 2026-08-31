@@ -2,6 +2,7 @@ import { serve } from "https://deno.land/std@0.192.0/http/server.ts";
 import Stripe from "https://esm.sh/stripe@14.14.0";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3";
 
+// Initialize Stripe Client with secret key (SDK manages API version automatically)
 const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY") || "", {
   apiVersion: "2023-10-16",
 });
@@ -27,7 +28,7 @@ serve(async (req) => {
     const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
     const supabase = createClient(supabaseUrl, supabaseKey);
 
-    // Get the user from the JWT
+    // Get user from JWT
     const token = authHeader.replace("Bearer ", "");
     const { data: { user }, error: userError } = await supabase.auth.getUser(token);
 
@@ -35,50 +36,101 @@ serve(async (req) => {
       return new Response("Unauthorized", { status: 401, headers: corsHeaders });
     }
 
-    // Check if profile already has a stripe_account_id
+    // Fetch user profile from Supabase
     const { data: profile } = await supabase
       .from("profiles")
-      .select("stripe_account_id")
+      .select("stripe_account_id, username, email")
       .eq("id", user.id)
       .single();
 
+    const body = await req.json().catch(() => ({}));
+    const returnUrl = body.return_url || body.returnUrl || `${req.headers.get('origin') || 'https://vibenetwork.tv'}`;
+
+    // If request asks for status check only:
+    if (body.action === 'get_status' && profile?.stripe_account_id) {
+      try {
+        const account = await (stripe as any).v2.core.accounts.retrieve(profile.stripe_account_id, {
+          include: ["configuration.merchant", "requirements"],
+        });
+        const readyToProcessPayments = account?.configuration?.merchant?.capabilities?.card_payments?.status === "active";
+        const requirementsStatus = account.requirements?.summary?.minimum_deadline?.status;
+        const onboardingComplete = requirementsStatus !== "currently_due" && requirementsStatus !== "past_due";
+
+        return new Response(JSON.stringify({
+          accountId: profile.stripe_account_id,
+          readyToProcessPayments,
+          requirementsStatus: requirementsStatus || "complete",
+          onboardingComplete
+        }), {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+          status: 200,
+        });
+      } catch (statusErr: any) {
+        console.warn("V2 Account status retrieve fallback:", statusErr.message);
+      }
+    }
+
     let accountId = profile?.stripe_account_id;
 
-    // If no Stripe account exists, create an Express account
+    // 1. Create Connected Account using V2 API if it does not exist
     if (!accountId) {
-      const account = await stripe.accounts.create({
-        type: "express",
-        capabilities: {
-          card_payments: { requested: true },
-          transfers: { requested: true },
+      const displayName = profile?.username ? `@${profile.username}` : (user.email || "Vibe Creator");
+      const contactEmail = user.email || profile?.email || "creator@vibenetwork.tv";
+
+      // V2 Account Creation: No top-level 'type' parameter
+      const account = await (stripe as any).v2.core.accounts.create({
+        display_name: displayName,
+        contact_email: contactEmail,
+        identity: {
+          country: "us",
         },
-        business_type: "individual",
+        dashboard: "full",
+        defaults: {
+          responsibilities: {
+            fees_collector: "stripe",
+            losses_collector: "stripe",
+          },
+        },
+        configuration: {
+          customer: {},
+          merchant: {
+            capabilities: {
+              card_payments: {
+                requested: true,
+              },
+            },
+          },
+        },
       });
 
       accountId = account.id;
 
-      // Save it to Supabase
+      // Save mapping in Supabase profiles
       await supabase
         .from("profiles")
         .update({ stripe_account_id: accountId })
         .eq("id", user.id);
     }
 
-    // Create an account link for onboarding/dashboard access
-    const { return_url } = await req.json();
-
-    const accountLink = await stripe.accountLinks.create({
+    // 2. Generate Onboarding Link using V2 Account Links API
+    const accountLink = await (stripe as any).v2.core.accountLinks.create({
       account: accountId,
-      refresh_url: return_url || `${req.headers.get('origin') || 'https://vibenetwork.tv'}`,
-      return_url: return_url || `${req.headers.get('origin') || 'https://vibenetwork.tv'}`,
-      type: "account_onboarding",
+      use_case: {
+        type: "account_onboarding",
+        account_onboarding: {
+          configurations: ["merchant", "customer"],
+          refresh_url: returnUrl,
+          return_url: `${returnUrl}?accountId=${accountId}&onboarded=true`,
+        },
+      },
     });
 
-    return new Response(JSON.stringify({ url: accountLink.url }), {
+    return new Response(JSON.stringify({ url: accountLink.url, accountId }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 200,
     });
   } catch (error: any) {
+    console.error("Stripe V2 Onboard Error:", error.message);
     return new Response(JSON.stringify({ error: error.message }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 400,

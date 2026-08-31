@@ -416,13 +416,16 @@ export async function getN2NLedger(parentId: string): Promise<any[]> {
     .select('id')
     .in('whitelabel_id', networkIds);
 
-  if (!profiles || profiles.length === 0) return [];
+  const creatorIds = (profiles || []).map((p: any) => p.id);
 
-  const creatorIds = profiles.map((p: any) => p.id);
-  const { data, error } = await supabase
-    .from('ledger')
-    .select('*')
-    .in('creator_id', creatorIds)
+  let query = supabase.from('ledger').select('*');
+  if (creatorIds.length > 0) {
+    query = query.or(`whitelabel_id.in.(${networkIds.join(',')}),creator_id.in.(${creatorIds.join(',')})`);
+  } else {
+    query = query.in('whitelabel_id', networkIds);
+  }
+
+  const { data, error } = await query
     .order('created_at', { ascending: false })
     .limit(100);
 

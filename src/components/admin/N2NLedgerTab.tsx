@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import { DollarSign, TrendingUp, Hash, ArrowUpDown, Calendar } from 'lucide-react';
 import { getN2NLedger } from '../../lib/n2n';
+import { supabase } from '../../supabaseClient';
 
 export const N2NLedgerTab = ({ wlConfig }: { wlConfig: any }) => {
   const accent = wlConfig?.accent || '#D35400';
@@ -20,6 +21,22 @@ export const N2NLedgerTab = ({ wlConfig }: { wlConfig: any }) => {
       setLoading(false);
     };
     load();
+
+    const channel = supabase
+      .channel(`realtime-n2n-ledger-${wlConfig.id}`)
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'ledger' },
+        async () => {
+          const freshData = await getN2NLedger(wlConfig.id);
+          setLedger(freshData);
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, [wlConfig?.id]);
 
   const months = useMemo(() => {

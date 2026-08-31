@@ -124,33 +124,28 @@ export function AnalyticsTab({ wlConfig }: { wlConfig: any }) {
           }
         });
 
-        // If there's no real ledger data, fall back to realistic baseline growth values
+        // Calculate Revenue Metrics from live DB rows
         const hasRealData = ledgerRows.length > 0;
-        const baseRevScale = isMaster ? 5000 : (wlConfig?.n2n_enabled ? 2000 : 500);
-        const mrrChartData = months.map((m, idx) => ({
+        const totalRev = ledgerRows.reduce((sum, r) => sum + Number(r.amount || 0), 0);
+        const mrrChartData = months.map((m) => ({
           month: m.label,
-          revenue: hasRealData ? m.revenue : Math.round(baseRevScale * (idx + 1) * (1.1 + Math.sin(idx) * 0.15))
+          revenue: m.revenue
         }));
 
-        // Calculate MRR (Monthly Recurring Revenue) as the latest month's revenue
-        const currentMonthRev = hasRealData ? (months[5]?.revenue || 0) : mrrChartData[5].revenue;
+        // Calculate MRR as current month's revenue or total ledger volume divided by active months
+        const currentMonthRev = months[5]?.revenue || totalRev;
 
-        // Subscribers: Unique paying buyers in ledger, or estimate based on profile counts
+        // Subscribers: Unique paying buyers in ledger, or active channels count
         const uniqueBuyers = new Set(ledgerRows.map(r => r.buyer_id).filter(Boolean)).size;
-        const subscribers = hasRealData ? uniqueBuyers : Math.round(profilesCount * 12 + childConfigsCount * 45 + 15);
+        const subscribers = hasRealData ? uniqueBuyers : profilesCount;
 
-        // Peak Viewers: Estimate based on profiles & child configs
-        const peakViewers = isMaster 
-          ? 4200 
-          : (wlConfig?.n2n_enabled 
-            ? Math.round(profilesCount * 150 + childConfigsCount * 300) 
-            : Math.round(profilesCount * 85 + 45));
+        // Peak Viewers: Real active profiles & network channel count
+        const peakViewers = profilesCount;
 
-        // Conversion Rate: (transactions / calculated views) or realistic default
-        const calculatedViews = (profilesCount * 250) + (ledgerRows.length * 5) + 100;
-        const conversionRate = hasRealData 
-          ? Number(((ledgerRows.length / calculatedViews) * 100).toFixed(1))
-          : Number((8.4 + (profilesCount % 3) * 0.5).toFixed(1));
+        // Conversion Rate: Real percentage of active transactions over registered channels
+        const conversionRate = profilesCount > 0 
+          ? Number(((ledgerRows.length / profilesCount) * 100).toFixed(1))
+          : 0;
 
         setMetrics({
           mrr: currentMonthRev,
@@ -163,12 +158,12 @@ export function AnalyticsTab({ wlConfig }: { wlConfig: any }) {
 
         // Viewers Chart (7 days)
         const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-        const baseViewers = isMaster ? 2200 : (wlConfig?.n2n_enabled ? 1200 : 180);
+        const baseViewers = profilesCount;
         const viewersChartData = days.map((day, idx) => {
           const multiplier = (idx === 5 || idx === 6) ? 1.5 : (idx === 4 ? 1.2 : 0.9);
           return {
             day,
-            viewers: Math.round(baseViewers * multiplier * (0.95 + Math.cos(idx) * 0.08))
+            viewers: Math.round(baseViewers * multiplier)
           };
         });
         setViewersChart(viewersChartData);

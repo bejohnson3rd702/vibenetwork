@@ -14,6 +14,17 @@ dist-ssr
 .env
 .env.*
 !.env.example
+test_stripe_integration.ts
+check_all_stripe_accounts.ts
+execute_test_transaction.ts
+execute_10_test_transactions.ts
+execute_20_channel_transactions.ts
+check_god_mode_live_stats.ts
+sync_test_transactions_to_ledger.ts
+seed_comprehensive_test_data.ts
+seed_stripe_transactions_to_ledger.ts
+execute_100_stripe_test_transactions.ts
+execute_instant_live_tx.ts
 
 # Editor directories and files
 .vscode/*

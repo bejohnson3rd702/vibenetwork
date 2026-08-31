@@ -908,42 +908,6 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
     }
   }, [location.search, isNetworkLevel, wlConfig]);
 
-  // Real-time duration metadata auto-detector for old video uploads and pasted URLs
-  useEffect(() => {
-    if (!seriesList || seriesList.length === 0) return;
-
-    seriesList.forEach(series => {
-      (series.episodes || []).forEach((ep: any) => {
-        if ((!ep.duration || ep.duration === 0) && (!ep.length || ep.length === 'TBD') && ep.video_url) {
-          const tempVideo = document.createElement('video');
-          tempVideo.preload = 'metadata';
-          tempVideo.src = ep.video_url;
-          tempVideo.onloadedmetadata = () => {
-            const durationSec = Math.round(tempVideo.duration || 0);
-            if (durationSec > 0) {
-              const formatted = `${Math.floor(durationSec / 60)}m ${durationSec % 60}s`;
-              setSeriesList(prev => prev.map(s => {
-                if (s.id === series.id) {
-                  return {
-                    ...s,
-                    episodes: (s.episodes || []).map((e: any) => e.id === ep.id ? { ...e, duration: durationSec, length: formatted } : e)
-                  };
-                }
-                return s;
-              }));
-
-              try {
-                supabase!.from('episodes').update({ duration: durationSec, length: formatted }).eq('id', ep.id);
-              } catch (err) {
-                console.warn('Silently backfilling episode duration failed:', err);
-              }
-            }
-          };
-        }
-      });
-    });
-  }, [seriesList.length]);
-
   useEffect(() => {
     if (isNetworkLevel && wlConfig?.id) {
       const isMasterVibe = wlConfig.id === 'master' || wlConfig.domain === 'vibenetwork.tv' || wlConfig.domain === 'vibenetwork.com' || wlConfig.domain?.includes('vercel.app');
@@ -1280,6 +1244,42 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
   const [uploadingEditSeriesImg, setUploadingEditSeriesImg] = useState(false);
   const [uploadingEditEpisodeImg, setUploadingEditEpisodeImg] = useState(false);
   const [uploadingEditEpisodeVideo, setUploadingEditEpisodeVideo] = useState(false);
+
+  // Real-time duration metadata auto-detector for old video uploads and pasted URLs
+  useEffect(() => {
+    if (!seriesList || seriesList.length === 0) return;
+
+    seriesList.forEach(series => {
+      (series.episodes || []).forEach((ep: any) => {
+        if ((!ep.duration || ep.duration === 0) && (!ep.length || ep.length === 'TBD') && ep.video_url) {
+          const tempVideo = document.createElement('video');
+          tempVideo.preload = 'metadata';
+          tempVideo.src = ep.video_url;
+          tempVideo.onloadedmetadata = () => {
+            const durationSec = Math.round(tempVideo.duration || 0);
+            if (durationSec > 0) {
+              const formatted = `${Math.floor(durationSec / 60)}m ${durationSec % 60}s`;
+              setSeriesList(prev => prev.map(s => {
+                if (s.id === series.id) {
+                  return {
+                    ...s,
+                    episodes: (s.episodes || []).map((e: any) => e.id === ep.id ? { ...e, duration: durationSec, length: formatted } : e)
+                  };
+                }
+                return s;
+              }));
+
+              try {
+                supabase!.from('episodes').update({ duration: durationSec, length: formatted }).eq('id', ep.id);
+              } catch (err) {
+                console.warn('Silently backfilling episode duration failed:', err);
+              }
+            }
+          };
+        }
+      });
+    });
+  }, [seriesList.length]);
 
   // Slow Upload Loader State & Effect
   const [showUploadLoader, setShowUploadLoader] = useState(false);
