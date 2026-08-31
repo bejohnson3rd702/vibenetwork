@@ -262,7 +262,7 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
   const [activeCinemaSeries, setActiveCinemaSeries] = useState<any | null>(null);
   const [activeCinemaEpisode, setActiveCinemaEpisode] = useState<any | null>(null);
   const [showCinemaModal, setShowCinemaModal] = useState(false);
-  const [isMobile, setIsMobile] = useState(false);
+  const [isMobile, setIsMobile] = useState(() => typeof window !== 'undefined' ? window.innerWidth <= 768 : false);
   useEffect(() => {
     if (typeof window === 'undefined') return;
     const handleResize = () => {
