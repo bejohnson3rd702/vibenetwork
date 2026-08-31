@@ -6296,262 +6296,260 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
 
                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '20px', alignItems: 'start' }}>
-                      {/* Left Column / Selector: Mobile Dropdowns or Desktop Calendar */}
-                      {isMobile ? (
-                        <div style={{ background: 'rgba(255,255,255,0.015)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '20px', padding: 'clamp(16px, 4vw, 24px)', backdropFilter: 'blur(20px)', display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                          
-                          {/* 1. Date Dropdown */}
-                          <div>
-                            <label style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '13px', fontWeight: 'bold', color: '#fff', marginBottom: '8px' }}>
-                              <Calendar size={15} color={wlConfig?.accent || '#00ff88'} /> 1. Select Available Date
-                            </label>
-                            <div style={{ position: 'relative' }}>
-                              <select
-                                value={selectedDate || ''}
-                                onChange={(e) => {
-                                  const val = Number(e.target.value);
-                                  if (val) {
-                                    setSelectedDate(val);
-                                    const found = mobileDateOptions.find(o => o.value === val);
-                                    if (found) setSelectedMonthOffset(found.monthOffset);
-                                    setSelectedTime(null);
-                                  } else {
-                                    setSelectedDate(null);
-                                    setSelectedTime(null);
-                                  }
-                                }}
-                                style={{
-                                  width: '100%',
-                                  padding: '14px 16px',
-                                  background: 'rgba(0,0,0,0.5)',
-                                  border: `1.5px solid ${selectedDate ? (wlConfig?.accent || '#00ff88') : 'rgba(255,255,255,0.1)'}`,
-                                  borderRadius: '12px',
-                                  color: selectedDate ? '#fff' : 'var(--text-muted)',
-                                  fontSize: '14px',
-                                  fontWeight: 600,
-                                  outline: 'none',
-                                  cursor: 'pointer',
-                                  appearance: 'none',
-                                  WebkitAppearance: 'none'
-                                }}
-                              >
-                                <option value="" style={{ background: '#111', color: '#888' }}>
-                                  {mobileDateOptions.length > 0 ? `-- Choose a Date (${mobileDateOptions.length} available) --` : '-- No upcoming dates with open slots --'}
+                      {/* Mobile Dropdowns Card (shown on mobile <= 900px) */}
+                      <div className="show-on-mobile-block" style={{ background: 'rgba(255,255,255,0.015)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '20px', padding: 'clamp(16px, 4vw, 24px)', backdropFilter: 'blur(20px)', flexDirection: 'column', gap: '16px' }}>
+                        
+                        {/* 1. Date Dropdown */}
+                        <div>
+                          <label style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '13px', fontWeight: 'bold', color: '#fff', marginBottom: '8px' }}>
+                            <Calendar size={15} color={wlConfig?.accent || '#00ff88'} /> 1. Select Available Date
+                          </label>
+                          <div style={{ position: 'relative' }}>
+                            <select
+                              value={selectedDate || ''}
+                              onChange={(e) => {
+                                const val = Number(e.target.value);
+                                if (val) {
+                                  setSelectedDate(val);
+                                  const found = mobileDateOptions.find(o => o.value === val);
+                                  if (found) setSelectedMonthOffset(found.monthOffset);
+                                  setSelectedTime(null);
+                                } else {
+                                  setSelectedDate(null);
+                                  setSelectedTime(null);
+                                }
+                              }}
+                              style={{
+                                width: '100%',
+                                padding: '14px 16px',
+                                background: 'rgba(0,0,0,0.5)',
+                                border: `1.5px solid ${selectedDate ? (wlConfig?.accent || '#00ff88') : 'rgba(255,255,255,0.1)'}`,
+                                borderRadius: '12px',
+                                color: selectedDate ? '#fff' : 'var(--text-muted)',
+                                fontSize: '14px',
+                                fontWeight: 600,
+                                outline: 'none',
+                                cursor: 'pointer',
+                                appearance: 'none',
+                                WebkitAppearance: 'none'
+                              }}
+                            >
+                              <option value="" style={{ background: '#111', color: '#888' }}>
+                                {mobileDateOptions.length > 0 ? `-- Choose a Date (${mobileDateOptions.length} available) --` : '-- No upcoming dates with open slots --'}
+                              </option>
+                              {mobileDateOptions.map(opt => (
+                                <option key={opt.value} value={opt.value} style={{ background: '#111', color: '#fff' }}>
+                                  {opt.label}
                                 </option>
-                                {mobileDateOptions.map(opt => (
-                                  <option key={opt.value} value={opt.value} style={{ background: '#111', color: '#fff' }}>
-                                    {opt.label}
+                              ))}
+                            </select>
+                            <div style={{ position: 'absolute', right: '14px', top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none', color: 'var(--text-muted)' }}>
+                              <ChevronRight size={16} style={{ transform: 'rotate(90deg)' }} />
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* 2. Timeslot Dropdown */}
+                        {(() => {
+                          const legacyDay = selectedDate ? (selectedDate > 10000000 ? selectedDate % 100 : selectedDate) : null;
+                          const slots = selectedDate ? (availableSlots[selectedDate] || availableSlots[legacyDay!] || []) : [];
+
+                          return (
+                            <div>
+                              <label style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '13px', fontWeight: 'bold', color: '#fff', marginBottom: '8px' }}>
+                                <Clock size={15} color={wlConfig?.accent || '#00ff88'} /> 2. Select Timeslot
+                              </label>
+                              <div style={{ position: 'relative' }}>
+                                <select
+                                  value={selectedTime || ''}
+                                  disabled={!selectedDate || slots.length === 0}
+                                  onChange={(e) => setSelectedTime(e.target.value || null)}
+                                  style={{
+                                    width: '100%',
+                                    padding: '14px 16px',
+                                    background: !selectedDate ? 'rgba(0,0,0,0.2)' : 'rgba(0,0,0,0.5)',
+                                    border: `1.5px solid ${selectedTime ? (wlConfig?.accent || '#00ff88') : 'rgba(255,255,255,0.1)'}`,
+                                    borderRadius: '12px',
+                                    color: selectedTime ? '#fff' : 'var(--text-muted)',
+                                    fontSize: '14px',
+                                    fontWeight: 600,
+                                    outline: 'none',
+                                    cursor: !selectedDate ? 'not-allowed' : 'pointer',
+                                    appearance: 'none',
+                                    WebkitAppearance: 'none',
+                                    opacity: !selectedDate ? 0.6 : 1
+                                  }}
+                                >
+                                  <option value="" style={{ background: '#111', color: '#888' }}>
+                                    {!selectedDate ? '-- Choose a date first --' : slots.length > 0 ? `-- Choose a Timeslot (${slots.length} available) --` : '-- No times available for this date --'}
                                   </option>
-                                ))}
-                              </select>
-                              <div style={{ position: 'absolute', right: '14px', top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none', color: 'var(--text-muted)' }}>
-                                <ChevronRight size={16} style={{ transform: 'rotate(90deg)' }} />
+                                  {slots.map(t => (
+                                    <option key={t} value={t} style={{ background: '#111', color: '#fff' }}>
+                                      {t}
+                                    </option>
+                                  ))}
+                                </select>
+                                <div style={{ position: 'absolute', right: '14px', top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none', color: 'var(--text-muted)' }}>
+                                  <ChevronRight size={16} style={{ transform: 'rotate(90deg)' }} />
+                                </div>
+                              </div>
+                            </div>
+                          );
+                        })()}
+                      </div>
+
+                      {/* Desktop Left Column: Calendar & Time Slots (shown on desktop > 900px) */}
+                      <div className="hide-on-mobile-block" style={{ flexDirection: 'column', gap: '20px' }}>
+                        
+                        {/* Calendar Card */}
+                        <div style={{ background: 'rgba(255,255,255,0.015)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '20px', padding: 'clamp(14px, 3vw, 24px)', backdropFilter: 'blur(20px)' }}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+                            <h4 style={{ margin: 0, fontSize: '14px', fontWeight: 'bold', color: '#fff', textTransform: 'uppercase', letterSpacing: '1px' }}>
+                              1. Select a Date
+                            </h4>
+                            
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                              <span style={{ fontSize: '13px', fontWeight: 'bold', color: '#fff', marginRight: '4px' }}>
+                                {displayMonthName} {displayYearName}
+                              </span>
+                              <div style={{ display: 'flex', gap: '4px' }}>
+                                <button 
+                                  disabled={calendarMonthOffset === 0} 
+                                  onClick={() => setCalendarMonthOffset(0)}
+                                  style={{
+                                    background: calendarMonthOffset === 0 ? 'rgba(255,255,255,0.02)' : 'rgba(255,255,255,0.06)',
+                                    border: 'none',
+                                    color: calendarMonthOffset === 0 ? 'rgba(255,255,255,0.15)' : '#fff',
+                                    cursor: calendarMonthOffset === 0 ? 'not-allowed' : 'pointer',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    width: '32px',
+                                    height: '32px',
+                                    borderRadius: '50%',
+                                    transition: 'all 0.2s ease'
+                                  }}
+                                  onMouseOver={e => {
+                                    if (calendarMonthOffset !== 0) e.currentTarget.style.background = 'rgba(255,255,255,0.12)';
+                                  }}
+                                  onMouseOut={e => {
+                                    if (calendarMonthOffset !== 0) e.currentTarget.style.background = 'rgba(255,255,255,0.06)';
+                                  }}
+                                >
+                                  <ChevronLeft size={16} />
+                                </button>
+                                <button 
+                                  disabled={calendarMonthOffset === 1} 
+                                  onClick={() => setCalendarMonthOffset(1)}
+                                  style={{
+                                    background: calendarMonthOffset === 1 ? 'rgba(255,255,255,0.02)' : 'rgba(255,255,255,0.06)',
+                                    border: 'none',
+                                    color: calendarMonthOffset === 1 ? 'rgba(255,255,255,0.15)' : '#fff',
+                                    cursor: calendarMonthOffset === 1 ? 'not-allowed' : 'pointer',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    width: '32px',
+                                    height: '32px',
+                                    borderRadius: '50%',
+                                    transition: 'all 0.2s ease'
+                                  }}
+                                  onMouseOver={e => {
+                                    if (calendarMonthOffset !== 1) e.currentTarget.style.background = 'rgba(255,255,255,0.12)';
+                                  }}
+                                  onMouseOut={e => {
+                                    if (calendarMonthOffset !== 1) e.currentTarget.style.background = 'rgba(255,255,255,0.06)';
+                                  }}
+                                >
+                                  <ChevronRight size={16} />
+                                </button>
                               </div>
                             </div>
                           </div>
 
-                          {/* 2. Timeslot Dropdown */}
+                          {/* Day Grid */}
+                          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: 'clamp(2px, 1vw, 6px)', textAlign: 'center' }}>
+                            {weekdays.map((day, i) => (
+                              <div key={i} style={{ color: 'var(--text-muted)', fontSize: '10px', fontWeight: 'bold', padding: '4px 0', textTransform: 'uppercase', letterSpacing: '0.5px' }}>{day}</div>
+                            ))}
+                            {daysGrid}
+                          </div>
+                        </div>
+
+                        {/* Time Selection Card */}
+                        <div style={{ background: 'rgba(255,255,255,0.015)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '20px', padding: 'clamp(14px, 3vw, 24px)', minHeight: '160px', backdropFilter: 'blur(20px)' }}>
+                          <h4 style={{ margin: '0 0 16px 0', fontSize: '14px', fontWeight: 'bold', color: '#fff', textTransform: 'uppercase', letterSpacing: '1px' }}>
+                            2. Available Slots
+                          </h4>
+
                           {(() => {
                             const legacyDay = selectedDate ? (selectedDate > 10000000 ? selectedDate % 100 : selectedDate) : null;
                             const slots = selectedDate ? (availableSlots[selectedDate] || availableSlots[legacyDay!] || []) : [];
-
-                            return (
-                              <div>
-                                <label style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '13px', fontWeight: 'bold', color: '#fff', marginBottom: '8px' }}>
-                                  <Clock size={15} color={wlConfig?.accent || '#00ff88'} /> 2. Select Timeslot
-                                </label>
-                                <div style={{ position: 'relative' }}>
-                                  <select
-                                    value={selectedTime || ''}
-                                    disabled={!selectedDate || slots.length === 0}
-                                    onChange={(e) => setSelectedTime(e.target.value || null)}
-                                    style={{
-                                      width: '100%',
-                                      padding: '14px 16px',
-                                      background: !selectedDate ? 'rgba(0,0,0,0.2)' : 'rgba(0,0,0,0.5)',
-                                      border: `1.5px solid ${selectedTime ? (wlConfig?.accent || '#00ff88') : 'rgba(255,255,255,0.1)'}`,
-                                      borderRadius: '12px',
-                                      color: selectedTime ? '#fff' : 'var(--text-muted)',
-                                      fontSize: '14px',
-                                      fontWeight: 600,
-                                      outline: 'none',
-                                      cursor: !selectedDate ? 'not-allowed' : 'pointer',
-                                      appearance: 'none',
-                                      WebkitAppearance: 'none',
-                                      opacity: !selectedDate ? 0.6 : 1
-                                    }}
-                                  >
-                                    <option value="" style={{ background: '#111', color: '#888' }}>
-                                      {!selectedDate ? '-- Choose a date first --' : slots.length > 0 ? `-- Choose a Timeslot (${slots.length} available) --` : '-- No times available for this date --'}
-                                    </option>
-                                    {slots.map(t => (
-                                      <option key={t} value={t} style={{ background: '#111', color: '#fff' }}>
-                                        {t}
-                                      </option>
-                                    ))}
-                                  </select>
-                                  <div style={{ position: 'absolute', right: '14px', top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none', color: 'var(--text-muted)' }}>
-                                    <ChevronRight size={16} style={{ transform: 'rotate(90deg)' }} />
-                                  </div>
+                            
+                            if (!selectedDate) {
+                              return (
+                                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '30px 0', gap: '10px', color: 'var(--text-muted)' }}>
+                                  <Calendar size={28} style={{ opacity: 0.5, color: wlConfig?.accent || '#00ff88' }} />
+                                  <span style={{ fontSize: '13px', fontStyle: 'italic' }}>Please select a date on the calendar.</span>
                                 </div>
-                              </div>
-                            );
+                              );
+                            }
+
+                            if (slots.length > 0) {
+                              return (
+                                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(85px, 1fr))', gap: '8px' }}>
+                                  {slots.map(time => {
+                                    const isTimeSelected = selectedTime === time;
+                                    return (
+                                      <div key={time} style={{ display: 'flex', gap: '4px' }}>
+                                        <button 
+                                          onClick={() => setSelectedTime(time)}
+                                          style={{ 
+                                            flex: 1, 
+                                            padding: '10px 6px', 
+                                            borderRadius: '10px', 
+                                            border: '1.5px solid', 
+                                            borderColor: isTimeSelected ? (wlConfig?.accent || '#00ff88') : 'transparent', 
+                                            background: isTimeSelected 
+                                              ? `${wlConfig?.accent || '#00ff88'}1c` 
+                                              : 'rgba(255,255,255,0.02)', 
+                                            color: isTimeSelected ? (wlConfig?.accent || '#00ff88') : '#fff', 
+                                            fontSize: '12px', 
+                                            fontWeight: 'bold', 
+                                            cursor: 'pointer', 
+                                            transition: 'all 0.2s ease',
+                                            textAlign: 'center',
+                                            boxShadow: isTimeSelected ? `0 0 12px ${wlConfig?.accent || '#00ff88'}1c` : 'none'
+                                          }}
+                                          onMouseOver={e => {
+                                            if (!isTimeSelected) {
+                                              e.currentTarget.style.background = 'rgba(255,255,255,0.06)';
+                                            }
+                                          }}
+                                          onMouseOut={e => {
+                                            if (!isTimeSelected) {
+                                              e.currentTarget.style.background = 'rgba(255,255,255,0.02)';
+                                            }
+                                          }}
+                                        >
+                                          {time}
+                                        </button>
+                                      </div>
+                                    );
+                                  })}
+                                </div>
+                              );
+                            } else {
+                              return (
+                                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '40px 0', gap: '10px', color: 'var(--text-muted)' }}>
+                                  <Clock size={32} style={{ opacity: 0.5, color: wlConfig?.accent || '#00ff88' }} />
+                                  <span style={{ fontSize: '13px', fontStyle: 'italic' }}>No times available on this date.</span>
+                                </div>
+                              );
+                            }
                           })()}
                         </div>
-                      ) : (
-                        /* Left Column: Calendar & Time Slots */
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-                          
-                          {/* Calendar Card */}
-                          <div style={{ background: 'rgba(255,255,255,0.015)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '20px', padding: 'clamp(14px, 3vw, 24px)', backdropFilter: 'blur(20px)' }}>
-                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-                              <h4 style={{ margin: 0, fontSize: '14px', fontWeight: 'bold', color: '#fff', textTransform: 'uppercase', letterSpacing: '1px' }}>
-                                1. Select a Date
-                              </h4>
-                              
-                              <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                                <span style={{ fontSize: '13px', fontWeight: 'bold', color: '#fff', marginRight: '4px' }}>
-                                  {displayMonthName} {displayYearName}
-                                </span>
-                                <div style={{ display: 'flex', gap: '4px' }}>
-                                  <button 
-                                    disabled={calendarMonthOffset === 0} 
-                                    onClick={() => setCalendarMonthOffset(0)}
-                                    style={{
-                                      background: calendarMonthOffset === 0 ? 'rgba(255,255,255,0.02)' : 'rgba(255,255,255,0.06)',
-                                      border: 'none',
-                                      color: calendarMonthOffset === 0 ? 'rgba(255,255,255,0.15)' : '#fff',
-                                      cursor: calendarMonthOffset === 0 ? 'not-allowed' : 'pointer',
-                                      display: 'flex',
-                                      alignItems: 'center',
-                                      justifyContent: 'center',
-                                      width: '32px',
-                                      height: '32px',
-                                      borderRadius: '50%',
-                                      transition: 'all 0.2s ease'
-                                    }}
-                                    onMouseOver={e => {
-                                      if (calendarMonthOffset !== 0) e.currentTarget.style.background = 'rgba(255,255,255,0.12)';
-                                    }}
-                                    onMouseOut={e => {
-                                      if (calendarMonthOffset !== 0) e.currentTarget.style.background = 'rgba(255,255,255,0.06)';
-                                    }}
-                                  >
-                                    <ChevronLeft size={16} />
-                                  </button>
-                                  <button 
-                                    disabled={calendarMonthOffset === 1} 
-                                    onClick={() => setCalendarMonthOffset(1)}
-                                    style={{
-                                      background: calendarMonthOffset === 1 ? 'rgba(255,255,255,0.02)' : 'rgba(255,255,255,0.06)',
-                                      border: 'none',
-                                      color: calendarMonthOffset === 1 ? 'rgba(255,255,255,0.15)' : '#fff',
-                                      cursor: calendarMonthOffset === 1 ? 'not-allowed' : 'pointer',
-                                      display: 'flex',
-                                      alignItems: 'center',
-                                      justifyContent: 'center',
-                                      width: '32px',
-                                      height: '32px',
-                                      borderRadius: '50%',
-                                      transition: 'all 0.2s ease'
-                                    }}
-                                    onMouseOver={e => {
-                                      if (calendarMonthOffset !== 1) e.currentTarget.style.background = 'rgba(255,255,255,0.12)';
-                                    }}
-                                    onMouseOut={e => {
-                                      if (calendarMonthOffset !== 1) e.currentTarget.style.background = 'rgba(255,255,255,0.06)';
-                                    }}
-                                  >
-                                    <ChevronRight size={16} />
-                                  </button>
-                                </div>
-                              </div>
-                            </div>
-
-                            {/* Day Grid */}
-                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: 'clamp(2px, 1vw, 6px)', textAlign: 'center' }}>
-                              {weekdays.map((day, i) => (
-                                <div key={i} style={{ color: 'var(--text-muted)', fontSize: '10px', fontWeight: 'bold', padding: '4px 0', textTransform: 'uppercase', letterSpacing: '0.5px' }}>{day}</div>
-                              ))}
-                              {daysGrid}
-                            </div>
-                          </div>
-
-                          {/* Time Selection Card */}
-                          <div style={{ background: 'rgba(255,255,255,0.015)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '20px', padding: 'clamp(14px, 3vw, 24px)', minHeight: '160px', backdropFilter: 'blur(20px)' }}>
-                            <h4 style={{ margin: '0 0 16px 0', fontSize: '14px', fontWeight: 'bold', color: '#fff', textTransform: 'uppercase', letterSpacing: '1px' }}>
-                              2. Available Slots
-                            </h4>
-
-                            {(() => {
-                              const legacyDay = selectedDate ? (selectedDate > 10000000 ? selectedDate % 100 : selectedDate) : null;
-                              const slots = selectedDate ? (availableSlots[selectedDate] || availableSlots[legacyDay!] || []) : [];
-                              
-                              if (!selectedDate) {
-                                return (
-                                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '30px 0', gap: '10px', color: 'var(--text-muted)' }}>
-                                    <Calendar size={28} style={{ opacity: 0.5, color: wlConfig?.accent || '#00ff88' }} />
-                                    <span style={{ fontSize: '13px', fontStyle: 'italic' }}>Please select a date on the calendar.</span>
-                                  </div>
-                                );
-                              }
-
-                              if (slots.length > 0) {
-                                return (
-                                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(85px, 1fr))', gap: '8px' }}>
-                                    {slots.map(time => {
-                                      const isTimeSelected = selectedTime === time;
-                                      return (
-                                        <div key={time} style={{ display: 'flex', gap: '4px' }}>
-                                          <button 
-                                            onClick={() => setSelectedTime(time)}
-                                            style={{ 
-                                              flex: 1, 
-                                              padding: '10px 6px', 
-                                              borderRadius: '10px', 
-                                              border: '1.5px solid', 
-                                              borderColor: isTimeSelected ? (wlConfig?.accent || '#00ff88') : 'transparent', 
-                                              background: isTimeSelected 
-                                                ? `${wlConfig?.accent || '#00ff88'}1c` 
-                                                : 'rgba(255,255,255,0.02)', 
-                                              color: isTimeSelected ? (wlConfig?.accent || '#00ff88') : '#fff', 
-                                              fontSize: '12px', 
-                                              fontWeight: 'bold', 
-                                              cursor: 'pointer', 
-                                              transition: 'all 0.2s ease',
-                                              textAlign: 'center',
-                                              boxShadow: isTimeSelected ? `0 0 12px ${wlConfig?.accent || '#00ff88'}1c` : 'none'
-                                            }}
-                                            onMouseOver={e => {
-                                              if (!isTimeSelected) {
-                                                e.currentTarget.style.background = 'rgba(255,255,255,0.06)';
-                                              }
-                                            }}
-                                            onMouseOut={e => {
-                                              if (!isTimeSelected) {
-                                                e.currentTarget.style.background = 'rgba(255,255,255,0.02)';
-                                              }
-                                            }}
-                                          >
-                                            {time}
-                                          </button>
-                                        </div>
-                                      );
-                                    })}
-                                  </div>
-                                );
-                              } else {
-                                return (
-                                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '40px 0', gap: '10px', color: 'var(--text-muted)' }}>
-                                    <Clock size={32} style={{ opacity: 0.5, color: wlConfig?.accent || '#00ff88' }} />
-                                    <span style={{ fontSize: '13px', fontStyle: 'italic' }}>No times available on this date.</span>
-                                  </div>
-                                );
-                              }
-                            })()}
-                          </div>
-                        </div>
-                      )}
+                      </div>
 
                       {/* Right Column: Confirmation Form & Checkout */}
                       <div>

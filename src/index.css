@@ -318,13 +318,23 @@ html[data-theme="light"] .btn-primary {
 .show-on-mobile {
   display: none !important;
 }
+.show-on-mobile-block {
+  display: none !important;
+}
+.hide-on-mobile-block {
+  display: flex !important;
+}
 
 /* Mobile Responsive Engine */
-@media (max-width: 768px) {
+@media (max-width: 900px) {
   .show-on-mobile {
     display: block !important;
   }
-  .hide-on-mobile {
+  .show-on-mobile-block {
+    display: flex !important;
+  }
+  .hide-on-mobile,
+  .hide-on-mobile-block {
     display: none !important;
   }
   .px-mobile-sm {
