@@ -31,22 +31,26 @@ const Footer: React.FC = () => {
           Contact Support
         </Link>
       </div>
-      <div style={{ 
-        width: '100%', 
-        maxWidth: '1400px', 
-        display: 'flex', 
-        justifyContent: 'space-between', 
-        alignItems: 'center', 
-        color: 'rgba(255,255,255,0.3)', 
-        fontSize: '12px',
-        padding: '0 40px',
-        flexWrap: 'wrap',
-        gap: '12px'
-      }}>
-        <div>
+      <div 
+        className="px-mobile-sm" 
+        style={{ 
+          width: '100%', 
+          maxWidth: '1400px', 
+          display: 'flex', 
+          justifyContent: 'space-between', 
+          alignItems: 'center', 
+          color: 'rgba(255,255,255,0.3)', 
+          fontSize: '12px',
+          padding: '0 40px',
+          flexWrap: 'wrap',
+          gap: '12px',
+          textAlign: 'center'
+        }}
+      >
+        <div style={{ flex: '1 1 auto', textAlign: 'inherit' }}>
           &copy; {year} {platformName}. All rights reserved.
         </div>
-        <div style={{ fontSize: '10px', letterSpacing: '1px', textTransform: 'uppercase', fontWeight: 700 }}>
+        <div style={{ flex: '1 1 auto', fontSize: '10px', letterSpacing: '1px', textTransform: 'uppercase', fontWeight: 700, textAlign: 'inherit' }}>
           Powered By: <span style={{ color: 'rgba(255,255,255,0.5)' }}>VIBE NETWORK</span>
         </div>
       </div>

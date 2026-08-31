@@ -144,8 +144,8 @@ const Contact: React.FC = () => {
     <div style={{ 
       minHeight: '100vh', 
       background: 'var(--bg-color)', 
-      paddingTop: '120px', 
-      paddingBottom: '80px',
+      paddingTop: '90px', 
+      paddingBottom: '60px',
       color: 'var(--text-primary)',
       display: 'flex',
       flexDirection: 'column',
@@ -157,23 +157,23 @@ const Contact: React.FC = () => {
       <div className="hide-on-mobile" style={{ position: 'absolute', top: '10%', right: '5%', width: '400px', height: '400px', background: accentColor, filter: 'blur(200px)', opacity: 0.15, zIndex: 0, borderRadius: '50%' }} />
       <div className="hide-on-mobile" style={{ position: 'absolute', bottom: '10%', left: '5%', width: '300px', height: '300px', background: '#ffffff', filter: 'blur(150px)', opacity: 0.05, zIndex: 0, borderRadius: '50%' }} />
 
-      <div style={{ maxWidth: '1200px', width: '100%', padding: '0 40px', position: 'relative', zIndex: 2 }}>
+      <div className="px-mobile-sm" style={{ maxWidth: '1200px', width: '100%', padding: '0 40px', position: 'relative', zIndex: 2 }}>
         
-        <div style={{ textAlign: 'center', marginBottom: '60px' }}>
+        <div style={{ textAlign: 'center', marginBottom: '40px' }}>
           <motion.div 
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
-            style={{ padding: '8px 24px', background: 'rgba(255,255,255,0.03)', backdropFilter: 'blur(10px)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '100px', display: 'inline-flex', alignItems: 'center', gap: '12px', marginBottom: '20px' }}
+            style={{ padding: '6px 18px', background: 'rgba(255,255,255,0.03)', backdropFilter: 'blur(10px)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '100px', display: 'inline-flex', alignItems: 'center', gap: '10px', marginBottom: '16px' }}
           >
             <span style={{ width: 6, height: 6, borderRadius: '50%', background: accentColor, boxShadow: `0 0 10px ${accentColor}` }} />
-            <span style={{ fontSize: '12px', fontWeight: 700, letterSpacing: '3px', textTransform: 'uppercase', color: 'rgba(255,255,255,0.8)' }}>
+            <span style={{ fontSize: '11px', fontWeight: 700, letterSpacing: '2.5px', textTransform: 'uppercase', color: 'rgba(255,255,255,0.8)' }}>
               {isOlympian ? "Contact Support" : "Enterprise Support"}
             </span>
           </motion.div>
           <motion.h1 
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            style={{ fontSize: '56px', fontWeight: 900, marginBottom: '20px', letterSpacing: '-2px' }}
+            style={{ fontSize: 'clamp(28px, 6vw, 52px)', fontWeight: 900, marginBottom: '16px', letterSpacing: '-1.5px', lineHeight: 1.15 }}
           >
             Get In Touch
           </motion.h1>
@@ -181,7 +181,7 @@ const Contact: React.FC = () => {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 }}
-            style={{ fontSize: '18px', color: 'var(--text-secondary)', maxWidth: '600px', margin: '0 auto', lineHeight: 1.6 }}
+            style={{ fontSize: '16px', color: 'var(--text-secondary)', maxWidth: '600px', margin: '0 auto', lineHeight: 1.6 }}
           >
             {isOlympian 
               ? `Have questions about ${wlConfig?.name || 'Muscle & Fitness'}, partner opportunities, or official gear? Contact us and we will get back to you shortly.`
@@ -199,24 +199,24 @@ const Contact: React.FC = () => {
               initial={{ opacity: 0, y: 40 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.3 }}
-              style={{ background: 'var(--bg-surface)', padding: '40px', borderRadius: '24px', border: '1px solid var(--bg-surface-hover)', maxWidth: '650px', width: '100%' }}
+              style={{ background: 'var(--bg-surface)', padding: 'clamp(20px, 4vw, 40px)', borderRadius: '24px', border: '1px solid var(--bg-surface-hover)', maxWidth: '650px', width: '100%' }}
             >
               {formContent}
             </motion.div>
           </div>
         ) : (
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '40px' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '24px' }}>
             {/* Contact Info Sidebar */}
             <motion.div 
               initial={{ opacity: 0, x: -40 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 0.2 }}
-              style={{ display: 'flex', flexDirection: 'column', gap: '30px' }}
+              style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}
             >
-              <div style={{ background: 'var(--bg-surface)', padding: '40px', borderRadius: '24px', border: '1px solid var(--bg-surface-hover)', flex: 1 }}>
-                <h3 style={{ fontSize: '24px', fontWeight: 800, marginBottom: '30px' }}>Contact Information</h3>
+              <div style={{ background: 'var(--bg-surface)', padding: 'clamp(20px, 4vw, 40px)', borderRadius: '24px', border: '1px solid var(--bg-surface-hover)', flex: 1 }}>
+                <h3 style={{ fontSize: '22px', fontWeight: 800, marginBottom: '24px' }}>Contact Information</h3>
                 
-                <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '24px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '14px', marginBottom: '20px' }}>
                   <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: `${accentColor}22`, display: 'flex', alignItems: 'center', justifyContent: 'center', color: accentColor }}>
                     <Mail size={20} />
                   </div>

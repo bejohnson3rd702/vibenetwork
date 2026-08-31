@@ -49,40 +49,40 @@ export default function BookingModal({ onClose, profile }: { onClose: () => void
   };
 
   return (
-    <div style={{ position: 'fixed', inset: 0, zIndex: 999999, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(0,0,0,0.8)', backdropFilter: 'blur(10px)' }}>
-      <div style={{ background: 'var(--bg-color)', width: '100%', maxWidth: '500px', maxHeight: '90vh', overflowY: 'auto', borderRadius: '24px', border: '1px solid rgba(255,255,255,0.1)', boxShadow: '0 25px 50px rgba(0,0,0,0.5)' }}>
+    <div style={{ position: 'fixed', inset: 0, zIndex: 999999, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(0,0,0,0.8)', backdropFilter: 'blur(10px)', padding: '16px' }}>
+      <div style={{ background: 'var(--bg-color)', width: '100%', maxWidth: '480px', maxHeight: '90vh', overflowY: 'auto', borderRadius: '20px', border: '1px solid rgba(255,255,255,0.1)', boxShadow: '0 25px 50px rgba(0,0,0,0.5)' }}>
         
-        <div style={{ padding: '24px 30px', borderBottom: '1px solid rgba(255,255,255,0.05)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-           <h2 style={{ margin: 0, fontSize: '24px', fontWeight: 'bold' }}>Schedule Appointment</h2>
-           <button onClick={onClose} style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', padding: '8px' }}>
-              <X size={24} />
+        <div style={{ padding: '20px 24px', borderBottom: '1px solid rgba(255,255,255,0.05)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+           <h2 style={{ margin: 0, fontSize: '20px', fontWeight: 'bold' }}>Schedule Appointment</h2>
+           <button onClick={onClose} style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', padding: '6px' }}>
+              <X size={22} />
            </button>
         </div>
 
         {submitted ? (
-           <div style={{ padding: '60px 40px', textAlign: 'center' }}>
+           <div style={{ padding: '50px 24px', textAlign: 'center' }}>
               <div style={{ width: '60px', height: '60px', borderRadius: '50%', background: 'rgba(0,255,136,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 20px' }}>
                  <Calendar color="#00ff88" size={30} />
               </div>
-              <h3 style={{ fontSize: '24px', margin: '0 0 10px 0' }}>Request Submitted</h3>
-              <p style={{ color: 'var(--text-muted)' }}>We have received your appointment request. We will confirm your hourly slot shortly.</p>
+              <h3 style={{ fontSize: '22px', margin: '0 0 10px 0' }}>Request Submitted</h3>
+              <p style={{ color: 'var(--text-muted)', fontSize: '14px', lineHeight: 1.5 }}>We have received your appointment request. We will confirm your hourly slot shortly.</p>
            </div>
         ) : (
-           <form onSubmit={handleSubmit} style={{ padding: '30px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
+           <form onSubmit={handleSubmit} style={{ padding: 'clamp(16px, 4vw, 28px)', display: 'flex', flexDirection: 'column', gap: '16px' }}>
               
-              <div style={{ display: 'flex', gap: '20px' }}>
-                 <div style={{ flex: 1 }}>
-                    <label style={{ display: 'block', marginBottom: '8px', fontWeight: 'bold', fontSize: '14px', color: '#ccc' }}>Date</label>
+              <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
+                 <div style={{ flex: '1 1 180px' }}>
+                    <label style={{ display: 'block', marginBottom: '8px', fontWeight: 'bold', fontSize: '13px', color: '#ccc' }}>Date</label>
                     <div style={{ position: 'relative' }}>
-                       <Calendar size={18} style={{ position: 'absolute', left: '16px', top: '16px', color: '#888' }} />
-                       <input type="date" required value={date} onChange={e=>setDate(e.target.value)} style={{ width: '100%', padding: '14px 16px 14px 44px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px', color: 'var(--text-primary)', fontSize: '16px', outline: 'none' }} />
+                       <Calendar size={18} style={{ position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)', color: '#888' }} />
+                       <input type="date" required value={date} onChange={e=>setDate(e.target.value)} style={{ width: '100%', padding: '12px 14px 12px 42px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px', color: 'var(--text-primary)', fontSize: '15px', outline: 'none' }} />
                     </div>
                  </div>
-                 <div style={{ flex: 1 }}>
-                    <label style={{ display: 'block', marginBottom: '8px', fontWeight: 'bold', fontSize: '14px', color: '#ccc' }}>Time</label>
+                 <div style={{ flex: '1 1 180px' }}>
+                    <label style={{ display: 'block', marginBottom: '8px', fontWeight: 'bold', fontSize: '13px', color: '#ccc' }}>Time</label>
                     <div style={{ position: 'relative' }}>
-                       <Clock size={18} style={{ position: 'absolute', left: '16px', top: '16px', color: '#888' }} />
-                       <input type="time" required value={time} onChange={e=>setTime(e.target.value)} style={{ width: '100%', padding: '14px 16px 14px 44px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px', color: 'var(--text-primary)', fontSize: '16px', outline: 'none' }} />
+                       <Clock size={18} style={{ position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)', color: '#888' }} />
+                       <input type="time" required value={time} onChange={e=>setTime(e.target.value)} style={{ width: '100%', padding: '12px 14px 12px 42px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px', color: 'var(--text-primary)', fontSize: '15px', outline: 'none' }} />
                     </div>
                  </div>
               </div>

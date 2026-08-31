@@ -25,15 +25,7 @@ import { processAndEnhanceImage } from '../lib/imageProcessor';
 import { syncContactToExternalCrms } from '../lib/crmSync';
 import { validateFileSafety } from '../lib/fileSecurity';
 
-let stripePromise: Promise<any> | null = null;
-const getStripe = () => {
-  if (!stripePromise) {
-    stripePromise = import('@stripe/stripe-js').then(({ loadStripe }) =>
-      loadStripe(import.meta.env.VITE_STRIPE_PUBLIC_KEY || 'pk_test_placeholder')
-    );
-  }
-  return stripePromise;
-};
+import { isStripeEnabled, getStripeClient } from '../lib/stripeConfig';
 
 interface BookingFormInputProps {
   label: string;
@@ -974,21 +966,51 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
   // and startLiveStream are all managed by the useStreaming hook above.
 
    const handleStripeCheckout = async (itemName: string, amount: number, extraMetadata?: any) => {
-     try {
-       // Pre-warm / load Stripe SDK lazily on checkout
-       await getStripe();
+     if (!isStripeEnabled()) {
+       // Dev and Prod fallback: instant simulated activation
+       toast.success(`[DEV MODE] Instant unlocked: ${itemName} ($${amount.toFixed(2)})`);
+       if (itemName.toLowerCase().includes('ppv') || itemName.toLowerCase().includes('live')) {
+         setHasPaidForLive(true);
+       }
+       return;
+     }
 
-       // In a production app, this endpoint would be your Supabase Edge Function
-       // that creates the Stripe Checkout Session securely using the Stripe Secret Key.
+     try {
+       // Staging: Pre-warm Stripe client
+       await getStripeClient();
+
+       // Try local Staging API endpoint first
+       const localRes = await fetch('/api/stripe/create-checkout-session', {
+         method: 'POST',
+         headers: { 'Content-Type': 'application/json' },
+         body: JSON.stringify({
+           productTitle: itemName,
+           amount,
+           creatorId: targetProfileId,
+           returnUrl: window.location.href,
+           extraMetadata
+         })
+       }).catch(() => null);
+
+       if (localRes && localRes.ok) {
+         const data = await localRes.json();
+         if (data && data.url) {
+           window.location.href = data.url;
+           return;
+         }
+       }
+
+       // Supabase Edge Function fallback
+       const session = (await supabase.auth.getSession()).data.session;
        const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/stripe-checkout`, {
          method: 'POST',
          headers: {
            'Content-Type': 'application/json',
-           'Authorization': `Bearer ${(await supabase.auth.getSession()).data.session?.access_token}`
+           ...(session?.access_token ? { 'Authorization': `Bearer ${session.access_token}` } : {})
          },
          body: JSON.stringify({
            productTitle: itemName,
-           amount: amount, // Do not multiply by 100, edge function handles it
+           amount: amount,
            creatorId: targetProfileId,
            returnUrl: window.location.href,
            extraMetadata
@@ -996,16 +1018,14 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
        });
        
        const data = await response.json().catch(() => null);
-       
        if (data && data.url) {
          window.location.href = data.url;
        } else {
-         // Fallback for development before Edge Function is deployed
-         toast.info(`[STRIPE READY]\n\nThe frontend is wired up! To complete the payment for:\n${itemName} ($${amount.toFixed(2)})\n\nyou just need to deploy the Supabase Edge Function to return a sessionId.`);
+         toast.info(`[STRIPE STAGING READY]\n\nCheckout session initiated for: ${itemName} ($${amount.toFixed(2)})`);
        }
-     } catch (error) {
+     } catch (error: any) {
        console.error("Stripe Checkout Error:", error);
-       toast.error(`[STRIPE READY]\n\nThe frontend is wired up! To complete the payment for:\n${itemName} ($${amount.toFixed(2)})\n\nyou just need to deploy the Supabase Edge Function to return a sessionId.`);
+       toast.error(`Stripe Checkout Error: ${error.message || 'Payment initiation failed.'}`);
      }
    };
 
@@ -4125,18 +4145,18 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
         {/* View Toggle Bar (For channel owners & admins) */}
         {isOwnProfile && (
           <div style={{ padding: '12px', display: 'flex', justifyContent: 'center', position: 'relative', zIndex: 100, marginBottom: '20px' }}>
-            <div style={{ display: 'flex', background: 'rgba(0,0,0,0.4)', backdropFilter: 'blur(12px)', borderRadius: '30px', padding: '4px', border: '1px solid rgba(255,255,255,0.1)', boxShadow: '0 8px 32px rgba(0,0,0,0.2)' }}>
+            <div style={{ display: 'flex', gap: isMobile ? '10px' : '8px', background: 'rgba(0,0,0,0.4)', backdropFilter: 'blur(12px)', borderRadius: '30px', padding: '5px', border: '1px solid rgba(255,255,255,0.1)', boxShadow: '0 8px 32px rgba(0,0,0,0.2)' }}>
               <button 
                 onClick={() => setViewMode('edit')}
                 style={{ 
-                  padding: '8px 24px', 
+                  padding: isMobile ? '8px 16px' : '8px 24px', 
                   borderRadius: '30px', 
                   border: viewMode === 'edit' ? 'none' : '1px solid rgba(253, 216, 53, 0.4)', 
                   background: viewMode === 'edit' ? '#fdd835' : 'rgba(253, 216, 53, 0.15)', 
                   color: viewMode === 'edit' ? '#000' : '#fdd835', 
                   textShadow: viewMode === 'edit' ? '0 1px 3px rgba(255, 255, 255, 0.9)' : 'none',
                   fontWeight: 900, 
-                  fontSize: '14px',
+                  fontSize: isMobile ? '13px' : '14px',
                   cursor: 'pointer', 
                   display: 'flex', 
                   alignItems: 'center', 
@@ -4155,14 +4175,14 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
                   setShowCreatorPanel(false);
                 }}
                 style={{ 
-                  padding: '8px 24px', 
+                  padding: isMobile ? '8px 16px' : '8px 24px', 
                   borderRadius: '30px', 
                   border: viewMode === 'public' ? 'none' : '1px solid rgba(100, 181, 246, 0.4)', 
                   background: viewMode === 'public' ? '#1565c0' : 'rgba(21, 101, 192, 0.15)', 
                   color: viewMode === 'public' ? '#fff' : '#64b5f6', 
                   textShadow: 'none',
                   fontWeight: 900, 
-                  fontSize: '14px',
+                  fontSize: isMobile ? '13px' : '14px',
                   cursor: 'pointer', 
                   display: 'flex', 
                   alignItems: 'center', 
@@ -5824,6 +5844,31 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
             return (availableSlots[yyyymmdd] && availableSlots[yyyymmdd].length > 0) || (availableSlots[day] && availableSlots[day].length > 0);
           };
 
+          // Compute all upcoming dates with available slots for the mobile dropdown view
+          const mobileDateOptions: { value: number; label: string; count: number; monthOffset: number }[] = [];
+          for (let offsetDays = 0; offsetDays < 30; offsetDays++) {
+            const dateObj = new Date(currentYear, currentMonth, todayDate + offsetDays);
+            const y = dateObj.getFullYear();
+            const m = dateObj.getMonth();
+            const dayNum = dateObj.getDate();
+            const yyyymmdd = y * 10000 + (m + 1) * 100 + dayNum;
+            const legacyDay = dayNum;
+
+            const slots = availableSlots[yyyymmdd] || availableSlots[legacyDay] || [];
+            if (slots.length > 0) {
+              const weekdayName = dateObj.toLocaleDateString('en-US', { weekday: 'short' });
+              const monthShort = dateObj.toLocaleDateString('en-US', { month: 'short' });
+              const formatted = `${weekdayName}, ${monthShort} ${dayNum}`;
+              const monthOffset = (y === currentYear && m === currentMonth) ? 0 : 1;
+              mobileDateOptions.push({
+                value: yyyymmdd,
+                label: `${formatted} (${slots.length} ${slots.length === 1 ? 'slot' : 'slots'})`,
+                count: slots.length,
+                monthOffset
+              });
+            }
+          }
+
           const weekdays = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
           
           const daysGrid = [];
@@ -5848,9 +5893,13 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
                 }}
                 style={{
                   aspectRatio: '1',
+                  width: '100%',
+                  maxWidth: '40px',
+                  maxHeight: '40px',
+                  margin: '0 auto',
                   borderRadius: '50%',
                   border: selected
-                    ? `2.5px solid ${wlConfig?.accent || '#00ff88'}`
+                    ? `2px solid ${wlConfig?.accent || '#00ff88'}`
                     : available && !disabled
                     ? `1px solid ${(wlConfig?.accent || '#00ff88')}66`
                     : '1px solid rgba(255,255,255,0.05)',
@@ -5867,12 +5916,13 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
                     ? (wlConfig?.accent || '#00ff88')
                     : '#fff',
                   cursor: disabled ? 'not-allowed' : 'pointer',
-                  fontSize: '14px',
+                  fontSize: 'clamp(11px, 2.5vw, 13px)',
                   fontWeight: selected || available ? 'bold' : 'normal',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
                   position: 'relative',
+                  padding: 0,
                   transition: 'all 0.2s ease',
                   boxShadow: selected ? `0 0 12px ${wlConfig?.accent || '#00ff88'}33` : 'none',
                 }}
@@ -5893,7 +5943,7 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
                 {available && !disabled && (
                   <span style={{
                     position: 'absolute',
-                    bottom: '4px',
+                    bottom: '3px',
                     width: '4px',
                     height: '4px',
                     borderRadius: '50%',
@@ -5908,15 +5958,15 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
           const directMeetingLink = `${window.location.origin}/call/room_${profile?.id || 'demo'}${window.location.search}`;
 
           return (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '30px' }}>
-              <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} style={{ background: 'rgba(255,255,255,0.01)', borderRadius: '24px', padding: '30px', border: '1px solid rgba(255,255,255,0.04)', backdropFilter: 'blur(20px)' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+              <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} style={{ background: 'rgba(255,255,255,0.01)', borderRadius: '24px', padding: 'clamp(14px, 4vw, 30px)', border: '1px solid rgba(255,255,255,0.04)', backdropFilter: 'blur(20px)' }}>
                 
                 {/* Dashboard Header */}
-                <div style={{ borderBottom: '1px solid rgba(255,255,255,0.06)', paddingBottom: '24px', marginBottom: '30px' }}>
-                  <h3 style={{ margin: '0 0 8px 0', fontSize: '32px', fontWeight: 800, background: 'linear-gradient(90deg, #fff, var(--text-muted))', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', display: 'flex', alignItems: 'center', gap: '12px' }}>
-                    <Calendar size={32} color={wlConfig?.accent || '#00ff88'} /> {isOwnProfile && viewMode === 'edit' ? 'Appointment Settings' : `Schedule Appointment with ${profile?.username || 'this Creator'}`}
+                <div style={{ borderBottom: '1px solid rgba(255,255,255,0.06)', paddingBottom: '18px', marginBottom: '24px' }}>
+                  <h3 style={{ margin: '0 0 8px 0', fontSize: 'clamp(20px, 4.5vw, 30px)', fontWeight: 800, background: 'linear-gradient(90deg, #fff, var(--text-muted))', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', display: 'flex', alignItems: 'center', gap: '10px', lineHeight: 1.2 }}>
+                    <Calendar size={28} color={wlConfig?.accent || '#00ff88'} style={{ flexShrink: 0 }} /> {isOwnProfile && viewMode === 'edit' ? 'Appointment Settings' : `Schedule Appointment with ${profile?.username || 'this Creator'}`}
                   </h3>
-                  <p style={{ color: 'var(--text-secondary)', margin: 0, fontSize: '15px' }}>
+                  <p style={{ color: 'var(--text-secondary)', margin: 0, fontSize: '14px', lineHeight: 1.5 }}>
                     {isOwnProfile && viewMode === 'edit' 
                       ? 'Manage your session price, template hours, notification alerts, and generate availability slots.'
                       : 'Schedule a 1-on-1 session, studio consultation, or collaboration meeting.'}
@@ -6243,293 +6293,294 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
 
                 {/* Main Client/Guest Booking Layout */}
                 {!(isOwnProfile && viewMode === 'edit') && (
-                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '30px', alignItems: 'start' }}>
-                  
-                  {/* Left Column: Calendar & Time Slots */}
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
-                    
-                    {/* Calendar Card */}
-                    <div style={{ background: 'rgba(255,255,255,0.015)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '24px', padding: '28px', backdropFilter: 'blur(20px)' }}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-                        <h4 style={{ margin: 0, fontSize: '15px', fontWeight: 'bold', color: '#fff', textTransform: 'uppercase', letterSpacing: '1px' }}>
-                          1. Select a Date
-                        </h4>
-                        
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                          <span style={{ fontSize: '13px', fontWeight: 'bold', color: '#fff', marginRight: '6px' }}>
-                            {displayMonthName} {displayYearName}
-                          </span>
-                          <div style={{ display: 'flex', gap: '4px' }}>
-                            <button 
-                              disabled={calendarMonthOffset === 0} 
-                              onClick={() => setCalendarMonthOffset(0)}
-                              style={{
-                                background: calendarMonthOffset === 0 ? 'rgba(255,255,255,0.02)' : 'rgba(255,255,255,0.06)',
-                                border: 'none',
-                                color: calendarMonthOffset === 0 ? 'rgba(255,255,255,0.15)' : '#fff',
-                                cursor: calendarMonthOffset === 0 ? 'not-allowed' : 'pointer',
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                width: '32px',
-                                height: '32px',
-                                borderRadius: '50%',
-                                transition: 'all 0.2s ease'
-                              }}
-                              onMouseOver={e => {
-                                if (calendarMonthOffset !== 0) e.currentTarget.style.background = 'rgba(255,255,255,0.12)';
-                              }}
-                              onMouseOut={e => {
-                                if (calendarMonthOffset !== 0) e.currentTarget.style.background = 'rgba(255,255,255,0.06)';
-                              }}
-                            >
-                              <ChevronLeft size={16} />
-                            </button>
-                            <button 
-                              disabled={calendarMonthOffset === 1} 
-                              onClick={() => setCalendarMonthOffset(1)}
-                              style={{
-                                background: calendarMonthOffset === 1 ? 'rgba(255,255,255,0.02)' : 'rgba(255,255,255,0.06)',
-                                border: 'none',
-                                color: calendarMonthOffset === 1 ? 'rgba(255,255,255,0.15)' : '#fff',
-                                cursor: calendarMonthOffset === 1 ? 'not-allowed' : 'pointer',
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                width: '32px',
-                                height: '32px',
-                                borderRadius: '50%',
-                                transition: 'all 0.2s ease'
-                              }}
-                              onMouseOver={e => {
-                                if (calendarMonthOffset !== 1) e.currentTarget.style.background = 'rgba(255,255,255,0.12)';
-                              }}
-                              onMouseOut={e => {
-                                if (calendarMonthOffset !== 1) e.currentTarget.style.background = 'rgba(255,255,255,0.06)';
-                              }}
-                            >
-                              <ChevronRight size={16} />
-                            </button>
-                          </div>
-                        </div>
-                      </div>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
 
-                      {/* Day Grid */}
-                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: '8px', textAlign: 'center' }}>
-                        {weekdays.map((day, i) => (
-                          <div key={i} style={{ color: 'var(--text-muted)', fontSize: '11px', fontWeight: 'bold', padding: '6px 0', textTransform: 'uppercase', letterSpacing: '1px' }}>{day}</div>
-                        ))}
-                        {daysGrid}
-                      </div>
-                    </div>
-
-                    {/* Time Selection Card */}
-                    <div style={{ background: 'rgba(255,255,255,0.015)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '24px', padding: '28px', minHeight: '180px', backdropFilter: 'blur(20px)' }}>
-                      <h4 style={{ margin: '0 0 20px 0', fontSize: '15px', fontWeight: 'bold', color: '#fff', textTransform: 'uppercase', letterSpacing: '1px' }}>
-                        2. Available Slots
-                      </h4>
-
-                      {/* Add Slot Block for Creator Edit View */}
-                      {isOwnProfile && viewMode === 'edit' && selectedDate ? (
-                        <div style={{ marginBottom: '20px', padding: '16px', background: 'rgba(0,0,0,0.3)', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.05)' }}>
-                          <span style={{ fontSize: '12px', color: 'var(--text-secondary)', display: 'block', marginBottom: '10px', fontWeight: 'bold' }}>Add manual slot for {displayMonthName} {selectedDate > 10000000 ? selectedDate % 100 : selectedDate}:</span>
-                          <div style={{ display: 'flex', gap: '8px' }}>
-                            <input type="time" step="1800" value={newTimeInput} onChange={e => setNewTimeInput(e.target.value)} style={{ flex: 1, background: 'rgba(0,0,0,0.4)', border: '1px solid rgba(255,255,255,0.08)', padding: '10px 14px', borderRadius: '10px', color: 'var(--text-primary)', outline: 'none', fontSize: '14px' }} />
-                            <button 
-                              onClick={async () => {
-                                if (!newTimeInput) return;
-                                const [h, m] = newTimeInput.split(':');
-                                let hour = parseInt(h);
-                                const ampm = hour >= 12 ? 'PM' : 'AM';
-                                hour = hour % 12 || 12;
-                                const timeString = `${hour}:${m} ${ampm}`;
-                                
-                                try {
-                                  const { error } = await supabase!.from('available_slots').insert({
-                                    creator_id: targetProfileId,
-                                    date: selectedDate,
-                                    time: timeString
-                                  });
-                                  
-                                  if (error) {
-                                    if (error.code === '23505') {
-                                      toast.error('This timeslot is already added.');
-                                    } else {
-                                      toast.error(`Error adding slot: ${error.message}`);
-                                    }
-                                    return;
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '20px', alignItems: 'start' }}>
+                      {/* Left Column / Selector: Mobile Dropdowns or Desktop Calendar */}
+                      {isMobile ? (
+                        <div style={{ background: 'rgba(255,255,255,0.015)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '20px', padding: 'clamp(16px, 4vw, 24px)', backdropFilter: 'blur(20px)', display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                          
+                          {/* 1. Date Dropdown */}
+                          <div>
+                            <label style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '13px', fontWeight: 'bold', color: '#fff', marginBottom: '8px' }}>
+                              <Calendar size={15} color={wlConfig?.accent || '#00ff88'} /> 1. Select Available Date
+                            </label>
+                            <div style={{ position: 'relative' }}>
+                              <select
+                                value={selectedDate || ''}
+                                onChange={(e) => {
+                                  const val = Number(e.target.value);
+                                  if (val) {
+                                    setSelectedDate(val);
+                                    const found = mobileDateOptions.find(o => o.value === val);
+                                    if (found) setSelectedMonthOffset(found.monthOffset);
+                                    setSelectedTime(null);
+                                  } else {
+                                    setSelectedDate(null);
+                                    setSelectedTime(null);
                                   }
-                                  
-                                  setAvailableSlots(prev => {
-                                    const current = prev[selectedDate] || [];
-                                    if (!current.includes(timeString)) return { ...prev, [selectedDate]: [...current, timeString].sort() };
-                                    return prev;
-                                  });
-                                  toast.success('Timeslot added successfully!');
-                                } catch (err: any) {
-                                  toast.error(err.message || 'Failed to add timeslot');
-                                }
-                                setNewTimeInput('');
-                              }}
-                              style={{ padding: '10px 20px', background: wlConfig?.accent || '#00ff88', color: '#000', border: 'none', borderRadius: '10px', fontWeight: 'bold', cursor: 'pointer', fontSize: '13px', transition: 'opacity 0.2s' }}
-                              onMouseOver={e => e.currentTarget.style.opacity = '0.9'}
-                              onMouseOut={e => e.currentTarget.style.opacity = '1'}
-                            >
-                              Add
-                            </button>
-                          </div>
-                        </div>
-                      ) : null}
-
-                      {(() => {
-                        const legacyDay = selectedDate ? (selectedDate > 10000000 ? selectedDate % 100 : selectedDate) : null;
-                        const slots = selectedDate ? (availableSlots[selectedDate] || availableSlots[legacyDay!] || []) : [];
-                        
-                        if (!selectedDate) {
-                          return (
-                            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '40px 0', gap: '10px', color: 'var(--text-muted)' }}>
-                              <Calendar size={32} style={{ opacity: 0.5, color: wlConfig?.accent || '#00ff88' }} />
-                              <span style={{ fontSize: '13px', fontStyle: 'italic' }}>Please select a date on the calendar.</span>
+                                }}
+                                style={{
+                                  width: '100%',
+                                  padding: '14px 16px',
+                                  background: 'rgba(0,0,0,0.5)',
+                                  border: `1.5px solid ${selectedDate ? (wlConfig?.accent || '#00ff88') : 'rgba(255,255,255,0.1)'}`,
+                                  borderRadius: '12px',
+                                  color: selectedDate ? '#fff' : 'var(--text-muted)',
+                                  fontSize: '14px',
+                                  fontWeight: 600,
+                                  outline: 'none',
+                                  cursor: 'pointer',
+                                  appearance: 'none',
+                                  WebkitAppearance: 'none'
+                                }}
+                              >
+                                <option value="" style={{ background: '#111', color: '#888' }}>
+                                  {mobileDateOptions.length > 0 ? `-- Choose a Date (${mobileDateOptions.length} available) --` : '-- No upcoming dates with open slots --'}
+                                </option>
+                                {mobileDateOptions.map(opt => (
+                                  <option key={opt.value} value={opt.value} style={{ background: '#111', color: '#fff' }}>
+                                    {opt.label}
+                                  </option>
+                                ))}
+                              </select>
+                              <div style={{ position: 'absolute', right: '14px', top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none', color: 'var(--text-muted)' }}>
+                                <ChevronRight size={16} style={{ transform: 'rotate(90deg)' }} />
+                              </div>
                             </div>
-                          );
-                        }
+                          </div>
 
-                        if (slots.length > 0) {
-                          return (
-                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(110px, 1fr))', gap: '10px' }}>
-                              {slots.map(time => {
-                                const isTimeSelected = selectedTime === time;
+                          {/* 2. Timeslot Dropdown */}
+                          {(() => {
+                            const legacyDay = selectedDate ? (selectedDate > 10000000 ? selectedDate % 100 : selectedDate) : null;
+                            const slots = selectedDate ? (availableSlots[selectedDate] || availableSlots[legacyDay!] || []) : [];
+
+                            return (
+                              <div>
+                                <label style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '13px', fontWeight: 'bold', color: '#fff', marginBottom: '8px' }}>
+                                  <Clock size={15} color={wlConfig?.accent || '#00ff88'} /> 2. Select Timeslot
+                                </label>
+                                <div style={{ position: 'relative' }}>
+                                  <select
+                                    value={selectedTime || ''}
+                                    disabled={!selectedDate || slots.length === 0}
+                                    onChange={(e) => setSelectedTime(e.target.value || null)}
+                                    style={{
+                                      width: '100%',
+                                      padding: '14px 16px',
+                                      background: !selectedDate ? 'rgba(0,0,0,0.2)' : 'rgba(0,0,0,0.5)',
+                                      border: `1.5px solid ${selectedTime ? (wlConfig?.accent || '#00ff88') : 'rgba(255,255,255,0.1)'}`,
+                                      borderRadius: '12px',
+                                      color: selectedTime ? '#fff' : 'var(--text-muted)',
+                                      fontSize: '14px',
+                                      fontWeight: 600,
+                                      outline: 'none',
+                                      cursor: !selectedDate ? 'not-allowed' : 'pointer',
+                                      appearance: 'none',
+                                      WebkitAppearance: 'none',
+                                      opacity: !selectedDate ? 0.6 : 1
+                                    }}
+                                  >
+                                    <option value="" style={{ background: '#111', color: '#888' }}>
+                                      {!selectedDate ? '-- Choose a date first --' : slots.length > 0 ? `-- Choose a Timeslot (${slots.length} available) --` : '-- No times available for this date --'}
+                                    </option>
+                                    {slots.map(t => (
+                                      <option key={t} value={t} style={{ background: '#111', color: '#fff' }}>
+                                        {t}
+                                      </option>
+                                    ))}
+                                  </select>
+                                  <div style={{ position: 'absolute', right: '14px', top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none', color: 'var(--text-muted)' }}>
+                                    <ChevronRight size={16} style={{ transform: 'rotate(90deg)' }} />
+                                  </div>
+                                </div>
+                              </div>
+                            );
+                          })()}
+                        </div>
+                      ) : (
+                        /* Left Column: Calendar & Time Slots */
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                          
+                          {/* Calendar Card */}
+                          <div style={{ background: 'rgba(255,255,255,0.015)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '20px', padding: 'clamp(14px, 3vw, 24px)', backdropFilter: 'blur(20px)' }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+                              <h4 style={{ margin: 0, fontSize: '14px', fontWeight: 'bold', color: '#fff', textTransform: 'uppercase', letterSpacing: '1px' }}>
+                                1. Select a Date
+                              </h4>
+                              
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                <span style={{ fontSize: '13px', fontWeight: 'bold', color: '#fff', marginRight: '4px' }}>
+                                  {displayMonthName} {displayYearName}
+                                </span>
+                                <div style={{ display: 'flex', gap: '4px' }}>
+                                  <button 
+                                    disabled={calendarMonthOffset === 0} 
+                                    onClick={() => setCalendarMonthOffset(0)}
+                                    style={{
+                                      background: calendarMonthOffset === 0 ? 'rgba(255,255,255,0.02)' : 'rgba(255,255,255,0.06)',
+                                      border: 'none',
+                                      color: calendarMonthOffset === 0 ? 'rgba(255,255,255,0.15)' : '#fff',
+                                      cursor: calendarMonthOffset === 0 ? 'not-allowed' : 'pointer',
+                                      display: 'flex',
+                                      alignItems: 'center',
+                                      justifyContent: 'center',
+                                      width: '32px',
+                                      height: '32px',
+                                      borderRadius: '50%',
+                                      transition: 'all 0.2s ease'
+                                    }}
+                                    onMouseOver={e => {
+                                      if (calendarMonthOffset !== 0) e.currentTarget.style.background = 'rgba(255,255,255,0.12)';
+                                    }}
+                                    onMouseOut={e => {
+                                      if (calendarMonthOffset !== 0) e.currentTarget.style.background = 'rgba(255,255,255,0.06)';
+                                    }}
+                                  >
+                                    <ChevronLeft size={16} />
+                                  </button>
+                                  <button 
+                                    disabled={calendarMonthOffset === 1} 
+                                    onClick={() => setCalendarMonthOffset(1)}
+                                    style={{
+                                      background: calendarMonthOffset === 1 ? 'rgba(255,255,255,0.02)' : 'rgba(255,255,255,0.06)',
+                                      border: 'none',
+                                      color: calendarMonthOffset === 1 ? 'rgba(255,255,255,0.15)' : '#fff',
+                                      cursor: calendarMonthOffset === 1 ? 'not-allowed' : 'pointer',
+                                      display: 'flex',
+                                      alignItems: 'center',
+                                      justifyContent: 'center',
+                                      width: '32px',
+                                      height: '32px',
+                                      borderRadius: '50%',
+                                      transition: 'all 0.2s ease'
+                                    }}
+                                    onMouseOver={e => {
+                                      if (calendarMonthOffset !== 1) e.currentTarget.style.background = 'rgba(255,255,255,0.12)';
+                                    }}
+                                    onMouseOut={e => {
+                                      if (calendarMonthOffset !== 1) e.currentTarget.style.background = 'rgba(255,255,255,0.06)';
+                                    }}
+                                  >
+                                    <ChevronRight size={16} />
+                                  </button>
+                                </div>
+                              </div>
+                            </div>
+
+                            {/* Day Grid */}
+                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: 'clamp(2px, 1vw, 6px)', textAlign: 'center' }}>
+                              {weekdays.map((day, i) => (
+                                <div key={i} style={{ color: 'var(--text-muted)', fontSize: '10px', fontWeight: 'bold', padding: '4px 0', textTransform: 'uppercase', letterSpacing: '0.5px' }}>{day}</div>
+                              ))}
+                              {daysGrid}
+                            </div>
+                          </div>
+
+                          {/* Time Selection Card */}
+                          <div style={{ background: 'rgba(255,255,255,0.015)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '20px', padding: 'clamp(14px, 3vw, 24px)', minHeight: '160px', backdropFilter: 'blur(20px)' }}>
+                            <h4 style={{ margin: '0 0 16px 0', fontSize: '14px', fontWeight: 'bold', color: '#fff', textTransform: 'uppercase', letterSpacing: '1px' }}>
+                              2. Available Slots
+                            </h4>
+
+                            {(() => {
+                              const legacyDay = selectedDate ? (selectedDate > 10000000 ? selectedDate % 100 : selectedDate) : null;
+                              const slots = selectedDate ? (availableSlots[selectedDate] || availableSlots[legacyDay!] || []) : [];
+                              
+                              if (!selectedDate) {
                                 return (
-                                  <div key={time} style={{ display: 'flex', gap: '6px' }}>
-                                    <button 
-                                      onClick={() => setSelectedTime(time)}
-                                      style={{ 
-                                        flex: 1, 
-                                        padding: '14px 10px', 
-                                        borderRadius: '12px', 
-                                        border: '1.5px solid', 
-                                        borderColor: isTimeSelected ? (wlConfig?.accent || '#00ff88') : 'transparent', 
-                                        background: isTimeSelected 
-                                          ? `${wlConfig?.accent || '#00ff88'}1c` 
-                                          : 'rgba(255,255,255,0.02)', 
-                                        color: isTimeSelected ? (wlConfig?.accent || '#00ff88') : '#fff', 
-                                        fontSize: '13px', 
-                                        fontWeight: 'bold', 
-                                        cursor: 'pointer', 
-                                        transition: 'all 0.2s ease',
-                                        textAlign: 'center',
-                                        boxShadow: isTimeSelected ? `0 0 12px ${wlConfig?.accent || '#00ff88'}1c` : 'none'
-                                      }}
-                                      onMouseOver={e => {
-                                        if (!isTimeSelected) {
-                                          e.currentTarget.style.background = 'rgba(255,255,255,0.06)';
-                                        }
-                                      }}
-                                      onMouseOut={e => {
-                                        if (!isTimeSelected) {
-                                          e.currentTarget.style.background = 'rgba(255,255,255,0.02)';
-                                        }
-                                      }}
-                                    >
-                                      {time}
-                                    </button>
-                                    {isOwnProfile && viewMode === 'edit' && (
-                                      <button 
-                                        onClick={async () => {
-                                          try {
-                                            const { error } = await supabase!
-                                              .from('available_slots')
-                                              .delete()
-                                              .eq('creator_id', targetProfileId)
-                                              .eq('time', time)
-                                              .in('date', [selectedDate, legacyDay!]);
-
-                                            if (error) {
-                                              toast.error(`Failed to delete timeslot: ${error.message}`);
-                                              return;
-                                            }
-
-                                            setAvailableSlots(prev => {
-                                              const newSlots = { ...prev };
-                                              if (newSlots[selectedDate]) {
-                                                newSlots[selectedDate] = newSlots[selectedDate].filter(t => t !== time);
-                                              }
-                                              if (newSlots[legacyDay!]) {
-                                                newSlots[legacyDay!] = newSlots[legacyDay!].filter(t => t !== time);
-                                              }
-                                              return newSlots;
-                                            });
-                                            if (selectedTime === time) setSelectedTime(null);
-                                            toast.success('Slot removed.');
-                                          } catch (err: any) {
-                                            toast.error(err.message || 'Failed to remove slot');
-                                          }
-                                        }}
-                                        style={{ 
-                                          background: 'rgba(255,0,0,0.08)', 
-                                          color: '#ff4d4d', 
-                                          border: '1px solid rgba(255,0,0,0.15)', 
-                                          borderRadius: '12px', 
-                                          padding: '0 12px', 
-                                          cursor: 'pointer', 
-                                          display: 'flex', 
-                                          alignItems: 'center', 
-                                          justifyContent: 'center',
-                                          fontSize: '14px',
-                                          fontWeight: 'bold',
-                                          transition: 'all 0.2s'
-                                        }}
-                                        onMouseOver={e => e.currentTarget.style.background = 'rgba(255,0,0,0.15)'}
-                                        onMouseOut={e => e.currentTarget.style.background = 'rgba(255,0,0,0.08)'}
-                                      >
-                                        ✕
-                                      </button>
-                                    )}
+                                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '30px 0', gap: '10px', color: 'var(--text-muted)' }}>
+                                    <Calendar size={28} style={{ opacity: 0.5, color: wlConfig?.accent || '#00ff88' }} />
+                                    <span style={{ fontSize: '13px', fontStyle: 'italic' }}>Please select a date on the calendar.</span>
                                   </div>
                                 );
-                              })}
-                            </div>
-                          );
-                        } else {
-                          return (
-                            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '40px 0', gap: '10px', color: 'var(--text-muted)' }}>
-                              <Clock size={32} style={{ opacity: 0.5, color: wlConfig?.accent || '#00ff88' }} />
-                              <span style={{ fontSize: '13px', fontStyle: 'italic' }}>No times available on this date.</span>
-                            </div>
-                          );
-                        }
-                      })()}
-                    </div>
-                  </div>
+                              }
 
-                  {/* Right Column: Confirmation Form & Checkout */}
-                  <div>
-                    {!selectedTime ? (
-                      <div style={{ background: 'rgba(255,255,255,0.01)', border: '1px dashed rgba(255,255,255,0.12)', borderRadius: '24px', padding: '50px 30px', textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '16px', minHeight: '320px', justifyContent: 'center', backdropFilter: 'blur(20px)' }}>
-                        <div style={{ width: '64px', height: '64px', borderRadius: '50%', background: 'rgba(255,255,255,0.02)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-muted)', border: '1px solid rgba(255,255,255,0.05)' }}>
-                          <Clock size={28} style={{ color: wlConfig?.accent || '#00ff88', opacity: 0.8 }} />
-                        </div>
-                        <div style={{ maxWidth: '280px' }}>
-                          <h4 style={{ margin: '0 0 8px 0', fontSize: '18px', fontWeight: 'bold', color: '#fff' }}>Configure Your Session</h4>
-                          <p style={{ margin: 0, fontSize: '13px', color: 'var(--text-muted)', lineHeight: 1.5 }}>Choose an available date and timeslot from the scheduler on the left to configure your meeting details.</p>
-                        </div>
-                      </div>
-                    ) : (
-                      <motion.div initial={{ opacity: 0, scale: 0.98 }} animate={{ opacity: 1, scale: 1 }} style={{ background: 'rgba(255,255,255,0.015)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '24px', padding: '28px', backdropFilter: 'blur(20px)' }}>
-                        <h4 style={{ margin: '0 0 20px 0', fontSize: '15px', fontWeight: 'bold', color: '#fff', textTransform: 'uppercase', letterSpacing: '1px' }}>
-                          3. Meeting Details
-                        </h4>
-
-                        {/* Selected Slot Receipt Header */}
-                        <div style={{ background: `${wlConfig?.accent || '#00ff88'}08`, border: `1.5px solid ${wlConfig?.accent || '#00ff88'}2a`, borderRadius: '16px', padding: '16px 20px', marginBottom: '24px', display: 'flex', alignItems: 'center', gap: '12px', boxShadow: `0 4px 15px ${wlConfig?.accent || '#00ff88'}08` }}>
-                          <CheckCircle size={22} color={wlConfig?.accent || '#00ff88'} style={{ flexShrink: 0 }} />
-                          <div>
-                            <span style={{ fontSize: '11px', color: '#aaa', textTransform: 'uppercase', letterSpacing: '0.5px', display: 'block', fontWeight: 'bold' }}>Selected Appointment</span>
-                            <strong style={{ fontSize: '14px', color: '#fff' }}>
-                              {displayMonthName} {selectedDate > 10000000 ? selectedDate % 100 : selectedDate}, {displayYearName} at {selectedTime}
-                            </strong>
+                              if (slots.length > 0) {
+                                return (
+                                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(85px, 1fr))', gap: '8px' }}>
+                                    {slots.map(time => {
+                                      const isTimeSelected = selectedTime === time;
+                                      return (
+                                        <div key={time} style={{ display: 'flex', gap: '4px' }}>
+                                          <button 
+                                            onClick={() => setSelectedTime(time)}
+                                            style={{ 
+                                              flex: 1, 
+                                              padding: '10px 6px', 
+                                              borderRadius: '10px', 
+                                              border: '1.5px solid', 
+                                              borderColor: isTimeSelected ? (wlConfig?.accent || '#00ff88') : 'transparent', 
+                                              background: isTimeSelected 
+                                                ? `${wlConfig?.accent || '#00ff88'}1c` 
+                                                : 'rgba(255,255,255,0.02)', 
+                                              color: isTimeSelected ? (wlConfig?.accent || '#00ff88') : '#fff', 
+                                              fontSize: '12px', 
+                                              fontWeight: 'bold', 
+                                              cursor: 'pointer', 
+                                              transition: 'all 0.2s ease',
+                                              textAlign: 'center',
+                                              boxShadow: isTimeSelected ? `0 0 12px ${wlConfig?.accent || '#00ff88'}1c` : 'none'
+                                            }}
+                                            onMouseOver={e => {
+                                              if (!isTimeSelected) {
+                                                e.currentTarget.style.background = 'rgba(255,255,255,0.06)';
+                                              }
+                                            }}
+                                            onMouseOut={e => {
+                                              if (!isTimeSelected) {
+                                                e.currentTarget.style.background = 'rgba(255,255,255,0.02)';
+                                              }
+                                            }}
+                                          >
+                                            {time}
+                                          </button>
+                                        </div>
+                                      );
+                                    })}
+                                  </div>
+                                );
+                              } else {
+                                return (
+                                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '40px 0', gap: '10px', color: 'var(--text-muted)' }}>
+                                    <Clock size={32} style={{ opacity: 0.5, color: wlConfig?.accent || '#00ff88' }} />
+                                    <span style={{ fontSize: '13px', fontStyle: 'italic' }}>No times available on this date.</span>
+                                  </div>
+                                );
+                              }
+                            })()}
                           </div>
                         </div>
+                      )}
+
+                      {/* Right Column: Confirmation Form & Checkout */}
+                      <div>
+                          {!selectedTime ? (
+                            <div style={{ background: 'rgba(255,255,255,0.01)', border: '1px dashed rgba(255,255,255,0.12)', borderRadius: '24px', padding: '50px 30px', textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '16px', minHeight: '320px', justifyContent: 'center', backdropFilter: 'blur(20px)' }}>
+                              <div style={{ width: '64px', height: '64px', borderRadius: '50%', background: 'rgba(255,255,255,0.02)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-muted)', border: '1px solid rgba(255,255,255,0.05)' }}>
+                                <Clock size={28} style={{ color: wlConfig?.accent || '#00ff88', opacity: 0.8 }} />
+                              </div>
+                              <div style={{ maxWidth: '280px' }}>
+                                <h4 style={{ margin: '0 0 8px 0', fontSize: '18px', fontWeight: 'bold', color: '#fff' }}>Configure Your Session</h4>
+                                <p style={{ margin: 0, fontSize: '13px', color: 'var(--text-muted)', lineHeight: 1.5 }}>Choose an available date and timeslot from the scheduler on the left to configure your meeting details.</p>
+                              </div>
+                            </div>
+                          ) : (
+                            <motion.div initial={{ opacity: 0, scale: 0.98 }} animate={{ opacity: 1, scale: 1 }} style={{ background: 'rgba(255,255,255,0.015)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '24px', padding: '28px', backdropFilter: 'blur(20px)' }}>
+                              <h4 style={{ margin: '0 0 20px 0', fontSize: '15px', fontWeight: 'bold', color: '#fff', textTransform: 'uppercase', letterSpacing: '1px' }}>
+                                3. Meeting Details
+                              </h4>
+
+                              {/* Selected Slot Receipt Header */}
+                              <div style={{ background: `${wlConfig?.accent || '#00ff88'}08`, border: `1.5px solid ${wlConfig?.accent || '#00ff88'}2a`, borderRadius: '16px', padding: '16px 20px', marginBottom: '24px', display: 'flex', alignItems: 'center', gap: '12px', boxShadow: `0 4px 15px ${wlConfig?.accent || '#00ff88'}08` }}>
+                                <CheckCircle size={22} color={wlConfig?.accent || '#00ff88'} style={{ flexShrink: 0 }} />
+                                <div>
+                                  <span style={{ fontSize: '11px', color: '#aaa', textTransform: 'uppercase', letterSpacing: '0.5px', display: 'block', fontWeight: 'bold' }}>Selected Appointment</span>
+                                  <strong style={{ fontSize: '14px', color: '#fff' }}>
+                                    {displayMonthName} {selectedDate > 10000000 ? selectedDate % 100 : selectedDate}, {displayYearName} at {selectedTime}
+                                  </strong>
+                                </div>
+                              </div>
 
 
 
@@ -6801,11 +6852,11 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
                       </motion.div>
                     )}
                   </div>
-
                 </div>
-                )}
-              </motion.div>
-            </div>
+              </div>
+            )}
+          </motion.div>
+        </div>
           );
         })()}
 

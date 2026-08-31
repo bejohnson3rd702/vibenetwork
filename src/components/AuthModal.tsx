@@ -228,7 +228,8 @@ const AuthModal: React.FC<AuthModalProps> = ({ onClose, onSuccess, defaultIsLogi
       backgroundColor: 'rgba(0,0,0,0.85)',
       backdropFilter: 'blur(10px)',
       display: 'flex', alignItems: 'center', justifyContent: 'center',
-      zIndex: 100000
+      zIndex: 100000,
+      padding: '16px'
     }}>
       <motion.div
         initial={{ opacity: 0, scale: 0.9, y: 30 }}
@@ -240,8 +241,8 @@ const AuthModal: React.FC<AuthModalProps> = ({ onClose, onSuccess, defaultIsLogi
           overflowY: 'auto',
           background: 'linear-gradient(180deg, rgba(30,30,30,0.95) 0%, rgba(15,15,15,0.95) 100%)',
           border: '1px solid rgba(255,255,255,0.1)',
-          borderRadius: '24px',
-          padding: '40px',
+          borderRadius: '20px',
+          padding: 'clamp(20px, 5vw, 36px)',
           position: 'relative',
           boxShadow: '0 25px 50px -12px rgba(0,0,0,0.5)'
         }}
@@ -250,18 +251,18 @@ const AuthModal: React.FC<AuthModalProps> = ({ onClose, onSuccess, defaultIsLogi
         <button 
           onClick={onClose}
           style={{
-            position: 'absolute', top: '24px', right: '24px',
+            position: 'absolute', top: '18px', right: '18px',
             background: 'none', border: 'none', color: 'var(--text-muted)',
             cursor: 'pointer'
           }}
         >
-          <X size={24} />
+          <X size={22} />
         </button>
 
-        <h2 style={{ fontSize: '32px', fontWeight: 'bold', marginBottom: '8px', color: 'var(--text-primary)' }}>
+        <h2 style={{ fontSize: 'clamp(22px, 5vw, 30px)', fontWeight: 'bold', marginBottom: '8px', color: 'var(--text-primary)' }}>
           {isForgotPassword ? 'Reset Password' : isLogin ? 'Welcome Back' : 'Join Vibe'}
         </h2>
-        <p style={{ color: '#ccc', marginBottom: '32px', fontSize: '15px' }}>
+        <p style={{ color: '#ccc', marginBottom: '24px', fontSize: '14px' }}>
           {isForgotPassword ? "Enter your email to reset your password. (Forgot username? Your email is all you need to log in!)" : isLogin ? 'Sign in to access your Vibe Favorites.' : 'Create an account to start streaming.'}
         </p>
 

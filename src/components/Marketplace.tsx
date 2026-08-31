@@ -27,6 +27,16 @@ const Marketplace: React.FC = () => {
   const [networksMap, setNetworksMap] = useState<Record<string, { name: string; parentId: string | null; parentName: string }>>({});
   const [selectedShopifyProduct, setSelectedShopifyProduct] = useState<any>(null);
   const [selectedImage, setSelectedImage] = useState(0);
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth <= 768);
+    };
+    handleResize();
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   const isMasterPlatform = !wlConfig || wlConfig.id === 'master' || wlConfig.domain === 'vibenetwork.tv' || wlConfig.domain === 'vibenetwork.com' || wlConfig.domain?.includes('vercel.app');
   const isBonaireTenant = wlConfig?.id === 'b0ea0000-c08f-4260-8540-a0cc8bed4e11' || wlConfig?.parent_network_id === 'b0ea0000-c08f-4260-8540-a0cc8bed4e11';
@@ -312,7 +322,7 @@ const Marketplace: React.FC = () => {
             <p style={{ color: 'var(--text-muted)' }}>Try adjusting your search or filters.</p>
           </div>
         ) : (
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '30px' }}>
+          <div className="vibe-product-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: isMobile ? '12px' : '28px' }}>
             {filteredProducts.map((product, i) => (
               <motion.div 
                 key={product.id}
@@ -321,11 +331,13 @@ const Marketplace: React.FC = () => {
                 transition={{ delay: i * 0.05 }}
                 style={{ 
                   background: 'rgba(255,255,255,0.02)', 
-                  borderRadius: '20px', 
+                  borderRadius: isMobile ? '14px' : '20px', 
                   overflow: 'hidden', 
                   border: '1px solid rgba(255,255,255,0.05)',
                   cursor: 'pointer',
                   transition: 'transform 0.3s, box-shadow 0.3s',
+                  display: 'flex',
+                  flexDirection: 'column'
                 }}
                 onMouseOver={(e) => {
                   e.currentTarget.style.transform = 'translateY(-5px)';
@@ -351,36 +363,74 @@ const Marketplace: React.FC = () => {
                      <img src={product.image_url} alt={product.title} loading="lazy" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
                    ) : (
                      <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'linear-gradient(45deg, #1a1a1a, #2a2a2a)' }}>
-                       <ShoppingBag size={48} color="#333" />
+                       <ShoppingBag size={isMobile ? 32 : 48} color="#333" />
                      </div>
                    )}
-                   <div style={{ position: 'absolute', top: 16, right: 16, background: 'rgba(0,0,0,0.8)', backdropFilter: 'blur(10px)', padding: '6px 12px', borderRadius: '20px', fontSize: '12px', fontWeight: 'bold', textTransform: 'uppercase', color: product.isShopify ? (product.schoolColor || 'var(--accent-primary)') : (wlConfig?.accent || 'var(--accent-primary)'), border: `1px solid ${product.isShopify ? (product.schoolColor || 'var(--accent-primary)') : (wlConfig?.accent || 'var(--accent-primary)')}44` }}>
+                   <div style={{ 
+                     position: 'absolute', 
+                     top: isMobile ? 8 : 14, 
+                     right: isMobile ? 8 : 14, 
+                     background: 'rgba(0,0,0,0.8)', 
+                     backdropFilter: 'blur(10px)', 
+                     padding: isMobile ? '3px 8px' : '6px 12px', 
+                     borderRadius: '20px', 
+                     fontSize: isMobile ? '10px' : '12px', 
+                     fontWeight: 'bold', 
+                     textTransform: 'uppercase', 
+                     color: product.isShopify ? (product.schoolColor || 'var(--accent-primary)') : (wlConfig?.accent || 'var(--accent-primary)'), 
+                     border: `1px solid ${product.isShopify ? (product.schoolColor || 'var(--accent-primary)') : (wlConfig?.accent || 'var(--accent-primary)')}44` 
+                   }}>
                      {product.isShopify ? product.schoolName : product.type}
                    </div>
                 </div>
 
                 {/* Product Info */}
-                <div style={{ padding: '24px' }}>
-                   <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '16px' }}>
+                <div style={{ padding: isMobile ? '12px' : '20px', display: 'flex', flexDirection: 'column', flex: 1 }}>
+                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: isMobile ? '8px' : '12px' }}>
                      <img 
                        src={product.creator?.avatar_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(product.creator?.username || 'C')}&background=random`} 
                        alt={product.creator?.username} 
                        loading="lazy"
-                       style={{ width: '28px', height: '28px', borderRadius: '50%', border: '1px solid rgba(255,255,255,0.2)' }} 
+                       style={{ width: isMobile ? '20px' : '26px', height: isMobile ? '20px' : '26px', borderRadius: '50%', border: '1px solid rgba(255,255,255,0.2)' }} 
                      />
-                     <span style={{ color: 'var(--text-secondary)', fontSize: '14px', fontWeight: 500 }}>@{product.creator?.username}</span>
+                     <span style={{ color: 'var(--text-secondary)', fontSize: isMobile ? '11px' : '13px', fontWeight: 500, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                       @{product.creator?.username}
+                     </span>
                    </div>
                    
-                   <h3 style={{ margin: '0 0 16px 0', fontSize: '20px', fontWeight: 'bold', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden', height: '48px' }}>
+                   <h3 style={{ 
+                     margin: '0 0 10px 0', 
+                     fontSize: isMobile ? '14px' : '18px', 
+                     fontWeight: 'bold', 
+                     display: '-webkit-box', 
+                     WebkitLineClamp: 2, 
+                     WebkitBoxOrient: 'vertical', 
+                     overflow: 'hidden', 
+                     minHeight: isMobile ? '36px' : '44px',
+                     lineHeight: 1.3
+                   }}>
                      {product.title}
                    </h3>
 
-                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: '16px', borderTop: '1px solid rgba(255,255,255,0.05)' }}>
-                      <div style={{ fontSize: '24px', fontWeight: 900, color: 'var(--text-primary)' }}>
+                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: isMobile ? '8px' : '14px', borderTop: '1px solid rgba(255,255,255,0.05)', marginTop: 'auto' }}>
+                      <div style={{ fontSize: isMobile ? '16px' : '22px', fontWeight: 900, color: 'var(--text-primary)' }}>
                         ${Number(product.price).toFixed(2)}
                       </div>
-                      <button style={{ width: '40px', height: '40px', borderRadius: '50%', background: wlConfig?.accent || 'var(--accent-primary)', border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: '#000' }}>
-                        <ShoppingCart size={18} />
+                      <button 
+                        style={{ 
+                          width: isMobile ? '32px' : '38px', 
+                          height: isMobile ? '32px' : '38px', 
+                          borderRadius: '50%', 
+                          background: wlConfig?.accent || 'var(--accent-primary)', 
+                          border: 'none', 
+                          display: 'flex', 
+                          alignItems: 'center', 
+                          justifyContent: 'center', 
+                          cursor: 'pointer', 
+                          color: '#000' 
+                        }}
+                      >
+                        <ShoppingCart size={isMobile ? 14 : 16} />
                       </button>
                    </div>
                 </div>
@@ -399,40 +449,44 @@ const Marketplace: React.FC = () => {
             style={{
               position: 'fixed', inset: 0, zIndex: 9999,
               background: 'rgba(0,0,0,0.92)', backdropFilter: 'blur(20px)',
-              display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '40px',
+              display: 'flex', alignItems: 'center', justifyContent: 'center', 
+              padding: isMobile ? '16px' : '40px',
             }}
           >
             <motion.div
               initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.97, opacity: 0 }}
               onClick={e => e.stopPropagation()}
               style={{
-                width: '100%', maxWidth: '900px', maxHeight: '85vh',
+                width: '100%', maxWidth: '900px', maxHeight: '90vh',
                 borderRadius: '16px', overflow: 'hidden',
                 background: '#111', border: '1px solid rgba(255,255,255,0.06)',
-                display: 'flex', position: 'relative',
+                display: 'flex', 
+                flexDirection: isMobile ? 'column' : 'row',
+                position: 'relative',
+                overflowY: 'auto'
               }}
             >
               {/* Close */}
               <button onClick={() => setSelectedShopifyProduct(null)} style={{
-                position: 'absolute', top: '16px', right: '16px', zIndex: 10,
-                width: '36px', height: '36px', borderRadius: '50%',
-                background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.1)',
+                position: 'absolute', top: '14px', right: '14px', zIndex: 10,
+                width: '34px', height: '34px', borderRadius: '50%',
+                background: 'rgba(0,0,0,0.6)', border: '1px solid rgba(255,255,255,0.15)',
                 color: '#fff', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
               }}>
                 <X size={16} />
               </button>
 
               {/* Image gallery */}
-              <div style={{ flex: '0 0 50%', background: '#fff', display: 'flex', flexDirection: 'column' }}>
-                <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '30px', minHeight: '350px' }}>
+              <div style={{ flex: isMobile ? 'none' : '0 0 50%', background: '#fff', display: 'flex', flexDirection: 'column' }}>
+                <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: isMobile ? '16px' : '30px', minHeight: isMobile ? '240px' : '350px' }}>
                   <img
                     src={(selectedShopifyProduct.images && selectedShopifyProduct.images[selectedImage]) || selectedShopifyProduct.image_url}
                     alt={selectedShopifyProduct.title}
-                    style={{ maxWidth: '100%', maxHeight: '400px', objectFit: 'contain' }}
+                    style={{ maxWidth: '100%', maxHeight: isMobile ? '220px' : '400px', objectFit: 'contain' }}
                   />
                 </div>
                 {selectedShopifyProduct.images && selectedShopifyProduct.images.length > 1 && (
-                  <div style={{ display: 'flex', gap: '6px', padding: '10px 20px 16px', overflowX: 'auto', justifyContent: 'center' }}>
+                  <div style={{ display: 'flex', gap: '6px', padding: '10px 16px', overflowX: 'auto', justifyContent: 'center' }}>
                     {selectedShopifyProduct.images.slice(0, 5).map((img: string, i: number) => (
                       <img
                         key={i}
@@ -440,9 +494,9 @@ const Marketplace: React.FC = () => {
                         alt=""
                         onClick={() => setSelectedImage(i)}
                         style={{
-                          width: '56px', height: '56px', objectFit: 'contain', borderRadius: '6px',
+                          width: '48px', height: '48px', objectFit: 'contain', borderRadius: '6px',
                           border: selectedImage === i ? `2px solid ${wlConfig?.accent || 'var(--accent-primary)'}` : '2px solid #eee',
-                          cursor: 'pointer', background: '#fff', padding: '4px',
+                          cursor: 'pointer', background: '#fff', padding: '3px',
                         }}
                       />
                     ))}
@@ -451,7 +505,7 @@ const Marketplace: React.FC = () => {
               </div>
 
               {/* Product details */}
-              <div style={{ flex: '0 0 50%', padding: '40px 32px', overflowY: 'auto', display: 'flex', flexDirection: 'column' }}>
+              <div style={{ flex: isMobile ? 'none' : '0 0 50%', padding: isMobile ? '24px 20px' : '40px 32px', overflowY: 'auto', display: 'flex', flexDirection: 'column' }}>
                 <span style={{
                   display: 'inline-block', padding: '4px 12px', borderRadius: '4px', fontSize: '10px', fontWeight: 900,
                   background: selectedShopifyProduct.schoolColor || 'var(--accent-primary)', color: '#fff',

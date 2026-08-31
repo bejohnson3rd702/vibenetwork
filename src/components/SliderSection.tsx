@@ -235,9 +235,9 @@ const SliderSection: React.FC<SliderSectionProps> = ({ title, items, delay = 0, 
     >
       <div className="px-mobile-sm" style={{ maxWidth: '1400px', margin: '0 auto', padding: '0 40px' }}>
         
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '30px' }}>
-          <h2 style={{ fontSize: '28px', margin: 0, fontWeight: 900, display: 'flex', alignItems: 'center', gap: '16px', letterSpacing: '-0.5px' }}>
-            <span style={{ width: '4px', height: '24px', borderRadius: '4px', background: 'var(--accent-primary)', boxShadow: '0 0 10px var(--accent-primary)' }} />
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px' }}>
+          <h2 style={{ fontSize: 'clamp(20px, 4vw, 28px)', margin: 0, fontWeight: 900, display: 'flex', alignItems: 'center', gap: '12px', letterSpacing: '-0.5px' }}>
+            <span style={{ width: '4px', height: '22px', borderRadius: '4px', background: 'var(--accent-primary)', boxShadow: '0 0 10px var(--accent-primary)' }} />
             <span style={{ color: 'var(--text-primary)' }}>{title}</span>
           </h2>
           
@@ -250,32 +250,32 @@ const SliderSection: React.FC<SliderSectionProps> = ({ title, items, delay = 0, 
                   backdropFilter: 'blur(10px)',
                   border: '1px solid rgba(255,255,255,0.15)',
                   color: 'var(--text-primary)',
-                  padding: '10px 20px',
+                  padding: '8px 16px',
                   borderRadius: '30px',
-                  fontSize: '13px',
+                  fontSize: '12px',
                   fontWeight: 800,
                   letterSpacing: '1px',
                   textTransform: 'uppercase',
                   cursor: 'pointer',
                   display: 'flex',
                   alignItems: 'center',
-                  gap: '8px',
+                  gap: '6px',
                   transition: 'all 0.25s'
                 }}
                 onMouseOver={e => { e.currentTarget.style.background = 'var(--accent-primary)'; e.currentTarget.style.color = '#fff'; }}
                 onMouseOut={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.08)'; e.currentTarget.style.color = 'var(--text-primary)'; }}
               >
                 <span>{viewAllText || 'View All'}</span>
-                <ArrowRight size={16} />
+                <ArrowRight size={14} />
               </button>
             )}
 
-            <div style={{ display: 'flex', gap: '8px' }}>
-              <button onClick={() => { if(scrollRef.current) scrollRef.current.scrollBy({ left: -600, behavior: 'smooth' }) }} style={{ width: '48px', height: '48px', borderRadius: '50%', background: 'var(--bg-surface)', border: '1px solid var(--bg-surface-hover)', color: 'var(--text-primary)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.2s', boxShadow: '0 4px 10px rgba(0,0,0,0.1)' }} onMouseOver={e=>{e.currentTarget.style.background='var(--accent-primary)'; e.currentTarget.style.color='#fff'}} onMouseOut={e=>{e.currentTarget.style.background='var(--bg-surface)'; e.currentTarget.style.color='var(--text-primary)'}}>
-                <ChevronLeft size={28} />
+            <div className="hide-on-mobile" style={{ display: 'flex', gap: '8px' }}>
+              <button onClick={() => { if(scrollRef.current) scrollRef.current.scrollBy({ left: -600, behavior: 'smooth' }) }} style={{ width: '44px', height: '44px', borderRadius: '50%', background: 'var(--bg-surface)', border: '1px solid var(--bg-surface-hover)', color: 'var(--text-primary)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.2s', boxShadow: '0 4px 10px rgba(0,0,0,0.1)' }} onMouseOver={e=>{e.currentTarget.style.background='var(--accent-primary)'; e.currentTarget.style.color='#fff'}} onMouseOut={e=>{e.currentTarget.style.background='var(--bg-surface)'; e.currentTarget.style.color='var(--text-primary)'}}>
+                <ChevronLeft size={24} />
               </button>
-              <button onClick={() => { if(scrollRef.current) scrollRef.current.scrollBy({ left: 600, behavior: 'smooth' }) }} style={{ width: '48px', height: '48px', borderRadius: '50%', background: 'var(--bg-surface)', border: '1px solid var(--bg-surface-hover)', color: 'var(--text-primary)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.2s', boxShadow: '0 4px 10px rgba(0,0,0,0.1)' }} onMouseOver={e=>{e.currentTarget.style.background='var(--accent-primary)'; e.currentTarget.style.color='#fff'}} onMouseOut={e=>{e.currentTarget.style.background='var(--bg-surface)'; e.currentTarget.style.color='var(--text-primary)'}}>
-                <ChevronRight size={28} />
+              <button onClick={() => { if(scrollRef.current) scrollRef.current.scrollBy({ left: 600, behavior: 'smooth' }) }} style={{ width: '44px', height: '44px', borderRadius: '50%', background: 'var(--bg-surface)', border: '1px solid var(--bg-surface-hover)', color: 'var(--text-primary)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.2s', boxShadow: '0 4px 10px rgba(0,0,0,0.1)' }} onMouseOver={e=>{e.currentTarget.style.background='var(--accent-primary)'; e.currentTarget.style.color='#fff'}} onMouseOut={e=>{e.currentTarget.style.background='var(--bg-surface)'; e.currentTarget.style.color='var(--text-primary)'}}>
+                <ChevronRight size={24} />
               </button>
             </div>
           </div>
@@ -289,14 +289,15 @@ const SliderSection: React.FC<SliderSectionProps> = ({ title, items, delay = 0, 
           onMouseLeave={endDrag}
           style={{
             display: 'flex',
-            gap: '30px',
+            gap: '20px',
             overflowX: 'auto',
-            paddingBottom: '40px',
-            paddingTop: '20px',
+            paddingBottom: '30px',
+            paddingTop: '10px',
             cursor: isDragging ? 'grabbing' : 'grab',
             scrollBehavior: isDragging ? 'auto' : 'smooth',
             WebkitOverflowScrolling: 'touch',
             scrollbarWidth: 'none',
+            scrollSnapType: 'x mandatory'
           }}
           className="hide-scrollbar"
         >
@@ -304,7 +305,7 @@ const SliderSection: React.FC<SliderSectionProps> = ({ title, items, delay = 0, 
             <div 
               className="slider-item-mobile"
               key={item.id} 
-              style={{ flexShrink: 0, width: widthVal, height: aspectRatio === '1/1' ? widthVal : 'auto' }}
+              style={{ flexShrink: 0, width: widthVal, height: aspectRatio === '1/1' ? widthVal : 'auto', scrollSnapAlign: 'start' }}
               onClick={(e) => {
                 if (isDragging && Math.abs(scrollRef.current!.scrollLeft - scrollLeft) > 10) {
                    e.preventDefault(); return;

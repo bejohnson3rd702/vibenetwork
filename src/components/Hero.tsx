@@ -85,8 +85,34 @@ const Hero: React.FC<HeroProps> = ({ setActiveVideo }) => {
     }
   };
 
+  const [touchStartX, setTouchStartX] = useState<number | null>(null);
+
+  const handleTouchStart = (e: React.TouchEvent) => {
+    setTouchStartX(e.touches[0].clientX);
+  };
+
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    if (touchStartX === null) return;
+    const diffX = touchStartX - e.changedTouches[0].clientX;
+    if (Math.abs(diffX) > 50) {
+      if (diffX > 0) {
+        // Swiped left -> next slide
+        setHeroSlide(prev => (prev + 1) % slides.length);
+      } else {
+        // Swiped right -> prev slide
+        setHeroSlide(prev => (prev - 1 + slides.length) % slides.length);
+      }
+    }
+    setTouchStartX(null);
+  };
+
   return (
-    <div className="vibe-hero-container" style={{ position: 'relative', width: '100%', height: '100vh', backgroundColor: '#000', overflow: 'hidden' }}>
+    <div 
+      className="vibe-hero-container" 
+      onTouchStart={handleTouchStart}
+      onTouchEnd={handleTouchEnd}
+      style={{ position: 'relative', width: '100%', height: '100vh', backgroundColor: '#000', overflow: 'hidden' }}
+    >
       
       {/* Full-bleed hero slideshow */}
       <AnimatePresence mode="wait">
