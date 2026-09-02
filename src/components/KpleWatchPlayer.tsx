@@ -13,6 +13,10 @@ export interface KpleVideoItem {
   description?: string;
   transcript?: string;
   created_at?: string;
+  scheduledAirDate?: string;
+  scheduledAirTime?: string;
+  airTimeSlot?: string;
+  duration?: number;
 }
 
 interface KpleWatchPlayerProps {
@@ -209,6 +213,54 @@ export const KpleWatchPlayer: React.FC<KpleWatchPlayerProps> = ({
                 boxShadow: '0 20px 50px rgba(0,0,0,0.8)',
                 border: '1px solid rgba(255,255,255,0.1)'
               }}>
+                <style>{`
+                  @keyframes kpleLiveDotPulse {
+                    0% { transform: scale(0.9); opacity: 0.8; box-shadow: 0 0 4px #ff0050; }
+                    50% { transform: scale(1.3); opacity: 1; box-shadow: 0 0 16px #ff0050; }
+                    100% { transform: scale(0.9); opacity: 0.8; box-shadow: 0 0 4px #ff0050; }
+                  }
+                `}</style>
+
+                {/* Broadcast LIVE Watermark (Top Right) */}
+                <div style={{
+                  position: 'absolute',
+                  top: '16px',
+                  right: '16px',
+                  zIndex: 25,
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  background: 'rgba(0, 0, 0, 0.72)',
+                  backdropFilter: 'blur(10px)',
+                  WebkitBackdropFilter: 'blur(10px)',
+                  border: '1px solid rgba(255, 255, 255, 0.22)',
+                  padding: '6px 14px',
+                  borderRadius: '8px',
+                  boxShadow: '0 4px 20px rgba(0,0,0,0.7)',
+                  pointerEvents: 'none',
+                  userSelect: 'none'
+                }}>
+                  <span style={{
+                    width: '9px',
+                    height: '9px',
+                    borderRadius: '50%',
+                    background: '#ff0050',
+                    boxShadow: '0 0 12px #ff0050',
+                    display: 'inline-block',
+                    animation: 'kpleLiveDotPulse 1.5s infinite ease-in-out'
+                  }} />
+                  <span style={{
+                    color: '#fff',
+                    fontSize: '12px',
+                    fontWeight: 900,
+                    letterSpacing: '1.5px',
+                    textTransform: 'uppercase',
+                    fontFamily: 'system-ui, -apple-system, sans-serif',
+                    lineHeight: 1
+                  }}>
+                    LIVE
+                  </span>
+                </div>
                 {ytId ? (
                   <iframe
                     src={`https://www.youtube.com/embed/${ytId}?autoplay=0`}

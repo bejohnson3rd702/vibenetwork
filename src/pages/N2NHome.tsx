@@ -299,16 +299,31 @@ export default function N2NHome({ wlConfig, categories, user, activeVideo, setAc
 
             const formattedVids = nonLiveVideos.map((v: any) => {
               const cName = v.whitelabel?.name || (v.creator?.username ? v.creator.username.replace(/_/g, ' ').replace(/\b\w/g, (c: string) => c.toUpperCase()) : 'Channel Video');
+              const tags = Array.isArray(v.tags) ? v.tags : [];
+              let airDate = v.scheduled_air_date;
+              let airTime = v.scheduled_air_time;
+              let timeSlot = v.air_time_slot || '1 Hour';
+              tags.forEach((t: string) => {
+                if (typeof t === 'string') {
+                  if (t.startsWith('air_date:')) airDate = t.replace('air_date:', '');
+                  else if (t.startsWith('air_time:')) airTime = t.replace('air_time:', '');
+                  else if (t.startsWith('slot:')) timeSlot = t.replace('slot:', '');
+                }
+              });
               return {
                 id: v.id,
                 title: v.title,
                 image: v.image_url,
-                tags: [cName, 'Channel Video'],
+                tags: [cName, 'Channel Video', ...tags],
                 videoUrl: v.video_url,
                 linkUrl: v.video_url,
                 channelName: cName,
                 description: v.description || '',
-                transcript: v.transcript || ''
+                transcript: v.transcript || '',
+                scheduledAirDate: airDate,
+                scheduledAirTime: airTime,
+                airTimeSlot: timeSlot,
+                duration: v.duration ? parseInt(v.duration) || 0 : (v.preview_duration ? parseInt(v.preview_duration) || 0 : 0)
               };
             });
 
@@ -325,8 +340,11 @@ export default function N2NHome({ wlConfig, categories, user, activeVideo, setAc
               return numA - numB;
             });
 
-            const formattedEpisodes = validEpisodes.map((ep: any) => {
+            const todayStr = new Date().toISOString().split('T')[0];
+            const formattedEpisodes = validEpisodes.map((ep: any, idx: number) => {
               const cName = ep.series?.title || 'Doc Wales Diaries';
+              const startHour = (7 + (idx % 16));
+              const airTimeStr = `${startHour < 10 ? '0' : ''}${startHour}:00`;
               return {
                 id: ep.id,
                 title: ep.title,
@@ -336,7 +354,11 @@ export default function N2NHome({ wlConfig, categories, user, activeVideo, setAc
                 linkUrl: ep.video_url,
                 channelName: cName,
                 description: ep.description || 'Doc Wales Diaries episode featuring Dr. Steve Price on medical missions around the world.',
-                transcript: ep.transcript || ''
+                transcript: ep.transcript || '',
+                scheduledAirDate: todayStr,
+                scheduledAirTime: airTimeStr,
+                airTimeSlot: '1 Hour',
+                duration: ep.duration ? parseInt(ep.duration) || 1800 : 1800
               };
             });
 

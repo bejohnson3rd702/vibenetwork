@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
-import { Play, Tv, FileText, Copy, Check, Search, Maximize2, Share2 } from 'lucide-react';
+import { Play, Tv, FileText, Copy, Check, Search, Maximize2, Share2, Volume2, VolumeX, Radio } from 'lucide-react';
 import { extractYouTubeId } from './KpleAddVideoModal';
 import type { KpleVideoItem } from './KpleWatchPlayer';
 
@@ -9,6 +9,66 @@ interface KpleInlineWatchSectionProps {
   accent?: string;
   networkName?: string;
   onOpenModal?: (vid: KpleVideoItem) => void;
+}
+
+export interface BroadcastScheduleItem {
+  video: KpleVideoItem;
+  elapsedSeconds: number;
+  scheduledAirTime?: string;
+  isCustomScheduled: boolean;
+}
+
+export function calculateCurrentBroadcast(videos: KpleVideoItem[]): BroadcastScheduleItem | null {
+  if (!videos || videos.length === 0) return null;
+
+  const now = new Date();
+  const todayStr = now.toISOString().split('T')[0];
+
+  // 1. Check if any video has an explicit scheduled airtime covering right now
+  for (const v of videos) {
+    const airDate = v.scheduledAirDate || todayStr;
+    const airTime = v.scheduledAirTime;
+    if (airTime) {
+      try {
+        const airDateObj = new Date(`${airDate}T${airTime}:00`);
+        let slotMs = 3600000;
+        const slot = v.airTimeSlot;
+        if (slot === '30 mins' || slot === '30 Minutes Slot') slotMs = 1800000;
+        else if (slot === '2 Hours' || slot === '2 Hours Slot') slotMs = 7200000;
+        else if (slot === '4 Hours' || slot === '4 Hours Slot') slotMs = 14400000;
+
+        const diffMs = now.getTime() - airDateObj.getTime();
+        if (diffMs >= 0 && diffMs < slotMs) {
+          const elapsedSec = Math.floor(diffMs / 1000);
+          return {
+            video: v,
+            elapsedSeconds: elapsedSec,
+            scheduledAirTime: airTime,
+            isCustomScheduled: true
+          };
+        }
+      } catch {}
+    }
+  }
+
+  // 2. 24/7 deterministic linear broadcast cycle across catalog
+  const secondsSinceMidnight = (now.getHours() * 3600) + (now.getMinutes() * 60) + now.getSeconds();
+  const slotDurationSec = 1800; // 30-minute programming blocks
+  const currentSlotIndex = Math.floor(secondsSinceMidnight / slotDurationSec);
+  const videoIndex = currentSlotIndex % videos.length;
+  const currentVideo = videos[videoIndex];
+  const elapsedInSlot = secondsSinceMidnight % slotDurationSec;
+
+  const startHour = Math.floor((currentSlotIndex * 30) / 60);
+  const startMin = (currentSlotIndex * 30) % 60;
+  const timeStr = `${startHour < 10 ? '0' : ''}${startHour}:${startMin < 10 ? '0' : ''}${startMin}`;
+
+  return {
+    video: currentVideo,
+    elapsedSeconds: elapsedInSlot,
+    scheduledAirTime: timeStr,
+    isCustomScheduled: false
+  };
 }
 
 const sanitizeTitle = (t?: string) => {
@@ -30,21 +90,10 @@ export const KpleInlineWatchSection: React.FC<KpleInlineWatchSectionProps> = ({
   const [tab, setTab] = useState<'description' | 'transcript'>('description');
   const [copiedTranscript, setCopiedTranscript] = useState(false);
   const [copiedLink, setCopiedLink] = useState(false);
+  const [isMuted, setIsMuted] = useState(true);
+  const [currentBroadcast, setCurrentBroadcast] = useState<BroadcastScheduleItem | null>(null);
+  const [isUserBrowsingPastVideo, setIsUserBrowsingPastVideo] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
-
-  // Initialize active video
-  useEffect(() => {
-    if (videos.length > 0 && !activeVideo) {
-      setActiveVideo(videos[0]);
-    }
-  }, [videos]);
-
-  // Load video playback when activeVideo changes
-  useEffect(() => {
-    if (activeVideo && videoRef.current) {
-      videoRef.current.load();
-    }
-  }, [activeVideo?.id]);
 
   // Filter out livestreams
   const cleanVideos = videos.filter(v => {
@@ -61,9 +110,44 @@ export const KpleInlineWatchSection: React.FC<KpleInlineWatchSectionProps> = ({
     );
   });
 
-  if (cleanVideos.length === 0) return null;
+  // Continuous linear broadcast synchronization
+  useEffect(() => {
+    if (cleanVideos.length === 0) return;
 
-  const currentActive = cleanVideos.find(v => v.id === activeVideo?.id) || cleanVideos[0];
+    const syncSchedule = () => {
+      const bc = calculateCurrentBroadcast(cleanVideos);
+      if (bc) {
+        setCurrentBroadcast(bc);
+        if (!isUserBrowsingPastVideo) {
+          setActiveVideo(bc.video);
+        }
+      }
+    };
+
+    syncSchedule();
+    const interval = setInterval(syncSchedule, 10000);
+    return () => clearInterval(interval);
+  }, [cleanVideos.length, isUserBrowsingPastVideo]);
+
+  const currentActive = cleanVideos.find(v => v.id === activeVideo?.id) || currentBroadcast?.video || cleanVideos[0];
+
+  // Handle video element play / sync when activeVideo or mute changes
+  useEffect(() => {
+    if (videoRef.current && currentActive) {
+      videoRef.current.muted = isMuted;
+      videoRef.current.volume = 1.0;
+      if (!isUserBrowsingPastVideo && currentBroadcast && currentActive.id === currentBroadcast.video.id) {
+        try {
+          videoRef.current.currentTime = currentBroadcast.elapsedSeconds;
+        } catch (_) {}
+      }
+      videoRef.current.play().catch(err => {
+        console.warn("Virtual linear TV play error:", err);
+      });
+    }
+  }, [currentActive?.id, isMuted, isUserBrowsingPastVideo]);
+
+  if (cleanVideos.length === 0) return null;
 
   // Filtered playlist
   const filteredVideos = cleanVideos.filter(v =>
@@ -73,9 +157,20 @@ export const KpleInlineWatchSection: React.FC<KpleInlineWatchSectionProps> = ({
   );
 
   const ytId = extractYouTubeId(currentActive.videoUrl);
+  const isCurrentAirProgram = !isUserBrowsingPastVideo && currentBroadcast && currentActive.id === currentBroadcast.video.id;
+  const startSeconds = isCurrentAirProgram ? Math.floor(currentBroadcast.elapsedSeconds) : 0;
 
   return (
     <section id="whats-on-now" style={{ padding: '40px 0', width: '100%', overflow: 'hidden' }}>
+      {/* Pulse Animation Style */}
+      <style>{`
+        @keyframes kpleLiveDotPulse {
+          0% { transform: scale(0.9); opacity: 0.8; box-shadow: 0 0 4px #ff0050; }
+          50% { transform: scale(1.3); opacity: 1; box-shadow: 0 0 16px #ff0050; }
+          100% { transform: scale(0.9); opacity: 0.8; box-shadow: 0 0 4px #ff0050; }
+        }
+      `}</style>
+
       <div className="px-mobile-sm" style={{ maxWidth: '1400px', margin: '0 auto', padding: '0 40px' }}>
         
         {/* Section Header */}
@@ -147,9 +242,122 @@ export const KpleInlineWatchSection: React.FC<KpleInlineWatchSectionProps> = ({
               boxShadow: '0 10px 30px rgba(0,0,0,0.9)',
               border: '1px solid rgba(255,255,255,0.1)'
             }}>
+              {/* Broadcast LIVE Watermark (Top Right) */}
+              <div style={{
+                position: 'absolute',
+                top: '16px',
+                right: '16px',
+                zIndex: 25,
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                background: 'rgba(0, 0, 0, 0.72)',
+                backdropFilter: 'blur(10px)',
+                WebkitBackdropFilter: 'blur(10px)',
+                border: '1px solid rgba(255, 255, 255, 0.22)',
+                padding: '6px 14px',
+                borderRadius: '8px',
+                boxShadow: '0 4px 20px rgba(0,0,0,0.7)',
+                pointerEvents: 'none',
+                userSelect: 'none'
+              }}>
+                <span style={{
+                  width: '9px',
+                  height: '9px',
+                  borderRadius: '50%',
+                  background: '#ff0050',
+                  boxShadow: '0 0 12px #ff0050',
+                  display: 'inline-block',
+                  animation: 'kpleLiveDotPulse 1.5s infinite ease-in-out'
+                }} />
+                <span style={{
+                  color: '#fff',
+                  fontSize: '12px',
+                  fontWeight: 900,
+                  letterSpacing: '1.5px',
+                  textTransform: 'uppercase',
+                  fontFamily: 'system-ui, -apple-system, sans-serif',
+                  lineHeight: 1
+                }}>
+                  LIVE
+                </span>
+              </div>
+
+              {/* Unmute / Volume Control Overlay */}
+              {isMuted ? (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsMuted(false);
+                    if (videoRef.current) {
+                      videoRef.current.muted = false;
+                      videoRef.current.volume = 1.0;
+                    }
+                  }}
+                  style={{
+                    position: 'absolute',
+                    bottom: '16px',
+                    right: '16px',
+                    zIndex: 25,
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                    background: 'rgba(0, 0, 0, 0.85)',
+                    backdropFilter: 'blur(12px)',
+                    WebkitBackdropFilter: 'blur(12px)',
+                    border: `1.5px solid ${accent}`,
+                    color: '#fff',
+                    padding: '8px 18px',
+                    borderRadius: '30px',
+                    fontSize: '12px',
+                    fontWeight: 800,
+                    cursor: 'pointer',
+                    boxShadow: `0 8px 24px rgba(0,0,0,0.7), 0 0 15px ${accent}44`,
+                    transition: 'all 0.2s'
+                  }}
+                  onMouseOver={e => e.currentTarget.style.transform = 'scale(1.05)'}
+                  onMouseOut={e => e.currentTarget.style.transform = 'scale(1)'}
+                >
+                  <VolumeX size={16} color={accent} />
+                  <span>Click to Unmute</span>
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsMuted(true);
+                    if (videoRef.current) {
+                      videoRef.current.muted = true;
+                    }
+                  }}
+                  style={{
+                    position: 'absolute',
+                    bottom: '16px',
+                    right: '16px',
+                    zIndex: 25,
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                    background: 'rgba(0, 0, 0, 0.65)',
+                    backdropFilter: 'blur(10px)',
+                    border: '1px solid rgba(255,255,255,0.15)',
+                    color: '#fff',
+                    padding: '6px 14px',
+                    borderRadius: '30px',
+                    fontSize: '11px',
+                    fontWeight: 700,
+                    cursor: 'pointer'
+                  }}
+                >
+                  <Volume2 size={14} color="#30d158" />
+                  <span>Mute</span>
+                </button>
+              )}
+
               {ytId ? (
                 <iframe
-                  src={`https://www.youtube.com/embed/${ytId}?autoplay=0`}
+                  key={`${ytId}-${isMuted ? 'muted' : 'unmuted'}-${isCurrentAirProgram ? Math.floor(startSeconds / 30) : 'manual'}`}
+                  src={`https://www.youtube.com/embed/${ytId}?autoplay=1&mute=${isMuted ? 1 : 0}&start=${startSeconds}&controls=1&enablejsapi=1&rel=0`}
                   title={currentActive.title}
                   style={{ width: '100%', height: '100%', border: 'none' }}
                   allow="autoplay; encrypted-media; fullscreen"
@@ -167,9 +375,19 @@ export const KpleInlineWatchSection: React.FC<KpleInlineWatchSectionProps> = ({
                 <video
                   ref={videoRef}
                   src={currentActive.videoUrl}
-                  controls
+                  autoPlay
+                  muted={isMuted}
                   playsInline
+                  controls
                   style={{ width: '100%', height: '100%', objectFit: 'contain' }}
+                  onEnded={() => {
+                    setIsUserBrowsingPastVideo(false);
+                    const nextBc = calculateCurrentBroadcast(cleanVideos);
+                    if (nextBc) {
+                      setCurrentBroadcast(nextBc);
+                      setActiveVideo(nextBc.video);
+                    }
+                  }}
                 >
                   <source src={currentActive.videoUrl} type="video/mp4" />
                 </video>
@@ -180,14 +398,46 @@ export const KpleInlineWatchSection: React.FC<KpleInlineWatchSectionProps> = ({
             <div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '16px', padding: '20px' }}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px', flexWrap: 'wrap', gap: '10px' }}>
                 <div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px', flexWrap: 'wrap' }}>
+                    {isCurrentAirProgram ? (
+                      <span style={{
+                        background: 'rgba(255, 0, 80, 0.15)',
+                        border: '1px solid rgba(255, 0, 80, 0.4)',
+                        color: '#ff4d85',
+                        padding: '2px 10px',
+                        borderRadius: '6px',
+                        fontSize: '11px',
+                        fontWeight: 900,
+                        letterSpacing: '0.8px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '6px'
+                      }}>
+                        <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#ff0050', display: 'inline-block', animation: 'kpleLiveDotPulse 1.5s infinite ease-in-out' }} />
+                        ON AIR NOW {currentBroadcast?.scheduledAirTime ? `@ ${currentBroadcast.scheduledAirTime}` : ''}
+                      </span>
+                    ) : (
+                      <span style={{
+                        background: 'rgba(255, 255, 255, 0.08)',
+                        border: '1px solid rgba(255, 255, 255, 0.15)',
+                        color: 'rgba(255,255,255,0.7)',
+                        padding: '2px 8px',
+                        borderRadius: '6px',
+                        fontSize: '11px',
+                        fontWeight: 700
+                      }}>
+                        ON DEMAND
+                      </span>
+                    )}
+                    {currentActive.channelName && (
+                      <span style={{ fontSize: '11px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '1px', color: accent }}>
+                        {currentActive.channelName}
+                      </span>
+                    )}
+                  </div>
                   <h3 style={{ fontSize: '20px', fontWeight: 900, color: '#fff', margin: '0 0 4px 0', letterSpacing: '-0.3px' }}>
                     {sanitizeTitle(currentActive.title)}
                   </h3>
-                  {currentActive.channelName && (
-                    <span style={{ fontSize: '11px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '1px', color: accent }}>
-                      {currentActive.channelName}
-                    </span>
-                  )}
                 </div>
 
                 <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
@@ -361,16 +611,58 @@ export const KpleInlineWatchSection: React.FC<KpleInlineWatchSectionProps> = ({
               </div>
             </div>
 
+            {/* Return to Live Schedule Broadcast Banner */}
+            {isUserBrowsingPastVideo && currentBroadcast && (
+              <div style={{ padding: '12px 14px 0 14px' }}>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsUserBrowsingPastVideo(false);
+                    setActiveVideo(currentBroadcast.video);
+                  }}
+                  style={{
+                    width: '100%',
+                    padding: '8px 12px',
+                    background: 'rgba(255, 0, 80, 0.14)',
+                    border: '1px solid rgba(255, 0, 80, 0.35)',
+                    borderRadius: '12px',
+                    color: '#ff4d85',
+                    fontSize: '11px',
+                    fontWeight: 800,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '6px',
+                    cursor: 'pointer',
+                    transition: 'all 0.2s'
+                  }}
+                  onMouseOver={e => e.currentTarget.style.background = 'rgba(255, 0, 80, 0.22)'}
+                  onMouseOut={e => e.currentTarget.style.background = 'rgba(255, 0, 80, 0.14)'}
+                >
+                  <Radio size={14} />
+                  <span>Return to Live Broadcast</span>
+                </button>
+              </div>
+            )}
+
             {/* Video List Items */}
             <div style={{ flex: 1, overflowY: 'auto', padding: '14px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
               {filteredVideos.map((vid) => {
                 const isCurrent = vid.id === currentActive.id;
+                const isAirBroadcast = currentBroadcast && vid.id === currentBroadcast.video.id;
                 return (
                   <motion.div
                     key={vid.id}
                     whileHover={{ scale: 1.02, x: 2 }}
                     transition={{ duration: 0.15 }}
-                    onClick={() => setActiveVideo(vid)}
+                    onClick={() => {
+                      setActiveVideo(vid);
+                      if (currentBroadcast && vid.id === currentBroadcast.video.id) {
+                        setIsUserBrowsingPastVideo(false);
+                      } else {
+                        setIsUserBrowsingPastVideo(true);
+                      }
+                    }}
                     style={{
                       padding: '8px',
                       borderRadius: '14px',
@@ -439,10 +731,15 @@ export const KpleInlineWatchSection: React.FC<KpleInlineWatchSectionProps> = ({
                         {sanitizeTitle(vid.title)}
                       </h4>
                       
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '11px', color: 'rgba(255,255,255,0.5)' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '11px', color: 'rgba(255,255,255,0.5)', flexWrap: 'wrap' }}>
+                        {isAirBroadcast && (
+                          <span style={{ color: '#ff4d85', fontWeight: 900, fontSize: '10px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                            🔴 LIVE AIR
+                          </span>
+                        )}
                         {isCurrent ? (
                           <span style={{ color: accent, fontWeight: 900, fontSize: '10px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-                            ▶ NOW PLAYING
+                            ▶ PLAYING
                           </span>
                         ) : (
                           <span>{vid.channelName || networkName}</span>
