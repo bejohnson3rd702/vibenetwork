@@ -95,10 +95,16 @@ function calculateCurrentBroadcast(videos: KpleVideoItem[]): BroadcastScheduleIt
         elapsedSec = elapsedSec % durSec;
       }
 
+      // Compute actual current broadcast airtime for this cycle
+      const cycleStartMin = (currentMinutes - (cycleMin - accumulatedMin) + 1440) % 1440;
+      const h = Math.floor(cycleStartMin / 60);
+      const m = cycleStartMin % 60;
+      const currentAirTime = `${h < 10 ? '0' : ''}${h}:${m < 10 ? '0' : ''}${m}`;
+
       return {
         video: v,
         elapsedSeconds: elapsedSec,
-        scheduledAirTime: v.scheduledAirTime,
+        scheduledAirTime: currentAirTime,
         isCustomScheduled: true
       };
     }
@@ -144,10 +150,20 @@ export const KpleInlineWatchSection: React.FC<KpleInlineWatchSectionProps> = ({
   const [copiedTranscript, setCopiedTranscript] = useState(false);
   const [copiedLink, setCopiedLink] = useState(false);
   const [isMuted, setIsMuted] = useState(true);
-  const [isUserBrowsingPastVideo, setIsUserBrowsingPastVideo] = useState(false);
+  const [userSelectedVideo, setUserSelectedVideo] = useState<KpleVideoItem | null>(null);
+  const [clockTick, setClockTick] = useState<number>(() => Date.now());
 
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
+  const ytDurationRef = useRef<number>(0);
+
+  // High-precision clock tick: ensures live broadcast transitions happen synchronously on the second
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setClockTick(Date.now());
+    }, 1000);
+    return () => clearInterval(timer);
+  }, []);
 
   // Filter out livestreams
   const cleanVideos = useMemo(() => {
@@ -166,50 +182,29 @@ export const KpleInlineWatchSection: React.FC<KpleInlineWatchSectionProps> = ({
     });
   }, [videos]);
 
-  // Compute initial broadcast synchronously so the player has startSeconds on mount
-  const initialBroadcast = useMemo(() => calculateCurrentBroadcast(cleanVideos), [cleanVideos]);
-  const [currentBroadcast, setCurrentBroadcast] = useState<BroadcastScheduleItem | null>(() => initialBroadcast);
-  const [activeVideo, setActiveVideo] = useState<KpleVideoItem | null>(() => initialBroadcast?.video || cleanVideos[0] || null);
+  // Synchronously compute current broadcast from cleanVideos and clockTick
+  const currentBroadcast = useMemo(() => {
+    return calculateCurrentBroadcast(cleanVideos);
+  }, [cleanVideos, clockTick]);
 
-  // Synchronize when cleanVideos updates from parent fetch
-  useEffect(() => {
-    if (cleanVideos.length === 0) return;
-    const bc = calculateCurrentBroadcast(cleanVideos);
-    if (bc) {
-      setCurrentBroadcast(bc);
-      if (!isUserBrowsingPastVideo) {
-        setActiveVideo(bc.video);
-      }
+  // Derive currently active video: user selection takes priority; otherwise active live program
+  const currentActive = userSelectedVideo || currentBroadcast?.video || cleanVideos[0];
+  const isCurrentAirProgram = !userSelectedVideo && currentBroadcast && currentActive?.id === currentBroadcast.video.id;
+  const rawElapsed = isCurrentAirProgram && currentBroadcast ? Math.max(0, Math.floor(currentBroadcast.elapsedSeconds)) : 0;
+
+  // Exact startSeconds with duration boundary handling
+  const startSeconds = useMemo(() => {
+    if (!isCurrentAirProgram || rawElapsed <= 0) return 0;
+    const durSec = (currentActive as any)?.durationMinutes && (currentActive as any).durationMinutes > 0
+      ? Math.floor((currentActive as any).durationMinutes * 60)
+      : (typeof currentActive?.duration === 'number' && currentActive.duration > 0 ? currentActive.duration : 0);
+    if (durSec > 0 && rawElapsed >= durSec) {
+      return rawElapsed % durSec;
     }
-  }, [cleanVideos, isUserBrowsingPastVideo]);
+    return rawElapsed;
+  }, [isCurrentAirProgram, rawElapsed, currentActive]);
 
-  // Continuous linear broadcast clock synchronization
-  useEffect(() => {
-    if (cleanVideos.length === 0) return;
-
-    const interval = setInterval(() => {
-      const bc = calculateCurrentBroadcast(cleanVideos);
-      if (bc) {
-        setCurrentBroadcast(bc);
-        if (!isUserBrowsingPastVideo) {
-          setActiveVideo(prev => {
-            if (!prev) return bc.video;
-            if (prev.id !== bc.video.id && currentBroadcast && prev.id === currentBroadcast.video.id) {
-              return bc.video;
-            }
-            return prev;
-          });
-        }
-      }
-    }, 5000);
-
-    return () => clearInterval(interval);
-  }, [cleanVideos, isUserBrowsingPastVideo, currentBroadcast?.video.id]);
-
-  const currentActive = cleanVideos.find(v => v.id === activeVideo?.id) || currentBroadcast?.video || cleanVideos[0];
   const ytId = currentActive ? extractYouTubeId(currentActive.videoUrl) : null;
-  const isCurrentAirProgram = !isUserBrowsingPastVideo && currentBroadcast && currentActive?.id === currentBroadcast.video.id;
-  const startSeconds = isCurrentAirProgram ? Math.max(0, Math.floor(currentBroadcast.elapsedSeconds)) : 0;
 
   // PostMessage helper for YouTube iframe API
   const postToYouTube = (func: string, args: any[] = []) => {
@@ -226,6 +221,23 @@ export const KpleInlineWatchSection: React.FC<KpleInlineWatchSectionProps> = ({
       }
     } catch (e) {
       console.warn('YouTube postMessage error:', e);
+    }
+  };
+
+  // Execute precise seek on YouTube
+  const executeYouTubeSeek = (targetSec: number) => {
+    if (targetSec <= 0) return;
+    let actualTarget = targetSec;
+    if (ytDurationRef.current > 0 && actualTarget >= ytDurationRef.current) {
+      actualTarget = actualTarget % Math.floor(ytDurationRef.current);
+    }
+    postToYouTube('seekTo', [Math.floor(actualTarget), true]);
+    postToYouTube('playVideo');
+    if (isMuted) {
+      postToYouTube('mute');
+    } else {
+      postToYouTube('unMute');
+      postToYouTube('setVolume', [100]);
     }
   };
 
@@ -255,24 +267,59 @@ export const KpleInlineWatchSection: React.FC<KpleInlineWatchSectionProps> = ({
     }
   };
 
-  // Handle iframe load event to seek to elapsed broadcast time & enforce playback
+  // Listen to YouTube API messages to capture duration and enforce seek when player is ready
+  useEffect(() => {
+    const handleWindowMessage = (event: MessageEvent) => {
+      try {
+        if (!event.data || typeof event.data !== 'string') return;
+        const data = JSON.parse(event.data);
+
+        // Capture reported duration from YouTube
+        if (data.event === 'infoDelivery' && data.info) {
+          if (typeof data.info.duration === 'number' && data.info.duration > 0) {
+            ytDurationRef.current = data.info.duration;
+          }
+        }
+
+        // When YouTube player announces ready
+        if (data.event === 'onReady' || (data.event === 'infoDelivery' && data.info && data.info.playerState !== undefined)) {
+          if (isCurrentAirProgram && startSeconds > 0) {
+            executeYouTubeSeek(startSeconds);
+          }
+          if (isMuted) {
+            postToYouTube('mute');
+          } else {
+            postToYouTube('unMute');
+            postToYouTube('setVolume', [100]);
+          }
+        }
+      } catch (_) {}
+    };
+
+    window.addEventListener('message', handleWindowMessage);
+    return () => window.removeEventListener('message', handleWindowMessage);
+  }, [isCurrentAirProgram, startSeconds, isMuted]);
+
+  // Handle iframe load event with staggered retry sequence to guarantee sync
   const handleIframeLoad = () => {
-    setTimeout(() => {
-      if (isCurrentAirProgram && startSeconds > 0) {
-        postToYouTube('seekTo', [startSeconds, true]);
-      }
-      postToYouTube('playVideo');
-      if (isMuted) {
-        postToYouTube('mute');
-      } else {
-        postToYouTube('unMute');
-        postToYouTube('setVolume', [100]);
-      }
-    }, 400);
+    [150, 450, 900, 1800].forEach(delay => {
+      setTimeout(() => {
+        if (isCurrentAirProgram && startSeconds > 0) {
+          executeYouTubeSeek(startSeconds);
+        }
+        postToYouTube('playVideo');
+        if (isMuted) {
+          postToYouTube('mute');
+        } else {
+          postToYouTube('unMute');
+          postToYouTube('setVolume', [100]);
+        }
+      }, delay);
+    });
   };
 
-  // Handle HTML5 video metadata loaded to seek to elapsed broadcast time
-  const handleVideoLoadedMetadata = () => {
+  // Seek and play for HTML5 <video>
+  const applyHtml5Seek = () => {
     if (videoRef.current) {
       videoRef.current.muted = isMuted;
       if (isCurrentAirProgram && startSeconds > 0) {
@@ -282,7 +329,9 @@ export const KpleInlineWatchSection: React.FC<KpleInlineWatchSectionProps> = ({
           if (dur && !isNaN(dur) && dur > 0 && target >= dur) {
             target = target % Math.floor(dur);
           }
-          videoRef.current.currentTime = target;
+          if (Math.abs(videoRef.current.currentTime - target) > 1.5) {
+            videoRef.current.currentTime = target;
+          }
         } catch (_) {}
       }
       videoRef.current.play().catch(err => {
@@ -291,25 +340,16 @@ export const KpleInlineWatchSection: React.FC<KpleInlineWatchSectionProps> = ({
     }
   };
 
-  // HTML5 video play when currentActive changes
+  const handleVideoLoadedMetadata = () => {
+    applyHtml5Seek();
+  };
+
+  // HTML5 video play when currentActive or isCurrentAirProgram changes
   useEffect(() => {
     if (videoRef.current && currentActive && !ytId) {
-      videoRef.current.muted = isMuted;
-      if (videoRef.current.readyState >= 1 && isCurrentAirProgram && startSeconds > 0) {
-        try {
-          const dur = videoRef.current.duration;
-          let target = startSeconds;
-          if (dur && !isNaN(dur) && dur > 0 && target >= dur) {
-            target = target % Math.floor(dur);
-          }
-          videoRef.current.currentTime = target;
-        } catch (_) {}
-      }
-      videoRef.current.play().catch(err => {
-        console.warn("Virtual linear TV play error:", err);
-      });
+      applyHtml5Seek();
     }
-  }, [currentActive?.id, isUserBrowsingPastVideo]);
+  }, [currentActive?.id, isCurrentAirProgram, startSeconds]);
 
   if (cleanVideos.length === 0) return null;
 
@@ -495,8 +535,8 @@ export const KpleInlineWatchSection: React.FC<KpleInlineWatchSectionProps> = ({
               {ytId ? (
                 <iframe
                   ref={iframeRef}
-                  key={`yt-${currentActive.id || ytId}`}
-                  src={`https://www.youtube.com/embed/${ytId}?autoplay=1&mute=1&controls=1&enablejsapi=1&rel=0&start=${startSeconds}&origin=${encodeURIComponent(typeof window !== 'undefined' ? window.location.origin : '')}`}
+                  key={`yt-${currentActive.id}-${isCurrentAirProgram ? 'live' : 'vod'}`}
+                  src={`https://www.youtube.com/embed/${ytId}?autoplay=1&mute=1&controls=1&enablejsapi=1&rel=0&start=${startSeconds}&playsinline=1`}
                   title={currentActive.title}
                   onLoad={handleIframeLoad}
                   style={{ width: '100%', height: '100%', border: 'none' }}
@@ -514,25 +554,21 @@ export const KpleInlineWatchSection: React.FC<KpleInlineWatchSectionProps> = ({
               ) : (
                 <video
                   ref={videoRef}
-                  key={`vid-${currentActive.id}`}
+                  key={`vid-${currentActive.id}-${isCurrentAirProgram ? 'live' : 'vod'}`}
                   src={currentActive.videoUrl}
                   autoPlay
                   muted={isMuted}
                   playsInline
                   controls
                   onLoadedMetadata={handleVideoLoadedMetadata}
-                  onCanPlay={() => {
-                    if (videoRef.current) {
-                      videoRef.current.play().catch(() => {});
-                    }
-                  }}
+                  onLoadedData={applyHtml5Seek}
+                  onCanPlay={applyHtml5Seek}
                   style={{ width: '100%', height: '100%', objectFit: 'contain' }}
                   onEnded={() => {
-                    setIsUserBrowsingPastVideo(false);
-                    const nextBc = calculateCurrentBroadcast(cleanVideos);
-                    if (nextBc) {
-                      setCurrentBroadcast(nextBc);
-                      setActiveVideo(nextBc.video);
+                    if (userSelectedVideo) {
+                      setUserSelectedVideo(null);
+                    } else {
+                      applyHtml5Seek();
                     }
                   }}
                 >
@@ -564,20 +600,44 @@ export const KpleInlineWatchSection: React.FC<KpleInlineWatchSectionProps> = ({
                         ON AIR NOW • {formatAirTime12h(currentActive.scheduledAirTime || currentBroadcast?.scheduledAirTime)} ({currentActive.airTimeSlot || '30 mins'})
                       </span>
                     ) : (
-                      <span style={{
-                        background: 'rgba(0, 212, 255, 0.12)',
-                        border: '1px solid rgba(0, 212, 255, 0.3)',
-                        color: '#00d4ff',
-                        padding: '3px 10px',
-                        borderRadius: '6px',
-                        fontSize: '11px',
-                        fontWeight: 800,
-                        display: 'inline-flex',
-                        alignItems: 'center',
-                        gap: '6px'
-                      }}>
-                        📅 BROADCAST AIRTIME: {formatAirTime12h(currentActive.scheduledAirTime) || 'Scheduled'} ({currentActive.airTimeSlot || '30 mins'})
-                      </span>
+                      <>
+                        <span style={{
+                          background: 'rgba(0, 212, 255, 0.12)',
+                          border: '1px solid rgba(0, 212, 255, 0.3)',
+                          color: '#00d4ff',
+                          padding: '3px 10px',
+                          borderRadius: '6px',
+                          fontSize: '11px',
+                          fontWeight: 800,
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '6px'
+                        }}>
+                          📅 BROADCAST AIRTIME: {formatAirTime12h(currentActive.scheduledAirTime) || 'Scheduled'} ({currentActive.airTimeSlot || '30 mins'})
+                        </span>
+                        {userSelectedVideo && currentBroadcast && (
+                          <button
+                            type="button"
+                            onClick={() => setUserSelectedVideo(null)}
+                            style={{
+                              background: 'rgba(255, 0, 80, 0.18)',
+                              border: '1px solid rgba(255, 0, 80, 0.45)',
+                              color: '#ff4d85',
+                              padding: '3px 10px',
+                              borderRadius: '6px',
+                              fontSize: '11px',
+                              fontWeight: 800,
+                              cursor: 'pointer',
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              gap: '5px'
+                            }}
+                          >
+                            <Radio size={12} />
+                            <span>Return to Live Broadcast</span>
+                          </button>
+                        )}
+                      </>
                     )}
                     {currentActive.channelName && (
                       <span style={{ fontSize: '11px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '1px', color: accent }}>
@@ -762,13 +822,12 @@ export const KpleInlineWatchSection: React.FC<KpleInlineWatchSectionProps> = ({
             </div>
 
             {/* Return to Live Schedule Broadcast Banner */}
-            {isUserBrowsingPastVideo && currentBroadcast && (
+            {userSelectedVideo && currentBroadcast && (
               <div style={{ padding: '12px 14px 0 14px' }}>
                 <button
                   type="button"
                   onClick={() => {
-                    setIsUserBrowsingPastVideo(false);
-                    setActiveVideo(currentBroadcast.video);
+                    setUserSelectedVideo(null);
                   }}
                   style={{
                     width: '100%',
@@ -806,11 +865,10 @@ export const KpleInlineWatchSection: React.FC<KpleInlineWatchSectionProps> = ({
                     whileHover={{ scale: 1.02, x: 2 }}
                     transition={{ duration: 0.15 }}
                     onClick={() => {
-                      setActiveVideo(vid);
                       if (currentBroadcast && vid.id === currentBroadcast.video.id) {
-                        setIsUserBrowsingPastVideo(false);
+                        setUserSelectedVideo(null);
                       } else {
-                        setIsUserBrowsingPastVideo(true);
+                        setUserSelectedVideo(vid);
                       }
                     }}
                     style={{

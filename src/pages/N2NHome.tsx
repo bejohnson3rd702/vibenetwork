@@ -421,16 +421,17 @@ export default function N2NHome({ wlConfig, categories, user, activeVideo, setAc
             let runningTimeMinutes = (15 * 60) + 30; // 930 minutes (3:30 PM)
 
             const scheduledKpleVideos = allLoadedVideos.map((v: any) => {
-              const durMin = parseDurationToMinutes(v.duration || v.preview_duration, v.tags, v.title);
+              const durMin = v.durationMinutes || parseDurationToMinutes(v.duration || v.preview_duration, v.tags, v.title) || 28;
               
               // If video is over 30 min then 1 hour (60m), if under 30 min then 30 min
-              const slotMinutes = durMin > 30 ? 60 : 30;
+              const slotMinutes = (durMin > 30 || v.airTimeSlot === '1 Hour' || (v as any).slotMinutes === 60) ? 60 : 30;
               const slotLabel = slotMinutes === 60 ? '1 Hour' : '30 mins';
 
               const dayMinute = runningTimeMinutes % (24 * 60);
               const hour = Math.floor(dayMinute / 60);
               const minute = dayMinute % 60;
-              const airTimeStr = `${hour < 10 ? '0' : ''}${hour}:${minute < 10 ? '0' : ''}${minute}`;
+              const generatedAirTime = `${hour < 10 ? '0' : ''}${hour}:${minute < 10 ? '0' : ''}${minute}`;
+              const airTimeStr = v.scheduledAirTime || generatedAirTime;
 
               // Next video starts immediately after: 1 after another
               runningTimeMinutes += slotMinutes;
@@ -438,7 +439,7 @@ export default function N2NHome({ wlConfig, categories, user, activeVideo, setAc
               return {
                 ...v,
                 durationMinutes: durMin,
-                scheduledAirDate: todayStr,
+                scheduledAirDate: v.scheduledAirDate || todayStr,
                 scheduledAirTime: airTimeStr,
                 airTimeSlot: slotLabel,
                 slotMinutes: slotMinutes
