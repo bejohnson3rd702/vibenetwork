@@ -297,19 +297,64 @@ export default function N2NHome({ wlConfig, categories, user, activeVideo, setAc
               );
             });
 
+            const parseDurationToMinutes = (val: any, tags?: any[], title?: string): number => {
+              if (!val) {
+                if (Array.isArray(tags)) {
+                  for (const t of tags) {
+                    if (typeof t === 'string') {
+                      const m = t.match(/(\d+)\s*min/i);
+                      if (m) return parseInt(m[1], 10);
+                    }
+                  }
+                }
+                if (typeof title === 'string') {
+                  const tm = title.match(/(\d+)\s*min/i);
+                  if (tm) return parseInt(tm[1], 10);
+                }
+                return 0;
+              }
+
+              if (typeof val === 'number' && !isNaN(val)) {
+                if (val > 180) return val / 60; // stored in seconds
+                return val; // stored in minutes
+              }
+
+              const s = String(val).trim().toLowerCase();
+              if (s.includes(':')) {
+                const parts = s.split(':').map(p => parseFloat(p) || 0);
+                if (parts.length === 3) return parts[0] * 60 + parts[1] + parts[2] / 60;
+                if (parts.length === 2) return parts[0] + parts[1] / 60;
+              }
+
+              let totalMin = 0;
+              const hr = s.match(/(\d+(?:\.\d+)?)\s*(?:h|hr|hour)/);
+              const min = s.match(/(\d+(?:\.\d+)?)\s*(?:m|min)/);
+              const sec = s.match(/(\d+(?:\.\d+)?)\s*(?:s|sec)/);
+              if (hr) totalMin += parseFloat(hr[1]) * 60;
+              if (min) totalMin += parseFloat(min[1]);
+              if (sec) totalMin += parseFloat(sec[1]) / 60;
+              if (totalMin > 0) return totalMin;
+
+              const num = parseFloat(s);
+              if (!isNaN(num)) {
+                if (num > 180) return num / 60;
+                return num;
+              }
+              return 0;
+            };
+
             const formattedVids = nonLiveVideos.map((v: any) => {
               const cName = v.whitelabel?.name || (v.creator?.username ? v.creator.username.replace(/_/g, ' ').replace(/\b\w/g, (c: string) => c.toUpperCase()) : 'Channel Video');
               const tags = Array.isArray(v.tags) ? v.tags : [];
               let airDate = v.scheduled_air_date;
               let airTime = v.scheduled_air_time;
-              let timeSlot = v.air_time_slot || '1 Hour';
               tags.forEach((t: string) => {
                 if (typeof t === 'string') {
                   if (t.startsWith('air_date:')) airDate = t.replace('air_date:', '');
                   else if (t.startsWith('air_time:')) airTime = t.replace('air_time:', '');
-                  else if (t.startsWith('slot:')) timeSlot = t.replace('slot:', '');
                 }
               });
+              const durMin = parseDurationToMinutes(v.duration || v.preview_duration, tags, v.title);
               return {
                 id: v.id,
                 title: v.title,
@@ -322,8 +367,8 @@ export default function N2NHome({ wlConfig, categories, user, activeVideo, setAc
                 transcript: v.transcript || '',
                 scheduledAirDate: airDate,
                 scheduledAirTime: airTime,
-                airTimeSlot: timeSlot,
-                duration: v.duration ? parseInt(v.duration) || 0 : (v.preview_duration ? parseInt(v.preview_duration) || 0 : 0)
+                duration: v.duration || v.preview_duration || 0,
+                durationMinutes: durMin
               };
             });
 
@@ -341,10 +386,9 @@ export default function N2NHome({ wlConfig, categories, user, activeVideo, setAc
             });
 
             const todayStr = new Date().toISOString().split('T')[0];
-            const formattedEpisodes = validEpisodes.map((ep: any, idx: number) => {
+            const formattedEpisodes = validEpisodes.map((ep: any) => {
               const cName = ep.series?.title || 'Doc Wales Diaries';
-              const startHour = (7 + (idx % 16));
-              const airTimeStr = `${startHour < 10 ? '0' : ''}${startHour}:00`;
+              const durMin = parseDurationToMinutes(ep.duration || ep.video_duration, ep.tags, ep.title) || 28;
               return {
                 id: ep.id,
                 title: ep.title,
@@ -356,9 +400,8 @@ export default function N2NHome({ wlConfig, categories, user, activeVideo, setAc
                 description: ep.description || 'Doc Wales Diaries episode featuring Dr. Steve Price on medical missions around the world.',
                 transcript: ep.transcript || '',
                 scheduledAirDate: todayStr,
-                scheduledAirTime: airTimeStr,
-                airTimeSlot: '1 Hour',
-                duration: ep.duration ? parseInt(ep.duration) || 1800 : 1800
+                duration: ep.duration || 0,
+                durationMinutes: durMin
               };
             });
 
@@ -372,15 +415,16 @@ export default function N2NHome({ wlConfig, categories, user, activeVideo, setAc
             const allLoadedVideos = Array.from(combinedMap.values());
 
             // Assign sequential broadcast air times starting at 3:30 PM (15:30)
-            // Slots are in 30 min or 1 hr increments based on video length:
-            // <= 30 mins -> 30 min slot, > 30 mins -> 1 hour slot
+            // Video length strictly determines slot:
+            // > 30 mins -> 1 Hour slot (60 mins)
+            // <= 30 mins -> 30 mins slot (30 mins)
             let runningTimeMinutes = (15 * 60) + 30; // 930 minutes (3:30 PM)
 
             const scheduledKpleVideos = allLoadedVideos.map((v: any) => {
-              const durSec = v.duration ? parseInt(v.duration) || 0 : (v.preview_duration ? parseInt(v.preview_duration) || 0 : 0);
+              const durMin = parseDurationToMinutes(v.duration || v.preview_duration, v.tags, v.title);
               
-              // Increment: 30 mins or 1 hr by video length
-              const slotMinutes = (durSec > 1800 || v.airTimeSlot === '1 Hour' || v.airTimeSlot === '2 Hours') ? 60 : 30;
+              // If video is over 30 min then 1 hour (60m), if under 30 min then 30 min
+              const slotMinutes = durMin > 30 ? 60 : 30;
               const slotLabel = slotMinutes === 60 ? '1 Hour' : '30 mins';
 
               const dayMinute = runningTimeMinutes % (24 * 60);
@@ -393,6 +437,7 @@ export default function N2NHome({ wlConfig, categories, user, activeVideo, setAc
 
               return {
                 ...v,
+                durationMinutes: durMin,
                 scheduledAirDate: todayStr,
                 scheduledAirTime: airTimeStr,
                 airTimeSlot: slotLabel,

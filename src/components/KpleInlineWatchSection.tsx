@@ -432,7 +432,7 @@ export const KpleInlineWatchSection: React.FC<KpleInlineWatchSectionProps> = ({
                         gap: '6px'
                       }}>
                         <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#ff0050', display: 'inline-block', animation: 'kpleLiveDotPulse 1.5s infinite ease-in-out' }} />
-                        ON AIR NOW • {formatAirTime12h(currentActive.scheduledAirTime || currentBroadcast?.scheduledAirTime)} ({currentActive.airTimeSlot || '1 Hr'})
+                        ON AIR NOW • {formatAirTime12h(currentActive.scheduledAirTime || currentBroadcast?.scheduledAirTime)} ({currentActive.airTimeSlot || '30 mins'})
                       </span>
                     ) : (
                       <span style={{
@@ -447,7 +447,7 @@ export const KpleInlineWatchSection: React.FC<KpleInlineWatchSectionProps> = ({
                         alignItems: 'center',
                         gap: '6px'
                       }}>
-                        📅 BROADCAST AIRTIME: {formatAirTime12h(currentActive.scheduledAirTime) || 'Scheduled'} ({currentActive.airTimeSlot || '1 Hr'})
+                        📅 BROADCAST AIRTIME: {formatAirTime12h(currentActive.scheduledAirTime) || 'Scheduled'} ({currentActive.airTimeSlot || '30 mins'})
                       </span>
                     )}
                     {currentActive.channelName && (
@@ -768,7 +768,7 @@ export const KpleInlineWatchSection: React.FC<KpleInlineWatchSectionProps> = ({
                             gap: '4px'
                           }}>
                             <span style={{ width: '5px', height: '5px', borderRadius: '50%', background: '#ff0050', display: 'inline-block', animation: 'kpleLiveDotPulse 1.5s infinite ease-in-out' }} />
-                            ON AIR NOW • {formatAirTime12h(vid.scheduledAirTime)}
+                            ON AIR NOW • {formatAirTime12h(vid.scheduledAirTime)} ({vid.airTimeSlot || '30 mins'})
                           </span>
                         ) : (
                           <span style={{
@@ -779,7 +779,7 @@ export const KpleInlineWatchSection: React.FC<KpleInlineWatchSectionProps> = ({
                             padding: '2px 6px',
                             borderRadius: '5px'
                           }}>
-                            📅 Airs {formatAirTime12h(vid.scheduledAirTime) || 'Scheduled'}
+                            📅 Airs {formatAirTime12h(vid.scheduledAirTime) || 'Scheduled'} ({vid.airTimeSlot || '30 mins'})
                           </span>
                         )}
                         {isCurrent ? (
