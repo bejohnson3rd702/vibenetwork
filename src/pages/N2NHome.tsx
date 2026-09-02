@@ -371,29 +371,32 @@ export default function N2NHome({ wlConfig, categories, user, activeVideo, setAc
 
             const allLoadedVideos = Array.from(combinedMap.values());
 
-            // Assign broadcast air times to ALL loaded videos across the daily 24-hour broadcast grid
-            const slotIntervalMinutes = allLoadedVideos.length > 24 ? 30 : 60;
-            const scheduledKpleVideos = allLoadedVideos.map((v: any, index: number) => {
-              if (v.scheduledAirTime) {
-                return {
-                  ...v,
-                  scheduledAirDate: v.scheduledAirDate || todayStr,
-                  airTimeSlot: v.airTimeSlot || (slotIntervalMinutes === 30 ? '30 mins' : '1 Hour')
-                };
-              }
+            // Assign sequential broadcast air times starting at 3:30 PM (15:30)
+            // Slots are in 30 min or 1 hr increments based on video length:
+            // <= 30 mins -> 30 min slot, > 30 mins -> 1 hour slot
+            let runningTimeMinutes = (15 * 60) + 30; // 930 minutes (3:30 PM)
 
-              // Calculate linear broadcast time slot starting at 6:00 AM
-              const totalSlotMinutes = (6 * 60) + (index * slotIntervalMinutes);
-              const dayMinute = totalSlotMinutes % (24 * 60);
+            const scheduledKpleVideos = allLoadedVideos.map((v: any) => {
+              const durSec = v.duration ? parseInt(v.duration) || 0 : (v.preview_duration ? parseInt(v.preview_duration) || 0 : 0);
+              
+              // Increment: 30 mins or 1 hr by video length
+              const slotMinutes = (durSec > 1800 || v.airTimeSlot === '1 Hour' || v.airTimeSlot === '2 Hours') ? 60 : 30;
+              const slotLabel = slotMinutes === 60 ? '1 Hour' : '30 mins';
+
+              const dayMinute = runningTimeMinutes % (24 * 60);
               const hour = Math.floor(dayMinute / 60);
               const minute = dayMinute % 60;
               const airTimeStr = `${hour < 10 ? '0' : ''}${hour}:${minute < 10 ? '0' : ''}${minute}`;
+
+              // Next video starts immediately after: 1 after another
+              runningTimeMinutes += slotMinutes;
 
               return {
                 ...v,
                 scheduledAirDate: todayStr,
                 scheduledAirTime: airTimeStr,
-                airTimeSlot: slotIntervalMinutes === 30 ? '30 mins' : '1 Hour'
+                airTimeSlot: slotLabel,
+                slotMinutes: slotMinutes
               };
             });
 

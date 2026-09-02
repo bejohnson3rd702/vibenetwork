@@ -22,59 +22,49 @@ function calculateCurrentBroadcast(videos: KpleVideoItem[]): BroadcastScheduleIt
   if (!videos || videos.length === 0) return null;
 
   const now = new Date();
-  const todayStr = now.toISOString().split('T')[0];
-
-  // 1. Check if any video has an explicit scheduled airtime covering right now
-  for (const v of videos) {
-    const airDate = v.scheduledAirDate || todayStr;
-    const airTime = v.scheduledAirTime;
-    if (airTime) {
-      try {
-        const airDateObj = new Date(`${airDate}T${airTime}:00`);
-        let slotMs = 3600000;
-        const slot = v.airTimeSlot;
-        if (slot === '30 mins' || slot === '30 Minutes Slot') slotMs = 1800000;
-        else if (slot === '2 Hours' || slot === '2 Hours Slot') slotMs = 7200000;
-        else if (slot === '4 Hours' || slot === '4 Hours Slot') slotMs = 14400000;
-
-        const diffMs = now.getTime() - airDateObj.getTime();
-        if (diffMs >= 0 && diffMs < slotMs) {
-          const elapsedSec = Math.floor(diffMs / 1000);
-          return {
-            video: v,
-            elapsedSeconds: elapsedSec,
-            scheduledAirTime: airTime,
-            isCustomScheduled: true
-          };
-        }
-      } catch {}
-    }
-  }
-
-  // 2. Fallback: select closest video to current time across 24h
   const currentMinutes = now.getHours() * 60 + now.getMinutes();
-  let bestVideo = videos[0];
-  let minDiff = Infinity;
-  let bestElapsed = 0;
+  const currentSecondsInMin = now.getSeconds();
 
   for (const v of videos) {
     if (v.scheduledAirTime) {
       const parts = v.scheduledAirTime.split(':');
-      const videoMinutes = parseInt(parts[0], 10) * 60 + parseInt(parts[1], 10);
-      let diff = currentMinutes - videoMinutes;
-      if (diff < 0) diff += 1440;
-      if (diff < minDiff) {
-        minDiff = diff;
-        bestVideo = v;
-        bestElapsed = diff * 60 + now.getSeconds();
+      const startMin = parseInt(parts[0], 10) * 60 + parseInt(parts[1], 10);
+      const slotMin = (v.airTimeSlot === '1 Hour' || (v as any).slotMinutes === 60) ? 60 : 30;
+      const endMin = startMin + slotMin;
+
+      // Check if current time falls within [startMin, endMin)
+      if (endMin <= 1440) {
+        if (currentMinutes >= startMin && currentMinutes < endMin) {
+          const elapsedSec = (currentMinutes - startMin) * 60 + currentSecondsInMin;
+          return {
+            video: v,
+            elapsedSeconds: elapsedSec,
+            scheduledAirTime: v.scheduledAirTime,
+            isCustomScheduled: true
+          };
+        }
+      } else {
+        // Midnight wrap window (e.g. 23:30 - 00:30)
+        const wrappedEnd = endMin % 1440;
+        if (currentMinutes >= startMin || currentMinutes < wrappedEnd) {
+          const elapsedMin = (currentMinutes - startMin + 1440) % 1440;
+          const elapsedSec = elapsedMin * 60 + currentSecondsInMin;
+          return {
+            video: v,
+            elapsedSeconds: elapsedSec,
+            scheduledAirTime: v.scheduledAirTime,
+            isCustomScheduled: true
+          };
+        }
       }
     }
   }
 
+  // Fallback: first video in schedule
   return {
-    video: bestVideo,
-    elapsedSeconds: bestElapsed,
-    scheduledAirTime: bestVideo.scheduledAirTime,
+    video: videos[0],
+    elapsedSeconds: 0,
+    scheduledAirTime: videos[0].scheduledAirTime || '15:30',
     isCustomScheduled: false
   };
 }
@@ -169,15 +159,19 @@ export const KpleInlineWatchSection: React.FC<KpleInlineWatchSectionProps> = ({
 
   if (cleanVideos.length === 0) return null;
 
-  // Filtered playlist sorted chronologically by broadcast airtime
+  // Filtered playlist sorted sequentially starting from 3:30 PM (930 mins from midnight)
   const filteredVideos = cleanVideos.filter(v =>
     v.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
     (v.channelName && v.channelName.toLowerCase().includes(searchQuery.toLowerCase())) ||
     (v.tags && v.tags.some(t => t.toLowerCase().includes(searchQuery.toLowerCase())))
   ).sort((a, b) => {
-    const timeA = a.scheduledAirTime || '00:00';
-    const timeB = b.scheduledAirTime || '00:00';
-    return timeA.localeCompare(timeB);
+    const getOffsetMin = (timeStr?: string) => {
+      if (!timeStr) return 0;
+      const parts = timeStr.split(':');
+      const min = parseInt(parts[0], 10) * 60 + parseInt(parts[1], 10);
+      return (min - 930 + 1440) % 1440;
+    };
+    return getOffsetMin(a.scheduledAirTime) - getOffsetMin(b.scheduledAirTime);
   });
 
   const ytId = extractYouTubeId(currentActive.videoUrl);
