@@ -352,7 +352,110 @@ export const KpleWatchPlayer: React.FC<KpleWatchPlayerProps> = ({
                   )}
                 </button>
 
-                {ytId ? (
+                {activeVideo.id.startsWith('ad-') ? (
+                  <div style={{
+                    position: 'absolute',
+                    inset: 0,
+                    zIndex: 20,
+                    background: 'radial-gradient(circle at center, #0e1222 0%, #05060b 100%)',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    padding: '32px',
+                    textAlign: 'center',
+                    boxSizing: 'border-box'
+                  }}>
+                    {/* Glowing Ambient Light */}
+                    <div style={{
+                      position: 'absolute',
+                      width: '320px',
+                      height: '320px',
+                      borderRadius: '50%',
+                      background: accent,
+                      filter: 'blur(110px)',
+                      opacity: 0.22,
+                      pointerEvents: 'none'
+                    }} />
+
+                    {/* KPLE Station Logo Icon */}
+                    <div style={{
+                      width: '76px',
+                      height: '76px',
+                      borderRadius: '22px',
+                      background: `linear-gradient(135deg, ${accent}44, rgba(0,0,0,0.85))`,
+                      border: `1.5px solid ${accent}aa`,
+                      boxShadow: `0 0 45px ${accent}66`,
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      marginBottom: '22px',
+                      position: 'relative'
+                    }}>
+                      <Radio size={38} color="#fff" />
+                    </div>
+
+                    <div style={{
+                      fontSize: '11px',
+                      fontWeight: 900,
+                      textTransform: 'uppercase',
+                      letterSpacing: '3px',
+                      color: accent,
+                      marginBottom: '10px'
+                    }}>
+                      KPLE-TV • CHRISTIAN REVIVAL NETWORK
+                    </div>
+
+                    <h2 style={{
+                      fontSize: '38px',
+                      fontWeight: 900,
+                      color: '#fff',
+                      margin: '0 0 14px 0',
+                      letterSpacing: '-0.8px',
+                      textShadow: '0 4px 25px rgba(0,0,0,0.9)'
+                    }}>
+                      WE WILL BE RIGHT BACK
+                    </h2>
+
+                    <p style={{
+                      fontSize: '14px',
+                      color: 'rgba(255,255,255,0.72)',
+                      maxWidth: '480px',
+                      margin: '0 0 24px 0',
+                      lineHeight: 1.5,
+                      fontWeight: 500
+                    }}>
+                      Station break in progress. Live programming will resume shortly.
+                    </p>
+
+                    {/* Station Status Pill */}
+                    <div style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '10px',
+                      background: 'rgba(255,255,255,0.06)',
+                      backdropFilter: 'blur(12px)',
+                      WebkitBackdropFilter: 'blur(12px)',
+                      border: '1px solid rgba(255,255,255,0.15)',
+                      padding: '8px 22px',
+                      borderRadius: '30px',
+                      fontSize: '12px',
+                      fontWeight: 800,
+                      color: '#fff',
+                      boxShadow: '0 8px 24px rgba(0,0,0,0.5)'
+                    }}>
+                      <span style={{
+                        width: '8px',
+                        height: '8px',
+                        borderRadius: '50%',
+                        background: '#ffaa00',
+                        boxShadow: '0 0 12px #ffaa00',
+                        animation: 'kpleLiveDotPulse 1.5s infinite ease-in-out'
+                      }} />
+                      <span>📣 COMMERCIAL BREAK IN PROGRESS</span>
+                    </div>
+                  </div>
+                ) : ytId ? (
                   <iframe
                     ref={iframeRef}
                     key={`yt-modal-${activeVideo.id}`}
