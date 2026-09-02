@@ -378,16 +378,6 @@ export const KpleInlineWatchSection: React.FC<KpleInlineWatchSectionProps> = ({
       }, delay);
     });
   };
-        postToYouTube('playVideo');
-        if (isMuted) {
-          postToYouTube('mute');
-        } else {
-          postToYouTube('unMute');
-          postToYouTube('setVolume', [100]);
-        }
-      }, delay);
-    });
-  };
 
   // Seek and play for HTML5 <video>
   const applyHtml5Seek = () => {
