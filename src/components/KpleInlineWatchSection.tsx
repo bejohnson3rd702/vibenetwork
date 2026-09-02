@@ -11,14 +11,14 @@ interface KpleInlineWatchSectionProps {
   onOpenModal?: (vid: KpleVideoItem) => void;
 }
 
-export interface BroadcastScheduleItem {
+interface BroadcastScheduleItem {
   video: KpleVideoItem;
   elapsedSeconds: number;
   scheduledAirTime?: string;
   isCustomScheduled: boolean;
 }
 
-export function calculateCurrentBroadcast(videos: KpleVideoItem[]): BroadcastScheduleItem | null {
+function calculateCurrentBroadcast(videos: KpleVideoItem[]): BroadcastScheduleItem | null {
   if (!videos || videos.length === 0) return null;
 
   const now = new Date();
@@ -79,7 +79,7 @@ export function calculateCurrentBroadcast(videos: KpleVideoItem[]): BroadcastSch
   };
 }
 
-export const formatAirTime12h = (timeStr?: string) => {
+const formatAirTime12h = (timeStr?: string) => {
   if (!timeStr) return '';
   const parts = timeStr.split(':');
   if (parts.length < 2) return timeStr;
