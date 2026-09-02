@@ -1083,6 +1083,11 @@ export default function WatchLive({ accent = '#D35400', isCourtneyBee = false, i
         try {
           ytPlayerRef.current = new (window as any).YT.Player('watch-live-yt-iframe', {
             events: {
+              onReady: (event: any) => {
+                try {
+                  event.target.playVideo();
+                } catch (_) {}
+              },
               onStateChange: (event: any) => {
                 if (event.data === (window as any).YT.PlayerState.PLAYING) {
                   if (!interval) {
@@ -2448,6 +2453,13 @@ export default function WatchLive({ accent = '#D35400', isCourtneyBee = false, i
       videoRef.current.load();
       videoRef.current.muted = false;
       videoRef.current.volume = 1.0;
+      videoRef.current.play().catch(err => {
+        console.warn("WatchLive: Unmuted playback was prevented, falling back to muted:", err);
+        if (videoRef.current) {
+          videoRef.current.muted = true;
+          videoRef.current.play().catch(() => {});
+        }
+      });
     }
   }, [activeVideo]);
 
@@ -2752,10 +2764,10 @@ export default function WatchLive({ accent = '#D35400', isCourtneyBee = false, i
                           return (
                             <iframe
                               id="watch-live-yt-iframe"
-                              src={`https://www.youtube.com/embed/${ytId}?autoplay=0&controls=1&rel=0&enablejsapi=1`}
+                              src={`https://www.youtube.com/embed/${ytId}?autoplay=1&controls=1&rel=0&enablejsapi=1`}
                               title={activeVideo.headline}
                               frameBorder="0"
-                              allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                               allowFullScreen
                               style={{ width: '100%', height: '100%', position: 'absolute', inset: 0, border: 'none' }}
                             />
@@ -2765,10 +2777,10 @@ export default function WatchLive({ accent = '#D35400', isCourtneyBee = false, i
                           const dmId = match ? match[1] : activeVideo.id;
                           return (
                             <iframe
-                              src={`https://www.dailymotion.com/embed/video/${dmId}?autoplay=0`}
+                              src={`https://www.dailymotion.com/embed/video/${dmId}?autoplay=1`}
                               title={activeVideo.headline}
                               frameBorder="0"
-                              allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                               allowFullScreen
                               style={{ width: '100%', height: '100%', position: 'absolute', inset: 0, border: 'none' }}
                             />
@@ -2780,6 +2792,7 @@ export default function WatchLive({ accent = '#D35400', isCourtneyBee = false, i
                               ref={videoRef}
                               src={activeVideo.videoUrl}
                               controls
+                              autoPlay
                               playsInline
                               preload="auto"
                               style={{ width: '100%', display: 'block', height: '100%', objectFit: 'contain' }}
