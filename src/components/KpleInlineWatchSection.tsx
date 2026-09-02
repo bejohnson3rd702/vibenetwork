@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { Play, Tv, FileText, Copy, Check, Search, Maximize2, Share2, Volume2, VolumeX, Radio } from 'lucide-react';
 import { extractYouTubeId } from './KpleAddVideoModal';
@@ -25,6 +25,7 @@ function calculateCurrentBroadcast(videos: KpleVideoItem[]): BroadcastScheduleIt
   const currentMinutes = now.getHours() * 60 + now.getMinutes();
   const currentSecondsInMin = now.getSeconds();
 
+  // 1. Direct slot match
   for (const v of videos) {
     if (v.scheduledAirTime) {
       const parts = v.scheduledAirTime.split(':');
@@ -32,35 +33,78 @@ function calculateCurrentBroadcast(videos: KpleVideoItem[]): BroadcastScheduleIt
       const slotMin = (v.airTimeSlot === '1 Hour' || (v as any).slotMinutes === 60) ? 60 : 30;
       const endMin = startMin + slotMin;
 
-      // Check if current time falls within [startMin, endMin)
+      let isMatch = false;
+      let elapsedMin = 0;
+
       if (endMin <= 1440) {
         if (currentMinutes >= startMin && currentMinutes < endMin) {
-          const elapsedSec = (currentMinutes - startMin) * 60 + currentSecondsInMin;
-          return {
-            video: v,
-            elapsedSeconds: elapsedSec,
-            scheduledAirTime: v.scheduledAirTime,
-            isCustomScheduled: true
-          };
+          isMatch = true;
+          elapsedMin = currentMinutes - startMin;
         }
       } else {
         // Midnight wrap window (e.g. 23:30 - 00:30)
         const wrappedEnd = endMin % 1440;
         if (currentMinutes >= startMin || currentMinutes < wrappedEnd) {
-          const elapsedMin = (currentMinutes - startMin + 1440) % 1440;
-          const elapsedSec = elapsedMin * 60 + currentSecondsInMin;
-          return {
-            video: v,
-            elapsedSeconds: elapsedSec,
-            scheduledAirTime: v.scheduledAirTime,
-            isCustomScheduled: true
-          };
+          isMatch = true;
+          elapsedMin = (currentMinutes - startMin + 1440) % 1440;
         }
+      }
+
+      if (isMatch) {
+        let elapsedSec = elapsedMin * 60 + currentSecondsInMin;
+        const durSec = (v as any).durationMinutes && (v as any).durationMinutes > 0
+          ? Math.floor((v as any).durationMinutes * 60)
+          : (typeof v.duration === 'number' && v.duration > 0 ? v.duration : 0);
+
+        if (durSec > 0 && elapsedSec >= durSec) {
+          elapsedSec = elapsedSec % durSec;
+        }
+
+        return {
+          video: v,
+          elapsedSeconds: elapsedSec,
+          scheduledAirTime: v.scheduledAirTime,
+          isCustomScheduled: true
+        };
       }
     }
   }
 
-  // Fallback: first video in schedule
+  // 2. Continuous 24/7 Looping Fallback (ensures virtual TV stream never freezes or resets to 0:00)
+  const firstParts = (videos[0].scheduledAirTime || '15:30').split(':');
+  const firstStartMin = parseInt(firstParts[0], 10) * 60 + parseInt(firstParts[1], 10);
+  let totalScheduleMin = 0;
+  for (const v of videos) {
+    totalScheduleMin += (v.airTimeSlot === '1 Hour' || (v as any).slotMinutes === 60) ? 60 : 30;
+  }
+  if (totalScheduleMin === 0) totalScheduleMin = videos.length * 30;
+
+  const diffFromScheduleStart = (currentMinutes - firstStartMin + 1440) % 1440;
+  const cycleMin = diffFromScheduleStart % totalScheduleMin;
+
+  let accumulatedMin = 0;
+  for (const v of videos) {
+    const vSlotMin = (v.airTimeSlot === '1 Hour' || (v as any).slotMinutes === 60) ? 60 : 30;
+    if (cycleMin >= accumulatedMin && cycleMin < accumulatedMin + vSlotMin) {
+      let elapsedSec = (cycleMin - accumulatedMin) * 60 + currentSecondsInMin;
+      const durSec = (v as any).durationMinutes && (v as any).durationMinutes > 0
+        ? Math.floor((v as any).durationMinutes * 60)
+        : (typeof v.duration === 'number' && v.duration > 0 ? v.duration : 0);
+
+      if (durSec > 0 && elapsedSec >= durSec) {
+        elapsedSec = elapsedSec % durSec;
+      }
+
+      return {
+        video: v,
+        elapsedSeconds: elapsedSec,
+        scheduledAirTime: v.scheduledAirTime,
+        isCustomScheduled: true
+      };
+    }
+    accumulatedMin += vSlotMin;
+  }
+
   return {
     video: videos[0],
     elapsedSeconds: 0,
@@ -95,67 +139,177 @@ export const KpleInlineWatchSection: React.FC<KpleInlineWatchSectionProps> = ({
   networkName = 'KPLE-TV',
   onOpenModal
 }) => {
-  const [activeVideo, setActiveVideo] = useState<KpleVideoItem | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [tab, setTab] = useState<'description' | 'transcript'>('description');
   const [copiedTranscript, setCopiedTranscript] = useState(false);
   const [copiedLink, setCopiedLink] = useState(false);
   const [isMuted, setIsMuted] = useState(true);
-  const [currentBroadcast, setCurrentBroadcast] = useState<BroadcastScheduleItem | null>(null);
   const [isUserBrowsingPastVideo, setIsUserBrowsingPastVideo] = useState(false);
+
+  const iframeRef = useRef<HTMLIFrameElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
 
   // Filter out livestreams
-  const cleanVideos = videos.filter(v => {
-    const url = (v.videoUrl || '').toLowerCase();
-    const title = (v.title || '').toLowerCase();
-    const tagsStr = (v.tags || []).join(' ').toLowerCase();
-    return (
-      !tagsStr.includes('live stream') &&
-      !tagsStr.includes('livestream') &&
-      !title.includes('live stream') &&
-      !title.includes('livestream') &&
-      !url.includes('.m3u8') &&
-      !url.includes('stream.mux.com')
-    );
-  });
+  const cleanVideos = useMemo(() => {
+    return videos.filter(v => {
+      const url = (v.videoUrl || '').toLowerCase();
+      const title = (v.title || '').toLowerCase();
+      const tagsStr = (v.tags || []).join(' ').toLowerCase();
+      return (
+        !tagsStr.includes('live stream') &&
+        !tagsStr.includes('livestream') &&
+        !title.includes('live stream') &&
+        !title.includes('livestream') &&
+        !url.includes('.m3u8') &&
+        !url.includes('stream.mux.com')
+      );
+    });
+  }, [videos]);
 
-  // Continuous linear broadcast synchronization
+  // Compute initial broadcast synchronously so the player has startSeconds on mount
+  const initialBroadcast = useMemo(() => calculateCurrentBroadcast(cleanVideos), [cleanVideos]);
+  const [currentBroadcast, setCurrentBroadcast] = useState<BroadcastScheduleItem | null>(() => initialBroadcast);
+  const [activeVideo, setActiveVideo] = useState<KpleVideoItem | null>(() => initialBroadcast?.video || cleanVideos[0] || null);
+
+  // Synchronize when cleanVideos updates from parent fetch
+  useEffect(() => {
+    if (cleanVideos.length === 0) return;
+    const bc = calculateCurrentBroadcast(cleanVideos);
+    if (bc) {
+      setCurrentBroadcast(bc);
+      if (!isUserBrowsingPastVideo) {
+        setActiveVideo(bc.video);
+      }
+    }
+  }, [cleanVideos, isUserBrowsingPastVideo]);
+
+  // Continuous linear broadcast clock synchronization
   useEffect(() => {
     if (cleanVideos.length === 0) return;
 
-    const syncSchedule = () => {
+    const interval = setInterval(() => {
       const bc = calculateCurrentBroadcast(cleanVideos);
       if (bc) {
         setCurrentBroadcast(bc);
         if (!isUserBrowsingPastVideo) {
-          setActiveVideo(bc.video);
+          setActiveVideo(prev => {
+            if (!prev) return bc.video;
+            if (prev.id !== bc.video.id && currentBroadcast && prev.id === currentBroadcast.video.id) {
+              return bc.video;
+            }
+            return prev;
+          });
         }
       }
-    };
+    }, 5000);
 
-    syncSchedule();
-    const interval = setInterval(syncSchedule, 10000);
     return () => clearInterval(interval);
-  }, [cleanVideos.length, isUserBrowsingPastVideo]);
+  }, [cleanVideos, isUserBrowsingPastVideo, currentBroadcast?.video.id]);
 
   const currentActive = cleanVideos.find(v => v.id === activeVideo?.id) || currentBroadcast?.video || cleanVideos[0];
+  const ytId = currentActive ? extractYouTubeId(currentActive.videoUrl) : null;
+  const isCurrentAirProgram = !isUserBrowsingPastVideo && currentBroadcast && currentActive?.id === currentBroadcast.video.id;
+  const startSeconds = isCurrentAirProgram ? Math.max(0, Math.floor(currentBroadcast.elapsedSeconds)) : 0;
 
-  // Handle video element play / sync when activeVideo or mute changes
-  useEffect(() => {
-    if (videoRef.current && currentActive) {
+  // PostMessage helper for YouTube iframe API
+  const postToYouTube = (func: string, args: any[] = []) => {
+    try {
+      if (iframeRef.current && iframeRef.current.contentWindow) {
+        iframeRef.current.contentWindow.postMessage(
+          JSON.stringify({
+            event: 'command',
+            func,
+            args
+          }),
+          '*'
+        );
+      }
+    } catch (e) {
+      console.warn('YouTube postMessage error:', e);
+    }
+  };
+
+  // Toggle Mute / Unmute handler
+  const handleToggleMute = () => {
+    const nextMuted = !isMuted;
+    setIsMuted(nextMuted);
+
+    // 1. YouTube iframe control
+    if (ytId) {
+      if (nextMuted) {
+        postToYouTube('mute');
+      } else {
+        postToYouTube('unMute');
+        postToYouTube('setVolume', [100]);
+        postToYouTube('playVideo');
+      }
+    }
+
+    // 2. HTML5 <video> control
+    if (videoRef.current) {
+      videoRef.current.muted = nextMuted;
+      if (!nextMuted) {
+        videoRef.current.volume = 1.0;
+        videoRef.current.play().catch(e => console.warn('HTML5 play on unmute error:', e));
+      }
+    }
+  };
+
+  // Handle iframe load event to seek to elapsed broadcast time & enforce playback
+  const handleIframeLoad = () => {
+    setTimeout(() => {
+      if (isCurrentAirProgram && startSeconds > 0) {
+        postToYouTube('seekTo', [startSeconds, true]);
+      }
+      postToYouTube('playVideo');
+      if (isMuted) {
+        postToYouTube('mute');
+      } else {
+        postToYouTube('unMute');
+        postToYouTube('setVolume', [100]);
+      }
+    }, 400);
+  };
+
+  // Handle HTML5 video metadata loaded to seek to elapsed broadcast time
+  const handleVideoLoadedMetadata = () => {
+    if (videoRef.current) {
       videoRef.current.muted = isMuted;
-      videoRef.current.volume = 1.0;
-      if (!isUserBrowsingPastVideo && currentBroadcast && currentActive.id === currentBroadcast.video.id) {
+      if (isCurrentAirProgram && startSeconds > 0) {
         try {
-          videoRef.current.currentTime = currentBroadcast.elapsedSeconds;
+          const dur = videoRef.current.duration;
+          let target = startSeconds;
+          if (dur && !isNaN(dur) && dur > 0 && target >= dur) {
+            target = target % Math.floor(dur);
+          }
+          videoRef.current.currentTime = target;
         } catch (_) {}
       }
       videoRef.current.play().catch(err => {
         console.warn("Virtual linear TV play error:", err);
       });
     }
-  }, [currentActive?.id, isMuted, isUserBrowsingPastVideo]);
+  };
+
+  // HTML5 video play when currentActive changes
+  useEffect(() => {
+    if (videoRef.current && currentActive && !ytId) {
+      videoRef.current.muted = isMuted;
+      if (videoRef.current.readyState >= 1 && isCurrentAirProgram && startSeconds > 0) {
+        try {
+          const dur = videoRef.current.duration;
+          let target = startSeconds;
+          if (dur && !isNaN(dur) && dur > 0 && target >= dur) {
+            target = target % Math.floor(dur);
+          }
+          videoRef.current.currentTime = target;
+        } catch (_) {}
+      }
+      videoRef.current.play().catch(err => {
+        console.warn("Virtual linear TV play error:", err);
+      });
+    }
+  }, [currentActive?.id, isUserBrowsingPastVideo]);
 
   if (cleanVideos.length === 0) return null;
 
@@ -173,10 +327,6 @@ export const KpleInlineWatchSection: React.FC<KpleInlineWatchSectionProps> = ({
     };
     return getOffsetMin(a.scheduledAirTime) - getOffsetMin(b.scheduledAirTime);
   });
-
-  const ytId = extractYouTubeId(currentActive.videoUrl);
-  const isCurrentAirProgram = !isUserBrowsingPastVideo && currentBroadcast && currentActive.id === currentBroadcast.video.id;
-  const startSeconds = isCurrentAirProgram ? Math.floor(currentBroadcast.elapsedSeconds) : 0;
 
   return (
     <section id="whats-on-now" style={{ padding: '40px 0', width: '100%', overflow: 'hidden' }}>
@@ -302,83 +452,55 @@ export const KpleInlineWatchSection: React.FC<KpleInlineWatchSectionProps> = ({
               </div>
 
               {/* Unmute / Volume Control Overlay */}
-              {isMuted ? (
-                <button
-                  type="button"
-                  onClick={() => {
-                    setIsMuted(false);
-                    if (videoRef.current) {
-                      videoRef.current.muted = false;
-                      videoRef.current.volume = 1.0;
-                    }
-                  }}
-                  style={{
-                    position: 'absolute',
-                    bottom: '16px',
-                    right: '16px',
-                    zIndex: 25,
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '8px',
-                    background: 'rgba(0, 0, 0, 0.85)',
-                    backdropFilter: 'blur(12px)',
-                    WebkitBackdropFilter: 'blur(12px)',
-                    border: `1.5px solid ${accent}`,
-                    color: '#fff',
-                    padding: '8px 18px',
-                    borderRadius: '30px',
-                    fontSize: '12px',
-                    fontWeight: 800,
-                    cursor: 'pointer',
-                    boxShadow: `0 8px 24px rgba(0,0,0,0.7), 0 0 15px ${accent}44`,
-                    transition: 'all 0.2s'
-                  }}
-                  onMouseOver={e => e.currentTarget.style.transform = 'scale(1.05)'}
-                  onMouseOut={e => e.currentTarget.style.transform = 'scale(1)'}
-                >
-                  <VolumeX size={16} color={accent} />
-                  <span>Click to Unmute</span>
-                </button>
-              ) : (
-                <button
-                  type="button"
-                  onClick={() => {
-                    setIsMuted(true);
-                    if (videoRef.current) {
-                      videoRef.current.muted = true;
-                    }
-                  }}
-                  style={{
-                    position: 'absolute',
-                    bottom: '16px',
-                    right: '16px',
-                    zIndex: 25,
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '6px',
-                    background: 'rgba(0, 0, 0, 0.65)',
-                    backdropFilter: 'blur(10px)',
-                    border: '1px solid rgba(255,255,255,0.15)',
-                    color: '#fff',
-                    padding: '6px 14px',
-                    borderRadius: '30px',
-                    fontSize: '11px',
-                    fontWeight: 700,
-                    cursor: 'pointer'
-                  }}
-                >
-                  <Volume2 size={14} color="#30d158" />
-                  <span>Mute</span>
-                </button>
-              )}
+              <button
+                type="button"
+                onClick={handleToggleMute}
+                style={{
+                  position: 'absolute',
+                  bottom: '16px',
+                  right: '16px',
+                  zIndex: 25,
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: isMuted ? '8px' : '6px',
+                  background: isMuted ? 'rgba(0, 0, 0, 0.88)' : 'rgba(0, 0, 0, 0.65)',
+                  backdropFilter: 'blur(12px)',
+                  WebkitBackdropFilter: 'blur(12px)',
+                  border: isMuted ? `1.5px solid ${accent}` : '1px solid rgba(255,255,255,0.15)',
+                  color: '#fff',
+                  padding: isMuted ? '8px 18px' : '6px 14px',
+                  borderRadius: '30px',
+                  fontSize: isMuted ? '12px' : '11px',
+                  fontWeight: isMuted ? 800 : 700,
+                  cursor: 'pointer',
+                  boxShadow: isMuted ? `0 8px 24px rgba(0,0,0,0.7), 0 0 15px ${accent}44` : 'none',
+                  transition: 'all 0.2s'
+                }}
+                onMouseOver={e => e.currentTarget.style.transform = 'scale(1.05)'}
+                onMouseOut={e => e.currentTarget.style.transform = 'scale(1)'}
+              >
+                {isMuted ? (
+                  <>
+                    <VolumeX size={16} color={accent} />
+                    <span>Click to Unmute</span>
+                  </>
+                ) : (
+                  <>
+                    <Volume2 size={14} color="#30d158" />
+                    <span>Mute</span>
+                  </>
+                )}
+              </button>
 
               {ytId ? (
                 <iframe
-                  key={`${ytId}-${isMuted ? 'muted' : 'unmuted'}-${isCurrentAirProgram ? Math.floor(startSeconds / 30) : 'manual'}`}
-                  src={`https://www.youtube.com/embed/${ytId}?autoplay=1&mute=${isMuted ? 1 : 0}&start=${startSeconds}&controls=1&enablejsapi=1&rel=0`}
+                  ref={iframeRef}
+                  key={`yt-${currentActive.id || ytId}`}
+                  src={`https://www.youtube.com/embed/${ytId}?autoplay=1&mute=1&controls=1&enablejsapi=1&rel=0&start=${startSeconds}&origin=${encodeURIComponent(typeof window !== 'undefined' ? window.location.origin : '')}`}
                   title={currentActive.title}
+                  onLoad={handleIframeLoad}
                   style={{ width: '100%', height: '100%', border: 'none' }}
-                  allow="autoplay; encrypted-media; fullscreen"
+                  allow="autoplay; encrypted-media; fullscreen; picture-in-picture; accelerometer; clipboard-write; gyroscope"
                   allowFullScreen
                 />
               ) : (currentActive.videoUrl && (currentActive.videoUrl.includes('lightcast.com') || currentActive.videoUrl.includes('embed') || currentActive.videoUrl.includes('player.php'))) ? (
@@ -386,17 +508,24 @@ export const KpleInlineWatchSection: React.FC<KpleInlineWatchSectionProps> = ({
                   src={currentActive.videoUrl}
                   title={currentActive.title}
                   style={{ width: '100%', height: '100%', border: 'none' }}
-                  allow="autoplay; encrypted-media; fullscreen"
+                  allow="autoplay; encrypted-media; fullscreen; picture-in-picture"
                   allowFullScreen
                 />
               ) : (
                 <video
                   ref={videoRef}
+                  key={`vid-${currentActive.id}`}
                   src={currentActive.videoUrl}
                   autoPlay
                   muted={isMuted}
                   playsInline
                   controls
+                  onLoadedMetadata={handleVideoLoadedMetadata}
+                  onCanPlay={() => {
+                    if (videoRef.current) {
+                      videoRef.current.play().catch(() => {});
+                    }
+                  }}
                   style={{ width: '100%', height: '100%', objectFit: 'contain' }}
                   onEnded={() => {
                     setIsUserBrowsingPastVideo(false);
