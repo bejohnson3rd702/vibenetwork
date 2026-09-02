@@ -255,6 +255,16 @@ export const KpleInlineWatchSection: React.FC<KpleInlineWatchSectionProps> = ({
     return rawElapsed;
   }, [isCurrentAirProgram, rawElapsed, currentActive]);
 
+  // Compute initial start seconds once per active video change to keep iframe src stable
+  const initialStartRef = useRef<{ id: string; seconds: number }>({ id: '', seconds: 0 });
+  if (initialStartRef.current.id !== currentActive?.id) {
+    initialStartRef.current = {
+      id: currentActive?.id || '',
+      seconds: startSeconds
+    };
+  }
+  const initialStartSeconds = initialStartRef.current.seconds;
+
   const ytId = currentActive ? extractYouTubeId(currentActive.videoUrl) : null;
 
   // PostMessage helper for YouTube iframe API
@@ -334,8 +344,8 @@ export const KpleInlineWatchSection: React.FC<KpleInlineWatchSectionProps> = ({
 
         // When YouTube player announces ready
         if (data.event === 'onReady' || (data.event === 'infoDelivery' && data.info && data.info.playerState !== undefined)) {
-          if (isCurrentAirProgram && startSeconds > 0) {
-            executeYouTubeSeek(startSeconds);
+          if (isCurrentAirProgram && initialStartSeconds > 0) {
+            executeYouTubeSeek(initialStartSeconds);
           }
           if (isMuted) {
             postToYouTube('mute');
@@ -349,15 +359,25 @@ export const KpleInlineWatchSection: React.FC<KpleInlineWatchSectionProps> = ({
 
     window.addEventListener('message', handleWindowMessage);
     return () => window.removeEventListener('message', handleWindowMessage);
-  }, [isCurrentAirProgram, startSeconds, isMuted]);
+  }, [isCurrentAirProgram, currentActive?.id, isMuted]);
 
   // Handle iframe load event with staggered retry sequence to guarantee sync
   const handleIframeLoad = () => {
     [150, 450, 900, 1800].forEach(delay => {
       setTimeout(() => {
-        if (isCurrentAirProgram && startSeconds > 0) {
-          executeYouTubeSeek(startSeconds);
+        if (isCurrentAirProgram && initialStartSeconds > 0) {
+          executeYouTubeSeek(initialStartSeconds);
         }
+        postToYouTube('playVideo');
+        if (isMuted) {
+          postToYouTube('mute');
+        } else {
+          postToYouTube('unMute');
+          postToYouTube('setVolume', [100]);
+        }
+      }, delay);
+    });
+  };
         postToYouTube('playVideo');
         if (isMuted) {
           postToYouTube('mute');
@@ -405,7 +425,7 @@ export const KpleInlineWatchSection: React.FC<KpleInlineWatchSectionProps> = ({
     if (videoRef.current && currentActive && !ytId) {
       applyHtml5Seek();
     }
-  }, [currentActive?.id, isCurrentAirProgram, startSeconds]);
+  }, [currentActive?.id, isCurrentAirProgram]);
 
   if (cleanVideos.length === 0) return null;
 
@@ -695,7 +715,7 @@ export const KpleInlineWatchSection: React.FC<KpleInlineWatchSectionProps> = ({
                 <iframe
                   ref={iframeRef}
                   key={`yt-${currentActive.id}-${isCurrentAirProgram ? 'live' : 'vod'}`}
-                  src={`https://www.youtube.com/embed/${ytId}?autoplay=1&mute=1&controls=1&enablejsapi=1&rel=0&start=${startSeconds}&playsinline=1&origin=${encodeURIComponent(typeof window !== 'undefined' ? window.location.origin : '')}`}
+                  src={`https://www.youtube.com/embed/${ytId}?autoplay=1&mute=1&controls=1&enablejsapi=1&rel=0&start=${initialStartSeconds}&playsinline=1&origin=${encodeURIComponent(typeof window !== 'undefined' ? window.location.origin : '')}`}
                   title={currentActive.title}
                   onLoad={handleIframeLoad}
                   style={{ width: '100%', height: '100%', border: 'none' }}
