@@ -4,6 +4,8 @@ import { Upload, Sparkles, CheckCircle2, Image as ImageIcon, Video as VideoIcon,
 import { supabase } from '../supabaseClient';
 import { extractYouTubeId } from './KpleAddVideoModal';
 import { validateFileSafety } from '../lib/fileSecurity';
+import { getChildNetworks } from '../lib/n2n';
+import { isKpleConfig } from '../lib/whitelabel';
 
 const YoutubeIcon = ({ size = 20, color = "#FF0000" }: { size?: number, color?: string }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill={color}>
@@ -64,18 +66,121 @@ export const DashboardVideoControlCenter: React.FC<DashboardVideoControlCenterPr
   const [loadingVideos, setLoadingVideos] = useState(true);
   const [selectedLibraryVideoId, setSelectedLibraryVideoId] = useState('');
 
-  // Fetch videos & categories published to this network
+  // Fetch videos & categories published to this network's N2N and children channels/networks only
   const fetchPublishedVideos = async () => {
     setLoadingVideos(true);
     try {
-      const [vidRes, catRes] = await Promise.all([
-        supabase.from('videos').select('*').order('created_at', { ascending: false }),
-        supabase.from('categories').select('*').order('title', { ascending: true })
+      const targetId = whitelabelId || '100d0000-c08f-4260-8540-a0cc8bed4e01';
+      const isKple = isKpleConfig({ id: targetId }) || 
+                     targetId === '100d0000-c08f-4260-8540-a0cc8bed4e01' || 
+                     targetId === '33742e2f-430b-4c2d-9cba-42507891ef02' ||
+                     targetId === 'a0f7c22e-a3ab-4e3f-a3cf-e06cf0cb0bb0';
+
+      // 1. Gather parent N2N network IDs
+      const baseNetworkIds = isKple 
+        ? ['100d0000-c08f-4260-8540-a0cc8bed4e01', '33742e2f-430b-4c2d-9cba-42507891ef02', 'a0f7c22e-a3ab-4e3f-a3cf-e06cf0cb0bb0', targetId]
+        : [targetId];
+
+      // 2. Fetch children channels and networks
+      const childResults = await Promise.all(
+        baseNetworkIds.map(id => getChildNetworks(id, true))
+      );
+      const childNetworks = childResults.flat();
+      const childIds = childNetworks.map((c: any) => c.id).filter(Boolean);
+
+      // Also query whitelabel_configs for any database children directly
+      const { data: dbChildren } = await supabase
+        .from('whitelabel_configs')
+        .select('id, name, parent_network_id')
+        .in('parent_network_id', baseNetworkIds);
+
+      const dbChildIds = (dbChildren || []).map((c: any) => c.id).filter(Boolean);
+      const allNetworkIds = Array.from(new Set([...baseNetworkIds, ...childIds, ...dbChildIds]));
+
+      // 3. Fetch creator profile IDs associated with these networks
+      const { data: creatorProfiles } = await supabase
+        .from('profiles')
+        .select('id, username, whitelabel_id')
+        .in('whitelabel_id', allNetworkIds);
+
+      const creatorIds = (creatorProfiles || []).map((p: any) => p.id).filter(Boolean);
+
+      // 4. Fetch videos explicitly matching this N2N and children channels/networks
+      const [networkVidsRes, creatorVidsRes, taggedVidsRes, catRes, epsRes] = await Promise.all([
+        supabase
+          .from('videos')
+          .select('*, whitelabel:whitelabel_configs(name), creator:profiles(username)')
+          .in('whitelabel_id', allNetworkIds)
+          .order('created_at', { ascending: false }),
+        creatorIds.length > 0
+          ? supabase
+              .from('videos')
+              .select('*, whitelabel:whitelabel_configs(name), creator:profiles(username)')
+              .in('creator_id', creatorIds)
+              .order('created_at', { ascending: false })
+          : Promise.resolve({ data: [] as any[] }),
+        isKple
+          ? supabase
+              .from('videos')
+              .select('*, whitelabel:whitelabel_configs(name), creator:profiles(username)')
+              .contains('tags', ['KPLE-TV'])
+              .order('created_at', { ascending: false })
+          : Promise.resolve({ data: [] as any[] }),
+        supabase.from('categories').select('*').order('title', { ascending: true }),
+        isKple
+          ? supabase.from('episodes').select('*, series:series(title, creator_id)').order('created_at', { ascending: false })
+          : Promise.resolve({ data: [] as any[] })
       ]);
 
-      if (vidRes.data) {
-        setPublishedVideos(vidRes.data);
+      const videoMap = new Map<string, any>();
+      (networkVidsRes.data || []).forEach(v => videoMap.set(v.id, v));
+      (creatorVidsRes.data || []).forEach(v => {
+        if (!videoMap.has(v.id)) videoMap.set(v.id, v);
+      });
+      (taggedVidsRes.data || []).forEach(v => {
+        if (!videoMap.has(v.id)) videoMap.set(v.id, v);
+      });
+
+      // If episodes exist for KPLE/Doc Wales/CRN, include them so they can be selected
+      if (epsRes.data && epsRes.data.length > 0) {
+        const validEpisodes = epsRes.data.filter((ep: any) => {
+          const title = (ep.title || '').toLowerCase();
+          const url = (ep.video_url || '').toLowerCase();
+          const seriesTitle = (ep.series?.title || '').toLowerCase();
+          return (
+            url &&
+            (creatorIds.includes(ep.series?.creator_id) ||
+             title.includes('doc wales') ||
+             title.includes('kple') ||
+             title.includes('crn') ||
+             seriesTitle.includes('doc wales') ||
+             seriesTitle.includes('kple'))
+          );
+        });
+
+        validEpisodes.forEach((ep: any) => {
+          if (!videoMap.has(ep.id)) {
+            videoMap.set(ep.id, {
+              id: ep.id,
+              title: ep.title,
+              description: ep.description || '',
+              image_url: ep.thumbnail_url || ep.image_url || '',
+              video_url: ep.video_url,
+              tags: [ep.series?.title || 'Doc Wales Diaries', 'Episode'],
+              created_at: ep.created_at,
+              source_type: 'episode',
+              whitelabel: { name: ep.series?.title || 'Doc Wales Diaries' }
+            });
+          }
+        });
       }
+
+      const sortedVideos = Array.from(videoMap.values()).sort(
+        (a, b) => (new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime())
+      );
+
+      setPublishedVideos(sortedVideos);
+
       if (catRes.data) {
         setCategories(catRes.data);
         if (catRes.data.length > 0 && !selectedCategoryId) {
@@ -273,9 +378,10 @@ export const DashboardVideoControlCenter: React.FC<DashboardVideoControlCenterPr
   };
 
   // Delete published video
-  const handleDeleteVideo = async (videoId: string) => {
+  const handleDeleteVideo = async (videoId: string, sourceType?: string) => {
     if (!window.confirm('Are you sure you want to delete this video from the network?')) return;
-    const { error } = await supabase.from('videos').delete().eq('id', videoId);
+    const table = sourceType === 'episode' ? 'episodes' : 'videos';
+    const { error } = await supabase.from(table).delete().eq('id', videoId);
     if (!error) {
       fetchPublishedVideos();
       if (onVideoPublished) onVideoPublished();
@@ -743,12 +849,15 @@ export const DashboardVideoControlCenter: React.FC<DashboardVideoControlCenterPr
                 cursor: 'pointer'
               }}
             >
-              <option value="">-- Choose from existing site video library --</option>
-              {publishedVideos.map(v => (
-                <option key={v.id} value={v.id} style={{ background: '#111' }}>
-                  {v.title} ({v.video_url ? v.video_url.slice(0, 40) + '...' : 'Internal Video'})
-                </option>
-              ))}
+              <option value="">-- Choose from existing site video library ({publishedVideos.length} available) --</option>
+              {publishedVideos.map(v => {
+                const channelTag = v.whitelabel?.name || v.creator?.username || (v.tags && v.tags[0]) || 'Network Video';
+                return (
+                  <option key={v.id} value={v.id} style={{ background: '#111' }}>
+                    {v.title} [{channelTag}] ({v.video_url ? v.video_url.slice(0, 35) + '...' : 'Internal Video'})
+                  </option>
+                );
+              })}
             </select>
           </div>
 
@@ -952,7 +1061,7 @@ export const DashboardVideoControlCenter: React.FC<DashboardVideoControlCenterPr
                   <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
                     <button
                       type="button"
-                      onClick={() => handleDeleteVideo(vid.id)}
+                      onClick={() => handleDeleteVideo(vid.id, vid.source_type)}
                       style={{
                         background: 'rgba(255,59,48,0.12)',
                         color: '#ff4d85',
