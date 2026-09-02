@@ -11,11 +11,94 @@ interface KpleInlineWatchSectionProps {
   onOpenModal?: (vid: KpleVideoItem) => void;
 }
 
-interface BroadcastScheduleItem {
+export interface BroadcastScheduleItem {
   video: KpleVideoItem;
   elapsedSeconds: number;
   scheduledAirTime?: string;
   isCustomScheduled: boolean;
+  isCommercialBreak?: boolean;
+  commercialLabel?: string;
+}
+
+function computeSlotTimeline(
+  v: KpleVideoItem,
+  slotMin: number,
+  slotElapsedSec: number,
+  scheduledAirTime?: string
+): BroadcastScheduleItem {
+  const slotTotalSec = slotMin * 60;
+
+  // Extract main video duration in seconds (default to 22m for 30m slot, 45m for 60m slot if unspecified)
+  let rawDur = (v as any).durationMinutes && (v as any).durationMinutes > 0
+    ? Math.floor((v as any).durationMinutes * 60)
+    : (typeof v.duration === 'number' && v.duration > 0 ? v.duration : (slotMin === 60 ? 2700 : 1320));
+
+  // Mid-roll break length: 2 mins (120s) for 30m slot, 3 mins (180s) for 60m slot
+  const midRollSec = slotMin === 60 ? 180 : 120;
+  const maxProgSec = Math.max(60, slotTotalSec - midRollSec);
+  const progDurSec = Math.min(rawDur, maxProgSec);
+  const midSec = Math.floor(progDurSec / 2);
+
+  // Extract commercial URL from tags if available
+  const tagsStr = (v.tags || []).join(' ');
+  const adUrlMatch = tagsStr.match(/ad_url:([^\s]+)/);
+  const adUrl = adUrlMatch ? adUrlMatch[1] : (v as any).commercialMediaUrl;
+
+  const commercialVideo: KpleVideoItem = {
+    id: `ad-${v.id}`,
+    title: `KPLE-TV Station Promos & Commercial Break`,
+    videoUrl: adUrl || 'https://www.youtube.com/watch?v=njSC3gMfjjU',
+    image: v.image || 'https://images.unsplash.com/photo-1593113598332-cd288d649433?auto=format&fit=crop&q=80&w=800',
+    channelName: 'KPLE-TV Network',
+    description: 'Official KPLE-TV Station Commercial Break and Community Announcements',
+    scheduledAirTime: scheduledAirTime || v.scheduledAirTime,
+    airTimeSlot: v.airTimeSlot
+  };
+
+  // Phase 1: Main Video Part 1 (0 to midSec)
+  if (slotElapsedSec < midSec) {
+    return {
+      video: v,
+      elapsedSeconds: slotElapsedSec,
+      scheduledAirTime: scheduledAirTime || v.scheduledAirTime,
+      isCustomScheduled: true,
+      isCommercialBreak: false
+    };
+  }
+
+  // Phase 2: Mid-Roll Commercial Break (midSec to midSec + midRollSec)
+  if (slotElapsedSec < midSec + midRollSec) {
+    return {
+      video: commercialVideo,
+      elapsedSeconds: slotElapsedSec - midSec,
+      scheduledAirTime: scheduledAirTime || v.scheduledAirTime,
+      isCustomScheduled: true,
+      isCommercialBreak: true,
+      commercialLabel: 'MID-ROLL COMMERCIAL BREAK'
+    };
+  }
+
+  // Phase 3: Main Video Part 2 (midSec + midRollSec to progDurSec + midRollSec)
+  if (slotElapsedSec < progDurSec + midRollSec) {
+    const mainSeekSec = midSec + (slotElapsedSec - (midSec + midRollSec));
+    return {
+      video: v,
+      elapsedSeconds: mainSeekSec,
+      scheduledAirTime: scheduledAirTime || v.scheduledAirTime,
+      isCustomScheduled: true,
+      isCommercialBreak: false
+    };
+  }
+
+  // Phase 4: Post-Show Commercial & Station Promo Reel (progDurSec + midRollSec to slotTotalSec)
+  return {
+    video: commercialVideo,
+    elapsedSeconds: slotElapsedSec - (progDurSec + midRollSec),
+    scheduledAirTime: scheduledAirTime || v.scheduledAirTime,
+    isCustomScheduled: true,
+    isCommercialBreak: true,
+    commercialLabel: 'STATION PROMO & SPONSOR REEL'
+  };
 }
 
 function calculateCurrentBroadcast(videos: KpleVideoItem[]): BroadcastScheduleItem | null {
@@ -51,26 +134,13 @@ function calculateCurrentBroadcast(videos: KpleVideoItem[]): BroadcastScheduleIt
       }
 
       if (isMatch) {
-        let elapsedSec = elapsedMin * 60 + currentSecondsInMin;
-        const durSec = (v as any).durationMinutes && (v as any).durationMinutes > 0
-          ? Math.floor((v as any).durationMinutes * 60)
-          : (typeof v.duration === 'number' && v.duration > 0 ? v.duration : 0);
-
-        if (durSec > 0 && elapsedSec >= durSec) {
-          elapsedSec = elapsedSec % durSec;
-        }
-
-        return {
-          video: v,
-          elapsedSeconds: elapsedSec,
-          scheduledAirTime: v.scheduledAirTime,
-          isCustomScheduled: true
-        };
+        const slotElapsedSec = elapsedMin * 60 + currentSecondsInMin;
+        return computeSlotTimeline(v, slotMin, slotElapsedSec, v.scheduledAirTime);
       }
     }
   }
 
-  // 2. Continuous 24/7 Looping Fallback (ensures virtual TV stream never freezes or resets to 0:00)
+  // 2. Continuous 24/7 Looping Fallback
   const firstParts = (videos[0].scheduledAirTime || '15:30').split(':');
   const firstStartMin = parseInt(firstParts[0], 10) * 60 + parseInt(firstParts[1], 10);
   let totalScheduleMin = 0;
@@ -86,37 +156,18 @@ function calculateCurrentBroadcast(videos: KpleVideoItem[]): BroadcastScheduleIt
   for (const v of videos) {
     const vSlotMin = (v.airTimeSlot === '1 Hour' || (v as any).slotMinutes === 60) ? 60 : 30;
     if (cycleMin >= accumulatedMin && cycleMin < accumulatedMin + vSlotMin) {
-      let elapsedSec = (cycleMin - accumulatedMin) * 60 + currentSecondsInMin;
-      const durSec = (v as any).durationMinutes && (v as any).durationMinutes > 0
-        ? Math.floor((v as any).durationMinutes * 60)
-        : (typeof v.duration === 'number' && v.duration > 0 ? v.duration : 0);
-
-      if (durSec > 0 && elapsedSec >= durSec) {
-        elapsedSec = elapsedSec % durSec;
-      }
-
-      // Compute actual current broadcast airtime for this cycle
+      const slotElapsedSec = (cycleMin - accumulatedMin) * 60 + currentSecondsInMin;
       const cycleStartMin = (currentMinutes - (cycleMin - accumulatedMin) + 1440) % 1440;
       const h = Math.floor(cycleStartMin / 60);
       const m = cycleStartMin % 60;
       const currentAirTime = `${h < 10 ? '0' : ''}${h}:${m < 10 ? '0' : ''}${m}`;
 
-      return {
-        video: v,
-        elapsedSeconds: elapsedSec,
-        scheduledAirTime: currentAirTime,
-        isCustomScheduled: true
-      };
+      return computeSlotTimeline(v, vSlotMin, slotElapsedSec, currentAirTime);
     }
     accumulatedMin += vSlotMin;
   }
 
-  return {
-    video: videos[0],
-    elapsedSeconds: 0,
-    scheduledAirTime: videos[0].scheduledAirTime || '15:30',
-    isCustomScheduled: false
-  };
+  return computeSlotTimeline(videos[0], 30, 0, videos[0].scheduledAirTime || '15:30');
 }
 
 const formatAirTime12h = (timeStr?: string) => {
@@ -588,22 +639,41 @@ export const KpleInlineWatchSection: React.FC<KpleInlineWatchSectionProps> = ({
                 <div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px', flexWrap: 'wrap' }}>
                     {isCurrentAirProgram ? (
-                      <span style={{
-                        background: 'rgba(255, 0, 80, 0.15)',
-                        border: '1px solid rgba(255, 0, 80, 0.4)',
-                        color: '#ff4d85',
-                        padding: '3px 10px',
-                        borderRadius: '6px',
-                        fontSize: '11px',
-                        fontWeight: 900,
-                        letterSpacing: '0.8px',
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '6px'
-                      }}>
-                        <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#ff0050', display: 'inline-block', animation: 'kpleLiveDotPulse 1.5s infinite ease-in-out' }} />
-                        ON AIR NOW • {formatAirTime12h(currentActive.scheduledAirTime || currentBroadcast?.scheduledAirTime)} ({currentActive.airTimeSlot || '30 mins'})
-                      </span>
+                      currentBroadcast?.isCommercialBreak ? (
+                        <span style={{
+                          background: 'rgba(255, 170, 0, 0.18)',
+                          border: '1px solid rgba(255, 170, 0, 0.5)',
+                          color: '#ffaa00',
+                          padding: '3px 10px',
+                          borderRadius: '6px',
+                          fontSize: '11px',
+                          fontWeight: 900,
+                          letterSpacing: '0.8px',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '6px'
+                        }}>
+                          <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#ffaa00', display: 'inline-block', animation: 'kpleLiveDotPulse 1.5s infinite ease-in-out' }} />
+                          📣 {currentBroadcast.commercialLabel || 'COMMERCIAL BREAK'} • {formatAirTime12h(currentActive.scheduledAirTime || currentBroadcast?.scheduledAirTime)}
+                        </span>
+                      ) : (
+                        <span style={{
+                          background: 'rgba(255, 0, 80, 0.15)',
+                          border: '1px solid rgba(255, 0, 80, 0.4)',
+                          color: '#ff4d85',
+                          padding: '3px 10px',
+                          borderRadius: '6px',
+                          fontSize: '11px',
+                          fontWeight: 900,
+                          letterSpacing: '0.8px',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '6px'
+                        }}>
+                          <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#ff0050', display: 'inline-block', animation: 'kpleLiveDotPulse 1.5s infinite ease-in-out' }} />
+                          ON AIR NOW • {formatAirTime12h(currentActive.scheduledAirTime || currentBroadcast?.scheduledAirTime)} ({currentActive.airTimeSlot || '30 mins'})
+                        </span>
+                      )
                     ) : (
                       <>
                         <span style={{
