@@ -8304,7 +8304,7 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
                           )}
                           
                           {previewFile.file_type === 'video' && (
-                            <video src={previewUrl} controls autoPlay style={{ width: '100%', maxHeight: '60vh', background: '#000' }} />
+                            <video src={previewUrl} controls preload="metadata" style={{ width: '100%', maxHeight: '60vh', background: '#000' }} />
                           )}
 
                           {previewFile.file_type === 'pdf' && (
@@ -10274,13 +10274,13 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
             // Check for YouTube
             const ytMatch = url.match(/(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/i);
             if (ytMatch && ytMatch[1]) {
-              const embedUrl = `https://www.youtube.com/embed/${ytMatch[1]}?autoplay=1&rel=0`;
+              const embedUrl = `https://www.youtube.com/embed/${ytMatch[1]}?autoplay=0&rel=0`;
               return (
                 <iframe 
                   title={activeCinemaEpisode.title}
                   src={embedUrl}
                   style={{ width: '100%', height: '100%', border: 'none' }}
-                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                  allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
                   allowFullScreen
                 />
               );
@@ -10289,13 +10289,13 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
             // Check for Vimeo
             const vimeoMatch = url.match(/vimeo\.com\/(?:video\/)?([0-9]+)/i);
             if (vimeoMatch && vimeoMatch[1]) {
-              const embedUrl = `https://player.vimeo.com/video/${vimeoMatch[1]}?autoplay=1`;
+              const embedUrl = `https://player.vimeo.com/video/${vimeoMatch[1]}?autoplay=0`;
               return (
                 <iframe 
                   title={activeCinemaEpisode.title}
                   src={embedUrl}
                   style={{ width: '100%', height: '100%', border: 'none' }}
-                  allow="autoplay; fullscreen; picture-in-picture"
+                  allow="fullscreen; picture-in-picture"
                   allowFullScreen
                 />
               );
@@ -10308,7 +10308,7 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
                   title={activeCinemaEpisode.title}
                   src={url}
                   style={{ width: '100%', height: '100%', border: 'none' }}
-                  allow="autoplay; fullscreen; picture-in-picture; encrypted-media"
+                  allow="fullscreen; picture-in-picture; encrypted-media"
                   allowFullScreen
                 />
               );
@@ -10319,8 +10319,8 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
               <video 
                 src={url}
                 controls
-                autoPlay
                 playsInline
+                preload="auto"
                 style={{ width: '100%', height: '100%', objectFit: 'contain', background: '#000' }}
               />
             );

@@ -2446,9 +2446,8 @@ export default function WatchLive({ accent = '#D35400', isCourtneyBee = false, i
   useEffect(() => {
     if (activeVideo && activeVideo.source !== 'YouTube' && videoRef.current) {
       videoRef.current.load();
-      videoRef.current.play().catch(err => {
-        console.warn("WatchLive: Playback was prevented or failed:", err);
-      });
+      videoRef.current.muted = false;
+      videoRef.current.volume = 1.0;
     }
   }, [activeVideo]);
 
@@ -2539,33 +2538,20 @@ export default function WatchLive({ accent = '#D35400', isCourtneyBee = false, i
             onMouseOut={e => { e.currentTarget.style.transform = 'scale(1)'; }}
           >
             <div className="watch-featured-container" style={{ position: 'relative', width: '100%', overflow: 'hidden' }}>
-              {(() => {
-                const isYt = (featured.videoUrl.includes('youtube.com') || featured.videoUrl.includes('youtu.be')) && !featured.videoUrl.endsWith('.mp4');
-                if (isYt) {
-                  const match = featured.videoUrl.match(/^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/);
-                  let ytId = (match && match[2].length === 11) ? match[2] : (featured.id.length === 11 ? featured.id : '');
-                  if (ytId) {
-                    return (
-                      <iframe
-                        src={`https://www.youtube.com/embed/${ytId}?autoplay=1&mute=1&controls=0&loop=1&playlist=${ytId}&modestbranding=1&playsinline=1`}
-                        title={featured.headline}
-                        style={{ width: '100%', height: '100%', border: 'none', objectFit: 'cover', pointerEvents: 'none' }}
-                      />
-                    );
-                  }
-                }
-                return (
-                  <video
-                    src={featured.videoUrl}
-                    autoPlay
-                    muted
-                    loop
-                    playsInline
-                    poster={featured.thumbnail}
-                    style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
-                  />
-                );
-              })()}
+              {featured.thumbnail ? (
+                <img
+                  src={featured.thumbnail}
+                  alt={featured.headline}
+                  style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+                />
+              ) : (
+                <video
+                  src={featured.videoUrl}
+                  preload="metadata"
+                  playsInline
+                  style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+                />
+              )}
               <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(0,0,0,0.95) 0%, rgba(0,0,0,0.3) 50%, transparent 70%)' }} />
               {/* Play / Link button */}
               <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -2766,10 +2752,10 @@ export default function WatchLive({ accent = '#D35400', isCourtneyBee = false, i
                           return (
                             <iframe
                               id="watch-live-yt-iframe"
-                              src={`https://www.youtube.com/embed/${ytId}?autoplay=1&mute=1&controls=1&rel=0`}
+                              src={`https://www.youtube.com/embed/${ytId}?autoplay=0&controls=1&rel=0&enablejsapi=1`}
                               title={activeVideo.headline}
                               frameBorder="0"
-                              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                              allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                               allowFullScreen
                               style={{ width: '100%', height: '100%', position: 'absolute', inset: 0, border: 'none' }}
                             />
@@ -2779,10 +2765,10 @@ export default function WatchLive({ accent = '#D35400', isCourtneyBee = false, i
                           const dmId = match ? match[1] : activeVideo.id;
                           return (
                             <iframe
-                              src={`https://www.dailymotion.com/embed/video/${dmId}?autoplay=1&mute=1`}
+                              src={`https://www.dailymotion.com/embed/video/${dmId}?autoplay=0`}
                               title={activeVideo.headline}
                               frameBorder="0"
-                              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                              allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                               allowFullScreen
                               style={{ width: '100%', height: '100%', position: 'absolute', inset: 0, border: 'none' }}
                             />
@@ -2794,8 +2780,6 @@ export default function WatchLive({ accent = '#D35400', isCourtneyBee = false, i
                               ref={videoRef}
                               src={activeVideo.videoUrl}
                               controls
-                              autoPlay
-                              muted
                               playsInline
                               preload="auto"
                               style={{ width: '100%', display: 'block', height: '100%', objectFit: 'contain' }}

@@ -72,9 +72,8 @@ const WhatsOnNow: React.FC = () => {
   React.useEffect(() => {
     if (activeVideo && videoRef.current) {
       videoRef.current.load();
-      videoRef.current.play().catch(err => {
-        console.warn("WhatsOnNow: Playback was prevented or failed:", err);
-      });
+      videoRef.current.muted = false;
+      videoRef.current.volume = 1.0;
     }
   }, [activeVideo]);
 
@@ -248,10 +247,10 @@ const WhatsOnNow: React.FC = () => {
                   if (ytId) {
                     return (
                       <iframe
-                        src={`https://www.youtube.com/embed/${ytId}?autoplay=1`}
+                        src={`https://www.youtube.com/embed/${ytId}?autoplay=0`}
                         title={activeVideo.title}
                         style={{ width: '100%', height: '100%', border: 'none' }}
-                        allow="autoplay; encrypted-media; fullscreen"
+                        allow="encrypted-media; fullscreen"
                         allowFullScreen
                       />
                     );
@@ -262,7 +261,6 @@ const WhatsOnNow: React.FC = () => {
                       ref={videoRef}
                       src={activeVideo.video_url}
                       controls
-                      autoPlay
                       playsInline
                       preload="auto"
                       style={{ width: '100%', height: '100%', objectFit: 'contain' }}

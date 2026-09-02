@@ -2266,10 +2266,10 @@ export const ProfileLive: React.FC<ProfileLiveProps> = ({
                             const ytId = (match && match[2].length === 11) ? match[2] : '';
                             return (
                               <iframe
-                                src={`https://www.youtube.com/embed/${ytId}?autoplay=1&controls=1&rel=0`}
+                                src={`https://www.youtube.com/embed/${ytId}?autoplay=0&controls=1&rel=0`}
                                 title={activePastStream.title}
                                 frameBorder="0"
-                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                                 allowFullScreen
                                 style={{ width: '100%', height: '100%', border: 'none' }}
                               />
@@ -2279,10 +2279,10 @@ export const ProfileLive: React.FC<ProfileLiveProps> = ({
                             const dmId = match ? match[1] : '';
                             return (
                               <iframe
-                                src={`https://www.dailymotion.com/embed/video/${dmId}?autoplay=1`}
+                                src={`https://www.dailymotion.com/embed/video/${dmId}?autoplay=0`}
                                 title={activePastStream.title}
                                 frameBorder="0"
-                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                                 allowFullScreen
                                 style={{ width: '100%', height: '100%', border: 'none' }}
                               />
@@ -2293,8 +2293,8 @@ export const ProfileLive: React.FC<ProfileLiveProps> = ({
                                 ref={pastStreamVideoRef}
                                 src={activePastStream.video_url}
                                 controls
-                                autoPlay
                                 playsInline
+                                preload="auto"
                                 style={{ width: '100%', height: '100%', objectFit: 'contain' }}
                                 onTimeUpdate={(e) => {
                                   const videoEl = e.currentTarget;

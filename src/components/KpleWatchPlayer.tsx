@@ -64,9 +64,6 @@ export const KpleWatchPlayer: React.FC<KpleWatchPlayerProps> = ({
   useEffect(() => {
     if (activeVideo && videoRef.current) {
       videoRef.current.load();
-      videoRef.current.play().catch(err => {
-        console.warn('Playback error:', err);
-      });
     }
   }, [activeVideo?.id]);
 
@@ -214,10 +211,10 @@ export const KpleWatchPlayer: React.FC<KpleWatchPlayerProps> = ({
               }}>
                 {ytId ? (
                   <iframe
-                    src={`https://www.youtube.com/embed/${ytId}?autoplay=1`}
+                    src={`https://www.youtube.com/embed/${ytId}?autoplay=0`}
                     title={activeVideo.title}
                     style={{ width: '100%', height: '100%', border: 'none' }}
-                    allow="autoplay; encrypted-media; fullscreen"
+                    allow="encrypted-media; fullscreen"
                     allowFullScreen
                   />
                 ) : (activeVideo.videoUrl && (activeVideo.videoUrl.includes('lightcast.com') || activeVideo.videoUrl.includes('embed') || activeVideo.videoUrl.includes('player.php'))) ? (
@@ -225,7 +222,7 @@ export const KpleWatchPlayer: React.FC<KpleWatchPlayerProps> = ({
                     src={activeVideo.videoUrl}
                     title={activeVideo.title}
                     style={{ width: '100%', height: '100%', border: 'none' }}
-                    allow="autoplay; encrypted-media; fullscreen"
+                    allow="encrypted-media; fullscreen"
                     allowFullScreen
                   />
                 ) : (
@@ -233,8 +230,8 @@ export const KpleWatchPlayer: React.FC<KpleWatchPlayerProps> = ({
                     ref={videoRef}
                     src={activeVideo.videoUrl}
                     controls
-                    autoPlay
                     playsInline
+                    preload="auto"
                     style={{ width: '100%', height: '100%', objectFit: 'contain' }}
                   >
                     <source src={activeVideo.videoUrl} type="video/mp4" />
