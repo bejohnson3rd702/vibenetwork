@@ -49,7 +49,9 @@ export const KpleWatchPlayer: React.FC<KpleWatchPlayerProps> = ({
   const [tab, setTab] = useState<'description' | 'transcript'>('description');
   const [copiedTranscript, setCopiedTranscript] = useState(false);
   const [copiedLink, setCopiedLink] = useState(false);
+  const [isMuted, setIsMuted] = useState(true);
   const videoRef = useRef<HTMLVideoElement>(null);
+  const iframeRef = useRef<HTMLIFrameElement>(null);
 
   // Initialize active video
   useEffect(() => {
@@ -64,10 +66,57 @@ export const KpleWatchPlayer: React.FC<KpleWatchPlayerProps> = ({
     setActiveVideo(videos[0]);
   }, [videos, initialVideoId]);
 
-  // Load video playback when activeVideo changes
+  // PostMessage helper for YouTube iframe API
+  const postToYouTube = (func: string, args: any[] = []) => {
+    try {
+      if (iframeRef.current && iframeRef.current.contentWindow) {
+        iframeRef.current.contentWindow.postMessage(
+          JSON.stringify({ event: 'command', func, args }),
+          '*'
+        );
+      }
+    } catch (e) {
+      console.warn('YouTube postMessage error in modal:', e);
+    }
+  };
+
+  // Toggle Mute / Unmute handler
+  const handleToggleMute = () => {
+    const nextMuted = !isMuted;
+    setIsMuted(nextMuted);
+
+    if (iframeRef.current) {
+      if (nextMuted) {
+        postToYouTube('mute');
+      } else {
+        postToYouTube('unMute');
+        postToYouTube('setVolume', [100]);
+        postToYouTube('playVideo');
+      }
+    }
+
+    if (videoRef.current) {
+      videoRef.current.muted = nextMuted;
+      if (!nextMuted) {
+        videoRef.current.volume = 1.0;
+        videoRef.current.play().catch(e => console.warn('HTML5 play on unmute error:', e));
+      }
+    }
+  };
+
+  // Load video playback and trigger play when activeVideo changes
   useEffect(() => {
     if (activeVideo && videoRef.current) {
       videoRef.current.load();
+      videoRef.current.muted = isMuted;
+      videoRef.current.play().catch(err => {
+        console.warn("Muted autoplay retry:", err);
+        if (videoRef.current) {
+          videoRef.current.muted = true;
+          setIsMuted(true);
+          videoRef.current.play().catch(_ => {});
+        }
+      });
     }
   }, [activeVideo?.id]);
 
@@ -261,12 +310,56 @@ export const KpleWatchPlayer: React.FC<KpleWatchPlayerProps> = ({
                     LIVE
                   </span>
                 </div>
+
+                {/* Unmute / Volume Control Overlay */}
+                <button
+                  type="button"
+                  onClick={handleToggleMute}
+                  style={{
+                    position: 'absolute',
+                    bottom: '16px',
+                    right: '16px',
+                    zIndex: 25,
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: isMuted ? '8px' : '6px',
+                    background: isMuted ? 'rgba(0, 0, 0, 0.88)' : 'rgba(0, 0, 0, 0.65)',
+                    backdropFilter: 'blur(12px)',
+                    WebkitBackdropFilter: 'blur(12px)',
+                    border: isMuted ? `1.5px solid ${accent}` : '1px solid rgba(255,255,255,0.15)',
+                    color: '#fff',
+                    padding: isMuted ? '8px 18px' : '6px 14px',
+                    borderRadius: '30px',
+                    fontSize: isMuted ? '12px' : '11px',
+                    fontWeight: isMuted ? 800 : 700,
+                    cursor: 'pointer',
+                    boxShadow: isMuted ? `0 8px 24px rgba(0,0,0,0.7), 0 0 15px ${accent}44` : 'none',
+                    transition: 'all 0.2s'
+                  }}
+                  onMouseOver={e => e.currentTarget.style.transform = 'scale(1.05)'}
+                  onMouseOut={e => e.currentTarget.style.transform = 'scale(1)'}
+                >
+                  {isMuted ? (
+                    <>
+                      <VolumeX size={16} color={accent} />
+                      <span>Click to Unmute</span>
+                    </>
+                  ) : (
+                    <>
+                      <Volume2 size={14} color="#30d158" />
+                      <span>Mute</span>
+                    </>
+                  )}
+                </button>
+
                 {ytId ? (
                   <iframe
-                    src={`https://www.youtube.com/embed/${ytId}?autoplay=0`}
+                    ref={iframeRef}
+                    key={`yt-modal-${activeVideo.id}`}
+                    src={`https://www.youtube.com/embed/${ytId}?autoplay=1&mute=1&controls=1&enablejsapi=1&rel=0&playsinline=1&origin=${encodeURIComponent(typeof window !== 'undefined' ? window.location.origin : '')}`}
                     title={activeVideo.title}
                     style={{ width: '100%', height: '100%', border: 'none' }}
-                    allow="encrypted-media; fullscreen"
+                    allow="autoplay; encrypted-media; fullscreen; picture-in-picture; accelerometer; clipboard-write; gyroscope"
                     allowFullScreen
                   />
                 ) : (activeVideo.videoUrl && (activeVideo.videoUrl.includes('lightcast.com') || activeVideo.videoUrl.includes('embed') || activeVideo.videoUrl.includes('player.php'))) ? (
@@ -274,15 +367,18 @@ export const KpleWatchPlayer: React.FC<KpleWatchPlayerProps> = ({
                     src={activeVideo.videoUrl}
                     title={activeVideo.title}
                     style={{ width: '100%', height: '100%', border: 'none' }}
-                    allow="encrypted-media; fullscreen"
+                    allow="autoplay; encrypted-media; fullscreen; picture-in-picture"
                     allowFullScreen
                   />
                 ) : (
                   <video
                     ref={videoRef}
+                    key={`vid-modal-${activeVideo.id}`}
                     src={activeVideo.videoUrl}
-                    controls
+                    autoPlay
+                    muted={isMuted}
                     playsInline
+                    controls
                     preload="auto"
                     style={{ width: '100%', height: '100%', objectFit: 'contain' }}
                   >

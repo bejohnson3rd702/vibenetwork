@@ -248,7 +248,7 @@ export default function CourtneyBeeWatchSection({ accent = '#D35400' }: { accent
               {isPlaying ? (
                 <iframe
                   key={selectedVideo.youtubeId}
-                  src={`https://www.youtube.com/embed/${selectedVideo.youtubeId}?autoplay=1&rel=0&modestbranding=1`}
+                  src={`https://www.youtube.com/embed/${selectedVideo.youtubeId}?autoplay=1&mute=1&rel=0&modestbranding=1&enablejsapi=1&playsinline=1&origin=${encodeURIComponent(typeof window !== 'undefined' ? window.location.origin : '')}`}
                   title={selectedVideo.title}
                   allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                   allowFullScreen

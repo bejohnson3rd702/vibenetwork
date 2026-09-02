@@ -335,7 +335,12 @@ export const KpleInlineWatchSection: React.FC<KpleInlineWatchSectionProps> = ({
         } catch (_) {}
       }
       videoRef.current.play().catch(err => {
-        console.warn("Virtual linear TV play error:", err);
+        console.warn("Virtual linear TV play error, retrying muted:", err);
+        if (videoRef.current) {
+          videoRef.current.muted = true;
+          setIsMuted(true);
+          videoRef.current.play().catch(e => console.warn("Fallback muted play failed:", e));
+        }
       });
     }
   };
@@ -536,7 +541,7 @@ export const KpleInlineWatchSection: React.FC<KpleInlineWatchSectionProps> = ({
                 <iframe
                   ref={iframeRef}
                   key={`yt-${currentActive.id}-${isCurrentAirProgram ? 'live' : 'vod'}`}
-                  src={`https://www.youtube.com/embed/${ytId}?autoplay=1&mute=1&controls=1&enablejsapi=1&rel=0&start=${startSeconds}&playsinline=1`}
+                  src={`https://www.youtube.com/embed/${ytId}?autoplay=1&mute=1&controls=1&enablejsapi=1&rel=0&start=${startSeconds}&playsinline=1&origin=${encodeURIComponent(typeof window !== 'undefined' ? window.location.origin : '')}`}
                   title={currentActive.title}
                   onLoad={handleIframeLoad}
                   style={{ width: '100%', height: '100%', border: 'none' }}
