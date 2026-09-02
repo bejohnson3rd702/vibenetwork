@@ -248,16 +248,20 @@ export const KpleInlineWatchSection: React.FC<KpleInlineWatchSectionProps> = ({
     if (!isCurrentAirProgram || rawElapsed <= 0) return 0;
     const durSec = (currentActive as any)?.durationMinutes && (currentActive as any).durationMinutes > 0
       ? Math.floor((currentActive as any).durationMinutes * 60)
-      : (typeof currentActive?.duration === 'number' && currentActive.duration > 0 ? currentActive.duration : 0);
-    if (durSec > 0 && rawElapsed >= durSec) {
-      return rawElapsed % durSec;
+      : (typeof currentActive?.duration === 'number' && currentActive.duration > 0
+        ? currentActive.duration
+        : (ytDurationRef.current > 0 ? Math.floor(ytDurationRef.current) : 1650));
+    
+    let calc = rawElapsed;
+    if (durSec > 0 && calc >= durSec) {
+      calc = calc % durSec;
     }
-    return rawElapsed;
+    return Math.max(0, Math.floor(calc));
   }, [isCurrentAirProgram, rawElapsed, currentActive]);
 
   // Compute initial start seconds once per active video change to keep iframe src stable
   const initialStartRef = useRef<{ id: string; seconds: number }>({ id: '', seconds: 0 });
-  if (initialStartRef.current.id !== currentActive?.id) {
+  if (initialStartRef.current.id !== (currentActive?.id || '')) {
     initialStartRef.current = {
       id: currentActive?.id || '',
       seconds: startSeconds
