@@ -51,25 +51,45 @@ export function calculateCurrentBroadcast(videos: KpleVideoItem[]): BroadcastSch
     }
   }
 
-  // 2. 24/7 deterministic linear broadcast cycle across catalog
-  const secondsSinceMidnight = (now.getHours() * 3600) + (now.getMinutes() * 60) + now.getSeconds();
-  const slotDurationSec = 1800; // 30-minute programming blocks
-  const currentSlotIndex = Math.floor(secondsSinceMidnight / slotDurationSec);
-  const videoIndex = currentSlotIndex % videos.length;
-  const currentVideo = videos[videoIndex];
-  const elapsedInSlot = secondsSinceMidnight % slotDurationSec;
+  // 2. Fallback: select closest video to current time across 24h
+  const currentMinutes = now.getHours() * 60 + now.getMinutes();
+  let bestVideo = videos[0];
+  let minDiff = Infinity;
+  let bestElapsed = 0;
 
-  const startHour = Math.floor((currentSlotIndex * 30) / 60);
-  const startMin = (currentSlotIndex * 30) % 60;
-  const timeStr = `${startHour < 10 ? '0' : ''}${startHour}:${startMin < 10 ? '0' : ''}${startMin}`;
+  for (const v of videos) {
+    if (v.scheduledAirTime) {
+      const parts = v.scheduledAirTime.split(':');
+      const videoMinutes = parseInt(parts[0], 10) * 60 + parseInt(parts[1], 10);
+      let diff = currentMinutes - videoMinutes;
+      if (diff < 0) diff += 1440;
+      if (diff < minDiff) {
+        minDiff = diff;
+        bestVideo = v;
+        bestElapsed = diff * 60 + now.getSeconds();
+      }
+    }
+  }
 
   return {
-    video: currentVideo,
-    elapsedSeconds: elapsedInSlot,
-    scheduledAirTime: timeStr,
+    video: bestVideo,
+    elapsedSeconds: bestElapsed,
+    scheduledAirTime: bestVideo.scheduledAirTime,
     isCustomScheduled: false
   };
 }
+
+export const formatAirTime12h = (timeStr?: string) => {
+  if (!timeStr) return '';
+  const parts = timeStr.split(':');
+  if (parts.length < 2) return timeStr;
+  let hours = parseInt(parts[0], 10);
+  const minutes = parts[1];
+  const ampm = hours >= 12 ? 'PM' : 'AM';
+  hours = hours % 12;
+  hours = hours ? hours : 12;
+  return `${hours}:${minutes} ${ampm}`;
+};
 
 const sanitizeTitle = (t?: string) => {
   if (!t) return '';
@@ -149,12 +169,16 @@ export const KpleInlineWatchSection: React.FC<KpleInlineWatchSectionProps> = ({
 
   if (cleanVideos.length === 0) return null;
 
-  // Filtered playlist
+  // Filtered playlist sorted chronologically by broadcast airtime
   const filteredVideos = cleanVideos.filter(v =>
     v.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
     (v.channelName && v.channelName.toLowerCase().includes(searchQuery.toLowerCase())) ||
     (v.tags && v.tags.some(t => t.toLowerCase().includes(searchQuery.toLowerCase())))
-  );
+  ).sort((a, b) => {
+    const timeA = a.scheduledAirTime || '00:00';
+    const timeB = b.scheduledAirTime || '00:00';
+    return timeA.localeCompare(timeB);
+  });
 
   const ytId = extractYouTubeId(currentActive.videoUrl);
   const isCurrentAirProgram = !isUserBrowsingPastVideo && currentBroadcast && currentActive.id === currentBroadcast.video.id;
@@ -404,7 +428,7 @@ export const KpleInlineWatchSection: React.FC<KpleInlineWatchSectionProps> = ({
                         background: 'rgba(255, 0, 80, 0.15)',
                         border: '1px solid rgba(255, 0, 80, 0.4)',
                         color: '#ff4d85',
-                        padding: '2px 10px',
+                        padding: '3px 10px',
                         borderRadius: '6px',
                         fontSize: '11px',
                         fontWeight: 900,
@@ -414,19 +438,22 @@ export const KpleInlineWatchSection: React.FC<KpleInlineWatchSectionProps> = ({
                         gap: '6px'
                       }}>
                         <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#ff0050', display: 'inline-block', animation: 'kpleLiveDotPulse 1.5s infinite ease-in-out' }} />
-                        ON AIR NOW {currentBroadcast?.scheduledAirTime ? `@ ${currentBroadcast.scheduledAirTime}` : ''}
+                        ON AIR NOW • {formatAirTime12h(currentActive.scheduledAirTime || currentBroadcast?.scheduledAirTime)} ({currentActive.airTimeSlot || '1 Hr'})
                       </span>
                     ) : (
                       <span style={{
-                        background: 'rgba(255, 255, 255, 0.08)',
-                        border: '1px solid rgba(255, 255, 255, 0.15)',
-                        color: 'rgba(255,255,255,0.7)',
-                        padding: '2px 8px',
+                        background: 'rgba(0, 212, 255, 0.12)',
+                        border: '1px solid rgba(0, 212, 255, 0.3)',
+                        color: '#00d4ff',
+                        padding: '3px 10px',
                         borderRadius: '6px',
                         fontSize: '11px',
-                        fontWeight: 700
+                        fontWeight: 800,
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '6px'
                       }}>
-                        ON DEMAND
+                        📅 BROADCAST AIRTIME: {formatAirTime12h(currentActive.scheduledAirTime) || 'Scheduled'} ({currentActive.airTimeSlot || '1 Hr'})
                       </span>
                     )}
                     {currentActive.channelName && (
@@ -582,10 +609,10 @@ export const KpleInlineWatchSection: React.FC<KpleInlineWatchSectionProps> = ({
             <div style={{ padding: '18px 20px', borderBottom: '1px solid rgba(255,255,255,0.08)', display: 'flex', flexDirection: 'column', gap: '10px' }}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                 <h3 style={{ fontSize: '15px', fontWeight: 900, color: '#fff', margin: 0, letterSpacing: '-0.3px' }}>
-                  Section Video Playlist
+                  📺 Broadcast Air Schedule
                 </h3>
                 <span style={{ fontSize: '11px', fontWeight: 800, color: accent, background: `${accent}22`, padding: '3px 8px', borderRadius: '10px' }}>
-                  {filteredVideos.length} Videos
+                  {filteredVideos.length} Scheduled Shows
                 </span>
               </div>
 
@@ -593,7 +620,7 @@ export const KpleInlineWatchSection: React.FC<KpleInlineWatchSectionProps> = ({
                 <Search size={14} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: 'rgba(255,255,255,0.4)' }} />
                 <input
                   type="text"
-                  placeholder="Filter section videos..."
+                  placeholder="Filter broadcast schedule..."
                   value={searchQuery}
                   onChange={e => setSearchQuery(e.target.value)}
                   style={{
@@ -731,18 +758,42 @@ export const KpleInlineWatchSection: React.FC<KpleInlineWatchSectionProps> = ({
                         {sanitizeTitle(vid.title)}
                       </h4>
                       
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '11px', color: 'rgba(255,255,255,0.5)', flexWrap: 'wrap' }}>
-                        {isAirBroadcast && (
-                          <span style={{ color: '#ff4d85', fontWeight: 900, fontSize: '10px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-                            🔴 LIVE AIR
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '11px', color: 'rgba(255,255,255,0.5)', flexWrap: 'wrap', marginTop: '4px' }}>
+                        {isAirBroadcast ? (
+                          <span style={{
+                            color: '#ff4d85',
+                            fontWeight: 900,
+                            fontSize: '10px',
+                            textTransform: 'uppercase',
+                            letterSpacing: '0.5px',
+                            background: 'rgba(255,0,80,0.15)',
+                            padding: '2px 6px',
+                            borderRadius: '5px',
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: '4px'
+                          }}>
+                            <span style={{ width: '5px', height: '5px', borderRadius: '50%', background: '#ff0050', display: 'inline-block', animation: 'kpleLiveDotPulse 1.5s infinite ease-in-out' }} />
+                            ON AIR NOW • {formatAirTime12h(vid.scheduledAirTime)}
+                          </span>
+                        ) : (
+                          <span style={{
+                            color: '#00d4ff',
+                            fontWeight: 800,
+                            fontSize: '10px',
+                            background: 'rgba(0,212,255,0.1)',
+                            padding: '2px 6px',
+                            borderRadius: '5px'
+                          }}>
+                            📅 Airs {formatAirTime12h(vid.scheduledAirTime) || 'Scheduled'}
                           </span>
                         )}
                         {isCurrent ? (
                           <span style={{ color: accent, fontWeight: 900, fontSize: '10px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-                            ▶ PLAYING
+                            ▶ VIEWING
                           </span>
                         ) : (
-                          <span>{vid.channelName || networkName}</span>
+                          <span>• {vid.channelName || networkName}</span>
                         )}
                       </div>
                     </div>

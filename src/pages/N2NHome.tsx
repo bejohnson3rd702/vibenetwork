@@ -369,7 +369,35 @@ export default function N2NHome({ wlConfig, categories, user, activeVideo, setAc
               }
             });
 
-            setKpleChannelVideos(Array.from(combinedMap.values()));
+            const allLoadedVideos = Array.from(combinedMap.values());
+
+            // Assign broadcast air times to ALL loaded videos across the daily 24-hour broadcast grid
+            const slotIntervalMinutes = allLoadedVideos.length > 24 ? 30 : 60;
+            const scheduledKpleVideos = allLoadedVideos.map((v: any, index: number) => {
+              if (v.scheduledAirTime) {
+                return {
+                  ...v,
+                  scheduledAirDate: v.scheduledAirDate || todayStr,
+                  airTimeSlot: v.airTimeSlot || (slotIntervalMinutes === 30 ? '30 mins' : '1 Hour')
+                };
+              }
+
+              // Calculate linear broadcast time slot starting at 6:00 AM
+              const totalSlotMinutes = (6 * 60) + (index * slotIntervalMinutes);
+              const dayMinute = totalSlotMinutes % (24 * 60);
+              const hour = Math.floor(dayMinute / 60);
+              const minute = dayMinute % 60;
+              const airTimeStr = `${hour < 10 ? '0' : ''}${hour}:${minute < 10 ? '0' : ''}${minute}`;
+
+              return {
+                ...v,
+                scheduledAirDate: todayStr,
+                scheduledAirTime: airTimeStr,
+                airTimeSlot: slotIntervalMinutes === 30 ? '30 mins' : '1 Hour'
+              };
+            });
+
+            setKpleChannelVideos(scheduledKpleVideos);
           }
         }
       }
