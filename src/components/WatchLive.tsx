@@ -1889,6 +1889,14 @@ export default function WatchLive({ accent = '#D35400', isCourtneyBee = false, i
     }
   };
 
+  // Automatically trigger translation when target language changes or when a video transcript loads
+  useEffect(() => {
+    if (!activeVideo) return;
+    if (preferredLang && preferredLang !== 'english-united-states' && transcript && transcript.length > 0) {
+      handleTranslateVideoInfo(preferredLang);
+    }
+  }, [preferredLang, transcript, activeVideo?.id]);
+
   const toggleInfoAudio = () => {
     if (!infoAudioBase64) return;
     if (!infoAudioRef.current) {
