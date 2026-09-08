@@ -1833,8 +1833,11 @@ export default function WatchLive({ accent = '#D35400', isCourtneyBee = false, i
       // 4. Generate TTS audio from the TRANSCRIPT (not the description) for the "Listen" button
       if (supportsTts && fullTranscriptText.trim()) {
         try {
+          const textToSynthesize = fullTranscriptText.length > 1000 
+            ? fullTranscriptText.slice(0, 1000) + "..." 
+            : fullTranscriptText;
           const transcriptAudioRes = await translateText({
-            text: fullTranscriptText,
+            text: textToSynthesize,
             sourceLang: 'english-united-states',
             targetLang: targetLanguage,
             serviceCode: 'tts'
@@ -1847,33 +1850,33 @@ export default function WatchLive({ accent = '#D35400', isCourtneyBee = false, i
         }
       }
 
-      // 5. Translate Transcript Segments with TTS for timed video voiceover
+      // 5. Translate Transcript Segments with TTS for timed video voiceover concurrently
       if (activeTranscript && activeTranscript.length > 0) {
-        const translatedSegs = [];
         const segmentMode = supportsTts ? 'tts' : 'ttt';
-        
-        for (const seg of activeTranscript) {
-          try {
-            const res = await translateText({
-              text: seg.text,
-              sourceLang: 'english-united-states',
-              targetLang: targetLanguage,
-              serviceCode: segmentMode
-            });
-            translatedSegs.push({
-              ...seg,
-              translatedText: res.translated_text || seg.text,
-              audio: res.audio || null
-            });
-          } catch (err) {
-            console.warn("Failed to translate segment:", seg.text, err);
-            translatedSegs.push({
-              ...seg,
-              translatedText: seg.text,
-              audio: null
-            });
-          }
-        }
+        const translatedSegs = await Promise.all(
+          activeTranscript.map(async (seg) => {
+            try {
+              const res = await translateText({
+                text: seg.text,
+                sourceLang: 'english-united-states',
+                targetLang: targetLanguage,
+                serviceCode: segmentMode
+              });
+              return {
+                ...seg,
+                translatedText: res.translated_text || seg.text,
+                audio: res.audio || null
+              };
+            } catch (err) {
+              console.warn("Failed to translate segment:", seg.text, err);
+              return {
+                ...seg,
+                translatedText: seg.text,
+                audio: null
+              };
+            }
+          })
+        );
         setTranslatedTranscript(translatedSegs);
 
         // If full transcript audio wasn't generated, fallback to the first segment's audio for "Listen"

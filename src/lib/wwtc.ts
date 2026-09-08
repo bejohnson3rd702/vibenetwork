@@ -298,6 +298,31 @@ export interface YouTubeCaptionSegment {
   isRecorded?: boolean;
 }
 
+async function fetchWithCorsProxy(targetUrl: string): Promise<string> {
+  const proxyConstructors = [
+    (url: string) => url,
+    (url: string) => `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`,
+    (url: string) => `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(url)}`,
+    (url: string) => `https://corsproxy.io/?${encodeURIComponent(url)}`
+  ];
+
+  for (const buildProxyUrl of proxyConstructors) {
+    try {
+      const proxyUrl = buildProxyUrl(targetUrl);
+      const res = await fetch(proxyUrl);
+      if (res.ok) {
+        const text = await res.text();
+        if (text && text.trim().length > 0 && !text.includes('Error 404') && !text.includes('404 Not Found')) {
+          return text;
+        }
+      }
+    } catch {
+      // Continue to next proxy candidate
+    }
+  }
+  throw new Error(`Failed to fetch ${targetUrl} via direct fetch and CORS proxies`);
+}
+
 /**
  * Fetch and parse YouTube auto-captions / timedtext subtitles for a video ID
  */
@@ -313,11 +338,15 @@ export async function fetchYouTubeCaptions(videoId: string): Promise<YouTubeCapt
 
   for (const url of urls) {
     try {
-      const res = await fetch(url);
-      if (!res.ok) continue;
+      const rawText = await fetchWithCorsProxy(url);
 
       if (url.includes('fmt=json3')) {
-        const json = await res.json();
+        let json: any;
+        try {
+          json = JSON.parse(rawText);
+        } catch {
+          continue;
+        }
         if (json.events && Array.isArray(json.events)) {
           const segments: YouTubeCaptionSegment[] = [];
           for (const ev of json.events) {
@@ -341,17 +370,16 @@ export async function fetchYouTubeCaptions(videoId: string): Promise<YouTubeCapt
           if (segments.length > 0) return segments;
         }
       } else {
-        const xmlText = await res.text();
         const parser = new DOMParser();
-        const xmlDoc = parser.parseFromString(xmlText, "text/xml");
+        const xmlDoc = parser.parseFromString(rawText, "text/xml");
         const textNodes = xmlDoc.getElementsByTagName("text");
         if (textNodes && textNodes.length > 0) {
           const segments: YouTubeCaptionSegment[] = [];
           for (let i = 0; i < textNodes.length; i++) {
             const node = textNodes[i];
             const startSec = parseFloat(node.getAttribute("start") || "0");
-            const rawText = node.textContent || "";
-            const cleanText = rawText
+            const rawTextContent = node.textContent || "";
+            const cleanText = rawTextContent
               .replace(/&amp;/g, '&')
               .replace(/&#39;/g, "'")
               .replace(/&quot;/g, '"')
