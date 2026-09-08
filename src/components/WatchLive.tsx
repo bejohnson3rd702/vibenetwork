@@ -968,7 +968,7 @@ export default function WatchLive({ accent = '#D35400', isCourtneyBee = false, i
 
   // WWTC Translation Center state
   const [wwtcLanguages, setWwtcLanguages] = useState<any[]>([]);
-  const [preferredLang, setPreferredLang] = useState('spanish-international');
+  const [preferredLang, setPreferredLang] = useState('english-united-states');
   const [isTranslatingInfo, setIsTranslatingInfo] = useState(false);
   const [translatedInfo, setTranslatedInfo] = useState<{ headline: string; description: string } | null>(null);
   const [infoAudioBase64, setInfoAudioBase64] = useState<string | null>(null);
