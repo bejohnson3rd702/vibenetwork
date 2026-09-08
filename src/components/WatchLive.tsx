@@ -904,49 +904,14 @@ const getQueryVideoId = (video: any) => {
   return video.id;
 };
 
-const generateFallbackTranscript = (title: string, description?: string, source?: string) => {
-  const cleanTitle = (title || "this video broadcast").trim();
-  const cleanSource = (source || "Overview").trim();
-  
-  if (description && description.trim().length > 10) {
-    const rawSentences = description
-      .split(/(?<=[.!?])\s+/)
-      .map(s => s.trim())
-      .filter(s => s.length > 5);
-
-    if (rawSentences.length > 0) {
-      const segments: any[] = [
-        {
-          time: "00:00",
-          seconds: 0,
-          speaker: cleanSource,
-          text: cleanTitle
-        }
-      ];
-
-      rawSentences.forEach((sentence, idx) => {
-        const seconds = (idx + 1) * 15;
-        const m = Math.floor(seconds / 60);
-        const s = Math.floor(seconds % 60);
-        const timeStr = `${m < 10 ? '0' : ''}${m}:${s < 10 ? '0' : ''}${s}`;
-        segments.push({
-          time: timeStr,
-          seconds,
-          speaker: cleanSource,
-          text: sentence
-        });
-      });
-
-      return segments;
-    }
-  }
-
+const generateFallbackTranscript = (_title?: string, _description?: string, _source?: string) => {
   return [
     {
       time: "00:00",
       seconds: 0,
-      speaker: cleanSource,
-      text: cleanTitle
+      speaker: "Video Audio",
+      text: "[No spoken audio transcript available for this video yet. Import YouTube captions or record live audio to generate a transcript.]",
+      isPlaceholder: true
     }
   ];
 };
@@ -1820,7 +1785,9 @@ export default function WatchLive({ accent = '#D35400', isCourtneyBee = false, i
         setTranscript(activeTranscript);
       }
 
-      const fullTranscriptText = (activeTranscript && activeTranscript.length > 0)
+      const hasSpokenAudio = activeTranscript && activeTranscript.some(seg => !seg.isPlaceholder && !seg.text?.startsWith('[No spoken audio'));
+
+      const fullTranscriptText = (hasSpokenAudio && activeTranscript && activeTranscript.length > 0)
         ? activeTranscript.map(seg => seg.text).join(' ')
         : '';
 
@@ -1858,8 +1825,8 @@ export default function WatchLive({ accent = '#D35400', isCourtneyBee = false, i
         description: translatedDesc
       });
 
-      // 4. Generate TTS audio from the TRANSCRIPT (not the description) for the "Listen" button
-      if (supportsTts && fullTranscriptText.trim()) {
+      // 4. Generate TTS audio from real spoken video transcript ONLY for the "Listen" button
+      if (supportsTts && hasSpokenAudio && fullTranscriptText.trim()) {
         try {
           const textToSynthesize = fullTranscriptText.length > 1000 
             ? fullTranscriptText.slice(0, 1000) + "..." 
@@ -1878,8 +1845,8 @@ export default function WatchLive({ accent = '#D35400', isCourtneyBee = false, i
         }
       }
 
-      // 5. Translate Transcript Segments with TTS for timed video voiceover concurrently
-      if (activeTranscript && activeTranscript.length > 0) {
+      // 5. Translate real spoken transcript segments with TTS for timed video voiceover concurrently
+      if (hasSpokenAudio && activeTranscript && activeTranscript.length > 0) {
         const segmentMode = supportsTts ? 'tts' : 'ttt';
         const translatedSegs = await Promise.all(
           activeTranscript.map(async (seg) => {
