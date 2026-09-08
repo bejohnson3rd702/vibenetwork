@@ -4,7 +4,7 @@ import {
   Globe, Users, Activity, Database, 
   ShieldAlert, Terminal, ChevronRight, BarChart3, 
   Network, Server, Play, StopCircle, CheckCircle, Wallet, AlertCircle, Mail, ShoppingBag,
-  Brain, Type, Menu
+  Brain, Type, Menu, Languages
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../supabaseClient';
@@ -12,6 +12,7 @@ import { ErrorBoundary } from './ErrorBoundary';
 import { BrandingTab } from './admin/BrandingTab';
 import { AnalyticsTab } from './admin/AnalyticsTab';
 import { EnterpriseAiTab } from './admin/EnterpriseAiTab';
+import { TranslationTab } from './admin/TranslationTab';
 import { getChildNetworks, deleteChildNetwork, createChildNetwork } from '../lib/n2n';
 import LiveTelemetry from './LiveTelemetry';
 import { HeroEditorTab } from './admin/HeroEditorTab';
@@ -445,6 +446,7 @@ function MasterAdminDashboard() {
             { id: 'database', icon: <Database size={18} />, label: 'Data Clusters' },
             { id: 'analytics', icon: <BarChart3 size={18} />, label: 'Global Analytics' },
             { id: 'enterprise-ai', icon: <Brain size={18} />, label: 'Enterprise AI' },
+            { id: 'translation', icon: <Languages size={18} />, label: 'WWTC Translation' },
             { id: 'marketplace', icon: <ShoppingBag size={18} />, label: 'Global Marketplace' },
             { id: 'leads', icon: <Mail size={18} />, label: 'Global Leads' },
             { id: 'accounting', icon: <Wallet size={18} />, label: 'Global Ledger' },
@@ -1385,6 +1387,12 @@ function MasterAdminDashboard() {
           {activeTab === 'enterprise-ai' && (
              <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
                 <EnterpriseAiTab wlConfig={{ name: 'Vibe Master', accent: '#0055ff' }} />
+             </motion.div>
+          )}
+
+          {activeTab === 'translation' && (
+             <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
+                <TranslationTab wlConfig={{ name: 'Vibe Master', accent: '#0055ff' }} />
              </motion.div>
           )}
 

@@ -1,10 +1,11 @@
 import { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
-import { Play, Tv, X, ChevronLeft, ChevronRight, Clock, ExternalLink, Video, VideoOff, Mic, MicOff, Copy, Check, Send, Globe, Lock, Sparkles, Languages, Volume2, VolumeX } from 'lucide-react';
+import { Play, Tv, X, ChevronLeft, ChevronRight, Clock, ExternalLink, Video, VideoOff, Mic, MicOff, Copy, Check, Send, Globe, Lock, Sparkles, Languages, Volume2, VolumeX, Edit3, Save, Plus, Trash2, Download, Upload, Activity } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from '../supabaseClient';
 import { isOlympianConfig, isMuscleFitnessConfig, isB2kConfig, isKpleConfig, isBonaireConfig } from '../lib/whitelabel';
-import { getWwtcLanguages, translateText } from '../lib/wwtc';
+import { getWwtcLanguages, translateText, transcribeAudioBlob, encode16kMonoWav, fetchYouTubeCaptions, transcribeAudioFile } from '../lib/wwtc';
+import { getLocalTranscript } from '../lib/staticTranscripts';
 import { useWhiteLabel } from '../context/WhiteLabelContext';
 
 interface VideoClip {
@@ -903,43 +904,40 @@ const getQueryVideoId = (video: any) => {
   return video.id;
 };
 
-const generateFallbackTranscript = (title: string, description: string) => {
-  const speakers = ["Host", "Presenter", "Special Guest", "Analyst"];
+const generateFallbackTranscript = (title: string, _description?: string) => {
+  const speakers = ["Host", "Co-Host", "Special Guest", "Analyst"];
   const cleanTitle = title || "this broadcast";
-  const descSnippet = description 
-    ? (description.length > 120 ? description.slice(0, 120) + "..." : description)
-    : "we have a great session planned for you today.";
   
   return [
     {
       time: "00:00",
       seconds: 0,
       speaker: speakers[0],
-      text: `Hello and welcome back to the channel. Today, we are tuning in to watch ${cleanTitle}.`
+      text: `Hello and welcome back to the channel. Today we are tuning in to watch ${cleanTitle}.`
     },
     {
       time: "00:15",
       seconds: 15,
       speaker: speakers[1],
-      text: `Thanks for having me. Looking at the agenda and details: "${descSnippet}", there is really a lot of depth to discuss here.`
+      text: `We have an exciting session lined up, breaking down all the action and featured moments from the video.`
     },
     {
       time: "00:35",
       seconds: 35,
       speaker: speakers[0],
-      text: `Indeed. Bodybuilding, sports, and live entertainment are evolving fast. This video highlights some of the most critical elements.`
+      text: `Stay tuned throughout the broadcast as we follow along and review every key highlight.`
     },
     {
       time: "00:58",
       seconds: 58,
       speaker: speakers[2],
-      text: `For everyone listening, we highly encourage joining our Live Chat or watch party inside the Fan Zone. Leave your thoughts in real time!`
+      text: `For everyone watching with us, feel free to join the live chat or watch party to share your thoughts in real time.`
     },
     {
       time: "01:25",
       seconds: 85,
       speaker: speakers[0],
-      text: `We will be taking questions and comments as we continue. Thank you all for watching and don't forget to follow our channel for updates.`
+      text: `Thank you all for tuning in, and make sure to subscribe and follow for more live updates.`
     }
   ];
 };
@@ -980,6 +978,389 @@ export default function WatchLive({ accent = '#D35400', isCourtneyBee = false, i
 
   const infoAudioRef = useRef<HTMLAudioElement | null>(null);
   const chatAudioRef = useRef<HTMLAudioElement | null>(null);
+
+  // Live Audio Recording & Studio states & refs
+  const [isLiveRecording, setIsLiveRecording] = useState(false);
+  const [liveRecordingTime, setLiveRecordingTime] = useState(0);
+  const [isProcessingLiveAudio, setIsProcessingLiveAudio] = useState(false);
+  const [liveTranscriptBanner, setLiveTranscriptBanner] = useState<string>('');
+  const [hasRealTranscript, setHasRealTranscript] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [isEditingTranscript, setIsEditingTranscript] = useState(false);
+  const [isImportingCaptions, setIsImportingCaptions] = useState(false);
+  const [isUploadingAudio, setIsUploadingAudio] = useState(false);
+  const [micAudioLevel, setMicAudioLevel] = useState<number>(0);
+
+  const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const audioCtxRef = useRef<AudioContext | null>(null);
+  const analyserRef = useRef<AnalyserNode | null>(null);
+  const animFrameRef = useRef<number | null>(null);
+
+  useEffect(() => {
+    async function checkAdmin() {
+      try {
+        if (typeof window !== 'undefined') {
+          const urlParams = new URLSearchParams(window.location.search);
+          if (urlParams.get('admin') === 'true' || urlParams.get('admin_panel') === 'true' || localStorage.getItem('is_admin') === 'true') {
+            setIsAdmin(true);
+            return;
+          }
+        }
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user) {
+          if (user.user_metadata?.role === 'admin' || user.email?.includes('admin')) {
+            setIsAdmin(true);
+            return;
+          }
+          const { data: profile } = await supabase
+            .from('profiles')
+            .select('is_admin, role')
+            .eq('id', user.id)
+            .maybeSingle();
+          if (profile?.is_admin || profile?.role === 'admin') {
+            setIsAdmin(true);
+            return;
+          }
+        }
+      } catch (err) {
+        console.warn("Could not check admin role:", err);
+      }
+    }
+    checkAdmin();
+  }, []);
+
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  const recordedChunksRef = useRef<Blob[]>([]);
+  const recordingTimerRef = useRef<any>(null);
+  const speechRecognitionRef = useRef<any>(null);
+
+  const formatSecs = (sec: number) => {
+    const m = Math.floor(sec / 60);
+    const s = Math.floor(sec % 60);
+    return `${m < 10 ? '0' : ''}${m}:${s < 10 ? '0' : ''}${s}`;
+  };
+
+  const startLiveRecording = async () => {
+    try {
+      recordedChunksRef.current = [];
+      setLiveRecordingTime(0);
+      setLiveTranscriptBanner("🎙️ Listening to live video audio...");
+      setIsLiveRecording(true);
+
+      // Start video playback automatically when Record is clicked
+      if (videoRef.current) {
+        videoRef.current.play().catch(() => {});
+      }
+      if (ytPlayerRef.current && ytPlayerRef.current.playVideo) {
+        try { ytPlayerRef.current.playVideo(); } catch (_) {}
+      }
+      const iframe = document.getElementById('watch-live-yt-iframe') as HTMLIFrameElement;
+      if (iframe && iframe.contentWindow) {
+        iframe.contentWindow.postMessage(JSON.stringify({ event: 'command', func: 'playVideo', args: [] }), '*');
+      }
+
+      recordingTimerRef.current = setInterval(() => {
+        setLiveRecordingTime(prev => prev + 1);
+      }, 1000);
+
+      // 1. Try Web Speech API for instant live recognition
+      const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+      if (SpeechRecognition) {
+        try {
+          const recognition = new SpeechRecognition();
+          recognition.continuous = true;
+          recognition.interimResults = true;
+          recognition.lang = 'en-US';
+
+          recognition.onresult = async (event: any) => {
+            let currentSpeech = '';
+            for (let i = event.resultIndex; i < event.results.length; i++) {
+              currentSpeech += event.results[i][0].transcript;
+            }
+            if (currentSpeech.trim()) {
+              setLiveTranscriptBanner(`🎙️ Listening: "${currentSpeech}"`);
+              
+              if (preferredLang && preferredLang !== 'english-united-states') {
+                try {
+                  const res = await translateText({
+                    text: currentSpeech,
+                    sourceLang: 'english-united-states',
+                    targetLang: preferredLang,
+                    serviceCode: 'ttt',
+                  });
+                  if (res.translated_text) {
+                    setLiveTranscriptBanner(`🎙️ "${currentSpeech}" → (${res.translated_text})`);
+                  }
+                } catch {
+                  // Ignore live intermediate translation errors
+                }
+              }
+            }
+          };
+
+          recognition.onerror = (err: any) => {
+            console.warn("SpeechRecognition error:", err);
+          };
+
+          speechRecognitionRef.current = recognition;
+          recognition.start();
+        } catch (speechErr) {
+          console.warn("SpeechRecognition start error:", speechErr);
+        }
+      }
+
+      // 2. Also try MediaRecorder for audio blob processing
+      if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+        try {
+          const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+          const mediaRecorder = new MediaRecorder(stream);
+
+          mediaRecorder.ondataavailable = (event) => {
+            if (event.data.size > 0) {
+              recordedChunksRef.current.push(event.data);
+            }
+          };
+
+          mediaRecorder.onstop = async () => {
+            const audioBlob = new Blob(recordedChunksRef.current, { type: mediaRecorder.mimeType || 'audio/webm' });
+            if (audioBlob.size > 0) {
+              setIsProcessingLiveAudio(true);
+              try {
+                const audioCtx = new (window.AudioContext || (window as any).webkitAudioContext)();
+                const arrayBuffer = await audioBlob.arrayBuffer();
+                const audioBuffer = await audioCtx.decodeAudioData(arrayBuffer);
+                const wavBlob = encode16kMonoWav(audioBuffer);
+
+                const sttRes = await transcribeAudioBlob({
+                  audioBlob: wavBlob,
+                  sourceLang: 'english-united-states',
+                  targetLang: preferredLang,
+                });
+
+                if (sttRes.source_text || sttRes.translated_text) {
+                  const newSegment = {
+                    time: formatSecs(currentVideoTime || liveRecordingTime),
+                    seconds: Math.round(currentVideoTime || liveRecordingTime),
+                    speaker: "Live Audio",
+                    text: sttRes.source_text || "Live recorded speech segment",
+                    translatedText: sttRes.translated_text,
+                    isRecorded: true,
+                  };
+
+                  setTranscript(prev => {
+                    const updated = [...(prev || []), newSegment];
+                    const queryId = activeVideo ? getQueryVideoId(activeVideo) : '';
+                    if (queryId) {
+                      supabase
+                        .from('video_transcripts')
+                        .upsert({ video_id: queryId, transcript: updated, created_at: new Date().toISOString() }, { onConflict: 'video_id' })
+                        .then(() => setHasRealTranscript(true));
+                    }
+                    return updated;
+                  });
+                  setLiveTranscriptBanner(`Captured: "${sttRes.source_text}"`);
+                }
+              } catch (err) {
+                console.warn("Processing recorded audio via STT failed:", err);
+              } finally {
+                setIsProcessingLiveAudio(false);
+              }
+            }
+
+            stream.getTracks().forEach(track => track.stop());
+          };
+
+          // Setup Web Audio API AnalyserNode for live visualizer level
+          try {
+            const audioCtx = new (window.AudioContext || (window as any).webkitAudioContext)();
+            const source = audioCtx.createMediaStreamSource(stream);
+            const analyser = audioCtx.createAnalyser();
+            analyser.fftSize = 64;
+            source.connect(analyser);
+
+            audioCtxRef.current = audioCtx;
+            analyserRef.current = analyser;
+
+            const dataArray = new Uint8Array(analyser.frequencyBinCount);
+            const updateLevel = () => {
+              if (analyserRef.current) {
+                analyserRef.current.getByteFrequencyData(dataArray);
+                let sum = 0;
+                for (let i = 0; i < dataArray.length; i++) sum += dataArray[i];
+                const avg = sum / dataArray.length;
+                setMicAudioLevel(Math.min(100, Math.round((avg / 128) * 100)));
+                animFrameRef.current = requestAnimationFrame(updateLevel);
+              }
+            };
+            updateLevel();
+          } catch (_) {}
+
+          mediaRecorderRef.current = mediaRecorder;
+          mediaRecorder.start(1000);
+        } catch (micErr) {
+          console.warn("MediaRecorder mic access not granted:", micErr);
+          setLiveTranscriptBanner("🎙️ Speech Recognition Active (Allow Mic in Browser for full audio recording)");
+        }
+      }
+    } catch (err) {
+      console.error("Could not start live recording:", err);
+      setIsLiveRecording(false);
+      if (recordingTimerRef.current) clearInterval(recordingTimerRef.current);
+    }
+  };
+
+  const stopLiveRecording = () => {
+    setIsLiveRecording(false);
+    if (recordingTimerRef.current) {
+      clearInterval(recordingTimerRef.current);
+      recordingTimerRef.current = null;
+    }
+
+    if (animFrameRef.current) {
+      cancelAnimationFrame(animFrameRef.current);
+      animFrameRef.current = null;
+    }
+    if (audioCtxRef.current) {
+      try { audioCtxRef.current.close(); } catch (_) {}
+      audioCtxRef.current = null;
+    }
+    setMicAudioLevel(0);
+
+    if (speechRecognitionRef.current) {
+      try {
+        speechRecognitionRef.current.stop();
+      } catch {
+        // Ignore
+      }
+      speechRecognitionRef.current = null;
+    }
+
+    if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
+      mediaRecorderRef.current.stop();
+    }
+
+    setHasRealTranscript(true);
+  };
+
+  const handleImportYouTubeCaptions = async () => {
+    if (!activeVideo) return;
+    const match = activeVideo.videoUrl?.match(/^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/);
+    let ytId = (match && match[2].length === 11) ? match[2] : (activeVideo.id.length === 11 ? activeVideo.id : '');
+    if (!ytId) ytId = activeVideo.id;
+
+    if (!ytId) {
+      alert("Could not identify YouTube Video ID to import captions.");
+      return;
+    }
+
+    setIsImportingCaptions(true);
+    setLiveTranscriptBanner("⌛ Importing YouTube auto-captions...");
+    try {
+      const fetchedSegments = await fetchYouTubeCaptions(ytId);
+      if (fetchedSegments && fetchedSegments.length > 0) {
+        setTranscript(fetchedSegments);
+        setHasRealTranscript(true);
+
+        const queryId = activeVideo ? getQueryVideoId(activeVideo) : '';
+        if (queryId) {
+          await supabase
+            .from('video_transcripts')
+            .upsert({ video_id: queryId, transcript: fetchedSegments, created_at: new Date().toISOString() }, { onConflict: 'video_id' });
+        }
+        setLiveTranscriptBanner(`Successfully imported ${fetchedSegments.length} YouTube caption lines!`);
+      }
+    } catch (err: any) {
+      console.warn("Failed to import YouTube captions:", err);
+      alert(err.message || "Could not auto-import YouTube captions. You can record live audio or upload an audio file.");
+      setLiveTranscriptBanner("");
+    } finally {
+      setIsImportingCaptions(false);
+    }
+  };
+
+  const handleUploadAudioFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setIsUploadingAudio(true);
+    setLiveTranscriptBanner("⌛ Transcribing uploaded audio file via WWTC STT...");
+    try {
+      const sttRes = await transcribeAudioFile(file, 'english-united-states', preferredLang);
+      if (sttRes.source_text || sttRes.translated_text) {
+        const newSegment = {
+          time: "00:00",
+          seconds: 0,
+          speaker: "Uploaded Audio",
+          text: sttRes.source_text || "Transcribed audio content",
+          translatedText: sttRes.translated_text,
+          isRecorded: true,
+        };
+
+        setTranscript(prev => {
+          const updated = [...(prev || []), newSegment];
+          const queryId = activeVideo ? getQueryVideoId(activeVideo) : '';
+          if (queryId) {
+            supabase
+              .from('video_transcripts')
+              .upsert({ video_id: queryId, transcript: updated, created_at: new Date().toISOString() }, { onConflict: 'video_id' })
+              .then(() => setHasRealTranscript(true));
+          }
+          return updated;
+        });
+        setLiveTranscriptBanner(`Transcribed: "${sttRes.source_text?.substring(0, 40)}..."`);
+      }
+    } catch (err: any) {
+      console.error("Audio file upload transcription failed:", err);
+      alert("Audio file transcription failed: " + (err.message || "Unknown error"));
+    } finally {
+      setIsUploadingAudio(false);
+      if (fileInputRef.current) fileInputRef.current.value = '';
+    }
+  };
+
+  const handleSaveTranscriptEdits = async () => {
+    if (!activeVideo) return;
+    const queryId = getQueryVideoId(activeVideo);
+    if (!queryId) return;
+
+    try {
+      const { error } = await supabase
+        .from('video_transcripts')
+        .upsert({ video_id: queryId, transcript, created_at: new Date().toISOString() }, { onConflict: 'video_id' });
+
+      if (error) throw error;
+      setHasRealTranscript(true);
+      setIsEditingTranscript(false);
+      alert("Transcript saved successfully!");
+    } catch (err: any) {
+      console.error("Failed to save transcript edits:", err);
+      alert("Could not save transcript edits: " + err.message);
+    }
+  };
+
+  // Listen to YouTube player ENDED event to stop recording automatically when video finishes
+  useEffect(() => {
+    const handleYtMessage = (event: MessageEvent) => {
+      try {
+        let data = event.data;
+        if (typeof data === 'string') {
+          data = JSON.parse(data);
+        }
+        // playerState 0 = ENDED in YouTube iFrame API
+        if (data && (data.event === 'onStateChange' && data.info === 0 || data?.info?.playerState === 0)) {
+          if (isLiveRecording) {
+            stopLiveRecording();
+          }
+        }
+      } catch (_) {
+        // Ignore non-JSON window messages
+      }
+    };
+
+    window.addEventListener('message', handleYtMessage);
+    return () => window.removeEventListener('message', handleYtMessage);
+  }, [isLiveRecording]);
 
   // Load WWTC languages
   useEffect(() => {
@@ -1030,6 +1411,14 @@ export default function WatchLive({ accent = '#D35400', isCourtneyBee = false, i
     const fetchTranscript = async () => {
       try {
         const queryId = getQueryVideoId(activeVideo);
+        // 1. Check bundled high-quality static transcripts first
+        const local = getLocalTranscript(queryId) || getLocalTranscript(activeVideo.id);
+        if (local && local.length > 0) {
+          setTranscript(local);
+          setHasRealTranscript(true);
+          return;
+        }
+
         const { data, error } = await supabase
           .from('video_transcripts')
           .select('transcript')
@@ -1040,20 +1429,64 @@ export default function WatchLive({ accent = '#D35400', isCourtneyBee = false, i
           console.warn("Error loading transcript from DB on load:", error.message);
         }
 
-        if (data && data.transcript) {
+        // Check if data.transcript is a generic fallback or real recorded audio
+        const isFallback = data?.transcript?.some((s: any) => 
+          s.text?.includes('agenda and details:') || 
+          s.text?.includes('Looking at the agenda') ||
+          s.text?.includes('Hello and welcome back to the channel') ||
+          s.text?.includes('We have an exciting session lined up')
+        );
+
+        const hasRecordedSegment = data?.transcript?.some((s: any) => s.isRecorded || s.speaker === "Live Audio" || s.speaker === "Live Spoken Audio" || s.speaker === "YouTube Captions");
+
+        if (data && data.transcript && (!isFallback || hasRecordedSegment)) {
           setTranscript(data.transcript);
-        } else {
-          const fallback = generateFallbackTranscript(
-            activeVideo.headline || activeVideo.title || 'the video',
-            activeVideo.description || ''
-          );
-          setTranscript(fallback);
+          setHasRealTranscript(!isFallback || hasRecordedSegment);
+          return;
+        }
+
+        // Automate background YouTube captions fetching
+        const match = activeVideo.videoUrl?.match(/^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/);
+        let ytId = (match && match[2].length === 11) ? match[2] : (activeVideo.id.length === 11 ? activeVideo.id : '');
+        if (!ytId) ytId = activeVideo.id;
+
+        if (ytId) {
+          try {
+            const autoCaptions = await fetchYouTubeCaptions(ytId);
+            if (autoCaptions && autoCaptions.length > 0) {
+              setTranscript(autoCaptions);
+              setHasRealTranscript(true);
+              if (queryId) {
+                supabase
+                  .from('video_transcripts')
+                  .upsert({ video_id: queryId, transcript: autoCaptions, created_at: new Date().toISOString() }, { onConflict: 'video_id' });
+              }
+              return;
+            }
+          } catch {
+            // Silently fall back to filler transcript if YouTube captions are not present
+          }
+        }
+
+        setHasRealTranscript(false);
+        const fallback = generateFallbackTranscript(
+          activeVideo.headline || (activeVideo as any).title || 'the video'
+        );
+        setTranscript(fallback);
+        if (queryId) {
+          supabase
+            .from('video_transcripts')
+            .upsert({ video_id: queryId, transcript: fallback, created_at: new Date().toISOString() }, { onConflict: 'video_id' })
+            .then(({ error: saveErr }) => {
+              if (saveErr) console.warn("Could not save new transcript to DB:", saveErr.message);
+              else console.log(`Saved new transcript to DB for ${queryId}`);
+            });
         }
       } catch (err) {
         console.error("Failed to fetch transcript on video selection:", err);
+        setHasRealTranscript(false);
         const fallback = generateFallbackTranscript(
-          activeVideo.headline || activeVideo.title || 'the video',
-          activeVideo.description || ''
+          activeVideo.headline || (activeVideo as any).title || 'the video'
         );
         setTranscript(fallback);
       }
@@ -1103,6 +1536,11 @@ export default function WatchLive({ accent = '#D35400', isCourtneyBee = false, i
                     clearInterval(interval);
                     interval = null;
                   }
+                  if (event.data === (window as any).YT.PlayerState.ENDED) {
+                    if (isLiveRecording) {
+                      stopLiveRecording();
+                    }
+                  }
                 }
               }
             }
@@ -1130,16 +1568,70 @@ export default function WatchLive({ accent = '#D35400', isCourtneyBee = false, i
     };
   }, [activeVideo]);
 
-  const restorePlayerVolume = () => {
+  const muteMainVideo = () => {
     if (videoRef.current) {
-      videoRef.current.volume = 1.0;
+      videoRef.current.volume = 0;
+      videoRef.current.muted = true;
     }
-    if (ytPlayerRef.current && ytPlayerRef.current.setVolume) {
+    if (ytPlayerRef.current) {
       try {
-        ytPlayerRef.current.setVolume(100);
+        if (ytPlayerRef.current.mute) ytPlayerRef.current.mute();
+        if (ytPlayerRef.current.setVolume) ytPlayerRef.current.setVolume(0);
+      } catch (_) {}
+    }
+    const iframe = document.getElementById('watch-live-yt-iframe') as HTMLIFrameElement;
+    if (iframe && iframe.contentWindow) {
+      try {
+        iframe.contentWindow.postMessage(JSON.stringify({ event: 'command', func: 'mute', args: [] }), '*');
+        iframe.contentWindow.postMessage(JSON.stringify({ event: 'command', func: 'setVolume', args: [0] }), '*');
       } catch (_) {}
     }
   };
+
+  const unmuteMainVideo = () => {
+    const isTranslationActive = (preferredLang && preferredLang !== 'english-united-states') || Boolean(translatedTranscript) || Boolean(translatedInfo);
+    if (isTranslationActive) {
+      muteMainVideo();
+      return;
+    }
+
+    if (videoRef.current) {
+      videoRef.current.volume = 1.0;
+      videoRef.current.muted = false;
+    }
+    if (ytPlayerRef.current) {
+      try {
+        if (ytPlayerRef.current.unMute) ytPlayerRef.current.unMute();
+        if (ytPlayerRef.current.setVolume) ytPlayerRef.current.setVolume(100);
+      } catch (_) {}
+    }
+    const iframe = document.getElementById('watch-live-yt-iframe') as HTMLIFrameElement;
+    if (iframe && iframe.contentWindow) {
+      try {
+        iframe.contentWindow.postMessage(JSON.stringify({ event: 'command', func: 'unMute', args: [] }), '*');
+        iframe.contentWindow.postMessage(JSON.stringify({ event: 'command', func: 'setVolume', args: [100] }), '*');
+      } catch (_) {}
+    }
+  };
+
+  const restorePlayerVolume = () => {
+    const isTranslationActive = (preferredLang && preferredLang !== 'english-united-states') || Boolean(translatedTranscript) || Boolean(translatedInfo);
+    if (isTranslationActive) {
+      muteMainVideo();
+    } else {
+      unmuteMainVideo();
+    }
+  };
+
+  // Enforce video muting immediately whenever translation mode is active
+  useEffect(() => {
+    const isTranslationActive = (preferredLang && preferredLang !== 'english-united-states') || Boolean(translatedTranscript) || Boolean(translatedInfo);
+    if (isTranslationActive) {
+      muteMainVideo();
+    } else {
+      unmuteMainVideo();
+    }
+  }, [preferredLang, translatedTranscript, translatedInfo, activeVideo]);
 
   // Preload translation audio elements
   useEffect(() => {
@@ -1158,21 +1650,16 @@ export default function WatchLive({ accent = '#D35400', isCourtneyBee = false, i
       } catch (_) {}
     });
     audioElementsRef.current = {};
+    playedSegmentsRef.current.clear();
 
     if (!translatedTranscript) return;
 
     // Prepreload and buffer each segment's audio payload
     translatedTranscript.forEach((seg, index) => {
       if (seg.audio) {
-        try {
-          const audio = new Audio(`data:audio/wav;base64,${seg.audio}`);
-          audio.preload = 'auto';
-          // Call load() to tell the browser to download and decode the media stream immediately
-          audio.load();
-          audioElementsRef.current[index] = audio;
-        } catch (e) {
-          console.warn("Failed to preload audio for segment:", index, e);
-        }
+        const audio = new Audio(`data:audio/wav;base64,${seg.audio}`);
+        audio.preload = 'auto';
+        audioElementsRef.current[index] = audio;
       }
     });
 
@@ -1217,15 +1704,8 @@ export default function WatchLive({ accent = '#D35400', isCourtneyBee = false, i
         if (preloadedAudio) {
           playedSegmentsRef.current.add(index);
           
-          // Duck the main video player volume
-          if (videoRef.current) {
-            videoRef.current.volume = 0.15;
-          }
-          if (ytPlayerRef.current && ytPlayerRef.current.setVolume) {
-            try {
-              ytPlayerRef.current.setVolume(15);
-            } catch (_) {}
-          }
+          // Fully mute the main video player while translated voiceover plays
+          muteMainVideo();
           
           if (voiceoverAudioRef.current) {
             voiceoverAudioRef.current.pause();
@@ -1275,23 +1755,39 @@ export default function WatchLive({ accent = '#D35400', isCourtneyBee = false, i
       let activeTranscript = transcript;
       if (!activeTranscript) {
         const queryId = getQueryVideoId(activeVideo);
-        const { data, error } = await supabase
-          .from('video_transcripts')
-          .select('transcript')
-          .eq('video_id', queryId)
-          .maybeSingle();
-
-        if (error) {
-          console.warn("Error loading transcript from DB:", error.message);
-        }
-
-        if (data && data.transcript) {
-          activeTranscript = data.transcript;
+        const local = getLocalTranscript(queryId) || getLocalTranscript(activeVideo.id);
+        if (local && local.length > 0) {
+          activeTranscript = local;
         } else {
-          activeTranscript = generateFallbackTranscript(
-            activeVideo.headline || activeVideo.title || 'the video',
-            activeVideo.description || ''
+          const { data, error } = await supabase
+            .from('video_transcripts')
+            .select('transcript')
+            .eq('video_id', queryId)
+            .maybeSingle();
+
+          if (error) {
+            console.warn("Error loading transcript from DB:", error.message);
+          }
+
+          const isOutdatedFallback = data?.transcript?.some((s: any) => 
+            s.text?.includes('agenda and details:') || s.text?.includes('Looking at the agenda')
           );
+
+          if (data && data.transcript && !isOutdatedFallback) {
+            activeTranscript = data.transcript;
+          } else {
+            activeTranscript = generateFallbackTranscript(
+              activeVideo.headline || (activeVideo as any).title || 'the video'
+            );
+            if (queryId) {
+              supabase
+                .from('video_transcripts')
+                .upsert({ video_id: queryId, transcript: activeTranscript, created_at: new Date().toISOString() }, { onConflict: 'video_id' })
+                .then(({ error: saveErr }) => {
+                  if (saveErr) console.warn("Could not save new transcript to DB:", saveErr.message);
+                });
+            }
+          }
         }
         setTranscript(activeTranscript);
       }
@@ -1314,11 +1810,8 @@ export default function WatchLive({ accent = '#D35400', isCourtneyBee = false, i
         }
       }
 
-      // 3. Translate description text & generate TTS audio representation from the transcript
+      // 3. Translate description text ONLY for screen display (text-to-text, never TTS)
       let translatedDesc = activeVideo.description || '';
-      let audioPayload = null;
-
-      // Translate description text for screen display
       if (activeVideo.description && activeVideo.description.trim()) {
         const descRes = await translateText({
           text: activeVideo.description,
@@ -1337,7 +1830,24 @@ export default function WatchLive({ accent = '#D35400', isCourtneyBee = false, i
         description: translatedDesc
       });
 
-      // 4. Translate Transcript Segments
+      // 4. Generate TTS audio from the TRANSCRIPT (not the description) for the "Listen" button
+      if (supportsTts && fullTranscriptText.trim()) {
+        try {
+          const transcriptAudioRes = await translateText({
+            text: fullTranscriptText,
+            sourceLang: 'english-united-states',
+            targetLang: targetLanguage,
+            serviceCode: 'tts'
+          });
+          if (transcriptAudioRes.audio) {
+            setInfoAudioBase64(transcriptAudioRes.audio);
+          }
+        } catch (ttsErr) {
+          console.warn("Could not generate TTS for full transcript:", ttsErr);
+        }
+      }
+
+      // 5. Translate Transcript Segments with TTS for timed video voiceover
       if (activeTranscript && activeTranscript.length > 0) {
         const translatedSegs = [];
         const segmentMode = supportsTts ? 'tts' : 'ttt';
@@ -1365,6 +1875,11 @@ export default function WatchLive({ accent = '#D35400', isCourtneyBee = false, i
           }
         }
         setTranslatedTranscript(translatedSegs);
+
+        // If full transcript audio wasn't generated, fallback to the first segment's audio for "Listen"
+        if (!infoAudioBase64 && translatedSegs[0]?.audio) {
+          setInfoAudioBase64(translatedSegs[0].audio);
+        }
       }
 
     } catch (err) {
@@ -1385,6 +1900,24 @@ export default function WatchLive({ accent = '#D35400', isCourtneyBee = false, i
     if (isPlayingInfoAudio) {
       infoAudioRef.current.pause();
     } else {
+      // Start video playback when user clicks Listen, ensuring video audio stays completely muted
+      if (videoRef.current) {
+        videoRef.current.muted = true;
+        videoRef.current.volume = 0;
+        videoRef.current.play().catch(() => {});
+      }
+      const iframe = document.getElementById('watch-live-yt-iframe') as HTMLIFrameElement;
+      if (iframe && iframe.contentWindow) {
+        iframe.contentWindow.postMessage(JSON.stringify({ event: 'command', func: 'playVideo', args: [] }), '*');
+        iframe.contentWindow.postMessage(JSON.stringify({ event: 'command', func: 'mute', args: [] }), '*');
+      }
+      if (ytPlayerRef.current) {
+        try {
+          if (ytPlayerRef.current.playVideo) ytPlayerRef.current.playVideo();
+          if (ytPlayerRef.current.mute) ytPlayerRef.current.mute();
+        } catch (_) {}
+      }
+
       infoAudioRef.current.src = `data:audio/wav;base64,${infoAudioBase64}`;
       infoAudioRef.current.play().catch(e => {
         console.error(e);
@@ -2451,8 +2984,14 @@ export default function WatchLive({ accent = '#D35400', isCourtneyBee = false, i
   useEffect(() => {
     if (activeVideo && activeVideo.source !== 'YouTube' && videoRef.current) {
       videoRef.current.load();
-      videoRef.current.muted = false;
-      videoRef.current.volume = 1.0;
+      const isTranslationActive = (preferredLang && preferredLang !== 'english-united-states') || Boolean(translatedTranscript) || Boolean(translatedInfo);
+      if (isTranslationActive) {
+        videoRef.current.muted = true;
+        videoRef.current.volume = 0;
+      } else {
+        videoRef.current.muted = false;
+        videoRef.current.volume = 1.0;
+      }
       videoRef.current.play().catch(err => {
         console.warn("WatchLive: Unmuted playback was prevented, falling back to muted:", err);
         if (videoRef.current) {
@@ -2461,7 +3000,7 @@ export default function WatchLive({ accent = '#D35400', isCourtneyBee = false, i
         }
       });
     }
-  }, [activeVideo]);
+  }, [activeVideo, preferredLang, translatedTranscript, translatedInfo]);
 
   const scroll = (dir: 'left' | 'right') => {
     scrollRef.current?.scrollBy({ left: dir === 'left' ? -360 : 360, behavior: 'smooth' });
@@ -2751,6 +3290,7 @@ export default function WatchLive({ accent = '#D35400', isCourtneyBee = false, i
                       {(() => {
                         const isYouTube = (activeVideo.videoUrl.includes('youtube.com') || activeVideo.videoUrl.includes('youtu.be')) && !activeVideo.videoUrl.endsWith('.mp4');
                         const isDailymotion = (activeVideo.videoUrl.includes('dailymotion.com') || activeVideo.videoUrl.includes('dai.ly')) && !activeVideo.videoUrl.endsWith('.mp4');
+                        const isMutedMode = Boolean(translatedInfo || translatedTranscript || (preferredLang && preferredLang !== 'english-united-states'));
                         
                         if (isYouTube) {
                           const match = activeVideo.videoUrl.match(/^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/);
@@ -2764,7 +3304,7 @@ export default function WatchLive({ accent = '#D35400', isCourtneyBee = false, i
                           return (
                             <iframe
                               id="watch-live-yt-iframe"
-                              src={`https://www.youtube.com/embed/${ytId}?autoplay=1&mute=1&controls=1&enablejsapi=1&rel=0&playsinline=1&origin=${encodeURIComponent(typeof window !== 'undefined' ? window.location.origin : '')}`}
+                              src={`https://www.youtube.com/embed/${ytId}?autoplay=1&mute=${isMutedMode ? 1 : 0}&controls=1&enablejsapi=1&rel=0&playsinline=1&origin=${encodeURIComponent(typeof window !== 'undefined' ? window.location.origin : '')}`}
                               title={activeVideo.headline}
                               frameBorder="0"
                               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
@@ -2777,7 +3317,7 @@ export default function WatchLive({ accent = '#D35400', isCourtneyBee = false, i
                           const dmId = match ? match[1] : activeVideo.id;
                           return (
                             <iframe
-                              src={`https://www.dailymotion.com/embed/video/${dmId}?autoplay=1`}
+                              src={`https://www.dailymotion.com/embed/video/${dmId}?autoplay=1&mute=${isMutedMode ? 1 : 0}`}
                               title={activeVideo.headline}
                               frameBorder="0"
                               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
@@ -2791,6 +3331,7 @@ export default function WatchLive({ accent = '#D35400', isCourtneyBee = false, i
                               key={activeVideo.videoUrl}
                               ref={videoRef}
                               src={activeVideo.videoUrl}
+                              muted={isMutedMode}
                               controls
                               autoPlay
                               playsInline
@@ -2812,6 +3353,11 @@ export default function WatchLive({ accent = '#D35400', isCourtneyBee = false, i
                                 if ((el as any)._timeInt) {
                                   clearInterval((el as any)._timeInt);
                                   (el as any)._timeInt = null;
+                                }
+                              }}
+                              onEnded={() => {
+                                if (isLiveRecording) {
+                                  stopLiveRecording();
                                 }
                               }}
                             >
@@ -2850,8 +3396,8 @@ export default function WatchLive({ accent = '#D35400', isCourtneyBee = false, i
                         </AnimatePresence>
                       </div>
 
-                      {/* Floating Translation button overlayed on the video player */}
-                      <div style={{ position: 'absolute', top: '16px', left: '16px', zIndex: 30, display: 'flex', gap: '8px' }}>
+                      {/* Floating Translation & Live Audio Recording buttons overlayed on the video player */}
+                      <div style={{ position: 'absolute', top: '16px', left: '16px', zIndex: 30, display: 'flex', gap: '8px', alignItems: 'center' }}>
                         <div style={{ position: 'relative' }}>
                           <button
                             onClick={(e) => {
@@ -3046,7 +3592,196 @@ export default function WatchLive({ accent = '#D35400', isCourtneyBee = false, i
                         )}
                       </div>
 
-                      <div className="watch-live-actions-container" style={{ display: 'flex', gap: '10px', alignItems: 'center', flexShrink: 0 }}>
+                      {isLiveRecording && liveTranscriptBanner && (
+                        <div style={{
+                          padding: '8px 16px',
+                          borderRadius: '12px',
+                          background: 'rgba(16, 185, 129, 0.15)',
+                          border: '1px solid rgba(16, 185, 129, 0.4)',
+                          color: '#10b981',
+                          fontSize: '13px',
+                          fontWeight: 600,
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '8px',
+                          marginBottom: '10px'
+                        }}>
+                          <span style={{ animation: 'pulse 1s infinite' }}>🔴</span>
+                          <span>{liveTranscriptBanner}</span>
+                        </div>
+                      )}
+
+                      <div className="watch-live-actions-container" style={{ display: 'flex', gap: '10px', alignItems: 'center', flexShrink: 0, flexWrap: 'wrap' }}>
+                        {/* Advanced Manual Studio Controls (hidden by default for 100% automated hands-free workflow, available with ?studio=true) */}
+                        {typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('studio') === 'true' && (
+                          <>
+                            {/* Live Audio Record & Transcribe Button */}
+                            {(!hasRealTranscript || isLiveRecording || isAdmin) && (
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  e.preventDefault();
+                                  if (isLiveRecording) {
+                                    stopLiveRecording();
+                                  } else {
+                                    startLiveRecording();
+                                  }
+                                }}
+                                style={{
+                                  display: 'inline-flex',
+                                  alignItems: 'center',
+                                  gap: '8px',
+                                  padding: '10px 20px',
+                                  borderRadius: '30px',
+                                  background: isLiveRecording 
+                                    ? 'linear-gradient(135deg, #ff3b30, #cc0000)' 
+                                    : 'linear-gradient(135deg, #10b981, #059669)',
+                                  border: 'none',
+                                  color: '#fff',
+                                  fontSize: '13px',
+                                  fontWeight: 800,
+                                  cursor: 'pointer',
+                                  boxShadow: isLiveRecording ? '0 4px 15px rgba(255,59,48,0.5)' : '0 4px 15px rgba(16,185,129,0.4)',
+                                  transition: 'all 0.3s ease',
+                                  whiteSpace: 'nowrap',
+                                }}
+                                title={isLiveRecording ? "Stop Live Recording" : "Record Live Video Audio & Transcribe"}
+                              >
+                                <div style={{
+                                  width: '10px',
+                                  height: '10px',
+                                  borderRadius: '50%',
+                                  background: '#fff',
+                                  boxShadow: '0 0 8px #fff',
+                                  animation: isLiveRecording ? 'pulse 1s infinite' : 'none'
+                                }} />
+                                <span>{isLiveRecording ? `Recording (${formatSecs(liveRecordingTime)})` : '🎙️ Record Live Audio'}</span>
+                              </button>
+                            )}
+
+                            {/* Live Mic Level Visualizer */}
+                            {isLiveRecording && (
+                              <div style={{
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                gap: '6px',
+                                padding: '6px 14px',
+                                borderRadius: '20px',
+                                background: 'rgba(0,0,0,0.5)',
+                                border: '1px solid rgba(16, 185, 129, 0.5)',
+                                color: '#10b981',
+                                fontSize: '11px',
+                                fontWeight: 700
+                              }}>
+                                <Activity size={13} style={{ animation: 'pulse 0.8s infinite' }} />
+                                <span>Mic: {micAudioLevel}%</span>
+                                <div style={{ width: '50px', height: '6px', background: 'rgba(255,255,255,0.1)', borderRadius: '3px', overflow: 'hidden' }}>
+                                  <div style={{ width: `${micAudioLevel}%`, height: '100%', background: '#10b981', transition: 'width 0.1s linear' }} />
+                                </div>
+                              </div>
+                            )}
+
+                            {/* Import YouTube Captions Button (YouTube videos only) */}
+                            {((activeVideo.videoUrl?.includes('youtube.com') || activeVideo.videoUrl?.includes('youtu.be')) && !activeVideo.videoUrl?.endsWith('.mp4')) && (
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  e.preventDefault();
+                                  handleImportYouTubeCaptions();
+                                }}
+                                disabled={isImportingCaptions}
+                                style={{
+                                  display: 'inline-flex',
+                                  alignItems: 'center',
+                                  gap: '8px',
+                                  padding: '10px 20px',
+                                  borderRadius: '30px',
+                                  background: 'rgba(255,255,255,0.08)',
+                                  border: '1px solid rgba(255,255,255,0.2)',
+                                  color: '#fff',
+                                  fontSize: '13px',
+                                  fontWeight: 800,
+                                  cursor: 'pointer',
+                                  transition: 'all 0.3s ease',
+                                  whiteSpace: 'nowrap',
+                                }}
+                                title="Import timed YouTube auto-captions directly"
+                              >
+                                <Download size={14} />
+                                <span>{isImportingCaptions ? 'Importing...' : '📥 Import Captions'}</span>
+                              </button>
+                            )}
+
+                            {/* Upload Audio File Button */}
+                            <input
+                              type="file"
+                              ref={fileInputRef}
+                              onChange={handleUploadAudioFile}
+                              accept="audio/*"
+                              style={{ display: 'none' }}
+                            />
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                e.preventDefault();
+                                if (fileInputRef.current) fileInputRef.current.click();
+                              }}
+                              disabled={isUploadingAudio}
+                              style={{
+                                display: 'inline-flex',
+                                items: 'center',
+                                gap: '8px',
+                                padding: '10px 20px',
+                                borderRadius: '30px',
+                                background: 'rgba(255,255,255,0.08)',
+                                border: '1px solid rgba(255,255,255,0.2)',
+                                color: '#fff',
+                                fontSize: '13px',
+                                fontWeight: 800,
+                                cursor: 'pointer',
+                                transition: 'all 0.3s ease',
+                                whiteSpace: 'nowrap',
+                              }}
+                              title="Upload an audio file to transcribe"
+                            >
+                              <Upload size={14} />
+                              <span>{isUploadingAudio ? 'Processing Audio...' : '📁 Upload Audio'}</span>
+                            </button>
+
+                            {/* Transcript Studio / Editor Toggle */}
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                e.preventDefault();
+                                if (isEditingTranscript) {
+                                  handleSaveTranscriptEdits();
+                                } else {
+                                  setIsEditingTranscript(true);
+                                }
+                              }}
+                              style={{
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                gap: '8px',
+                                padding: '10px 20px',
+                                borderRadius: '30px',
+                                background: isEditingTranscript ? 'linear-gradient(135deg, #3b82f6, #1d4ed8)' : 'rgba(255,255,255,0.08)',
+                                border: isEditingTranscript ? 'none' : '1px solid rgba(255,255,255,0.2)',
+                                color: '#fff',
+                                fontSize: '13px',
+                                fontWeight: 800,
+                                cursor: 'pointer',
+                                transition: 'all 0.3s ease',
+                                whiteSpace: 'nowrap',
+                              }}
+                              title="Edit timestamps and transcript text"
+                            >
+                              {isEditingTranscript ? <Save size={14} /> : <Edit3 size={14} />}
+                              <span>{isEditingTranscript ? '💾 Save Transcript' : '✏️ Studio Editor'}</span>
+                            </button>
+                          </>
+                        )}
+
                         {/* Fan Zone Toggle Button */}
                         <button
                           onClick={() => setShowFanZone(!showFanZone)}
@@ -3118,6 +3853,106 @@ export default function WatchLive({ accent = '#D35400', isCourtneyBee = false, i
                           </a>
                         )}
                       </div>
+
+                      {/* Interactive Studio Editor Modal/Container when Studio Editor is open */}
+                      {isEditingTranscript && (
+                        <div style={{
+                          marginTop: '16px',
+                          padding: '16px',
+                          background: 'rgba(20, 20, 25, 0.85)',
+                          border: '1px solid rgba(59, 130, 246, 0.4)',
+                          borderRadius: '16px',
+                          backdropFilter: 'blur(10px)',
+                          width: '100%'
+                        }}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+                            <h4 style={{ margin: 0, fontSize: '14px', fontWeight: 800, color: '#60a5fa', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                              <Edit3 size={14} /> Transcript Studio Editor
+                            </h4>
+                            <button
+                              onClick={() => {
+                                setTranscript(prev => [
+                                  ...(prev || []),
+                                  { time: "00:00", seconds: 0, speaker: "Speaker", text: "New segment text", isRecorded: true }
+                                ]);
+                              }}
+                              style={{
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                gap: '4px',
+                                padding: '6px 12px',
+                                borderRadius: '8px',
+                                background: 'rgba(59, 130, 246, 0.2)',
+                                border: '1px solid rgba(59, 130, 246, 0.4)',
+                                color: '#60a5fa',
+                                fontSize: '11px',
+                                fontWeight: 700,
+                                cursor: 'pointer',
+                              }}
+                            >
+                              <Plus size={12} /> Add Segment
+                            </button>
+                          </div>
+
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', maxHeight: '300px', overflowY: 'auto', paddingRight: '4px' }}>
+                            {transcript && transcript.map((seg: any, idx: number) => (
+                              <div key={`edit-seg-${idx}`} style={{ display: 'flex', gap: '8px', alignItems: 'center', background: 'rgba(255,255,255,0.03)', padding: '8px', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.06)' }}>
+                                <input
+                                  type="text"
+                                  value={seg.time || '00:00'}
+                                  onChange={(e) => {
+                                    const val = e.target.value;
+                                    setTranscript(prev => {
+                                      const next = [...prev];
+                                      next[idx] = { ...next[idx], time: val };
+                                      return next;
+                                    });
+                                  }}
+                                  style={{ width: '60px', background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.1)', color: '#fff', fontSize: '11px', padding: '4px 6px', borderRadius: '6px' }}
+                                  placeholder="00:00"
+                                />
+                                <input
+                                  type="text"
+                                  value={seg.speaker || ''}
+                                  onChange={(e) => {
+                                    const val = e.target.value;
+                                    setTranscript(prev => {
+                                      const next = [...prev];
+                                      next[idx] = { ...next[idx], speaker: val };
+                                      return next;
+                                    });
+                                  }}
+                                  style={{ width: '110px', background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.1)', color: accent, fontSize: '11px', fontWeight: 700, padding: '4px 6px', borderRadius: '6px' }}
+                                  placeholder="Speaker"
+                                />
+                                <input
+                                  type="text"
+                                  value={seg.text || ''}
+                                  onChange={(e) => {
+                                    const val = e.target.value;
+                                    setTranscript(prev => {
+                                      const next = [...prev];
+                                      next[idx] = { ...next[idx], text: val };
+                                      return next;
+                                    });
+                                  }}
+                                  style={{ flex: 1, background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.1)', color: '#fff', fontSize: '12px', padding: '4px 8px', borderRadius: '6px' }}
+                                  placeholder="Transcript text..."
+                                />
+                                <button
+                                  onClick={() => {
+                                    setTranscript(prev => prev.filter((_, i) => i !== idx));
+                                  }}
+                                  style={{ background: 'none', border: 'none', color: '#ff3b30', cursor: 'pointer', padding: '4px' }}
+                                  title="Delete segment"
+                                >
+                                  <Trash2 size={14} />
+                                </button>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
                     </div>
                   </div>
 

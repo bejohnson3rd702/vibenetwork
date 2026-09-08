@@ -23,6 +23,7 @@ const TermsOfService = lazy(() => import('./components/TermsOfService'));
 const PrivacyPolicy = lazy(() => import('./components/PrivacyPolicy'));
 const Footer = lazy(() => import('./components/Footer'));
 const FoodTruck = lazy(() => import('./pages/FoodTruck'));
+const TranslationTab = lazy(() => import('./components/admin/TranslationTab').then(m => ({ default: m.TranslationTab })));
 const ResetPassword = lazy(() => import('./pages/ResetPassword'));
 const Community = lazy(() => import('./pages/Community'));
 import { Routes, Route, useLocation } from 'react-router-dom';
@@ -824,6 +825,7 @@ function App() {
               <Route path="/food-truck" element={<FoodTruck />} />
               <Route path="/reset-password" element={<ResetPassword />} />
               <Route path="/admin-login" element={<AdminLogin />} />
+              <Route path="/translation" element={<div style={{ padding: '40px', maxWidth: '1200px', margin: '0 auto', paddingTop: '100px' }}><TranslationTab wlConfig={{ accent: '#ff4d85', name: 'Vibe' }} /></div>} />
             </Routes>
           </Suspense>
           
