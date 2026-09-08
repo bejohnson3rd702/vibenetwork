@@ -329,9 +329,101 @@ async function fetchWithCorsProxy(targetUrl: string): Promise<string> {
 export async function fetchYouTubeCaptions(videoId: string): Promise<YouTubeCaptionSegment[]> {
   if (!videoId) throw new Error("Video ID is required");
 
-  // Attempt timedtext API endpoints
+  // First try Piped and Invidious public API endpoints which return JSON captions directly without CORS
+  const thirdPartyEndpoints = [
+    `https://pipedapi.kavin.rocks/captions/${videoId}`,
+    `https://vid.puffyan.us/api/v1/captions/${videoId}`,
+    `https://invidious.drgns.space/api/v1/captions/${videoId}`
+  ];
+
+  for (const endpoint of thirdPartyEndpoints) {
+    try {
+      const res = await fetch(endpoint);
+      if (res.ok) {
+        const json = await res.json();
+        // Handle Piped captions response format
+        if (json.subtitles && Array.isArray(json.subtitles)) {
+          const enSub = json.subtitles.find((s: any) => s.lang?.startsWith('en')) || json.subtitles[0];
+          if (enSub && enSub.url) {
+            const subRes = await fetch(enSub.url);
+            if (subRes.ok) {
+              const subJson = await subRes.json();
+              if (subJson.events && Array.isArray(subJson.events)) {
+                const segments: YouTubeCaptionSegment[] = [];
+                for (const ev of subJson.events) {
+                  if (ev.segs && ev.tStartMs !== undefined) {
+                    const textStr = ev.segs.map((s: any) => s.utf8).join('').trim();
+                    if (textStr && textStr !== '\n') {
+                      const totalSec = Math.floor(ev.tStartMs / 1000);
+                      const m = Math.floor(totalSec / 60);
+                      const s = Math.floor(totalSec % 60);
+                      const timeStr = `${m < 10 ? '0' : ''}${m}:${s < 10 ? '0' : ''}${s}`;
+                      segments.push({
+                        time: timeStr,
+                        seconds: totalSec,
+                        speaker: "YouTube Captions",
+                        text: textStr,
+                        isRecorded: true,
+                      });
+                    }
+                  }
+                }
+                if (segments.length > 0) return segments;
+              }
+            }
+          }
+        }
+        // Handle Invidious captions response format
+        if (json.captions && Array.isArray(json.captions)) {
+          const enCap = json.captions.find((c: any) => c.languageCode?.startsWith('en')) || json.captions[0];
+          if (enCap && enCap.url) {
+            const rawXml = await fetchWithCorsProxy(`https://vid.puffyan.us${enCap.url}`);
+            const parser = new DOMParser();
+            const xmlDoc = parser.parseFromString(rawXml, "text/xml");
+            const textNodes = xmlDoc.getElementsByTagName("text");
+            if (textNodes && textNodes.length > 0) {
+              const segments: YouTubeCaptionSegment[] = [];
+              for (let i = 0; i < textNodes.length; i++) {
+                const node = textNodes[i];
+                const startSec = parseFloat(node.getAttribute("start") || "0");
+                const rawTextContent = node.textContent || "";
+                const cleanText = rawTextContent
+                  .replace(/&amp;/g, '&')
+                  .replace(/&#39;/g, "'")
+                  .replace(/&quot;/g, '"')
+                  .replace(/&lt;/g, '<')
+                  .replace(/&gt;/g, '>')
+                  .replace(/\n/g, ' ')
+                  .trim();
+                if (cleanText) {
+                  const totalSec = Math.floor(startSec);
+                  const m = Math.floor(totalSec / 60);
+                  const s = Math.floor(totalSec % 60);
+                  const timeStr = `${m < 10 ? '0' : ''}${m}:${s < 10 ? '0' : ''}${s}`;
+                  segments.push({
+                    time: timeStr,
+                    seconds: totalSec,
+                    speaker: "YouTube Captions",
+                    text: cleanText,
+                    isRecorded: true,
+                  });
+                }
+              }
+              if (segments.length > 0) return segments;
+            }
+          }
+        }
+      }
+    } catch {
+      // Continue to YouTube timedtext fallbacks
+    }
+  }
+
+  // Attempt standard YouTube timedtext API endpoints
   const urls = [
     `https://www.youtube.com/api/timedtext?v=${videoId}&lang=en&fmt=json3`,
+    `https://www.youtube.com/api/timedtext?v=${videoId}&lang=en-US&fmt=json3`,
+    `https://www.youtube.com/api/timedtext?v=${videoId}&lang=a.en&fmt=json3`,
     `https://www.youtube.com/api/timedtext?v=${videoId}&lang=en`,
     `https://www.youtube.com/api/timedtext?v=${videoId}&lang=en-US`,
   ];

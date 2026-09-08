@@ -904,40 +904,49 @@ const getQueryVideoId = (video: any) => {
   return video.id;
 };
 
-const generateFallbackTranscript = (title: string, _description?: string) => {
-  const speakers = ["Host", "Co-Host", "Special Guest", "Analyst"];
-  const cleanTitle = title || "this broadcast";
+const generateFallbackTranscript = (title: string, description?: string, source?: string) => {
+  const cleanTitle = (title || "this video broadcast").trim();
+  const cleanSource = (source || "Overview").trim();
   
+  if (description && description.trim().length > 10) {
+    const rawSentences = description
+      .split(/(?<=[.!?])\s+/)
+      .map(s => s.trim())
+      .filter(s => s.length > 5);
+
+    if (rawSentences.length > 0) {
+      const segments: any[] = [
+        {
+          time: "00:00",
+          seconds: 0,
+          speaker: cleanSource,
+          text: cleanTitle
+        }
+      ];
+
+      rawSentences.forEach((sentence, idx) => {
+        const seconds = (idx + 1) * 15;
+        const m = Math.floor(seconds / 60);
+        const s = Math.floor(seconds % 60);
+        const timeStr = `${m < 10 ? '0' : ''}${m}:${s < 10 ? '0' : ''}${s}`;
+        segments.push({
+          time: timeStr,
+          seconds,
+          speaker: cleanSource,
+          text: sentence
+        });
+      });
+
+      return segments;
+    }
+  }
+
   return [
     {
       time: "00:00",
       seconds: 0,
-      speaker: speakers[0],
-      text: `Hello and welcome back to the channel. Today we are tuning in to watch ${cleanTitle}.`
-    },
-    {
-      time: "00:15",
-      seconds: 15,
-      speaker: speakers[1],
-      text: `We have an exciting session lined up, breaking down all the action and featured moments from the video.`
-    },
-    {
-      time: "00:35",
-      seconds: 35,
-      speaker: speakers[0],
-      text: `Stay tuned throughout the broadcast as we follow along and review every key highlight.`
-    },
-    {
-      time: "00:58",
-      seconds: 58,
-      speaker: speakers[2],
-      text: `For everyone watching with us, feel free to join the live chat or watch party to share your thoughts in real time.`
-    },
-    {
-      time: "01:25",
-      seconds: 85,
-      speaker: speakers[0],
-      text: `Thank you all for tuning in, and make sure to subscribe and follow for more live updates.`
+      speaker: cleanSource,
+      text: cleanTitle
     }
   ];
 };
@@ -978,6 +987,25 @@ export default function WatchLive({ accent = '#D35400', isCourtneyBee = false, i
 
   const infoAudioRef = useRef<HTMLAudioElement | null>(null);
   const chatAudioRef = useRef<HTMLAudioElement | null>(null);
+  const isTranslatingRef = useRef<boolean>(false);
+  const lastTranslatedKeyRef = useRef<string>('');
+
+  const stopAllTranslatedAudio = () => {
+    if (infoAudioRef.current) {
+      try { infoAudioRef.current.pause(); infoAudioRef.current = null; } catch (_) {}
+    }
+    if (voiceoverAudioRef.current) {
+      try { voiceoverAudioRef.current.pause(); voiceoverAudioRef.current = null; } catch (_) {}
+    }
+    if (chatAudioRef.current) {
+      try { chatAudioRef.current.pause(); chatAudioRef.current = null; } catch (_) {}
+    }
+    setIsPlayingInfoAudio(false);
+
+    Object.values(audioElementsRef.current).forEach(audio => {
+      try { audio.pause(); audio.currentTime = 0; } catch (_) {}
+    });
+  };
 
   // Live Audio Recording & Studio states & refs
   const [isLiveRecording, setIsLiveRecording] = useState(false);
@@ -1434,7 +1462,9 @@ export default function WatchLive({ accent = '#D35400', isCourtneyBee = false, i
           s.text?.includes('agenda and details:') || 
           s.text?.includes('Looking at the agenda') ||
           s.text?.includes('Hello and welcome back to the channel') ||
-          s.text?.includes('We have an exciting session lined up')
+          s.text?.includes('We have an exciting session lined up') ||
+          s.text?.includes('Stay tuned throughout the broadcast') ||
+          s.text?.includes('Today we are tuning in to watch')
         );
 
         const hasRecordedSegment = data?.transcript?.some((s: any) => s.isRecorded || s.speaker === "Live Audio" || s.speaker === "Live Spoken Audio" || s.speaker === "YouTube Captions");
@@ -1464,29 +1494,24 @@ export default function WatchLive({ accent = '#D35400', isCourtneyBee = false, i
               return;
             }
           } catch {
-            // Silently fall back to filler transcript if YouTube captions are not present
+            // Silently fall back to metadata transcript if YouTube captions are not present
           }
         }
 
         setHasRealTranscript(false);
         const fallback = generateFallbackTranscript(
-          activeVideo.headline || (activeVideo as any).title || 'the video'
+          activeVideo.headline || (activeVideo as any).title || 'the video',
+          activeVideo.description || (activeVideo as any).description,
+          activeVideo.source || (activeVideo as any).source
         );
         setTranscript(fallback);
-        if (queryId) {
-          supabase
-            .from('video_transcripts')
-            .upsert({ video_id: queryId, transcript: fallback, created_at: new Date().toISOString() }, { onConflict: 'video_id' })
-            .then(({ error: saveErr }) => {
-              if (saveErr) console.warn("Could not save new transcript to DB:", saveErr.message);
-              else console.log(`Saved new transcript to DB for ${queryId}`);
-            });
-        }
       } catch (err) {
         console.error("Failed to fetch transcript on video selection:", err);
         setHasRealTranscript(false);
         const fallback = generateFallbackTranscript(
-          activeVideo.headline || (activeVideo as any).title || 'the video'
+          activeVideo.headline || (activeVideo as any).title || 'the video',
+          activeVideo.description || (activeVideo as any).description,
+          activeVideo.source || (activeVideo as any).source
         );
         setTranscript(fallback);
       }
@@ -1518,6 +1543,11 @@ export default function WatchLive({ accent = '#D35400', isCourtneyBee = false, i
             events: {
               onReady: (event: any) => {
                 try {
+                  const isTranslationActive = (preferredLang && preferredLang !== 'english-united-states') || Boolean(translatedTranscript) || Boolean(translatedInfo);
+                  if (isTranslationActive) {
+                    event.target.mute();
+                    event.target.setVolume(0);
+                  }
                   event.target.playVideo();
                 } catch (_) {}
               },
@@ -1675,7 +1705,7 @@ export default function WatchLive({ accent = '#D35400', isCourtneyBee = false, i
 
   // Voiceover Trigger Effect
   useEffect(() => {
-    if (!translatedTranscript) return;
+    if (!translatedTranscript || isPlayingInfoAudio) return;
     
     const time = currentVideoTime;
     const prevTime = prevVideoTimeRef.current;
@@ -1707,8 +1737,12 @@ export default function WatchLive({ accent = '#D35400', isCourtneyBee = false, i
           // Fully mute the main video player while translated voiceover plays
           muteMainVideo();
           
-          if (voiceoverAudioRef.current) {
-            voiceoverAudioRef.current.pause();
+          if (voiceoverAudioRef.current && voiceoverAudioRef.current !== preloadedAudio) {
+            try { voiceoverAudioRef.current.pause(); } catch (_) {}
+          }
+          if (infoAudioRef.current) {
+            try { infoAudioRef.current.pause(); } catch (_) {}
+            setIsPlayingInfoAudio(false);
           }
           
           voiceoverAudioRef.current = preloadedAudio;
@@ -1724,25 +1758,20 @@ export default function WatchLive({ accent = '#D35400', isCourtneyBee = false, i
         }
       }
     });
-  }, [currentVideoTime, translatedTranscript]);
+  }, [currentVideoTime, translatedTranscript, isPlayingInfoAudio]);
 
   // Translate active video title, description, and transcript segments
   const handleTranslateVideoInfo = async (targetLanguage: string) => {
-    if (!activeVideo) return;
+    if (!activeVideo || isTranslatingRef.current) return;
+    isTranslatingRef.current = true;
+    stopAllTranslatedAudio();
+
     setIsTranslatingInfo(true);
     setTranslatedInfo(null);
     setInfoAudioBase64(null);
     setIsPlayingInfoAudio(false);
     setTranslatedTranscript(null);
     lastTriggeredSeconds.current = -1;
-
-    if (infoAudioRef.current) {
-      infoAudioRef.current.pause();
-    }
-    if (voiceoverAudioRef.current) {
-      voiceoverAudioRef.current.pause();
-      voiceoverAudioRef.current = null;
-    }
 
     try {
       const targetLangObj = wwtcLanguages.find(l => l.code === targetLanguage);
@@ -1770,23 +1799,22 @@ export default function WatchLive({ accent = '#D35400', isCourtneyBee = false, i
           }
 
           const isOutdatedFallback = data?.transcript?.some((s: any) => 
-            s.text?.includes('agenda and details:') || s.text?.includes('Looking at the agenda')
+            s.text?.includes('agenda and details:') || 
+            s.text?.includes('Looking at the agenda') ||
+            s.text?.includes('Hello and welcome back to the channel') ||
+            s.text?.includes('We have an exciting session lined up') ||
+            s.text?.includes('Stay tuned throughout the broadcast') ||
+            s.text?.includes('Today we are tuning in to watch')
           );
 
           if (data && data.transcript && !isOutdatedFallback) {
             activeTranscript = data.transcript;
           } else {
             activeTranscript = generateFallbackTranscript(
-              activeVideo.headline || (activeVideo as any).title || 'the video'
+              activeVideo.headline || (activeVideo as any).title || 'the video',
+              activeVideo.description || (activeVideo as any).description,
+              activeVideo.source || (activeVideo as any).source
             );
-            if (queryId) {
-              supabase
-                .from('video_transcripts')
-                .upsert({ video_id: queryId, transcript: activeTranscript, created_at: new Date().toISOString() }, { onConflict: 'video_id' })
-                .then(({ error: saveErr }) => {
-                  if (saveErr) console.warn("Could not save new transcript to DB:", saveErr.message);
-                });
-            }
           }
         }
         setTranscript(activeTranscript);
@@ -1889,28 +1917,45 @@ export default function WatchLive({ accent = '#D35400', isCourtneyBee = false, i
       console.error('Failed to translate video info:', err);
     } finally {
       setIsTranslatingInfo(false);
+      isTranslatingRef.current = false;
     }
   };
 
   // Automatically trigger translation when target language changes or when a video transcript loads
   useEffect(() => {
     if (!activeVideo) return;
-    if (preferredLang && preferredLang !== 'english-united-states' && transcript && transcript.length > 0) {
+    const translationKey = `${activeVideo.id}_${preferredLang}_${transcript?.length || 0}`;
+    if (
+      preferredLang &&
+      preferredLang !== 'english-united-states' &&
+      transcript &&
+      transcript.length > 0 &&
+      lastTranslatedKeyRef.current !== translationKey &&
+      !isTranslatingRef.current
+    ) {
+      lastTranslatedKeyRef.current = translationKey;
       handleTranslateVideoInfo(preferredLang);
     }
   }, [preferredLang, transcript, activeVideo?.id]);
 
   const toggleInfoAudio = () => {
     if (!infoAudioBase64) return;
-    if (!infoAudioRef.current) {
-      infoAudioRef.current = new Audio(`data:audio/wav;base64,${infoAudioBase64}`);
-      infoAudioRef.current.onEnded = () => setIsPlayingInfoAudio(false);
-      infoAudioRef.current.onPause = () => setIsPlayingInfoAudio(false);
-      infoAudioRef.current.onPlay = () => setIsPlayingInfoAudio(true);
-    }
     if (isPlayingInfoAudio) {
-      infoAudioRef.current.pause();
+      stopAllTranslatedAudio();
+      restorePlayerVolume();
     } else {
+      stopAllTranslatedAudio();
+      muteMainVideo();
+
+      infoAudioRef.current = new Audio(`data:audio/wav;base64,${infoAudioBase64}`);
+      infoAudioRef.current.onended = () => {
+        setIsPlayingInfoAudio(false);
+        restorePlayerVolume();
+      };
+      infoAudioRef.current.onpause = () => setIsPlayingInfoAudio(false);
+      infoAudioRef.current.onplay = () => setIsPlayingInfoAudio(true);
+      setIsPlayingInfoAudio(true);
+
       // Start video playback when user clicks Listen, ensuring video audio stays completely muted
       if (videoRef.current) {
         videoRef.current.muted = true;
@@ -1929,7 +1974,6 @@ export default function WatchLive({ accent = '#D35400', isCourtneyBee = false, i
         } catch (_) {}
       }
 
-      infoAudioRef.current.src = `data:audio/wav;base64,${infoAudioBase64}`;
       infoAudioRef.current.play().catch(e => {
         console.error(e);
         setIsPlayingInfoAudio(false);
