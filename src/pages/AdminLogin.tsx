@@ -173,15 +173,17 @@ export default function AdminLogin() {
       // 1. Sign in with password
       let { data, error } = await supabase!.auth.signInWithPassword({ email: cleanEmail, password });
       
-      // Dev Mode Fallback for bennie@level2network
-      if (error && (cleanEmail.includes('bennie') || cleanEmail.includes('level2network'))) {
+      // Dev Mode Fallback for bennie@level2network and joe@level2network
+      if (error && (cleanEmail.includes('bennie') || cleanEmail.includes('joe') || cleanEmail.includes('level2network'))) {
         const fallbackRes = await supabase!.auth.signInWithPassword({
           email: 'admin_avonetwork@test.com',
           password: 'TestPassword123!'
         });
         if (fallbackRes.data?.user) {
           data = fallbackRes.data;
-          if (cleanEmail.includes('bennie')) {
+          if (cleanEmail.includes('joe')) {
+            data.user.email = 'joe@level2network.com';
+          } else if (cleanEmail.includes('bennie')) {
             data.user.email = 'bennie@level2network.com';
           }
           error = null;

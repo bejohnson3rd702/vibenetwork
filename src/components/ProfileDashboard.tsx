@@ -167,16 +167,17 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
   const [showBgSettingsModal, setShowBgSettingsModal] = useState(false);
   const targetProfileId = profile?.id || rawCreatorId || user?.id; // Determine which profile to load
 
+  const isBennieUser = Boolean(user?.email?.toLowerCase().includes('bennie'));
+  const isJoeUser = Boolean(user?.email?.toLowerCase().includes('joe'));
+
   const isOwnProfile = Boolean(
     user && (
       targetProfileId === user.id ||
+      (isBennieUser && (targetProfileId === '8c409557-a48c-41d4-8133-9d9788aebe0d' || !paramCreatorId)) ||
+      (isJoeUser && (targetProfileId === 'db7af833-2f7a-40b0-ad46-57ff8fbd4744' || !paramCreatorId)) ||
       isCourtney ||
       targetProfileId === wlConfig?.id ||
-      wlConfig?.owner_id === user.id ||
-      user.user_metadata?.role === 'admin' ||
-      user.email?.toLowerCase().includes('bennie') ||
-      user.email?.toLowerCase().includes('joe') ||
-      user.email?.toLowerCase().includes('admin')
+      wlConfig?.owner_id === user.id
     )
   );
 
@@ -1530,11 +1531,10 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
       const isOwn = Boolean(
         user && (
           loadedProfileId === user.id ||
+          (isBennieUser && loadedProfileId === '8c409557-a48c-41d4-8133-9d9788aebe0d') ||
+          (isJoeUser && loadedProfileId === 'db7af833-2f7a-40b0-ad46-57ff8fbd4744') ||
           targetProfile.whitelabel_id === user.id ||
-          wlConfig?.owner_id === user.id ||
-          user.user_metadata?.role === 'admin' ||
-          user.email?.toLowerCase().includes('bennie') ||
-          user.email?.toLowerCase().includes('admin')
+          wlConfig?.owner_id === user.id
         )
       );
       setViewMode(isOwn ? 'edit' : 'public');
@@ -1697,11 +1697,7 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
             const isMasterPlatform = !wlConfig || wlConfig.id === 'master' || wlConfig.domain === 'vibenetwork.tv' || wlConfig.domain === 'vibenetwork.com' || wlConfig.domain?.includes('vercel.app');
             if (wlConfig?.domain && !isMasterPlatform) prodQuery = prodQuery.eq('creator.whitelabel_id', wlConfig.id);
           } else {
-            if (user?.id && user.id !== loadedProfileId) {
-              prodQuery = prodQuery.or(`creator_id.eq.${loadedProfileId},creator_id.eq.${user.id}`);
-            } else {
-              prodQuery = prodQuery.eq('creator_id', loadedProfileId);
-            }
+            prodQuery = prodQuery.eq('creator_id', loadedProfileId);
           }
           const productsPromise = prodQuery.order('created_at', { ascending: false });
 
