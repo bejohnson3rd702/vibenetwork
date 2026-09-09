@@ -2217,7 +2217,7 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
     setHomepageImageUrl(courtneyFallback.homepage_image_url);
   }
 
-  if (loading && !profile) return <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-primary)' }}>Loading Profile...</div>;
+  if (loading && !profile) return <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-primary)' }}>Loading Channel...</div>;
   const isGuestInvite = new URLSearchParams(location.search).get('guest_invite') === 'true';
   if (!profile && !isGuestInvite && !isNetworkLevel && !isCourtney) return (
     <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', color: 'var(--text-primary)', background: 'var(--bg-color)' }}>
@@ -4034,7 +4034,7 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
   if (loading || !profile) {
     return (
       <div style={{ paddingTop: '100px', minHeight: '100vh', background: 'var(--bg-color)', color: 'var(--text-muted)', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-        <p>Loading Profile Network Data...</p>
+        <p>Loading Channel Data...</p>
       </div>
     );
   }

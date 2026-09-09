@@ -242,7 +242,7 @@ export default function WhiteLabelHome({ wlConfig, categories, user, activeVideo
        
        {/* Full Profile Dashboard Integrated at Network Level */}
        <div style={{ width: '100%', position: 'relative', zIndex: 10 }}>
-          <Suspense fallback={<div style={{ textAlign: 'center', padding: '100px', color: 'var(--text-muted)' }}>Loading network profile...</div>}>
+          <Suspense fallback={<div style={{ textAlign: 'center', padding: '100px', color: 'var(--text-muted)' }}>Loading channel...</div>}>
             <ProfileDashboard user={user} creatorIdOverride={wlConfig.owner_id} isNetworkLevel={true} />
           </Suspense>
        </div>
