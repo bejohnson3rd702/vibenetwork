@@ -1396,7 +1396,21 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
                            wlConfig?.domain?.includes('courtney')
                          );
       
-      let targetProfile = data;
+       let targetProfile = data;
+      if (user && !paramCreatorId && !isNetworkLevel) {
+        const isBennieUser = user.email?.toLowerCase().includes('bennie');
+        const isJoeUser = user.email?.toLowerCase().includes('joe');
+        targetProfile = {
+          id: isBennieUser ? '8c409557-a48c-41d4-8133-9d9788aebe0d' : (isJoeUser ? 'db7af833-2f7a-40b0-ad46-57ff8fbd4744' : user.id),
+          username: isBennieUser ? 'Rev Bennie Johnson (BJ)' : (isJoeUser ? 'Joe VIBE' : (user.user_metadata?.full_name || user.user_metadata?.display_name || user.user_metadata?.username || user.email?.split('@')[0] || 'Member')),
+          full_name: isBennieUser ? 'Rev Bennie Johnson' : (isJoeUser ? 'Joe VIBE' : (user.user_metadata?.full_name || user.user_metadata?.display_name || user.email?.split('@')[0] || 'Member')),
+          bio: isJoeUser ? 'Welcome to my official Joe VIBE channel.' : (wlConfig?.theme?.defaultBio || 'Welcome to the official Christian Revival Network stream.'),
+          avatar_url: isBennieUser ? 'https://fimzetmvrmbmdggvqzpr.supabase.co/storage/v1/object/public/images/whitelabel/kple_logo_1782369339776.png' : (isJoeUser ? 'https://fimzetmvrmbmdggvqzpr.supabase.co/storage/v1/object/public/images/db7af833-2f7a-40b0-ad46-57ff8fbd4744/0.11923008118112288.jpeg' : (user.user_metadata?.avatar_url || '')),
+          homepage_image_url: '',
+          sub_price: 4.99,
+          whitelabel_id: (isBennieUser || isJoeUser) ? '33742e2f-430b-4c2d-9cba-42507891ef02' : (wlConfig?.id || null)
+        };
+      }
       if (!targetProfile) {
         if (isCourtney) {
           targetProfile = {
@@ -1467,19 +1481,6 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
             homepage_image_url: wlConfig?.heroImage || wlConfig?.theme?.heroImage || '/n2n/comedy_club_bg.jpg',
             sub_price: 4.99,
             whitelabel_id: wlConfig?.id
-          };
-        } else if (user && (targetProfileId === user.id || !paramCreatorId)) {
-          const isBennieUser = user.email?.toLowerCase().includes('bennie');
-          const isJoeUser = user.email?.toLowerCase().includes('joe');
-          targetProfile = {
-            id: isBennieUser ? '8c409557-a48c-41d4-8133-9d9788aebe0d' : (isJoeUser ? 'db7af833-2f7a-40b0-ad46-57ff8fbd4744' : user.id),
-            username: isBennieUser ? 'Rev Bennie Johnson (BJ)' : (isJoeUser ? 'Joe VIBE' : (user.user_metadata?.full_name || user.user_metadata?.display_name || user.user_metadata?.username || user.email?.split('@')[0] || 'Member')),
-            full_name: isBennieUser ? 'Rev Bennie Johnson' : (isJoeUser ? 'Joe VIBE' : (user.user_metadata?.full_name || user.user_metadata?.display_name || user.email?.split('@')[0] || 'Member')),
-            bio: isJoeUser ? 'Welcome to my official Joe VIBE channel.' : (wlConfig?.theme?.defaultBio || 'Welcome to the official Christian Revival Network stream.'),
-            avatar_url: isBennieUser ? 'https://fimzetmvrmbmdggvqzpr.supabase.co/storage/v1/object/public/images/whitelabel/kple_logo_1782369339776.png' : (isJoeUser ? 'https://fimzetmvrmbmdggvqzpr.supabase.co/storage/v1/object/public/images/db7af833-2f7a-40b0-ad46-57ff8fbd4744/0.11923008118112288.jpeg' : (user.user_metadata?.avatar_url || '')),
-            homepage_image_url: '',
-            sub_price: 4.99,
-            whitelabel_id: (isBennieUser || isJoeUser) ? '33742e2f-430b-4c2d-9cba-42507891ef02' : (wlConfig?.id || null)
           };
         } else if (targetProfileId) {
           try {
