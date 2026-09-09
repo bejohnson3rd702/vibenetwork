@@ -927,36 +927,17 @@ const getQueryVideoId = (video: any) => {
   return video.id;
 };
 
-const generateFallbackTranscript = (title?: string, description?: string, source?: string) => {
-  const segments: any[] = [];
-  if (title && title.trim()) {
-    segments.push({
+const generateFallbackTranscript = (title?: string, _description?: string, source?: string) => {
+  return [
+    {
       time: "00:00",
       seconds: 0,
-      speaker: source || "Broadcast",
-      text: title.trim(),
-      isRecorded: true
-    });
-  }
-  if (description && description.trim()) {
-    segments.push({
-      time: "00:06",
-      seconds: 6,
-      speaker: source || "Narrator",
-      text: description.trim(),
-      isRecorded: true
-    });
-  }
-  if (segments.length === 0) {
-    segments.push({
-      time: "00:00",
-      seconds: 0,
-      speaker: "Live Audio",
-      text: "Live broadcast streaming on the network.",
-      isRecorded: true
-    });
-  }
-  return segments;
+      speaker: source || "Live Audio",
+      text: title && title.trim() ? title.trim() : "Live Broadcast",
+      isRecorded: false,
+      isPlaceholder: true
+    }
+  ];
 };
 
 export default function WatchLive({ accent = '#D35400', isCourtneyBee = false, isOlympian = false, isMf = false, isB2K = false, isVibe = false, isKple = false, isVibe100 = false, isBonaire = false, tenantId = '' }: { accent?: string; isCourtneyBee?: boolean; isOlympian?: boolean; isMf?: boolean; isB2K?: boolean; isVibe?: boolean; isKple?: boolean; isVibe100?: boolean; isBonaire?: boolean; tenantId?: string }) {
@@ -1472,14 +1453,21 @@ export default function WatchLive({ accent = '#D35400', isCourtneyBee = false, i
           s.text?.includes('Hello and welcome back to the channel') ||
           s.text?.includes('We have an exciting session lined up') ||
           s.text?.includes('Stay tuned throughout the broadcast') ||
-          s.text?.includes('Today we are tuning in to watch')
+          s.text?.includes('Today we are tuning in to watch') ||
+          s.isPlaceholder ||
+          s.text?.includes('#') ||
+          (activeVideo.description && activeVideo.description.length > 30 && s.text?.trim() === activeVideo.description.trim())
         );
 
-        const hasRecordedSegment = data?.transcript?.some((s: any) => s.isRecorded || s.speaker === "Live Audio" || s.speaker === "Live Spoken Audio" || s.speaker === "YouTube Captions");
+        const hasRealDialogue = Boolean(
+          data?.transcript && 
+          data.transcript.length > 1 && 
+          data.transcript.some((s: any) => s.isRecorded && !s.isPlaceholder && !s.text?.includes('#') && s.text?.trim() !== activeVideo.description?.trim())
+        );
 
-        if (data && data.transcript && (!isFallback || hasRecordedSegment)) {
+        if (data && data.transcript && !isFallback && hasRealDialogue) {
           setTranscript(data.transcript);
-          setHasRealTranscript(!isFallback || hasRecordedSegment);
+          setHasRealTranscript(true);
           return;
         }
 
@@ -1845,7 +1833,11 @@ export default function WatchLive({ accent = '#D35400', isCourtneyBee = false, i
         setTranscript(activeTranscript);
       }
 
-      const hasSpokenAudio = activeTranscript && activeTranscript.some(seg => !seg.isPlaceholder && !seg.text?.startsWith('[No spoken audio'));
+      const hasSpokenAudio = Boolean(
+        activeTranscript &&
+        activeTranscript.length > 0 &&
+        activeTranscript.some(seg => seg.isRecorded && !seg.isPlaceholder && !seg.text?.startsWith('[No spoken audio') && !seg.text?.includes('#') && seg.text?.trim() !== activeVideo.description?.trim())
+      );
 
       const fullTranscriptText = (hasSpokenAudio && activeTranscript && activeTranscript.length > 0)
         ? activeTranscript.map(seg => seg.text).join(' ')

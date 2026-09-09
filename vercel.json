@@ -25,6 +25,10 @@
       "destination": "https://www.youtube.com/feeds/videos.xml?channel_id=:channelId"
     },
     {
+      "source": "/api/yt-transcript",
+      "destination": "/api/yt-transcript"
+    },
+    {
       "source": "/(.*)",
       "destination": "/index.html"
     }
