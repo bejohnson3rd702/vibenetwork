@@ -44,12 +44,11 @@ function stripeStagingPlugin(env: Record<string, string>) {
             const successUrl = returnUrl ? `${returnUrl}${returnUrl.includes('?') ? '&' : '?'}stripe_success=true` : `${origin}/profile?stripe_success=true`;
             const cancelUrl = returnUrl ? `${returnUrl}${returnUrl.includes('?') ? '&' : '?'}stripe_canceled=true` : `${origin}/profile?stripe_canceled=true`;
 
-            const requestedUiMode = body.uiMode || 'hosted';
-            const uiMode = (requestedUiMode === 'embedded' || requestedUiMode === 'embedded_page') ? 'embedded_page' : 'hosted';
-
+            const uiMode = body.uiMode || 'embedded_page';
             const formData = new URLSearchParams({
               'mode': 'payment',
               'ui_mode': uiMode,
+              'managed_payments[enabled]': 'false',
               'line_items[0][price_data][currency]': 'usd',
               'line_items[0][price_data][product_data][name]': String(productTitle || 'Vibe Store Purchase'),
               'line_items[0][price_data][product_data][tax_code]': 'txcd_10000000',
