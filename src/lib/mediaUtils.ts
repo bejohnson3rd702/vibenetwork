@@ -35,9 +35,10 @@ export async function getSafeUserMedia(
           );
           if (physicalAudio?.deviceId) {
             constraints.audio = {
-              deviceId: { exact: physicalAudio.deviceId },
+              deviceId: { ideal: physicalAudio.deviceId },
               echoCancellation: true,
               noiseSuppression: true,
+              autoGainControl: true,
             };
           }
         }
@@ -50,7 +51,6 @@ export async function getSafeUserMedia(
           if (physicalVideo?.deviceId) {
             constraints.video = {
               deviceId: { exact: physicalVideo.deviceId },
-              facingMode: 'user',
             };
           }
         }
@@ -60,5 +60,22 @@ export async function getSafeUserMedia(
     console.warn('[mediaUtils] Failed to filter virtual media devices:', e);
   }
 
-  return navigator.mediaDevices.getUserMedia(constraints);
+  try {
+    return await navigator.mediaDevices.getUserMedia(constraints);
+  } catch (err: any) {
+    // If specific device constraints fail, fallback to default hardware constraints
+    console.warn('[mediaUtils] Specific constraints failed, retrying with default media constraints:', err);
+    try {
+      return await navigator.mediaDevices.getUserMedia({
+        video: requestVideo ? { facingMode: 'user' } : false,
+        audio: requestAudio ? { echoCancellation: true, noiseSuppression: true, autoGainControl: true } : false,
+      });
+    } catch (fallbackErr: any) {
+      // Last resort: basic true/false constraints
+      return await navigator.mediaDevices.getUserMedia({
+        video: requestVideo ? true : false,
+        audio: requestAudio ? true : false,
+      });
+    }
+  }
 }

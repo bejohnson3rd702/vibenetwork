@@ -184,6 +184,7 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
   
   // View Modes (public vs edit)
   const [viewMode, setViewMode] = useState<'public' | 'edit'>('public');
+  const initialViewModeSet = useRef(false);
 
   // Editor States
   const [bio, setBio] = useState('');
@@ -285,6 +286,18 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
   const [aiPromptTarget, setAiPromptTarget] = useState<'bio' | 'post' | 'refund_policy' | 'product_title' | 'product_desc'>('post');
   const [aiCustomPrompt, setAiCustomPrompt] = useState('');
   const [aiGenerating, setAiGenerating] = useState(false);
+
+  // Saved Confirmation Graphic Popup
+  const [savedGraphicPopup, setSavedGraphicPopup] = useState<{ show: boolean; title: string; subtitle: string; tag?: string } | null>(null);
+
+  useEffect(() => {
+    if (savedGraphicPopup?.show) {
+      const timer = setTimeout(() => {
+        setSavedGraphicPopup(null);
+      }, 3500);
+      return () => clearTimeout(timer);
+    }
+  }, [savedGraphicPopup]);
 
   // Native WhatsApp In-App Chat Drawer State
   const [showWhatsAppDrawer, setShowWhatsAppDrawer] = useState(false);
@@ -838,6 +851,7 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
   const streaming = useStreaming({
     profileId: targetProfileId,
     isOwnProfile: !!isOwnProfile,
+    viewMode,
     user,
     supabase,
     channelRef,
@@ -848,7 +862,7 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
     liveCountdown,
     streamSource, setStreamSource,
     liveEmbedUrl, setLiveEmbedUrl,
-    cameraStatus, cameraDebugData, localStream, videoRef,
+    cameraStatus, setCameraStatus, cameraDebugData, localStream, videoRef, isCameraRequested,
     guests, setGuests,
     localGuestData, setLocalGuestData,
     guestSetup, setGuestSetup,
@@ -1535,7 +1549,10 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
           (isJoeUser && loadedProfileId === 'db7af833-2f7a-40b0-ad46-57ff8fbd4744')
         )
       );
-      setViewMode(isOwn ? 'edit' : 'public');
+      if (!initialViewModeSet.current) {
+        initialViewModeSet.current = true;
+        setViewMode('public');
+      }
 
       let rawBio = targetProfile.bio !== null && targetProfile.bio !== undefined ? targetProfile.bio : (wlConfig?.theme?.defaultBio || 'Welcome to my official channel!');
       if (typeof rawBio === 'string' && (rawBio.includes('schemaname') || rawBio.includes('policyname'))) {
@@ -2303,13 +2320,19 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
     }
   };
 
-  const saveProfile = async () => {
+  const saveProfile = async (bioOverride?: string) => {
     setSaving(true);
     
-    const newName = profile?.username || profile?.full_name || '';
+    const bioToSave = bioOverride !== undefined ? bioOverride : bio;
+    const newName = (profile?.username ?? profile?.full_name ?? '').trim();
+    if (!newName) {
+      setSaving(false);
+      toast.error('Profile name cannot be empty');
+      return;
+    }
     const updatePayload: any = {
       username: newName,
-      bio,
+      bio: bioToSave,
       avatar_url: avatarUrl,
       homepage_image_url: homepageImageUrl,
     };
@@ -2362,7 +2385,7 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
         if (retryError && (retryError.message.includes('column') || retryError.message.includes('schema cache'))) {
           const minimalPayload: any = {
             ...(newName && { username: newName }),
-            ...(bio !== undefined && { bio }),
+            ...(bioToSave !== undefined && { bio: bioToSave }),
             ...(avatarUrl && { avatar_url: avatarUrl }),
           };
           const { error: minErr } = await supabase!.from('profiles').update(minimalPayload).eq('id', targetIdToUpdate);
@@ -2371,7 +2394,7 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
           // Stage 3: Absolute minimal (bio & avatar_url)
           if (minErr && (minErr.message.includes('column') || minErr.message.includes('schema cache'))) {
             const bioAvatarOnly: any = {
-              ...(bio !== undefined && { bio }),
+              ...(bioToSave !== undefined && { bio: bioToSave }),
               ...(avatarUrl && { avatar_url: avatarUrl }),
             };
             const { error: finalErr } = await supabase!.from('profiles').update(bioAvatarOnly).eq('id', targetIdToUpdate);
@@ -2396,10 +2419,10 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
     if (!targetWlId || targetWlId === 'courtney-bee-tenant-id') {
       targetWlId = 'cb000000-c08f-4260-8540-a0cc8bed4e11';
     }
-    if (targetWlId) {
+    if (targetWlId && isUuid(targetWlId)) {
       const updatedTheme = {
         ...(wlConfig?.theme || {}),
-        heroCopy: bio,
+        heroCopy: bioToSave,
         ...(homepageImageUrl && { heroImage: homepageImageUrl }),
         flipbook_images: flipbookImages,
         refund_policy: refundPolicy,
@@ -2413,11 +2436,18 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
       if (themeError) {
         console.warn("Failed to sync branding settings to whitelabel config:", themeError.message);
         wlError = themeError;
-      } else if (wlConfig) {
-        if (newName) wlConfig.name = newName;
-        wlConfig.theme = updatedTheme;
-        if (bio !== undefined) wlConfig.heroCopy = bio;
       }
+    }
+    if (wlConfig) {
+      if (newName) wlConfig.name = newName;
+      wlConfig.theme = {
+        ...(wlConfig?.theme || {}),
+        heroCopy: bioToSave,
+        ...(homepageImageUrl && { heroImage: homepageImageUrl }),
+        flipbook_images: flipbookImages,
+        refund_policy: refundPolicy,
+      };
+      if (bioToSave !== undefined) wlConfig.heroCopy = bioToSave;
     }
 
     // Persist new name & bio to localStorage overrides so it displays immediately on reload
@@ -2429,8 +2459,8 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
           existingOverrides[storeId] = {
             ...(existingOverrides[storeId] || {}),
             name: newName,
-            bio: bio,
-            heroCopy: bio,
+            bio: bioToSave,
+            heroCopy: bioToSave,
             logo: avatarUrl,
             updated_at: Date.now()
           };
@@ -2444,9 +2474,9 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
     // Update local React state instantly so profile name & bio update immediately on screen without page reload
     setProfile((prev: any) => ({
       ...(prev || {}),
-      username: newName || prev?.username,
-      full_name: newName || prev?.full_name,
-      bio: bio !== undefined ? bio : prev?.bio,
+      username: newName,
+      full_name: newName,
+      bio: bioToSave !== undefined ? bioToSave : prev?.bio,
       avatar_url: avatarUrl || prev?.avatar_url,
       homepage_image_url: homepageImageUrl || prev?.homepage_image_url
     }));
@@ -2457,9 +2487,9 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
         wlConfig.name = newName;
       }
     }
-    if (bio !== undefined) {
-      setBio(bio);
-      setSavedBio(bio);
+    if (bioToSave !== undefined) {
+      setBio(bioToSave);
+      setSavedBio(bioToSave);
       setIsEditingBio(false);
     }
 
@@ -2490,7 +2520,7 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
     } else {
       toast.success('Channel Name & Profile Updated!');
       if (wlError) {
-        toast.warning('Note: Custom branding could not be synced.');
+        toast.info('Note: Custom branding could not be synced.');
       }
     }
   };
@@ -4141,7 +4171,10 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
           <div style={{ padding: '12px', display: 'flex', justifyContent: 'center', position: 'relative', zIndex: 100, marginBottom: '20px' }}>
             <div style={{ display: 'flex', gap: isMobile ? '10px' : '8px', background: 'rgba(0,0,0,0.4)', backdropFilter: 'blur(12px)', borderRadius: '30px', padding: '5px', border: '1px solid rgba(255,255,255,0.1)', boxShadow: '0 8px 32px rgba(0,0,0,0.2)' }}>
               <button 
-                onClick={() => setViewMode('edit')}
+                onClick={() => {
+                  setViewMode('edit');
+                  setIsPlayingLive(false);
+                }}
                 style={{ 
                   padding: isMobile ? '8px 16px' : '8px 24px', 
                   borderRadius: '30px', 
@@ -4167,6 +4200,8 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
                   setActiveTab('feed');
                   setIsEditingBio(false);
                   setShowCreatorPanel(false);
+                  if (stopLiveStream) stopLiveStream();
+                  else setIsPlayingLive(false);
                 }}
                 style={{ 
                   padding: isMobile ? '8px 16px' : '8px 24px', 
@@ -4372,21 +4407,38 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
                         <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px', flexWrap: 'wrap' }}>
                           <input 
                             type="text" 
-                            value={profile?.username || user?.user_metadata?.full_name || user?.user_metadata?.display_name || user?.email?.split('@')[0] || ''} 
+                            value={profile?.username ?? user?.user_metadata?.full_name ?? user?.user_metadata?.display_name ?? user?.email?.split('@')[0] ?? ''} 
                             onChange={e => {
-                              const updated = { ...(profile || {}), username: e.target.value, full_name: e.target.value };
+                              const val = e.target.value;
+                              const updated = { ...(profile || {}), username: val, full_name: val };
                               setProfile(updated);
+                            }}
+                            onKeyDown={e => {
+                              if (e.key === 'Enter') {
+                                const currentName = profile?.username ?? '';
+                                const initialBaseline = savedName || user?.user_metadata?.full_name || user?.user_metadata?.display_name || user?.email?.split('@')[0] || '';
+                                const isDirty = Boolean(currentName.trim() && initialBaseline && currentName.trim() !== initialBaseline.trim());
+                                if (isDirty && !saving) saveProfile();
+                              }
                             }}
                             placeholder="Enter Profile Display Name..."
                             style={{ fontSize: '28px', fontWeight: 900, background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.25)', padding: '10px 18px', borderRadius: '16px', color: '#fff', outline: 'none', flex: 1, minWidth: '280px', maxWidth: '500px' }}
                           />
                           {(() => {
-                            const currentName = profile?.username || '';
+                            const currentName = profile?.username ?? '';
                             const initialBaseline = savedName || user?.user_metadata?.full_name || user?.user_metadata?.display_name || user?.email?.split('@')[0] || '';
-                            const isNameDirty = Boolean(currentName && initialBaseline && currentName.trim() !== initialBaseline.trim());
+                            const isNameDirty = Boolean(currentName.trim() && initialBaseline && currentName.trim() !== initialBaseline.trim());
                             return (
                               <button
-                                onClick={saveProfile}
+                                onClick={async () => {
+                                  await saveProfile();
+                                  setSavedGraphicPopup({
+                                    show: true,
+                                    title: 'Name Saved!',
+                                    subtitle: 'Your channel display name has been saved successfully.',
+                                    tag: 'Profile Updated'
+                                  });
+                                }}
                                 disabled={saving || !isNameDirty}
                                 style={{
                                   padding: '10px 22px',
@@ -4439,6 +4491,12 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
                                   onClick={async () => {
                                     await saveProfile();
                                     setIsEditingBio(false);
+                                    setSavedGraphicPopup({
+                                      show: true,
+                                      title: 'Bio Saved!',
+                                      subtitle: 'Your channel bio has been saved successfully.',
+                                      tag: 'Bio Updated'
+                                    });
                                   }}
                                   disabled={saving || !isBioDirty}
                                   style={{
@@ -5769,7 +5827,7 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
             isPreviewExpired={isPreviewExpired} liveEmbedUrl={liveEmbedUrl} hasPaidForLive={hasPaidForLive}
             livePrice={livePrice} previewTimeLeft={previewTimeLeft} presenterMode={presenterMode}
             activeGuests={activeGuests} totalSlots={totalSlots} showHost={showHost}
-            cameraStatus={cameraStatus} videoRef={videoRef} profile={profile} visibleGuests={visibleGuests}
+            cameraStatus={cameraStatus} setCameraStatus={setCameraStatus} videoRef={videoRef} profile={profile} visibleGuests={visibleGuests}
             homepageImageUrl={homepageImageUrl} channelRef={channelRef}
             setShowExitScreen={setShowExitScreen} viewMode={viewMode} creatorId={creatorId} user={user}
             guests={guests} subPrice={subPrice} setLivePrice={setLivePrice} setStreamSource={setStreamSource}
@@ -5779,6 +5837,7 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
             handleSubscribe={handleSubscribe} startLiveStream={startLiveStream} stopLiveStream={stopLiveStream} setShowTipModal={setShowTipModal}
             localStream={localStream}
             liveCountdown={liveCountdown}
+            isCameraRequested={isCameraRequested}
             products={products}
             pinnedProducts={pinnedProducts}
             setPinnedProducts={setPinnedProducts}
@@ -10732,79 +10791,92 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
                       type="button"
                       onClick={async () => {
                         setAiGenerating(true);
-                        await new Promise(r => setTimeout(r, 600));
-                        
-                        if (aiPromptTarget === 'bio') {
-                          const currentVal = (bio || profile?.bio || wlConfig?.theme?.heroCopy || wlConfig?.heroCopy || 'Welcome to the official channel media & culture stream.').trim();
-                          let result = '';
-                          if (preset.id === 'viral') {
-                            result = `🔥 ${currentVal.replace(/[\.\s]+$/, '')}! High-energy original streams, exclusive content drops, and culture in real time. Follow & Subscribe for VIP access!`;
-                          } else if (preset.id === 'pro') {
-                            result = `✨ ${currentVal.replace(/[\.\s]+$/, '')}. Premium broadcasts, exclusive digital releases, and live community streams. Follow for official channel updates.`;
-                          } else if (preset.id === 'monetize') {
-                            result = `🚀 ${currentVal.replace(/[\.\s]+$/, '')}! Join our channel community — Subscribe for exclusive member access, behind-the-scenes streams, and full episodes.`;
-                          } else {
-                            let cleaned = currentVal.charAt(0).toUpperCase() + currentVal.slice(1);
-                            if (!cleaned.endsWith('.')) cleaned += '.';
-                            result = cleaned;
-                          }
-                          setBio(result);
-                          setSavedBio(result);
-                          toast.success("AI Bio Boost Applied!");
-                        } else if (aiPromptTarget === 'refund_policy') {
-                          let result = '';
-                          if (preset.id === 'viral') {
-                            result = `🔥 Fast processing & instant digital access! All sales final on digital downloads. For physical merch, contact support within 14 days.`;
-                          } else if (preset.id === 'pro') {
-                            result = `✨ Official Store Policy: Digital downloads and virtual ticket access are non-refundable upon delivery. For physical merchandise inquiries, contact channel support.`;
-                          } else if (preset.id === 'monetize') {
-                            result = `🚀 Satisfaction Guaranteed! Instant digital content delivery with every purchase. Contact channel support for order tracking and merch inquiries.`;
-                          } else {
-                            result = `✨ All sales final. Contact channel support for order inquiries.`;
-                          }
-                          setRefundPolicy(result);
-                          toast.success("AI Store Policy Boost Applied!");
-                        } else if (aiPromptTarget === 'post') {
-                          setPostTitle(`${preset.prompt.split(' ')[0]} ${postTitle || 'Exclusive release on Vibe Network!'} 🔥`);
-                          toast.success("AI Post Boost Applied!");
-                        } else if (aiPromptTarget === 'product_title') {
-                          const baseTitle = (editingProduct ? editingProduct.title : newProduct.title).trim();
-                          const titleWords = baseTitle ? baseTitle.split(/\s+/).map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ') : 'Digital Release';
-                          let result = '';
+                        try {
+                          await new Promise(r => setTimeout(r, 600));
+                          
+                          if (aiPromptTarget === 'bio') {
+                            const currentVal = (bio || profile?.bio || wlConfig?.theme?.heroCopy || wlConfig?.heroCopy || 'Welcome to the official channel media & culture stream.').trim();
+                            let result = '';
+                            if (preset.id === 'viral') {
+                              result = `🔥 ${currentVal.replace(/[\.\s]+$/, '')}! High-energy original streams, exclusive content drops, and culture in real time. Follow & Subscribe for VIP access!`;
+                            } else if (preset.id === 'pro') {
+                              result = `✨ ${currentVal.replace(/[\.\s]+$/, '')}. Premium broadcasts, exclusive digital releases, and live community streams. Follow for official channel updates.`;
+                            } else if (preset.id === 'monetize') {
+                              result = `🚀 ${currentVal.replace(/[\.\s]+$/, '')}! Join our channel community — Subscribe for exclusive member access, behind-the-scenes streams, and full episodes.`;
+                            } else {
+                              let cleaned = currentVal.charAt(0).toUpperCase() + currentVal.slice(1);
+                              if (!cleaned.endsWith('.')) cleaned += '.';
+                              result = cleaned;
+                            }
+                            setBio(result);
+                            setSavedBio(result);
+                            setIsEditingBio(false);
+                            setShowAiModal(false);
+                            await saveProfile(result);
+                            setSavedGraphicPopup({
+                              show: true,
+                              title: 'AI Bio Boost Saved!',
+                              subtitle: 'Your boosted channel bio has been applied and automatically saved.',
+                              tag: 'Bio Auto-Saved'
+                            });
+                            toast.success("AI Bio Boost Applied & Saved!");
+                          } else if (aiPromptTarget === 'refund_policy') {
+                            let result = '';
+                            if (preset.id === 'viral') {
+                              result = `🔥 Fast processing & instant digital access! All sales final on digital downloads. For physical merch, contact support within 14 days.`;
+                            } else if (preset.id === 'pro') {
+                              result = `✨ Official Store Policy: Digital downloads and virtual ticket access are non-refundable upon delivery. For physical merchandise inquiries, contact channel support.`;
+                            } else if (preset.id === 'monetize') {
+                              result = `🚀 Satisfaction Guaranteed! Instant digital content delivery with every purchase. Contact channel support for order tracking and merch inquiries.`;
+                            } else {
+                              result = `✨ All sales final. Contact channel support for order inquiries.`;
+                            }
+                            setRefundPolicy(result);
+                            toast.success("AI Store Policy Boost Applied!");
+                          } else if (aiPromptTarget === 'post') {
+                            setPostTitle(`${preset.prompt.split(' ')[0]} ${postTitle || 'Exclusive release on Vibe Network!'} 🔥`);
+                            toast.success("AI Post Boost Applied!");
+                          } else if (aiPromptTarget === 'product_title') {
+                            const baseTitle = (editingProduct ? editingProduct.title : newProduct.title).trim();
+                            const titleWords = baseTitle ? baseTitle.split(/\s+/).map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ') : 'Digital Release';
+                            let result = '';
 
-                          if (preset.id === 'viral') {
-                            result = `🔥 ${titleWords} [Official Exclusive Drop]`;
-                          } else if (preset.id === 'pro') {
-                            result = `✨ ${titleWords} — Master Edition`;
-                          } else if (preset.id === 'monetize') {
-                            result = `🚀 VIP Access Pass: ${titleWords}`;
-                          } else {
-                            result = titleWords;
-                          }
+                            if (preset.id === 'viral') {
+                              result = `🔥 ${titleWords} [Official Exclusive Drop]`;
+                            } else if (preset.id === 'pro') {
+                              result = `✨ ${titleWords} — Master Edition`;
+                            } else if (preset.id === 'monetize') {
+                              result = `🚀 VIP Access Pass: ${titleWords}`;
+                            } else {
+                              result = titleWords;
+                            }
 
-                          if (editingProduct) setEditingProduct(prev => prev ? { ...prev, title: result } : null);
-                          else setNewProduct(prev => ({ ...prev, title: result }));
-                          toast.success("AI Product Title Boost Applied!");
-                        } else if (aiPromptTarget === 'product_desc') {
-                          const currentDesc = (editingProduct ? editingProduct.description : newProduct.description) || '';
-                          let result = '';
-                          if (preset.id === 'viral') {
-                            result = `🔥 Exclusive release! Instant digital access & priority delivery. ${currentDesc || 'Get official access now!'}`;
-                          } else if (preset.id === 'pro') {
-                            result = `✨ Premium Official Channel Item. High quality digital deliverable / tracked merch. ${currentDesc || 'Includes full access upon purchase.'}`;
-                          } else if (preset.id === 'monetize') {
-                            result = `🚀 VIP Channel Release! Upgrade your collection with instant download access and member perks. ${currentDesc || 'Order now!'}`;
-                          } else {
-                            result = currentDesc ? currentDesc.charAt(0).toUpperCase() + currentDesc.slice(1) : 'Official digital release.';
-                          }
+                            if (editingProduct) setEditingProduct(prev => prev ? { ...prev, title: result } : null);
+                            else setNewProduct(prev => ({ ...prev, title: result }));
+                            toast.success("AI Product Title Boost Applied!");
+                          } else if (aiPromptTarget === 'product_desc') {
+                            const currentDesc = (editingProduct ? editingProduct.description : newProduct.description) || '';
+                            let result = '';
+                            if (preset.id === 'viral') {
+                              result = `🔥 Exclusive release! Instant digital access & priority delivery. ${currentDesc || 'Get official access now!'}`;
+                            } else if (preset.id === 'pro') {
+                              result = `✨ Premium Official Channel Item. High quality digital deliverable / tracked merch. ${currentDesc || 'Includes full access upon purchase.'}`;
+                            } else if (preset.id === 'monetize') {
+                              result = `🚀 VIP Channel Release! Upgrade your collection with instant download access and member perks. ${currentDesc || 'Order now!'}`;
+                            } else {
+                              result = currentDesc ? currentDesc.charAt(0).toUpperCase() + currentDesc.slice(1) : 'Official digital release.';
+                            }
 
-                          if (editingProduct) setEditingProduct(prev => prev ? { ...prev, description: result } : null);
-                          else setNewProduct(prev => ({ ...prev, description: result }));
-                          toast.success("AI Product Description Boost Applied!");
+                            if (editingProduct) setEditingProduct(prev => prev ? { ...prev, description: result } : null);
+                            else setNewProduct(prev => ({ ...prev, description: result }));
+                            toast.success("AI Product Description Boost Applied!");
+                          }
+                        } catch (boostErr) {
+                          console.error("AI Boost error:", boostErr);
+                        } finally {
+                          setAiGenerating(false);
+                          setShowAiModal(false);
                         }
-
-                        setAiGenerating(false);
-                        setShowAiModal(false);
                       }}
                       style={{ padding: '8px 14px', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)', borderRadius: '20px', color: '#fff', fontSize: '12px', fontWeight: 'bold', cursor: 'pointer', transition: 'all 0.2s' }}
                       onMouseOver={e=>e.currentTarget.style.background='rgba(255,255,255,0.15)'}
@@ -10843,46 +10915,216 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
                   disabled={aiGenerating || !aiCustomPrompt.trim()}
                   onClick={async () => {
                     setAiGenerating(true);
-                    await new Promise(r => setTimeout(r, 700));
-                    const instr = aiCustomPrompt.trim();
+                    try {
+                      await new Promise(r => setTimeout(r, 700));
+                      const instr = aiCustomPrompt.trim();
 
-                    if (aiPromptTarget === 'bio') {
-                      const base = (bio || profile?.bio || wlConfig?.theme?.heroCopy || wlConfig?.heroCopy || 'Welcome to the official channel media & culture stream.').trim();
-                      const result = `✨ ${base.replace(/[\.\s]+$/, '')}. ${instr.charAt(0).toUpperCase() + instr.slice(1)} 🔥`;
-                      setBio(result);
-                      setSavedBio(result);
-                      toast.success("AI Bio Boost Applied!");
-                    } else if (aiPromptTarget === 'refund_policy') {
-                      const result = `✨ ${instr}`;
-                      setRefundPolicy(result);
-                      toast.success("AI Store Policy Boost Applied!");
-                    } else if (aiPromptTarget === 'post') {
-                      setPostTitle(`✨ ${instr} — Streaming live on Vibe Network! 🔥`);
-                      toast.success("AI Post Boost Applied!");
-                    } else if (aiPromptTarget === 'product_title') {
-                      const baseTitle = (editingProduct ? editingProduct.title : newProduct.title).trim();
-                      const titleWords = baseTitle ? baseTitle.split(/\s+/).map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ') : 'Digital Release';
-                      const cleanInstr = instr.replace(/^(make|rewrite|create|turn|change|add)\s+(this|my|the|product|title)\s+/i, '');
-                      const result = `✨ ${titleWords} (${cleanInstr.charAt(0).toUpperCase() + cleanInstr.slice(1)})`;
-                      if (editingProduct) setEditingProduct(prev => prev ? { ...prev, title: result } : null);
-                      else setNewProduct(prev => ({ ...prev, title: result }));
-                      toast.success("AI Product Title Boost Applied!");
-                    } else if (aiPromptTarget === 'product_desc') {
-                      const result = `✨ ${instr}`;
-                      if (editingProduct) setEditingProduct(prev => prev ? { ...prev, description: result } : null);
-                      else setNewProduct(prev => ({ ...prev, description: result }));
-                      toast.success("AI Product Description Boost Applied!");
+                      if (aiPromptTarget === 'bio') {
+                        const base = (bio || profile?.bio || wlConfig?.theme?.heroCopy || wlConfig?.heroCopy || 'Welcome to the official channel media & culture stream.').trim();
+                        const result = `✨ ${base.replace(/[\.\s]+$/, '')}. ${instr.charAt(0).toUpperCase() + instr.slice(1)} 🔥`;
+                        setBio(result);
+                        setSavedBio(result);
+                        setIsEditingBio(false);
+                        setShowAiModal(false);
+                        await saveProfile(result);
+                        setSavedGraphicPopup({
+                          show: true,
+                          title: 'AI Bio Boost Saved!',
+                          subtitle: 'Your custom boosted bio has been applied and automatically saved.',
+                          tag: 'Bio Auto-Saved'
+                        });
+                        toast.success("AI Bio Boost Applied & Saved!");
+                      } else if (aiPromptTarget === 'refund_policy') {
+                        const result = `✨ ${instr}`;
+                        setRefundPolicy(result);
+                        toast.success("AI Store Policy Boost Applied!");
+                      } else if (aiPromptTarget === 'post') {
+                        setPostTitle(`✨ ${instr} — Streaming live on Vibe Network! 🔥`);
+                        toast.success("AI Post Boost Applied!");
+                      } else if (aiPromptTarget === 'product_title') {
+                        const baseTitle = (editingProduct ? editingProduct.title : newProduct.title).trim();
+                        const titleWords = baseTitle ? baseTitle.split(/\s+/).map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ') : 'Digital Release';
+                        const cleanInstr = instr.replace(/^(make|rewrite|create|turn|change|add)\s+(this|my|the|product|title)\s+/i, '');
+                        const result = `✨ ${titleWords} (${cleanInstr.charAt(0).toUpperCase() + cleanInstr.slice(1)})`;
+                        if (editingProduct) setEditingProduct(prev => prev ? { ...prev, title: result } : null);
+                        else setNewProduct(prev => ({ ...prev, title: result }));
+                        toast.success("AI Product Title Boost Applied!");
+                      } else if (aiPromptTarget === 'product_desc') {
+                        const result = `✨ ${instr}`;
+                        if (editingProduct) setEditingProduct(prev => prev ? { ...prev, description: result } : null);
+                        else setNewProduct(prev => ({ ...prev, description: result }));
+                        toast.success("AI Product Description Boost Applied!");
+                      }
+                    } catch (customErr) {
+                      console.error("AI Custom Prompt error:", customErr);
+                    } finally {
+                      setAiGenerating(false);
+                      setShowAiModal(false);
+                      setAiCustomPrompt('');
                     }
-
-                    setAiGenerating(false);
-                    setShowAiModal(false);
-                    setAiCustomPrompt('');
                   }}
                   style={{ padding: '12px 28px', background: 'linear-gradient(135deg, #8A2BE2, #ff4d85)', border: 'none', color: '#fff', borderRadius: '12px', cursor: 'pointer', fontWeight: 'bold', boxShadow: '0 4px 15px rgba(138,43,226,0.4)', opacity: (!aiCustomPrompt.trim() || aiGenerating) ? 0.5 : 1 }}
                 >
                   {aiGenerating ? 'AI Generating...' : '✨ Apply AI Boost'}
                 </button>
               </div>
+            </motion.div>
+          </motion.div>
+        )}
+
+        {/* POPPED UP SAVED CONFIRMATION GRAPHIC MODAL */}
+        {savedGraphicPopup?.show && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => setSavedGraphicPopup(null)}
+            style={{
+              position: 'fixed',
+              inset: 0,
+              zIndex: 999999,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              background: 'rgba(0, 0, 0, 0.78)',
+              backdropFilter: 'blur(16px)',
+              padding: '20px'
+            }}
+          >
+            <motion.div
+              initial={{ scale: 0.8, opacity: 0, y: 30 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.85, opacity: 0, y: 20 }}
+              transition={{ type: 'spring', damping: 22, stiffness: 280 }}
+              onClick={e => e.stopPropagation()}
+              style={{
+                position: 'relative',
+                width: '100%',
+                maxWidth: '440px',
+                background: 'linear-gradient(145deg, #111827, #0b0f19)',
+                border: '1.5px solid rgba(0, 255, 136, 0.35)',
+                borderRadius: '32px',
+                padding: '36px 30px',
+                textAlign: 'center',
+                boxShadow: '0 25px 80px rgba(0,0,0,0.85), 0 0 60px rgba(0, 255, 136, 0.18)',
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                gap: '16px'
+              }}
+            >
+              {/* Close X button */}
+              <button
+                type="button"
+                onClick={() => setSavedGraphicPopup(null)}
+                style={{
+                  position: 'absolute',
+                  top: '18px',
+                  right: '18px',
+                  background: 'rgba(255, 255, 255, 0.08)',
+                  border: 'none',
+                  borderRadius: '50%',
+                  width: '32px',
+                  height: '32px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  color: '#aaa',
+                  cursor: 'pointer',
+                  fontSize: '18px'
+                }}
+              >
+                ✕
+              </button>
+
+              {/* POPPED UP SAVED IMAGE / VECTOR GRAPHIC */}
+              <div style={{ position: 'relative', width: '130px', height: '130px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <svg width="130" height="130" viewBox="0 0 130 130" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ filter: 'drop-shadow(0 10px 30px rgba(0,255,136,0.45))' }}>
+                  <defs>
+                    <linearGradient id="savedGradRing" x1="0" y1="0" x2="130" y2="130" gradientUnits="userSpaceOnUse">
+                      <stop stopColor="#00ff88" />
+                      <stop offset="1" stopColor="#00b4d8" />
+                    </linearGradient>
+                    <radialGradient id="glowBackdrop" cx="50%" cy="50%" r="50%">
+                      <stop stopColor="#00ff88" stopOpacity="0.4" />
+                      <stop offset="100%" stopColor="#00ff88" stopOpacity="0" />
+                    </radialGradient>
+                  </defs>
+                  {/* Outer Ambient Glow */}
+                  <circle cx="65" cy="65" r="60" fill="url(#glowBackdrop)" />
+                  {/* Dashed Rotary Ring */}
+                  <circle cx="65" cy="65" r="52" stroke="url(#savedGradRing)" strokeWidth="3" strokeDasharray="8 5" opacity="0.8" />
+                  {/* Badge Base */}
+                  <circle cx="65" cy="65" r="44" fill="#0c1520" stroke="url(#savedGradRing)" strokeWidth="3.5" />
+                  {/* Glowing Checkmark */}
+                  <path d="M46 66 L59 79 L86 52" stroke="#00ff88" strokeWidth="6" strokeLinecap="round" strokeLinejoin="round" />
+                  {/* Sparkles */}
+                  <circle cx="32" cy="34" r="3.5" fill="#00ff88" />
+                  <circle cx="102" cy="38" r="3" fill="#00b4d8" />
+                  <circle cx="98" cy="95" r="4" fill="#00ff88" />
+                  <circle cx="36" cy="98" r="2.5" fill="#00b4d8" />
+                </svg>
+              </div>
+
+              {/* Tag & Text */}
+              <div>
+                <div style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  padding: '5px 14px',
+                  borderRadius: '20px',
+                  background: 'rgba(0, 255, 136, 0.14)',
+                  border: '1px solid rgba(0, 255, 136, 0.35)',
+                  color: '#00ff88',
+                  fontSize: '11px',
+                  fontWeight: 800,
+                  textTransform: 'uppercase',
+                  letterSpacing: '1px',
+                  marginBottom: '10px'
+                }}>
+                  ✨ {savedGraphicPopup.tag || 'Saved to Profile'}
+                </div>
+                <h3 style={{
+                  margin: '0 0 8px 0',
+                  fontSize: '26px',
+                  fontWeight: 900,
+                  color: '#fff',
+                  letterSpacing: '-0.5px'
+                }}>
+                  {savedGraphicPopup.title}
+                </h3>
+                <p style={{
+                  margin: 0,
+                  fontSize: '14px',
+                  color: 'rgba(255, 255, 255, 0.75)',
+                  lineHeight: 1.5,
+                  maxWidth: '340px'
+                }}>
+                  {savedGraphicPopup.subtitle}
+                </p>
+              </div>
+
+              {/* Action Button */}
+              <button
+                type="button"
+                onClick={() => setSavedGraphicPopup(null)}
+                style={{
+                  marginTop: '10px',
+                  padding: '11px 36px',
+                  borderRadius: '16px',
+                  background: 'linear-gradient(135deg, #00ff88, #00bd68)',
+                  color: '#000',
+                  fontWeight: 900,
+                  fontSize: '14px',
+                  border: 'none',
+                  cursor: 'pointer',
+                  boxShadow: '0 4px 20px rgba(0, 255, 136, 0.45)',
+                  transition: 'all 0.2s ease'
+                }}
+              >
+                Done
+              </button>
             </motion.div>
           </motion.div>
         )}

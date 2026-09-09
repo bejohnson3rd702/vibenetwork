@@ -17,12 +17,15 @@ export type CameraStatus = 'idle' | 'loading' | 'active' | 'error';
 interface UseStreamingOptions {
   profileId: string | undefined;
   isOwnProfile: boolean;
+  viewMode?: 'public' | 'edit';
   user: any;
   supabase: any;
   channelRef: React.MutableRefObject<any>;
 }
 
-export function useStreaming({ profileId, isOwnProfile, user, supabase, channelRef }: UseStreamingOptions) {
+export function useStreaming({ profileId, isOwnProfile, viewMode = 'public', user, supabase, channelRef }: UseStreamingOptions) {
+  const isBroadcaster = Boolean(isOwnProfile && viewMode === 'edit');
+
   // ── Core Live State ──
   const [isPlayingLive, setIsPlayingLive] = useState(false);
   const [isPubliclyLive, setIsPubliclyLive] = useState(false);
@@ -75,53 +78,64 @@ export function useStreaming({ profileId, isOwnProfile, user, supabase, channelR
 
   // ── Derived Values ──
   const [isCameraRequested, setIsCameraRequested] = useState(false);
-  const isCameraActive = isPlayingLive || liveCountdown !== null || isCameraRequested;
+  const [cameraTrigger, setCameraTrigger] = useState(0);
+  const isPlayingLiveRef = useRef(isPlayingLive);
+  useEffect(() => {
+    isPlayingLiveRef.current = isPlayingLive;
+  }, [isPlayingLive]);
+
+  const isCameraActive = isBroadcaster && (isPlayingLive || liveCountdown !== null || isCameraRequested);
   const isPreviewExpired = !isOwnProfile && isPlayingLive && !hasPaidForLive && previewTimeLeft === 0;
 
-  // Auto-reset camera request when live streaming is turned off
-  useEffect(() => {
-    if (!isPlayingLive && liveCountdown === null) {
-      setIsCameraRequested(false);
-    }
-  }, [isPlayingLive, liveCountdown]);
-
   // ── Countdown Timer (guarded against double-start) ──
+  const triggerCountdown = useCallback(() => {
+    if (countdownRef.current !== null || liveCountdown !== null || isPlayingLiveRef.current) return;
+    setLiveCountdown(3);
+    let ticker = 3;
+    const interval = setInterval(() => {
+      ticker -= 1;
+      if (ticker <= 0) {
+        clearInterval(interval);
+        countdownRef.current = null;
+        setLiveCountdown(null);
+        setIsPlayingLive(true);
+        setIsPubliclyLive(true);
+      } else {
+        setLiveCountdown(ticker);
+      }
+    }, 1000);
+    countdownRef.current = interval;
+  }, [liveCountdown]);
+
   const startLiveStream = useCallback(() => {
-    if (countdownRef.current !== null || liveCountdown !== null || isPlayingLive) return;
+    if (!isBroadcaster || countdownRef.current !== null || liveCountdown !== null || isPlayingLive) return;
     setIsCameraRequested(true);
-  }, [liveCountdown, isPlayingLive]);
+    if (cameraStatus === 'active' && localStreamRef.current) {
+      triggerCountdown();
+    } else {
+      setCameraStatus('loading');
+      setCameraDebugData('Initializing hardware...');
+      setCameraTrigger(c => c + 1);
+    }
+  }, [isBroadcaster, liveCountdown, isPlayingLive, cameraStatus, triggerCountdown]);
 
   const stopLiveStream = useCallback(() => {
     setIsPlayingLive(false);
     setIsPubliclyLive(false);
     setIsCameraRequested(false);
+    setCameraStatus('idle');
+    setCameraDebugData('Idle');
     if (countdownRef.current) {
       clearInterval(countdownRef.current);
       countdownRef.current = null;
     }
     setLiveCountdown(null);
-  }, []);
-
-  // ── Auto-start countdown once camera is active ──
-  useEffect(() => {
-    if (isOwnProfile && isCameraRequested && cameraStatus === 'active' && liveCountdown === null && !isPlayingLive && countdownRef.current === null) {
-      setLiveCountdown(3);
-      let ticker = 3;
-      const interval = setInterval(() => {
-        ticker -= 1;
-        if (ticker <= 0) {
-          clearInterval(interval);
-          countdownRef.current = null;
-          setLiveCountdown(null);
-          setIsPlayingLive(true);
-          setIsPubliclyLive(true);
-        } else {
-          setLiveCountdown(ticker);
-        }
-      }, 1000);
-      countdownRef.current = interval;
+    if (localStreamRef.current) {
+      localStreamRef.current.getTracks().forEach(t => t.stop());
+      localStreamRef.current = null;
+      setLocalStream(null);
     }
-  }, [isOwnProfile, isCameraRequested, cameraStatus, liveCountdown, isPlayingLive]);
+  }, []);
 
   // Cleanup countdown on unmount
   useEffect(() => {
@@ -150,7 +164,7 @@ export function useStreaming({ profileId, isOwnProfile, user, supabase, channelR
   // preventing "unavailable-id" collisions when starting/stopping.
   // ══════════════════════════════════════════════════════════════
   useEffect(() => {
-    if (!isOwnProfile || !profileId || typeof window === 'undefined') return;
+    if (!isBroadcaster || !profileId || typeof window === 'undefined') return;
 
     const peerId = `vibe-host-${profileId}`;
     let retryCount = 0;
@@ -193,6 +207,7 @@ export function useStreaming({ profileId, isOwnProfile, user, supabase, channelR
           if (currentStream) {
             const vTracks = currentStream.getVideoTracks();
             const aTracks = currentStream.getAudioTracks();
+            aTracks.forEach(t => { t.enabled = true; });
             console.log(`[WebRTC] Answering with stream: video=${vTracks.length} (${vTracks[0]?.readyState || 'none'}) audio=${aTracks.length} (${aTracks[0]?.readyState || 'none'})`);
             call.answer(currentStream);
             activeCallsRef.current.add(call);
@@ -235,7 +250,7 @@ export function useStreaming({ profileId, isOwnProfile, user, supabase, channelR
       }
       peerRef.current = null;
     };
-  }, [isOwnProfile, profileId, user?.id]);
+  }, [isBroadcaster, profileId, user?.id]);
 
   // ══════════════════════════════════════════════════════════════
   // Camera Media Stream Effect
@@ -245,7 +260,7 @@ export function useStreaming({ profileId, isOwnProfile, user, supabase, channelR
     let aborted = false;
     let acquiredStream: MediaStream | null = null;
 
-    const shouldActivateCamera = isOwnProfile && isCameraActive && (streamSource === 'camera' || presenterMode || guests.length > 0);
+    const shouldActivateCamera = isBroadcaster && isCameraActive && (streamSource === 'camera' || presenterMode || guests.length > 0);
 
     if (shouldActivateCamera) {
       if (streamSource === 'camera') {
@@ -256,15 +271,35 @@ export function useStreaming({ profileId, isOwnProfile, user, supabase, channelR
       if (!navigator.mediaDevices?.getUserMedia) {
         setCameraStatus('error');
         setCameraDebugData('getUserMedia not available (HTTP or browser block)');
+        setIsCameraRequested(false);
         return;
       }
 
       getSafeUserMedia(true, true)
-        .then(stream => {
+        .then(async stream => {
           if (aborted) {
             stream.getTracks().forEach(t => t.stop());
             return;
           }
+
+          // If audio track is missing, try fallback microphone acquisition
+          if (stream.getAudioTracks().length === 0) {
+            try {
+              const fallbackAudio = await navigator.mediaDevices.getUserMedia({
+                audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true }
+              });
+              fallbackAudio.getAudioTracks().forEach(t => stream.addTrack(t));
+              console.log('[useStreaming] Attached fallback audio track to host stream');
+            } catch (micErr) {
+              console.warn('[useStreaming] Microphone access unavailable:', micErr);
+            }
+          }
+
+          // Ensure all audio tracks are active
+          stream.getAudioTracks().forEach(t => {
+            t.enabled = true;
+          });
+
           acquiredStream = stream;
           localStreamRef.current = stream;
           setCameraStatus('active');
@@ -274,7 +309,9 @@ export function useStreaming({ profileId, isOwnProfile, user, supabase, channelR
           const dims = videoTrack?.getSettings
             ? `${videoTrack.getSettings().width}x${videoTrack.getSettings().height}`
             : 'No Track';
-          setCameraDebugData(`Stream: ${dims} | Audio: ${stream.getAudioTracks().length}`);
+          const audioCount = stream.getAudioTracks().length;
+          setCameraDebugData(`Stream: ${dims} | Audio: ${audioCount}`);
+          console.log(`[useStreaming] Host camera & audio ready: video=${dims}, audio=${audioCount}`);
 
           if (videoRef.current) {
             videoRef.current.srcObject = stream;
@@ -284,11 +321,18 @@ export function useStreaming({ profileId, isOwnProfile, user, supabase, channelR
               setCameraDebugData(prev => prev + ` | PlayErr: ${e.message}`);
             });
           }
+
+          // Trigger countdown now that camera hardware is active
+          if (!isPlayingLiveRef.current && countdownRef.current === null) {
+            triggerCountdown();
+          }
         })
         .catch(err => {
           if (aborted) return;
+          console.error('[useStreaming] Camera access error:', err);
           setCameraStatus('error');
           setCameraDebugData(`GUM Error: ${err.name} - ${err.message}`);
+          setIsCameraRequested(false);
         });
     } else {
       setCameraStatus('idle');
@@ -309,7 +353,7 @@ export function useStreaming({ profileId, isOwnProfile, user, supabase, channelR
       });
       activeCallsRef.current.clear();
     };
-  }, [isCameraActive, streamSource, presenterMode, isOwnProfile]);
+  }, [isCameraActive, streamSource, presenterMode, isBroadcaster, cameraTrigger, triggerCountdown]);
   // NOTE: `guests.length` is intentionally REMOVED from deps — guest changes
   // should NOT tear down the camera or PeerJS host. guestsRef handles auth.
 
@@ -323,7 +367,7 @@ export function useStreaming({ profileId, isOwnProfile, user, supabase, channelR
 
     // Listen for live stream status announcements
     channel.on('broadcast', { event: 'stream_status' }, (payload: any) => {
-      if (isOwnProfile) return;
+      if (isBroadcaster) return;
       console.log("[useStreaming broadcast receive] payload:", payload.payload);
       const { 
         isPlayingLive: hostIsPlaying, 
@@ -347,7 +391,7 @@ export function useStreaming({ profileId, isOwnProfile, user, supabase, channelR
 
     // Listen for guest list sync from host
     channel.on('broadcast', { event: 'host_sync_guests' }, (payload: any) => {
-      if (isOwnProfile) return;
+      if (isBroadcaster) return;
       const guestList = payload.payload;
       setGuests(guestList);
 
@@ -422,9 +466,9 @@ export function useStreaming({ profileId, isOwnProfile, user, supabase, channelR
 
   // ── Heartbeat Broadcast (host only) ──
   useEffect(() => {
-    if (!isOwnProfile || !isPlayingLive) {
+    if (!isBroadcaster || !isPlayingLive) {
       // Send one "stopped" signal when going offline
-      if (isOwnProfile && !isPlayingLive && channelRef.current) {
+      if (isBroadcaster && !isPlayingLive && channelRef.current) {
         channelRef.current.send({
           type: 'broadcast',
           event: 'stream_status',
@@ -447,14 +491,14 @@ export function useStreaming({ profileId, isOwnProfile, user, supabase, channelR
 
     const interval = setInterval(broadcastStatus, 3000);
     return () => clearInterval(interval);
-  }, [isOwnProfile, isPlayingLive, isPubliclyLive, streamSource, liveEmbedUrl, pinnedProducts]);
+  }, [isBroadcaster, isPlayingLive, isPubliclyLive, streamSource, liveEmbedUrl, pinnedProducts]);
 
   // ── Stream Recording Effect (Host Only) ──
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const recordedChunksRef = useRef<Blob[]>([]);
 
   useEffect(() => {
-    if (!isOwnProfile || typeof window === 'undefined') return;
+    if (!isBroadcaster || typeof window === 'undefined') return;
 
     if (isPlayingLive) {
       const stream = localStreamRef.current;
@@ -567,7 +611,7 @@ export function useStreaming({ profileId, isOwnProfile, user, supabase, channelR
         mediaRecorderRef.current = null;
       }
     };
-  }, [isPlayingLive, isOwnProfile, profileId, user?.id, livePrice]);
+  }, [isPlayingLive, isBroadcaster, profileId, user?.id, livePrice]);
 
   return {
     // Core live state
@@ -579,9 +623,11 @@ export function useStreaming({ profileId, isOwnProfile, user, supabase, channelR
 
     // Camera
     cameraStatus,
+    setCameraStatus,
     cameraDebugData,
     localStream,
     videoRef,
+    isCameraRequested,
 
     // Guests
     guests, setGuests,

@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Lock, Settings, Camera, Video, Globe, X, Mic, MicOff, VideoOff, Send, Check, Copy, Play, Trash2, Plus, Edit3 } from 'lucide-react';
+import { Lock, Settings, Camera, Video, Globe, X, Mic, MicOff, VideoOff, Send, Check, Copy, Play, Trash2, Plus, Edit3, Radio, Eye, Volume2, VolumeX } from 'lucide-react';
 import { useToast } from '../context/ToastContext';
 import Peer from 'peerjs';
 import { supabase } from '../supabaseClient';
@@ -52,9 +52,10 @@ export interface ProfileLiveProps {
   handleSubscribe: () => void;
   startLiveStream: () => void;
   stopLiveStream?: () => void;
-  setShowTipModal: (b: boolean) => void;
+  setCameraStatus?: (s: any) => void;
   localStream?: MediaStream | null;
   liveCountdown?: number | null;
+  isCameraRequested?: boolean;
 
   products?: any[];
   pinnedProducts?: any[];
@@ -66,12 +67,13 @@ export const ProfileLive: React.FC<ProfileLiveProps> = ({
   isSubscribed, isOwnProfile, localGuestData, isPlayingLive, isPubliclyLive,
   streamSource, isPreviewExpired, liveEmbedUrl, hasPaidForLive, livePrice,
   previewTimeLeft, presenterMode, activeGuests, totalSlots, showHost,
-  cameraStatus, videoRef, profile, visibleGuests,
+  cameraStatus, setCameraStatus, videoRef, profile, visibleGuests,
   homepageImageUrl, channelRef, setShowExitScreen, viewMode, creatorId,
   user, guests, subPrice, setLivePrice, setStreamSource, setLiveEmbedUrl,
   setIsPlayingLive, setIsPubliclyLive, setPresenterMode, setGuests,
   setLocalGuestData, handleStripeCheckout, handleUnlockLive, handleSubscribe,
   startLiveStream, stopLiveStream, setShowTipModal, localStream, liveCountdown,
+  isCameraRequested = false,
   products = [], pinnedProducts = [], setPinnedProducts = () => {}
 }) => {
   const toast = useToast();
@@ -428,12 +430,36 @@ export const ProfileLive: React.FC<ProfileLiveProps> = ({
   }, [safePinnedProducts, lastPinnedCount]);
 
   const isBroadcaster = Boolean(isOwnProfile && viewMode === 'edit');
+  const isStreamLive = (isBroadcaster && isPlayingLive) || (!isBroadcaster && isPubliclyLive);
 
   console.log("[ProfileLive Render] state:", { isOwnProfile, isBroadcaster, isPlayingLive, pinnedProductsCount: safePinnedProducts.length, isDrawerOpen });
 
   // Fan Zone & Co-watching state
   const showFanZone = false;
   const [isMuted, setIsMuted] = React.useState(false);
+  const [isViewerMuted, setIsViewerMuted] = React.useState(false);
+
+  // Broadcaster mic mute sync
+  React.useEffect(() => {
+    if (isBroadcaster && localStream) {
+      localStream.getAudioTracks().forEach(track => {
+        track.enabled = !isMuted;
+      });
+    }
+  }, [isBroadcaster, isMuted, localStream]);
+
+  const toggleViewerMute = React.useCallback(() => {
+    if (viewerVideoRef.current) {
+      const nextMuted = !viewerVideoRef.current.muted;
+      viewerVideoRef.current.muted = nextMuted;
+      viewerVideoRef.current.volume = 1.0;
+      setIsViewerMuted(nextMuted);
+      if (!nextMuted) {
+        viewerVideoRef.current.play().catch(() => {});
+      }
+    }
+  }, []);
+
   const [isCameraOn, setIsCameraOn] = React.useState(false);
   const [copied, setCopied] = React.useState(false);
   const [isPrivate, setIsPrivate] = React.useState(false);
@@ -611,7 +637,7 @@ export const ProfileLive: React.FC<ProfileLiveProps> = ({
   React.useEffect(() => {
     if (isBroadcaster || !isPlayingLive || streamSource !== 'camera') return;
     // Strictly block connection requests if the user is unauthorized
-    if (!effectiveIsSubscribed && !hasPaidForLive && !localGuestData) return;
+    if (!isOwnProfile && !effectiveIsSubscribed && !hasPaidForLive && !localGuestData) return;
 
     let peer: Peer | null = null;
     let call: any = null;
@@ -653,9 +679,16 @@ export const ProfileLive: React.FC<ProfileLiveProps> = ({
             if (ctx2d) ctx2d.fillRect(0, 0, 2, 2);
             const canvasStream = canvas.captureStream(0);
 
-            // Dummy audio: silent AudioContext destination
-            const audioCtx = new AudioContext();
+            // Dummy audio: active silent AudioContext destination with oscillator
+            const AudioCtxClass = window.AudioContext || (window as any).webkitAudioContext;
+            const audioCtx = new AudioCtxClass();
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            gain.gain.value = 0.0001; // Silent but producing active WebRTC audio clock
+            osc.connect(gain);
             const dest = audioCtx.createMediaStreamDestination();
+            gain.connect(dest);
+            osc.start();
 
             // Combine video + audio into one stream
             viewerStream = new MediaStream([
@@ -682,20 +715,30 @@ export const ProfileLive: React.FC<ProfileLiveProps> = ({
           }
 
           call.on('stream', (remoteStream: MediaStream) => {
-            console.log("[WebRTC Viewer] ✅ Received live camera feed from host!");
+            console.log("[WebRTC Viewer] ✅ Received live feed! Video tracks:", remoteStream.getVideoTracks().length, "Audio tracks:", remoteStream.getAudioTracks().length);
+            remoteStream.getAudioTracks().forEach(t => {
+              t.enabled = true;
+              console.log("[WebRTC Viewer] Track ready:", t.id, t.readyState, "enabled:", t.enabled, "muted:", t.muted);
+            });
             setIsRemoteConnected(true);
             setConnectionStatus('connected');
             if (viewerVideoRef.current) {
               viewerVideoRef.current.srcObject = remoteStream;
-              viewerVideoRef.current.muted = false; // Enable audio — user already interacted
-              viewerVideoRef.current.play().catch(e => {
-                // If unmuted autoplay fails, try muted then let user unmute via controls
-                console.warn('[WebRTC Viewer] Unmuted play failed, trying muted:', e.message);
-                if (viewerVideoRef.current) {
-                  viewerVideoRef.current.muted = true;
-                  viewerVideoRef.current.play().catch(() => {});
-                }
-              });
+              viewerVideoRef.current.volume = 1.0;
+              viewerVideoRef.current.muted = false; // Attempt unmuted first
+              viewerVideoRef.current.play()
+                .then(() => {
+                  console.log("[WebRTC Viewer] Unmuted autoplay permitted by browser!");
+                  setIsViewerMuted(false);
+                })
+                .catch(e => {
+                  console.warn('[WebRTC Viewer] Unmuted autoplay restricted by browser policy. Defaulting to muted with tap-to-unmute control:', e.message);
+                  if (viewerVideoRef.current) {
+                    viewerVideoRef.current.muted = true;
+                    setIsViewerMuted(true);
+                    viewerVideoRef.current.play().catch(() => {});
+                  }
+                });
             }
           });
 
@@ -815,29 +858,35 @@ export const ProfileLive: React.FC<ProfileLiveProps> = ({
                         </p>
                      </div>
                   )}
-                  {isPlayingLive && (
+                  {isStreamLive && (
                      <>
                         {isPubliclyLive ? (
-                           <div className="live-video-status" style={{ position: 'absolute', top: 20, left: 20, background: 'rgba(255, 0, 85, 0.25)', border: '1px solid rgba(255, 0, 85, 0.4)', backdropFilter: 'blur(12px)', color: '#fff', padding: '6px 14px', borderRadius: '12px', fontWeight: 'bold', fontSize: '12px', display: 'flex', alignItems: 'center', gap: '8px', zIndex: 10, textTransform: 'uppercase', letterSpacing: '1px', boxShadow: '0 4px 15px rgba(255,0,85,0.25)' }}>
-                             <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#fff', animation: 'pulse 1.5s infinite' }}/> LIVE
-                           </div>
+                            <div className="live-video-status" style={{ position: 'absolute', top: 20, left: 20, background: 'rgba(255, 0, 85, 0.25)', border: '1px solid rgba(255, 0, 85, 0.4)', backdropFilter: 'blur(12px)', color: '#fff', padding: '6px 14px', borderRadius: '12px', fontWeight: 'bold', fontSize: '12px', display: 'flex', alignItems: 'center', gap: '8px', zIndex: 10, textTransform: 'uppercase', letterSpacing: '1px', boxShadow: '0 4px 15px rgba(255,0,85,0.25)' }}>
+                              <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#fff', animation: 'pulse 1.5s infinite' }}/> LIVE
+                            </div>
+                        ) : isBroadcaster ? (
+                            <div className="live-video-status" style={{ position: 'absolute', top: 20, left: 20, background: 'rgba(0, 85, 255, 0.25)', border: '1px solid rgba(0, 85, 255, 0.4)', backdropFilter: 'blur(12px)', color: '#fff', padding: '6px 14px', borderRadius: '12px', fontWeight: 'bold', fontSize: '12px', display: 'flex', alignItems: 'center', gap: '8px', zIndex: 10, textTransform: 'uppercase', letterSpacing: '1px', boxShadow: '0 4px 15px rgba(0,85,255,0.25)' }}>
+                              <Settings size={16} /> STUDIO PREVIEW
+                            </div>
                         ) : (
-                           <div className="live-video-status" style={{ position: 'absolute', top: 20, left: 20, background: 'rgba(0, 85, 255, 0.25)', border: '1px solid rgba(0, 85, 255, 0.4)', backdropFilter: 'blur(12px)', color: '#fff', padding: '6px 14px', borderRadius: '12px', fontWeight: 'bold', fontSize: '12px', display: 'flex', alignItems: 'center', gap: '8px', zIndex: 10, textTransform: 'uppercase', letterSpacing: '1px', boxShadow: '0 4px 15px rgba(0,85,255,0.25)' }}>
-                             <Settings size={16} /> STUDIO PREVIEW
-                           </div>
+                            <div className="live-video-status" style={{ position: 'absolute', top: 20, left: 20, background: 'rgba(255, 255, 255, 0.15)', border: '1px solid rgba(255, 255, 255, 0.25)', backdropFilter: 'blur(12px)', color: '#fff', padding: '6px 14px', borderRadius: '12px', fontWeight: 'bold', fontSize: '12px', display: 'flex', alignItems: 'center', gap: '8px', zIndex: 10, textTransform: 'uppercase', letterSpacing: '1px', boxShadow: '0 4px 15px rgba(0,0,0,0.25)' }}>
+                              <Eye size={16} /> STREAM PREVIEW
+                            </div>
                         )}
                      </>
                    )}
                   
-                  <div className="live-video-actions" style={{ position: 'absolute', top: 20, right: 20, zIndex: 10, display: 'flex', gap: '10px' }}>
-                    {!localGuestData && (
-                      <button onClick={() => setShowTipModal(true)} style={{ padding: '8px 18px', background: 'rgba(255, 255, 255, 0.08)', border: `1px solid ${accent}44`, backdropFilter: 'blur(12px)', color: '#fff', borderRadius: '20px', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', boxShadow: '0 8px 32px rgba(0,0,0,0.3)', textTransform: 'uppercase', fontSize: '12px', letterSpacing: '1px', transition: 'all 0.2s' }} onMouseOver={e=>{e.currentTarget.style.transform='scale(1.05)'; e.currentTarget.style.borderColor=accent;}} onMouseOut={e=>{e.currentTarget.style.transform='none'; e.currentTarget.style.borderColor=`${accent}44`;}}>
-                         💰 Support Stream
-                      </button>
-                    )}
-                  </div>
+                  {isStreamLive && (
+                    <div className="live-video-actions" style={{ position: 'absolute', top: 20, right: 20, zIndex: 10, display: 'flex', gap: '10px' }}>
+                      {!localGuestData && (
+                        <button onClick={() => setShowTipModal(true)} style={{ padding: '8px 18px', background: 'rgba(255, 255, 255, 0.08)', border: `1px solid ${accent}44`, backdropFilter: 'blur(12px)', color: '#fff', borderRadius: '20px', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', boxShadow: '0 8px 32px rgba(0,0,0,0.3)', textTransform: 'uppercase', fontSize: '12px', letterSpacing: '1px', transition: 'all 0.2s' }} onMouseOver={e=>{e.currentTarget.style.transform='scale(1.05)'; e.currentTarget.style.borderColor=accent;}} onMouseOut={e=>{e.currentTarget.style.transform='none'; e.currentTarget.style.borderColor=`${accent}44`;}}>
+                            💰 Support Stream
+                        </button>
+                      )}
+                    </div>
+                  )}
                   
-                  {isPlayingLive || (isOwnProfile && cameraStatus !== 'idle') ? (
+                  {isStreamLive || (isBroadcaster && (cameraStatus !== 'idle' || liveCountdown !== null || isCameraRequested)) ? (
                      <>
                        {!isOwnProfile && isPlayingLive && !effectiveIsSubscribed && !hasPaidForLive ? (
                          isPreviewExpired ? (
@@ -877,26 +926,50 @@ export const ProfileLive: React.FC<ProfileLiveProps> = ({
                          }}>
                            {showHost && (
                              <div style={{ position: 'relative', background: 'var(--bg-surface)', flexShrink: 0, pointerEvents: 'auto', ...(streamSource === 'url' ? { width: 'min(20%, 200px)', aspectRatio: '16/9', borderRadius: '12px', border: '2px solid rgba(255,255,255,0.2)', overflow: 'hidden', boxShadow: '0 4px 20px rgba(0,0,0,0.5)' } : { width: '100%', height: '100%' }) }}>
-                               {cameraStatus === 'loading' && (
+                               {isBroadcaster && cameraStatus === 'loading' && (
                                  <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: 'var(--bg-surface)', zIndex: 5 }}>
                                     <div style={{ width: 40, height: 40, border: '3px solid rgba(255,255,255,0.1)', borderTopColor: '#00ff88', borderRadius: '50%', animation: 'spin 1s linear infinite', marginBottom: 15 }} />
                                     <p style={{ margin: 0, color: 'var(--text-primary)', fontSize: '14px', fontWeight: 'bold', letterSpacing: '1px' }}>INITIALIZING HARDWARE...</p>
                                     <p style={{ margin: '5px 0 0 0', color: 'var(--text-muted)', fontSize: '12px' }}>Please allow access to your camera and microphone</p>
                                  </div>
                                )}
-                               {cameraStatus === 'error' && (
-                                 <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: 'var(--bg-surface)', zIndex: 5 }}>
+                               {isBroadcaster && cameraStatus === 'error' && (
+                                 <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: 'var(--bg-surface)', zIndex: 5, padding: '20px', textAlign: 'center' }}>
                                     <div style={{ padding: '15px', borderRadius: '50%', background: 'rgba(255,0,85,0.1)', color: '#ff0055', marginBottom: 15 }}>
                                        <Video size={30} />
                                     </div>
                                     <p style={{ margin: 0, color: 'var(--text-primary)', fontSize: '14px', fontWeight: 'bold' }}>CAMERA ACCESS DENIED</p>
-                                    <p style={{ margin: '5px 0 0 0', color: 'var(--text-muted)', fontSize: '12px', maxWidth: '300px', textAlign: 'center' }}>Check your browser settings to ensure the platform has hardware permissions.</p>
-                                    <button onClick={() => setIsPlayingLive(false)} style={{ marginTop: '15px', padding: '8px 20px', background: 'transparent', border: '1px solid var(--bg-surface-hover)', color: 'var(--text-primary)', borderRadius: '20px', cursor: 'pointer' }}>Close Mode</button>
+                                    <p style={{ margin: '6px 0 16px 0', color: 'var(--text-muted)', fontSize: '12px', maxWidth: '300px' }}>Please ensure your browser has permission to access your camera and microphone.</p>
+                                    <div style={{ display: 'flex', gap: '12px' }}>
+                                      <button
+                                        onClick={startLiveStream}
+                                        style={{ padding: '8px 22px', background: `linear-gradient(135deg, ${accent}, #8A2BE2)`, color: '#fff', border: 'none', borderRadius: '20px', cursor: 'pointer', fontWeight: 'bold', fontSize: '13px' }}
+                                      >
+                                        Try Again
+                                      </button>
+                                      <button
+                                        onClick={() => {
+                                          if (stopLiveStream) stopLiveStream();
+                                          else setIsPlayingLive(false);
+                                          setCameraStatus?.('idle');
+                                        }}
+                                        style={{ padding: '8px 20px', background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.2)', color: 'var(--text-primary)', borderRadius: '20px', cursor: 'pointer', fontWeight: 'bold', fontSize: '13px' }}
+                                      >
+                                        Dismiss
+                                      </button>
+                                    </div>
                                  </div>
                                )}
                                 {!isBroadcaster ? (
                                   streamSource === 'camera' ? (
-                                    <div style={{ width: '100%', height: '100%', position: 'relative' }}>
+                                    <div 
+                                      style={{ width: '100%', height: '100%', position: 'relative', background: '#0a0a0f', cursor: isViewerMuted ? 'pointer' : 'default' }}
+                                      onClick={() => {
+                                        if (isViewerMuted) {
+                                          toggleViewerMute();
+                                        }
+                                      }}
+                                    >
                                       <video
                                         ref={viewerVideoRef}
                                         autoPlay
@@ -904,34 +977,74 @@ export const ProfileLive: React.FC<ProfileLiveProps> = ({
                                         controls
                                         style={{ width: '100%', height: '100%', objectFit: 'cover', border: 'none', display: isRemoteConnected ? 'block' : 'none' }}
                                       />
-                                      {!isRemoteConnected && (connectionStatus === 'connecting' || connectionStatus === 'reconnecting') && (
-                                        <div style={{ position: 'absolute', top: 12, left: 12, display: 'flex', alignItems: 'center', gap: '8px', background: 'rgba(0,0,0,0.7)', padding: '6px 14px', borderRadius: '20px', backdropFilter: 'blur(10px)', zIndex: 10, border: '1px solid rgba(255,255,255,0.1)' }}>
-                                          <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: connectionStatus === 'reconnecting' ? '#ff9900' : '#00ff88', animation: 'pulse 1.5s ease-in-out infinite' }} />
-                                          <span style={{ fontSize: '11px', color: '#fff', fontWeight: 600, letterSpacing: '0.5px', textTransform: 'uppercase' }}>
-                                            {connectionStatus === 'reconnecting' ? 'Reconnecting...' : 'Connecting...'}
-                                          </span>
-                                        </div>
+                                      {isRemoteConnected && (
+                                        <button
+                                          type="button"
+                                          onClick={(e) => {
+                                            e.stopPropagation();
+                                            toggleViewerMute();
+                                          }}
+                                          style={{
+                                            position: 'absolute',
+                                            bottom: 20,
+                                            left: 20,
+                                            zIndex: 35,
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            gap: '8px',
+                                            padding: isViewerMuted ? '10px 20px' : '8px 14px',
+                                            background: isViewerMuted ? 'linear-gradient(135deg, #ff0055, #e50914)' : 'rgba(0, 0, 0, 0.75)',
+                                            color: '#fff',
+                                            border: isViewerMuted ? '2px solid #fff' : '1px solid rgba(255, 255, 255, 0.2)',
+                                            borderRadius: '30px',
+                                            fontWeight: 'bold',
+                                            fontSize: isViewerMuted ? '14px' : '12px',
+                                            cursor: 'pointer',
+                                            backdropFilter: 'blur(12px)',
+                                            boxShadow: isViewerMuted ? '0 4px 25px rgba(255,0,85,0.6)' : '0 4px 15px rgba(0,0,0,0.4)',
+                                            transition: 'all 0.2s',
+                                            pointerEvents: 'auto',
+                                          }}
+                                          onMouseOver={e => e.currentTarget.style.transform = 'scale(1.05)'}
+                                          onMouseOut={e => e.currentTarget.style.transform = 'none'}
+                                        >
+                                          {isViewerMuted ? <VolumeX size={18} /> : <Volume2 size={16} />}
+                                          <span>{isViewerMuted ? '🔊 Tap to Unmute' : 'Mute'}</span>
+                                        </button>
                                       )}
                                       {!isRemoteConnected && (
-                                        <video
-                                          src="/videos/tiesto.mp4"
-                                          autoPlay
-                                          loop
-                                          muted
-                                          playsInline
-                                          style={{ width: '100%', height: '100%', objectFit: 'cover', border: 'none' }}
-                                        />
+                                        <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: 'rgba(10, 10, 15, 0.9)', backdropFilter: 'blur(16px)', zIndex: 5, padding: '30px', textAlign: 'center' }}>
+                                          <div style={{ width: '64px', height: '64px', borderRadius: '50%', background: 'rgba(255, 0, 85, 0.1)', border: '1px solid rgba(255, 0, 85, 0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '16px', boxShadow: '0 0 30px rgba(255, 0, 85, 0.2)' }}>
+                                            <Radio size={28} color="#ff0055" />
+                                          </div>
+                                          <h3 style={{ margin: '0 0 8px 0', fontSize: '20px', fontWeight: 800, color: 'var(--text-primary)' }}>
+                                            {connectionStatus === 'reconnecting' ? 'Reconnecting to Broadcast...' : 'Connecting to Live Feed...'}
+                                          </h3>
+                                          <p style={{ margin: 0, color: 'var(--text-muted)', fontSize: '13px', maxWidth: '320px', lineHeight: 1.5 }}>
+                                            Awaiting camera stream from {profile?.username || 'the host'}. Feed will begin playing automatically.
+                                          </p>
+                                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '16px', padding: '6px 14px', borderRadius: '20px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)' }}>
+                                            <div style={{ width: 8, height: 8, borderRadius: '50%', background: connectionStatus === 'reconnecting' ? '#ff9900' : '#00ff88', animation: 'pulse 1.5s infinite' }} />
+                                            <span style={{ fontSize: '11px', color: '#fff', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                                              {connectionStatus === 'reconnecting' ? 'Reconnecting...' : 'Establishing Peer Link...'}
+                                            </span>
+                                          </div>
+                                        </div>
                                       )}
                                     </div>
                                   ) : (
-                                    <video
-                                      src="/videos/tiesto.mp4"
-                                      autoPlay
-                                      loop
-                                      muted
-                                      playsInline
-                                      style={{ width: '100%', height: '100%', objectFit: 'cover', border: 'none' }}
-                                    />
+                                    liveEmbedUrl ? (
+                                      <iframe
+                                        src={liveEmbedUrl}
+                                        allow="autoplay; fullscreen"
+                                        style={{ width: '100%', height: '100%', border: 'none' }}
+                                      />
+                                    ) : (
+                                      <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: 'rgba(10, 10, 15, 0.9)', padding: '30px', textAlign: 'center' }}>
+                                        <Radio size={28} color="var(--text-muted)" />
+                                        <p style={{ color: 'var(--text-muted)', fontSize: '14px', marginTop: '12px' }}>Waiting for external broadcast stream...</p>
+                                      </div>
+                                    )
                                   )
                                 ) : (
                                   <video 
@@ -989,22 +1102,66 @@ export const ProfileLive: React.FC<ProfileLiveProps> = ({
                               width: '100%', 
                               height: '100%', 
                               objectFit: 'cover', 
-                              opacity: 0.5, 
-                              filter: 'blur(6px)' 
+                              opacity: 0.25, 
+                              filter: 'blur(10px)' 
                             }} 
                           />
-                          <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.3)', zIndex: 1 }} />
+                          <div style={{ position: 'absolute', inset: 0, background: 'rgba(5,5,10,0.6)', zIndex: 1 }} />
                         </>
                       )}
-                      <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 10 }}>
-                        <button onClick={() => setIsPlayingLive(true)} style={{ width: '80px', height: '80px', borderRadius: '50%', background: 'rgba(255,77,133,0.9)', border: 'none', color: 'var(--text-primary)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 0 20px rgba(255,77,133,0.5)', transition: 'transform 0.2s' }} onMouseOver={e=>e.currentTarget.style.transform='scale(1.1)'} onMouseOut={e=>e.currentTarget.style.transform='scale(1)'}>
-                          <svg width="32" height="32" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
-                        </button>
-                      </div>
+                      {isBroadcaster ? (
+                        <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textAlign: 'center', padding: '30px', zIndex: 10, background: 'rgba(10, 10, 15, 0.75)', backdropFilter: 'blur(12px)' }}>
+                          <div style={{ width: '76px', height: '76px', borderRadius: '50%', background: 'rgba(253, 216, 53, 0.1)', border: '1px solid rgba(253, 216, 53, 0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '18px', boxShadow: '0 0 30px rgba(253, 216, 53, 0.2)' }}>
+                            <Camera size={34} color="#fdd835" />
+                          </div>
+                          <h2 style={{ margin: '0 0 10px 0', fontSize: '24px', fontWeight: '900', color: 'var(--text-primary)', letterSpacing: '-0.5px' }}>
+                            Broadcast Studio Standby
+                          </h2>
+                          <p style={{ margin: 0, color: 'var(--text-secondary)', fontSize: '14px', maxWidth: '380px', lineHeight: 1.6 }}>
+                            Your channel is offline. Press "Start Streaming" below to test your camera and begin your live broadcast.
+                          </p>
+                          <button
+                            onClick={startLiveStream}
+                            disabled={cameraStatus === 'loading' || liveCountdown !== null}
+                            style={{
+                              marginTop: '20px',
+                              padding: '12px 28px',
+                              background: (cameraStatus === 'loading' || liveCountdown !== null) ? 'rgba(255, 255, 255, 0.1)' : `linear-gradient(135deg, ${accent}, #8A2BE2)`,
+                              color: '#fff',
+                              border: 'none',
+                              borderRadius: '12px',
+                              fontWeight: 'bold',
+                              fontSize: '15px',
+                              cursor: (cameraStatus === 'loading' || liveCountdown !== null) ? 'not-allowed' : 'pointer',
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: '8px',
+                              boxShadow: (cameraStatus === 'loading' || liveCountdown !== null) ? 'none' : '0 8px 24px rgba(138,43,226,0.3)',
+                              transition: 'transform 0.2s'
+                            }}
+                            onMouseOver={e => { if (cameraStatus !== 'loading' && liveCountdown === null) e.currentTarget.style.transform = 'translateY(-2px)'; }}
+                            onMouseOut={e => { if (cameraStatus !== 'loading' && liveCountdown === null) e.currentTarget.style.transform = 'none'; }}
+                          >
+                            <Camera size={18} /> {cameraStatus === 'loading' ? 'Initializing Camera...' : liveCountdown !== null ? 'Starting...' : 'Start Streaming'}
+                          </button>
+                        </div>
+                      ) : (
+                        <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textAlign: 'center', padding: '30px', zIndex: 10, background: 'rgba(10, 10, 15, 0.85)', backdropFilter: 'blur(16px)' }}>
+                          <div style={{ width: '76px', height: '76px', borderRadius: '50%', background: 'rgba(255, 77, 133, 0.1)', border: '1px solid rgba(255, 77, 133, 0.25)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '18px', boxShadow: '0 0 30px rgba(255, 77, 133, 0.2)' }}>
+                            <VideoOff size={36} color="#ff4d85" />
+                          </div>
+                          <h2 style={{ margin: '0 0 10px 0', fontSize: '26px', fontWeight: '900', color: 'var(--text-primary)', letterSpacing: '-0.5px' }}>
+                            No stream to watch
+                          </h2>
+                          <p style={{ margin: 0, color: 'var(--text-secondary)', fontSize: '15px', maxWidth: '380px', lineHeight: 1.6 }}>
+                            {profile?.username || 'This channel'} is not streaming live right now. When a broadcast begins, it will appear here automatically.
+                          </p>
+                        </div>
+                      )}
                     </>
                   )}
 
-                  {!(isOwnProfile && viewMode === 'edit') && isPlayingLive && safePinnedProducts.length > 0 && (
+                  {!(isOwnProfile && viewMode === 'edit') && isStreamLive && safePinnedProducts.length > 0 && (
                     <AnimatePresence>
                       {!isDrawerOpen ? (
                         <motion.button
@@ -1628,22 +1785,43 @@ export const ProfileLive: React.FC<ProfileLiveProps> = ({
                         
                         {streamSource === 'camera' && (
                           <div style={{ display: 'flex', gap: '16px', alignItems: 'center', flexWrap: 'wrap', background: 'rgba(255, 255, 255, 0.02)', padding: '20px', borderRadius: '16px', border: `1px solid ${accent}15` }}>
-                             <div style={{ flex: 1, minWidth: '200px' }}>
+                            <div style={{ flex: 1, minWidth: '200px' }}>
                                 <p style={{ margin: 0, color: 'var(--text-primary)', fontWeight: 'bold', fontSize: '15px' }}>Direct Broadcast Server</p>
                                 <p style={{ margin: '4px 0 0 0', color: 'var(--text-muted)', fontSize: '13px', lineHeight: '1.4' }}>Using your local hardware camera and microphone as the live stream origin. Press "Start Streaming" to ignite the feed.</p>
                              </div>
                              {isPlayingLive ? (
-                               <button onClick={() => { if (stopLiveStream) { stopLiveStream(); } else { setIsPlayingLive(false); } }} style={{ padding: '14px 28px', background: 'rgba(229, 9, 20, 0.12)', color: '#ff3b30', border: '1px solid rgba(229, 9, 20, 0.3)', borderRadius: '12px', fontWeight: 'bold', fontSize: '15px', cursor: 'pointer', transition: 'all 0.2s', display: 'flex', alignItems: 'center', gap: '8px', boxShadow: '0 4px 15px rgba(229,9,20,0.1)' }} onMouseOver={e=>e.currentTarget.style.background='rgba(229, 9, 20, 0.2)'} onMouseOut={e=>e.currentTarget.style.background='rgba(229, 9, 20, 0.12)'}>
-                                  🛑 Stop Streaming
-                               </button>
-                             ) : (
-                               <button onClick={startLiveStream} style={{ padding: '14px 28px', background: `linear-gradient(135deg, ${accent}, #8A2BE2)`, color: 'var(--text-primary)', border: 'none', borderRadius: '12px', fontWeight: 'bold', fontSize: '15px', cursor: 'pointer', transition: 'all 0.2s', display: 'flex', alignItems: 'center', gap: '8px', boxShadow: `0 8px 24px rgba(138,43,226,0.3)` }} onMouseOver={e=>e.currentTarget.style.transform='translateY(-2px)'} onMouseOut={e=>e.currentTarget.style.transform='none'}><Camera size={18}/> Start Streaming</button>
-                             )}
+                                <button onClick={() => { if (stopLiveStream) { stopLiveStream(); } else { setIsPlayingLive(false); } }} style={{ padding: '14px 28px', background: 'rgba(229, 9, 20, 0.12)', color: '#ff3b30', border: '1px solid rgba(229, 9, 20, 0.3)', borderRadius: '12px', fontWeight: 'bold', fontSize: '15px', cursor: 'pointer', transition: 'all 0.2s', display: 'flex', alignItems: 'center', gap: '8px', boxShadow: '0 4px 15px rgba(229,9,20,0.1)' }} onMouseOver={e=>e.currentTarget.style.background='rgba(229, 9, 20, 0.2)'} onMouseOut={e=>e.currentTarget.style.background='rgba(229, 9, 20, 0.12)'}>
+                                   🛑 Stop Streaming
+                                </button>
+                              ) : (
+                                <button 
+                                  onClick={startLiveStream} 
+                                  disabled={cameraStatus === 'loading' || liveCountdown !== null}
+                                  style={{ 
+                                    padding: '14px 28px', 
+                                    background: (cameraStatus === 'loading' || liveCountdown !== null) ? 'rgba(255, 255, 255, 0.1)' : `linear-gradient(135deg, ${accent}, #8A2BE2)`, 
+                                    color: 'var(--text-primary)', 
+                                    border: 'none', 
+                                    borderRadius: '12px', 
+                                    fontWeight: 'bold', 
+                                    fontSize: '15px', 
+                                    cursor: (cameraStatus === 'loading' || liveCountdown !== null) ? 'not-allowed' : 'pointer', 
+                                    transition: 'all 0.2s', 
+                                    display: 'flex', 
+                                    alignItems: 'center', 
+                                    gap: '8px', 
+                                    boxShadow: (cameraStatus === 'loading' || liveCountdown !== null) ? 'none' : `0 8px 24px rgba(138,43,226,0.3)` 
+                                  }} 
+                                  onMouseOver={e => { if (cameraStatus !== 'loading' && liveCountdown === null) e.currentTarget.style.transform='translateY(-2px)'; }} 
+                                  onMouseOut={e => { if (cameraStatus !== 'loading' && liveCountdown === null) e.currentTarget.style.transform='none'; }}
+                                >
+                                  <Camera size={18}/> {cameraStatus === 'loading' ? 'Initializing Camera...' : liveCountdown !== null ? 'Starting...' : 'Start Streaming'}
+                                </button>
+                              )}
                           </div>
                         )}
 
                         {/* WebRTC Overlays & Guests configuration block is disabled
-                        <div style={{ background: 'rgba(0,0,0,0.3)', padding: '16px', borderRadius: '12px', border: '1px dashed rgba(255,255,255,0.1)' }}>
                           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px' }}>
                             <div>
                                <p style={{ margin: 0, color: 'var(--text-primary)', fontWeight: 'bold', fontSize: '14px' }}>WebRTC Overlays & Guests</p>
