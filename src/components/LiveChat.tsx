@@ -4,12 +4,24 @@ import { supabase } from '../supabaseClient';
 import { DictationButton } from './DictationButton';
 import { EmojiPickerButton } from './EmojiPickerButton';
 
-export default function LiveChat({ streamId }: { streamId: string }) {
+interface LiveChatProps {
+  streamId: string;
+  isStreamer?: boolean;
+}
+
+export default function LiveChat({ streamId, isStreamer = false }: LiveChatProps) {
   const [messages, setMessages] = useState<{id: string, user: string, text: string, time: string, isSuperTip?: boolean, amount?: number}[]>([]);
-  const [viewersCount, setViewersCount] = useState(1);
+  const [viewersCount, setViewersCount] = useState(0);
   const [input, setInput] = useState("");
   const [currentUser, setCurrentUser] = useState<any>(null);
   const autoScrollRef = useRef<HTMLDivElement>(null);
+
+  // Check if current user is the streamer/host
+  const isActualStreamer = isStreamer || Boolean(
+    currentUser?.username && (
+      currentUser.username.toLowerCase() === streamId.toLowerCase()
+    )
+  );
 
   useEffect(() => {
     supabase?.auth.getSession().then(({ data: { session } }) => {
@@ -32,18 +44,19 @@ export default function LiveChat({ streamId }: { streamId: string }) {
   const [pinnedSuperTip, setPinnedSuperTip] = useState<any | null>(null);
   const [pinTimeLeft, setPinTimeLeft] = useState(30);
 
-  const [isActive, setIsActive] = useState(true);
-  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const resetTimer = () => {
-    setIsActive(prev => {
-      if (!prev) return true;
-      return prev;
-    });
-    if (timeoutRef.current) clearTimeout(timeoutRef.current);
-    timeoutRef.current = setTimeout(() => {
-      setIsActive(false);
-    }, 20000); // 20s idle
-  };
+  // Disappearing chat on idle (commented out):
+  // const [isActive, setIsActive] = useState(true);
+  // const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  // const resetTimer = () => {
+  //   setIsActive(prev => {
+  //     if (!prev) return true;
+  //     return prev;
+  //   });
+  //   if (timeoutRef.current) clearTimeout(timeoutRef.current);
+  //   timeoutRef.current = setTimeout(() => {
+  //     setIsActive(false);
+  //   }, 20000); // 20s idle
+  // };
 
   // Pinned Super-Tip Timer Effect
   useEffect(() => {
@@ -65,24 +78,25 @@ export default function LiveChat({ streamId }: { streamId: string }) {
   // Realtime Broadcast Channel
   const channelRef = useRef<any>(null);
 
-  useEffect(() => {
-    resetTimer();
-    let lastUpdate = 0;
-    const handleActivity = () => {
-      const now = Date.now();
-      if (now - lastUpdate > 1000) {
-        resetTimer();
-        lastUpdate = now;
-      }
-    };
-    window.addEventListener('mousemove', handleActivity);
-    window.addEventListener('keydown', handleActivity);
-    return () => {
-      window.removeEventListener('mousemove', handleActivity);
-      window.removeEventListener('keydown', handleActivity);
-      if (timeoutRef.current) clearTimeout(timeoutRef.current);
-    };
-  }, []);
+  // Commented out chat disappearing on idle:
+  // useEffect(() => {
+  //   resetTimer();
+  //   let lastUpdate = 0;
+  //   const handleActivity = () => {
+  //     const now = Date.now();
+  //     if (now - lastUpdate > 1000) {
+  //       resetTimer();
+  //       lastUpdate = now;
+  //     }
+  //   };
+  //   window.addEventListener('mousemove', handleActivity);
+  //   window.addEventListener('keydown', handleActivity);
+  //   return () => {
+  //     window.removeEventListener('mousemove', handleActivity);
+  //     window.removeEventListener('keydown', handleActivity);
+  //     if (timeoutRef.current) clearTimeout(timeoutRef.current);
+  //   };
+  // }, []);
 
   useEffect(() => {
     if (supabase) {
@@ -92,8 +106,19 @@ export default function LiveChat({ streamId }: { streamId: string }) {
       channel
         .on('presence', { event: 'sync' }, () => {
           const state = channel.presenceState();
-          const totalViewers = Object.values(state).reduce((acc, presences) => acc + presences.length, 0);
-          setViewersCount(totalViewers || 1);
+          let watchers = 0;
+          Object.values(state).forEach((presences: any) => {
+            presences.forEach((p: any) => {
+              // Do not count the streamer/host as a watcher
+              const isHostPresence = p.isStreamer === true || 
+                p.role === 'streamer' || 
+                (p.username && p.username.toLowerCase() === streamId.toLowerCase());
+              if (!isHostPresence) {
+                watchers++;
+              }
+            });
+          });
+          setViewersCount(watchers);
         })
         .on('broadcast', { event: 'new-message' }, (payload) => {
           const msg = payload.payload.message;
@@ -110,7 +135,12 @@ export default function LiveChat({ streamId }: { streamId: string }) {
         })
         .subscribe(async (status) => {
           if (status === 'SUBSCRIBED') {
-            await channel.track({ online_at: new Date().toISOString() });
+            await channel.track({
+              online_at: new Date().toISOString(),
+              isStreamer: isActualStreamer,
+              role: isActualStreamer ? 'streamer' : 'watcher',
+              username: currentUser?.username || undefined,
+            });
           }
         });
       
@@ -122,7 +152,19 @@ export default function LiveChat({ streamId }: { streamId: string }) {
         supabase?.removeChannel(channelRef.current);
       }
     };
-  }, [streamId]);
+  }, [streamId, isActualStreamer]);
+
+  // Update presence role when currentUser finishes loading
+  useEffect(() => {
+    if (channelRef.current && currentUser) {
+      channelRef.current.track({
+        online_at: new Date().toISOString(),
+        isStreamer: isActualStreamer,
+        role: isActualStreamer ? 'streamer' : 'watcher',
+        username: currentUser.username,
+      }).catch(() => {});
+    }
+  }, [currentUser, isActualStreamer]);
 
   useEffect(() => {
     if (autoScrollRef.current) {
@@ -193,11 +235,16 @@ export default function LiveChat({ streamId }: { streamId: string }) {
   return (
     <div style={{
       display: 'flex', flexDirection: 'column', height: '100%', 
-      background: 'rgba(0,0,0,0.85)', borderLeft: isActive ? '1px solid rgba(255,255,255,0.1)' : 'none',
+      background: 'rgba(0,0,0,0.85)', 
+      borderLeft: '1px solid rgba(255,255,255,0.1)',
       overflow: 'hidden',
-      width: isActive ? '350px' : '0px',
-      opacity: isActive ? 1 : 0,
-      transition: 'width 0.4s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s ease-out'
+      width: '350px',
+      opacity: 1,
+      // Commented out chat disappearing on idle:
+      // borderLeft: isActive ? '1px solid rgba(255,255,255,0.1)' : 'none',
+      // width: isActive ? '350px' : '0px',
+      // opacity: isActive ? 1 : 0,
+      // transition: 'width 0.4s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s ease-out'
     }}>
       {/* Chat Header */}
       <div style={{ padding: '16px', borderBottom: '1px solid rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0 }}>
@@ -337,8 +384,33 @@ export default function LiveChat({ streamId }: { streamId: string }) {
         </div>
       )}
 
+      {/* Quick Reaction Emojis Bar */}
+      <div style={{ padding: '6px 16px', display: 'flex', gap: '8px', borderTop: '1px solid rgba(255,255,255,0.06)', background: 'rgba(0,0,0,0.3)', alignItems: 'center', flexShrink: 0 }}>
+        <span style={{ fontSize: '11px', color: 'var(--text-muted)', fontWeight: 600 }}>Quick:</span>
+        {['🔥', '👏', '❤️', '😂', '🎉', '💯'].map(em => (
+          <button
+            key={em}
+            type="button"
+            onClick={() => setInput(prev => prev + em)}
+            style={{
+              background: 'none',
+              border: 'none',
+              fontSize: '16px',
+              cursor: 'pointer',
+              padding: '2px 4px',
+              borderRadius: '6px',
+              transition: 'transform 0.15s ease'
+            }}
+            onMouseOver={e => e.currentTarget.style.transform = 'scale(1.25)'}
+            onMouseOut={e => e.currentTarget.style.transform = 'scale(1)'}
+          >
+            {em}
+          </button>
+        ))}
+      </div>
+
       {/* Primary Message Input Form */}
-      <form onSubmit={handleSend} style={{ padding: '16px', borderTop: '1px solid rgba(255,255,255,0.1)', display: 'flex', gap: '8px', background: 'var(--bg-surface)', flexShrink: 0, alignItems: 'center' }}>
+      <form onSubmit={handleSend} style={{ position: 'relative', zIndex: 50, padding: '16px', borderTop: '1px solid rgba(255,255,255,0.1)', display: 'flex', gap: '8px', background: 'var(--bg-surface)', flexShrink: 0, alignItems: 'center' }}>
         <button 
           type="button" 
           onClick={() => setShowSuperTipPanel(!showSuperTipPanel)} 
@@ -369,7 +441,7 @@ export default function LiveChat({ streamId }: { streamId: string }) {
           style={{ flex: 1, background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '24px', padding: '10px 16px', color: 'var(--text-primary)', outline: 'none', minWidth: 0 }}
         />
         <div style={{ display: 'flex', alignItems: 'center', gap: '4px', flexShrink: 0 }}>
-          <EmojiPickerButton onSelect={(emoji) => setInput(prev => prev + emoji)} />
+          <EmojiPickerButton pickerWidth={300} pickerHeight={350} onSelect={(emoji) => setInput(prev => prev + emoji)} />
           <DictationButton onResult={(text) => setInput(prev => prev ? `${prev} ${text}` : text)} />
         </div>
         <button type="submit" disabled={!input.trim()} style={{ background: input.trim() ? '#00ff88' : 'rgba(255,255,255,0.1)', color: '#000', border: 'none', borderRadius: '50%', width: '36px', height: '36px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: input.trim() ? 'pointer' : 'default', transition: '0.2s', flexShrink: 0 }}>

@@ -744,11 +744,11 @@ export const ProfileLive: React.FC<ProfileLiveProps> = ({
 
           call.on('close', () => {
             // Host rejected or closed the call (auth failure, or host went offline)
-            console.warn('[WebRTC Viewer] Call was closed by host — retrying in 5s');
+            console.warn('[WebRTC Viewer] Call was closed by host — retrying in 3s');
             setIsRemoteConnected(false);
             if (!destroyed) {
               setConnectionStatus('reconnecting');
-              retryTimeout = setTimeout(connectToHost, 5000);
+              retryTimeout = setTimeout(connectToHost, 3000);
             }
           });
 
@@ -1609,7 +1609,10 @@ export const ProfileLive: React.FC<ProfileLiveProps> = ({
                     ) : (
                       <ErrorBoundary fallback={<div style={{ padding: '20px', color: '#ff4d4d' }}>⚠️ Live chat crashed.</div>}>
                         <React.Suspense fallback={<div style={{ padding: '20px', color: 'var(--text-secondary)' }}>Loading chat...</div>}>
-                          <LiveChat streamId={profile?.username || 'profile'} />
+                          <LiveChat 
+                            streamId={profile?.username || 'profile'} 
+                            isStreamer={isBroadcaster || isOwnProfile} 
+                          />
                         </React.Suspense>
                       </ErrorBoundary>
                     )}

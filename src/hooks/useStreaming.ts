@@ -84,12 +84,17 @@ export function useStreaming({ profileId, isOwnProfile, viewMode = 'public', use
     isPlayingLiveRef.current = isPlayingLive;
   }, [isPlayingLive]);
 
+  const liveCountdownRef = useRef(liveCountdown);
+  useEffect(() => {
+    liveCountdownRef.current = liveCountdown;
+  }, [liveCountdown]);
+
   const isCameraActive = isBroadcaster && (isPlayingLive || liveCountdown !== null || isCameraRequested);
   const isPreviewExpired = !isOwnProfile && isPlayingLive && !hasPaidForLive && previewTimeLeft === 0;
 
   // ── Countdown Timer (guarded against double-start) ──
   const triggerCountdown = useCallback(() => {
-    if (countdownRef.current !== null || liveCountdown !== null || isPlayingLiveRef.current) return;
+    if (countdownRef.current !== null || liveCountdownRef.current !== null || isPlayingLiveRef.current) return;
     setLiveCountdown(3);
     let ticker = 3;
     const interval = setInterval(() => {
@@ -105,10 +110,10 @@ export function useStreaming({ profileId, isOwnProfile, viewMode = 'public', use
       }
     }, 1000);
     countdownRef.current = interval;
-  }, [liveCountdown]);
+  }, []);
 
   const startLiveStream = useCallback(() => {
-    if (!isBroadcaster || countdownRef.current !== null || liveCountdown !== null || isPlayingLive) return;
+    if (!isBroadcaster || countdownRef.current !== null || liveCountdownRef.current !== null || isPlayingLiveRef.current) return;
     setIsCameraRequested(true);
     if (cameraStatus === 'active' && localStreamRef.current) {
       triggerCountdown();
@@ -117,7 +122,7 @@ export function useStreaming({ profileId, isOwnProfile, viewMode = 'public', use
       setCameraDebugData('Initializing hardware...');
       setCameraTrigger(c => c + 1);
     }
-  }, [isBroadcaster, liveCountdown, isPlayingLive, cameraStatus, triggerCountdown]);
+  }, [isBroadcaster, cameraStatus, triggerCountdown]);
 
   const stopLiveStream = useCallback(() => {
     setIsPlayingLive(false);
@@ -168,22 +173,29 @@ export function useStreaming({ profileId, isOwnProfile, viewMode = 'public', use
 
     const peerId = `vibe-host-${profileId}`;
     let retryCount = 0;
-    const MAX_RETRIES = 3;
+    const MAX_RETRIES = 5;
     let hostPeer: Peer | null = null;
     let aborted = false;
+    let retryTimeoutId: any = null;
 
-    const createPeer = (id: string) => {
+    const createPeer = () => {
       if (aborted) return;
-      console.log(`[PeerJS Host] Initializing Peer with ID: ${id}`);
-      hostPeer = new Peer(id, {
+      console.log(`[PeerJS Host] Initializing Peer with ID: ${peerId} (attempt ${retryCount + 1})`);
+      if (hostPeer) {
+        try { hostPeer.destroy(); } catch (_) {}
+      }
+
+      hostPeer = new Peer(peerId, {
         debug: PEERJS_DEBUG_LEVEL,
         secure: true,
         config: { iceServers: ICE_SERVERS },
       });
+      peerRef.current = hostPeer;
 
       hostPeer.on('open', () => {
+        if (aborted) return;
         retryCount = 0;
-        console.log(`[PeerJS Host] Registered as: ${id}`);
+        console.log(`[PeerJS Host] Registered as: ${peerId}`);
         if (channelRef.current) {
           channelRef.current.send({
             type: 'broadcast',
@@ -202,14 +214,13 @@ export function useStreaming({ profileId, isOwnProfile, viewMode = 'public', use
 
         if (isSubscriber || isGuest || isSelf) {
           console.log(`[WebRTC] Authorized: ${meta.viewerName || 'Viewer'} (${meta.authType})`);
-          // Always use the ref — it's always the freshest stream
-          const currentStream = localStreamRef.current;
-          if (currentStream) {
-            const vTracks = currentStream.getVideoTracks();
-            const aTracks = currentStream.getAudioTracks();
+
+          const answerCallWithStream = (stream: MediaStream) => {
+            const vTracks = stream.getVideoTracks();
+            const aTracks = stream.getAudioTracks();
             aTracks.forEach(t => { t.enabled = true; });
             console.log(`[WebRTC] Answering with stream: video=${vTracks.length} (${vTracks[0]?.readyState || 'none'}) audio=${aTracks.length} (${aTracks[0]?.readyState || 'none'})`);
-            call.answer(currentStream);
+            call.answer(stream);
             activeCallsRef.current.add(call);
             call.on('close', () => {
               activeCallsRef.current.delete(call);
@@ -217,9 +228,28 @@ export function useStreaming({ profileId, isOwnProfile, viewMode = 'public', use
             call.on('error', () => {
               activeCallsRef.current.delete(call);
             });
+          };
+
+          // Always use the ref — it's always the freshest stream
+          const currentStream = localStreamRef.current;
+          if (currentStream && currentStream.active && currentStream.getVideoTracks().length > 0) {
+            answerCallWithStream(currentStream);
           } else {
-            console.warn('[WebRTC] No local stream to answer with');
-            call.close();
+            // Camera hardware may still be starting up: wait up to 1.5s before closing call
+            console.log('[WebRTC] Stream acquiring hardware, holding viewer call for up to 1.5s...');
+            let attempts = 0;
+            const waitInterval = setInterval(() => {
+              attempts++;
+              const delayedStream = localStreamRef.current;
+              if (delayedStream && delayedStream.active && delayedStream.getVideoTracks().length > 0) {
+                clearInterval(waitInterval);
+                answerCallWithStream(delayedStream);
+              } else if (attempts >= 10 || aborted) {
+                clearInterval(waitInterval);
+                console.warn('[WebRTC] No local stream to answer with after waiting');
+                call.close();
+              }
+            }, 150);
           }
         } else {
           console.warn(`[WebRTC] Blocked: ${meta.viewerName || 'Unknown'} (${meta.authType || 'none'})`);
@@ -229,24 +259,26 @@ export function useStreaming({ profileId, isOwnProfile, viewMode = 'public', use
 
       hostPeer.on('error', (err: any) => {
         console.error('[PeerJS Host Error]', err.type, err.message);
-        if (err.type === 'unavailable-id' && retryCount < MAX_RETRIES) {
+        if (err.type === 'unavailable-id' && retryCount < MAX_RETRIES && !aborted) {
           retryCount++;
-          const suffixedId = `${peerId}-${Date.now()}`;
-          console.log(`[PeerJS] ID collision, retrying with: ${suffixedId}`);
-          hostPeer?.destroy();
-          createPeer(suffixedId);
+          console.log(`[PeerJS] ID "${peerId}" is held by signaling server. Retrying in 3s (attempt ${retryCount}/${MAX_RETRIES})...`);
+          try { hostPeer?.destroy(); } catch (_) {}
+          hostPeer = null;
+          retryTimeoutId = setTimeout(() => {
+            if (!aborted) createPeer();
+          }, 3000);
         }
       });
     };
 
-    createPeer(peerId);
-    peerRef.current = hostPeer;
+    createPeer();
 
     return () => {
       aborted = true;
+      if (retryTimeoutId) clearTimeout(retryTimeoutId);
       if (hostPeer) {
         console.log(`[PeerJS Host] Destroying Peer connection for: ${peerId}`);
-        hostPeer.destroy();
+        try { hostPeer.destroy(); } catch (_) {}
       }
       peerRef.current = null;
     };
@@ -321,6 +353,26 @@ export function useStreaming({ profileId, isOwnProfile, viewMode = 'public', use
               setCameraDebugData(prev => prev + ` | PlayErr: ${e.message}`);
             });
           }
+
+          // If there are existing viewer calls (e.g. camera re-initialized or toggled),
+          // seamlessly update sender tracks so viewers don't lose connection
+          activeCallsRef.current.forEach(c => {
+            try {
+              const pc: RTCPeerConnection = c.peerConnection;
+              if (pc) {
+                const senders = pc.getSenders();
+                const newVideoTrack = stream.getVideoTracks()[0];
+                const newAudioTrack = stream.getAudioTracks()[0];
+                senders.forEach(sender => {
+                  if (sender.track?.kind === 'video' && newVideoTrack) {
+                    sender.replaceTrack(newVideoTrack).catch(() => {});
+                  } else if (sender.track?.kind === 'audio' && newAudioTrack) {
+                    sender.replaceTrack(newAudioTrack).catch(() => {});
+                  }
+                });
+              }
+            } catch (_) {}
+          });
 
           // Trigger countdown now that camera hardware is active
           if (!isPlayingLiveRef.current && countdownRef.current === null) {
