@@ -172,12 +172,10 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
 
   const isOwnProfile = Boolean(
     user && (
-      targetProfileId === user.id ||
-      (isBennieUser && (targetProfileId === '8c409557-a48c-41d4-8133-9d9788aebe0d' || !paramCreatorId)) ||
-      (isJoeUser && (targetProfileId === 'db7af833-2f7a-40b0-ad46-57ff8fbd4744' || !paramCreatorId)) ||
-      isCourtney ||
-      targetProfileId === wlConfig?.id ||
-      wlConfig?.owner_id === user.id
+      (!rawCreatorId && !creatorIdOverride) ||
+      (targetProfileId === user.id) ||
+      (isBennieUser && (targetProfileId === '8c409557-a48c-41d4-8133-9d9788aebe0d' || !rawCreatorId)) ||
+      (isJoeUser && (targetProfileId === 'db7af833-2f7a-40b0-ad46-57ff8fbd4744' || !rawCreatorId))
     )
   );
 
@@ -1530,11 +1528,10 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
         const loadedProfileId = targetProfile.id;
       const isOwn = Boolean(
         user && (
-          loadedProfileId === user.id ||
+          (!rawCreatorId && !creatorIdOverride) ||
+          (loadedProfileId === user.id) ||
           (isBennieUser && loadedProfileId === '8c409557-a48c-41d4-8133-9d9788aebe0d') ||
-          (isJoeUser && loadedProfileId === 'db7af833-2f7a-40b0-ad46-57ff8fbd4744') ||
-          targetProfile.whitelabel_id === user.id ||
-          wlConfig?.owner_id === user.id
+          (isJoeUser && loadedProfileId === 'db7af833-2f7a-40b0-ad46-57ff8fbd4744')
         )
       );
       setViewMode(isOwn ? 'edit' : 'public');
