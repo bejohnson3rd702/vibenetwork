@@ -46,12 +46,13 @@ export function useStreaming({ profileId, isOwnProfile, viewMode = 'public', use
   const [directorLayout, setDirectorLayout] = useState('grid');
 
   // ── Monetization State ──
-  const [livePrice, setLivePrice] = useState('5.00');
+  const [livePrice, setLivePrice] = useState('0');
   const [hasPaidForLive, setHasPaidForLive] = useState(false);
-  const [previewTimeLeft, setPreviewTimeLeft] = useState(90);
+  const [previewTimeLeft, setPreviewTimeLeft] = useState(120);
   const [isSubscribed, setIsSubscribed] = useState(false);
   const [subPrice, setSubPrice] = useState('9.99');
   const [pinnedProducts, setPinnedProducts] = useState<any[]>([]);
+  const [recordStream, setRecordStream] = useState<boolean>(true);
 
   // ── UI State ──
   const [showTipModal, setShowTipModal] = useState(false);
@@ -90,7 +91,8 @@ export function useStreaming({ profileId, isOwnProfile, viewMode = 'public', use
   }, [liveCountdown]);
 
   const isCameraActive = isBroadcaster && (isPlayingLive || liveCountdown !== null || isCameraRequested);
-  const isPreviewExpired = !isOwnProfile && isPlayingLive && !hasPaidForLive && previewTimeLeft === 0;
+  const hasFullAccess = isOwnProfile || isSubscribed || hasPaidForLive;
+  const isPreviewExpired = !hasFullAccess && isPlayingLive && previewTimeLeft === 0;
 
   // ── Countdown Timer (guarded against double-start) ──
   const triggerCountdown = useCallback(() => {
@@ -140,7 +142,10 @@ export function useStreaming({ profileId, isOwnProfile, viewMode = 'public', use
       localStreamRef.current = null;
       setLocalStream(null);
     }
-  }, []);
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent('vibe_stream_ended', { detail: { profileId } }));
+    }
+  }, [profileId]);
 
   // Cleanup countdown on unmount
   useEffect(() => {
@@ -152,15 +157,16 @@ export function useStreaming({ profileId, isOwnProfile, viewMode = 'public', use
     };
   }, []);
 
-  // ── Free Preview Countdown ──
+  // ── Free Preview Countdown (2-minute preview for unsubscribed viewers) ──
   useEffect(() => {
-    if (!isOwnProfile && isPlayingLive && !hasPaidForLive && previewTimeLeft > 0) {
+    const hasFullAccess = isOwnProfile || isSubscribed || hasPaidForLive;
+    if (!hasFullAccess && isPlayingLive && previewTimeLeft > 0) {
       const timer = setInterval(() => {
         setPreviewTimeLeft(prev => (prev > 0 ? prev - 1 : 0));
       }, 1000);
       return () => clearInterval(timer);
     }
-  }, [isOwnProfile, isPlayingLive, hasPaidForLive, previewTimeLeft]);
+  }, [isOwnProfile, isPlayingLive, hasPaidForLive, previewTimeLeft, isSubscribed]);
 
   // ══════════════════════════════════════════════════════════════
   // PeerJS Host Lifetime Effect
@@ -552,6 +558,11 @@ export function useStreaming({ profileId, isOwnProfile, viewMode = 'public', use
           event: 'stream_status',
           payload: { isPlayingLive: false, isPubliclyLive: false, pinnedProducts: [] },
         });
+        channelRef.current.send({
+          type: 'broadcast',
+          event: 'stream-ended',
+          payload: { profileId },
+        });
       }
       return;
     }
@@ -578,14 +589,14 @@ export function useStreaming({ profileId, isOwnProfile, viewMode = 'public', use
   useEffect(() => {
     if (!isBroadcaster || typeof window === 'undefined') return;
 
-    if (isPlayingLive) {
+    if (isPlayingLive && recordStream) {
       const stream = localStreamRef.current;
       if (!stream) {
         console.warn("[Recording] Cannot start recording: local stream not available.");
         return;
       }
 
-      console.log("[Recording] Live stream started. Initializing MediaRecorder...");
+      console.log("[Recording] Live stream started with recordStream=true. Initializing MediaRecorder...");
       recordedChunksRef.current = [];
 
       let options: any = {};
@@ -644,7 +655,7 @@ export function useStreaming({ profileId, isOwnProfile, viewMode = 'public', use
             console.log("[Recording] Upload complete. Public URL:", publicUrl);
 
             // Add record to videos database table
-            const streamPrice = parseFloat(livePrice || '5.00') || 5.00;
+            const streamPrice = parseFloat(livePrice || '0') || 0;
             const { data: insertedVideo, error: insertErr } = await supabase
               .from('videos')
               .insert({
@@ -689,7 +700,7 @@ export function useStreaming({ profileId, isOwnProfile, viewMode = 'public', use
         mediaRecorderRef.current = null;
       }
     };
-  }, [isPlayingLive, isBroadcaster, profileId, user?.id, livePrice]);
+  }, [isPlayingLive, isBroadcaster, recordStream, profileId, user?.id, livePrice]);
 
   return {
     // Core live state
@@ -721,6 +732,7 @@ export function useStreaming({ profileId, isOwnProfile, viewMode = 'public', use
     isSubscribed, setIsSubscribed,
     subPrice, setSubPrice,
     pinnedProducts, setPinnedProducts,
+    recordStream, setRecordStream,
 
     // UI
     showTipModal, setShowTipModal,

@@ -7,10 +7,27 @@ import { EmojiPickerButton } from './EmojiPickerButton';
 interface LiveChatProps {
   streamId: string;
   isStreamer?: boolean;
+  isStreamLive?: boolean;
 }
 
-export default function LiveChat({ streamId, isStreamer = false }: LiveChatProps) {
-  const [messages, setMessages] = useState<{id: string, user: string, text: string, time: string, isSuperTip?: boolean, amount?: number}[]>([]);
+export default function LiveChat({ streamId, isStreamer = false, isStreamLive }: LiveChatProps) {
+  const storageKey = `vibe_live_chat_${streamId.toLowerCase()}`;
+
+  const [messages, setMessages] = useState<{id: string, user: string, text: string, time: string, isSuperTip?: boolean, amount?: number}[]>(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        const raw = sessionStorage.getItem(storageKey) || localStorage.getItem(storageKey);
+        if (raw) {
+          const parsed = JSON.parse(raw);
+          if (parsed && Array.isArray(parsed.messages) && Date.now() - (parsed.updatedAt || 0) < 12 * 60 * 60 * 1000) {
+            return parsed.messages;
+          }
+        }
+      } catch (_) {}
+    }
+    return [];
+  });
+
   const [viewersCount, setViewersCount] = useState(0);
   const [input, setInput] = useState("");
   const [currentUser, setCurrentUser] = useState<any>(null);
@@ -41,7 +58,20 @@ export default function LiveChat({ streamId, isStreamer = false }: LiveChatProps
   const [showSuperTipPanel, setShowSuperTipPanel] = useState(false);
   const [tipAmount, setTipAmount] = useState<number>(5);
   const [tipMessage, setTipMessage] = useState("");
-  const [pinnedSuperTip, setPinnedSuperTip] = useState<any | null>(null);
+  const [pinnedSuperTip, setPinnedSuperTip] = useState<any | null>(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        const raw = sessionStorage.getItem(storageKey) || localStorage.getItem(storageKey);
+        if (raw) {
+          const parsed = JSON.parse(raw);
+          if (parsed && parsed.pinnedSuperTip && Date.now() - (parsed.updatedAt || 0) < 30 * 1000) {
+            return parsed.pinnedSuperTip;
+          }
+        }
+      } catch (_) {}
+    }
+    return null;
+  });
   const [pinTimeLeft, setPinTimeLeft] = useState(30);
 
   // Disappearing chat on idle (commented out):
@@ -75,28 +105,58 @@ export default function LiveChat({ streamId, isStreamer = false }: LiveChatProps
     return () => clearInterval(interval);
   }, [pinnedSuperTip]);
 
+  // Save messages to session and local storage so they stay on page refresh
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    if (messages.length > 0 || pinnedSuperTip) {
+      try {
+        const payload = JSON.stringify({
+          messages,
+          pinnedSuperTip,
+          updatedAt: Date.now(),
+        });
+        sessionStorage.setItem(storageKey, payload);
+        localStorage.setItem(storageKey, payload);
+      } catch (_) {}
+    }
+  }, [messages, pinnedSuperTip, storageKey]);
+
+  const wasLiveRef = useRef<boolean>(false);
+
+  // Clear chat when the stream ends (was live, now ended)
+  useEffect(() => {
+    if (isStreamLive) {
+      wasLiveRef.current = true;
+    } else if (wasLiveRef.current && isStreamLive === false) {
+      console.log('[LiveChat] Stream ended (was live, now offline). Clearing chat.');
+      wasLiveRef.current = false;
+      setMessages([]);
+      setPinnedSuperTip(null);
+      if (typeof window !== 'undefined') {
+        sessionStorage.removeItem(storageKey);
+        localStorage.removeItem(storageKey);
+      }
+    }
+  }, [isStreamLive, storageKey]);
+
+  // Also listen for explicit stream-ended events
+  useEffect(() => {
+    const handleStreamEndEvent = () => {
+      console.log('[LiveChat] Received stream-ended window event. Clearing chat.');
+      wasLiveRef.current = false;
+      setMessages([]);
+      setPinnedSuperTip(null);
+      if (typeof window !== 'undefined') {
+        sessionStorage.removeItem(storageKey);
+        localStorage.removeItem(storageKey);
+      }
+    };
+    window.addEventListener('vibe_stream_ended', handleStreamEndEvent);
+    return () => window.removeEventListener('vibe_stream_ended', handleStreamEndEvent);
+  }, [storageKey]);
+
   // Realtime Broadcast Channel
   const channelRef = useRef<any>(null);
-
-  // Commented out chat disappearing on idle:
-  // useEffect(() => {
-  //   resetTimer();
-  //   let lastUpdate = 0;
-  //   const handleActivity = () => {
-  //     const now = Date.now();
-  //     if (now - lastUpdate > 1000) {
-  //       resetTimer();
-  //       lastUpdate = now;
-  //     }
-  //   };
-  //   window.addEventListener('mousemove', handleActivity);
-  //   window.addEventListener('keydown', handleActivity);
-  //   return () => {
-  //     window.removeEventListener('mousemove', handleActivity);
-  //     window.removeEventListener('keydown', handleActivity);
-  //     if (timeoutRef.current) clearTimeout(timeoutRef.current);
-  //   };
-  // }, []);
 
   useEffect(() => {
     if (supabase) {
@@ -119,6 +179,16 @@ export default function LiveChat({ streamId, isStreamer = false }: LiveChatProps
             });
           });
           setViewersCount(watchers);
+        })
+        .on('broadcast', { event: 'stream-ended' }, () => {
+          console.log('[LiveChat] Received broadcast stream-ended. Clearing chat.');
+          wasLiveRef.current = false;
+          setMessages([]);
+          setPinnedSuperTip(null);
+          if (typeof window !== 'undefined') {
+            sessionStorage.removeItem(storageKey);
+            localStorage.removeItem(storageKey);
+          }
         })
         .on('broadcast', { event: 'new-message' }, (payload) => {
           const msg = payload.payload.message;
@@ -172,14 +242,14 @@ export default function LiveChat({ streamId, isStreamer = false }: LiveChatProps
     }
   }, [messages]);
 
-  const handleSend = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!input.trim()) return;
+  const sendMessage = () => {
+    const trimmed = input.trim();
+    if (!trimmed) return;
     
     const myMessage = {
       id: Math.random().toString(),
       user: currentUser?.username || 'Guest',
-      text: input.trim(),
+      text: trimmed,
       time: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})
     };
     
@@ -198,6 +268,11 @@ export default function LiveChat({ streamId, isStreamer = false }: LiveChatProps
     }
     
     setInput("");
+  };
+
+  const handleSend = (e: React.FormEvent) => {
+    e.preventDefault();
+    sendMessage();
   };
 
   const handleSendSuperTip = () => {
@@ -437,6 +512,12 @@ export default function LiveChat({ streamId, isStreamer = false }: LiveChatProps
           type="text"
           value={input}
           onChange={e => setInput(e.target.value)}
+          onKeyDown={e => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+              e.preventDefault();
+              sendMessage();
+            }
+          }}
           placeholder="Send a message..."
           style={{ flex: 1, background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '24px', padding: '10px 16px', color: 'var(--text-primary)', outline: 'none', minWidth: 0 }}
         />

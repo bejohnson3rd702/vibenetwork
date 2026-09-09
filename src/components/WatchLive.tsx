@@ -3865,7 +3865,8 @@ export default function WatchLive({ accent = '#D35400', isCourtneyBee = false, i
                           </>
                         )}
 
-                        {/* Fan Zone Toggle Button */}
+                        {/* Fan Zone Toggle Button (commented out) */}
+                        {false && (
                         <button
                           onClick={() => setShowFanZone(!showFanZone)}
                           style={{
@@ -3906,6 +3907,7 @@ export default function WatchLive({ accent = '#D35400', isCourtneyBee = false, i
                           <Sparkles size={14} fill={showFanZone ? 'none' : '#fff'} />
                           {showFanZone ? 'Leave Fan Zone' : '🎉 Join Fan Zone'}
                         </button>
+                        )}
 
                         {activeVideo.articleUrl && (
                           <a
@@ -4039,9 +4041,9 @@ export default function WatchLive({ accent = '#D35400', isCourtneyBee = false, i
                     </div>
                   </div>
 
-                  {/* Right Column: Fan Zone Panel */}
+                  {/* Right Column: Fan Zone Panel (commented out) */}
                   <AnimatePresence>
-                    {showFanZone && (
+                    {false && showFanZone && (
                       <motion.div
                         initial={{ opacity: 0, x: 30, width: 0 }}
                         animate={{ opacity: 1, x: 0, width: '33%' }}
@@ -4409,6 +4411,12 @@ export default function WatchLive({ accent = '#D35400', isCourtneyBee = false, i
                               type="text"
                               value={chatInput}
                               onChange={e => setChatInput(e.target.value)}
+                              onKeyDown={e => {
+                                if (e.key === 'Enter' && !e.shiftKey) {
+                                  e.preventDefault();
+                                  (e.currentTarget.form as HTMLFormElement)?.requestSubmit();
+                                }
+                              }}
                               placeholder="Say something..."
                               className="watch-live-chat-input"
                               style={{

@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Lock, Settings, Camera, Video, Globe, X, Mic, MicOff, VideoOff, Send, Check, Copy, Play, Trash2, Plus, Edit3, Radio, Eye, Volume2, VolumeX } from 'lucide-react';
+import { Lock, Settings, Camera, Video, Globe, X, Mic, MicOff, VideoOff, Send, Check, Copy, Play, Trash2, Plus, Edit3, Radio, Eye, Volume2, VolumeX, Maximize, Minimize, MessageSquare, MessageSquareOff, ChevronRight, ChevronLeft } from 'lucide-react';
 import { useToast } from '../context/ToastContext';
 import Peer from 'peerjs';
 import { supabase } from '../supabaseClient';
@@ -60,12 +60,15 @@ export interface ProfileLiveProps {
   products?: any[];
   pinnedProducts?: any[];
   setPinnedProducts?: (products: any[]) => void;
+  recordStream?: boolean;
+  setRecordStream?: (val: boolean) => void;
+  onOpenSubModal?: () => void;
 }
 
 export const ProfileLive: React.FC<ProfileLiveProps> = ({
   accent = '#D35400',
   isSubscribed, isOwnProfile, localGuestData, isPlayingLive, isPubliclyLive,
-  streamSource, isPreviewExpired, liveEmbedUrl, hasPaidForLive, livePrice,
+  streamSource, isPreviewExpired: _rawIsPreviewExpired, liveEmbedUrl, hasPaidForLive, livePrice,
   previewTimeLeft, presenterMode, activeGuests, totalSlots, showHost,
   cameraStatus, setCameraStatus, videoRef, profile, visibleGuests,
   homepageImageUrl, channelRef, setShowExitScreen, viewMode, creatorId,
@@ -74,15 +77,93 @@ export const ProfileLive: React.FC<ProfileLiveProps> = ({
   setLocalGuestData, handleStripeCheckout, handleUnlockLive, handleSubscribe,
   startLiveStream, stopLiveStream, setShowTipModal, localStream, liveCountdown,
   isCameraRequested = false,
-  products = [], pinnedProducts = [], setPinnedProducts = () => {}
+  products = [], pinnedProducts = [], setPinnedProducts = () => {},
+  recordStream, setRecordStream,
+  onOpenSubModal
 }) => {
   const toast = useToast();
+  const isRecording = recordStream !== undefined ? recordStream : true;
+  const setIsRecording = setRecordStream || (() => {});
   const bypassSub = typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('bypass_sub') === 'true';
   const effectiveIsSubscribed = isSubscribed || bypassSub;
+  const hasFullAccess = isOwnProfile || effectiveIsSubscribed || hasPaidForLive || Boolean(localGuestData);
+  const isPaywalled = parseFloat(livePrice || '0') > 0 && !hasFullAccess;
+  const isPreviewExpired = !hasFullAccess && previewTimeLeft === 0;
   const viewerVideoRef = React.useRef<HTMLVideoElement>(null);
   const [isRemoteConnected, setIsRemoteConnected] = React.useState(false);
   const [isDrawerOpen, setIsDrawerOpen] = React.useState(false);
   const [lastPinnedCount, setLastPinnedCount] = React.useState(0);
+
+  // ── Fullscreen & Overlay Chat State ──
+  const [isFullscreen, setIsFullscreen] = React.useState(false);
+  const [showChatInFullscreen, setShowChatInFullscreen] = React.useState(true);
+  const streamContainerRef = React.useRef<HTMLDivElement>(null);
+
+  const toggleFullscreen = React.useCallback(async () => {
+    const elem = streamContainerRef.current;
+    if (!elem) return;
+
+    if (!document.fullscreenElement && !(elem as any)._isCssFs) {
+      try {
+        if (elem.requestFullscreen) {
+          await elem.requestFullscreen();
+        } else if ((elem as any).webkitRequestFullscreen) {
+          await (elem as any).webkitRequestFullscreen();
+        } else if ((elem as any).msRequestFullscreen) {
+          await (elem as any).msRequestFullscreen();
+        }
+        setIsFullscreen(true);
+      } catch (err) {
+        console.warn("[Fullscreen] Browser fullscreen failed, falling back to CSS fullscreen:", err);
+        (elem as any)._isCssFs = true;
+        setIsFullscreen(true);
+      }
+    } else {
+      try {
+        if (document.fullscreenElement) {
+          if (document.exitFullscreen) {
+            await document.exitFullscreen();
+          } else if ((document as any).webkitExitFullscreen) {
+            await (document as any).webkitExitFullscreen();
+          }
+        }
+      } catch (_) {}
+      (elem as any)._isCssFs = false;
+      setIsFullscreen(false);
+    }
+  }, []);
+
+  React.useEffect(() => {
+    const handleFsChange = () => {
+      const isFs = Boolean(
+        document.fullscreenElement &&
+        streamContainerRef.current &&
+        (document.fullscreenElement === streamContainerRef.current || streamContainerRef.current.contains(document.fullscreenElement))
+      );
+      setIsFullscreen(isFs);
+    };
+
+    document.addEventListener('fullscreenchange', handleFsChange);
+    document.addEventListener('webkitfullscreenchange', handleFsChange);
+    document.addEventListener('mozfullscreenchange', handleFsChange);
+    document.addEventListener('MSFullscreenChange', handleFsChange);
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && streamContainerRef.current && (streamContainerRef.current as any)._isCssFs) {
+        (streamContainerRef.current as any)._isCssFs = false;
+        setIsFullscreen(false);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+
+    return () => {
+      document.removeEventListener('fullscreenchange', handleFsChange);
+      document.removeEventListener('webkitfullscreenchange', handleFsChange);
+      document.removeEventListener('mozfullscreenchange', handleFsChange);
+      document.removeEventListener('MSFullscreenChange', handleFsChange);
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, []);
 
   // ── Past Streams States & Actions ──
   const [pastStreams, setPastStreams] = React.useState<any[]>([]);
@@ -464,7 +545,62 @@ export const ProfileLive: React.FC<ProfileLiveProps> = ({
   const [copied, setCopied] = React.useState(false);
   const [isPrivate, setIsPrivate] = React.useState(false);
   const [chatInput, setChatInput] = React.useState('');
-  const [chatMessages, setChatMessages] = React.useState<{ id: string; user: string; text: string; avatar: string; time: string; isSelf?: boolean }[]>([]);
+  const fanzoneStorageKey = `vibe_fanzone_chat_${profile?.username || creatorId || 'profile'}`;
+  const [chatMessages, setChatMessages] = React.useState<{ id: string; user: string; text: string; avatar: string; time: string; isSelf?: boolean }[]>(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        const raw = sessionStorage.getItem(fanzoneStorageKey) || localStorage.getItem(fanzoneStorageKey);
+        if (raw) {
+          const parsed = JSON.parse(raw);
+          if (parsed && Array.isArray(parsed.messages) && Date.now() - (parsed.updatedAt || 0) < 12 * 60 * 60 * 1000) {
+            return parsed.messages;
+          }
+        }
+      } catch (_) {}
+    }
+    return [];
+  });
+
+  // Save Fan Zone chat messages across page refreshes
+  React.useEffect(() => {
+    if (typeof window === 'undefined') return;
+    if (chatMessages.length > 0) {
+      try {
+        const payload = JSON.stringify({ messages: chatMessages, updatedAt: Date.now() });
+        sessionStorage.setItem(fanzoneStorageKey, payload);
+        localStorage.setItem(fanzoneStorageKey, payload);
+      } catch (_) {}
+    }
+  }, [chatMessages, fanzoneStorageKey]);
+
+  // Clear Fan Zone chat when stream ends
+  const wasFanzoneLiveRef = React.useRef<boolean>(false);
+  React.useEffect(() => {
+    if (isStreamLive) {
+      wasFanzoneLiveRef.current = true;
+    } else if (wasFanzoneLiveRef.current && isStreamLive === false) {
+      wasFanzoneLiveRef.current = false;
+      setChatMessages([]);
+      if (typeof window !== 'undefined') {
+        sessionStorage.removeItem(fanzoneStorageKey);
+        localStorage.removeItem(fanzoneStorageKey);
+      }
+    }
+  }, [isStreamLive, fanzoneStorageKey]);
+
+  React.useEffect(() => {
+    const handleStreamEndEvent = () => {
+      wasFanzoneLiveRef.current = false;
+      setChatMessages([]);
+      if (typeof window !== 'undefined') {
+        sessionStorage.removeItem(fanzoneStorageKey);
+        localStorage.removeItem(fanzoneStorageKey);
+      }
+    };
+    window.addEventListener('vibe_stream_ended', handleStreamEndEvent);
+    return () => window.removeEventListener('vibe_stream_ended', handleStreamEndEvent);
+  }, [fanzoneStorageKey]);
+
   const [reactions, setReactions] = React.useState<{ id: number; char: string; left: number }[]>([]);
   const [coWatchers, setCoWatchers] = React.useState([
     { id: '1', name: 'Alex', avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100&h=100&fit=crop', speaking: true, hasVideo: true },
@@ -636,8 +772,8 @@ export const ProfileLive: React.FC<ProfileLiveProps> = ({
 
   React.useEffect(() => {
     if (isBroadcaster || !isPlayingLive || streamSource !== 'camera') return;
-    // Strictly block connection requests if the user is unauthorized
-    if (!isOwnProfile && !effectiveIsSubscribed && !hasPaidForLive && !localGuestData) return;
+    // Block unauthorized viewers only once the 2-minute preview has expired
+    if (!hasFullAccess && previewTimeLeft === 0) return;
 
     let peer: Peer | null = null;
     let call: any = null;
@@ -827,7 +963,8 @@ export const ProfileLive: React.FC<ProfileLiveProps> = ({
                 });
             }
 
-            // Stream Playback Stall Watchdog: auto-recovers if frames stop arriving for > 6s
+            // Stream Playback Stall Watchdog: auto-recovers if frames stop arriving
+            let lastFrames = -1;
             let lastPlaybackTime = 0;
             let stallTicks = 0;
             stallWatcher = setInterval(() => {
@@ -837,10 +974,24 @@ export const ProfileLive: React.FC<ProfileLiveProps> = ({
               }
               const vid = viewerVideoRef.current;
               if (vid && vid.srcObject && !vid.paused && vid.readyState >= 2) {
-                if (vid.currentTime > 0 && Math.abs(vid.currentTime - lastPlaybackTime) < 0.05) {
+                const quality = (vid as any).getVideoPlaybackQuality?.();
+                const totalFrames = quality?.totalVideoFrames ?? (vid as any).webkitDecodedFrameCount;
+
+                let isAdvancing = false;
+                if (typeof totalFrames === 'number' && totalFrames > 0) {
+                  if (lastFrames >= 0 && totalFrames > lastFrames) {
+                    isAdvancing = true;
+                  }
+                  lastFrames = totalFrames;
+                } else if (vid.currentTime > 0 && Math.abs(vid.currentTime - lastPlaybackTime) > 0.05) {
+                  isAdvancing = true;
+                }
+                lastPlaybackTime = vid.currentTime;
+
+                if (!isAdvancing) {
                   stallTicks++;
-                  if (stallTicks >= 3) { // Stalled for ~6 seconds
-                    console.warn('[WebRTC Viewer] Video playback stalled for 6s — auto-refreshing connection...');
+                  if (stallTicks >= 6) { // 12 seconds of completely frozen stream
+                    console.warn('[WebRTC Viewer] Video playback stalled for 12s — auto-refreshing connection...');
                     stallTicks = 0;
                     clearInterval(stallWatcher);
                     try { call?.close(); } catch (_) {}
@@ -851,7 +1002,6 @@ export const ProfileLive: React.FC<ProfileLiveProps> = ({
                   }
                 } else {
                   stallTicks = 0;
-                  lastPlaybackTime = vid.currentTime;
                 }
               }
             }, 2000);
@@ -953,10 +1103,74 @@ export const ProfileLive: React.FC<ProfileLiveProps> = ({
                   height: 450px;
                 }
               }
+
+              /* ── Fullscreen Mode with Chat Overlay on Right ── */
+              .live-stream-container.is-fullscreen,
+              .live-stream-container:fullscreen {
+                position: fixed !important;
+                inset: 0 !important;
+                width: 100vw !important;
+                height: 100vh !important;
+                max-width: 100vw !important;
+                max-height: 100vh !important;
+                z-index: 999999 !important;
+                background: #000 !important;
+                display: flex !important;
+                flex-direction: row !important;
+                border-radius: 0 !important;
+                border: none !important;
+                margin: 0 !important;
+                padding: 0 !important;
+                overflow: hidden !important;
+              }
+              .live-stream-container.is-fullscreen .live-video-slot,
+              .live-stream-container:fullscreen .live-video-slot {
+                width: 100% !important;
+                height: 100% !important;
+                flex: 1 1 100% !important;
+                aspect-ratio: auto !important;
+                background: #000 !important;
+                display: flex !important;
+                align-items: center !important;
+                justify-content: center !important;
+              }
+              .live-stream-container.is-fullscreen .live-video-slot video,
+              .live-stream-container:fullscreen .live-video-slot video {
+                width: 100% !important;
+                height: 100% !important;
+                max-height: 100vh !important;
+                object-fit: contain !important;
+              }
+              .live-stream-container.is-fullscreen .live-chat-slot,
+              .live-stream-container:fullscreen .live-chat-slot {
+                position: absolute !important;
+                right: 0 !important;
+                top: 0 !important;
+                bottom: 0 !important;
+                width: 380px !important;
+                max-width: 85vw !important;
+                height: 100% !important;
+                z-index: 99999 !important;
+                background: rgba(12, 12, 18, 0.82) !important;
+                backdrop-filter: blur(24px) !important;
+                -webkit-backdrop-filter: blur(24px) !important;
+                border-left: 1px solid rgba(255, 255, 255, 0.15) !important;
+                box-shadow: -15px 0 40px rgba(0, 0, 0, 0.75) !important;
+                transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.25s ease !important;
+              }
+              .live-stream-container.is-fullscreen .live-chat-slot.chat-collapsed,
+              .live-stream-container:fullscreen .live-chat-slot.chat-collapsed {
+                transform: translateX(100%) !important;
+                opacity: 0 !important;
+                pointer-events: none !important;
+              }
             `}</style>
-            {effectiveIsSubscribed || isOwnProfile || localGuestData !== null ? (
-               <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} style={{ background: 'var(--bg-surface)', borderRadius: '24px', overflow: 'hidden', border: `1px solid ${accent}22` }}>
-                 <div className="live-stream-container">
+            {hasFullAccess || isStreamLive || isPlayingLive ? (
+               <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} style={{ background: 'var(--bg-surface)', borderRadius: isFullscreen ? '0' : '24px', overflow: 'hidden', border: isFullscreen ? 'none' : `1px solid ${accent}22` }}>
+                 <div 
+                   ref={streamContainerRef}
+                   className={`live-stream-container ${isFullscreen ? 'is-fullscreen' : ''}`}
+                 >
                    <div className="live-video-slot">
                   {liveCountdown !== null && liveCountdown !== undefined && (
                      <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(12px)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', zIndex: 40 }}>
@@ -1001,9 +1215,114 @@ export const ProfileLive: React.FC<ProfileLiveProps> = ({
                      </>
                    )}
                   
-                  {isStreamLive && (
+                  {(isStreamLive || isBroadcaster) && (
                     <div className="live-video-actions" style={{ position: 'absolute', top: 20, right: 20, zIndex: 10, display: 'flex', gap: '10px' }}>
-                      {!localGuestData && (
+                      {isBroadcaster && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const nextVal = !isRecording;
+                            setIsRecording(nextVal);
+                            toast.info(`Stream recording turned ${nextVal ? 'ON' : 'OFF'}`);
+                          }}
+                          title={isRecording ? "Recording is ON (Stream will be saved to your vault)" : "Recording is OFF"}
+                          style={{
+                            padding: '8px 16px',
+                            background: isRecording ? 'rgba(255, 0, 85, 0.25)' : 'rgba(255, 255, 255, 0.1)',
+                            border: `1px solid ${isRecording ? '#ff0055' : 'rgba(255, 255, 255, 0.25)'}`,
+                            backdropFilter: 'blur(12px)',
+                            color: '#fff',
+                            borderRadius: '20px',
+                            fontWeight: 'bold',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '8px',
+                            cursor: 'pointer',
+                            fontSize: '12px',
+                            letterSpacing: '1px',
+                            textTransform: 'uppercase',
+                            boxShadow: isRecording ? '0 0 15px rgba(255, 0, 85, 0.4)' : 'none',
+                            transition: 'all 0.2s'
+                          }}
+                          onMouseOver={e => e.currentTarget.style.transform = 'scale(1.05)'}
+                          onMouseOut={e => e.currentTarget.style.transform = 'none'}
+                        >
+                          <div style={{
+                            width: 8,
+                            height: 8,
+                            borderRadius: '50%',
+                            background: isRecording ? '#ff0055' : '#888',
+                            boxShadow: isRecording ? '0 0 8px #ff0055' : 'none',
+                            animation: (isRecording && isPlayingLive) ? 'pulse 1s infinite' : 'none'
+                          }} />
+                          {isRecording ? (isPlayingLive ? '● REC LIVE' : '● REC ON') : '○ REC OFF'}
+                        </button>
+                      )}
+                      {/* Fullscreen Button */}
+                      <button
+                        type="button"
+                        onClick={toggleFullscreen}
+                        title={isFullscreen ? "Exit Fullscreen" : "Fullscreen with Chat Overlay"}
+                        style={{
+                          padding: '8px 16px',
+                          background: isFullscreen ? 'rgba(255, 77, 133, 0.35)' : 'rgba(0, 0, 0, 0.65)',
+                          border: `1px solid ${isFullscreen ? '#ff4d85' : 'rgba(255, 255, 255, 0.25)'}`,
+                          backdropFilter: 'blur(12px)',
+                          color: '#fff',
+                          borderRadius: '20px',
+                          fontWeight: 'bold',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '8px',
+                          cursor: 'pointer',
+                          fontSize: '12px',
+                          letterSpacing: '1px',
+                          textTransform: 'uppercase',
+                          boxShadow: isFullscreen ? '0 0 15px rgba(255, 77, 133, 0.4)' : '0 4px 15px rgba(0,0,0,0.4)',
+                          transition: 'all 0.2s',
+                          zIndex: 60
+                        }}
+                        onMouseOver={e => e.currentTarget.style.transform = 'scale(1.05)'}
+                        onMouseOut={e => e.currentTarget.style.transform = 'none'}
+                      >
+                        {isFullscreen ? <Minimize size={15} /> : <Maximize size={15} />}
+                        <span>{isFullscreen ? 'Exit Full Screen' : 'Full Screen'}</span>
+                      </button>
+
+                      {/* Fullscreen Chat Toggle */}
+                      {isFullscreen && (
+                        <button
+                          type="button"
+                          onClick={() => setShowChatInFullscreen(!showChatInFullscreen)}
+                          title={showChatInFullscreen ? "Hide Chat Overlay" : "Show Chat Overlay"}
+                          style={{
+                            padding: '8px 16px',
+                            background: showChatInFullscreen ? 'rgba(0, 255, 136, 0.25)' : 'rgba(0, 0, 0, 0.65)',
+                            border: `1px solid ${showChatInFullscreen ? '#00ff88' : 'rgba(255, 255, 255, 0.25)'}`,
+                            backdropFilter: 'blur(12px)',
+                            color: '#fff',
+                            borderRadius: '20px',
+                            fontWeight: 'bold',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '8px',
+                            cursor: 'pointer',
+                            fontSize: '12px',
+                            letterSpacing: '1px',
+                            textTransform: 'uppercase',
+                            boxShadow: showChatInFullscreen ? '0 0 15px rgba(0, 255, 136, 0.3)' : '0 4px 15px rgba(0,0,0,0.4)',
+                            transition: 'all 0.2s',
+                            zIndex: 60
+                          }}
+                          onMouseOver={e => e.currentTarget.style.transform = 'scale(1.05)'}
+                          onMouseOut={e => e.currentTarget.style.transform = 'none'}
+                        >
+                          {showChatInFullscreen ? <MessageSquareOff size={15} /> : <MessageSquare size={15} />}
+                          <span>{showChatInFullscreen ? 'Hide Chat' : 'Show Chat'}</span>
+                        </button>
+                      )}
+
+                      {isStreamLive && !localGuestData && (
                         <button onClick={() => setShowTipModal(true)} style={{ padding: '8px 18px', background: 'rgba(255, 255, 255, 0.08)', border: `1px solid ${accent}44`, backdropFilter: 'blur(12px)', color: '#fff', borderRadius: '20px', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', boxShadow: '0 8px 32px rgba(0,0,0,0.3)', textTransform: 'uppercase', fontSize: '12px', letterSpacing: '1px', transition: 'all 0.2s' }} onMouseOver={e=>{e.currentTarget.style.transform='scale(1.05)'; e.currentTarget.style.borderColor=accent;}} onMouseOut={e=>{e.currentTarget.style.transform='none'; e.currentTarget.style.borderColor=`${accent}44`;}}>
                             💰 Support Stream
                         </button>
@@ -1013,32 +1332,37 @@ export const ProfileLive: React.FC<ProfileLiveProps> = ({
                   
                   {isStreamLive || (isBroadcaster && (cameraStatus !== 'idle' || liveCountdown !== null || isCameraRequested)) ? (
                      <>
-                       {!isOwnProfile && isPlayingLive && !effectiveIsSubscribed && !hasPaidForLive ? (
-                         isPreviewExpired ? (
-                           <div style={{ position: 'absolute', inset: 0, zIndex: 30, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: 'rgba(10, 10, 12, 0.45)', backdropFilter: 'blur(30px)', padding: '40px', textAlign: 'center', border: `1px solid ${accent}22`, boxShadow: '0 20px 50px rgba(0,0,0,0.6)' }}>
-                             <div style={{ display: 'inline-flex', padding: '16px', borderRadius: '50%', background: 'rgba(255, 77, 133, 0.05)', border: '1px solid rgba(255, 77, 133, 0.15)', marginBottom: '16px', filter: 'drop-shadow(0 0 12px rgba(255,77,133,0.3))' }}>
-                                <Lock size={40} color="#ff4d85" />
-                             </div>
-                             <h2 style={{ margin: '0 0 12px 0', fontSize: '28px', color: 'var(--text-primary)', fontWeight: '900', letterSpacing: '-0.5px' }}>Preview Ended</h2>
-                             <p style={{ color: 'var(--text-secondary)', fontSize: '15px', maxWidth: '380px', marginBottom: '32px', lineHeight: 1.6 }}>
-                               Your free 90-second preview has expired. Subscribe to {profile?.username} for full access, or purchase a one-time pass to continue watching.
-                             </p>
-                             <div style={{ display: 'flex', gap: '16px' }}>
-                               <button onClick={handleUnlockLive} style={{ padding: '14px 28px', background: `linear-gradient(135deg, ${accent}, ${accent}dd)`, color: 'var(--text-primary)', border: 'none', borderRadius: '12px', fontWeight: 'bold', fontSize: '16px', cursor: 'pointer', boxShadow: `0 8px 24px ${accent}44`, transition: 'all 0.2s' }} onMouseOver={e=>{e.currentTarget.style.transform='scale(1.05)';}} onMouseOut={e=>{e.currentTarget.style.transform='none';}}>
-                                 Unlock for ${livePrice}
-                               </button>
-                               <button onClick={handleSubscribe} style={{ padding: '14px 28px', background: 'rgba(255,255,255,0.06)', color: 'var(--text-primary)', border: '1px solid rgba(255,255,255,0.15)', borderRadius: '12px', fontWeight: 'bold', fontSize: '16px', cursor: 'pointer', backdropFilter: 'blur(10px)', transition: 'all 0.2s' }} onMouseOver={e=>{e.currentTarget.style.background='rgba(255,255,255,0.1)';}} onMouseOut={e=>{e.currentTarget.style.background='rgba(255,255,255,0.06)';}}>
-                                 Subscribe Now
-                               </button>
-                             </div>
-                           </div>
-                         ) : (
-                           <div style={{ position: 'absolute', top: 20, left: 20, zIndex: 30, background: 'rgba(255,0,85,0.8)', padding: '6px 12px', borderRadius: '8px', color: 'var(--text-primary)', fontWeight: 'bold', fontSize: '12px', letterSpacing: '1px', backdropFilter: 'blur(10px)', border: '1px solid rgba(255,255,255,0.2)' }}>
-                             FREE PREVIEW: {Math.floor(previewTimeLeft / 60)}:{(previewTimeLeft % 60).toString().padStart(2, '0')} REMAINING
-                           </div>
-                         )
-                       ) : null}
-                       {!isPreviewExpired && (streamSource === 'camera' || presenterMode || activeGuests.length > 0) && (
+                        {!hasFullAccess ? (
+                          isPreviewExpired ? (
+                            <div style={{ position: 'absolute', inset: 0, zIndex: 30, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: 'rgba(10, 10, 12, 0.75)', backdropFilter: 'blur(30px)', padding: '40px', textAlign: 'center', border: `1px solid ${accent}22`, boxShadow: '0 20px 50px rgba(0,0,0,0.6)' }}>
+                              <div style={{ display: 'inline-flex', padding: '16px', borderRadius: '50%', background: 'rgba(255, 77, 133, 0.05)', border: '1px solid rgba(255, 77, 133, 0.15)', marginBottom: '16px', filter: 'drop-shadow(0 0 12px rgba(255,77,133,0.3))' }}>
+                                 <Lock size={40} color="#ff4d85" />
+                              </div>
+                              <h2 style={{ margin: '0 0 12px 0', fontSize: '28px', color: 'var(--text-primary)', fontWeight: '900', letterSpacing: '-0.5px' }}>Preview Ended</h2>
+                              <p style={{ color: 'var(--text-secondary)', fontSize: '15px', maxWidth: '380px', marginBottom: '32px', lineHeight: 1.6 }}>
+                                Your free 2-minute preview has expired. Subscribe to {profile?.username || 'this creator'} to continue watching{parseFloat(livePrice || '0') > 0 ? ', or purchase a one-time pass' : ''}.
+                              </p>
+                              <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap', justifyContent: 'center' }}>
+                                <button onClick={handleSubscribe} style={{ padding: '14px 28px', background: `linear-gradient(135deg, ${accent}, #8A2BE2)`, color: 'var(--text-primary)', border: 'none', borderRadius: '12px', fontWeight: 'bold', fontSize: '16px', cursor: 'pointer', boxShadow: `0 8px 24px ${accent}44`, transition: 'all 0.2s' }} onMouseOver={e=>{e.currentTarget.style.transform='scale(1.05)';}} onMouseOut={e=>{e.currentTarget.style.transform='none';}}>
+                                  Subscribe Now
+                                </button>
+                                {parseFloat(livePrice || '0') > 0 && (
+                                  <button onClick={handleUnlockLive} style={{ padding: '14px 28px', background: 'rgba(255,255,255,0.06)', color: 'var(--text-primary)', border: '1px solid rgba(255,255,255,0.15)', borderRadius: '12px', fontWeight: 'bold', fontSize: '16px', cursor: 'pointer', backdropFilter: 'blur(10px)', transition: 'all 0.2s' }} onMouseOver={e=>{e.currentTarget.style.background='rgba(255,255,255,0.1)';}} onMouseOut={e=>{e.currentTarget.style.background='rgba(255,255,255,0.06)';}}>
+                                    Unlock for ${livePrice}
+                                  </button>
+                                )}
+                              </div>
+                            </div>
+                          ) : (
+                            <div style={{ position: 'absolute', top: 20, left: 20, zIndex: 30, display: 'flex', alignItems: 'center', gap: '10px', background: 'rgba(255,0,85,0.85)', padding: '6px 14px', borderRadius: '8px', color: '#fff', fontWeight: 'bold', fontSize: '12px', letterSpacing: '1px', backdropFilter: 'blur(10px)', border: '1px solid rgba(255,255,255,0.2)', boxShadow: '0 4px 15px rgba(255,0,85,0.3)' }}>
+                              <span>FREE PREVIEW: {Math.floor(previewTimeLeft / 60)}:{(previewTimeLeft % 60).toString().padStart(2, '0')}</span>
+                              <button onClick={handleSubscribe} style={{ background: '#fff', color: '#ff0055', border: 'none', borderRadius: '4px', padding: '2px 8px', fontSize: '11px', fontWeight: '900', cursor: 'pointer', textTransform: 'uppercase', transition: 'all 0.15s' }}>
+                                Subscribe
+                              </button>
+                            </div>
+                          )
+                        ) : null}
+                        {!isPreviewExpired && (streamSource === 'camera' || presenterMode || activeGuests.length > 0) && (
                          <div style={{
                            position: 'absolute', zIndex: 15,
                            ...(streamSource === 'url' ? {
@@ -1135,6 +1459,41 @@ export const ProfileLive: React.FC<ProfileLiveProps> = ({
                                         >
                                           {isViewerMuted ? <VolumeX size={18} /> : <Volume2 size={16} />}
                                           <span>{isViewerMuted ? '🔊 Tap to Unmute' : 'Mute'}</span>
+                                        </button>
+                                      )}
+                                      {isRemoteConnected && (
+                                        <button
+                                          type="button"
+                                          onClick={(e) => {
+                                            e.stopPropagation();
+                                            toggleFullscreen();
+                                          }}
+                                          style={{
+                                            position: 'absolute',
+                                            bottom: 20,
+                                            right: 20,
+                                            zIndex: 35,
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            gap: '8px',
+                                            padding: '8px 14px',
+                                            background: isFullscreen ? 'rgba(255, 77, 133, 0.4)' : 'rgba(0, 0, 0, 0.75)',
+                                            color: '#fff',
+                                            border: `1px solid ${isFullscreen ? '#ff4d85' : 'rgba(255, 255, 255, 0.2)'}`,
+                                            borderRadius: '30px',
+                                            fontWeight: 'bold',
+                                            fontSize: '12px',
+                                            cursor: 'pointer',
+                                            backdropFilter: 'blur(12px)',
+                                            boxShadow: '0 4px 15px rgba(0,0,0,0.4)',
+                                            transition: 'all 0.2s',
+                                            pointerEvents: 'auto',
+                                          }}
+                                          onMouseOver={e => e.currentTarget.style.transform = 'scale(1.05)'}
+                                          onMouseOut={e => e.currentTarget.style.transform = 'none'}
+                                        >
+                                          {isFullscreen ? <Minimize size={16} /> : <Maximize size={16} />}
+                                          <span>{isFullscreen ? 'Exit Full Screen' : 'Full Screen'}</span>
                                         </button>
                                       )}
                                       {!isRemoteConnected && (
@@ -1454,10 +1813,90 @@ export const ProfileLive: React.FC<ProfileLiveProps> = ({
                       )}
                     </AnimatePresence>
                   )}
+
+                  {/* Floating Open Chat Button in Fullscreen when chat is collapsed */}
+                  {isFullscreen && !showChatInFullscreen && (
+                    <button
+                      type="button"
+                      onClick={() => setShowChatInFullscreen(true)}
+                      style={{
+                        position: 'absolute',
+                        right: 24,
+                        top: 80,
+                        zIndex: 99999,
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '8px',
+                        padding: '10px 18px',
+                        background: 'rgba(12, 12, 18, 0.85)',
+                        backdropFilter: 'blur(20px)',
+                        border: '1px solid rgba(255, 255, 255, 0.25)',
+                        color: '#fff',
+                        borderRadius: '30px',
+                        fontWeight: 'bold',
+                        fontSize: '13px',
+                        cursor: 'pointer',
+                        boxShadow: '0 8px 30px rgba(0,0,0,0.6), 0 0 15px rgba(0,255,136,0.2)',
+                        transition: 'all 0.2s',
+                        pointerEvents: 'auto'
+                      }}
+                      onMouseOver={e => e.currentTarget.style.transform = 'scale(1.05)'}
+                      onMouseOut={e => e.currentTarget.style.transform = 'none'}
+                    >
+                      <MessageSquare size={16} color="#00ff88" />
+                      <span>Open Chat</span>
+                    </button>
+                  )}
                 </div>
 
-                <div className="live-chat-slot" style={{ display: 'flex', flexDirection: 'column', height: 'auto', minHeight: '450px' }}>
-                  {showFanZone ? (
+                <div 
+                  className={`live-chat-slot ${isFullscreen && !showChatInFullscreen ? 'chat-collapsed' : ''}`}
+                  style={{ display: 'flex', flexDirection: 'column', height: 'auto', minHeight: '450px' }}
+                >
+                  {/* Fullscreen Overlay Header */}
+                  {isFullscreen && (
+                    <div style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      padding: '14px 20px',
+                      borderBottom: '1px solid rgba(255,255,255,0.12)',
+                      background: 'rgba(255,255,255,0.04)',
+                      backdropFilter: 'blur(10px)',
+                      flexShrink: 0
+                    }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#00ff88', boxShadow: '0 0 8px #00ff88' }} />
+                        <span style={{ fontWeight: 'bold', fontSize: '13px', color: '#fff', letterSpacing: '0.5px' }}>LIVE CHAT OVERLAY</span>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => setShowChatInFullscreen(false)}
+                        title="Hide chat overlay"
+                        style={{
+                          background: 'rgba(255,255,255,0.08)',
+                          border: '1px solid rgba(255,255,255,0.15)',
+                          color: '#fff',
+                          borderRadius: '8px',
+                          padding: '4px 10px',
+                          fontSize: '12px',
+                          fontWeight: 'bold',
+                          cursor: 'pointer',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '4px',
+                          transition: 'all 0.2s'
+                        }}
+                        onMouseOver={e => e.currentTarget.style.background = 'rgba(255,255,255,0.15)'}
+                        onMouseOut={e => e.currentTarget.style.background = 'rgba(255,255,255,0.08)'}
+                      >
+                        <ChevronRight size={14} />
+                        <span>Hide</span>
+                      </button>
+                    </div>
+                  )}
+                  {/* Fan View commented out */}
+                  {false && (
                     <div
                       style={{
                         width: '100%',
@@ -1703,6 +2142,12 @@ export const ProfileLive: React.FC<ProfileLiveProps> = ({
                               type="text"
                               value={chatInput}
                               onChange={e => setChatInput(e.target.value)}
+                              onKeyDown={e => {
+                                if (e.key === 'Enter' && !e.shiftKey) {
+                                  e.preventDefault();
+                                  (e.currentTarget.form as HTMLFormElement)?.requestSubmit();
+                                }
+                              }}
                               placeholder="Say something in Fan Zone..."
                               style={{
                                 flex: 1,
@@ -1731,16 +2176,16 @@ export const ProfileLive: React.FC<ProfileLiveProps> = ({
                           </form>
                         </div>
                       </div>
-                    ) : (
-                      <ErrorBoundary fallback={<div style={{ padding: '20px', color: '#ff4d4d' }}>⚠️ Live chat crashed.</div>}>
-                        <React.Suspense fallback={<div style={{ padding: '20px', color: 'var(--text-secondary)' }}>Loading chat...</div>}>
-                          <LiveChat 
-                            streamId={profile?.username || 'profile'} 
-                            isStreamer={isBroadcaster || isOwnProfile} 
-                          />
-                        </React.Suspense>
-                      </ErrorBoundary>
-                    )}
+                  )}
+                  <ErrorBoundary fallback={<div style={{ padding: '20px', color: '#ff4d4d' }}>⚠️ Live chat crashed.</div>}>
+                    <React.Suspense fallback={<div style={{ padding: '20px', color: 'var(--text-secondary)' }}>Loading chat...</div>}>
+                      <LiveChat 
+                        streamId={profile?.username || 'profile'} 
+                        isStreamer={isBroadcaster || isOwnProfile} 
+                        isStreamLive={isStreamLive}
+                      />
+                    </React.Suspense>
+                  </ErrorBoundary>
                   </div>
               </div>
               {localGuestData && (
@@ -1776,13 +2221,76 @@ export const ProfileLive: React.FC<ProfileLiveProps> = ({
                   
                   {isOwnProfile && viewMode === 'edit' && (
                      <div style={{ marginTop: '24px', background: 'rgba(15, 15, 15, 0.45)', backdropFilter: 'blur(20px)', padding: '24px', borderRadius: '24px', border: `1px solid ${accent}22`, boxShadow: '0 12px 40px rgba(0,0,0,0.4)' }}>
-                       <div style={{ display: 'flex', gap: '16px', alignItems: 'center', marginBottom: '24px', background: 'rgba(255, 255, 255, 0.02)', padding: '16px 20px', borderRadius: '16px', border: `1px solid ${accent}15` }}>
-                         <label style={{ color: 'var(--text-primary)', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '8px', flexShrink: 0 }}>
-                           Pay-Per-View Price: $
-                         </label>
-                         <input type="number" value={livePrice} onChange={e => setLivePrice(e.target.value)} onFocus={e => { e.target.style.borderColor = accent; e.target.style.boxShadow = `0 0 10px ${accent}44`; }} onBlur={e => { e.target.style.borderColor = 'rgba(255,255,255,0.2)'; e.target.style.boxShadow = 'none'; }} style={{ background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(255,255,255,0.2)', color: 'var(--text-primary)', padding: '8px 14px', borderRadius: '8px', width: '90px', fontSize: '15px', outline: 'none', transition: 'all 0.2s' }} />
-                         <span style={{ color: 'var(--text-muted)', fontSize: '13px' }}>(Free for subscribers)</span>
-                       </div>
+                        <div style={{ display: 'flex', gap: '20px', alignItems: 'center', flexWrap: 'wrap', justifyContent: 'space-between', marginBottom: '24px', background: 'rgba(255, 255, 255, 0.02)', padding: '16px 20px', borderRadius: '16px', border: `1px solid ${accent}15` }}>
+                          <div style={{ display: 'flex', gap: '16px', alignItems: 'center', flexWrap: 'wrap' }}>
+                            <label style={{ color: 'var(--text-primary)', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '8px', flexShrink: 0 }}>
+                              Pay-Per-View Price: $
+                            </label>
+                            <input type="number" value={livePrice} onChange={e => setLivePrice(e.target.value)} onFocus={e => { e.target.style.borderColor = accent; e.target.style.boxShadow = `0 0 10px ${accent}44`; }} onBlur={e => { e.target.style.borderColor = 'rgba(255,255,255,0.2)'; e.target.style.boxShadow = 'none'; }} style={{ background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(255,255,255,0.2)', color: 'var(--text-primary)', padding: '8px 14px', borderRadius: '8px', width: '90px', fontSize: '15px', outline: 'none', transition: 'all 0.2s' }} />
+                            <span style={{ color: 'var(--text-muted)', fontSize: '13px' }}>(Free for subscribers)</span>
+                            {onOpenSubModal && (
+                              <button
+                                type="button"
+                                onClick={onOpenSubModal}
+                                style={{
+                                  background: 'rgba(255, 77, 133, 0.1)',
+                                  border: '1px solid rgba(255, 77, 133, 0.3)',
+                                  borderRadius: '20px',
+                                  color: '#ff4d85',
+                                  padding: '4px 12px',
+                                  fontSize: '12px',
+                                  fontWeight: 'bold',
+                                  cursor: 'pointer',
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  gap: '6px',
+                                  transition: 'all 0.2s'
+                                }}
+                                onMouseOver={e => e.currentTarget.style.background = 'rgba(255, 77, 133, 0.2)'}
+                                onMouseOut={e => e.currentTarget.style.background = 'rgba(255, 77, 133, 0.1)'}
+                              >
+                                Edit Sub Tier ({Number(subPrice) > 0 ? `$${Number(subPrice).toFixed(2)}/mo` : 'Free'})
+                              </button>
+                            )}
+                          </div>
+
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                            <span style={{ color: 'var(--text-primary)', fontWeight: 'bold', fontSize: '14px' }}>Auto-Record Stream:</span>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                const nextVal = !isRecording;
+                                setIsRecording(nextVal);
+                                toast.info(`Auto-recording turned ${nextVal ? 'ON' : 'OFF'}`);
+                              }}
+                              title={isRecording ? "Auto-record is ON: Stream will be saved and archived to your vault upon ending" : "Auto-record is OFF"}
+                              style={{
+                                padding: '8px 18px',
+                                background: isRecording ? 'rgba(255, 0, 85, 0.2)' : 'rgba(255, 255, 255, 0.06)',
+                                border: `1px solid ${isRecording ? '#ff0055' : 'rgba(255, 255, 255, 0.2)'}`,
+                                borderRadius: '20px',
+                                color: isRecording ? '#ff4d85' : 'var(--text-secondary)',
+                                fontWeight: 'bold',
+                                fontSize: '13px',
+                                cursor: 'pointer',
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '8px',
+                                transition: 'all 0.2s ease',
+                                boxShadow: isRecording ? '0 0 12px rgba(255, 0, 85, 0.3)' : 'none'
+                              }}
+                            >
+                              <div style={{
+                                width: 8,
+                                height: 8,
+                                borderRadius: '50%',
+                                background: isRecording ? '#ff0055' : '#888',
+                                boxShadow: isRecording ? '0 0 8px #ff0055' : 'none'
+                              }} />
+                              {isRecording ? 'Record: ON' : 'Record: OFF'}
+                            </button>
+                          </div>
+                        </div>
 
                        <div style={{ marginBottom: '24px', background: 'rgba(255, 255, 255, 0.02)', padding: '20px', borderRadius: '16px', border: `1px solid ${accent}15` }}>
                          <label style={{ display: 'block', marginBottom: '12px', color: accent, fontWeight: 'bold', fontSize: '15px', textTransform: 'uppercase', letterSpacing: '1px' }}>

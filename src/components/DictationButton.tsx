@@ -15,6 +15,7 @@ export function DictationButton({ onResult, style, color = '#fff' }: DictationBu
 
   return (
     <motion.button
+      type="button"
       whileHover={{ scale: 1.1 }}
       whileTap={{ scale: 0.9 }}
       onClick={(e) => {

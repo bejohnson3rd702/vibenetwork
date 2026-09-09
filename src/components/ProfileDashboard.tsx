@@ -874,6 +874,7 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
     isSubscribed, setIsSubscribed,
     subPrice, setSubPrice,
     pinnedProducts, setPinnedProducts,
+    recordStream, setRecordStream,
     showTipModal, setShowTipModal,
     tipAmount, setTipAmount,
     showExitScreen, setShowExitScreen,
@@ -1414,15 +1415,26 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
       if (user && !paramCreatorId && !isNetworkLevel) {
         const isBennieUser = user.email?.toLowerCase().includes('bennie');
         const isJoeUser = user.email?.toLowerCase().includes('joe');
+        const defaultProfileId = isBennieUser ? '8c409557-a48c-41d4-8133-9d9788aebe0d' : (isJoeUser ? 'db7af833-2f7a-40b0-ad46-57ff8fbd4744' : user.id);
+        const localCachedPrice = (data?.id ? localStorage.getItem(`vibe_sub_price_${data.id}`) : null)
+          || localStorage.getItem(`vibe_sub_price_${defaultProfileId}`)
+          || (user?.id ? localStorage.getItem(`vibe_sub_price_${user.id}`) : null)
+          || localStorage.getItem('vibe_channel_sub_price');
+
+        const effectiveSubPrice = (data?.sub_price !== undefined && data?.sub_price !== null)
+          ? Number(data.sub_price)
+          : (localCachedPrice !== null ? parseFloat(localCachedPrice) : 4.99);
+
         targetProfile = {
-          id: isBennieUser ? '8c409557-a48c-41d4-8133-9d9788aebe0d' : (isJoeUser ? 'db7af833-2f7a-40b0-ad46-57ff8fbd4744' : user.id),
-          username: isBennieUser ? 'Rev Bennie Johnson (BJ)' : (isJoeUser ? 'Joe VIBE' : (user.user_metadata?.full_name || user.user_metadata?.display_name || user.user_metadata?.username || user.email?.split('@')[0] || 'Member')),
-          full_name: isBennieUser ? 'Rev Bennie Johnson' : (isJoeUser ? 'Joe VIBE' : (user.user_metadata?.full_name || user.user_metadata?.display_name || user.email?.split('@')[0] || 'Member')),
-          bio: isJoeUser ? 'Welcome to my official Joe VIBE channel.' : (wlConfig?.theme?.defaultBio || 'Welcome to the official Christian Revival Network stream.'),
-          avatar_url: isBennieUser ? 'https://fimzetmvrmbmdggvqzpr.supabase.co/storage/v1/object/public/images/whitelabel/kple_logo_1782369339776.png' : (isJoeUser ? 'https://fimzetmvrmbmdggvqzpr.supabase.co/storage/v1/object/public/images/db7af833-2f7a-40b0-ad46-57ff8fbd4744/0.11923008118112288.jpeg' : (user.user_metadata?.avatar_url || '')),
-          homepage_image_url: '',
-          sub_price: 4.99,
-          whitelabel_id: (isBennieUser || isJoeUser) ? '33742e2f-430b-4c2d-9cba-42507891ef02' : (wlConfig?.id || null)
+          ...data,
+          id: data?.id || defaultProfileId,
+          username: data?.username || (isBennieUser ? 'Rev Bennie Johnson (BJ)' : (isJoeUser ? 'Joe VIBE' : (user.user_metadata?.full_name || user.user_metadata?.display_name || user.user_metadata?.username || user.email?.split('@')[0] || 'Member'))),
+          full_name: data?.full_name || (isBennieUser ? 'Rev Bennie Johnson' : (isJoeUser ? 'Joe VIBE' : (user.user_metadata?.full_name || user.user_metadata?.display_name || user.email?.split('@')[0] || 'Member'))),
+          bio: data?.bio ?? (isJoeUser ? 'Welcome to my official Joe VIBE channel.' : (wlConfig?.theme?.defaultBio || 'Welcome to the official Christian Revival Network stream.')),
+          avatar_url: data?.avatar_url || (isBennieUser ? 'https://fimzetmvrmbmdggvqzpr.supabase.co/storage/v1/object/public/images/whitelabel/kple_logo_1782369339776.png' : (isJoeUser ? 'https://fimzetmvrmbmdggvqzpr.supabase.co/storage/v1/object/public/images/db7af833-2f7a-40b0-ad46-57ff8fbd4744/0.11923008118112288.jpeg' : (user.user_metadata?.avatar_url || ''))),
+          homepage_image_url: data?.homepage_image_url || '',
+          sub_price: effectiveSubPrice,
+          whitelabel_id: data?.whitelabel_id || ((isBennieUser || isJoeUser) ? '33742e2f-430b-4c2d-9cba-42507891ef02' : (wlConfig?.id || null))
         };
       }
       if (!targetProfile) {
@@ -1565,9 +1577,17 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
       setFlipbookImages(targetProfile.flipbook_images || wlConfig?.theme?.flipbook_images || '');
       setRefundPolicy(targetProfile.refund_policy || wlConfig?.theme?.refund_policy || 'All sales are final. No refunds are provided for digital downloads or virtual bookings. For physical merchandise, please contact the creator directly.');
       if (targetProfile.genre) setSelectedGenre(targetProfile.genre);
-      if (targetProfile.sub_price != null) {
-        setSubPrice(String(targetProfile.sub_price));
-        setIsSub(targetProfile.sub_price > 0);
+      const localCachedSubPrice = (targetProfile?.id ? localStorage.getItem(`vibe_sub_price_${targetProfile.id}`) : null)
+        || (user?.id ? localStorage.getItem(`vibe_sub_price_${user.id}`) : null)
+        || localStorage.getItem('vibe_channel_sub_price');
+
+      const resolvedSubPrice = targetProfile?.sub_price != null
+        ? targetProfile.sub_price
+        : (localCachedSubPrice != null ? parseFloat(localCachedSubPrice) : null);
+
+      if (resolvedSubPrice != null) {
+        setSubPrice(String(resolvedSubPrice));
+        setIsSub(Number(resolvedSubPrice) > 0);
       }
       if (targetProfile.booking_price !== undefined && targetProfile.booking_price !== null) setBookingPrice(String(targetProfile.booking_price));
       if (targetProfile.booking_availability) setBookingAvailability(targetProfile.booking_availability);
@@ -1975,6 +1995,11 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
           console.warn("Profile creation exception:", err);
         }
         
+        const localCachedPrice = localStorage.getItem(`vibe_sub_price_${user.id}`) || localStorage.getItem('vibe_channel_sub_price');
+        const resolvedPrice = (newProfile?.sub_price !== undefined && newProfile?.sub_price !== null)
+          ? Number(newProfile.sub_price)
+          : (localCachedPrice !== null ? parseFloat(localCachedPrice) : 4.99);
+
         const activeProfile = newProfile || {
           id: user.id,
           username: user?.user_metadata?.full_name || user?.user_metadata?.display_name || user?.user_metadata?.username || user?.email?.split('@')[0] || 'Member',
@@ -1982,7 +2007,7 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
           bio: wlConfig?.theme?.defaultBio || 'Welcome to my official channel!',
           avatar_url: user?.user_metadata?.avatar_url || '',
           homepage_image_url: '',
-          sub_price: 4.99
+          sub_price: resolvedPrice
         };
 
         setProfile(activeProfile);
@@ -1993,8 +2018,8 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
         setHomepageImageUrl('');
         setFlipbookImages('');
         setSelectedGenre(activeProfile.genre || 'General');
-        setSubPrice('4.99');
-        setIsSub(true);
+        setSubPrice(String(resolvedPrice));
+        setIsSub(Number(resolvedPrice) > 0);
         setProducts([]);
         setFeed([]);
         setSeriesList([]);
@@ -2330,11 +2355,13 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
       toast.error('Profile name cannot be empty');
       return;
     }
+    const currentSubPriceNum = parseFloat(subPrice) || 0;
     const updatePayload: any = {
       username: newName,
       bio: bioToSave,
       avatar_url: avatarUrl,
       homepage_image_url: homepageImageUrl,
+      sub_price: currentSubPriceNum,
     };
 
     // Update Supabase Auth User Metadata so display name persists on login/reload
@@ -2360,6 +2387,14 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
     if (!isUuid(targetIdToUpdate) && user?.id) {
       targetIdToUpdate = user.id;
     }
+
+    if (targetIdToUpdate) {
+      localStorage.setItem(`vibe_sub_price_${targetIdToUpdate}`, String(currentSubPriceNum));
+    }
+    if (user?.id) {
+      localStorage.setItem(`vibe_sub_price_${user.id}`, String(currentSubPriceNum));
+    }
+    localStorage.setItem('vibe_channel_sub_price', String(currentSubPriceNum));
 
     let error: any = null;
 
@@ -4633,42 +4668,95 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
                   {!isEditingBio && (
                     <div style={{ display: 'flex', gap: '14px', alignItems: 'center', justifyContent: (isOwnProfile && viewMode === 'edit') ? 'flex-end' : 'center', flexWrap: 'wrap', marginTop: '24px', width: '100%' }}>
                       {isOwnProfile && viewMode === 'edit' ? (
-                        <button
-                          onClick={() => {
-                            if (!isEditingBio) {
-                              setBio(profile?.bio || bio);
-                            }
-                            setIsEditingBio(true);
-                          }}
-                          onMouseOver={(e) => {
-                            e.currentTarget.style.background = '#fdd835';
-                            e.currentTarget.style.color = '#000';
-                            e.currentTarget.style.boxShadow = '0 4px 20px rgba(253, 216, 53, 0.6)';
-                          }}
-                          onMouseOut={(e) => {
-                            e.currentTarget.style.background = 'rgba(253, 216, 53, 0.15)';
-                            e.currentTarget.style.color = '#fdd835';
-                            e.currentTarget.style.boxShadow = 'none';
-                          }}
-                          style={{
-                            padding: '10px 28px',
-                            background: 'rgba(253, 216, 53, 0.15)',
-                            color: '#fdd835',
-                            border: '1px solid rgba(253, 216, 53, 0.4)',
-                            borderRadius: '100px',
-                            fontWeight: 'bold',
-                            fontSize: '14px',
-                            cursor: 'pointer',
-                            display: 'inline-flex',
-                            alignItems: 'center',
-                            gap: '8px',
-                            transition: 'all 0.3s ease',
-                            backdropFilter: 'blur(10px)'
-                          }}
-                        >
-                          <Edit3 size={16} />
-                          <span>Edit Bio Text</span>
-                        </button>
+                        <div style={{ display: 'flex', gap: '12px', alignItems: 'center', flexWrap: 'wrap' }}>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              if (!isEditingBio) {
+                                setBio(profile?.bio || bio);
+                              }
+                              setIsEditingBio(true);
+                            }}
+                            onMouseOver={(e) => {
+                              e.currentTarget.style.background = '#fdd835';
+                              e.currentTarget.style.color = '#000';
+                              e.currentTarget.style.boxShadow = '0 4px 20px rgba(253, 216, 53, 0.6)';
+                            }}
+                            onMouseOut={(e) => {
+                              e.currentTarget.style.background = 'rgba(253, 216, 53, 0.15)';
+                              e.currentTarget.style.color = '#fdd835';
+                              e.currentTarget.style.boxShadow = 'none';
+                            }}
+                            style={{
+                              padding: '10px 24px',
+                              background: 'rgba(253, 216, 53, 0.15)',
+                              color: '#fdd835',
+                              border: '1px solid rgba(253, 216, 53, 0.4)',
+                              borderRadius: '100px',
+                              fontWeight: 'bold',
+                              fontSize: '14px',
+                              cursor: 'pointer',
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              gap: '8px',
+                              transition: 'all 0.3s ease',
+                              backdropFilter: 'blur(10px)'
+                            }}
+                          >
+                            <Edit3 size={16} />
+                            <span>Edit Bio Text</span>
+                          </button>
+
+                          <button
+                            type="button"
+                            onClick={() => setShowSubModal(true)}
+                            title="Click to edit or set your subscription price"
+                            onMouseOver={(e) => {
+                              e.currentTarget.style.background = 'linear-gradient(135deg, #ff4d85, #8A2BE2)';
+                              e.currentTarget.style.color = '#fff';
+                              e.currentTarget.style.borderColor = 'transparent';
+                              e.currentTarget.style.boxShadow = '0 6px 24px rgba(255, 77, 133, 0.5)';
+                              e.currentTarget.style.transform = 'translateY(-2px)';
+                            }}
+                            onMouseOut={(e) => {
+                              e.currentTarget.style.background = 'rgba(255, 77, 133, 0.15)';
+                              e.currentTarget.style.color = '#ff4d85';
+                              e.currentTarget.style.borderColor = 'rgba(255, 77, 133, 0.4)';
+                              e.currentTarget.style.boxShadow = '0 2px 10px rgba(255, 77, 133, 0.15)';
+                              e.currentTarget.style.transform = 'none';
+                            }}
+                            style={{
+                              padding: '10px 22px',
+                              background: 'rgba(255, 77, 133, 0.15)',
+                              color: '#ff4d85',
+                              border: '1px solid rgba(255, 77, 133, 0.4)',
+                              borderRadius: '100px',
+                              fontWeight: 'bold',
+                              fontSize: '14px',
+                              cursor: 'pointer',
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              gap: '8px',
+                              transition: 'all 0.3s ease',
+                              backdropFilter: 'blur(10px)',
+                              boxShadow: '0 2px 10px rgba(255, 77, 133, 0.15)'
+                            }}
+                          >
+                            <Edit3 size={15} color="#ff4d85" />
+                            <span>Edit Subscription Price:</span>
+                            <span style={{
+                              background: 'rgba(0, 0, 0, 0.4)',
+                              padding: '2px 10px',
+                              borderRadius: '12px',
+                              color: Number(subPrice) > 0 ? '#00ff88' : '#ffd166',
+                              fontWeight: '900',
+                              fontSize: '13px',
+                              border: '1px solid rgba(255,255,255,0.1)'
+                            }}>
+                              {Number(subPrice) > 0 ? `$${Number(subPrice).toFixed(2)}/mo` : 'Free'}
+                            </span>
+                          </button>
+                        </div>
                       ) : (
                         <>
                           {/* Visitor Follow Button */}
@@ -4710,10 +4798,12 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
                             {isFollowing ? 'Following' : 'Follow'}
                           </button>
 
-                          {/* Visitor Subscribe Button */}
+                          {/* Subscribe Button (Public View & Preview Mode) */}
                           <button
                             className="profile-subscribe-btn"
-                            onClick={handleSubscribe}
+                            onClick={isOwnProfile ? undefined : handleSubscribe}
+                            disabled={isOwnProfile}
+                            title={isOwnProfile ? "Preview of your subscriber button for viewers" : undefined}
                             style={{
                               padding: '10px 28px',
                               background: isSubscribed
@@ -4724,7 +4814,7 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
                               borderRadius: '100px',
                               fontWeight: 'bold',
                               fontSize: '14px',
-                              cursor: 'pointer',
+                              cursor: isOwnProfile ? 'default' : 'pointer',
                               display: 'flex',
                               alignItems: 'center',
                               gap: '6px',
@@ -4857,6 +4947,16 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
                       ) 
                     },
                     { id: 'subscriptions', label: 'Following & Subs', icon: <Star size={16} />, color: '#ffcc00', bg: 'rgba(255,204,0,0.12)', border: 'rgba(255,204,0,0.4)', show: !!user },
+                    { 
+                      id: 'sub_price_setting', 
+                      label: `Subscription Price: ${Number(subPrice) > 0 ? `$${Number(subPrice).toFixed(2)}/mo` : 'Free'}`, 
+                      icon: <DollarSign size={16} />, 
+                      color: '#00ff88', 
+                      bg: 'rgba(0,255,136,0.12)', 
+                      border: 'rgba(0,255,136,0.4)', 
+                      show: true,
+                      onClick: () => setShowSubModal(true)
+                    },
                     { id: 'whatsapp', label: 'WhatsApp Live Inbox', icon: <MessageCircle size={16} />, color: '#25D366', bg: 'rgba(37,211,102,0.12)', border: 'rgba(37,211,102,0.4)', show: true },
                     { id: 'ai_report', label: 'AI Creator Report', icon: <Activity size={16} />, color: '#3399ff', bg: 'rgba(51,153,255,0.12)', border: 'rgba(51,153,255,0.4)', show: isInfluencer },
                     { id: 'crm', label: 'Vibe CRM', icon: <Users size={16} />, color: '#00ffcc', bg: 'rgba(0,255,204,0.12)', border: 'rgba(0,255,204,0.4)', show: isInfluencer },
@@ -4876,7 +4976,13 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
                     return (
                       <button 
                         key={tool.id}
-                        onClick={() => setActiveTab(tool.id as any)}
+                        onClick={() => {
+                          if ((tool as any).onClick) {
+                            (tool as any).onClick();
+                          } else {
+                            setActiveTab(tool.id as any);
+                          }
+                        }}
                         style={{ 
                           position: 'relative', 
                           background: isActive ? tool.bg : 'rgba(255,255,255,0.02)', 
@@ -5841,6 +5947,9 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
             products={products}
             pinnedProducts={pinnedProducts}
             setPinnedProducts={setPinnedProducts}
+            recordStream={recordStream}
+            setRecordStream={setRecordStream}
+            onOpenSubModal={() => setShowSubModal(true)}
           />
         )}
 
@@ -9189,6 +9298,43 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
               <p style={{ margin: '4px 0 0 0', color: '#888', fontSize: '14px' }}>Manage all the channels, networks, and creator profiles you follow or subscribe to.</p>
             </div>
 
+            {/* Creator's Own Channel Subscription Tier Card */}
+            <div style={{ background: 'rgba(255, 255, 255, 0.03)', border: '1px solid rgba(255, 255, 255, 0.08)', borderRadius: '20px', padding: '24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '16px' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                  <DollarSign size={22} color="#00ff88" />
+                  <span style={{ color: '#fff', fontWeight: 'bold', fontSize: '18px' }}>Your Channel Subscription Price</span>
+                </div>
+                <p style={{ margin: 0, color: 'var(--text-muted)', fontSize: '14px' }}>
+                  Current Status: <strong style={{ color: Number(subPrice) > 0 ? '#00ff88' : 'var(--text-secondary)' }}>{Number(subPrice) > 0 ? `Paid ($${Number(subPrice).toFixed(2)}/month)` : 'Free Channel (Fans subscribe free)'}</strong>
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowSubModal(true)}
+                style={{
+                  padding: '12px 24px',
+                  background: 'linear-gradient(135deg, #ff4d85, #8A2BE2)',
+                  color: '#fff',
+                  border: 'none',
+                  borderRadius: '12px',
+                  fontWeight: 'bold',
+                  fontSize: '14px',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  boxShadow: '0 4px 15px rgba(255,77,133,0.3)',
+                  transition: 'all 0.2s'
+                }}
+                onMouseOver={e => e.currentTarget.style.transform = 'translateY(-2px)'}
+                onMouseOut={e => e.currentTarget.style.transform = 'none'}
+              >
+                <Edit3 size={16} />
+                Change Subscription Price
+              </button>
+            </div>
+
             {loadingConnections ? (
               <div style={{ padding: '40px', textAlign: 'center', color: '#888' }}>Loading your connections...</div>
             ) : myConnections.length === 0 ? (
@@ -9332,6 +9478,11 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
         subPrice={subPrice}
         setSubPrice={setSubPrice}
         userId={user?.id}
+        profileId={profile?.id || targetProfileId}
+        targetProfileId={targetProfileId}
+        onSaveSuccess={(newPrice) => {
+          setProfile((prev: any) => prev ? { ...prev, sub_price: newPrice } : prev);
+        }}
       />
 
       {/* Modern Profile Picture Modals */}
