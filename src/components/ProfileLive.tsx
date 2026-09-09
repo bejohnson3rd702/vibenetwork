@@ -427,7 +427,9 @@ export const ProfileLive: React.FC<ProfileLiveProps> = ({
     setLastPinnedCount(safePinnedProducts.length);
   }, [safePinnedProducts, lastPinnedCount]);
 
-  console.log("[ProfileLive Render] state:", { isOwnProfile, isPlayingLive, pinnedProductsCount: safePinnedProducts.length, isDrawerOpen });
+  const isBroadcaster = Boolean(isOwnProfile && viewMode === 'edit');
+
+  console.log("[ProfileLive Render] state:", { isOwnProfile, isBroadcaster, isPlayingLive, pinnedProductsCount: safePinnedProducts.length, isDrawerOpen });
 
   // Fan Zone & Co-watching state
   const showFanZone = false;
@@ -587,7 +589,7 @@ export const ProfileLive: React.FC<ProfileLiveProps> = ({
   }, [chatMessages]);
 
   React.useEffect(() => {
-    if (isOwnProfile && localStream && videoRef.current) {
+    if (isBroadcaster && localStream && videoRef.current) {
       console.log("WebRTC: Attaching localStream to host video element.");
       if (videoRef.current.srcObject !== localStream) {
         videoRef.current.srcObject = localStream;
@@ -596,7 +598,7 @@ export const ProfileLive: React.FC<ProfileLiveProps> = ({
       videoRef.current.muted = true;
       videoRef.current.play().catch(e => console.warn("Local video play warning:", e));
     }
-  }, [isOwnProfile, localStream, videoRef, cameraStatus, isPlayingLive]);
+  }, [isBroadcaster, localStream, videoRef, cameraStatus, isPlayingLive]);
 
   const [connectionStatus, setConnectionStatus] = React.useState<'idle' | 'connecting' | 'connected' | 'reconnecting'>('idle');
 
@@ -607,7 +609,7 @@ export const ProfileLive: React.FC<ProfileLiveProps> = ({
   ];
 
   React.useEffect(() => {
-    if (isOwnProfile || !isPlayingLive || streamSource !== 'camera') return;
+    if (isBroadcaster || !isPlayingLive || streamSource !== 'camera') return;
     // Strictly block connection requests if the user is unauthorized
     if (!effectiveIsSubscribed && !hasPaidForLive && !localGuestData) return;
 
@@ -892,7 +894,7 @@ export const ProfileLive: React.FC<ProfileLiveProps> = ({
                                     <button onClick={() => setIsPlayingLive(false)} style={{ marginTop: '15px', padding: '8px 20px', background: 'transparent', border: '1px solid var(--bg-surface-hover)', color: 'var(--text-primary)', borderRadius: '20px', cursor: 'pointer' }}>Close Mode</button>
                                  </div>
                                )}
-                                {!isOwnProfile ? (
+                                {!isBroadcaster ? (
                                   streamSource === 'camera' ? (
                                     <div style={{ width: '100%', height: '100%', position: 'relative' }}>
                                       <video
