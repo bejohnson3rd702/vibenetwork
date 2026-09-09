@@ -643,11 +643,22 @@ export const ProfileLive: React.FC<ProfileLiveProps> = ({
     let call: any = null;
     let retryTimeout: NodeJS.Timeout;
     let destroyed = false;
+    let keepaliveInterval: any = null;
+    let stallWatcher: any = null;
+    let activeAudioCtx: any = null;
 
     const connectToHost = () => {
       if (destroyed) return;
       try {
         setConnectionStatus('connecting');
+        if (stallWatcher) {
+          clearInterval(stallWatcher);
+          stallWatcher = null;
+        }
+        if (keepaliveInterval) {
+          clearInterval(keepaliveInterval);
+          keepaliveInterval = null;
+        }
         // Destroy previous peer if retrying
         if (peer) {
           try { peer.destroy(); } catch (_) {}
@@ -655,7 +666,7 @@ export const ProfileLive: React.FC<ProfileLiveProps> = ({
         }
 
         peer = new Peer({
-          debug: 2, // Show warnings + errors (helps diagnose connection issues)
+          debug: 2,
           secure: true,
           config: { iceServers: VIEWER_ICE_SERVERS },
         });
@@ -666,22 +677,40 @@ export const ProfileLive: React.FC<ProfileLiveProps> = ({
           const authType = localGuestData ? 'guest' : hasPaidForLive ? 'ppv' : effectiveIsSubscribed ? 'subscription' : 'none';
           console.log(`[WebRTC Viewer] My peer ID: ${myId} | Calling host: ${hostId} | Auth: ${authType}`);
           
-          // Create dummy video + audio tracks so the SDP offer includes both
-          // m=video and m=audio lines. Without m=audio, the host's microphone
-          // stream can't be negotiated into the answer.
+          // Create continuous dummy video (1 fps) + audio so the SDP offer includes both
+          // m=video and m=audio lines, and continually sends outbound RTP/RTCP packets.
+          // Without continuous outbound packets, stateful router NAT firewalls drop the UDP
+          // translation entry after ~300 seconds (5 minutes), cutting off the incoming stream!
           let viewerStream: MediaStream;
           try {
-            // Dummy video: 2x2 black canvas, 0 fps
             const canvas = document.createElement('canvas');
             canvas.width = 2;
             canvas.height = 2;
             const ctx2d = canvas.getContext('2d');
-            if (ctx2d) ctx2d.fillRect(0, 0, 2, 2);
-            const canvasStream = canvas.captureStream(0);
+            if (ctx2d) {
+              ctx2d.fillStyle = '#000000';
+              ctx2d.fillRect(0, 0, 2, 2);
+            }
+            const canvasStream = (canvas as any).captureStream ? (canvas as any).captureStream(1) : new MediaStream();
 
-            // Dummy audio: active silent AudioContext destination with oscillator
+            // Continually write to canvas every 2s to guarantee active outbound UDP heartbeat traffic
+            keepaliveInterval = setInterval(() => {
+              if (destroyed) {
+                clearInterval(keepaliveInterval);
+                return;
+              }
+              if (ctx2d) {
+                ctx2d.fillRect(0, 0, 2, 2);
+              }
+            }, 2000);
+
+            // Active silent AudioContext destination with oscillator
             const AudioCtxClass = window.AudioContext || (window as any).webkitAudioContext;
             const audioCtx = new AudioCtxClass();
+            activeAudioCtx = audioCtx;
+            if (audioCtx.state === 'suspended') {
+              audioCtx.resume().catch(() => {});
+            }
             const osc = audioCtx.createOscillator();
             const gain = audioCtx.createGain();
             gain.gain.value = 0.0001; // Silent but producing active WebRTC audio clock
@@ -690,13 +719,12 @@ export const ProfileLive: React.FC<ProfileLiveProps> = ({
             gain.connect(dest);
             osc.start();
 
-            // Combine video + audio into one stream
             viewerStream = new MediaStream([
               ...canvasStream.getVideoTracks(),
               ...dest.stream.getAudioTracks(),
             ]);
           } catch (_) {
-            viewerStream = new MediaStream(); // fallback
+            viewerStream = new MediaStream();
           }
 
           // Connect to the host with authorization handshake metadata
@@ -710,9 +738,42 @@ export const ProfileLive: React.FC<ProfileLiveProps> = ({
           
           if (!call) {
             console.warn('[WebRTC Viewer] peer.call() returned null — host may not exist');
-            retryTimeout = setTimeout(connectToHost, 5000);
+            retryTimeout = setTimeout(connectToHost, 3000);
             return;
           }
+
+          // Monitor RTCPeerConnection health directly
+          const attachPeerConnectionMonitors = () => {
+            const pc: RTCPeerConnection = call?.peerConnection;
+            if (!pc) return;
+
+            const handleDrop = (detail: string) => {
+              console.warn(`[WebRTC Viewer] Stream drop detected (${detail}) — auto-reconnecting in 2s...`);
+              setIsRemoteConnected(false);
+              if (!destroyed) {
+                setConnectionStatus('reconnecting');
+                if (retryTimeout) clearTimeout(retryTimeout);
+                retryTimeout = setTimeout(connectToHost, 2000);
+              }
+            };
+
+            pc.oniceconnectionstatechange = () => {
+              console.log('[WebRTC Viewer] ICE state:', pc.iceConnectionState);
+              if (pc.iceConnectionState === 'failed' || pc.iceConnectionState === 'disconnected') {
+                handleDrop(`ICE: ${pc.iceConnectionState}`);
+              }
+            };
+
+            pc.onconnectionstatechange = () => {
+              console.log('[WebRTC Viewer] Connection state:', pc.connectionState);
+              if (pc.connectionState === 'failed' || pc.connectionState === 'disconnected') {
+                handleDrop(`PeerConnection: ${pc.connectionState}`);
+              }
+            };
+          };
+
+          // PeerJS attaches peerConnection asynchronously
+          setTimeout(attachPeerConnectionMonitors, 500);
 
           call.on('stream', (remoteStream: MediaStream) => {
             console.log("[WebRTC Viewer] ✅ Received live feed! Video tracks:", remoteStream.getVideoTracks().length, "Audio tracks:", remoteStream.getAudioTracks().length);
@@ -720,6 +781,31 @@ export const ProfileLive: React.FC<ProfileLiveProps> = ({
               t.enabled = true;
               console.log("[WebRTC Viewer] Track ready:", t.id, t.readyState, "enabled:", t.enabled, "muted:", t.muted);
             });
+
+            // Detect if remote stream or tracks end
+            remoteStream.oninactive = () => {
+              console.warn('[WebRTC Viewer] Remote stream became inactive — auto-reconnecting in 2s...');
+              setIsRemoteConnected(false);
+              if (!destroyed) {
+                setConnectionStatus('reconnecting');
+                if (retryTimeout) clearTimeout(retryTimeout);
+                retryTimeout = setTimeout(connectToHost, 2000);
+              }
+            };
+
+            const videoTrack = remoteStream.getVideoTracks()[0];
+            if (videoTrack) {
+              videoTrack.onended = () => {
+                console.warn('[WebRTC Viewer] Remote video track ended — auto-reconnecting in 2s...');
+                setIsRemoteConnected(false);
+                if (!destroyed) {
+                  setConnectionStatus('reconnecting');
+                  if (retryTimeout) clearTimeout(retryTimeout);
+                  retryTimeout = setTimeout(connectToHost, 2000);
+                }
+              };
+            }
+
             setIsRemoteConnected(true);
             setConnectionStatus('connected');
             if (viewerVideoRef.current) {
@@ -740,10 +826,38 @@ export const ProfileLive: React.FC<ProfileLiveProps> = ({
                   }
                 });
             }
+
+            // Stream Playback Stall Watchdog: auto-recovers if frames stop arriving for > 6s
+            let lastPlaybackTime = 0;
+            let stallTicks = 0;
+            stallWatcher = setInterval(() => {
+              if (destroyed || !viewerVideoRef.current) {
+                clearInterval(stallWatcher);
+                return;
+              }
+              const vid = viewerVideoRef.current;
+              if (vid && vid.srcObject && !vid.paused && vid.readyState >= 2) {
+                if (vid.currentTime > 0 && Math.abs(vid.currentTime - lastPlaybackTime) < 0.05) {
+                  stallTicks++;
+                  if (stallTicks >= 3) { // Stalled for ~6 seconds
+                    console.warn('[WebRTC Viewer] Video playback stalled for 6s — auto-refreshing connection...');
+                    stallTicks = 0;
+                    clearInterval(stallWatcher);
+                    try { call?.close(); } catch (_) {}
+                    if (!destroyed) {
+                      setConnectionStatus('reconnecting');
+                      connectToHost();
+                    }
+                  }
+                } else {
+                  stallTicks = 0;
+                  lastPlaybackTime = vid.currentTime;
+                }
+              }
+            }, 2000);
           });
 
           call.on('close', () => {
-            // Host rejected or closed the call (auth failure, or host went offline)
             console.warn('[WebRTC Viewer] Call was closed by host — retrying in 3s');
             setIsRemoteConnected(false);
             if (!destroyed) {
@@ -757,9 +871,16 @@ export const ProfileLive: React.FC<ProfileLiveProps> = ({
             setIsRemoteConnected(false);
             if (!destroyed) {
               setConnectionStatus('reconnecting');
-              retryTimeout = setTimeout(connectToHost, 5000);
+              retryTimeout = setTimeout(connectToHost, 3000);
             }
           });
+        });
+
+        peer.on('disconnected', () => {
+          console.warn("[WebRTC Viewer] Peer signaling disconnected — attempting reconnect...");
+          if (!destroyed && peer && !peer.destroyed) {
+            try { peer.reconnect(); } catch (_) {}
+          }
         });
 
         peer.on('error', (err: any) => {
@@ -767,7 +888,6 @@ export const ProfileLive: React.FC<ProfileLiveProps> = ({
           setIsRemoteConnected(false);
           if (!destroyed) {
             setConnectionStatus('reconnecting');
-            // peer-unavailable = host not registered yet, retry faster
             const delay = err.type === 'peer-unavailable' ? 3000 : 5000;
             retryTimeout = setTimeout(connectToHost, delay);
           }
@@ -775,7 +895,7 @@ export const ProfileLive: React.FC<ProfileLiveProps> = ({
       } catch (e) {
         console.error("[WebRTC Viewer] PeerJS initialization failed:", e);
         if (!destroyed) {
-          retryTimeout = setTimeout(connectToHost, 5000);
+          retryTimeout = setTimeout(connectToHost, 3000);
         }
       }
     };
@@ -787,6 +907,11 @@ export const ProfileLive: React.FC<ProfileLiveProps> = ({
       setIsRemoteConnected(false);
       setConnectionStatus('idle');
       if (retryTimeout) clearTimeout(retryTimeout);
+      if (keepaliveInterval) clearInterval(keepaliveInterval);
+      if (stallWatcher) clearInterval(stallWatcher);
+      if (activeAudioCtx) {
+        try { activeAudioCtx.close(); } catch (_) {}
+      }
       if (call) try { call.close(); } catch (_) {}
       if (peer) try { peer.destroy(); } catch (_) {};
     };

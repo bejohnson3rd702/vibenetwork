@@ -257,6 +257,17 @@ export function useStreaming({ profileId, isOwnProfile, viewMode = 'public', use
         }
       });
 
+      hostPeer.on('disconnected', () => {
+        console.warn(`[PeerJS Host] Disconnected from signaling server for ${peerId}. Reconnecting...`);
+        if (!aborted && hostPeer && !hostPeer.destroyed) {
+          try {
+            hostPeer.reconnect();
+          } catch (e) {
+            console.error('[PeerJS Host] Reconnect error:', e);
+          }
+        }
+      });
+
       hostPeer.on('error', (err: any) => {
         console.error('[PeerJS Host Error]', err.type, err.message);
         if (err.type === 'unavailable-id' && retryCount < MAX_RETRIES && !aborted) {
@@ -273,8 +284,23 @@ export function useStreaming({ profileId, isOwnProfile, viewMode = 'public', use
 
     createPeer();
 
+    // Keepalive interval: prevent signaling socket idle timeout
+    const hostKeepaliveTimer = setInterval(() => {
+      if (aborted) {
+        clearInterval(hostKeepaliveTimer);
+        return;
+      }
+      if (hostPeer && !hostPeer.destroyed) {
+        if (hostPeer.disconnected) {
+          console.log('[PeerJS Host] Signaling socket is disconnected, reconnecting...');
+          try { hostPeer.reconnect(); } catch (_) {}
+        }
+      }
+    }, 25000);
+
     return () => {
       aborted = true;
+      clearInterval(hostKeepaliveTimer);
       if (retryTimeoutId) clearTimeout(retryTimeoutId);
       if (hostPeer) {
         console.log(`[PeerJS Host] Destroying Peer connection for: ${peerId}`);
