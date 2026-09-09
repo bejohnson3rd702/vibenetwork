@@ -1,5 +1,134 @@
 import { defineConfig, loadEnv } from 'vite'
 import react from '@vitejs/plugin-react'
+import { execSync } from 'child_process'
+import { createClient } from '@supabase/supabase-js'
+
+function youtubeTranscriptPlugin(env: Record<string, string>) {
+  const supabaseUrl = env.VITE_SUPABASE_URL || 'https://fimzetmvrmbmdggvqzpr.supabase.co';
+  const supabaseKey = env.VITE_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZpbXpldG12cm1ibWRnZ3ZxenByIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUwMTQ2MjcsImV4cCI6MjA5MDU5MDYyN30.1spJ19jp6RZzpMVSHZRNLjaS-bd2RoztlIYMxmKQQQg';
+  const supabase = createClient(supabaseUrl, supabaseKey);
+
+  return {
+    name: 'youtube-transcript-middleware',
+    configureServer(server: any) {
+      server.middlewares.use('/api/yt-transcript', async (req: any, res: any) => {
+        try {
+          const urlObj = new URL(req.url, 'http://localhost:5173');
+          const rawId = urlObj.searchParams.get('videoId') || urlObj.searchParams.get('url') || '';
+          const match = rawId.match(/(?:youtube\.com\/(?:[^\/\n\s]+\/\S+\/|(?:v|e(?:mbed)?|live|shorts)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/i);
+          const videoId = (match && match[1]?.length === 11) ? match[1] : (rawId.length === 11 ? rawId : '');
+
+          if (!videoId) {
+            res.statusCode = 400;
+            res.setHeader('Content-Type', 'application/json');
+            return res.end(JSON.stringify({ success: false, error: 'Valid YouTube videoId is required.' }));
+          }
+
+          // 1. Check Supabase cache
+          try {
+            const { data: cached } = await supabase
+              .from('video_transcripts')
+              .select('transcript')
+              .eq('video_id', videoId)
+              .maybeSingle();
+
+            if (cached && Array.isArray(cached.transcript) && cached.transcript.length > 0) {
+              res.setHeader('Content-Type', 'application/json');
+              return res.end(JSON.stringify({ success: true, videoId, segments: cached.transcript, source: 'cache' }));
+            }
+          } catch (cacheErr) {
+            console.warn('[yt-transcript] Cache query error:', cacheErr);
+          }
+
+          // 2. Extract using yt-dlp
+          try {
+            const ytdlpBin = [
+              '/opt/homebrew/bin/yt-dlp',
+              '/usr/local/bin/yt-dlp',
+              'yt-dlp'
+            ].find(bin => {
+              try {
+                execSync(`${bin} --version`, { stdio: 'ignore' });
+                return true;
+              } catch (_) {
+                return false;
+              }
+            }) || 'yt-dlp';
+
+            const raw = execSync(`${ytdlpBin} --dump-json --skip-download "https://www.youtube.com/watch?v=${videoId}"`, {
+              encoding: 'utf8',
+              maxBuffer: 20 * 1024 * 1024,
+              timeout: 20000
+            });
+            const data = JSON.parse(raw);
+            const subs = data.subtitles || {};
+            const autoSubs = data.automatic_captions || {};
+
+            const langKey = Object.keys(subs).find(k => k.startsWith('en'))
+              || Object.keys(autoSubs).find(k => k.startsWith('en'))
+              || Object.keys(subs)[0]
+              || Object.keys(autoSubs)[0];
+
+            if (langKey) {
+              const formats = (subs[langKey] || autoSubs[langKey] || []);
+              const json3Format = formats.find((f: any) => f.ext === 'json3') || formats[0];
+              if (json3Format && json3Format.url) {
+                const capRes = await fetch(json3Format.url);
+                const json = await capRes.json();
+                const segments: any[] = [];
+                if (json.events && Array.isArray(json.events)) {
+                  for (const ev of json.events) {
+                    if (ev.segs && ev.tStartMs !== undefined) {
+                      const text = ev.segs.map((s: any) => s.utf8).join('').trim();
+                      if (text && text !== '\n') {
+                        const totalSec = Math.floor(ev.tStartMs / 1000);
+                        const m = Math.floor(totalSec / 60);
+                        const s = Math.floor(totalSec % 60);
+                        segments.push({
+                          time: `${m < 10 ? '0' : ''}${m}:${s < 10 ? '0' : ''}${s}`,
+                          seconds: totalSec,
+                          speaker: 'YouTube Audio',
+                          text: text,
+                          isRecorded: true
+                        });
+                      }
+                    }
+                  }
+                }
+
+                if (segments.length > 0) {
+                  // Save to Supabase
+                  try {
+                    await supabase.from('video_transcripts').upsert({
+                      video_id: videoId,
+                      transcript: segments,
+                      created_at: new Date().toISOString()
+                    }, { onConflict: 'video_id' });
+                  } catch (saveErr) {
+                    console.warn('[yt-transcript] Save to Supabase error:', saveErr);
+                  }
+
+                  res.setHeader('Content-Type', 'application/json');
+                  return res.end(JSON.stringify({ success: true, videoId, title: data.title, segments, source: 'youtube' }));
+                }
+              }
+            }
+          } catch (ytErr: any) {
+            console.warn('[yt-transcript] yt-dlp error:', ytErr?.message);
+          }
+
+          res.statusCode = 404;
+          res.setHeader('Content-Type', 'application/json');
+          return res.end(JSON.stringify({ success: false, videoId, error: 'No caption track available on YouTube for this video.' }));
+        } catch (err: any) {
+          res.statusCode = 500;
+          res.setHeader('Content-Type', 'application/json');
+          return res.end(JSON.stringify({ success: false, error: err?.message || 'Server error' }));
+        }
+      });
+    }
+  };
+}
 
 function stripeStagingPlugin(env: Record<string, string>) {
   return {
@@ -117,7 +246,7 @@ export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), '');
 
   return {
-    plugins: [react(), stripeStagingPlugin(env)],
+    plugins: [react(), stripeStagingPlugin(env), youtubeTranscriptPlugin(env)],
     server: {
       proxy: {
         '/api/ncaa': {

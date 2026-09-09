@@ -5,6 +5,7 @@ import { useToast } from '../context/ToastContext';
 import Peer from 'peerjs';
 import { supabase } from '../supabaseClient';
 import { ErrorBoundary } from './ErrorBoundary';
+import { VideoTranslationOverlay } from './VideoTranslationOverlay';
 
 // We import LiveChat dynamically
 const LiveChat = React.lazy(() => import('./LiveChat').catch(() => ({ default: () => <div/> })));
@@ -255,6 +256,24 @@ export const ProfileLive: React.FC<ProfileLiveProps> = ({
       if (interval) clearInterval(interval);
     };
   }, [activePastStream, isOwnProfile, effectiveIsSubscribed, purchasedVideoIds, isPastStreamPreviewExpired]);
+
+  // Track elapsed playback time for iframe stream translations
+  React.useEffect(() => {
+    let interval: any = null;
+    const isIframe = activePastStream?.video_url?.includes('youtube.com') || 
+                     activePastStream?.video_url?.includes('youtu.be') || 
+                     activePastStream?.video_url?.includes('dailymotion.com') || 
+                     activePastStream?.video_url?.includes('dai.ly');
+    if (activePastStream && isIframe) {
+      setCurrentTime(0);
+      interval = setInterval(() => {
+        setCurrentTime(prev => prev + 1);
+      }, 1000);
+    }
+    return () => {
+      if (interval) clearInterval(interval);
+    };
+  }, [activePastStream]);
 
   const handleBuyVideo = async (video: any) => {
     const priceVal = Number(video.price) || 0;
@@ -3078,11 +3097,11 @@ export const ProfileLive: React.FC<ProfileLiveProps> = ({
                           const isDailymotion = videoUrl.includes('dailymotion.com') || videoUrl.includes('dai.ly');
 
                           if (isYouTube) {
-                            const match = videoUrl.match(/^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/);
-                            const ytId = (match && match[2].length === 11) ? match[2] : '';
+                            const match = videoUrl.match(/(?:youtube\.com\/(?:[^\/\n\s]+\/\S+\/|(?:v|e(?:mbed)?|live|shorts)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/i);
+                            const ytId = (match && match[1]?.length === 11) ? match[1] : '';
                             return (
                               <iframe
-                                src={`https://www.youtube.com/embed/${ytId}?autoplay=0&controls=1&rel=0`}
+                                src={`https://www.youtube.com/embed/${ytId}?autoplay=0&controls=1&rel=0&enablejsapi=1&origin=${encodeURIComponent(typeof window !== 'undefined' ? window.location.origin : '')}`}
                                 title={activePastStream.title}
                                 frameBorder="0"
                                 allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
@@ -3132,6 +3151,20 @@ export const ProfileLive: React.FC<ProfileLiveProps> = ({
                           }
                         })()
                       )}
+
+                      {/* Video Translation Overlay (WWTC Multi-Language Subtitles & Voiceover) */}
+                      <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', zIndex: 12 }}>
+                        <VideoTranslationOverlay 
+                          videoUrl={activePastStream.video_url || ''} 
+                          currentTime={currentTime} 
+                          accent={accent}
+                          onMuteVideo={(shouldMute) => {
+                            if (pastStreamVideoRef.current) {
+                              pastStreamVideoRef.current.muted = shouldMute;
+                            }
+                          }}
+                        />
+                      </div>
 
                       {/* Preview Overlay Indicator */}
                       {!isOwnProfile &&

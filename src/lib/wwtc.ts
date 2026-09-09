@@ -1,3 +1,5 @@
+import { supabase } from '../supabaseClient';
+
 const WWTC_API_KEY = (typeof import.meta !== 'undefined' && import.meta.env?.VITE_WWTC_API_KEY) || '95a35451.30ece979-c4bd-447b-8b1e-fd9a6c77418b';
 const CORE_BASE_URL = 'https://core.worldwidetechconnections.com';
 const API_BASE_URL = 'https://api.worldwidetechconnections.com';
@@ -154,8 +156,12 @@ export async function executeWwtcService(params: WwtcServiceRequest): Promise<Ww
   return response.json();
 }
 
+// Global In-Memory Translation Cache & Deduplication Pool
+const translationMemoryCache = new Map<string, WwtcServiceResponse>();
+const inFlightTranslations = new Map<string, Promise<WwtcServiceResponse>>();
+
 /**
- * Send text for translation service (TTT or TTS)
+ * Send text for translation service (TTT or TTS) with high-speed in-memory caching and coalescing
  */
 export async function translateText(params: {
   text: string;
@@ -164,13 +170,115 @@ export async function translateText(params: {
   serviceCode?: 'sts' | 'ttt' | 'stt' | 'tts';
 }): Promise<WwtcServiceResponse> {
   const { text, sourceLang, targetLang, serviceCode = 'tts' } = params;
-  
-  return executeWwtcService({
-    serviceCode: serviceCode === 'sts' ? 'tts' : serviceCode,
-    sourceLang,
-    targetLang,
-    text,
-  });
+  const cleanText = (text || '').trim();
+
+  if (!cleanText) {
+    return { source_text: '', translated_text: '', audio: '' };
+  }
+
+  // Same language: instant 0ms response
+  if (sourceLang === targetLang) {
+    return { source_text: cleanText, translated_text: cleanText, audio: '' };
+  }
+
+  const normalizedService = serviceCode === 'sts' ? 'tts' : serviceCode;
+  const cacheKey = `${normalizedService}:${sourceLang}:${targetLang}:${cleanText}`;
+
+  // 1. Instant Cache Hit (0ms)
+  if (translationMemoryCache.has(cacheKey)) {
+    return translationMemoryCache.get(cacheKey)!;
+  }
+
+  // 2. Coalesce with any identical in-flight request
+  if (inFlightTranslations.has(cacheKey)) {
+    return inFlightTranslations.get(cacheKey)!;
+  }
+
+  const requestPromise = (async () => {
+    try {
+      const res = await executeWwtcService({
+        serviceCode: normalizedService,
+        sourceLang,
+        targetLang,
+        text: cleanText,
+      });
+
+      // Cache successful response
+      translationMemoryCache.set(cacheKey, res);
+
+      // LRU cache bounding (max 2500 entries)
+      if (translationMemoryCache.size > 2500) {
+        const oldestKey = translationMemoryCache.keys().next().value;
+        if (oldestKey) translationMemoryCache.delete(oldestKey);
+      }
+
+      return res;
+    } finally {
+      inFlightTranslations.delete(cacheKey);
+    }
+  })();
+
+  inFlightTranslations.set(cacheKey, requestPromise);
+  return requestPromise;
+}
+
+/**
+ * High-speed parallel pre-fetcher for caption segments / text chunks
+ * Uses a concurrency pool (default 4 workers) to pre-warm the cache ahead of playback
+ */
+export async function batchPrefetchTranslations(params: {
+  texts: string[];
+  sourceLang: string;
+  targetLang: string;
+  serviceCode?: 'ttt' | 'tts';
+  concurrency?: number;
+  onItemTranslated?: (index: number, text: string, translatedText: string, audio?: string) => void;
+}): Promise<Record<number, string>> {
+  const { 
+    texts, 
+    sourceLang, 
+    targetLang, 
+    serviceCode = 'ttt', 
+    concurrency = 4,
+    onItemTranslated 
+  } = params;
+
+  const results: Record<number, string> = {};
+  if (!texts || texts.length === 0 || sourceLang === targetLang) {
+    return results;
+  }
+
+  let currentIndex = 0;
+
+  const worker = async () => {
+    while (currentIndex < texts.length) {
+      const idx = currentIndex++;
+      const txt = texts[idx];
+      if (!txt || !txt.trim()) continue;
+
+      try {
+        const res = await translateText({
+          text: txt,
+          sourceLang,
+          targetLang,
+          serviceCode,
+        });
+
+        const translated = res.translated_text || txt;
+        results[idx] = translated;
+        if (onItemTranslated) {
+          onItemTranslated(idx, txt, translated, res.audio);
+        }
+      } catch (err) {
+        // Continue prefetching remaining items even if one fails
+        console.warn(`[WWTC] Prefetch item ${idx} notice:`, err);
+      }
+    }
+  };
+
+  const pool = Array.from({ length: Math.min(concurrency, texts.length) }, () => worker());
+  await Promise.all(pool);
+  return results;
 }
 
 /**
@@ -324,16 +432,50 @@ async function fetchWithCorsProxy(targetUrl: string): Promise<string> {
 }
 
 /**
- * Fetch and parse YouTube auto-captions / timedtext subtitles for a video ID
+ * Fetch and parse YouTube auto-captions / timedtext subtitles for a video ID or URL
  */
 export async function fetchYouTubeCaptions(videoId: string): Promise<YouTubeCaptionSegment[]> {
   if (!videoId) throw new Error("Video ID is required");
 
-  // First try Piped and Invidious public API endpoints which return JSON captions directly without CORS
+  // Extract clean 11-char video ID if a full URL was provided
+  const match = videoId.match(/(?:youtube\.com\/(?:[^\/\n\s]+\/\S+\/|(?:v|e(?:mbed)?|live|shorts)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/i);
+  const cleanId = (match && match[1]?.length === 11) ? match[1] : (videoId.length === 11 ? videoId : videoId);
+
+  // 1. Check Supabase database cache (instant)
+  if (supabase) {
+    try {
+      const { data } = await supabase
+        .from('video_transcripts')
+        .select('transcript')
+        .eq('video_id', cleanId)
+        .maybeSingle();
+
+      if (data && Array.isArray(data.transcript) && data.transcript.length > 0) {
+        return data.transcript;
+      }
+    } catch (dbErr) {
+      console.warn("[WWTC] Supabase transcript check notice:", dbErr);
+    }
+  }
+
+  // 2. Call server-side transcript extraction API (uses yt-dlp & signed timedtext endpoint)
+  try {
+    const res = await fetch(`/api/yt-transcript?videoId=${encodeURIComponent(cleanId)}`);
+    if (res.ok) {
+      const json = await res.json();
+      if (json.success && Array.isArray(json.segments) && json.segments.length > 0) {
+        return json.segments;
+      }
+    }
+  } catch (apiErr) {
+    console.warn("[WWTC] /api/yt-transcript API notice:", apiErr);
+  }
+
+  // 3. Fallback to third-party endpoints
   const thirdPartyEndpoints = [
-    `https://pipedapi.kavin.rocks/captions/${videoId}`,
-    `https://vid.puffyan.us/api/v1/captions/${videoId}`,
-    `https://invidious.drgns.space/api/v1/captions/${videoId}`
+    `https://pipedapi.kavin.rocks/captions/${cleanId}`,
+    `https://vid.puffyan.us/api/v1/captions/${cleanId}`,
+    `https://invidious.drgns.space/api/v1/captions/${cleanId}`
   ];
 
   for (const endpoint of thirdPartyEndpoints) {
@@ -421,11 +563,11 @@ export async function fetchYouTubeCaptions(videoId: string): Promise<YouTubeCapt
 
   // Attempt standard YouTube timedtext API endpoints
   const urls = [
-    `https://www.youtube.com/api/timedtext?v=${videoId}&lang=en&fmt=json3`,
-    `https://www.youtube.com/api/timedtext?v=${videoId}&lang=en-US&fmt=json3`,
-    `https://www.youtube.com/api/timedtext?v=${videoId}&lang=a.en&fmt=json3`,
-    `https://www.youtube.com/api/timedtext?v=${videoId}&lang=en`,
-    `https://www.youtube.com/api/timedtext?v=${videoId}&lang=en-US`,
+    `https://www.youtube.com/api/timedtext?v=${cleanId}&lang=en&fmt=json3`,
+    `https://www.youtube.com/api/timedtext?v=${cleanId}&lang=en-US&fmt=json3`,
+    `https://www.youtube.com/api/timedtext?v=${cleanId}&lang=a.en&fmt=json3`,
+    `https://www.youtube.com/api/timedtext?v=${cleanId}&lang=en`,
+    `https://www.youtube.com/api/timedtext?v=${cleanId}&lang=en-US`,
   ];
 
   for (const url of urls) {

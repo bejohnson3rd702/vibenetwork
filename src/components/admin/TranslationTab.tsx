@@ -97,9 +97,11 @@ export function TranslationTab({ wlConfig }: { wlConfig: any }) {
         try {
           const wavBlob = await convertBlobTo16kWav(rawBlob);
           setRecordedAudioBlob(wavBlob);
+          executeAudioTranslation(wavBlob);
         } catch (err) {
           console.error('Failed to convert to 16kHz WAV:', err);
           setRecordedAudioBlob(rawBlob);
+          executeAudioTranslation(rawBlob);
         }
         stream.getTracks().forEach(track => track.stop());
       };
@@ -112,6 +114,46 @@ export function TranslationTab({ wlConfig }: { wlConfig: any }) {
       }, 1000);
     } catch (err: any) {
       setTranslateError(err.message || 'Could not access microphone.');
+    }
+  };
+
+  // Immediate audio execution upon stopping recording
+  const executeAudioTranslation = async (blob: Blob) => {
+    setIsTranslating(true);
+    setTranslateError(null);
+    setRecognizedSourceText('');
+    setTranslatedText('');
+    setAudioBase64(null);
+    setIsPlaying(false);
+
+    if (audioRef.current) {
+      audioRef.current.pause();
+    }
+
+    try {
+      const result = await executeWwtcService({
+        serviceCode: serviceMode,
+        sourceLang,
+        targetLang,
+        audioBlob: blob
+      });
+
+      if (result.source_text) {
+        setRecognizedSourceText(result.source_text);
+      }
+      if (result.translated_text) {
+        setTranslatedText(result.translated_text);
+      } else if (result.source_text && serviceMode === 'stt') {
+        setTranslatedText(result.source_text);
+      }
+
+      if (result.audio) {
+        setAudioBase64(result.audio);
+      }
+    } catch (err: any) {
+      setTranslateError(err.message || 'An error occurred during speech translation.');
+    } finally {
+      setIsTranslating(false);
     }
   };
 
@@ -134,14 +176,16 @@ export function TranslationTab({ wlConfig }: { wlConfig: any }) {
     try {
       const wavBlob = await convertBlobTo16kWav(file);
       setRecordedAudioBlob(wavBlob);
+      executeAudioTranslation(wavBlob);
     } catch {
       setRecordedAudioBlob(file);
+      executeAudioTranslation(file);
     }
   };
 
   // Handle translation / speech service execution
-  const handleTranslate = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleTranslate = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
     if ((serviceMode === 'ttt' || serviceMode === 'tts') && !inputText.trim()) return;
     if ((serviceMode === 'stt' || serviceMode === 'sts') && !recordedAudioBlob) {
       setTranslateError('Please record audio or upload an audio file for speech service.');

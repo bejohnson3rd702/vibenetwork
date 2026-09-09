@@ -27,7 +27,7 @@ export function useDictation(onResult: (text: string) => void) {
     const recognition = new SpeechRecognition();
     
     recognition.continuous = false;
-    recognition.interimResults = false;
+    recognition.interimResults = true;
     recognition.lang = 'en-US';
 
     recognition.onstart = () => {
@@ -35,9 +35,19 @@ export function useDictation(onResult: (text: string) => void) {
     };
 
     recognition.onresult = (event: any) => {
-      const transcript = event.results[0][0].transcript;
-      onResult(transcript);
-      setIsListening(false);
+      let finalTranscript = '';
+      let interimTranscript = '';
+      for (let i = event.resultIndex; i < event.results.length; ++i) {
+        if (event.results[i].isFinal) {
+          finalTranscript += event.results[i][0].transcript;
+        } else {
+          interimTranscript += event.results[i][0].transcript;
+        }
+      }
+      const text = (finalTranscript || interimTranscript).trim();
+      if (text) {
+        onResult(text);
+      }
     };
 
     recognition.onerror = (event: any) => {

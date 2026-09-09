@@ -11,6 +11,7 @@ import { DashboardVideoControlCenter } from './DashboardVideoControlCenter';
 import { ErrorBoundary } from './ErrorBoundary';
 import { BackgroundSettingsModal } from './BackgroundSettingsModal';
 import { SubscriptionSettingsModal } from './SubscriptionSettingsModal';
+import { VideoTranslationOverlay } from './VideoTranslationOverlay';
 const LiveChat = React.lazy(() => import('./LiveChat'));
 const ShopifyStore = React.lazy(() => import('./ShopifyStore'));
 const AiReportTab = React.lazy(() => import('./admin/AiReportTab').then(m => ({ default: m.AiReportTab })));
@@ -10477,7 +10478,7 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
             // Check for YouTube
             const ytMatch = url.match(/(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/i);
             if (ytMatch && ytMatch[1]) {
-              const embedUrl = `https://www.youtube.com/embed/${ytMatch[1]}?autoplay=0&rel=0`;
+              const embedUrl = `https://www.youtube.com/embed/${ytMatch[1]}?autoplay=0&rel=0&enablejsapi=1&origin=${encodeURIComponent(typeof window !== 'undefined' ? window.location.origin : '')}`;
               return (
                 <iframe 
                   title={activeCinemaEpisode.title}
@@ -10553,6 +10554,14 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
                     {/* Simulated High-Fidelity Video Screen */}
                     <div style={{ width: '100%', aspectRatio: '16/9', background: 'radial-gradient(circle, #250917 0%, #030103 100%)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', position: 'relative', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
                       {renderCinemaPlayer()}
+
+                      {/* Video Translation Overlay (WWTC Multi-Language Subtitles & Voiceover) */}
+                      <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', zIndex: 12 }}>
+                        <VideoTranslationOverlay
+                          videoUrl={activeCinemaEpisode.video_url || ''}
+                          accent={wlConfig?.accent || '#ff4d85'}
+                        />
+                      </div>
                     </div>
 
                     {/* Synopsis & Synopsis metadata */}
