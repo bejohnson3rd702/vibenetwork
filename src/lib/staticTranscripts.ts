@@ -8,6 +8,58 @@ export interface TranscriptSegment {
 }
 
 export const STATIC_TRANSCRIPTS: Record<string, TranscriptSegment[]> = {
+  "trump1-speech": [
+    {
+      "time": "00:00",
+      "seconds": 0,
+      "speaker": "Reporter",
+      "text": "Trump posted over the holiday about changing New Mexico's name to New America."
+    },
+    {
+      "time": "00:05",
+      "seconds": 5,
+      "speaker": "Reporter",
+      "text": "The backlash was swift as you might expect. New Mexico's Governor said it isn't up for debate, adding while the White House wasted time on coloring maps, her state is busy doing the work."
+    },
+    {
+      "time": "00:13",
+      "seconds": 13,
+      "speaker": "Reporter",
+      "text": "Even a Republican running for governor there said the state does not need a new name. To be clear, it is up to the voters, not the president."
+    },
+    {
+      "time": "00:20",
+      "seconds": 20,
+      "speaker": "Reporter",
+      "text": "Still, Trump has already shown he's serious. Just last week, he signed an executive order renaming Lake Ontario to Lake America."
+    }
+  ],
+  "trump1": [
+    {
+      "time": "00:00",
+      "seconds": 0,
+      "speaker": "Reporter",
+      "text": "Trump posted over the holiday about changing New Mexico's name to New America."
+    },
+    {
+      "time": "00:05",
+      "seconds": 5,
+      "speaker": "Reporter",
+      "text": "The backlash was swift as you might expect. New Mexico's Governor said it isn't up for debate, adding while the White House wasted time on coloring maps, her state is busy doing the work."
+    },
+    {
+      "time": "00:13",
+      "seconds": 13,
+      "speaker": "Reporter",
+      "text": "Even a Republican running for governor there said the state does not need a new name. To be clear, it is up to the voters, not the president."
+    },
+    {
+      "time": "00:20",
+      "seconds": 20,
+      "speaker": "Reporter",
+      "text": "Still, Trump has already shown he's serious. Just last week, he signed an executive order renaming Lake Ontario to Lake America."
+    }
+  ],
   "fishing-flats-bonaire": [
   {
     "time": "00:00",

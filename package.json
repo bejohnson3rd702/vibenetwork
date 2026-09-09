@@ -12,7 +12,8 @@
     "build:prod": "vite build --mode production",
     "lint": "eslint .",
     "preview": "vite preview",
-    "preview:stg": "vite preview --mode staging --port 5174"
+    "preview:stg": "vite preview --mode staging --port 5174",
+    "transcribe": "node scripts/transcribe_video.cjs"
   },
   "dependencies": {
     "@stripe/stripe-js": "^9.4.0",

@@ -42,5 +42,10 @@ node-v*.tar.gz
 # macOS metadata
 ._*
 
+# Temp files & audio dumps
+tmp/
+*.wav
+
 # node binaries
 node-v*/
+

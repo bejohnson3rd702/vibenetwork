@@ -6,6 +6,8 @@ import { useToast } from '../context/ToastContext';
 import { motion } from 'framer-motion';
 import { ShoppingBag, ArrowLeft, ShieldCheck, Download, Package, Music, CreditCard } from 'lucide-react';
 import { syncContactToExternalCrms } from '../lib/crmSync';
+import { getStripeClient } from '../lib/stripeConfig';
+import StripeEmbeddedCheckoutModal from './StripeEmbeddedCheckoutModal';
 
 const ProductPage: React.FC = () => {
   const { productId } = useParams();
@@ -17,6 +19,8 @@ const ProductPage: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [purchasing, setPurchasing] = useState(false);
   const [error, setError] = useState('');
+  const [checkoutModalOpen, setCheckoutModalOpen] = useState(false);
+  const [checkoutClientSecret, setCheckoutClientSecret] = useState('');
   const [purchasedProductIds, setPurchasedProductIds] = useState<string[]>(() => {
     try {
       const saved = localStorage.getItem('vibe_purchased_products');
@@ -203,36 +207,76 @@ const ProductPage: React.FC = () => {
 
       toast.info(`Preparing secure Checkout for ${product.title}...`);
 
-      if (session?.access_token) {
+      await getStripeClient().catch(() => null);
+
+      const extraMetadata = {
+        product_id: product.id,
+        product_type: product.type,
+        ...(product.type?.toLowerCase() === 'physical' ? {
+          ...(shouldShowSizes ? { size: selectedSize } : {}),
+          color: selectedColor
+        } : {})
+      };
+
+      // 1. Try local Staging API endpoint first
+      const localRes = await fetch('/api/stripe/create-checkout-session', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          productTitle: product.title,
+          amount: product.price,
+          creatorId: product.creator?.id || product.creator_id || wlConfig?.owner_id || '',
+          returnUrl: window.location.href,
+          uiMode: 'embedded',
+          extraMetadata
+        })
+      }).catch(() => null);
+
+      if (localRes && localRes.ok) {
+        const data = await localRes.json().catch(() => null);
+        if (data && data.clientSecret) {
+          setCheckoutClientSecret(data.clientSecret);
+          setCheckoutModalOpen(true);
+          setPurchasing(false);
+          return;
+        } else if (data && data.url) {
+          window.location.href = data.url;
+          return;
+        }
+      }
+
+      // 2. Supabase Edge Function fallback
+      if (import.meta.env.VITE_SUPABASE_URL) {
         const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/stripe-checkout`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            'Authorization': `Bearer ${session.access_token}`
+            ...(session?.access_token ? { 'Authorization': `Bearer ${session.access_token}` } : {})
           },
           body: JSON.stringify({
             creatorId: product.creator?.id || product.creator_id || wlConfig?.owner_id || '',
             amount: product.price,
             productTitle: product.title,
             returnUrl: window.location.href,
-            extraMetadata: {
-              product_id: product.id,
-              product_type: product.type,
-              ...(product.type?.toLowerCase() === 'physical' ? {
-                ...(shouldShowSizes ? { size: selectedSize } : {}),
-                color: selectedColor
-              } : {})
-            }
+            extraMetadata
           })
-        });
+        }).catch(() => null);
 
-        const data = await response.json().catch(() => null);
-        if (data && data.url) {
-          window.location.href = data.url;
-          return;
-        } else if (data?.error) {
-          throw new Error(data.error);
+        if (response && response.ok) {
+          const data = await response.json().catch(() => null);
+          if (data && data.url) {
+            window.location.href = data.url;
+            return;
+          } else if (data?.error) {
+            throw new Error(data.error);
+          }
         }
+      }
+
+      if (import.meta.env.VITE_ENABLE_STRIPE === 'true') {
+        toast.info(`[STRIPE STAGING READY]\n\nCheckout session initiated for: ${product.title} ($${Number(product.price).toFixed(2)})`);
+        setPurchasing(false);
+        return;
       }
 
       throw new Error('Could not establish checkout connection.');
@@ -558,6 +602,21 @@ const ProductPage: React.FC = () => {
         </div>
 
       </div>
+
+      <StripeEmbeddedCheckoutModal
+        isOpen={checkoutModalOpen}
+        onClose={() => setCheckoutModalOpen(false)}
+        clientSecret={checkoutClientSecret}
+        productTitle={product?.title || 'Product'}
+        amount={product?.price || 0}
+        productType={product?.type}
+        downloadUrl={product?.digital_file_url || product?.file_url}
+        onSuccess={() => {
+          if (product?.id) {
+            markAsPurchased(String(product.id));
+          }
+        }}
+      />
     </div>
   );
 };

@@ -4713,6 +4713,7 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
                   { id: 'store', label: 'Store', icon: <DollarSign size={16} />, color: '#00ff88' },
                   ...(wlConfig?.enableBooking !== false ? [{ id: 'booking', label: 'Schedule Appointment', icon: <Calendar size={16} />, color: '#b380ff' }] : []),
                   { id: 'series', label: 'Episodes', icon: <Video size={16} />, color: '#00e5ff' },
+                  ...(wlConfig?.enableWatchLive !== false ? [{ id: 'live', label: 'Live Stream', icon: <Video size={16} />, color: '#ff3b30' }] : []),
                   ...(!import.meta.env.PROD ? [{ id: 'courses', label: 'Sessions', icon: <CheckCircle size={16} />, color: '#ffb700' }] : []),
                   ...(isOwnProfile && viewMode === 'edit' ? [
                     { id: 'flipbook', label: 'Vibe Drive', icon: <Folder size={16} />, color: '#ff9d00' },
@@ -4720,8 +4721,6 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
                   ] : [])
                 ]
                   .concat(isNetworkLevel ? [
-                    { id: 'live', label: 'Live Stream', icon: <Video size={16} />, color: '#ff3b30' },
-                    // { id: 'members', label: 'Network Profiles', icon: <Monitor size={16} />, color: '#9d4edd' },
                     { id: 'community', label: 'Community', icon: <MessageCircle size={16} />, color: '#3399ff' }
                   ] : [])
                   .concat((myNetworks.length > 0 && !isNetworkLevel) ? [{ id: 'networks', label: 'My Networks', icon: <Monitor size={16} />, color: '#ff007f' }] : [])

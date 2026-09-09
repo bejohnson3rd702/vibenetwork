@@ -19,6 +19,7 @@ interface VideoClip {
   sport: string;
   articleUrl?: string;
   published?: Date;
+  translationAudioUrl?: string;
 }
 
 const FEEDS = [
@@ -165,6 +166,17 @@ const VIBE_100_FEEDS = [
 ];
 
 const VIBE_100_CLIPS: VideoClip[] = [
+  {
+    id: 'trump1-speech',
+    headline: 'President Donald Trump Special Address',
+    description: 'Special address broadcast featuring President Donald Trump with multi-language audio translation.',
+    thumbnail: 'https://images.unsplash.com/photo-1540910419892-4a36d2c3266c?auto=format&fit=crop&q=80&w=800',
+    videoUrl: '/videos/trump1.mp4',
+    duration: 29,
+    source: 'Vibes Watch',
+    sport: 'news',
+    translationAudioUrl: '/audio/trump1.mp3'
+  },
   // AVO Channel
   {
     id: 'vyqy7PcDGLM',
@@ -790,6 +802,17 @@ const STATIC_FLEX_ONLINE_CLIPS: VideoClip[] = [
 ];
 
 const STATIC_VIBE_CLIPS: VideoClip[] = [
+  {
+    id: 'trump1-speech',
+    headline: 'President Donald Trump Special Address',
+    description: 'Special address broadcast featuring President Donald Trump with multi-language audio translation.',
+    thumbnail: 'https://images.unsplash.com/photo-1540910419892-4a36d2c3266c?auto=format&fit=crop&q=80&w=800',
+    videoUrl: '/videos/trump1.mp4',
+    duration: 29,
+    source: 'Vibes Watch',
+    sport: 'news',
+    translationAudioUrl: '/audio/trump1.mp3'
+  },
   {
     id: '4cqcl3Jy_hw',
     headline: 'FAA wants to change this old system',
@@ -1725,9 +1748,26 @@ export default function WatchLive({ accent = '#D35400', isCourtneyBee = false, i
     });
   }, [currentVideoTime, translatedTranscript, isPlayingInfoAudio]);
 
+  const translationCacheRef = useRef<Map<string, {
+    translatedInfo: { headline: string; description: string } | null;
+    infoAudioBase64: string | null;
+    translatedTranscript: TranscriptSegment[] | null;
+  }>>(new Map());
+
   // Translate active video title, description, and transcript segments
   const handleTranslateVideoInfo = async (targetLanguage: string) => {
     if (!activeVideo || isTranslatingRef.current) return;
+
+    const cacheKey = `${activeVideo.id}_${targetLanguage}`;
+    if (translationCacheRef.current.has(cacheKey)) {
+      const cached = translationCacheRef.current.get(cacheKey)!;
+      setTranslatedInfo(cached.translatedInfo);
+      setInfoAudioBase64(cached.infoAudioBase64);
+      setTranslatedTranscript(cached.translatedTranscript);
+      setIsTranslatingInfo(false);
+      return;
+    }
+
     isTranslatingRef.current = true;
     stopAllTranslatedAudio();
 
@@ -1791,94 +1831,103 @@ export default function WatchLive({ accent = '#D35400', isCourtneyBee = false, i
         ? activeTranscript.map(seg => seg.text).join(' ')
         : '';
 
-      // 2. Translate title (headline)
-      let translatedHeadline = activeVideo.headline;
-      if (supportsTtt) {
-        const headlineRes = await translateText({
-          text: activeVideo.headline,
-          sourceLang: 'english-united-states',
-          targetLang: targetLanguage,
-          serviceCode: 'ttt'
-        });
-        if (headlineRes.translated_text) {
-          translatedHeadline = headlineRes.translated_text;
-        }
-      }
-
-      // 3. Translate description text ONLY for screen display (text-to-text, never TTS)
-      let translatedDesc = activeVideo.description || '';
-      if (activeVideo.description && activeVideo.description.trim()) {
-        const descRes = await translateText({
-          text: activeVideo.description,
-          sourceLang: 'english-united-states',
-          targetLang: targetLanguage,
-          serviceCode: 'ttt' // text-only for screen layout
-        });
-        
-        if (descRes.translated_text) {
-          translatedDesc = descRes.translated_text;
-        }
-      }
-
-      setTranslatedInfo({
-        headline: translatedHeadline,
-        description: translatedDesc
-      });
-
-      // 4. Generate TTS audio from real spoken video transcript ONLY for the "Listen" button
-      if (supportsTts && hasSpokenAudio && fullTranscriptText.trim()) {
-        try {
-          const textToSynthesize = fullTranscriptText.length > 1000 
-            ? fullTranscriptText.slice(0, 1000) + "..." 
-            : fullTranscriptText;
-          const transcriptAudioRes = await translateText({
-            text: textToSynthesize,
+      // Prepare concurrent tasks for headline, description, full transcript TTS, and segment translation
+      const headlinePromise = supportsTtt
+        ? translateText({
+            text: activeVideo.headline,
             sourceLang: 'english-united-states',
             targetLang: targetLanguage,
-            serviceCode: 'tts'
-          });
-          if (transcriptAudioRes.audio) {
-            setInfoAudioBase64(transcriptAudioRes.audio);
-          }
-        } catch (ttsErr) {
-          console.warn("Could not generate TTS for full transcript:", ttsErr);
-        }
-      }
+            serviceCode: 'ttt'
+          }).then(res => res.translated_text || activeVideo.headline).catch(() => activeVideo.headline)
+        : Promise.resolve(activeVideo.headline);
 
-      // 5. Translate real spoken transcript segments with TTS for timed video voiceover concurrently
-      if (hasSpokenAudio && activeTranscript && activeTranscript.length > 0) {
-        const segmentMode = supportsTts ? 'tts' : 'ttt';
-        const translatedSegs = await Promise.all(
-          activeTranscript.map(async (seg) => {
+      const descPromise = (supportsTtt && activeVideo.description && activeVideo.description.trim())
+        ? translateText({
+            text: activeVideo.description,
+            sourceLang: 'english-united-states',
+            targetLang: targetLanguage,
+            serviceCode: 'ttt'
+          }).then(res => res.translated_text || activeVideo.description || '').catch(() => activeVideo.description || '')
+        : Promise.resolve(activeVideo.description || '');
+
+      const fullTtsPromise = (supportsTts && hasSpokenAudio && fullTranscriptText.trim())
+        ? (async () => {
             try {
-              const res = await translateText({
-                text: seg.text,
+              const textToSynthesize = fullTranscriptText.length > 1000 
+                ? fullTranscriptText.slice(0, 1000) + "..." 
+                : fullTranscriptText;
+              const transcriptAudioRes = await translateText({
+                text: textToSynthesize,
                 sourceLang: 'english-united-states',
                 targetLang: targetLanguage,
-                serviceCode: segmentMode
+                serviceCode: 'tts'
               });
-              return {
-                ...seg,
-                translatedText: res.translated_text || seg.text,
-                audio: res.audio || null
-              };
-            } catch (err) {
-              console.warn("Failed to translate segment:", seg.text, err);
-              return {
-                ...seg,
-                translatedText: seg.text,
-                audio: null
-              };
+              return transcriptAudioRes.audio || null;
+            } catch (ttsErr) {
+              console.warn("Could not generate TTS for full transcript:", ttsErr);
+              return null;
             }
-          })
-        );
-        setTranslatedTranscript(translatedSegs);
+          })()
+        : Promise.resolve(null);
 
-        // If full transcript audio wasn't generated, fallback to the first segment's audio for "Listen"
-        if (!infoAudioBase64 && translatedSegs[0]?.audio) {
-          setInfoAudioBase64(translatedSegs[0].audio);
-        }
+      const segmentMode = supportsTts ? 'tts' : 'ttt';
+      const segmentsPromise = (hasSpokenAudio && activeTranscript && activeTranscript.length > 0)
+        ? Promise.all(
+            activeTranscript.map(async (seg) => {
+              try {
+                const res = await translateText({
+                  text: seg.text,
+                  sourceLang: 'english-united-states',
+                  targetLang: targetLanguage,
+                  serviceCode: segmentMode
+                });
+                return {
+                  ...seg,
+                  translatedText: res.translated_text || seg.text,
+                  audio: res.audio || null
+                };
+              } catch (err) {
+                console.warn("Failed to translate segment:", seg.text, err);
+                return {
+                  ...seg,
+                  translatedText: seg.text,
+                  audio: null
+                };
+              }
+            })
+          )
+        : Promise.resolve(null);
+
+      // Execute all translation tasks concurrently
+      const [translatedHeadline, translatedDesc, fullTtsAudio, translatedSegs] = await Promise.all([
+        headlinePromise,
+        descPromise,
+        fullTtsPromise,
+        segmentsPromise
+      ]);
+
+      const finalInfo = {
+        headline: translatedHeadline,
+        description: translatedDesc
+      };
+      setTranslatedInfo(finalInfo);
+
+      let finalInfoAudio = fullTtsAudio;
+      if (!finalInfoAudio && translatedSegs && translatedSegs[0]?.audio) {
+        finalInfoAudio = translatedSegs[0].audio;
       }
+      setInfoAudioBase64(finalInfoAudio);
+
+      if (translatedSegs) {
+        setTranslatedTranscript(translatedSegs);
+      }
+
+      // Cache successful translation result
+      translationCacheRef.current.set(cacheKey, {
+        translatedInfo: finalInfo,
+        infoAudioBase64: finalInfoAudio,
+        translatedTranscript: translatedSegs
+      });
 
     } catch (err) {
       console.error('Failed to translate video info:', err);
@@ -1906,7 +1955,11 @@ export default function WatchLive({ accent = '#D35400', isCourtneyBee = false, i
   }, [preferredLang, transcript, activeVideo?.id]);
 
   const toggleInfoAudio = () => {
-    if (!infoAudioBase64) return;
+    const audioSource = infoAudioBase64 
+      ? `data:audio/wav;base64,${infoAudioBase64}` 
+      : activeVideo?.translationAudioUrl;
+    if (!audioSource) return;
+
     if (isPlayingInfoAudio) {
       stopAllTranslatedAudio();
       restorePlayerVolume();
@@ -1914,7 +1967,7 @@ export default function WatchLive({ accent = '#D35400', isCourtneyBee = false, i
       stopAllTranslatedAudio();
       muteMainVideo();
 
-      infoAudioRef.current = new Audio(`data:audio/wav;base64,${infoAudioBase64}`);
+      infoAudioRef.current = new Audio(audioSource);
       infoAudioRef.current.onended = () => {
         setIsPlayingInfoAudio(false);
         restorePlayerVolume();
@@ -2830,7 +2883,11 @@ export default function WatchLive({ accent = '#D35400', isCourtneyBee = false, i
         for (const item of VIBE_100_CLIPS) {
           if (!seen.has(item.id)) {
             seen.add(item.id);
-            allClips.push(item);
+            if (item.translationAudioUrl || item.id === 'trump1-speech') {
+              allClips.unshift(item);
+            } else {
+              allClips.push(item);
+            }
           }
         }
       } else if (isVibe) {
@@ -2912,7 +2969,11 @@ export default function WatchLive({ accent = '#D35400', isCourtneyBee = false, i
         for (const item of STATIC_VIBE_CLIPS) {
           if (!seen.has(item.id)) {
             seen.add(item.id);
-            allClips.push(item);
+            if (item.translationAudioUrl || item.id === 'trump1-speech') {
+              allClips.unshift(item);
+            } else {
+              allClips.push(item);
+            }
           }
         }
       } else {
@@ -3528,7 +3589,7 @@ export default function WatchLive({ accent = '#D35400', isCourtneyBee = false, i
                           </button>
                         )}
 
-                        {infoAudioBase64 && (
+                        {(infoAudioBase64 || activeVideo?.translationAudioUrl) && (
                           <button
                             onClick={(e) => {
                               e.stopPropagation();
@@ -3551,7 +3612,7 @@ export default function WatchLive({ accent = '#D35400', isCourtneyBee = false, i
                             }}
                           >
                             {isPlayingInfoAudio ? <VolumeX size={14} /> : <Volume2 size={14} />}
-                            {isPlayingInfoAudio ? 'Mute' : 'Listen'}
+                            {isPlayingInfoAudio ? 'Mute' : 'Listen to Audio Translation'}
                           </button>
                         )}
                       </div>
