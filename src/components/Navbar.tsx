@@ -330,7 +330,7 @@ const Navbar: React.FC<NavbarProps> = ({ user, onLoginClick, onAdminClick }) => 
                     </span>
                   </button>
                 )}
-                <Link to={`/profile${window.location.search}`} style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer', textDecoration: 'none' }}>
+                <Link to="/profile" style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer', textDecoration: 'none' }}>
                   <div style={{ width: '34px', height: '34px', borderRadius: '50%', background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', border: '1.5px solid rgba(255,255,255,0.3)', boxShadow: '0 2px 8px rgba(0,0,0,0.3)' }}>
                     {userAvatar ? (
                       <img src={userAvatar} alt="Profile" style={{ width: '100%', height: '100%', objectFit: 'cover' }} onError={() => setUserAvatar(null)} />
@@ -367,7 +367,7 @@ const Navbar: React.FC<NavbarProps> = ({ user, onLoginClick, onAdminClick }) => 
           {/* Quick Profile Avatar for Mobile */}
           {user && (
             <Link 
-              to={`/profile${window.location.search}`} 
+              to="/profile" 
               className="show-on-mobile"
               style={{ display: 'none', alignItems: 'center', textDecoration: 'none' }}
               title="View Channel"
