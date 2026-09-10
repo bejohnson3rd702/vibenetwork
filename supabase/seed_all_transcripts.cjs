@@ -646,10 +646,350 @@ const ALL_TRANSCRIPTS = [
   {
     video_id: '-d4T5ruaGeA',
     transcript: [
-      { time: '00:00', seconds: 0, speaker: 'Fox Anchor', text: 'Former Acting ICE Director Jonathan Fahey joins Fox & Friends First to discuss immigration policy debates.' },
-      { time: '00:15', seconds: 15, speaker: 'Jonathan Fahey', text: 'Enforcing border security and supporting federal law enforcement agents is vital to community safety.' },
-      { time: '00:30', seconds: 30, speaker: 'Fox Anchor', text: 'We break down the legislative discussions taking place in Congress this week.' }
-    ]
+  {
+    "time": "00:00",
+    "seconds": 0,
+    "speaker": "Fox Anchor",
+    "text": "All right, meantime, here and here to the mayor's word, Mamdani, is ramping up his radical rhetoric after border czar Tom Homan suggested deploying more ICE agents.",
+    "isRecorded": true
+  },
+  {
+    "time": "00:10",
+    "seconds": 10,
+    "speaker": "Zohran Mamdani",
+    "text": "These kinds of threats, as you've said, from Tom Homan and the Federal Administration, they're not new.",
+    "isRecorded": true
+  },
+  {
+    "time": "00:14",
+    "seconds": 14,
+    "speaker": "Zohran Mamdani",
+    "text": "And neither will our response be.",
+    "isRecorded": true
+  },
+  {
+    "time": "00:15",
+    "seconds": 15,
+    "speaker": "Zohran Mamdani",
+    "text": "We continue to be proud of being a sanctuary city.",
+    "isRecorded": true
+  },
+  {
+    "time": "00:18",
+    "seconds": 18,
+    "speaker": "Zohran Mamdani",
+    "text": "We continue to be ready to stand up for our immigrant neighbors, and we continue to be ready to use every single tool at our disposal.",
+    "isRecorded": true
+  },
+  {
+    "time": "00:24",
+    "seconds": 24,
+    "speaker": "Fox Anchor",
+    "text": "And I've said to the President directly that I believe that ICE raids are cruel, and they do nothing to serve in the interests of public safety.",
+    "isRecorded": true
+  },
+  {
+    "time": "00:31",
+    "seconds": 31,
+    "speaker": "Fox Anchor",
+    "text": "And I do believe it's a rogue agency that should be abolished because we need an approach to immigration in this country that has more humanity at the heart of it.",
+    "isRecorded": true
+  },
+  {
+    "time": "00:39",
+    "seconds": 39,
+    "speaker": "Fox Anchor",
+    "text": "Former ICE Director and DHS Deputy Assistant Secretary Jonathan Fehi joins me now, Jonathan.",
+    "isRecorded": true
+  },
+  {
+    "time": "00:44",
+    "seconds": 44,
+    "speaker": "Fox Anchor",
+    "text": "Thank you for joining us this morning.",
+    "isRecorded": true
+  },
+  {
+    "time": "00:46",
+    "seconds": 46,
+    "speaker": "Jonathan Fahey",
+    "text": "You know, we've heard the mayor say things like this before he's doubling down once again.",
+    "isRecorded": true
+  },
+  {
+    "time": "00:50",
+    "seconds": 50,
+    "speaker": "Jonathan Fahey",
+    "text": "So let's live in a world for a moment where he gets his wish and ICE is abolished in cities and states across the country.",
+    "isRecorded": true
+  },
+  {
+    "time": "00:57",
+    "seconds": 57,
+    "speaker": "Jonathan Fahey",
+    "text": "What would that actually look like in practice?",
+    "isRecorded": true
+  },
+  {
+    "time": "01:01",
+    "seconds": 61,
+    "speaker": "Jonathan Fahey",
+    "text": "Would we live in a more humane society as the way the mayor is predicting?",
+    "isRecorded": true
+  },
+  {
+    "time": "01:07",
+    "seconds": 67,
+    "speaker": "Jonathan Fahey",
+    "text": "We would live in a society that is significantly less safe.",
+    "isRecorded": true
+  },
+  {
+    "time": "01:12",
+    "seconds": 72,
+    "speaker": "Jonathan Fahey",
+    "text": "Places like New York would be utterly bankrupt because remember under the Biden administration with the open borders policies",
+    "isRecorded": true
+  },
+  {
+    "time": "01:20",
+    "seconds": 80,
+    "speaker": "Jonathan Fahey",
+    "text": "that only were four years, New York City was going broke.",
+    "isRecorded": true
+  },
+  {
+    "time": "01:24",
+    "seconds": 84,
+    "speaker": "Jonathan Fahey",
+    "text": "They were mayor Adams was asking for $12 billion from the federal government to pay for all the services that illegal aliens were costing the city.",
+    "isRecorded": true
+  },
+  {
+    "time": "01:33",
+    "seconds": 93,
+    "speaker": "Jonathan Fahey",
+    "text": "And that was just on a short period of time.",
+    "isRecorded": true
+  },
+  {
+    "time": "01:36",
+    "seconds": 96,
+    "speaker": "Jonathan Fahey",
+    "text": "So if you actually got rid of ICE, we would see murder skyrocket.",
+    "isRecorded": true
+  },
+  {
+    "time": "01:41",
+    "seconds": 101,
+    "speaker": "Jonathan Fahey",
+    "text": "We'd see crime skyrocket.",
+    "isRecorded": true
+  },
+  {
+    "time": "01:42",
+    "seconds": 102,
+    "speaker": "Jonathan Fahey",
+    "text": "We would all be poor or less safe.",
+    "isRecorded": true
+  },
+  {
+    "time": "01:45",
+    "seconds": 105,
+    "speaker": "Jonathan Fahey",
+    "text": "And it would be a devastating effect because you cannot have ICE and the border go hand in hand.",
+    "isRecorded": true
+  },
+  {
+    "time": "01:52",
+    "seconds": 112,
+    "speaker": "Jonathan Fahey",
+    "text": "If you stop enforcing internal immigration laws, the border will be overrun again because part of the deterrence is the fact that people once they get in here aren't getting to stay anymore,",
+    "isRecorded": true
+  },
+  {
+    "time": "02:03",
+    "seconds": 123,
+    "speaker": "Jonathan Fahey",
+    "text": "which we didn't have under sort of the open border Biden policy.",
+    "isRecorded": true
+  },
+  {
+    "time": "02:06",
+    "seconds": 126,
+    "speaker": "Jonathan Fahey",
+    "text": "So it's a complete joke because he says this under the umbrella of protection that Donald Trump is providing New York by by shutting the border",
+    "isRecorded": true
+  },
+  {
+    "time": "02:16",
+    "seconds": 136,
+    "speaker": "Jonathan Fahey",
+    "text": "and deporting the bad guys.",
+    "isRecorded": true
+  },
+  {
+    "time": "02:18",
+    "seconds": 138,
+    "speaker": "Jonathan Fahey",
+    "text": "And remember since Trump took office, crime in New York has dropped dramatically and a lot of it is because he's getting rid of the bad guys that were allowed to stay",
+    "isRecorded": true
+  },
+  {
+    "time": "02:27",
+    "seconds": 147,
+    "speaker": "Jonathan Fahey",
+    "text": "during the previous administration.",
+    "isRecorded": true
+  },
+  {
+    "time": "02:29",
+    "seconds": 149,
+    "speaker": "Jonathan Fahey",
+    "text": "It's a total joke under my dummies side.",
+    "isRecorded": true
+  },
+  {
+    "time": "02:33",
+    "seconds": 153,
+    "speaker": "Jonathan Fahey",
+    "text": "He knows it is, but it's completely self-serving today for him and today's Democratic Party.",
+    "isRecorded": true
+  },
+  {
+    "time": "02:38",
+    "seconds": 158,
+    "speaker": "Jonathan Fahey",
+    "text": "You know, Jonathan, I think that's some of the things Mayor Mom Dami said in that little sound bite we played bare repeating.",
+    "isRecorded": true
+  },
+  {
+    "time": "02:43",
+    "seconds": 163,
+    "speaker": "Jonathan Fahey",
+    "text": "One of them is we continue to be ready to stand up for our immigrant neighbors.",
+    "isRecorded": true
+  },
+  {
+    "time": "02:49",
+    "seconds": 169,
+    "speaker": "Jonathan Fahey",
+    "text": "We also said I believe that ice raids are cruel and they do nothing to serve the interest of public safety.",
+    "isRecorded": true
+  },
+  {
+    "time": "02:56",
+    "seconds": 176,
+    "speaker": "Jonathan Fahey",
+    "text": "I wonder what he would say to the parents of Sheridan Gorman in his desire to not turn over illegal immigrants to federal law enforcement when their daughter was allegedly killed by",
+    "isRecorded": true
+  },
+  {
+    "time": "03:06",
+    "seconds": 186,
+    "speaker": "Jonathan Fahey",
+    "text": "an illegal immigrant with a criminal record.",
+    "isRecorded": true
+  },
+  {
+    "time": "03:09",
+    "seconds": 189,
+    "speaker": "Jonathan Fahey",
+    "text": "Maybe there's nothing you can say to a family like that and that's the point.",
+    "isRecorded": true
+  },
+  {
+    "time": "03:12",
+    "seconds": 192,
+    "speaker": "Jonathan Fahey",
+    "text": "That's part of the story when you talk about cruel and inhumane, don't those families matter.",
+    "isRecorded": true
+  },
+  {
+    "time": "03:19",
+    "seconds": 199,
+    "speaker": "Jonathan Fahey",
+    "text": "Right, exactly.",
+    "isRecorded": true
+  },
+  {
+    "time": "03:20",
+    "seconds": 200,
+    "speaker": "Jonathan Fahey",
+    "text": "And our politicians here are supposed to be representing American citizens, not illegal aliens.",
+    "isRecorded": true
+  },
+  {
+    "time": "03:26",
+    "seconds": 206,
+    "speaker": "Jonathan Fahey",
+    "text": "And you go back, you have Sheridan Gorman in Chicago, but you also have Lake and Riley in Georgia and remember, her killer was arrested",
+    "isRecorded": true
+  },
+  {
+    "time": "03:34",
+    "seconds": 214,
+    "speaker": "Jonathan Fahey",
+    "text": "in New York City released under their sanctuary policies albeit the DHS under mayorkers wasn't even trying to arrest him, but it just shows there's the cruelty",
+    "isRecorded": true
+  },
+  {
+    "time": "03:45",
+    "seconds": 225,
+    "speaker": "Jonathan Fahey",
+    "text": "and your responsibility as a mayor, as an elected official in America is to defend American citizens.",
+    "isRecorded": true
+  },
+  {
+    "time": "03:52",
+    "seconds": 232,
+    "speaker": "Jonathan Fahey",
+    "text": "And there's such an indifference.",
+    "isRecorded": true
+  },
+  {
+    "time": "03:54",
+    "seconds": 234,
+    "speaker": "Jonathan Fahey",
+    "text": "It's not, it's cruelty and just indifference to American suffering because you see it every day and when Donald Trump is trying to enforce",
+    "isRecorded": true
+  },
+  {
+    "time": "04:03",
+    "seconds": 243,
+    "speaker": "Jonathan Fahey",
+    "text": "the immigration laws, he's making us safer and the Democrats stand in the way every step of the way when he's simply trying to enforce the laws passed by Congress.",
+    "isRecorded": true
+  },
+  {
+    "time": "04:13",
+    "seconds": 253,
+    "speaker": "Jonathan Fahey",
+    "text": "That's back and forth isn't going anywhere.",
+    "isRecorded": true
+  },
+  {
+    "time": "04:15",
+    "seconds": 255,
+    "speaker": "Fox Anchor",
+    "text": "It continues into today.",
+    "isRecorded": true
+  },
+  {
+    "time": "04:16",
+    "seconds": 256,
+    "speaker": "Fox Anchor",
+    "text": "Thank you so much for joining us. We appreciate it.",
+    "isRecorded": true
+  },
+  {
+    "time": "04:19",
+    "seconds": 259,
+    "speaker": "Fox Anchor",
+    "text": "Be sure to like and subscribe for all the Fox News latest on YouTube and catch full shows streaming now on Fox One.",
+    "isRecorded": true
+  }
+]
   },
   {
     video_id: 'ciq7HeiJCOE',

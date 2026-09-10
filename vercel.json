@@ -22,11 +22,15 @@
     },
     {
       "source": "/api/yt-rss/:channelId",
-      "destination": "/api/yt-rss/:channelId"
+      "destination": "/api/yt-rss/[channelId]"
     },
     {
       "source": "/api/yt-transcript",
       "destination": "/api/yt-transcript"
+    },
+    {
+      "source": "/api/wwtc-proxy",
+      "destination": "/api/wwtc-proxy"
     },
     {
       "source": "/(.*)",
