@@ -45,6 +45,7 @@ node-v*.tar.gz
 # Temp files & audio dumps
 tmp/
 *.wav
+smoke_test_artifacts/
 
 # node binaries
 node-v*/

@@ -35,8 +35,50 @@ serve(async (req) => {
 
     const { creatorId, amount, productTitle, returnUrl, extraMetadata } = await req.json();
 
-    if (!creatorId || !amount) {
-      return new Response("Missing parameters", { status: 400, headers: corsHeaders });
+    const parsedAmount = Number(amount);
+    if (!creatorId || !parsedAmount || isNaN(parsedAmount) || parsedAmount < 0.50) {
+      return new Response(JSON.stringify({ error: "Invalid amount. Minimum charge is $0.50." }), { 
+        status: 400, 
+        headers: { ...corsHeaders, "Content-Type": "application/json" } 
+      });
+    }
+
+    // Server-side validation for storage tier upgrades
+    const STORAGE_TIER_MIN_PRICES: Record<string, number> = {
+      pro_100gb: 9.00,
+      studio_500gb: 29.00,
+      enterprise_2tb: 79.00,
+    };
+
+    const sanitizedMetadata: Record<string, string> = {};
+    if (extraMetadata && typeof extraMetadata === 'object') {
+      const allowedKeys = [
+        'storage_tier', 'is_booking', 'guest_name', 'guest_phone',
+        'meeting_purpose', 'date', 'time', 'meeting_type', 'scheduled_at',
+        'record_call', 'recording_price'
+      ];
+      for (const key of allowedKeys) {
+        if (extraMetadata[key] !== undefined && extraMetadata[key] !== null) {
+          sanitizedMetadata[key] = String(extraMetadata[key]);
+        }
+      }
+
+      // If storage_tier is provided, enforce server-side minimum pricing
+      if (sanitizedMetadata.storage_tier) {
+        const minPrice = STORAGE_TIER_MIN_PRICES[sanitizedMetadata.storage_tier];
+        if (!minPrice) {
+          return new Response(JSON.stringify({ error: "Invalid storage tier specified." }), {
+            status: 400,
+            headers: { ...corsHeaders, "Content-Type": "application/json" }
+          });
+        }
+        if (parsedAmount < minPrice) {
+          return new Response(JSON.stringify({ error: `Invalid amount for ${sanitizedMetadata.storage_tier}. Minimum price is $${minPrice}.` }), {
+            status: 400,
+            headers: { ...corsHeaders, "Content-Type": "application/json" }
+          });
+        }
+      }
     }
 
     // 1. Fetch Creator's Stripe Connection and Fee %
@@ -117,7 +159,7 @@ serve(async (req) => {
            product_title: productTitle || "Vibe Network Purchase",
            fee_percentage: totalFeePercent.toString(),
            application_fee_amount: applicationFeeInCents.toString(),
-           ...(extraMetadata || {})
+           ...sanitizedMetadata
         }
       },
       success_url: returnUrl ? `${returnUrl}?success=true` : `${req.headers.get('origin') || 'https://vibenetwork.tv'}/profile?success=true`,

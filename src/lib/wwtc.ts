@@ -1,8 +1,7 @@
 import { supabase } from '../supabaseClient';
 
-const WWTC_API_KEY = (typeof import.meta !== 'undefined' && import.meta.env?.VITE_WWTC_API_KEY) || '95a35451.30ece979-c4bd-447b-8b1e-fd9a6c77418b';
-const CORE_BASE_URL = 'https://core.worldwidetechconnections.com';
-const API_BASE_URL = 'https://api.worldwidetechconnections.com';
+// WWTC API proxy route (runs server-side to keep WWTC_API_KEY secure)
+const WWTC_PROXY_URL = '/api/wwtc-proxy';
 
 export interface WwtcLanguage {
   code: string;
@@ -53,7 +52,7 @@ const CACHE_KEY = 'wwtc_languages_cache_v1';
 const CACHE_TTL_MS = 1000 * 60 * 60 * 24; // 24 hours
 
 /**
- * Fetch supported languages from WWTC Core API with localStorage caching
+ * Fetch supported languages from WWTC Core API via secure proxy with localStorage caching
  */
 export async function getWwtcLanguages(forceRefresh = false): Promise<WwtcLanguage[]> {
   if (!forceRefresh && typeof window !== 'undefined' && window.localStorage) {
@@ -70,11 +69,10 @@ export async function getWwtcLanguages(forceRefresh = false): Promise<WwtcLangua
     }
   }
 
-  const response = await fetch(`${CORE_BASE_URL}/languages`, {
+  const response = await fetch(`${WWTC_PROXY_URL}?action=languages`, {
     method: 'GET',
     headers: {
       'accept': 'application/json',
-      'api-authorization': WWTC_API_KEY,
     },
   });
 
@@ -110,34 +108,23 @@ export interface WwtcServiceResponse {
 }
 
 /**
- * Execute WWTC Translation or Speech Synthesis Service
- * Endpoint: POST https://api.worldwidetechconnections.com/services/{serviceCode}/{sourceLanguage}/{targetLanguage}
+ * Execute WWTC Translation or Speech Synthesis Service via secure serverless proxy
  */
 export async function executeWwtcService(params: WwtcServiceRequest): Promise<WwtcServiceResponse> {
-  const { serviceCode, sourceLang, targetLang, text, audioBlob } = params;
+  const { serviceCode, sourceLang, targetLang, text } = params;
 
-  const url = new URL(`${API_BASE_URL}/services/${serviceCode}/${sourceLang}/${targetLang}`);
-  if (text) {
-    url.searchParams.set('text', text);
-  }
-
-  const headers: HeadersInit = {
-    'accept': 'application/json',
-    'api-authorization': WWTC_API_KEY,
-  };
-
-  let body: BodyInit | undefined = undefined;
-
-  if (audioBlob) {
-    const formData = new FormData();
-    formData.append('audio', audioBlob, 'recording.wav');
-    body = formData;
-  }
-
-  const response = await fetch(url.toString(), {
+  const response = await fetch(`${WWTC_PROXY_URL}?action=service`, {
     method: 'POST',
-    headers,
-    body,
+    headers: {
+      'accept': 'application/json',
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      serviceCode,
+      sourceLang,
+      targetLang,
+      text,
+    }),
   });
 
   if (!response.ok) {

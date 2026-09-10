@@ -30,8 +30,41 @@ serve(async (req) => {
 
     const { episodeId, videoUrl } = await req.json();
 
-    if (!episodeId || !videoUrl) {
-      return new Response("Missing parameters", { status: 400, headers: corsHeaders });
+    if (!episodeId || !videoUrl || typeof videoUrl !== 'string' || !videoUrl.startsWith('http')) {
+      return new Response(JSON.stringify({ error: "Invalid or missing parameters (episodeId and valid videoUrl required)" }), {
+        status: 400,
+        headers: { ...corsHeaders, "Content-Type": "application/json" }
+      });
+    }
+
+    // Check caller's authorization (must own the episode's series or be admin)
+    const { data: episode, error: epError } = await supabase
+      .from("episodes")
+      .select("id, series_id, series:series_id(creator_id)")
+      .eq("id", episodeId)
+      .maybeSingle();
+
+    if (epError || !episode) {
+      return new Response(JSON.stringify({ error: "Episode not found" }), {
+        status: 404,
+        headers: { ...corsHeaders, "Content-Type": "application/json" }
+      });
+    }
+
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("is_admin")
+      .eq("id", user.id)
+      .maybeSingle();
+
+    const isCreator = (episode as any)?.series?.creator_id === user.id || (episode as any)?.creator_id === user.id;
+    const isAdmin = profile?.is_admin === true;
+
+    if (!isCreator && !isAdmin) {
+      return new Response(JSON.stringify({ error: "Forbidden: You do not have permission to transcode this episode." }), {
+        status: 403,
+        headers: { ...corsHeaders, "Content-Type": "application/json" }
+      });
     }
 
     console.log(`Processing video transcoding for Episode: ${episodeId}, URL: ${videoUrl}`);

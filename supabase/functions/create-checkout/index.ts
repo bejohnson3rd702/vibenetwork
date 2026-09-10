@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import Stripe from "https://esm.sh/stripe@12.0.0?target=deno";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3";
 
 // Initialize Stripe with the Secret Key from Supabase Environment Variables
 const stripe = new Stripe(Deno.env.get('STRIPE_SECRET_KEY') as string, {
@@ -20,11 +21,28 @@ serve(async (req) => {
   }
 
   try {
+    const authHeader = req.headers.get("Authorization");
+    if (!authHeader) {
+      return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401, headers: corsHeaders });
+    }
+
+    const supabaseUrl = Deno.env.get("SUPABASE_URL") ?? "";
+    const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
+    const supabase = createClient(supabaseUrl, supabaseKey);
+
+    const token = authHeader.replace("Bearer ", "");
+    const { data: { user }, error: userError } = await supabase.auth.getUser(token);
+
+    if (userError || !user) {
+      return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401, headers: corsHeaders });
+    }
+
     // Parse the payload sent from the frontend
     const { itemName, amount, creatorId } = await req.json();
 
-    if (!itemName || !amount) {
-      throw new Error('Item name and amount are required.');
+    const parsedAmount = Number(amount);
+    if (!itemName || !parsedAmount || isNaN(parsedAmount) || parsedAmount < 50) {
+      throw new Error('Valid item name and amount (minimum 50 cents) are required.');
     }
 
     // Create a Stripe Checkout Session

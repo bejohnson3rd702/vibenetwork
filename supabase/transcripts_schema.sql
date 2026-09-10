@@ -16,11 +16,24 @@ CREATE POLICY "Allow public read access to video_transcripts"
   TO public
   USING (true);
 
--- Allow public/anonymous users to manage transcripts (necessary for seeding with the anon key)
+-- Only allow authenticated users with admin privileges or service role to manage transcripts
 DROP POLICY IF EXISTS "Allow write access to video_transcripts for authenticated users" ON public.video_transcripts;
 DROP POLICY IF EXISTS "Allow write access to video_transcripts for public users" ON public.video_transcripts;
-CREATE POLICY "Allow write access to video_transcripts for public users"
+DROP POLICY IF EXISTS "Allow admin write access to video_transcripts" ON public.video_transcripts;
+CREATE POLICY "Allow admin write access to video_transcripts"
   ON public.video_transcripts FOR ALL
-  TO public
-  USING (true)
-  WITH CHECK (true);
+  TO authenticated
+  USING (
+    EXISTS (
+      SELECT 1 FROM public.profiles
+      WHERE profiles.id = auth.uid()
+      AND profiles.is_admin = true
+    )
+  )
+  WITH CHECK (
+    EXISTS (
+      SELECT 1 FROM public.profiles
+      WHERE profiles.id = auth.uid()
+      AND profiles.is_admin = true
+    )
+  );
