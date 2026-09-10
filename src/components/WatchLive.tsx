@@ -1461,12 +1461,21 @@ export default function WatchLive({ accent = '#D35400', isCourtneyBee = false, i
 
         const hasRealDialogue = Boolean(
           data?.transcript && 
-          data.transcript.length > 1 && 
-          data.transcript.some((s: any) => s.isRecorded && !s.isPlaceholder && !s.text?.includes('#') && s.text?.trim() !== activeVideo.description?.trim())
+          data.transcript.length >= 1 && 
+          data.transcript.some((s: any) => 
+            s.text && 
+            s.text.trim().length > 0 && 
+            !s.isPlaceholder && 
+            !s.text.startsWith('[No spoken audio') && 
+            !s.text.includes('agenda and details:') &&
+            !s.text?.includes('#') && 
+            s.text?.trim() !== activeVideo.description?.trim()
+          )
         );
 
         if (data && data.transcript && !isFallback && hasRealDialogue) {
-          setTranscript(data.transcript);
+          const mapped = data.transcript.map((s: any) => ({ ...s, isRecorded: true }));
+          setTranscript(mapped);
           setHasRealTranscript(true);
           return;
         }
@@ -1836,10 +1845,15 @@ export default function WatchLive({ accent = '#D35400', isCourtneyBee = false, i
       const hasSpokenAudio = Boolean(
         activeTranscript &&
         activeTranscript.length > 0 &&
-        activeTranscript.some(seg => seg.isRecorded && !seg.isPlaceholder && !seg.text?.startsWith('[No spoken audio') && !seg.text?.includes('#') && seg.text?.trim() !== activeVideo.description?.trim())
+        activeTranscript.some(seg => 
+          seg.text && 
+          seg.text.trim().length > 0 && 
+          !seg.text.startsWith('[No spoken audio') &&
+          !seg.text.includes('agenda and details:')
+        )
       );
 
-      const fullTranscriptText = (hasSpokenAudio && activeTranscript && activeTranscript.length > 0)
+      const fullTranscriptText = (activeTranscript && activeTranscript.length > 0)
         ? activeTranscript.map(seg => seg.text).join(' ')
         : '';
 
@@ -1862,7 +1876,7 @@ export default function WatchLive({ accent = '#D35400', isCourtneyBee = false, i
           }).then(res => res.translated_text || activeVideo.description || '').catch(() => activeVideo.description || '')
         : Promise.resolve(activeVideo.description || '');
 
-      const fullTtsPromise = (supportsTts && hasSpokenAudio && fullTranscriptText.trim())
+      const fullTtsPromise = (supportsTts && fullTranscriptText.trim() && !fullTranscriptText.startsWith('[No spoken audio'))
         ? (async () => {
             try {
               const textToSynthesize = fullTranscriptText.length > 1000 
@@ -1883,7 +1897,7 @@ export default function WatchLive({ accent = '#D35400', isCourtneyBee = false, i
         : Promise.resolve(null);
 
       const segmentMode = supportsTts ? 'tts' : 'ttt';
-      const segmentsPromise = (hasSpokenAudio && activeTranscript && activeTranscript.length > 0)
+      const segmentsPromise = (activeTranscript && activeTranscript.length > 0)
         ? Promise.all(
             activeTranscript.map(async (seg) => {
               try {

@@ -1,4 +1,5 @@
 import { supabase } from '../supabaseClient';
+import { getLocalTranscript } from './staticTranscripts';
 
 // WWTC API proxy route (runs server-side to keep WWTC_API_KEY secure)
 const WWTC_PROXY_URL = '/api/wwtc-proxy';
@@ -428,7 +429,13 @@ export async function fetchYouTubeCaptions(videoId: string): Promise<YouTubeCapt
   const match = videoId.match(/(?:youtube\.com\/(?:[^\/\n\s]+\/\S+\/|(?:v|e(?:mbed)?|live|shorts)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/i);
   const cleanId = (match && match[1]?.length === 11) ? match[1] : (videoId.length === 11 ? videoId : videoId);
 
-  // 1. Check Supabase database cache (instant)
+  // 1. Check bundled local high-quality static transcripts first
+  const local = getLocalTranscript(cleanId) || getLocalTranscript(videoId);
+  if (local && local.length > 0) {
+    return local.map((s: any) => ({ ...s, isRecorded: true }));
+  }
+
+  // 2. Check Supabase database cache (instant)
   if (supabase) {
     try {
       const { data } = await supabase
@@ -438,14 +445,14 @@ export async function fetchYouTubeCaptions(videoId: string): Promise<YouTubeCapt
         .maybeSingle();
 
       if (data && Array.isArray(data.transcript) && data.transcript.length > 0) {
-        return data.transcript;
+        return data.transcript.map((s: any) => ({ ...s, isRecorded: true }));
       }
     } catch (dbErr) {
       console.warn("[WWTC] Supabase transcript check notice:", dbErr);
     }
   }
 
-  // 2. Call server-side transcript extraction API (uses yt-dlp & signed timedtext endpoint)
+  // 3. Call server-side transcript extraction API (uses yt-dlp & signed timedtext endpoint)
   try {
     const res = await fetch(`/api/yt-transcript?videoId=${encodeURIComponent(cleanId)}`);
     if (res.ok) {

@@ -1702,5 +1702,7 @@ export const STATIC_TRANSCRIPTS: Record<string, TranscriptSegment[]> = {
 
 export function getLocalTranscript(videoId: string): TranscriptSegment[] | null {
   if (!videoId) return null;
-  return STATIC_TRANSCRIPTS[videoId] || null;
+  const raw = STATIC_TRANSCRIPTS[videoId];
+  if (!raw) return null;
+  return raw.map(s => ({ ...s, isRecorded: true } as any));
 }
