@@ -22,7 +22,7 @@
     },
     {
       "source": "/api/yt-rss/:channelId",
-      "destination": "/api/yt-rss/[channelId]"
+      "destination": "/api/yt-rss/:channelId"
     },
     {
       "source": "/api/yt-transcript",

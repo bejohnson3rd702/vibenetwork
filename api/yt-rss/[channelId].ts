@@ -8,8 +8,16 @@ export default async function handler(req: any, res: any) {
   }
 
   try {
-    const channelId = req.query.channelId;
-    if (!channelId) {
+    let channelId = req.query.channelId;
+    if (!channelId || channelId === '[channelId]') {
+      const urlParts = (req.url || '').split('?')[0].split('/');
+      const lastPart = urlParts[urlParts.length - 1];
+      if (lastPart && lastPart !== '[channelId]' && lastPart !== 'yt-rss') {
+        channelId = lastPart;
+      }
+    }
+
+    if (!channelId || channelId === '[channelId]') {
       return res.status(400).json({ error: 'channelId is required' });
     }
 
