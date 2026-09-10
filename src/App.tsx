@@ -930,6 +930,7 @@ function App() {
                       <Route path="/food-truck" element={<FoodTruck />} />
                       <Route path="/reset-password" element={<ResetPassword />} />
                       <Route path="/stripe-connect-v2" element={<StripeConnectV2Demo />} />
+                      <Route path="/translation" element={<div style={{ padding: '40px', maxWidth: '1200px', margin: '0 auto', paddingTop: '100px' }}><TranslationTab wlConfig={{ accent: '#ff4d85', name: 'Vibe' }} /></div>} />
                     </Routes>
                   </Suspense>
                 </>

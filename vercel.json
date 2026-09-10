@@ -22,7 +22,7 @@
     },
     {
       "source": "/api/yt-rss/:channelId",
-      "destination": "https://www.youtube.com/feeds/videos.xml?channel_id=:channelId"
+      "destination": "/api/yt-rss?channelId=:channelId"
     },
     {
       "source": "/api/yt-transcript",
