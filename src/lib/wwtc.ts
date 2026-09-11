@@ -445,7 +445,17 @@ export async function fetchYouTubeCaptions(videoId: string): Promise<YouTubeCapt
         .maybeSingle();
 
       if (data && Array.isArray(data.transcript) && data.transcript.length > 0) {
-        return data.transcript.map((s: any) => ({ ...s, isRecorded: true }));
+        const isPlaceholder = data.transcript.some((s: any) =>
+          s.isPlaceholder ||
+          s.isRecorded === false ||
+          s.text?.includes('agenda and details:') ||
+          s.text?.includes('Welcome into the live studio broadcast') ||
+          s.text?.includes('Official Video Broadcast') ||
+          s.text?.includes('Streaming now on Vibe Network.')
+        );
+        if (!isPlaceholder) {
+          return data.transcript.map((s: any) => ({ ...s, isRecorded: true }));
+        }
       }
     } catch (dbErr) {
       console.warn("[WWTC] Supabase transcript check notice:", dbErr);
@@ -465,11 +475,12 @@ export async function fetchYouTubeCaptions(videoId: string): Promise<YouTubeCapt
     console.warn("[WWTC] /api/yt-transcript API notice:", apiErr);
   }
 
-  // 3. Fallback to third-party endpoints
+  // 4. Fallback to active Invidious endpoints
   const thirdPartyEndpoints = [
-    `https://pipedapi.kavin.rocks/captions/${cleanId}`,
-    `https://vid.puffyan.us/api/v1/captions/${cleanId}`,
-    `https://invidious.drgns.space/api/v1/captions/${cleanId}`
+    `https://inv.tux.pizza/api/v1/captions/${cleanId}`,
+    `https://invidious.nerdvpn.de/api/v1/captions/${cleanId}`,
+    `https://yt.artemislena.eu/api/v1/captions/${cleanId}`,
+    `https://invidious.private.coffee/api/v1/captions/${cleanId}`
   ];
 
   for (const endpoint of thirdPartyEndpoints) {

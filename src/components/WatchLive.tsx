@@ -1848,12 +1848,19 @@ export default function WatchLive({ accent = '#D35400', isCourtneyBee = false, i
         activeTranscript.some(seg => 
           seg.text && 
           seg.text.trim().length > 0 && 
+          !seg.isPlaceholder &&
+          seg.isRecorded !== false &&
           !seg.text.startsWith('[No spoken audio') &&
-          !seg.text.includes('agenda and details:')
+          !seg.text.includes('agenda and details:') &&
+          !seg.text.includes('Welcome into the live studio broadcast') &&
+          !seg.text.includes('Official Video Broadcast') &&
+          !seg.text.includes('Streaming now on Vibe Network.') &&
+          (activeVideo.description ? seg.text.trim() !== activeVideo.description.trim() : true) &&
+          (activeVideo.headline ? seg.text.trim() !== activeVideo.headline.trim() : true)
         )
       );
 
-      const fullTranscriptText = (activeTranscript && activeTranscript.length > 0)
+      const fullTranscriptText = (hasSpokenAudio && activeTranscript && activeTranscript.length > 0)
         ? activeTranscript.map(seg => seg.text).join(' ')
         : '';
 
@@ -1876,7 +1883,8 @@ export default function WatchLive({ accent = '#D35400', isCourtneyBee = false, i
           }).then(res => res.translated_text || activeVideo.description || '').catch(() => activeVideo.description || '')
         : Promise.resolve(activeVideo.description || '');
 
-      const fullTtsPromise = (supportsTts && fullTranscriptText.trim() && !fullTranscriptText.startsWith('[No spoken audio'))
+      // Strictly only synthesize full audio when genuine broadcast dialogue is present (never recite descriptions)
+      const fullTtsPromise = (supportsTts && hasSpokenAudio && fullTranscriptText.trim() && !fullTranscriptText.startsWith('[No spoken audio'))
         ? (async () => {
             try {
               const textToSynthesize = fullTranscriptText.length > 1000 
@@ -1896,7 +1904,8 @@ export default function WatchLive({ accent = '#D35400', isCourtneyBee = false, i
           })()
         : Promise.resolve(null);
 
-      const segmentMode = supportsTts ? 'tts' : 'ttt';
+      // Only generate audio for segments if they are authentic broadcast speech
+      const segmentMode = (supportsTts && hasSpokenAudio) ? 'tts' : 'ttt';
       const segmentsPromise = (activeTranscript && activeTranscript.length > 0)
         ? Promise.all(
             activeTranscript.map(async (seg) => {
@@ -1910,7 +1919,7 @@ export default function WatchLive({ accent = '#D35400', isCourtneyBee = false, i
                 return {
                   ...seg,
                   translatedText: res.translated_text || seg.text,
-                  audio: res.audio || null
+                  audio: (hasSpokenAudio && seg.isRecorded !== false && !seg.isPlaceholder) ? (res.audio || null) : null
                 };
               } catch (err) {
                 console.warn("Failed to translate segment:", seg.text, err);
@@ -1939,10 +1948,10 @@ export default function WatchLive({ accent = '#D35400', isCourtneyBee = false, i
       setTranslatedInfo(finalInfo);
 
       let finalInfoAudio = fullTtsAudio;
-      if (!finalInfoAudio && translatedSegs && translatedSegs[0]?.audio) {
+      if (!finalInfoAudio && hasSpokenAudio && translatedSegs && translatedSegs[0]?.audio) {
         finalInfoAudio = translatedSegs[0].audio;
       }
-      setInfoAudioBase64(finalInfoAudio);
+      setInfoAudioBase64(hasSpokenAudio ? finalInfoAudio : null);
 
       if (translatedSegs) {
         setTranslatedTranscript(translatedSegs);
