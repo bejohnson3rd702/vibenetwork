@@ -972,6 +972,7 @@ export default function WatchLive({ accent = '#D35400', isCourtneyBee = false, i
   const [infoAudioBase64, setInfoAudioBase64] = useState<string | null>(null);
   const [isPlayingInfoAudio, setIsPlayingInfoAudio] = useState(false);
   const [showInfoLangDropdown, setShowInfoLangDropdown] = useState(false);
+  const [infoTab, setInfoTab] = useState<'transcript' | 'description'>('transcript');
   const [translatedChats, setTranslatedChats] = useState<{ [msgId: string]: { text: string; audio?: string; isPlaying?: boolean } }>({});
 
   const infoAudioRef = useRef<HTMLAudioElement | null>(null);
@@ -1446,30 +1447,39 @@ export default function WatchLive({ accent = '#D35400', isCourtneyBee = false, i
           console.warn("Error loading transcript from DB on load:", error.message);
         }
 
-        // Check if data.transcript is a generic fallback or real recorded audio
+        const descLower = (activeVideo.description || '').toLowerCase();
+        const headlineLower = (activeVideo.headline || '').toLowerCase();
+
+        // Check if data.transcript is a generic fallback, placeholder, or seeded from the description
         const isFallback = data?.transcript?.some((s: any) => 
+          s.isPlaceholder ||
+          s.isRecorded === false ||
           s.text?.includes('agenda and details:') || 
           s.text?.includes('Looking at the agenda') ||
           s.text?.includes('Hello and welcome back to the channel') ||
           s.text?.includes('We have an exciting session lined up') ||
           s.text?.includes('Stay tuned throughout the broadcast') ||
           s.text?.includes('Today we are tuning in to watch') ||
-          s.isPlaceholder ||
+          s.text?.includes('Welcome into the live studio broadcast') ||
+          s.text?.includes('Official Video Broadcast') ||
+          s.text?.includes('Streaming now on Vibe Network.') ||
           s.text?.includes('#') ||
-          (activeVideo.description && activeVideo.description.length > 30 && s.text?.trim() === activeVideo.description.trim())
+          (descLower.length > 20 && s.text && s.text.length > 15 && descLower.includes(s.text.toLowerCase().trim())) ||
+          (headlineLower.length > 10 && s.text && s.text.length > 10 && headlineLower.includes(s.text.toLowerCase().trim()))
         );
 
         const hasRealDialogue = Boolean(
           data?.transcript && 
           data.transcript.length >= 1 && 
+          !isFallback &&
           data.transcript.some((s: any) => 
             s.text && 
             s.text.trim().length > 0 && 
             !s.isPlaceholder && 
+            s.isRecorded !== false &&
             !s.text.startsWith('[No spoken audio') && 
             !s.text.includes('agenda and details:') &&
-            !s.text?.includes('#') && 
-            s.text?.trim() !== activeVideo.description?.trim()
+            !s.text?.includes('#')
           )
         );
 
@@ -3514,6 +3524,59 @@ export default function WatchLive({ accent = '#D35400', isCourtneyBee = false, i
                         </AnimatePresence>
                       </div>
 
+                      {/* Live Synchronized Subtitles Overlay */}
+                      {(() => {
+                        const currentSegs = (preferredLang && preferredLang !== 'english-united-states' && translatedTranscript && translatedTranscript.length > 0)
+                          ? translatedTranscript
+                          : transcript;
+                        if (!currentSegs || currentSegs.length === 0) return null;
+                        
+                        const activeSeg = currentSegs.find((seg: any, idx: number, arr: any[]) => {
+                          const next = arr[idx + 1];
+                          const end = next ? next.seconds : seg.seconds + 6;
+                          return currentVideoTime >= seg.seconds && currentVideoTime < end;
+                        });
+                        
+                        if (!activeSeg || !activeSeg.text || activeSeg.isPlaceholder) return null;
+                        const displayText = activeSeg.translatedText || activeSeg.text;
+                        if (!displayText || displayText.startsWith('[No spoken audio')) return null;
+
+                        return (
+                          <div style={{
+                            position: 'absolute',
+                            bottom: '30px',
+                            left: '50%',
+                            transform: 'translateX(-50%)',
+                            maxWidth: '85%',
+                            textAlign: 'center',
+                            pointerEvents: 'none',
+                            zIndex: 25
+                          }}>
+                            <div style={{
+                              display: 'inline-block',
+                              background: 'rgba(0, 0, 0, 0.85)',
+                              color: '#ffffff',
+                              padding: '8px 18px',
+                              borderRadius: '8px',
+                              fontSize: '15px',
+                              fontWeight: 600,
+                              lineHeight: 1.4,
+                              backdropFilter: 'blur(8px)',
+                              border: '1px solid rgba(255, 255, 255, 0.15)',
+                              boxShadow: '0 4px 20px rgba(0,0,0,0.6)',
+                              textShadow: '0 2px 4px rgba(0,0,0,0.9)'
+                            }}>
+                              {activeSeg.speaker && (
+                                <span style={{ color: accent, marginRight: '6px', fontWeight: 800 }}>
+                                  {activeSeg.speaker}:
+                                </span>
+                              )}
+                              {displayText}
+                            </div>
+                          </div>
+                        );
+                      })()}
+
                       {/* Floating Translation & Live Audio Recording buttons overlayed on the video player */}
                       <div style={{ position: 'absolute', top: '16px', left: '16px', zIndex: 30, display: 'flex', gap: '8px', alignItems: 'center' }}>
                         <div style={{ position: 'relative' }}>
@@ -3663,9 +3726,90 @@ export default function WatchLive({ accent = '#D35400', isCourtneyBee = false, i
                             </span>
                           )}
                         </h3>
-                        <p style={{ margin: '0 0 12px 0', fontSize: '13px', color: '#ccc', lineHeight: 1.5 }}>
-                          {translatedInfo ? translatedInfo.description : activeVideo.description}
-                        </p>
+                        {/* Tab toggle: Dialogue Transcript vs Overview */}
+                        <div style={{ display: 'flex', gap: '8px', marginBottom: '12px' }}>
+                          <button
+                            onClick={() => setInfoTab('transcript')}
+                            style={{
+                              padding: '5px 14px',
+                              borderRadius: '16px',
+                              fontSize: '12px',
+                              fontWeight: 700,
+                              background: infoTab === 'transcript' ? `${accent}33` : 'rgba(255,255,255,0.06)',
+                              border: `1px solid ${infoTab === 'transcript' ? accent : 'rgba(255,255,255,0.12)'}`,
+                              color: infoTab === 'transcript' ? '#fff' : '#aaa',
+                              cursor: 'pointer',
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: '6px'
+                            }}
+                          >
+                            <span>💬 Broadcast Dialogue</span>
+                            {(translatedTranscript || transcript) && (translatedTranscript || transcript)!.length > 0 && !(translatedTranscript || transcript)![0].isPlaceholder && (
+                              <span style={{ fontSize: '10px', background: `${accent}44`, padding: '1px 6px', borderRadius: '8px' }}>
+                                {(translatedTranscript || transcript)!.length}
+                              </span>
+                            )}
+                          </button>
+                          <button
+                            onClick={() => setInfoTab('description')}
+                            style={{
+                              padding: '5px 14px',
+                              borderRadius: '16px',
+                              fontSize: '12px',
+                              fontWeight: 700,
+                              background: infoTab === 'description' ? `${accent}33` : 'rgba(255,255,255,0.06)',
+                              border: `1px solid ${infoTab === 'description' ? accent : 'rgba(255,255,255,0.12)'}`,
+                              color: infoTab === 'description' ? '#fff' : '#aaa',
+                              cursor: 'pointer'
+                            }}
+                          >
+                            📄 Video Overview
+                          </button>
+                        </div>
+
+                        {infoTab === 'transcript' && (translatedTranscript || transcript) && (translatedTranscript || transcript)!.length > 0 && !(translatedTranscript || transcript)![0].isPlaceholder ? (
+                          <div style={{
+                            maxHeight: '190px',
+                            overflowY: 'auto',
+                            display: 'flex',
+                            flexDirection: 'column',
+                            gap: '6px',
+                            padding: '10px 12px',
+                            background: 'rgba(0,0,0,0.4)',
+                            borderRadius: '12px',
+                            border: '1px solid rgba(255,255,255,0.08)',
+                            marginBottom: '12px'
+                          }}>
+                            {(translatedTranscript || transcript)!.map((seg: any, idx: number) => {
+                              const isCurrent = currentVideoTime >= seg.seconds && (idx === (translatedTranscript || transcript)!.length - 1 || currentVideoTime < (translatedTranscript || transcript)![idx + 1].seconds);
+                              return (
+                                <div 
+                                  key={`visible-seg-${idx}`}
+                                  style={{
+                                    display: 'flex',
+                                    gap: '10px',
+                                    fontSize: '13px',
+                                    padding: '5px 8px',
+                                    borderRadius: '6px',
+                                    background: isCurrent ? `${accent}22` : 'transparent',
+                                    borderLeft: isCurrent ? `3px solid ${accent}` : '3px solid transparent',
+                                    transition: 'all 0.2s',
+                                    alignItems: 'baseline'
+                                  }}
+                                >
+                                  <span style={{ color: accent, fontWeight: 700, fontFamily: 'monospace', minWidth: '42px', fontSize: '11px' }}>{seg.time}</span>
+                                  <span style={{ color: '#fff', fontWeight: 600, minWidth: '90px' }}>{seg.speaker}:</span>
+                                  <span style={{ color: isCurrent ? '#fff' : '#ccc', flex: 1, lineHeight: 1.4 }}>{seg.translatedText || seg.text}</span>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        ) : (
+                          <p style={{ margin: '0 0 12px 0', fontSize: '13px', color: '#ccc', lineHeight: 1.5 }}>
+                            {translatedInfo ? translatedInfo.description : activeVideo.description}
+                          </p>
+                        )}
 
                         {/* Hidden transcript container for external translation software */}
                         {transcript && transcript.length > 0 && (
