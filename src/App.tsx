@@ -409,7 +409,30 @@ function App() {
         ]);
 
         const dbTenantData = configRes?.data;
-        if (activeTenantId === 'wings-of-strength-tenant-id') {
+        if (activeTenantId === '7a017c4d-c08f-4260-8540-a0cc8bed4e12' || activeTenantId === 'olympia' || activeTenantId === 'mrolympia' || activeTenantId === 'mr-olympia') {
+          loadedTenantId = '7a017c4d-c08f-4260-8540-a0cc8bed4e12';
+          loadedConfig = normalizeWlConfig({
+            id: '7a017c4d-c08f-4260-8540-a0cc8bed4e12',
+            name: 'Mr. Olympia',
+            domain: 'mrolympia.com',
+            logo: '/n2n/mr_olympia_logo.png',
+            parent_network_id: '7a017c4d-c08f-4260-8540-a0cc8bed4e11',
+            platform_fee_percentage: 30,
+            is_active: true,
+            theme: {
+              accent: '#D4AF37',
+              heroCopy: "Joe Weider's Mr. Olympia Fitness & Performance Weekend — The Pinnacle of Bodybuilding.",
+              heroImage: '/n2n/mr_olympia_hero.png',
+              logoImage: '/n2n/mr_olympia_logo.png',
+              shopifyUrl: 'https://mrolympia.com/weekend-schedule',
+              sliderCount: 4,
+              enableBooking: false,
+              heroLayoutMode: 'verbiage',
+              enableWatchLive: true,
+              parent_network_id: '7a017c4d-c08f-4260-8540-a0cc8bed4e11'
+            }
+          });
+        } else if (activeTenantId === 'wings-of-strength-tenant-id') {
           loadedTenantId = 'wings-of-strength-tenant-id';
           loadedConfig = normalizeWlConfig({
             id: 'wings-of-strength-tenant-id',
