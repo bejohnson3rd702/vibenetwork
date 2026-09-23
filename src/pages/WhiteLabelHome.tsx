@@ -227,8 +227,8 @@ export default function WhiteLabelHome({ wlConfig, categories, user, activeVideo
           </div>
         )}
 
-        {/* Mr. & Mrs. Olympia Slider if it's the Mr. Olympia network */}
-        {isOlympian && (
+        {/* Mr. & Mrs. Olympia Slider if it's the Mr. Olympia network (Hidden for now) */}
+        {/* isOlympian && (
           <div id="olympia-champions-slider" style={{ width: '100%', position: 'relative', zIndex: 10, marginTop: '40px', marginBottom: '20px' }}>
             <SliderSection
               title="MR. & MRS. OLYMPIA"
@@ -238,7 +238,7 @@ export default function WhiteLabelHome({ wlConfig, categories, user, activeVideo
               onItemClick={(item) => navigate('/profile/' + item.id + window.location.search)}
             />
           </div>
-        )}
+        ) */}
        
        {/* Full Profile Dashboard Integrated at Network Level */}
        <div style={{ width: '100%', position: 'relative', zIndex: 10 }}>

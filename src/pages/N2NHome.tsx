@@ -1069,8 +1069,8 @@ export default function N2NHome({ wlConfig, categories, user, activeVideo, setAc
 
       <main style={{ background: 'var(--bg-color)', paddingBottom: '100px', zIndex: 10, position: 'relative', width: '100%' }}>
 
-        {/* ── Mr. & Mrs. Olympia Slider ──────────────────────── */}
-        {isOlympian && (
+        {/* ── Mr. & Mrs. Olympia Slider (Hidden for now) ──────── */}
+        {/* isOlympian && (
           <div id="olympia-champions-slider">
             <SliderSection
               title="MR. & MRS. OLYMPIA"
@@ -1081,7 +1081,7 @@ export default function N2NHome({ wlConfig, categories, user, activeVideo, setAc
               onItemClick={(item) => navigate('/profile/' + item.id + window.location.search)}
             />
           </div>
-        )}
+        ) */}
 
         {/* ── Child Networks Section (Slider or KPLE Introduction Call to Action) ── */}
         {isKple ? (
@@ -1160,7 +1160,7 @@ export default function N2NHome({ wlConfig, categories, user, activeVideo, setAc
             </div>
           </div>
         ) : (
-          childItems.length > 0 && (
+          childItems.length > 0 && !isOlympian && (
             <div id="child-networks-slider">
               <SliderSection
                 title={isBonaire ? "BONAIRE BUSINESS NETWORKS" : (isOlympian ? "OLYMPIA PARTNERS" : (isMf ? "MUSCLE & FITNESS NETWORKS" : (isB2K ? "B2K MEMBERS" : (isVibe100 ? "VIBE 100 NETWORKS" : (isVibe ? "NEW PROFILES & CHANNELS" : "NETWORKS & CHANNELS")))))}
@@ -1898,7 +1898,7 @@ export default function N2NHome({ wlConfig, categories, user, activeVideo, setAc
           </section>
         )}
 
-        {isMf && (
+        {/* isMf && (
           <div id="olympia-champions-slider-mf">
             <SliderSection
               title="MR. & MRS. OLYMPIA"
@@ -1909,7 +1909,7 @@ export default function N2NHome({ wlConfig, categories, user, activeVideo, setAc
               onItemClick={(item) => navigate('/profile/' + item.id + window.location.search)}
             />
           </div>
-        )}
+        ) */}
 
         {/* ── College Sports News Feed ──────────────────────── */}
         {!isMfFamily && !isB2K && !isKple && !isBonaire && !isCourtneyBee && (

@@ -205,7 +205,7 @@ export default function Home({ categories, activeVideo, setActiveVideo, user }: 
                         </div>
                       </section>
 
-                      <SliderSection
+                      {/* <SliderSection
                         title="MR. & MRS. OLYMPIA"
                         items={OLYMPIA_CHAMPIONS.map(champion => ({
                           ...champion,
@@ -220,7 +220,7 @@ export default function Home({ categories, activeVideo, setActiveVideo, user }: 
                             window.location.href = mergeQueryParams(targetUrl, window.location.search);
                           }
                         }}
-                      />
+                      /> */}
                     </>
                   )}
                 </div>

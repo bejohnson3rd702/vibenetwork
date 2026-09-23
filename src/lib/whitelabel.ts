@@ -34,9 +34,10 @@ export interface WlConfig {
 
 export function isOlympianConfig(config: any): boolean {
   if (!config) return false;
+  const id = config.id || '';
   const name = config.name?.toLowerCase() || '';
   const domain = config.domain?.toLowerCase() || '';
-  return name.includes('olympia') || domain.includes('mrolympia.com');
+  return id === '7a017c4d-c08f-4260-8540-a0cc8bed4e12' || name.includes('olympia') || domain.includes('mrolympia.com');
 }
 
 export function isMuscleFitnessConfig(config: any): boolean {
@@ -107,6 +108,20 @@ export function isBonaireConfig(config: any): boolean {
          domain.includes('bonairechamber');
 }
 
+export function isDestinitoConfig(config: any): boolean {
+  if (!config) return false;
+  const id = config.id || '';
+  const name = config.name?.toLowerCase() || '';
+  const domain = config.domain?.toLowerCase() || '';
+  return id === 'destinito' ||
+         id === 'destinito-cinema' ||
+         id === 'destinito-movies' ||
+         id === 'destinito-stream' ||
+         id === 'destinito-tenant-id' ||
+         name.includes('destinito') ||
+         domain.includes('destinito');
+}
+
 export function normalizeWlConfig(
   raw: any,
   overrides?: Partial<WlConfig>
@@ -116,6 +131,7 @@ export function normalizeWlConfig(
   const isMf = isMuscleFitnessConfig(raw) || isMuscleFitnessConfig(overrides);
   const isB2k = isB2kConfig(raw) || isB2kConfig(overrides);
   const isBonaire = isBonaireConfig(raw) || isBonaireConfig(overrides);
+  const isDestinito = isDestinitoConfig(raw) || isDestinitoConfig(overrides);
 
   const isKpleChild = (raw?.parent_network_id === '33742e2f-430b-4c2d-9cba-42507891ef02') || (overrides?.parent_network_id === '33742e2f-430b-4c2d-9cba-42507891ef02');
   const isKpleParent = isKple && !isKpleChild;
@@ -123,10 +139,15 @@ export function normalizeWlConfig(
   const isBonaireChild = (raw?.parent_network_id === 'b0ea0000-c08f-4260-8540-a0cc8bed4e11') || (overrides?.parent_network_id === 'b0ea0000-c08f-4260-8540-a0cc8bed4e11');
   const isBonaireParent = isBonaire && !isBonaireChild;
 
-  const defaultAccent = isKple ? '#004e98' : (isOlympian ? '#D4AF37' : (isMf ? '#E31B23' : (isB2k ? '#FF2A54' : (isBonaire ? '#00A3E0' : '#D35400'))));
+  const defaultAccent = isDestinito ? '#00F5D4' : (isKple ? '#004e98' : (isOlympian ? '#D4AF37' : (isMf ? '#E31B23' : (isB2k ? '#FF2A54' : (isBonaire ? '#00A3E0' : '#D35400')))));
 
   const theme = {
     ...(raw?.theme || {}),
+    ...(isDestinito ? {
+      heroCopy: 'Destinito Cinema — One Caribbean. One Connected Cinematic Experience. Stream movies, island originals, and resort premieres.',
+      bg: '#080c10',
+      accent: '#00F5D4'
+    } : {}),
     ...(isKpleParent ? {
       heroCopy: 'Christian Revival Network — Come All Revival. Class A Christian Broadcasting.'
     } : {}),
