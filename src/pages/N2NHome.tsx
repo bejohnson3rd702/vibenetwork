@@ -12,6 +12,7 @@ import { isOlympianConfig, isMuscleFitnessConfig, isB2kConfig, isKpleConfig, isK
 import { KpleWatchPlayer } from '../components/KpleWatchPlayer';
 import { KpleInlineWatchSection } from '../components/KpleInlineWatchSection';
 import CourtneyBeeWatchSection from '../components/CourtneyBeeWatchSection';
+const VibeWatchSection = lazy(() => import('../components/VibeWatchSection'));
 const CollegeTicker = lazy(() => import('../components/CollegeTicker'));
 const CollegeNewsFeed = lazy(() => import('../components/CollegeNewsFeed'));
 const WatchLive = lazy(() => import('../components/WatchLive'));
@@ -1294,6 +1295,10 @@ export default function N2NHome({ wlConfig, categories, user, activeVideo, setAc
             networkName={config.name || 'Christian Revival Network'}
             onOpenModal={(vid) => setActiveVideo(vid)}
           />
+        ) : isVibe ? (
+          <Suspense fallback={null}>
+            <VibeWatchSection accent={config.accent || '#D35400'} />
+          </Suspense>
         ) : (
           <div id="whats-on-now">
             <Suspense fallback={null}>
