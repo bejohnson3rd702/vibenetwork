@@ -53,16 +53,9 @@ export async function getCategoriesWithVideos(tenantId?: string) {
     deactivatedWlIds.add('courtney-bee-tenant-id');
   }
 
-  const destinitoDbRecord = (whitelabels || []).find((wl: any) => 
-    wl.id === 'destinito-cinema' || 
-    wl.id === 'destinito' || 
-    (wl.name || '').toLowerCase().includes('destinito')
-  );
-  const isDestinitoDbDeactivated = destinitoDbRecord ? isWlDeactivated(destinitoDbRecord) : false;
-  if (isDestinitoDbDeactivated) {
-    deactivatedWlIds.add('destinito-cinema');
-    deactivatedWlIds.add('destinito');
-  }
+  // Always exclude Destinito / Destino from Vibe homepage
+  deactivatedWlIds.add('destinito-cinema');
+  deactivatedWlIds.add('destinito');
 
   const APPROVED_N2N_PARENT_IDS = [
     'cb000000-c08f-4260-8540-a0cc8bed4e11', // Courtney Bee Network
@@ -88,13 +81,16 @@ export async function getCategoriesWithVideos(tenantId?: string) {
     // Filter out child networks
     if (wl.parent_network_id || wl.theme?.parent_network_id) return false;
     
-    // Filter out test networks (Noelani, Leilani, Leiloe, etc.) and deleted/finfire networks
+    // Filter out test networks (Noelani, Leilani, Leiloe, etc.), deleted/finfire networks, and Destinito/Destino from Vibe homepage
     if (
       nameLower.includes('noelani') || 
       nameLower.includes('leilani') || nameLower.includes('leiloe') ||
       nameLower.includes('deleted') || nameLower.includes('finfire') ||
+      nameLower.includes('destinito') || nameLower.includes('destino') ||
       domainLower.includes('noelani') ||
-      domainLower.includes('deleted') || domainLower.includes('finfire')
+      domainLower.includes('deleted') || domainLower.includes('finfire') ||
+      domainLower.includes('destinito') || domainLower.includes('destino') ||
+      wl.id === 'destinito' || wl.id === 'destinito-cinema'
     ) {
       return false;
     }
@@ -136,15 +132,6 @@ export async function getCategoriesWithVideos(tenantId?: string) {
     linkUrl: '/?tenant=cb000000-c08f-4260-8540-a0cc8bed4e11'
   };
 
-  const destinitoNetworkCard = {
-    id: 'wl_destinito-cinema',
-    title: 'Destinito Cinema',
-    image: 'https://image.tmdb.org/t/p/original/y3uOfZAYwLkbvhunswBCskNMrfI.jpg',
-    tags: ['Cinema', 'Movies'],
-    accent: '#00F5D4',
-    linkUrl: '/?tenant=destinito'
-  };
-
   if (!isCourtneyDbDeactivated) {
     const cbIdx = mappedNetworks.findIndex((n: any) => n.id === 'wl_cb000000-c08f-4260-8540-a0cc8bed4e11' || n.id === 'wl_courtney-bee-tenant-id' || (n.title || '').toLowerCase().includes('courtney bee network'));
     if (cbIdx > -1) {
@@ -162,15 +149,14 @@ export async function getCategoriesWithVideos(tenantId?: string) {
     }
   }
 
-  if (!isDestinitoDbDeactivated) {
-    const destIdx = mappedNetworks.findIndex((n: any) => n.id === 'wl_destinito-cinema' || (n.title || '').toLowerCase().includes('destinito'));
-    if (destIdx === -1) {
-      mappedNetworks.push(destinitoNetworkCard);
-    }
-  } else {
-    const destIdx = mappedNetworks.findIndex((n: any) => n.id === 'wl_destinito-cinema' || (n.title || '').toLowerCase().includes('destinito'));
-    if (destIdx > -1) {
-      mappedNetworks.splice(destIdx, 1);
+  // Purge any Destinito / Destino cards from Vibe homepage
+  for (let i = mappedNetworks.length - 1; i >= 0; i--) {
+    const item = mappedNetworks[i];
+    const t = (item.title || '').toLowerCase();
+    const l = (item.linkUrl || '').toLowerCase();
+    const id = (item.id || '').toLowerCase();
+    if (t.includes('destinito') || t.includes('destino') || l.includes('destinito') || l.includes('destino') || id.includes('destinito') || id.includes('destino')) {
+      mappedNetworks.splice(i, 1);
     }
   }
 
