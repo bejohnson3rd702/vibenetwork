@@ -32,15 +32,17 @@ export default function Home({ categories, activeVideo, setActiveVideo, user }: 
       const colleges = await getChildNetworks('3915f1e5-4c79-4b2a-ad41-7029ce8052d7');
       if (!cancelled && colleges) {
         setAvoColleges(
-          colleges.map((c: any) => ({
-            id: c.id,
-            title: c.name,
-            image: c.logoImage || c.heroImage || `https://ui-avatars.com/api/?name=${encodeURIComponent(c.name)}&background=111&color=fff&size=400`,
-            tags: ['College'],
-            videoUrl: '',
-            linkUrl: '/?tenant=' + c.id,
-            accent: c.accent,
-          }))
+          colleges
+            .filter((c: any) => c.is_active !== false && c.is_active !== 'false' && c.theme?.is_active !== false && c.theme?.is_active !== 'false')
+            .map((c: any) => ({
+              id: c.id,
+              title: c.name,
+              image: c.logoImage || c.heroImage || `https://ui-avatars.com/api/?name=${encodeURIComponent(c.name)}&background=111&color=fff&size=400`,
+              tags: ['College'],
+              videoUrl: '',
+              linkUrl: '/?tenant=' + c.id,
+              accent: c.accent,
+            }))
         );
       }
     })();
@@ -52,26 +54,30 @@ export default function Home({ categories, activeVideo, setActiveVideo, user }: 
       <Hero setActiveVideo={setActiveVideo} />
       <main style={{ background: 'var(--bg-color)', paddingBottom: '100px', zIndex: 10, position: 'relative', width: '100%' }}>
         {/* ── Networks slider (above Watch) ── */}
-        {categories.filter((c: any) => c.title.toLowerCase().includes('network')).map((category: any, index: number) => (
-          <SliderSection
-            key={category.title}
-            title={category.title}
-            items={category.items}
-            delay={index * 0.2}
-            aspectRatio="16/9"
-            sizeMultiplier={1}
-            onItemClick={(item) => {
-              if (item.linkUrl) {
-                const targetUrl = item.linkUrl.includes('?') 
-                  ? `${item.linkUrl}&fromVibe=true` 
-                  : `${item.linkUrl}?fromVibe=true`;
-                window.location.href = mergeQueryParams(targetUrl, window.location.search);
-              } else {
-                setActiveVideo(item);
-              }
-            }}
-          />
-        ))}
+        {categories.filter((c: any) => c.title.toLowerCase().includes('network')).map((category: any, index: number) => {
+          const activeItems = (category.items || []).filter((item: any) => item.is_active !== false && item.is_active !== 'false');
+          if (activeItems.length === 0) return null;
+          return (
+            <SliderSection
+              key={category.title}
+              title={category.title}
+              items={activeItems}
+              delay={index * 0.2}
+              aspectRatio="16/9"
+              sizeMultiplier={1}
+              onItemClick={(item) => {
+                if (item.linkUrl) {
+                  const targetUrl = item.linkUrl.includes('?') 
+                    ? `${item.linkUrl}&fromVibe=true` 
+                    : `${item.linkUrl}?fromVibe=true`;
+                  window.location.href = mergeQueryParams(targetUrl, window.location.search);
+                } else {
+                  setActiveVideo(item);
+                }
+              }}
+            />
+          );
+        })}
 
         {wlConfig?.enableWatchLive !== false && (
           <div id="whats-on-now">
@@ -103,6 +109,8 @@ export default function Home({ categories, activeVideo, setActiveVideo, user }: 
           {categories
             .filter((c: any) => !c.title.toLowerCase().includes('network') && c.title !== 'New Content')
             .map((category: any, index: number) => {
+              const activeItems = (category.items || []).filter((item: any) => item.is_active !== false && item.is_active !== 'false');
+              if (activeItems.length === 0) return null;
               const isArtist = category.aspectRatio === '3/4' || category.title.includes('Artist');
               const ratio = isArtist ? '3/4' : '16/9';
               const multiplier = 1; 
@@ -113,7 +121,7 @@ export default function Home({ categories, activeVideo, setActiveVideo, user }: 
                 <div key={category.title}>
                   <SliderSection 
                     title={category.title} 
-                    items={category.items} 
+                    items={activeItems} 
                     delay={index * 0.2}
                     aspectRatio={category.aspectRatio || ratio}
                     sizeMultiplier={multiplier}

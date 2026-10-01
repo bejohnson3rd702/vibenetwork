@@ -8,6 +8,108 @@ export interface TranscriptSegment {
 }
 
 export const STATIC_TRANSCRIPTS: Record<string, TranscriptSegment[]> = {
+  "destinito-saba-passage": [
+    { time: "00:00", seconds: 0, speaker: "Captain Julien", text: "All hands on deck! The swell off Mount Scenery is rising fast." },
+    { time: "00:05", seconds: 5, speaker: "First Mate Maya", text: "Barometer is dropping rapidly, Captain. Saba Bank currents are pulling us west toward the reef." },
+    { time: "00:12", seconds: 12, speaker: "Captain Julien", text: "Hold the rudder steady! There's an uncharted underwater trench three miles ahead." },
+    { time: "00:19", seconds: 19, speaker: "Coast Guard Dispatch", text: "Vessel Sea Falcon, this is Fort Bay Station. Squall warning in effect for the entire Saba Channel." },
+    { time: "00:27", seconds: 27, speaker: "First Mate Maya", text: "Sonar is picking up metal reflections on the sea bed. Captain, the Spanish wreck is real!" },
+    { time: "00:35", seconds: 35, speaker: "Captain Julien", text: "Secure the dive gear and prepare the deep-sea cable. We only get one shot at this." }
+  ],
+  "3-JjF1c-N8A": [
+    { time: "00:00", seconds: 0, speaker: "Captain Julien", text: "All hands on deck! The swell off Mount Scenery is rising fast." },
+    { time: "00:05", seconds: 5, speaker: "First Mate Maya", text: "Barometer is dropping rapidly, Captain. Saba Bank currents are pulling us west toward the reef." },
+    { time: "00:12", seconds: 12, speaker: "Captain Julien", text: "Hold the rudder steady! There's an uncharted underwater trench three miles ahead." },
+    { time: "00:19", seconds: 19, speaker: "Coast Guard Dispatch", text: "Vessel Sea Falcon, this is Fort Bay Station. Squall warning in effect for the entire Saba Channel." },
+    { time: "00:27", seconds: 27, speaker: "First Mate Maya", text: "Sonar is picking up metal reflections on the sea bed. Captain, the Spanish wreck is real!" },
+    { time: "00:35", seconds: 35, speaker: "Captain Julien", text: "Secure the dive gear and prepare the deep-sea cable. We only get one shot at this." }
+  ],
+  "destinito-sxm-blue-horizon": [
+    { time: "00:04", seconds: 4, speaker: "Birdie Jay", text: "Hello! Oh my God. Crew, we've arrived! Disruptors have assembled!" },
+    { time: "00:14", seconds: 14, speaker: "Miles Bron", text: "Welcome, gang. We got a great weekend." },
+    { time: "00:19", seconds: 19, speaker: "Claire Debella", text: "Who's that? Benoit Blanc, the detective?" },
+    { time: "00:22", seconds: 22, speaker: "Benoit Blanc", text: "Mr. Bron, I cannot overstate my gratitude to be here." },
+    { time: "00:27", seconds: 27, speaker: "Duke Cody", text: "When's the murder mystery start?" },
+    { time: "00:30", seconds: 30, speaker: "Miles Bron", text: "I've invited you all to my island, because tonight, a murder will be committed. My murder." },
+    { time: "00:37", seconds: 37, speaker: "Birdie Jay", text: "Once you're dead, will we still be able to talk to you?" },
+    { time: "00:40", seconds: 40, speaker: "Miles Bron", text: "Yeah, I'm not playing dead the whole weekend, dude." },
+    { time: "00:42", seconds: 42, speaker: "Benoit Blanc", text: "This is truly delightful." },
+    { time: "00:44", seconds: 44, speaker: "Miles Bron", text: "Across the island, I've hidden clues. You will have to closely observe each other. If anyone can name the killer, that person wins our game." },
+    { time: "00:54", seconds: 54, speaker: "Birdie Jay", text: "Halle Berry. That has a kick." },
+    { time: "00:58", seconds: 58, speaker: "Guests", text: "Oh my God. What happened? Holy sh--" },
+    { time: "01:07", seconds: 67, speaker: "Benoit Blanc", text: "Ladies and gentlemen, there's been a murder, and the killer is in plain sight." },
+    { time: "01:14", seconds: 74, speaker: "Benoit Blanc", text: "For at least one person, this is not a game." },
+    { time: "01:19", seconds: 79, speaker: "Benoit Blanc", text: "I must insist that nobody touch the body." },
+    { time: "01:23", seconds: 83, speaker: "Miles Bron", text: "Jeez, Detective. Who killed the party?" },
+    { time: "01:28", seconds: 88, speaker: "Benoit Blanc", text: "I need to find the motive for murder." },
+    { time: "01:31", seconds: 91, speaker: "Andi Brand", text: "Everyone would stab a friend in the back to hold on to this rich bastard. Deal with it." },
+    { time: "01:38", seconds: 98, speaker: "Benoit Blanc", text: "You're all friends. Why would anyone commit murder?" },
+    { time: "01:43", seconds: 103, speaker: "Claire Debella", text: "Are we gonna talk about the elephant in the room?" },
+    { time: "01:46", seconds: 106, speaker: "Duke Cody", text: "Am I the elephant? Yeah. You're the elephant!" },
+    { time: "01:49", seconds: 109, speaker: "Benoit Blanc", text: "You're not that bad. Think of the danger here." },
+    { time: "01:53", seconds: 113, speaker: "Miles Bron", text: "Are you calling me dangerous? Well, we'll see." },
+    { time: "02:01", seconds: 121, speaker: "Guests", text: "Let it all out. Hell yeah! This is reckless." },
+    { time: "02:05", seconds: 125, speaker: "Benoit Blanc", text: "The killer wouldn't hesitate to kill again if it covers their tracks." },
+    { time: "02:13", seconds: 133, speaker: "Birdie Jay", text: "You must be really great at Clue." },
+    { time: "02:15", seconds: 135, speaker: "Benoit Blanc", text: "I'm very bad at dumb things. Ticking boxes, running around, searching all the rooms. It's just a terrible, terrible game." }
+  ],
+  "gj5ibYSz8C0": [
+    { time: "00:04", seconds: 4, speaker: "Birdie Jay", text: "Hello! Oh my God. Crew, we've arrived! Disruptors have assembled!" },
+    { time: "00:14", seconds: 14, speaker: "Miles Bron", text: "Welcome, gang. We got a great weekend." },
+    { time: "00:19", seconds: 19, speaker: "Claire Debella", text: "Who's that? Benoit Blanc, the detective?" },
+    { time: "00:22", seconds: 22, speaker: "Benoit Blanc", text: "Mr. Bron, I cannot overstate my gratitude to be here." },
+    { time: "00:27", seconds: 27, speaker: "Duke Cody", text: "When's the murder mystery start?" },
+    { time: "00:30", seconds: 30, speaker: "Miles Bron", text: "I've invited you all to my island, because tonight, a murder will be committed. My murder." },
+    { time: "00:37", seconds: 37, speaker: "Birdie Jay", text: "Once you're dead, will we still be able to talk to you?" },
+    { time: "00:40", seconds: 40, speaker: "Miles Bron", text: "Yeah, I'm not playing dead the whole weekend, dude." },
+    { time: "00:42", seconds: 42, speaker: "Benoit Blanc", text: "This is truly delightful." },
+    { time: "00:44", seconds: 44, speaker: "Miles Bron", text: "Across the island, I've hidden clues. You will have to closely observe each other. If anyone can name the killer, that person wins our game." },
+    { time: "00:54", seconds: 54, speaker: "Birdie Jay", text: "Halle Berry. That has a kick." },
+    { time: "00:58", seconds: 58, speaker: "Guests", text: "Oh my God. What happened? Holy sh--" },
+    { time: "01:07", seconds: 67, speaker: "Benoit Blanc", text: "Ladies and gentlemen, there's been a murder, and the killer is in plain sight." },
+    { time: "01:14", seconds: 74, speaker: "Benoit Blanc", text: "For at least one person, this is not a game." },
+    { time: "01:19", seconds: 79, speaker: "Benoit Blanc", text: "I must insist that nobody touch the body." },
+    { time: "01:23", seconds: 83, speaker: "Miles Bron", text: "Jeez, Detective. Who killed the party?" },
+    { time: "01:28", seconds: 88, speaker: "Benoit Blanc", text: "I need to find the motive for murder." },
+    { time: "01:31", seconds: 91, speaker: "Andi Brand", text: "Everyone would stab a friend in the back to hold on to this rich bastard. Deal with it." },
+    { time: "01:38", seconds: 98, speaker: "Benoit Blanc", text: "You're all friends. Why would anyone commit murder?" },
+    { time: "01:43", seconds: 103, speaker: "Claire Debella", text: "Are we gonna talk about the elephant in the room?" },
+    { time: "01:46", seconds: 106, speaker: "Duke Cody", text: "Am I the elephant? Yeah. You're the elephant!" },
+    { time: "01:49", seconds: 109, speaker: "Benoit Blanc", text: "You're not that bad. Think of the danger here." },
+    { time: "01:53", seconds: 113, speaker: "Miles Bron", text: "Are you calling me dangerous? Well, we'll see." },
+    { time: "02:01", seconds: 121, speaker: "Guests", text: "Let it all out. Hell yeah! This is reckless." },
+    { time: "02:05", seconds: 125, speaker: "Benoit Blanc", text: "The killer wouldn't hesitate to kill again if it covers their tracks." },
+    { time: "02:13", seconds: 133, speaker: "Birdie Jay", text: "You must be really great at Clue." },
+    { time: "02:15", seconds: 135, speaker: "Benoit Blanc", text: "I'm very bad at dumb things. Ticking boxes, running around, searching all the rooms. It's just a terrible, terrible game." }
+  ],
+  "destinito-anguilla-shoals": [
+    { time: "00:00", seconds: 0, speaker: "Dr. Arina", text: "Welcome to the pristine coral sanctuaries of Shoal Bay, Anguilla." },
+    { time: "00:06", seconds: 6, speaker: "Kenrick", text: "Look at the visibility down here. Over one hundred feet of crystal-clear Caribbean water." },
+    { time: "00:14", seconds: 14, speaker: "Dr. Arina", text: "A pod of hawksbill sea turtles is grazing on the sea sponge beds near Prickly Pear Cays." },
+    { time: "00:22", seconds: 22, speaker: "Kenrick", text: "The reef restoration project here has revived over forty marine species in two years." },
+    { time: "00:31", seconds: 31, speaker: "Dr. Arina", text: "Listen carefully through the hydrophone. Migrating humpback whales singing through the trench." }
+  ],
+  "1Bbl4b49Q3c": [
+    { time: "00:00", seconds: 0, speaker: "Dr. Arina", text: "Welcome to the pristine coral sanctuaries of Shoal Bay, Anguilla." },
+    { time: "00:06", seconds: 6, speaker: "Kenrick", text: "Look at the visibility down here. Over one hundred feet of crystal-clear Caribbean water." },
+    { time: "00:14", seconds: 14, speaker: "Dr. Arina", text: "A pod of hawksbill sea turtles is grazing on the sea sponge beds near Prickly Pear Cays." },
+    { time: "00:22", seconds: 22, speaker: "Kenrick", text: "The reef restoration project here has revived over forty marine species in two years." },
+    { time: "00:31", seconds: 31, speaker: "Dr. Arina", text: "Listen carefully through the hydrophone. Migrating humpback whales singing through the trench." }
+  ],
+  "destinito-the-last-regatta": [
+    { time: "00:00", seconds: 0, speaker: "Skipper Marcus", text: "Three minutes to the gun! Trim the mainsail and ease the jib." },
+    { time: "00:06", seconds: 6, speaker: "Tactician Lianne", text: "Wind shift coming from the east at twenty-two knots off Cole Bay!" },
+    { time: "00:13", seconds: 13, speaker: "Skipper Marcus", text: "Tack now! Hit the line with full boat speed." },
+    { time: "00:20", seconds: 20, speaker: "Race Official", text: "All yachts clear! The Heineken Regatta round-the-island race has officially begun." },
+    { time: "00:28", seconds: 28, speaker: "Tactician Lianne", text: "We have clean air! Keep hiking out on the rail, we're taking the lead." }
+  ],
+  "w-zO7Jt_c68": [
+    { time: "00:00", seconds: 0, speaker: "Skipper Marcus", text: "Three minutes to the gun! Trim the mainsail and ease the jib." },
+    { time: "00:06", seconds: 6, speaker: "Tactician Lianne", text: "Wind shift coming from the east at twenty-two knots off Cole Bay!" },
+    { time: "00:13", seconds: 13, speaker: "Skipper Marcus", text: "Tack now! Hit the line with full boat speed." },
+    { time: "00:20", seconds: 20, speaker: "Race Official", text: "All yachts clear! The Heineken Regatta round-the-island race has officially begun." },
+    { time: "00:28", seconds: 28, speaker: "Tactician Lianne", text: "We have clean air! Keep hiking out on the rail, we're taking the lead." }
+  ],
   "trump1-speech": [
     {
       "time": "00:00",

@@ -339,8 +339,10 @@ export async function getChildNetworks(parentId: string, includeInactive: boolea
   
   // Filter out test networks (Noelani, Bennie, Leilani, Leiloe, etc.)
   const filtered = data.filter((row: any) => {
-    if (!includeInactive && row.is_active === false) {
-      return false;
+    if (!includeInactive) {
+      if (row.is_active === false || row.is_active === 'false' || row.theme?.is_active === false || row.theme?.is_active === 'false') {
+        return false;
+      }
     }
     const domainLower = (row.domain || '').toLowerCase();
     const nameLower = (row.name || '').toLowerCase();

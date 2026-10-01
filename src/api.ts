@@ -1,6 +1,13 @@
 import { supabase } from './supabaseClient';
 import { normalizeWlConfig } from './lib/whitelabel';
 
+export function isWlDeactivated(wl: any): boolean {
+  if (!wl) return false;
+  if (wl.is_active === false || wl.is_active === 'false') return true;
+  if (wl.theme?.is_active === false || wl.theme?.is_active === 'false') return true;
+  return false;
+}
+
 export async function getCategoriesWithVideos(tenantId?: string) {
   if (!supabase) return [];
 
@@ -21,12 +28,41 @@ export async function getCategoriesWithVideos(tenantId?: string) {
   ] = await Promise.all([
     tenantId 
       ? Promise.resolve({ data: [] })
-      : supabase.from('whitelabel_configs').select('id, name, domain, logo, theme, parent_network_id').order('created_at', { ascending: false }).limit(100),
+      : supabase.from('whitelabel_configs').select('id, name, domain, logo, theme, parent_network_id, is_active').order('created_at', { ascending: false }).limit(100),
     profilesQuery,
-    supabase.from('videos').select('id, title, image_url, tags, video_url').order('created_at', { ascending: false }).limit(20)
+    supabase.from('videos').select('id, title, image_url, tags, video_url, whitelabel_id').order('created_at', { ascending: false }).limit(20)
   ]);
 
   const whitelabels = whitelabelsResult.data || [];
+
+  const deactivatedWlIds = new Set<string>();
+  (whitelabels || []).forEach((wl: any) => {
+    if (isWlDeactivated(wl)) {
+      if (wl.id) deactivatedWlIds.add(wl.id);
+    }
+  });
+
+  const courtneyDbRecord = (whitelabels || []).find((wl: any) => 
+    wl.id === 'cb000000-c08f-4260-8540-a0cc8bed4e11' || 
+    wl.id === 'courtney-bee-tenant-id' || 
+    (wl.name || '').toLowerCase().includes('courtney bee')
+  );
+  const isCourtneyDbDeactivated = courtneyDbRecord ? isWlDeactivated(courtneyDbRecord) : false;
+  if (isCourtneyDbDeactivated) {
+    deactivatedWlIds.add('cb000000-c08f-4260-8540-a0cc8bed4e11');
+    deactivatedWlIds.add('courtney-bee-tenant-id');
+  }
+
+  const destinitoDbRecord = (whitelabels || []).find((wl: any) => 
+    wl.id === 'destinito-cinema' || 
+    wl.id === 'destinito' || 
+    (wl.name || '').toLowerCase().includes('destinito')
+  );
+  const isDestinitoDbDeactivated = destinitoDbRecord ? isWlDeactivated(destinitoDbRecord) : false;
+  if (isDestinitoDbDeactivated) {
+    deactivatedWlIds.add('destinito-cinema');
+    deactivatedWlIds.add('destinito');
+  }
 
   const APPROVED_N2N_PARENT_IDS = [
     'cb000000-c08f-4260-8540-a0cc8bed4e11', // Courtney Bee Network
@@ -41,7 +77,7 @@ export async function getCategoriesWithVideos(tenantId?: string) {
   ];
 
   const mappedNetworks = (whitelabels || []).filter((wl: any) => {
-    if (wl.is_active === false || wl.theme?.is_active === false) return false;
+    if (isWlDeactivated(wl)) return false;
 
     const domainLower = (wl.domain || '').toLowerCase();
     const nameLower = (wl.name || '').toLowerCase();
@@ -100,14 +136,42 @@ export async function getCategoriesWithVideos(tenantId?: string) {
     linkUrl: '/?tenant=cb000000-c08f-4260-8540-a0cc8bed4e11'
   };
 
-  const cbIdx = mappedNetworks.findIndex((n: any) => n.id === 'wl_cb000000-c08f-4260-8540-a0cc8bed4e11' || n.id === 'wl_courtney-bee-tenant-id' || (n.title || '').toLowerCase().includes('courtney bee network'));
-  if (cbIdx > -1) {
-    mappedNetworks[cbIdx].tags = ['Network'];
-    mappedNetworks[cbIdx].title = 'Courtney Bee Network';
-    mappedNetworks[cbIdx].image = 'https://static.wixstatic.com/media/066ffc_bb9bdff854db4b56bb3f6b58ee1ce532~mv2.png/v1/crop/x_0,y_261,w_1242,h_763/fill/w_860,h_528,al_c,q_90,usm_0.66_1.00_0.01,enc_avif,quality_auto/image%20(1).png';
-    mappedNetworks[cbIdx].linkUrl = '/?tenant=cb000000-c08f-4260-8540-a0cc8bed4e11';
+  const destinitoNetworkCard = {
+    id: 'wl_destinito-cinema',
+    title: 'Destinito Cinema',
+    image: 'https://image.tmdb.org/t/p/original/y3uOfZAYwLkbvhunswBCskNMrfI.jpg',
+    tags: ['Cinema', 'Movies'],
+    accent: '#00F5D4',
+    linkUrl: '/?tenant=destinito'
+  };
+
+  if (!isCourtneyDbDeactivated) {
+    const cbIdx = mappedNetworks.findIndex((n: any) => n.id === 'wl_cb000000-c08f-4260-8540-a0cc8bed4e11' || n.id === 'wl_courtney-bee-tenant-id' || (n.title || '').toLowerCase().includes('courtney bee network'));
+    if (cbIdx > -1) {
+      mappedNetworks[cbIdx].tags = ['Network'];
+      mappedNetworks[cbIdx].title = 'Courtney Bee Network';
+      mappedNetworks[cbIdx].image = 'https://static.wixstatic.com/media/066ffc_bb9bdff854db4b56bb3f6b58ee1ce532~mv2.png/v1/crop/x_0,y_261,w_1242,h_763/fill/w_860,h_528,al_c,q_90,usm_0.66_1.00_0.01,enc_avif,quality_auto/image%20(1).png';
+      mappedNetworks[cbIdx].linkUrl = '/?tenant=cb000000-c08f-4260-8540-a0cc8bed4e11';
+    } else {
+      mappedNetworks.push(courtneyNetworkCard);
+    }
   } else {
-    mappedNetworks.push(courtneyNetworkCard);
+    const cbIdx = mappedNetworks.findIndex((n: any) => n.id === 'wl_cb000000-c08f-4260-8540-a0cc8bed4e11' || n.id === 'wl_courtney-bee-tenant-id' || (n.title || '').toLowerCase().includes('courtney bee'));
+    if (cbIdx > -1) {
+      mappedNetworks.splice(cbIdx, 1);
+    }
+  }
+
+  if (!isDestinitoDbDeactivated) {
+    const destIdx = mappedNetworks.findIndex((n: any) => n.id === 'wl_destinito-cinema' || (n.title || '').toLowerCase().includes('destinito'));
+    if (destIdx === -1) {
+      mappedNetworks.push(destinitoNetworkCard);
+    }
+  } else {
+    const destIdx = mappedNetworks.findIndex((n: any) => n.id === 'wl_destinito-cinema' || (n.title || '').toLowerCase().includes('destinito'));
+    if (destIdx > -1) {
+      mappedNetworks.splice(destIdx, 1);
+    }
   }
 
   // Sort Bonaire Chamber of Commerce to top, VIBE 100 second, and Courtney Bee Network third
@@ -125,16 +189,19 @@ export async function getCategoriesWithVideos(tenantId?: string) {
     return getOrder(a.id) - getOrder(b.id);
   });
 
-
-
-
-  let mappedProfiles = (profiles || []).map((p: any) => ({
-    id: p.id,
-    title: p.username || 'Creator Profile',
-    image: p.avatar_url || '/n2n/default_avatar.png',
-    tags: [p.role === 'influencer' ? 'Creator' : 'Member'],
-    linkUrl: `/profile/${p.id}`
-  }));
+  let mappedProfiles = (profiles || [])
+    .filter((p: any) => {
+      if (p.is_active === false || p.is_active === 'false') return false;
+      if (p.whitelabel_id && deactivatedWlIds.has(p.whitelabel_id)) return false;
+      return true;
+    })
+    .map((p: any) => ({
+      id: p.id,
+      title: p.username || 'Creator Profile',
+      image: p.avatar_url || '/n2n/default_avatar.png',
+      tags: [p.role === 'influencer' ? 'Creator' : 'Member'],
+      linkUrl: `/profile/${p.id}`
+    }));
 
   const courtneyProfileItem = {
     id: 'courtney-bee-tenant-id',
@@ -144,23 +211,29 @@ export async function getCategoriesWithVideos(tenantId?: string) {
     linkUrl: '/profile/courtney-bee-tenant-id'
   };
 
-  const courtneyIdx = mappedProfiles.findIndex((p: any) => p.id === 'courtney-bee-tenant-id' || (p.title || '').toLowerCase().includes('courtney bee'));
-  if (courtneyIdx > -1) {
-    const [c] = mappedProfiles.splice(courtneyIdx, 1);
-    c.image = 'https://static.wixstatic.com/media/066ffc_bb9bdff854db4b56bb3f6b58ee1ce532~mv2.png/v1/crop/x_0,y_261,w_1242,h_763/fill/w_860,h_528,al_c,q_90,usm_0.66_1.00_0.01,enc_avif,quality_auto/image%20(1).png';
-    c.linkUrl = '/profile/courtney-bee-tenant-id';
-    mappedProfiles.unshift(c);
+  if (!isCourtneyDbDeactivated) {
+    const courtneyIdx = mappedProfiles.findIndex((p: any) => p.id === 'courtney-bee-tenant-id' || (p.title || '').toLowerCase().includes('courtney bee'));
+    if (courtneyIdx > -1) {
+      const [c] = mappedProfiles.splice(courtneyIdx, 1);
+      c.image = 'https://static.wixstatic.com/media/066ffc_bb9bdff854db4b56bb3f6b58ee1ce532~mv2.png/v1/crop/x_0,y_261,w_1242,h_763/fill/w_860,h_528,al_c,q_90,usm_0.66_1.00_0.01,enc_avif,quality_auto/image%20(1).png';
+      c.linkUrl = '/profile/courtney-bee-tenant-id';
+      mappedProfiles.unshift(c);
+    } else {
+      mappedProfiles.unshift(courtneyProfileItem);
+    }
   } else {
-    mappedProfiles.unshift(courtneyProfileItem);
+    mappedProfiles = mappedProfiles.filter((p: any) => p.id !== 'courtney-bee-tenant-id' && !(p.title || '').toLowerCase().includes('courtney bee'));
   }
 
-  const mappedContent = (videos || []).map((vid: any) => ({
-    id: vid.id,
-    title: vid.title,
-    image: vid.image_url,
-    tags: vid.tags || [],
-    videoUrl: vid.video_url
-  }));
+  const mappedContent = (videos || [])
+    .filter((vid: any) => !vid.whitelabel_id || !deactivatedWlIds.has(vid.whitelabel_id))
+    .map((vid: any) => ({
+      id: vid.id,
+      title: vid.title,
+      image: vid.image_url,
+      tags: vid.tags || [],
+      videoUrl: vid.video_url
+    }));
 
   const categoriesToReturn = [];
   
@@ -199,7 +272,12 @@ export async function getCategoriesWithVideos(tenantId?: string) {
       if (['live network schedule', 'featured dj sets', 'underground mixes'].includes(title)) return;
       if (!tenantId && ['music videos', 'bts & interviews'].includes(title)) return;
       
-      const catVideos = cat.videos || [];
+      const catVideos = (cat.videos || []).filter((vid: any) => {
+        if (vid.whitelabel_id && deactivatedWlIds.has(vid.whitelabel_id)) {
+          return false;
+        }
+        return true;
+      });
       
       if (catVideos.length > 0) {
         addedCustom = true;
@@ -256,13 +334,15 @@ export async function getN2NCategories(parentId: string, childNetworkIds: string
   const profiles = profilesResult.data || [];
   const videos = videosResult.data || [];
 
-  const mappedProfiles = profiles.map((p: any) => ({
-    id: p.id,
-    title: p.username || 'Creator Profile',
-    image: p.avatar_url || '/n2n/default_avatar.png',
-    tags: [p.role === 'influencer' ? 'Creator' : 'Member'],
-    linkUrl: `/profile/${p.id}`
-  }));
+  const mappedProfiles = profiles
+    .filter((p: any) => p.is_active !== false && p.is_active !== 'false')
+    .map((p: any) => ({
+      id: p.id,
+      title: p.username || 'Creator Profile',
+      image: p.avatar_url || '/n2n/default_avatar.png',
+      tags: [p.role === 'influencer' ? 'Creator' : 'Member'],
+      linkUrl: `/profile/${p.id}`
+    }));
 
   const mappedContent = videos.map((vid: any) => ({
     id: vid.id,

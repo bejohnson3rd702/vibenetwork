@@ -141,6 +141,11 @@ export async function executeWwtcService(params: WwtcServiceRequest): Promise<Ww
     throw new Error(errorMsg);
   }
 
+  const contentType = response.headers.get('content-type') || '';
+  if (!contentType.includes('application/json')) {
+    throw new Error(`WWTC Proxy returned non-JSON response (${contentType || 'empty'})`);
+  }
+
   return response.json();
 }
 
@@ -201,6 +206,31 @@ export async function translateText(params: {
       }
 
       return res;
+    } catch (err: any) {
+      console.warn(`[WWTC] translateText proxy notice for "${cleanText.slice(0, 30)}...":`, err.message);
+      // Direct WWTC API fallback
+      try {
+        const directUrl = new URL(`https://api.worldwidetechconnections.com/services/${normalizedService}/${sourceLang}/${targetLang}`);
+        directUrl.searchParams.set('text', cleanText.slice(0, 10000));
+        const directRes = await fetch(directUrl.toString(), {
+          method: 'POST',
+          headers: {
+            'accept': 'application/json',
+            'api-authorization': '95a35451.30ece979-c4bd-447b-8b1e-fd9a6c77418b'
+          }
+        });
+        if (directRes.ok) {
+          const directData = await directRes.json();
+          translationMemoryCache.set(cacheKey, directData);
+          return directData;
+        }
+      } catch (_) {}
+
+      return {
+        source_text: cleanText,
+        translated_text: cleanText,
+        audio: ''
+      };
     } finally {
       inFlightTranslations.delete(cacheKey);
     }

@@ -241,13 +241,144 @@ function stripeStagingPlugin(env: Record<string, string>) {
   };
 }
 
+function wwtcProxyPlugin(env: Record<string, string>) {
+  const WWTC_API_KEY = env.WWTC_API_KEY || env.VITE_WWTC_API_KEY || '95a35451.30ece979-c4bd-447b-8b1e-fd9a6c77418b';
+  const CORE_BASE_URL = 'https://core.worldwidetechconnections.com';
+  const API_BASE_URL = 'https://api.worldwidetechconnections.com';
+  let languagesCache: any = null;
+  let cacheTime = 0;
+
+  return {
+    name: 'wwtc-proxy-middleware',
+    configureServer(server: any) {
+      server.middlewares.use('/api/wwtc-proxy', async (req: any, res: any) => {
+        res.setHeader('Access-Control-Allow-Origin', '*');
+        res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+        res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+
+        if (req.method === 'OPTIONS') {
+          res.statusCode = 200;
+          return res.end();
+        }
+
+        try {
+          const urlObj = new URL(req.url, 'http://localhost:5173');
+          const action = urlObj.searchParams.get('action') || 'languages';
+
+          if (action === 'languages') {
+            if (languagesCache && Date.now() - cacheTime < 1000 * 60 * 60 * 12) {
+              res.setHeader('Content-Type', 'application/json');
+              return res.end(JSON.stringify(languagesCache));
+            }
+
+            try {
+              const response = await fetch(`${CORE_BASE_URL}/languages`, {
+                method: 'GET',
+                headers: {
+                  'accept': 'application/json',
+                  'api-authorization': WWTC_API_KEY,
+                },
+              });
+
+              if (response.ok) {
+                const data = await response.json();
+                languagesCache = data;
+                cacheTime = Date.now();
+                res.setHeader('Content-Type', 'application/json');
+                return res.end(JSON.stringify(data));
+              }
+            } catch (err: any) {
+              console.warn('[wwtc-proxy dev] Core languages fetch notice:', err.message);
+            }
+
+            const fallbackLangs = [
+              { code: 'english-united-states', name: 'English (US)', services: 'x-ttt-tts' },
+              { code: 'spanish-international', name: 'Spanish (International)', services: 'x-ttt-tts' },
+              { code: 'french-france', name: 'French', services: 'x-ttt-tts' },
+              { code: 'dutch-netherlands', name: 'Dutch', services: 'x-ttt-tts' },
+              { code: 'german-germany', name: 'German', services: 'x-ttt-tts' },
+              { code: 'italian-italy', name: 'Italian', services: 'x-ttt-tts' },
+              { code: 'portuguese-brazil', name: 'Portuguese (Brazil)', services: 'x-ttt-tts' },
+              { code: 'japanese', name: 'Japanese', services: 'x-ttt-tts' },
+              { code: 'korean', name: 'Korean', services: 'x-ttt-tts' },
+              { code: 'chinese-mandarin', name: 'Chinese (Mandarin)', services: 'x-ttt-tts' }
+            ];
+            res.setHeader('Content-Type', 'application/json');
+            return res.end(JSON.stringify(fallbackLangs));
+          }
+
+          if (action === 'service') {
+            let bodyStr = '';
+            req.on('data', (chunk: any) => { bodyStr += chunk; });
+            req.on('end', async () => {
+              try {
+                const body = JSON.parse(bodyStr || '{}');
+                const { serviceCode, sourceLang, targetLang, text } = body;
+
+                if (!serviceCode || !sourceLang || !targetLang) {
+                  res.statusCode = 400;
+                  res.setHeader('Content-Type', 'application/json');
+                  return res.end(JSON.stringify({ error: 'Missing serviceCode, sourceLang, or targetLang' }));
+                }
+
+                const url = new URL(`${API_BASE_URL}/services/${serviceCode}/${sourceLang}/${targetLang}`);
+                if (text) {
+                  url.searchParams.set('text', String(text).slice(0, 10000));
+                }
+
+                const response = await fetch(url.toString(), {
+                  method: 'POST',
+                  headers: {
+                    'accept': 'application/json',
+                    'api-authorization': WWTC_API_KEY,
+                  },
+                });
+
+                if (!response.ok) {
+                  let errDetails = `WWTC Error: ${response.statusText}`;
+                  try {
+                    const errJson = await response.json();
+                    if (errJson?.error) errDetails = errJson.error;
+                  } catch (_) {}
+                  res.statusCode = response.status;
+                  res.setHeader('Content-Type', 'application/json');
+                  return res.end(JSON.stringify({ error: errDetails }));
+                }
+
+                const result = await response.json();
+                res.setHeader('Content-Type', 'application/json');
+                return res.end(JSON.stringify(result));
+              } catch (parseErr: any) {
+                res.statusCode = 500;
+                res.setHeader('Content-Type', 'application/json');
+                return res.end(JSON.stringify({ error: parseErr.message }));
+              }
+            });
+            return;
+          }
+
+          res.statusCode = 400;
+          res.setHeader('Content-Type', 'application/json');
+          res.end(JSON.stringify({ error: `Unsupported action: ${action}` }));
+        } catch (err: any) {
+          res.statusCode = 500;
+          res.setHeader('Content-Type', 'application/json');
+          res.end(JSON.stringify({ error: err.message }));
+        }
+      });
+    }
+  };
+}
+
 // https://vite.dev/config/
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), '');
 
   return {
-    plugins: [react(), stripeStagingPlugin(env), youtubeTranscriptPlugin(env)],
+    plugins: [react(), stripeStagingPlugin(env), youtubeTranscriptPlugin(env), wwtcProxyPlugin(env)],
     server: {
+      host: true,
+      allowedHosts: true,
       proxy: {
         '/api/ncaa': {
           target: 'https://ncaa-api.henrygd.me',

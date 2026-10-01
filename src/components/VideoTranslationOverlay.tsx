@@ -65,8 +65,9 @@ export const VideoTranslationOverlay: React.FC<VideoTranslationOverlayProps> = (
           }
         }
         if (data && typeof data === 'object') {
-          if (data.event === 'infoDelivery' && data.info && typeof data.info.currentTime === 'number') {
-            setInternalTime(data.info.currentTime);
+          const curTime = data.info?.currentTime ?? data.currentTime;
+          if (typeof curTime === 'number') {
+            setInternalTime(curTime);
           }
         }
       } catch (_) {}
@@ -79,8 +80,8 @@ export const VideoTranslationOverlay: React.FC<VideoTranslationOverlayProps> = (
       const iframe = parent?.querySelector('iframe') || document.querySelector('iframe');
       if (iframe && iframe.contentWindow) {
         try {
-          iframe.contentWindow.postMessage(JSON.stringify({ event: 'listening' }), '*');
-          iframe.contentWindow.postMessage(JSON.stringify({ event: 'command', func: 'getCurrentTime' }), '*');
+          iframe.contentWindow.postMessage(JSON.stringify({ event: 'listening', id: 1 }), '*');
+          iframe.contentWindow.postMessage(JSON.stringify({ event: 'command', func: 'getCurrentTime', args: [] }), '*');
         } catch (_) {}
       }
     }, 100);
@@ -163,6 +164,10 @@ export const VideoTranslationOverlay: React.FC<VideoTranslationOverlayProps> = (
       if (activeTime >= seg.seconds && (!nextSeg || activeTime < nextSeg.seconds)) {
         return i;
       }
+    }
+    // If activeTime is within initial intro beats before the first dialogue line, show first line
+    if (activeTime < transcript[0].seconds && transcript[0].seconds <= 6) {
+      return 0;
     }
     return -1;
   }, [transcript, activeTime]);

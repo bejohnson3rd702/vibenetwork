@@ -70,6 +70,39 @@ function N2NChildrenList({ parentId, parentAccent, showToast, onEditHero, isMobi
                 Edit Hero
               </button>
             )}
+            {(() => {
+              const isChildActive = child.is_active !== false && child.theme?.is_active !== false;
+              return (
+                <button onClick={async () => {
+                  const nextVal = !isChildActive;
+                  if (!confirm(`${nextVal ? 'Activate' : 'Deactivate'} child network "${child.name}"?`)) return;
+                  const currentTheme = child.theme || {};
+                  const updatedTheme = { ...currentTheme, is_active: nextVal };
+                  const { error } = await supabase!.from('whitelabel_configs').update({
+                    is_active: nextVal,
+                    theme: updatedTheme
+                  }).eq('id', child.id);
+                  if (error) {
+                    await supabase!.from('whitelabel_configs').update({
+                      theme: updatedTheme
+                    }).eq('id', child.id);
+                  }
+                  setChildren(prev => prev.map(c => c.id === child.id ? { ...c, is_active: nextVal, theme: updatedTheme } : c));
+                  showToast(`Child network "${child.name}" ${nextVal ? 'Activated' : 'Deactivated'}`, 'success');
+                }} style={{
+                  padding: '4px 10px',
+                  background: isChildActive ? 'rgba(255,59,48,0.1)' : 'rgba(0,255,136,0.1)',
+                  color: isChildActive ? '#FF3B30' : '#00ff88',
+                  border: `1px solid ${isChildActive ? 'rgba(255,59,48,0.2)' : 'rgba(0,255,136,0.2)'}`,
+                  borderRadius: '6px',
+                  cursor: 'pointer',
+                  fontWeight: '700',
+                  fontSize: '11px'
+                }}>
+                  {isChildActive ? 'Deactivate' : 'Activate'}
+                </button>
+              );
+            })()}
             <button onClick={async () => {
               if (!confirm(`Delete ${child.name}?`)) return;
               const ok = await deleteChildNetwork(child.id);
@@ -832,15 +865,21 @@ function MasterAdminDashboard() {
                                const newVal = !currentActive;
                                if (!confirm(`${newVal ? 'Activate' : 'Deactivate'} network "${brandConfig.name}"?`)) return;
                                
-                               const { error } = await supabase!.from('whitelabel_configs').update({ is_active: newVal }).eq('id', brandConfig.id);
+                               const currentTheme = brandConfig.theme || {};
+                               const updatedTheme = { ...currentTheme, is_active: newVal };
+
+                               const { error } = await supabase!.from('whitelabel_configs').update({ 
+                                 is_active: newVal,
+                                 theme: updatedTheme 
+                               }).eq('id', brandConfig.id);
+
                                if (error) {
-                                 // Fallback: store in theme JSONB
-                                 const currentTheme = brandConfig.theme || {};
-                                 const { error: err2 } = await supabase!.from('whitelabel_configs').update({ theme: { ...currentTheme, is_active: newVal } }).eq('id', brandConfig.id);
+                                 // Fallback: update theme JSONB
+                                 const { error: err2 } = await supabase!.from('whitelabel_configs').update({ theme: updatedTheme }).eq('id', brandConfig.id);
                                  if (err2) { showToast('Deactivation toggle failed: ' + err2.message, 'error'); return; }
                                }
                                
-                               setWhitelabelsList(prev => prev.map(wl => wl.id === brandConfig.id ? { ...wl, is_active: newVal, theme: { ...wl.theme, is_active: newVal } } : wl));
+                               setWhitelabelsList(prev => prev.map(wl => wl.id === brandConfig.id ? { ...wl, is_active: newVal, theme: updatedTheme } : wl));
                                showToast(`Network "${brandConfig.name}" ${newVal ? 'Activated' : 'Deactivated'}`, 'success');
                                logSystemEvent('ALERT', `Network ${brandConfig.name} ${newVal ? 'ACTIVATED' : 'DEACTIVATED'}`, { tenant_id: brandConfig.id });
                             }} style={{ padding: '10px 20px', background: (brandConfig.is_active !== false && brandConfig.theme?.is_active !== false) ? 'rgba(255,59,48,0.1)' : 'rgba(0,255,136,0.1)', color: (brandConfig.is_active !== false && brandConfig.theme?.is_active !== false) ? '#FF3B30' : '#00ff88', border: `1px solid ${(brandConfig.is_active !== false && brandConfig.theme?.is_active !== false) ? 'rgba(255,59,48,0.3)' : 'rgba(0,255,136,0.3)'}`, borderRadius: '8px', fontWeight: 'bold', cursor: 'pointer', transition: '0.2s', fontSize: '12px', textTransform: 'uppercase', letterSpacing: '1px' }}>
