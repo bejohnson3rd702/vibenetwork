@@ -1663,7 +1663,7 @@ export default function N2NHome({ wlConfig, categories, user, activeVideo, setAc
                     </div>
                   ) : (!isKple ? (
                     <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginBottom: '28px' }}>
-                      {['Baylor', 'Colorado', 'Georgia', 'Miss. State', 'Alabama', 'Ole Miss', 'Vanderbilt', 'Penn State'].map(school => (
+                      {['Alabama', 'Arkansas', 'Auburn', 'Baylor', 'Colorado', 'Georgia', 'Georgia Tech', 'Indiana', 'LSU', 'Miss. State', 'Missouri', 'Nebraska', 'Ole Miss', 'Penn State', 'Rutgers', 'TCU', 'Texas A&M', 'Vanderbilt', 'Virginia', 'Virginia Tech', 'Wake Forest'].map(school => (
                         <span key={school} style={{
                           padding: '5px 12px', fontSize: '10px', fontWeight: 800,
                           letterSpacing: '1px', textTransform: 'uppercase',

@@ -6,14 +6,27 @@ import { ShoppingBag, Search, Filter, ShoppingCart, Star, X } from 'lucide-react
 import { useNavigate } from 'react-router-dom';
 
 const AVO_COLLECTIONS = [
+  { handle: 'avo-x-bama', label: 'Alabama', wlId: 'be124de3-82be-4017-b6d0-58b0132f5550', color: '#9E1B32' },
+  { handle: 'arkansas', label: 'Arkansas', wlId: 'avo-arkansas-tenant-id', color: '#9D2235' },
+  { handle: 'auburn', label: 'Auburn', wlId: 'avo-auburn-tenant-id', color: '#0C2340' },
   { handle: 'baylor', label: 'Baylor', wlId: 'e86c5900-0d27-420b-98f7-922213540ec2', color: '#154734' },
   { handle: 'colorado', label: 'Colorado', wlId: 'd0fd9b57-d8af-474b-a011-aa8babeadb34', color: '#CFB87C' },
   { handle: 'georgia', label: 'Georgia', wlId: '83b21eac-0f37-4b66-b7e0-1320105e82f1', color: '#BA0C2F' },
+  { handle: 'georgia-tech', label: 'Georgia Tech', wlId: 'avo-georgia-tech-tenant-id', color: '#B3A369' },
+  { handle: 'indiana', label: 'Indiana', wlId: 'avo-indiana-tenant-id', color: '#990000' },
+  { handle: 'lsu', label: 'LSU', wlId: 'avo-lsu-tenant-id', color: '#461D7C' },
   { handle: 'mississippi-state', label: 'Mississippi State', wlId: 'b7f74446-403b-4f9b-8be1-1bd2df35df54', color: '#660000' },
+  { handle: 'missouri', label: 'Missouri', wlId: 'avo-missouri-tenant-id', color: '#F1B82D' },
+  { handle: 'nebraska', label: 'Nebraska', wlId: 'avo-nebraska-tenant-id', color: '#E41C38' },
   { handle: 'ole-miss', label: 'Ole Miss', wlId: 'eb2428a2-87e2-46ed-b7c5-c1f5e6c4cf1b', color: '#CE1126' },
-  { handle: 'vanderbilt', label: 'Vanderbilt', wlId: '6b797710-bec0-4887-8336-d1eaf76cd307', color: '#866D4B' },
   { handle: 'penn-state', label: 'Penn State', wlId: '16e37654-6a62-490c-bb55-aee61558eee4', color: '#041E42' },
-  { handle: 'avo-x-bama', label: 'Alabama', wlId: 'be124de3-82be-4017-b6d0-58b0132f5550', color: '#9E1B32' }
+  { handle: 'rutgers', label: 'Rutgers', wlId: 'avo-rutgers-tenant-id', color: '#CC0033' },
+  { handle: 'tcu', label: 'TCU', wlId: 'avo-tcu-tenant-id', color: '#4D1979' },
+  { handle: 'texas-am', label: 'Texas A&M', wlId: 'avo-texas-am-tenant-id', color: '#500000' },
+  { handle: 'vanderbilt', label: 'Vanderbilt', wlId: '6b797710-bec0-4887-8336-d1eaf76cd307', color: '#866D4B' },
+  { handle: 'virginia', label: 'Virginia', wlId: 'avo-virginia-tenant-id', color: '#232D4B' },
+  { handle: 'virginia-tech', label: 'Virginia Tech', wlId: 'avo-virginia-tech-tenant-id', color: '#861F41' },
+  { handle: 'wake-forest', label: 'Wake Forest', wlId: 'avo-wake-forest-tenant-id', color: '#9E7E38' }
 ];
 
 const Marketplace: React.FC = () => {

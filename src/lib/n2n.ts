@@ -10,6 +10,451 @@ import { supabase } from '../supabaseClient';
 import type { WlConfig } from './whitelabel';
 import { normalizeWlConfig } from './whitelabel';
 
+// ─── Official AVO College Networks (21 Licensed Universities) ──
+export const AVO_COLLEGE_NETWORKS: WlConfig[] = [
+  normalizeWlConfig({
+    id: 'be124de3-82be-4017-b6d0-58b0132f5550',
+    name: 'Alabama',
+    domain: 'alabama.shopavo.la',
+    logo: '/n2n/alabama.png',
+    accent: '#9E1B32',
+    parent_network_id: '3915f1e5-4c79-4b2a-ad41-7029ce8052d7',
+    is_active: true,
+    theme: {
+      accent: '#9E1B32',
+      heroCopy: 'Roll Tide! Official Alabama Crimson Tide Apparel & NIL Gear by AVO.',
+      heroImage: 'https://shopavo.la/cdn/shop/files/bama-desk-hp-1_1500x.jpg?v=1774210820',
+      logoImage: '/n2n/alabama.png',
+      shopifyUrl: 'https://shopavo.la/pages/avo-x-bama',
+      sliderCount: 4,
+      enableBooking: false,
+      heroLayoutMode: 'verbiage',
+      enableWatchLive: false,
+      parent_network_id: '3915f1e5-4c79-4b2a-ad41-7029ce8052d7'
+    }
+  }),
+  normalizeWlConfig({
+    id: 'avo-arkansas-tenant-id',
+    name: 'Arkansas',
+    domain: 'arkansas.shopavo.la',
+    logo: 'https://a.espncdn.com/i/teamlogos/ncaa/500/8.png',
+    accent: '#9D2235',
+    parent_network_id: '3915f1e5-4c79-4b2a-ad41-7029ce8052d7',
+    is_active: true,
+    theme: {
+      accent: '#9D2235',
+      heroCopy: 'Woo Pig Sooie! Official Arkansas Razorbacks Apparel & NIL Collection by AVO.',
+      heroImage: 'https://shopavo.la/cdn/shop/files/bama-desk-hp-1_1500x.jpg?v=1774210820',
+      logoImage: 'https://a.espncdn.com/i/teamlogos/ncaa/500/8.png',
+      shopifyUrl: 'https://shopavo.la/collections/arkansas',
+      sliderCount: 4,
+      enableBooking: false,
+      heroLayoutMode: 'verbiage',
+      enableWatchLive: false,
+      parent_network_id: '3915f1e5-4c79-4b2a-ad41-7029ce8052d7'
+    }
+  }),
+  normalizeWlConfig({
+    id: 'avo-auburn-tenant-id',
+    name: 'Auburn',
+    domain: 'auburn.shopavo.la',
+    logo: 'https://a.espncdn.com/i/teamlogos/ncaa/500/2.png',
+    accent: '#0C2340',
+    parent_network_id: '3915f1e5-4c79-4b2a-ad41-7029ce8052d7',
+    is_active: true,
+    theme: {
+      accent: '#0C2340',
+      heroCopy: 'War Eagle! Official Auburn Tigers Apparel & Tailgate Collection by AVO.',
+      heroImage: 'https://shopavo.la/cdn/shop/files/bama-desk-hp-1_1500x.jpg?v=1774210820',
+      logoImage: 'https://a.espncdn.com/i/teamlogos/ncaa/500/2.png',
+      shopifyUrl: 'https://shopavo.la/collections/auburn',
+      sliderCount: 4,
+      enableBooking: false,
+      heroLayoutMode: 'verbiage',
+      enableWatchLive: false,
+      parent_network_id: '3915f1e5-4c79-4b2a-ad41-7029ce8052d7'
+    }
+  }),
+  normalizeWlConfig({
+    id: 'e86c5900-0d27-420b-98f7-922213540ec2',
+    name: 'Baylor',
+    domain: 'baylor.shopavo.la',
+    logo: '/n2n/baylor.png',
+    accent: '#154734',
+    parent_network_id: '3915f1e5-4c79-4b2a-ad41-7029ce8052d7',
+    is_active: true,
+    theme: {
+      accent: '#154734',
+      heroCopy: "Sic 'Em Bears! Official Baylor Bears Campus Apparel & NIL Gear by AVO.",
+      heroImage: 'https://shopavo.la/cdn/shop/files/msu-hp-hero_1500x.jpg?v=1775144388',
+      logoImage: '/n2n/baylor.png',
+      shopifyUrl: 'https://shopavo.la/collections/baylor',
+      sliderCount: 4,
+      enableBooking: false,
+      heroLayoutMode: 'verbiage',
+      enableWatchLive: false,
+      parent_network_id: '3915f1e5-4c79-4b2a-ad41-7029ce8052d7'
+    }
+  }),
+  normalizeWlConfig({
+    id: 'd0fd9b57-d8af-474b-a011-aa8babeadb34',
+    name: 'Colorado',
+    domain: 'colorado.shopavo.la',
+    logo: '/n2n/colorado.png',
+    accent: '#CFB87C',
+    parent_network_id: '3915f1e5-4c79-4b2a-ad41-7029ce8052d7',
+    is_active: true,
+    theme: {
+      accent: '#CFB87C',
+      heroCopy: 'Sko Buffs! Official Colorado Buffaloes Campus Apparel & Lifestyle Gear by AVO.',
+      heroImage: 'https://shopavo.la/cdn/shop/files/co-desktop2_4230eb90-9553-4d72-b205-30e62658bcce_1500x.jpg?v=1776445128',
+      logoImage: '/n2n/colorado.png',
+      shopifyUrl: 'https://shopavo.la/collections/colorado',
+      sliderCount: 4,
+      enableBooking: false,
+      heroLayoutMode: 'verbiage',
+      enableWatchLive: false,
+      parent_network_id: '3915f1e5-4c79-4b2a-ad41-7029ce8052d7'
+    }
+  }),
+  normalizeWlConfig({
+    id: '83b21eac-0f37-4b66-b7e0-1320105e82f1',
+    name: 'Georgia',
+    domain: 'georgia.shopavo.la',
+    logo: '/n2n/georgia.png',
+    accent: '#BA0C2F',
+    parent_network_id: '3915f1e5-4c79-4b2a-ad41-7029ce8052d7',
+    is_active: true,
+    theme: {
+      accent: '#BA0C2F',
+      heroCopy: 'Go Dawgs! Official Georgia Bulldogs Red & Black Tailgate Collection by AVO.',
+      heroImage: 'https://shopavo.la/cdn/shop/files/UGA_Collections_Desktop_1500x.jpg?v=1776210559',
+      logoImage: '/n2n/georgia.png',
+      shopifyUrl: 'https://shopavo.la/collections/georgia',
+      sliderCount: 4,
+      enableBooking: false,
+      heroLayoutMode: 'verbiage',
+      enableWatchLive: false,
+      parent_network_id: '3915f1e5-4c79-4b2a-ad41-7029ce8052d7'
+    }
+  }),
+  normalizeWlConfig({
+    id: 'avo-georgia-tech-tenant-id',
+    name: 'Georgia Tech',
+    domain: 'gatech.shopavo.la',
+    logo: 'https://a.espncdn.com/i/teamlogos/ncaa/500/59.png',
+    accent: '#B3A369',
+    parent_network_id: '3915f1e5-4c79-4b2a-ad41-7029ce8052d7',
+    is_active: true,
+    theme: {
+      accent: '#B3A369',
+      heroCopy: 'Go Jackets! Official Georgia Tech Yellow Jackets Apparel & NIL Gear by AVO.',
+      heroImage: 'https://shopavo.la/cdn/shop/files/UGA_Collections_Desktop_1500x.jpg?v=1776210559',
+      logoImage: 'https://a.espncdn.com/i/teamlogos/ncaa/500/59.png',
+      shopifyUrl: 'https://shopavo.la/collections/georgia-tech',
+      sliderCount: 4,
+      enableBooking: false,
+      heroLayoutMode: 'verbiage',
+      enableWatchLive: false,
+      parent_network_id: '3915f1e5-4c79-4b2a-ad41-7029ce8052d7'
+    }
+  }),
+  normalizeWlConfig({
+    id: 'avo-indiana-tenant-id',
+    name: 'Indiana',
+    domain: 'indiana.shopavo.la',
+    logo: 'https://a.espncdn.com/i/teamlogos/ncaa/500/84.png',
+    accent: '#990000',
+    parent_network_id: '3915f1e5-4c79-4b2a-ad41-7029ce8052d7',
+    is_active: true,
+    theme: {
+      accent: '#990000',
+      heroCopy: 'Go Hoosiers! Official Indiana Hoosiers Cream & Crimson Collection by AVO.',
+      heroImage: 'https://shopavo.la/cdn/shop/files/bama-desk-hp-1_1500x.jpg?v=1774210820',
+      logoImage: 'https://a.espncdn.com/i/teamlogos/ncaa/500/84.png',
+      shopifyUrl: 'https://shopavo.la/collections/indiana',
+      sliderCount: 4,
+      enableBooking: false,
+      heroLayoutMode: 'verbiage',
+      enableWatchLive: false,
+      parent_network_id: '3915f1e5-4c79-4b2a-ad41-7029ce8052d7'
+    }
+  }),
+  normalizeWlConfig({
+    id: 'avo-lsu-tenant-id',
+    name: 'LSU',
+    domain: 'lsu.shopavo.la',
+    logo: 'https://a.espncdn.com/i/teamlogos/ncaa/500/99.png',
+    accent: '#461D7C',
+    parent_network_id: '3915f1e5-4c79-4b2a-ad41-7029ce8052d7',
+    is_active: true,
+    theme: {
+      accent: '#461D7C',
+      heroCopy: 'Geaux Tigers! Official LSU Tigers Purple & Gold Game Day Apparel by AVO.',
+      heroImage: 'https://shopavo.la/cdn/shop/files/bama-desk-hp-1_1500x.jpg?v=1774210820',
+      logoImage: 'https://a.espncdn.com/i/teamlogos/ncaa/500/99.png',
+      shopifyUrl: 'https://shopavo.la/collections/lsu',
+      sliderCount: 4,
+      enableBooking: false,
+      heroLayoutMode: 'verbiage',
+      enableWatchLive: false,
+      parent_network_id: '3915f1e5-4c79-4b2a-ad41-7029ce8052d7'
+    }
+  }),
+  normalizeWlConfig({
+    id: 'b7f74446-403b-4f9b-8be1-1bd2df35df54',
+    name: 'Mississippi State',
+    domain: 'mississippistate.shopavo.la',
+    logo: '/n2n/mississippi-state.png',
+    accent: '#660000',
+    parent_network_id: '3915f1e5-4c79-4b2a-ad41-7029ce8052d7',
+    is_active: true,
+    theme: {
+      accent: '#660000',
+      heroCopy: 'Hail State! Official Mississippi State Bulldogs Maroon & White Apparel by AVO.',
+      heroImage: 'https://shopavo.la/cdn/shop/files/MSU_Homepage_Desktop_1500x.jpg?v=1776105569',
+      logoImage: '/n2n/mississippi-state.png',
+      shopifyUrl: 'https://shopavo.la/collections/mississippi-state',
+      sliderCount: 4,
+      enableBooking: false,
+      heroLayoutMode: 'verbiage',
+      enableWatchLive: false,
+      parent_network_id: '3915f1e5-4c79-4b2a-ad41-7029ce8052d7'
+    }
+  }),
+  normalizeWlConfig({
+    id: 'avo-missouri-tenant-id',
+    name: 'Missouri',
+    domain: 'missouri.shopavo.la',
+    logo: 'https://a.espncdn.com/i/teamlogos/ncaa/500/142.png',
+    accent: '#F1B82D',
+    parent_network_id: '3915f1e5-4c79-4b2a-ad41-7029ce8052d7',
+    is_active: true,
+    theme: {
+      accent: '#F1B82D',
+      heroCopy: 'Mizzou! Official Missouri Tigers Black & Gold Campus Collection by AVO.',
+      heroImage: 'https://shopavo.la/cdn/shop/files/MSU_Homepage_Desktop_1500x.jpg?v=1776105569',
+      logoImage: 'https://a.espncdn.com/i/teamlogos/ncaa/500/142.png',
+      shopifyUrl: 'https://shopavo.la/collections/missouri',
+      sliderCount: 4,
+      enableBooking: false,
+      heroLayoutMode: 'verbiage',
+      enableWatchLive: false,
+      parent_network_id: '3915f1e5-4c79-4b2a-ad41-7029ce8052d7'
+    }
+  }),
+  normalizeWlConfig({
+    id: 'avo-nebraska-tenant-id',
+    name: 'Nebraska',
+    domain: 'nebraska.shopavo.la',
+    logo: 'https://a.espncdn.com/i/teamlogos/ncaa/500/158.png',
+    accent: '#E41C38',
+    parent_network_id: '3915f1e5-4c79-4b2a-ad41-7029ce8052d7',
+    is_active: true,
+    theme: {
+      accent: '#E41C38',
+      heroCopy: 'Go Big Red! Official Nebraska Cornhuskers Scarlet & Cream Collection by AVO.',
+      heroImage: 'https://shopavo.la/cdn/shop/files/bama-desk-hp-1_1500x.jpg?v=1774210820',
+      logoImage: 'https://a.espncdn.com/i/teamlogos/ncaa/500/158.png',
+      shopifyUrl: 'https://shopavo.la/collections/nebraska',
+      sliderCount: 4,
+      enableBooking: false,
+      heroLayoutMode: 'verbiage',
+      enableWatchLive: false,
+      parent_network_id: '3915f1e5-4c79-4b2a-ad41-7029ce8052d7'
+    }
+  }),
+  normalizeWlConfig({
+    id: 'eb2428a2-87e2-46ed-b7c5-c1f5e6c4cf1b',
+    name: 'Ole Miss',
+    domain: 'olemiss.shopavo.la',
+    logo: '/n2n/ole-miss.png',
+    accent: '#CE1126',
+    parent_network_id: '3915f1e5-4c79-4b2a-ad41-7029ce8052d7',
+    is_active: true,
+    theme: {
+      accent: '#CE1126',
+      heroCopy: 'Hotty Toddy! Official Ole Miss Rebels Oxford-Inspired Campus Apparel by AVO.',
+      heroImage: 'https://shopavo.la/cdn/shop/files/desk-ole-miss-hp_1500x.jpg?v=1774210006',
+      logoImage: '/n2n/ole-miss.png',
+      shopifyUrl: 'https://shopavo.la/collections/ole-miss',
+      sliderCount: 4,
+      enableBooking: false,
+      heroLayoutMode: 'verbiage',
+      enableWatchLive: false,
+      parent_network_id: '3915f1e5-4c79-4b2a-ad41-7029ce8052d7'
+    }
+  }),
+  normalizeWlConfig({
+    id: '16e37654-6a62-490c-bb55-aee61558eee4',
+    name: 'Penn State',
+    domain: 'pennstate.shopavo.la',
+    logo: '/n2n/penn-state.png',
+    accent: '#041E42',
+    parent_network_id: '3915f1e5-4c79-4b2a-ad41-7029ce8052d7',
+    is_active: true,
+    theme: {
+      accent: '#041E42',
+      heroCopy: 'We Are! Official Penn State Nittany Lions Happy Valley Gear by AVO.',
+      heroImage: 'https://shopavo.la/cdn/shop/files/PSU_Homepage_Banner_Desktop2_1500x.jpg?v=1776375978',
+      logoImage: '/n2n/penn-state.png',
+      shopifyUrl: 'https://shopavo.la/collections/penn-state',
+      sliderCount: 4,
+      enableBooking: false,
+      heroLayoutMode: 'verbiage',
+      enableWatchLive: false,
+      parent_network_id: '3915f1e5-4c79-4b2a-ad41-7029ce8052d7'
+    }
+  }),
+  normalizeWlConfig({
+    id: 'avo-rutgers-tenant-id',
+    name: 'Rutgers',
+    domain: 'rutgers.shopavo.la',
+    logo: 'https://a.espncdn.com/i/teamlogos/ncaa/500/164.png',
+    accent: '#CC0033',
+    parent_network_id: '3915f1e5-4c79-4b2a-ad41-7029ce8052d7',
+    is_active: true,
+    theme: {
+      accent: '#CC0033',
+      heroCopy: 'Scarlet Knights! Official Rutgers University Apparel & NIL Collection by AVO.',
+      heroImage: 'https://shopavo.la/cdn/shop/files/bama-desk-hp-1_1500x.jpg?v=1774210820',
+      logoImage: 'https://a.espncdn.com/i/teamlogos/ncaa/500/164.png',
+      shopifyUrl: 'https://shopavo.la/collections/rutgers',
+      sliderCount: 4,
+      enableBooking: false,
+      heroLayoutMode: 'verbiage',
+      enableWatchLive: false,
+      parent_network_id: '3915f1e5-4c79-4b2a-ad41-7029ce8052d7'
+    }
+  }),
+  normalizeWlConfig({
+    id: 'avo-tcu-tenant-id',
+    name: 'TCU',
+    domain: 'tcu.shopavo.la',
+    logo: 'https://a.espncdn.com/i/teamlogos/ncaa/500/2628.png',
+    accent: '#4D1979',
+    parent_network_id: '3915f1e5-4c79-4b2a-ad41-7029ce8052d7',
+    is_active: true,
+    theme: {
+      accent: '#4D1979',
+      heroCopy: 'Go Frogs! Official TCU Horned Frogs Purple & White Collection by AVO.',
+      heroImage: 'https://shopavo.la/cdn/shop/files/msu-hp-hero_1500x.jpg?v=1775144388',
+      logoImage: 'https://a.espncdn.com/i/teamlogos/ncaa/500/2628.png',
+      shopifyUrl: 'https://shopavo.la/collections/tcu',
+      sliderCount: 4,
+      enableBooking: false,
+      heroLayoutMode: 'verbiage',
+      enableWatchLive: false,
+      parent_network_id: '3915f1e5-4c79-4b2a-ad41-7029ce8052d7'
+    }
+  }),
+  normalizeWlConfig({
+    id: 'avo-texas-am-tenant-id',
+    name: 'Texas A&M',
+    domain: 'texasam.shopavo.la',
+    logo: 'https://a.espncdn.com/i/teamlogos/ncaa/500/245.png',
+    accent: '#500000',
+    parent_network_id: '3915f1e5-4c79-4b2a-ad41-7029ce8052d7',
+    is_active: true,
+    theme: {
+      accent: '#500000',
+      heroCopy: "Gig 'Em Aggies! Official Texas A&M Maroon & White Apparel by AVO.",
+      heroImage: 'https://shopavo.la/cdn/shop/files/MSU_Homepage_Desktop_1500x.jpg?v=1776105569',
+      logoImage: 'https://a.espncdn.com/i/teamlogos/ncaa/500/245.png',
+      shopifyUrl: 'https://shopavo.la/collections/texas-am',
+      sliderCount: 4,
+      enableBooking: false,
+      heroLayoutMode: 'verbiage',
+      enableWatchLive: false,
+      parent_network_id: '3915f1e5-4c79-4b2a-ad41-7029ce8052d7'
+    }
+  }),
+  normalizeWlConfig({
+    id: '6b797710-bec0-4887-8336-d1eaf76cd307',
+    name: 'Vanderbilt',
+    domain: 'vanderbilt.shopavo.la',
+    logo: '/n2n/vanderbilt.png',
+    accent: '#866D4B',
+    parent_network_id: '3915f1e5-4c79-4b2a-ad41-7029ce8052d7',
+    is_active: true,
+    theme: {
+      accent: '#866D4B',
+      heroCopy: 'Anchor Down! Official Vanderbilt Commodores Campus Wear by AVO.',
+      heroImage: 'https://shopavo.la/cdn/shop/files/Homepage_Vanderbilt_Desktop_1500x.jpg?v=1776284269',
+      logoImage: '/n2n/vanderbilt.png',
+      shopifyUrl: 'https://shopavo.la/collections/vanderbilt',
+      sliderCount: 4,
+      enableBooking: false,
+      heroLayoutMode: 'verbiage',
+      enableWatchLive: false,
+      parent_network_id: '3915f1e5-4c79-4b2a-ad41-7029ce8052d7'
+    }
+  }),
+  normalizeWlConfig({
+    id: 'avo-virginia-tenant-id',
+    name: 'Virginia',
+    domain: 'virginia.shopavo.la',
+    logo: 'https://a.espncdn.com/i/teamlogos/ncaa/500/258.png',
+    accent: '#232D4B',
+    parent_network_id: '3915f1e5-4c79-4b2a-ad41-7029ce8052d7',
+    is_active: true,
+    theme: {
+      accent: '#232D4B',
+      heroCopy: 'Wahoowa! Official Virginia Cavaliers Navy & Orange Collection by AVO.',
+      heroImage: 'https://shopavo.la/cdn/shop/files/Homepage_Vanderbilt_Desktop_1500x.jpg?v=1776284269',
+      logoImage: 'https://a.espncdn.com/i/teamlogos/ncaa/500/258.png',
+      shopifyUrl: 'https://shopavo.la/collections/virginia',
+      sliderCount: 4,
+      enableBooking: false,
+      heroLayoutMode: 'verbiage',
+      enableWatchLive: false,
+      parent_network_id: '3915f1e5-4c79-4b2a-ad41-7029ce8052d7'
+    }
+  }),
+  normalizeWlConfig({
+    id: 'avo-virginia-tech-tenant-id',
+    name: 'Virginia Tech',
+    domain: 'virginiatech.shopavo.la',
+    logo: 'https://a.espncdn.com/i/teamlogos/ncaa/500/259.png',
+    accent: '#861F41',
+    parent_network_id: '3915f1e5-4c79-4b2a-ad41-7029ce8052d7',
+    is_active: true,
+    theme: {
+      accent: '#861F41',
+      heroCopy: 'Hokie Nation! Official Virginia Tech Hokies Maroon & Orange Apparel by AVO.',
+      heroImage: 'https://shopavo.la/cdn/shop/files/MSU_Homepage_Desktop_1500x.jpg?v=1776105569',
+      logoImage: 'https://a.espncdn.com/i/teamlogos/ncaa/500/259.png',
+      shopifyUrl: 'https://shopavo.la/collections/virginia-tech',
+      sliderCount: 4,
+      enableBooking: false,
+      heroLayoutMode: 'verbiage',
+      enableWatchLive: false,
+      parent_network_id: '3915f1e5-4c79-4b2a-ad41-7029ce8052d7'
+    }
+  }),
+  normalizeWlConfig({
+    id: 'avo-wake-forest-tenant-id',
+    name: 'Wake Forest',
+    domain: 'wakeforest.shopavo.la',
+    logo: 'https://a.espncdn.com/i/teamlogos/ncaa/500/154.png',
+    accent: '#9E7E38',
+    parent_network_id: '3915f1e5-4c79-4b2a-ad41-7029ce8052d7',
+    is_active: true,
+    theme: {
+      accent: '#9E7E38',
+      heroCopy: 'Go Deacs! Official Wake Forest Demon Deacons Old Gold & Black Collection by AVO.',
+      heroImage: 'https://shopavo.la/cdn/shop/files/msu-hp-hero_1500x.jpg?v=1775144388',
+      logoImage: 'https://a.espncdn.com/i/teamlogos/ncaa/500/154.png',
+      shopifyUrl: 'https://shopavo.la/collections/wake-forest',
+      sliderCount: 4,
+      enableBooking: false,
+      heroLayoutMode: 'verbiage',
+      enableWatchLive: false,
+      parent_network_id: '3915f1e5-4c79-4b2a-ad41-7029ce8052d7'
+    }
+  })
+];
+
 // ─── Child Network Queries ───────────────────────────────────────
 
 /** Fetch all child networks under a parent */
@@ -36,6 +481,33 @@ export async function getChildNetworks(parentId: string, includeInactive: boolea
 
   if (!data) {
     data = [];
+  }
+
+  // AVO Network Colleges (All 21 Official Licensed Universities)
+  if (parentId === '3915f1e5-4c79-4b2a-ad41-7029ce8052d7') {
+    const existingMap = new Map(data.map((row: any) => [row.name?.toLowerCase(), row]));
+    const result: WlConfig[] = [];
+    
+    for (const college of AVO_COLLEGE_NETWORKS) {
+      const match = existingMap.get(college.name.toLowerCase()) || data.find((row: any) => row.id === college.id);
+      if (match) {
+        result.push(normalizeWlConfig({
+          ...match,
+          accent: match.accent || college.accent,
+          logoImage: match.logoImage || match.theme?.logoImage || college.theme?.logoImage,
+          theme: {
+            ...match.theme,
+            accent: match.theme?.accent || match.accent || college.accent,
+            logoImage: match.theme?.logoImage || match.logoImage || college.theme?.logoImage,
+            heroImage: match.theme?.heroImage || college.theme?.heroImage,
+            shopifyUrl: match.theme?.shopifyUrl || college.theme?.shopifyUrl
+          }
+        }));
+      } else {
+        result.push(college);
+      }
+    }
+    data = result;
   }
 
   // Dynamically append Mr. Olympia, Wings of Strength, M&F Hers, and Flex Online for Muscle & Fitness parent if not already present

@@ -33,6 +33,7 @@ import { supabase, storageKey } from './supabaseClient';
 import { MASTER_DOMAIN, DEFAULT_PLATFORM_NAME } from './constants';
 const Home = lazy(() => import('./pages/Home'));
 import { normalizeWlConfig, isOlympianConfig, isMuscleFitnessConfig, isKpleConfig, isBonaireConfig } from './lib/whitelabel';
+import { AVO_COLLEGE_NETWORKS } from './lib/n2n';
 const WhiteLabelHome = lazy(() => import('./pages/WhiteLabelHome'));
 const N2NHome = lazy(() => import('./pages/N2NHome'));
 const AvoMarketplace = lazy(() => import('./components/AvoMarketplace'));
@@ -616,6 +617,12 @@ function App() {
               n2n_enabled: true
             }
           });
+        } else if (activeTenantId && (activeTenantId.startsWith('avo-') || AVO_COLLEGE_NETWORKS.some(c => c.id === activeTenantId))) {
+          const matchedCollege = AVO_COLLEGE_NETWORKS.find(c => c.id === activeTenantId);
+          if (matchedCollege) {
+            loadedTenantId = matchedCollege.id;
+            loadedConfig = matchedCollege;
+          }
         } else if (dbTenantData && dbTenantData.length > 0) {
           const dbConf = dbTenantData[0];
           loadedTenantId = dbConf.id;

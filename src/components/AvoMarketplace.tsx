@@ -17,14 +17,27 @@ interface Product {
 }
 
 const COLLECTIONS = [
+  { handle: 'avo-x-bama', label: 'Alabama', color: '#9E1B32' },
+  { handle: 'arkansas', label: 'Arkansas', color: '#9D2235' },
+  { handle: 'auburn', label: 'Auburn', color: '#0C2340' },
   { handle: 'baylor', label: 'Baylor', color: '#154734' },
   { handle: 'colorado', label: 'Colorado', color: '#CFB87C' },
   { handle: 'georgia', label: 'Georgia', color: '#BA0C2F' },
+  { handle: 'georgia-tech', label: 'Georgia Tech', color: '#B3A369' },
+  { handle: 'indiana', label: 'Indiana', color: '#990000' },
+  { handle: 'lsu', label: 'LSU', color: '#461D7C' },
   { handle: 'mississippi-state', label: 'Mississippi State', color: '#660000' },
+  { handle: 'missouri', label: 'Missouri', color: '#F1B82D' },
+  { handle: 'nebraska', label: 'Nebraska', color: '#E41C38' },
   { handle: 'ole-miss', label: 'Ole Miss', color: '#CE1126' },
-  { handle: 'vanderbilt', label: 'Vanderbilt', color: '#866D4B' },
   { handle: 'penn-state', label: 'Penn State', color: '#041E42' },
-  { handle: 'avo-x-bama', label: 'Alabama', color: '#9E1B32' }
+  { handle: 'rutgers', label: 'Rutgers', color: '#CC0033' },
+  { handle: 'tcu', label: 'TCU', color: '#4D1979' },
+  { handle: 'texas-am', label: 'Texas A&M', color: '#500000' },
+  { handle: 'vanderbilt', label: 'Vanderbilt', color: '#866D4B' },
+  { handle: 'virginia', label: 'Virginia', color: '#232D4B' },
+  { handle: 'virginia-tech', label: 'Virginia Tech', color: '#861F41' },
+  { handle: 'wake-forest', label: 'Wake Forest', color: '#9E7E38' }
 ];
 
 export default function AvoMarketplace({ accent = '#D35400' }: { accent?: string }) {
@@ -47,14 +60,8 @@ export default function AvoMarketplace({ accent = '#D35400' }: { accent?: string
     }
     if (handle === 'all' && wlConfig?.name) {
       const nameLower = wlConfig.name.toLowerCase();
-      if (nameLower.includes('baylor')) handle = 'baylor';
-      else if (nameLower.includes('colorado')) handle = 'colorado';
-      else if (nameLower.includes('georgia')) handle = 'georgia';
-      else if (nameLower.includes('mississippi')) handle = 'mississippi-state';
-      else if (nameLower.includes('ole miss')) handle = 'ole-miss';
-      else if (nameLower.includes('vanderbilt')) handle = 'vanderbilt';
-      else if (nameLower.includes('penn state')) handle = 'penn-state';
-      else if (nameLower.includes('alabama')) handle = 'avo-x-bama';
+      const match = COLLECTIONS.find(c => nameLower.includes(c.label.toLowerCase()) || nameLower.includes(c.handle.replace('-', ' ')));
+      if (match) handle = match.handle;
     }
     return handle;
   };
