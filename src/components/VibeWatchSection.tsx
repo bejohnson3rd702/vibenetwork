@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { Play, Tv, ExternalLink } from 'lucide-react';
+import React, { useState, useEffect, useRef } from 'react';
+import { Play, Tv, ExternalLink, ChevronDown, ChevronUp } from 'lucide-react';
 
 export interface VibeVideoClip {
   id: string;
@@ -113,6 +113,19 @@ export default function VibeWatchSection({ accent = '#D35400' }: { accent?: stri
   const [filter, setFilter] = useState<'all' | 'news' | 'foxnews' | 'politics' | 'entertainment' | 'money' | 'sports'>('all');
   const [isPlaying, setIsPlaying] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
+  const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(false);
+  const [hasMore, setHasMore] = useState(false);
+  const descRef = useRef<HTMLParagraphElement>(null);
+
+  useEffect(() => {
+    setIsDescriptionExpanded(false);
+    const timer = setTimeout(() => {
+      if (descRef.current) {
+        setHasMore(descRef.current.scrollHeight > descRef.current.clientHeight + 4 || (selectedVideo.description?.length || 0) > 160);
+      }
+    }, 50);
+    return () => clearTimeout(timer);
+  }, [selectedVideo.id, selectedVideo.description]);
 
   useEffect(() => {
     const mq = window.matchMedia('(max-width: 900px)');
@@ -405,9 +418,50 @@ export default function VibeWatchSection({ accent = '#D35400' }: { accent?: stri
               <h3 style={{ fontSize: '18px', fontWeight: 800, color: '#fff', margin: '0 0 8px 0', lineHeight: 1.35 }}>
                 {selectedVideo.title}
               </h3>
-              <p style={{ fontSize: '13px', color: '#aaa', margin: 0, lineHeight: 1.6 }}>
+              <p
+                ref={descRef}
+                style={{
+                  fontSize: '13px',
+                  color: '#aaa',
+                  margin: 0,
+                  lineHeight: 1.6,
+                  display: isDescriptionExpanded ? 'block' : '-webkit-box',
+                  WebkitLineClamp: isDescriptionExpanded ? undefined : 4,
+                  WebkitBoxOrient: 'vertical',
+                  overflow: isDescriptionExpanded ? 'visible' : 'hidden',
+                  whiteSpace: 'pre-line'
+                }}
+              >
                 {selectedVideo.description}
               </p>
+              {hasMore && (
+                <button
+                  onClick={() => setIsDescriptionExpanded(!isDescriptionExpanded)}
+                  style={{
+                    background: 'none',
+                    border: 'none',
+                    padding: '8px 0 0 0',
+                    color: accent,
+                    fontSize: '12px',
+                    fontWeight: 800,
+                    cursor: 'pointer',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '4px',
+                    outline: 'none',
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.8px'
+                  }}
+                  onMouseOver={e => { e.currentTarget.style.opacity = '0.8'; }}
+                  onMouseOut={e => { e.currentTarget.style.opacity = '1'; }}
+                >
+                  {isDescriptionExpanded ? (
+                    <>Show Less <ChevronUp size={14} /></>
+                  ) : (
+                    <>... More <ChevronDown size={14} /></>
+                  )}
+                </button>
+              )}
             </div>
           </div>
         </div>
