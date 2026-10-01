@@ -32,74 +32,7 @@ const VIBE_FEEDS = [
   { key: 'sports', label: '🏈 ESPN Sports', channelId: 'UCiWLfSweyRNmLpgEHekhoAg' },
 ];
 
-const STATIC_VIBE_VIDEOS: VibeVideoClip[] = [
-  {
-    id: '4cqcl3Jy_hw',
-    youtubeId: '4cqcl3Jy_hw',
-    title: 'FAA Wants to Change This Old Air Traffic System',
-    source: 'CNN News',
-    category: 'news',
-    description: "Many of America's busiest air traffic control towers still rely on paper flight strips to track aircraft movements. Now, the FAA is pushing for modernization.",
-    duration: '3:15',
-    thumbnail: '/n2n/air_traffic_control.png',
-    videoUrl: 'https://www.youtube.com/watch?v=4cqcl3Jy_hw'
-  },
-  {
-    id: '-d4T5ruaGeA',
-    youtubeId: '-d4T5ruaGeA',
-    title: "'COMPLETE JOKE': Mamdani RIPPED for 'Self-Serving' ICE Demand",
-    source: 'Fox News',
-    category: 'foxnews',
-    description: "Former Acting ICE Director Jonathan Fahey joined 'Fox & Friends First' to discuss calls regarding agency oversight and immigration policy.",
-    duration: '4:20',
-    thumbnail: 'https://i2.ytimg.com/vi/-d4T5ruaGeA/hqdefault.jpg',
-    videoUrl: 'https://www.youtube.com/watch?v=-d4T5ruaGeA'
-  },
-  {
-    id: 'ciq7HeiJCOE',
-    youtubeId: 'ciq7HeiJCOE',
-    title: "Ashley Parker Analysis: Live Broadcast & White House Events",
-    source: 'MSNBC',
-    category: 'politics',
-    description: "Political correspondents break down the high-profile White House events and policy discussions from Washington.",
-    duration: '5:45',
-    thumbnail: 'https://i4.ytimg.com/vi/ciq7HeiJCOE/hqdefault.jpg',
-    videoUrl: 'https://www.youtube.com/watch?v=ciq7HeiJCOE'
-  },
-  {
-    id: 'HPiqxMrKMKQ',
-    youtubeId: 'HPiqxMrKMKQ',
-    title: 'The Surprising Way Elizabeth Hurley & Billy Ray Cyrus Started Dating',
-    source: 'People Weekly',
-    category: 'entertainment',
-    description: 'Billy Ray Cyrus reveals how his romance with Elizabeth Hurley began and what brought the two celebrity stars together.',
-    duration: '3:40',
-    thumbnail: 'https://i1.ytimg.com/vi/HPiqxMrKMKQ/hqdefault.jpg',
-    videoUrl: 'https://www.youtube.com/watch?v=HPiqxMrKMKQ'
-  },
-  {
-    id: 'vwOxJJ80t3k',
-    youtubeId: 'vwOxJJ80t3k',
-    title: 'Market Shifts: Fast Food Competition & Business Strategies',
-    source: 'CNBC',
-    category: 'money',
-    description: 'Industry analysts examine the quick-service restaurant wars and how consumer demand is reshaping national food chains.',
-    duration: '6:12',
-    thumbnail: 'https://i3.ytimg.com/vi/vwOxJJ80t3k/hqdefault.jpg',
-    videoUrl: 'https://www.youtube.com/watch?v=vwOxJJ80t3k'
-  },
-  {
-    id: 'vyqy7PcDGLM',
-    youtubeId: 'vyqy7PcDGLM',
-    title: "College World Series Experience + Top Star Athletes to Watch",
-    source: 'ESPN',
-    category: 'sports',
-    description: 'Karl Ravech joins The Pat McAfee Show to break down the Men\'s College World Series showdown in Omaha.',
-    duration: '7:50',
-    thumbnail: 'https://i3.ytimg.com/vi/vyqy7PcDGLM/hqdefault.jpg',
-    videoUrl: 'https://www.youtube.com/watch?v=vyqy7PcDGLM'
-  }
-];
+import { supabase } from '../supabaseClient';
 
 function extractYouTubeId(url: string): string | null {
   if (!url) return null;
@@ -108,8 +41,9 @@ function extractYouTubeId(url: string): string | null {
 }
 
 export default function VibeWatchSection({ accent = '#D35400' }: { accent?: string }) {
-  const [videoList, setVideoList] = useState<VibeVideoClip[]>(STATIC_VIBE_VIDEOS);
-  const [selectedVideo, setSelectedVideo] = useState<VibeVideoClip>(STATIC_VIBE_VIDEOS[0]);
+  const [videoList, setVideoList] = useState<VibeVideoClip[]>([]);
+  const [selectedVideo, setSelectedVideo] = useState<VibeVideoClip | null>(null);
+  const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<'all' | 'news' | 'foxnews' | 'politics' | 'entertainment' | 'money' | 'sports'>('all');
   const [isPlaying, setIsPlaying] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
@@ -117,15 +51,23 @@ export default function VibeWatchSection({ accent = '#D35400' }: { accent?: stri
   const [hasMore, setHasMore] = useState(false);
   const descRef = useRef<HTMLParagraphElement>(null);
 
+  const filteredVideos = videoList.filter(v =>
+    filter === 'all' ? true : v.category === filter
+  );
+
+  const currentVideo = (selectedVideo && filteredVideos.some(v => v.id === selectedVideo.id))
+    ? selectedVideo
+    : (filteredVideos[0] || videoList[0] || null);
+
   useEffect(() => {
     setIsDescriptionExpanded(false);
     const timer = setTimeout(() => {
       if (descRef.current) {
-        setHasMore(descRef.current.scrollHeight > descRef.current.clientHeight + 4 || (selectedVideo.description?.length || 0) > 160);
+        setHasMore(descRef.current.scrollHeight > descRef.current.clientHeight + 4 || (currentVideo?.description?.length || 0) > 160);
       }
     }, 50);
     return () => clearTimeout(timer);
-  }, [selectedVideo.id, selectedVideo.description]);
+  }, [currentVideo?.id, currentVideo?.description]);
 
   useEffect(() => {
     const mq = window.matchMedia('(max-width: 900px)');
@@ -135,14 +77,15 @@ export default function VibeWatchSection({ accent = '#D35400' }: { accent?: stri
     return () => mq.removeEventListener('change', handler);
   }, []);
 
-  // Fetch dynamic YouTube RSS feeds
+  // Fetch dynamic YouTube RSS feeds & Supabase videos
   useEffect(() => {
     let cancelled = false;
 
     async function loadDynamicFeeds() {
       const dynamicClips: VibeVideoClip[] = [];
-      const seen = new Set<string>(STATIC_VIBE_VIDEOS.map(v => v.id));
+      const seen = new Set<string>();
 
+      // 1. Live YouTube RSS channels
       for (const feed of VIBE_FEEDS) {
         try {
           const res = await fetch(`/api/yt-rss/${feed.channelId}`);
@@ -187,16 +130,46 @@ export default function VibeWatchSection({ accent = '#D35400' }: { accent?: stri
         } catch (_) {}
       }
 
-      if (!cancelled && dynamicClips.length > 0) {
-        // Sort dynamic clips by published date descending
-        dynamicClips.sort((a, b) => (b.published?.getTime() || 0) - (a.published?.getTime() || 0));
-        setVideoList([...dynamicClips, ...STATIC_VIBE_VIDEOS]);
-        setSelectedVideo(prev => {
-          if (prev.id === STATIC_VIBE_VIDEOS[0]?.id) {
-            return dynamicClips[0];
+      // 2. Query Supabase videos table for dynamic items
+      try {
+        if (supabase) {
+          const { data: dbVideos } = await supabase
+            .from('videos')
+            .select('*')
+            .order('created_at', { ascending: false })
+            .limit(20);
+
+          if (dbVideos) {
+            for (const v of dbVideos) {
+              const id = String(v.id);
+              if (id && !seen.has(id) && v.video_url) {
+                seen.add(id);
+                const ytId = extractYouTubeId(v.video_url) || undefined;
+                dynamicClips.push({
+                  id,
+                  youtubeId: ytId,
+                  title: v.title || 'Broadcast',
+                  description: v.description || '',
+                  thumbnail: v.thumbnail_url || (ytId ? `https://i.ytimg.com/vi/${ytId}/hqdefault.jpg` : ''),
+                  videoUrl: v.video_url,
+                  duration: v.duration ? `${Math.floor(v.duration / 60)}:${String(v.duration % 60).padStart(2, '0')}` : 'Live Feed',
+                  source: v.source || 'Vibe Network',
+                  category: (v.category && CATEGORY_META[v.category] ? v.category : 'news') as any,
+                  published: v.created_at ? new Date(v.created_at) : new Date(0)
+                });
+              }
+            }
           }
-          return prev;
-        });
+        }
+      } catch (_) {}
+
+      if (!cancelled) {
+        if (dynamicClips.length > 0) {
+          dynamicClips.sort((a, b) => (b.published?.getTime() || 0) - (a.published?.getTime() || 0));
+          setVideoList(dynamicClips);
+          setSelectedVideo(prev => prev ? (dynamicClips.find(v => v.id === prev.id) || dynamicClips[0]) : dynamicClips[0]);
+        }
+        setLoading(false);
       }
     }
 
@@ -204,13 +177,34 @@ export default function VibeWatchSection({ accent = '#D35400' }: { accent?: stri
     return () => { cancelled = true; };
   }, []);
 
-  const filteredVideos = videoList.filter(v =>
-    filter === 'all' ? true : v.category === filter
-  );
+  if (loading && videoList.length === 0) {
+    return (
+      <section
+        id="whats-on-now"
+        style={{
+          position: 'relative',
+          padding: '40px 40px',
+          maxWidth: '1400px',
+          margin: '0 auto',
+          width: '100%',
+          textAlign: 'center',
+          boxSizing: 'border-box'
+        }}
+      >
+        <p style={{ color: '#888', fontSize: '13px', letterSpacing: '1px', textTransform: 'uppercase' }}>
+          Syncing live broadcasts...
+        </p>
+      </section>
+    );
+  }
 
-  const sidebarVideos = filteredVideos.filter(v => v.id !== selectedVideo.id);
-  const activeYtId = selectedVideo.youtubeId || extractYouTubeId(selectedVideo.videoUrl);
-  const activeCategoryMeta = CATEGORY_META[selectedVideo.category] || { label: selectedVideo.source, icon: '📺' };
+  if (!currentVideo || videoList.length === 0) {
+    return null;
+  }
+
+  const sidebarVideos = filteredVideos.filter(v => v.id !== currentVideo.id);
+  const activeYtId = currentVideo.youtubeId || extractYouTubeId(currentVideo.videoUrl);
+  const activeCategoryMeta = CATEGORY_META[currentVideo.category] || { label: currentVideo.source, icon: '📺' };
 
   return (
     <section
@@ -319,15 +313,15 @@ export default function VibeWatchSection({ accent = '#D35400' }: { accent?: stri
                   <iframe
                     key={activeYtId}
                     src={`https://www.youtube.com/embed/${activeYtId}?autoplay=1&mute=0&rel=0&modestbranding=1&enablejsapi=1&playsinline=1&origin=${encodeURIComponent(typeof window !== 'undefined' ? window.location.origin : '')}`}
-                    title={selectedVideo.title}
+                    title={currentVideo.title}
                     allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                     allowFullScreen
                     style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', border: 'none' }}
                   />
                 ) : (
                   <video
-                    key={selectedVideo.videoUrl}
-                    src={selectedVideo.videoUrl}
+                    key={currentVideo.videoUrl}
+                    src={currentVideo.videoUrl}
                     controls
                     autoPlay
                     playsInline
@@ -343,7 +337,7 @@ export default function VibeWatchSection({ accent = '#D35400' }: { accent?: stri
                     inset: 0, 
                     cursor: 'pointer', 
                     overflow: 'hidden',
-                    backgroundImage: `url(${selectedVideo.thumbnail})`,
+                    backgroundImage: `url(${currentVideo.thumbnail})`,
                     backgroundSize: 'cover', 
                     backgroundPosition: 'center'
                   }}
@@ -399,7 +393,7 @@ export default function VibeWatchSection({ accent = '#D35400' }: { accent?: stri
                   {activeCategoryMeta.icon} {activeCategoryMeta.label}
                 </span>
                 <span style={{ fontSize: '12px', color: '#888', fontWeight: 600 }}>
-                  {selectedVideo.duration}
+                  {currentVideo.duration}
                 </span>
                 <span style={{ 
                   fontSize: '10px', 
@@ -416,7 +410,7 @@ export default function VibeWatchSection({ accent = '#D35400' }: { accent?: stri
                 </span>
               </div>
               <h3 style={{ fontSize: '18px', fontWeight: 800, color: '#fff', margin: '0 0 8px 0', lineHeight: 1.35 }}>
-                {selectedVideo.title}
+                {currentVideo.title}
               </h3>
               <p
                 ref={descRef}
@@ -432,7 +426,7 @@ export default function VibeWatchSection({ accent = '#D35400' }: { accent?: stri
                   whiteSpace: 'pre-line'
                 }}
               >
-                {selectedVideo.description}
+                {currentVideo.description}
               </p>
               {hasMore && (
                 <button

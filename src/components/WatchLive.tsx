@@ -790,68 +790,7 @@ const STATIC_FLEX_ONLINE_CLIPS: VideoClip[] = [
   }
 ];
 
-const STATIC_VIBE_CLIPS: VideoClip[] = [
-  {
-    id: '4cqcl3Jy_hw',
-    headline: 'FAA wants to change this old system',
-    description: "Many of America's busiest air traffic control towers still rely on paper flight strips to track aircraft movements. Now, the FAA is pushing to replace...",
-    thumbnail: '/n2n/air_traffic_control.png',
-    videoUrl: 'https://www.youtube.com/watch?v=4cqcl3Jy_hw',
-    duration: 0,
-    source: 'YouTube',
-    sport: 'news'
-  },
-  {
-    id: '-d4T5ruaGeA',
-    headline: "'COMPLETE JOKE': Mamdani RIPPED for 'self-serving' ICE demand",
-    description: "Former Acting ICE Director Jonathan Fahey joined 'Fox & Friends First' to discuss Zohran Mamdani's doubling down on calls to abolish the 'rogue ag...",
-    thumbnail: 'https://i2.ytimg.com/vi/-d4T5ruaGeA/hqdefault.jpg',
-    videoUrl: 'https://www.youtube.com/watch?v=-d4T5ruaGeA',
-    duration: 0,
-    source: 'YouTube',
-    sport: 'foxnews'
-  },
-  {
-    id: 'ciq7HeiJCOE',
-    headline: "'Sense of grift, corruption, only caring about himself' after UFC event: Ashley Parker",
-    description: "President Trump hosted a UFC event on the White House's south lawn this weekend for America's 250th anniversary. Now, many questions are being raised ...",
-    thumbnail: 'https://i4.ytimg.com/vi/ciq7HeiJCOE/hqdefault.jpg',
-    videoUrl: 'https://www.youtube.com/watch?v=ciq7HeiJCOE',
-    duration: 0,
-    source: 'YouTube',
-    sport: 'politics'
-  },
-  {
-    id: 'HPiqxMrKMKQ',
-    headline: 'The Surprising Way Elizabeth Hurley & Billy Ray Cyrus Started Dating',
-    description: 'Billy Ray Cyrus reveals how his unexpected romance with Elizabeth Hurley began and what brought the two stars together.',
-    thumbnail: 'https://i1.ytimg.com/vi/HPiqxMrKMKQ/hqdefault.jpg',
-    videoUrl: 'https://www.youtube.com/watch?v=HPiqxMrKMKQ',
-    duration: 0,
-    source: 'YouTube',
-    sport: 'entertainment'
-  },
-  {
-    id: 'vwOxJJ80t3k',
-    headline: 'Why KFC Has Fallen Behind In The U.S.',
-    description: 'Chains like Chick-fil-A and Raising Cane\'s have become fast food mainstays as Americans continue to crave chicken. Yet KFC has become the fourth-large...',
-    thumbnail: 'https://i3.ytimg.com/vi/vwOxJJ80t3k/hqdefault.jpg',
-    videoUrl: 'https://www.youtube.com/watch?v=vwOxJJ80t3k',
-    duration: 0,
-    source: 'YouTube',
-    sport: 'money'
-  },
-  {
-    id: 'vyqy7PcDGLM',
-    headline: 'Describing the Men\'s College World Series experience + Star players to watch',
-    description: 'Karl Ravech joins The Pat McAfee Show to talk about the 2026 Men\'s College World Series in Omaha, Nebraska.',
-    thumbnail: 'https://i3.ytimg.com/vi/vyqy7PcDGLM/hqdefault.jpg',
-    videoUrl: 'https://www.youtube.com/watch?v=vyqy7PcDGLM',
-    duration: 0,
-    source: 'YouTube',
-    sport: 'sports'
-  }
-];
+const STATIC_VIBE_CLIPS: VideoClip[] = [];
 
 const getAiThumbnail = (
   headline: string,
