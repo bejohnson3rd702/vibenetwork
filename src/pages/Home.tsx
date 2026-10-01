@@ -310,9 +310,10 @@ export default function Home({ categories, activeVideo, setActiveVideo, user }: 
           </div>
         </section>
 
-        <Suspense fallback={null}>
+        {/* Trending Moments commented out per user request */}
+        {/* <Suspense fallback={null}>
           <TrendingFeed />
-        </Suspense>
+        </Suspense> */}
 
         {/* New content section below sliders */}
         <section style={{ maxWidth: '1400px', margin: '40px auto 40px', padding: '0 40px' }}>
