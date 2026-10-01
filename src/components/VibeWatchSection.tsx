@@ -34,16 +34,6 @@ const VIBE_FEEDS = [
 
 const STATIC_VIBE_VIDEOS: VibeVideoClip[] = [
   {
-    id: 'trump1-speech',
-    title: 'President Donald Trump Special Address',
-    source: 'Vibe Watch',
-    category: 'news',
-    description: 'Special address broadcast featuring President Donald Trump with multi-language dialogue audio translation.',
-    duration: '0:29',
-    thumbnail: 'https://images.unsplash.com/photo-1540910419892-4a36d2c3266c?auto=format&fit=crop&q=80&w=800',
-    videoUrl: '/videos/trump1.mp4'
-  },
-  {
     id: '4cqcl3Jy_hw',
     youtubeId: '4cqcl3Jy_hw',
     title: 'FAA Wants to Change This Old Air Traffic System',
@@ -185,9 +175,15 @@ export default function VibeWatchSection({ accent = '#D35400' }: { accent?: stri
       }
 
       if (!cancelled && dynamicClips.length > 0) {
-        // Sort dynamic clips by published date descending, keeping static hero items at top
+        // Sort dynamic clips by published date descending
         dynamicClips.sort((a, b) => (b.published?.getTime() || 0) - (a.published?.getTime() || 0));
-        setVideoList([STATIC_VIBE_VIDEOS[0], ...dynamicClips, ...STATIC_VIBE_VIDEOS.slice(1)]);
+        setVideoList([...dynamicClips, ...STATIC_VIBE_VIDEOS]);
+        setSelectedVideo(prev => {
+          if (prev.id === STATIC_VIBE_VIDEOS[0]?.id) {
+            return dynamicClips[0];
+          }
+          return prev;
+        });
       }
     }
 

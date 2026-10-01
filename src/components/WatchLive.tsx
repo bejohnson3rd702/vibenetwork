@@ -166,17 +166,6 @@ const VIBE_100_FEEDS = [
 ];
 
 const VIBE_100_CLIPS: VideoClip[] = [
-  {
-    id: 'trump1-speech',
-    headline: 'President Donald Trump Special Address',
-    description: 'Special address broadcast featuring President Donald Trump with multi-language audio translation.',
-    thumbnail: 'https://images.unsplash.com/photo-1540910419892-4a36d2c3266c?auto=format&fit=crop&q=80&w=800',
-    videoUrl: '/videos/trump1.mp4',
-    duration: 29,
-    source: 'Vibes Watch',
-    sport: 'news',
-    translationAudioUrl: '/audio/trump1.mp3'
-  },
   // AVO Channel
   {
     id: 'vyqy7PcDGLM',
@@ -802,17 +791,6 @@ const STATIC_FLEX_ONLINE_CLIPS: VideoClip[] = [
 ];
 
 const STATIC_VIBE_CLIPS: VideoClip[] = [
-  {
-    id: 'trump1-speech',
-    headline: 'President Donald Trump Special Address',
-    description: 'Special address broadcast featuring President Donald Trump with multi-language audio translation.',
-    thumbnail: 'https://images.unsplash.com/photo-1540910419892-4a36d2c3266c?auto=format&fit=crop&q=80&w=800',
-    videoUrl: '/videos/trump1.mp4',
-    duration: 29,
-    source: 'Vibes Watch',
-    sport: 'news',
-    translationAudioUrl: '/audio/trump1.mp3'
-  },
   {
     id: '4cqcl3Jy_hw',
     headline: 'FAA wants to change this old system',
