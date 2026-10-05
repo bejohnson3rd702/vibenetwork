@@ -34,7 +34,7 @@ export const AVO_COLLEGE_NETWORKS: WlConfig[] = [
     }
   }),
   normalizeWlConfig({
-    id: 'avo-arkansas-tenant-id',
+    id: 'a7000001-c08f-4260-8540-a0cc8bed4e11',
     name: 'Arkansas',
     domain: 'arkansas.shopavo.la',
     logo: 'https://a.espncdn.com/i/teamlogos/ncaa/500/8.png',
@@ -55,7 +55,7 @@ export const AVO_COLLEGE_NETWORKS: WlConfig[] = [
     }
   }),
   normalizeWlConfig({
-    id: 'avo-auburn-tenant-id',
+    id: 'a7000002-c08f-4260-8540-a0cc8bed4e11',
     name: 'Auburn',
     domain: 'auburn.shopavo.la',
     logo: 'https://a.espncdn.com/i/teamlogos/ncaa/500/2.png',
@@ -139,7 +139,7 @@ export const AVO_COLLEGE_NETWORKS: WlConfig[] = [
     }
   }),
   normalizeWlConfig({
-    id: 'avo-georgia-tech-tenant-id',
+    id: 'a7000003-c08f-4260-8540-a0cc8bed4e11',
     name: 'Georgia Tech',
     domain: 'gatech.shopavo.la',
     logo: 'https://a.espncdn.com/i/teamlogos/ncaa/500/59.png',
@@ -160,7 +160,7 @@ export const AVO_COLLEGE_NETWORKS: WlConfig[] = [
     }
   }),
   normalizeWlConfig({
-    id: 'avo-indiana-tenant-id',
+    id: 'a7000004-c08f-4260-8540-a0cc8bed4e11',
     name: 'Indiana',
     domain: 'indiana.shopavo.la',
     logo: 'https://a.espncdn.com/i/teamlogos/ncaa/500/84.png',
@@ -181,7 +181,7 @@ export const AVO_COLLEGE_NETWORKS: WlConfig[] = [
     }
   }),
   normalizeWlConfig({
-    id: 'avo-lsu-tenant-id',
+    id: 'a7000005-c08f-4260-8540-a0cc8bed4e11',
     name: 'LSU',
     domain: 'lsu.shopavo.la',
     logo: 'https://a.espncdn.com/i/teamlogos/ncaa/500/99.png',
@@ -223,7 +223,7 @@ export const AVO_COLLEGE_NETWORKS: WlConfig[] = [
     }
   }),
   normalizeWlConfig({
-    id: 'avo-missouri-tenant-id',
+    id: 'a7000006-c08f-4260-8540-a0cc8bed4e11',
     name: 'Missouri',
     domain: 'missouri.shopavo.la',
     logo: 'https://a.espncdn.com/i/teamlogos/ncaa/500/142.png',
@@ -244,7 +244,7 @@ export const AVO_COLLEGE_NETWORKS: WlConfig[] = [
     }
   }),
   normalizeWlConfig({
-    id: 'avo-nebraska-tenant-id',
+    id: 'a7000007-c08f-4260-8540-a0cc8bed4e11',
     name: 'Nebraska',
     domain: 'nebraska.shopavo.la',
     logo: 'https://a.espncdn.com/i/teamlogos/ncaa/500/158.png',
@@ -307,7 +307,7 @@ export const AVO_COLLEGE_NETWORKS: WlConfig[] = [
     }
   }),
   normalizeWlConfig({
-    id: 'avo-rutgers-tenant-id',
+    id: 'a7000008-c08f-4260-8540-a0cc8bed4e11',
     name: 'Rutgers',
     domain: 'rutgers.shopavo.la',
     logo: 'https://a.espncdn.com/i/teamlogos/ncaa/500/164.png',
@@ -328,7 +328,7 @@ export const AVO_COLLEGE_NETWORKS: WlConfig[] = [
     }
   }),
   normalizeWlConfig({
-    id: 'avo-tcu-tenant-id',
+    id: 'a7000009-c08f-4260-8540-a0cc8bed4e11',
     name: 'TCU',
     domain: 'tcu.shopavo.la',
     logo: 'https://a.espncdn.com/i/teamlogos/ncaa/500/2628.png',
@@ -349,7 +349,7 @@ export const AVO_COLLEGE_NETWORKS: WlConfig[] = [
     }
   }),
   normalizeWlConfig({
-    id: 'avo-texas-am-tenant-id',
+    id: 'a7000010-c08f-4260-8540-a0cc8bed4e11',
     name: 'Texas A&M',
     domain: 'texasam.shopavo.la',
     logo: 'https://a.espncdn.com/i/teamlogos/ncaa/500/245.png',
@@ -391,7 +391,7 @@ export const AVO_COLLEGE_NETWORKS: WlConfig[] = [
     }
   }),
   normalizeWlConfig({
-    id: 'avo-virginia-tenant-id',
+    id: 'a7000011-c08f-4260-8540-a0cc8bed4e11',
     name: 'Virginia',
     domain: 'virginia.shopavo.la',
     logo: 'https://a.espncdn.com/i/teamlogos/ncaa/500/258.png',
@@ -412,7 +412,7 @@ export const AVO_COLLEGE_NETWORKS: WlConfig[] = [
     }
   }),
   normalizeWlConfig({
-    id: 'avo-virginia-tech-tenant-id',
+    id: 'a7000012-c08f-4260-8540-a0cc8bed4e11',
     name: 'Virginia Tech',
     domain: 'virginiatech.shopavo.la',
     logo: 'https://a.espncdn.com/i/teamlogos/ncaa/500/259.png',
@@ -433,7 +433,7 @@ export const AVO_COLLEGE_NETWORKS: WlConfig[] = [
     }
   }),
   normalizeWlConfig({
-    id: 'avo-wake-forest-tenant-id',
+    id: 'a7000013-c08f-4260-8540-a0cc8bed4e11',
     name: 'Wake Forest',
     domain: 'wakeforest.shopavo.la',
     logo: 'https://a.espncdn.com/i/teamlogos/ncaa/500/154.png',
@@ -489,7 +489,15 @@ export async function getChildNetworks(parentId: string, includeInactive: boolea
     const result: WlConfig[] = [];
     
     for (const college of AVO_COLLEGE_NETWORKS) {
-      const match = existingMap.get(college.name.toLowerCase()) || data.find((row: any) => row.id === college.id);
+      const match = data.find((row: any) => 
+        row.id === college.id || 
+        row.domain?.toLowerCase() === college.domain?.toLowerCase() ||
+        (row.name && college.name && (
+          row.name.toLowerCase() === college.name.toLowerCase() ||
+          row.name.toLowerCase().includes(college.name.toLowerCase()) ||
+          college.name.toLowerCase().includes(row.name.toLowerCase())
+        ))
+      );
       if (match) {
         result.push(normalizeWlConfig({
           ...match,
@@ -776,9 +784,12 @@ export async function getChildNetworks(parentId: string, includeInactive: boolea
     ];
   }
 
-  // Dynamically append The Real Courtney Bee under Vibe parent network
-  const isOtherParent = parentId === 'cb000000-c08f-4260-8540-a0cc8bed4e11' || parentId === '7a017c4d-c08f-4260-8540-a0cc8bed4e11' || parentId === '100d0000-c08f-4260-8540-a0cc8bed4e01' || parentId === '33742e2f-430b-4c2d-9cba-42507891ef02' || parentId === 'b0ea0000-c08f-4260-8540-a0cc8bed4e11';
-  if (!isOtherParent) {
+  // Dynamically append The Real Courtney Bee under Vibe parent network only
+  const isVibeParent = parentId === 'adb92e36-5ebc-4dc3-ae96-429f3dc1bb30' || 
+                       parentId === 'vibe-network-tenant-id' || 
+                       parentId === 'master' || 
+                       parentId === 'vibe';
+  if (isVibeParent) {
     const hasCourtney = data.some((row: any) => row.id === 'courtney-bee-tenant-id' || row.domain?.includes('therealcourtneybee') || row.name?.toLowerCase().includes('courtney bee'));
     if (!hasCourtney) {
       data.push({

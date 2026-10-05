@@ -938,6 +938,8 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
             .eq('whitelabel_id', wlConfig.id)
             .in('role', ['influencer', 'business']);
           if (data) currentWlProfiles = data;
+          setNetworkProfiles(currentWlProfiles);
+          return;
         }
 
         const { data: vibeChannels } = await supabase.from('profiles')
@@ -947,17 +949,7 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
           .order('created_at', { ascending: false })
           .limit(20);
 
-        const vibeList = vibeChannels || [];
-
-        // Combine them, making sure there are no duplicates by id
-        const combined = [...currentWlProfiles];
-        vibeList.forEach(p => {
-          if (!combined.some(c => c.id === p.id)) {
-            combined.push(p);
-          }
-        });
-
-        setNetworkProfiles(combined);
+        setNetworkProfiles(vibeChannels || []);
       };
 
       fetchProfiles();
@@ -1398,7 +1390,7 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
           .maybeSingle()
           .then(async ({ data: infData, error: infErr }) => {
             if (!infErr && infData) return { data: infData, error: null };
-            return supabase!.from('profiles').select('*').eq('whitelabel_id', wlConfig.id).limit(1).single();
+            return supabase!.from('profiles').select('*').eq('whitelabel_id', wlConfig.id).limit(1).maybeSingle();
           });
       } else if (queryId && isUuid(queryId)) {
         profilePromise = supabase!.from('profiles').select('*').eq('id', queryId).maybeSingle();
@@ -1408,13 +1400,21 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
         profilePromise = Promise.resolve({ data: null, error: null });
       }
 
-      let postsQuery = supabase!.from('posts').select('*, creator:profiles(username, avatar_url, whitelabel_id), post_likes(user_id), post_comments(*, user:profiles(username, avatar_url))');
+      let postsQuery;
       if (isNetworkLevel && !paramCreatorId && wlConfig?.id && isUuid(wlConfig.id)) {
-        postsQuery = postsQuery.eq('creator.whitelabel_id', wlConfig.id).eq('is_locked', false);
+        postsQuery = supabase!.from('posts')
+          .select('*, creator:profiles!inner(username, avatar_url, whitelabel_id), post_likes(user_id), post_comments(*, user:profiles(username, avatar_url))')
+          .eq('creator.whitelabel_id', wlConfig.id)
+          .eq('is_locked', false);
       } else if (queryId && isUuid(queryId)) {
-        postsQuery = postsQuery.eq('creator_id', queryId);
+        postsQuery = supabase!.from('posts')
+          .select('*, creator:profiles(username, avatar_url, whitelabel_id), post_likes(user_id), post_comments(*, user:profiles(username, avatar_url))')
+          .eq('creator_id', queryId);
       } else {
-        postsQuery = postsQuery.eq('is_locked', false).limit(10);
+        postsQuery = supabase!.from('posts')
+          .select('*, creator:profiles(username, avatar_url, whitelabel_id), post_likes(user_id), post_comments(*, user:profiles(username, avatar_url))')
+          .eq('is_locked', false)
+          .limit(10);
       }
 
       const postsPromise = postsQuery
@@ -1759,12 +1759,21 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
             }
           }
 
-          let prodQuery = supabase!.from('products').select('*, creator:profiles(id, username, avatar_url, full_name, whitelabel_id)');
+          let prodQuery;
+          const isMasterPlatform = !wlConfig || wlConfig.id === 'master' || wlConfig.domain === 'vibenetwork.tv' || wlConfig.domain === 'vibenetwork.com' || wlConfig.domain?.includes('vercel.app');
           if (isNetworkLevel) {
-            const isMasterPlatform = !wlConfig || wlConfig.id === 'master' || wlConfig.domain === 'vibenetwork.tv' || wlConfig.domain === 'vibenetwork.com' || wlConfig.domain?.includes('vercel.app');
-            if (wlConfig?.domain && !isMasterPlatform) prodQuery = prodQuery.eq('creator.whitelabel_id', wlConfig.id);
+            if (wlConfig?.id && !isMasterPlatform && isUuid(wlConfig.id)) {
+              prodQuery = supabase!.from('products')
+                .select('*, creator:profiles!inner(id, username, avatar_url, full_name, whitelabel_id)')
+                .eq('creator.whitelabel_id', wlConfig.id);
+            } else {
+              prodQuery = supabase!.from('products')
+                .select('*, creator:profiles(id, username, avatar_url, full_name, whitelabel_id)');
+            }
           } else {
-            prodQuery = prodQuery.eq('creator_id', loadedProfileId);
+            prodQuery = supabase!.from('products')
+              .select('*, creator:profiles(id, username, avatar_url, full_name, whitelabel_id)')
+              .eq('creator_id', loadedProfileId);
           }
           const productsPromise = prodQuery.order('created_at', { ascending: false });
 

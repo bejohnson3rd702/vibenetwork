@@ -30,7 +30,9 @@ export async function getCategoriesWithVideos(tenantId?: string) {
       ? Promise.resolve({ data: [] })
       : supabase.from('whitelabel_configs').select('id, name, domain, logo, theme, parent_network_id, is_active').order('created_at', { ascending: false }).limit(100),
     profilesQuery,
-    supabase.from('videos').select('id, title, image_url, tags, video_url, whitelabel_id').order('created_at', { ascending: false }).limit(20)
+    tenantId
+      ? supabase.from('videos').select('id, title, image_url, tags, video_url, whitelabel_id').eq('whitelabel_id', tenantId).order('created_at', { ascending: false }).limit(20)
+      : supabase.from('videos').select('id, title, image_url, tags, video_url, whitelabel_id').is('whitelabel_id', null).order('created_at', { ascending: false }).limit(20)
   ]);
 
   const whitelabels = whitelabelsResult.data || [];
@@ -197,22 +199,24 @@ export async function getCategoriesWithVideos(tenantId?: string) {
     linkUrl: '/profile/courtney-bee-tenant-id'
   };
 
-  if (!isCourtneyDbDeactivated) {
-    const courtneyIdx = mappedProfiles.findIndex((p: any) => p.id === 'courtney-bee-tenant-id' || (p.title || '').toLowerCase().includes('courtney bee'));
-    if (courtneyIdx > -1) {
-      const [c] = mappedProfiles.splice(courtneyIdx, 1);
-      c.image = 'https://static.wixstatic.com/media/066ffc_bb9bdff854db4b56bb3f6b58ee1ce532~mv2.png/v1/crop/x_0,y_261,w_1242,h_763/fill/w_860,h_528,al_c,q_90,usm_0.66_1.00_0.01,enc_avif,quality_auto/image%20(1).png';
-      c.linkUrl = '/profile/courtney-bee-tenant-id';
-      mappedProfiles.unshift(c);
-    } else {
-      mappedProfiles.unshift(courtneyProfileItem);
+  if (!tenantId) {
+    if (!isCourtneyDbDeactivated) {
+      const courtneyIdx = mappedProfiles.findIndex((p: any) => p.id === 'courtney-bee-tenant-id' || (p.title || '').toLowerCase().includes('courtney bee'));
+      if (courtneyIdx > -1) {
+        const [c] = mappedProfiles.splice(courtneyIdx, 1);
+        c.image = 'https://static.wixstatic.com/media/066ffc_bb9bdff854db4b56bb3f6b58ee1ce532~mv2.png/v1/crop/x_0,y_261,w_1242,h_763/fill/w_860,h_528,al_c,q_90,usm_0.66_1.00_0.01,enc_avif,quality_auto/image%20(1).png';
+        c.linkUrl = '/profile/courtney-bee-tenant-id';
+        mappedProfiles.unshift(c);
+      } else {
+        mappedProfiles.unshift(courtneyProfileItem);
+      }
     }
   } else {
     mappedProfiles = mappedProfiles.filter((p: any) => p.id !== 'courtney-bee-tenant-id' && !(p.title || '').toLowerCase().includes('courtney bee'));
   }
 
   const mappedContent = (videos || [])
-    .filter((vid: any) => !vid.whitelabel_id || !deactivatedWlIds.has(vid.whitelabel_id))
+    .filter((vid: any) => tenantId ? vid.whitelabel_id === tenantId : (!vid.whitelabel_id && !deactivatedWlIds.has(vid.whitelabel_id)))
     .map((vid: any) => ({
       id: vid.id,
       title: vid.title,
@@ -286,7 +290,7 @@ export async function getCategoriesWithVideos(tenantId?: string) {
   }
 
   // Fallback if no custom categories have videos yet
-  if (!addedCustom) {
+  if (!addedCustom && mappedContent.length > 0) {
     categoriesToReturn.push({
       title: 'New Content',
       aspectRatio: '16/9',

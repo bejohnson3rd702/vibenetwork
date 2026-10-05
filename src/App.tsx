@@ -380,7 +380,15 @@ function App() {
         }
 
         const isMaster = checkIsMasterHost(hostname);
-        const activeTenantId = forceTenant || (isMaster ? null : userWlId);
+        const rawTenantId = forceTenant || (isMaster ? null : userWlId);
+        
+        const matchedAvoCollege = AVO_COLLEGE_NETWORKS.find(c => 
+          c.id === rawTenantId || 
+          c.domain === hostname ||
+          (rawTenantId && rawTenantId.startsWith('avo-') && rawTenantId.toLowerCase().includes(c.name.toLowerCase().replace(/\s+/g, '-'))) ||
+          (rawTenantId && c.name.toLowerCase() === rawTenantId.toLowerCase())
+        );
+        const activeTenantId = matchedAvoCollege ? matchedAvoCollege.id : rawTenantId;
         
         let configPromise;
         let categoriesPromise;
@@ -617,11 +625,16 @@ function App() {
               n2n_enabled: true
             }
           });
-        } else if (activeTenantId && (activeTenantId.startsWith('avo-') || AVO_COLLEGE_NETWORKS.some(c => c.id === activeTenantId))) {
-          const matchedCollege = AVO_COLLEGE_NETWORKS.find(c => c.id === activeTenantId);
+        } else if (activeTenantId && (activeTenantId.startsWith('avo-') || AVO_COLLEGE_NETWORKS.some(c => c.id === activeTenantId || c.domain === hostname || c.name.toLowerCase() === activeTenantId.toLowerCase()))) {
+          const matchedCollege = AVO_COLLEGE_NETWORKS.find(c => 
+            c.id === activeTenantId || 
+            c.domain === hostname || 
+            c.name.toLowerCase() === activeTenantId.toLowerCase()
+          );
           if (matchedCollege) {
+            const dbMatch = dbTenantData?.[0];
             loadedTenantId = matchedCollege.id;
-            loadedConfig = matchedCollege;
+            loadedConfig = dbMatch ? normalizeWlConfig({ ...matchedCollege, ...dbMatch, theme: { ...matchedCollege.theme, ...dbMatch.theme } }) : matchedCollege;
           }
         } else if (dbTenantData && dbTenantData.length > 0) {
           const dbConf = dbTenantData[0];
@@ -812,6 +825,8 @@ function App() {
                  (wlConfig?.n2n_enabled || 
                    isKpleConfig(wlConfig) ||
                    isBonaireConfig(wlConfig) ||
+                   wlConfig?.id === '3915f1e5-4c79-4b2a-ad41-7029ce8052d7' ||
+                   (wlConfig?.name || '').toLowerCase() === 'avo network' ||
                    wlConfig?.parent_network_id === '7a017c4d-c08f-4260-8540-a0cc8bed4e11' ||
                    wlConfig?.theme?.parent_network_id === '7a017c4d-c08f-4260-8540-a0cc8bed4e11' ||
                    wlConfig?.id === 'adb92e36-5ebc-4dc3-ae96-429f3dc1bb30' ||

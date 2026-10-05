@@ -1,20 +1,18 @@
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Play, ChevronRight, Sparkles } from 'lucide-react';
+import { X, Play, ChevronRight, Sparkles, ShoppingBag, UserCheck, ArrowRight } from 'lucide-react';
 import { lazy, Suspense, useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import SliderSection from '../components/SliderSection';
 import { supabase } from '../supabaseClient';
 import { ASSETS } from '../data';
 import type { WhiteLabelConfig, Category, VideoItem, User } from '../types';
-import { isOlympianConfig, isMuscleFitnessConfig, isB2kConfig, isKpleConfig, isCourtneyBeeConfig } from '../lib/whitelabel';
+import { isOlympianConfig, isMuscleFitnessConfig, isB2kConfig, isKpleConfig } from '../lib/whitelabel';
 
 import { OLYMPIA_CHAMPIONS } from '../lib/n2n';
 
-const ProfileDashboard = lazy(() => import('../components/ProfileDashboard'));
 const ShopifyStore = lazy(() => import('../components/ShopifyStore'));
 const WatchLive = lazy(() => import('../components/WatchLive'));
 const CollegeTicker = lazy(() => import('../components/CollegeTicker'));
-import CourtneyBeeWatchSection from '../components/CourtneyBeeWatchSection';
 
 interface WhiteLabelHomeProps {
   wlConfig: WhiteLabelConfig;
@@ -27,9 +25,51 @@ interface WhiteLabelHomeProps {
 export default function WhiteLabelHome({ wlConfig, categories, user, activeVideo, setActiveVideo }: WhiteLabelHomeProps) {
   const navigate = useNavigate();
   const isOlympian = isOlympianConfig(wlConfig);
-  const isCourtneyBee = isCourtneyBeeConfig(wlConfig);
   const [showVideoTitle, setShowVideoTitle] = useState(true);
   const videoRef = useRef<HTMLVideoElement>(null);
+  const [studentChannels, setStudentChannels] = useState<any[]>([]);
+  const [loadingStudents, setLoadingStudents] = useState(false);
+
+  useEffect(() => {
+    if (!wlConfig?.id) return;
+    let isCancelled = false;
+
+    const fetchStudents = async () => {
+      setLoadingStudents(true);
+      try {
+        const { data, error } = await supabase
+          .from('profiles')
+          .select('id, username, full_name, avatar_url, bio, role, created_at, whitelabel_id')
+          .eq('whitelabel_id', wlConfig.id)
+          .neq('is_active', false)
+          .in('role', ['influencer', 'student_athlete', 'athlete', 'creator'])
+          .order('created_at', { ascending: false });
+
+        if (!isCancelled && data) {
+          setStudentChannels(
+            data.map((athlete: any) => {
+              const displayName = athlete.full_name || (athlete.username ? athlete.username.replace(/_/g, ' ').replace(/\b\w/g, (c: string) => c.toUpperCase()) : 'Student Athlete');
+              return {
+                id: athlete.id,
+                title: displayName,
+                image: athlete.avatar_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(displayName)}&background=111&color=fff&size=400`,
+                tags: [wlConfig.name || 'Campus', 'Athlete Channel'],
+                videoUrl: '',
+                linkUrl: `/profile/${athlete.id}`
+              };
+            })
+          );
+        }
+      } catch (err) {
+        console.warn('Failed to load student channels:', err);
+      } finally {
+        if (!isCancelled) setLoadingStudents(false);
+      }
+    };
+
+    fetchStudents();
+    return () => { isCancelled = true; };
+  }, [wlConfig?.id]);
 
   useEffect(() => {
     // Keep the video title overlay visible permanently
@@ -199,21 +239,15 @@ export default function WhiteLabelHome({ wlConfig, categories, user, activeVideo
           })()}
        </div>
 
-        {/* Mr. Olympia Ticker if it is the Mr. Olympia network */}
-        {isOlympian && (
-          <div style={{ width: '100%', position: 'relative', zIndex: 10, marginBottom: '20px' }}>
-            <Suspense fallback={null}>
-              <CollegeTicker accent={wlConfig.accent} isOlympian={true} />
-            </Suspense>
-          </div>
-        )}
+        {/* College Sports Ticker for College & Sports Networks */}
+        <div style={{ width: '100%', position: 'relative', zIndex: 10, marginBottom: '20px' }}>
+          <Suspense fallback={null}>
+            <CollegeTicker accent={wlConfig.accent} isOlympian={isOlympian} />
+          </Suspense>
+        </div>
 
         {/* Live Section if enabled and on network level (not sub-tenant creator channels) */}
-        {(isCourtneyBee) ? (
-          <div id="whats-on-now" style={{ position: 'relative', zIndex: 10, marginTop: '40px', padding: '0 40px' }}>
-            <CourtneyBeeWatchSection accent={wlConfig.accent || '#D35400'} />
-          </div>
-        ) : wlConfig.enableWatchLive !== false && !wlConfig.parent_network_id && (
+        {wlConfig.enableWatchLive !== false && !wlConfig.parent_network_id && (
           <div id="whats-on-now" style={{ position: 'relative', zIndex: 10, marginTop: '40px' }}>
             <Suspense fallback={null}>
               <WatchLive 
@@ -227,25 +261,116 @@ export default function WhiteLabelHome({ wlConfig, categories, user, activeVideo
           </div>
         )}
 
-        {/* Mr. & Mrs. Olympia Slider if it's the Mr. Olympia network (Hidden for now) */}
-        {/* isOlympian && (
-          <div id="olympia-champions-slider" style={{ width: '100%', position: 'relative', zIndex: 10, marginTop: '40px', marginBottom: '20px' }}>
+        {/* Student Athletes (Child Channels of this College) */}
+        {studentChannels.length > 0 ? (
+          <div id="student-athletes-slider" style={{ width: '100%', position: 'relative', zIndex: 10, marginTop: '20px', marginBottom: '24px' }}>
             <SliderSection
-              title="MR. & MRS. OLYMPIA"
-              items={OLYMPIA_CHAMPIONS}
+              title="STUDENT ATHLETES"
+              items={studentChannels}
               delay={0}
               aspectRatio="1/1"
               onItemClick={(item) => navigate('/profile/' + item.id + window.location.search)}
             />
           </div>
-        ) */}
-       
-       {/* Full Profile Dashboard Integrated at Network Level */}
-       <div style={{ width: '100%', position: 'relative', zIndex: 10 }}>
-          <Suspense fallback={<div style={{ textAlign: 'center', padding: '100px', color: 'var(--text-muted)' }}>Loading channel...</div>}>
-            <ProfileDashboard user={user} creatorIdOverride={wlConfig.owner_id} isNetworkLevel={true} />
-          </Suspense>
-       </div>
+        ) : (
+          <div style={{ width: '100%', maxWidth: '1200px', margin: '30px auto', padding: '0 24px', position: 'relative', zIndex: 10 }}>
+            <div style={{
+              background: 'linear-gradient(135deg, rgba(255,255,255,0.04) 0%, rgba(255,255,255,0.01) 100%)',
+              border: `1px solid ${wlConfig.accent || 'rgba(255,255,255,0.1)'}33`,
+              borderRadius: '24px',
+              padding: '36px 32px',
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              textAlign: 'center',
+              gap: '16px'
+            }}>
+              <div style={{ width: 56, height: 56, borderRadius: '50%', background: `${wlConfig.accent || '#fff'}22`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <UserCheck size={28} color={wlConfig.accent || '#fff'} />
+              </div>
+              <h3 style={{ margin: 0, fontSize: '24px', fontWeight: 800, color: '#fff' }}>
+                {wlConfig.name} Student-Athlete Network
+              </h3>
+              <p style={{ margin: 0, color: 'rgba(255,255,255,0.7)', fontSize: '15px', maxWidth: '560px', lineHeight: 1.6 }}>
+                Official university student-athlete channels. Students enrolled at {wlConfig.name} can launch their verified channel to share game updates, publish videos, and monetize their NIL.
+              </p>
+            </div>
+          </div>
+        )}
+
+        {/* Network Content Sliders if available */}
+        {categories && categories.length > 0 && categories.some(c => c.items && c.items.length > 0) && (
+          <div style={{ width: '100%', position: 'relative', zIndex: 10, marginTop: '20px', marginBottom: '20px' }}>
+            {categories.filter(c => c.items && c.items.length > 0).map((cat, idx) => (
+              <SliderSection
+                key={cat.title || idx}
+                title={cat.title}
+                items={cat.items}
+                delay={idx * 0.1}
+                aspectRatio={cat.aspectRatio || '16/9'}
+                onItemClick={(item) => {
+                  if (item.videoUrl) {
+                    setActiveVideo(item);
+                  } else {
+                    navigate('/profile/' + item.id + window.location.search);
+                  }
+                }}
+              />
+            ))}
+          </div>
+        )}
+
+        {/* Official NIL Apparel & Merchandise Banner */}
+        <div style={{ width: '100%', maxWidth: '1200px', margin: '40px auto 60px', padding: '0 24px', position: 'relative', zIndex: 10 }}>
+          <div style={{
+            background: `linear-gradient(135deg, ${wlConfig.accent || '#111'}22 0%, rgba(0,0,0,0.7) 100%)`,
+            border: `1px solid ${wlConfig.accent || 'rgba(255,255,255,0.1)'}44`,
+            borderRadius: '24px',
+            padding: '36px 40px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            flexWrap: 'wrap',
+            gap: '24px'
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
+              <div style={{ width: 60, height: 60, borderRadius: '18px', background: `${wlConfig.accent || '#fff'}22`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <ShoppingBag size={30} color={wlConfig.accent || '#fff'} />
+              </div>
+              <div>
+                <h3 style={{ margin: 0, fontSize: '22px', fontWeight: 800, color: '#fff' }}>
+                  Official {wlConfig.name} NIL Apparel & Merchandise
+                </h3>
+                <p style={{ margin: '6px 0 0 0', color: 'rgba(255,255,255,0.7)', fontSize: '15px' }}>
+                  Directly support {wlConfig.name} student-athletes with officially licensed merchandise powered by AVO.
+                </p>
+              </div>
+            </div>
+            <button
+              onClick={() => navigate('/shop' + window.location.search)}
+              style={{
+                background: wlConfig.accent || 'var(--accent-primary)',
+                color: '#fff',
+                border: 'none',
+                borderRadius: '14px',
+                padding: '14px 28px',
+                fontWeight: 700,
+                fontSize: '15px',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                transition: 'all 0.2s',
+                boxShadow: `0 4px 20px ${wlConfig.accent || '#000'}55`
+              }}
+              onMouseOver={e => e.currentTarget.style.transform = 'scale(1.03)'}
+              onMouseOut={e => e.currentTarget.style.transform = 'scale(1)'}
+            >
+              <span>Shop Collection</span>
+              <ArrowRight size={18} />
+            </button>
+          </div>
+        </div>
        
        <AnimatePresence>
          {activeVideo && (
