@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Play, Tv, ChevronDown, ChevronUp } from 'lucide-react';
-import { supabase } from '../supabaseClient';
 
 export interface VibeVideoClip {
   id: string;
@@ -8,44 +7,27 @@ export interface VibeVideoClip {
   videoUrl: string;
   title: string;
   source: string;
-  category: 'originals' | 'news' | 'foxnews' | 'politics' | 'money' | 'sports';
+  category: 'news' | 'foxnews' | 'politics';
   description: string;
   duration: string;
   thumbnail: string;
   published?: Date;
-  isOriginal?: boolean;
 }
 
 const CATEGORY_META: Record<string, { label: string; icon: string }> = {
-  originals: { label: 'Vibe Originals', icon: '✨' },
   news: { label: 'CNN News', icon: '📰' },
   foxnews: { label: 'Fox News', icon: '🦊' },
   politics: { label: 'MSNBC Politics', icon: '⚖️' },
-  money: { label: 'CNBC Business', icon: '💵' },
-  sports: { label: 'ESPN Sports', icon: '🏈' },
 };
 
 const VIBE_FEEDS = [
   { key: 'news', label: '📰 CNN News', channelId: 'UCupvZG-5ko_eiXAupbDfxWw' },
   { key: 'foxnews', label: '🦊 Fox News', channelId: 'UCXIJgqnII2ZOINSWNOGFThA' },
   { key: 'politics', label: '⚖️ MSNBC Politics', channelId: 'UCaXkIU1QidjPwiAYu6GcHjg' },
-  { key: 'money', label: '💵 CNBC Business', channelId: 'UCvJJ_dzjViJCoLf5uKUTwoA', altChannelId: 'UCIALMKvObZNtJ6AmdCLP7Lg' },
-  { key: 'sports', label: '🏈 ESPN Sports', channelId: 'UCiWLfSweyRNmLpgEHekhoAg' },
 ];
 
 const DEFAULT_VIBE_CLIPS: VibeVideoClip[] = [
-  {
-    id: '44bdc4c8-f78b-4638-9560-43c6f1ca0811',
-    videoUrl: 'https://fimzetmvrmbmdggvqzpr.supabase.co/storage/v1/object/public/videos/past-streams/19a1f776-daa5-460b-8dc9-c89dd4cb4d06/1791157915566.webm',
-    title: 'Live Stream - 10/4/2026 Studio Broadcast',
-    source: 'Vibe Network',
-    category: 'originals',
-    description: 'Exclusive recorded live broadcast from the Vibe Network production studio featuring real-time stream highlights, multi-lingual transcription, and creator interviews.',
-    duration: 'Live Feed',
-    thumbnail: 'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?auto=format&fit=crop&q=80&w=800',
-    published: new Date('2026-10-04T23:51:59.000Z'),
-    isOriginal: true
-  },
+  // --- CNN NEWS ---
   {
     id: '_mbBBOOWaxg',
     youtubeId: '_mbBBOOWaxg',
@@ -70,6 +52,7 @@ const DEFAULT_VIBE_CLIPS: VibeVideoClip[] = [
     thumbnail: 'https://i.ytimg.com/vi/8DFsWxJVV_o/hqdefault.jpg',
     published: new Date('2026-10-04T22:00:00.000Z')
   },
+  // --- FOX NEWS ---
   {
     id: 'rufMKA2FPxc',
     youtubeId: 'rufMKA2FPxc',
@@ -95,6 +78,19 @@ const DEFAULT_VIBE_CLIPS: VibeVideoClip[] = [
     published: new Date('2026-10-04T18:45:33.000Z')
   },
   {
+    id: 'ZdCzZmsmzv8',
+    youtubeId: 'ZdCzZmsmzv8',
+    videoUrl: 'https://www.youtube.com/watch?v=ZdCzZmsmzv8',
+    title: "Hijacking attempt suspect used 'crash ax' in attempted terror attack, UAE says",
+    source: 'Fox News',
+    category: 'foxnews',
+    description: "New details emerge from Dubai authorities on the thwarted commercial airline hijacking and suspect background.",
+    duration: 'Live Feed',
+    thumbnail: 'https://i.ytimg.com/vi/ZdCzZmsmzv8/hqdefault.jpg',
+    published: new Date('2026-10-04T16:30:18.000Z')
+  },
+  // --- MSNBC POLITICS ---
+  {
     id: 'ph8Hrzqfu8Q',
     youtubeId: 'ph8Hrzqfu8Q',
     videoUrl: 'https://www.youtube.com/watch?v=ph8Hrzqfu8Q',
@@ -119,66 +115,16 @@ const DEFAULT_VIBE_CLIPS: VibeVideoClip[] = [
     published: new Date('2026-10-04T20:46:51.000Z')
   },
   {
-    id: 'vwOxJJ80t3k',
-    youtubeId: 'vwOxJJ80t3k',
-    videoUrl: 'https://www.youtube.com/watch?v=vwOxJJ80t3k',
-    title: 'Index Fund Investing & Global Market Strategy',
-    source: 'CNBC Business',
-    category: 'money',
-    description: 'Wall Street analysts discuss Federal Reserve interest rate projections, S&P 500 trends, and portfolio hedging strategies.',
-    duration: '10:15',
-    thumbnail: 'https://i.ytimg.com/vi/vwOxJJ80t3k/hqdefault.jpg',
-    published: new Date('2026-10-04T19:00:00.000Z')
-  },
-  {
-    id: 'E_MKI9NQmQk',
-    youtubeId: 'E_MKI9NQmQk',
-    videoUrl: 'https://www.youtube.com/watch?v=E_MKI9NQmQk',
-    title: '"I\'m Ovulating, Nick" with Tiffany Haddish | We Playin\' Spades',
-    source: 'Vibe Network',
-    category: 'originals',
-    description: 'Courtney Bee & Nick Cannon host Tiffany Haddish at the turquoise table for high-stakes Spades, trash talk, and uncensored stories.',
-    duration: '27:30',
-    thumbnail: 'https://i.ytimg.com/vi/E_MKI9NQmQk/hqdefault.jpg',
-    published: new Date('2026-10-04T18:00:00.000Z'),
-    isOriginal: true
-  },
-  {
-    id: 'boAP0v2Kckk',
-    youtubeId: 'boAP0v2Kckk',
-    videoUrl: 'https://www.youtube.com/watch?v=boAP0v2Kckk',
-    title: 'Raz-B - Exclusive No Jumper Interview',
-    source: 'Vibe Network',
-    category: 'originals',
-    description: 'Raz-B sits down for an intimate, tell-all interview discussing B2K history, the Millennium Tour, and new solo releases.',
-    duration: '45:10',
-    thumbnail: 'https://i.ytimg.com/vi/boAP0v2Kckk/hqdefault.jpg',
-    published: new Date('2026-10-03T12:00:00.000Z'),
-    isOriginal: true
-  },
-  {
-    id: 'vyqy7PcDGLM',
-    youtubeId: 'vyqy7PcDGLM',
-    videoUrl: 'https://www.youtube.com/watch?v=vyqy7PcDGLM',
-    title: 'AVO Campus Tour 2026 Highlight Reel & Gameday Preview',
-    source: 'ESPN Sports',
-    category: 'sports',
-    description: 'College football highlights, athletic program spotlights, and campus gameday atmosphere across top licensed universities.',
-    duration: '08:45',
-    thumbnail: 'https://i.ytimg.com/vi/vyqy7PcDGLM/hqdefault.jpg',
-    published: new Date('2026-10-04T17:00:00.000Z')
-  },
-  {
-    id: 'SV7JP7y80UM',
-    youtubeId: 'SV7JP7y80UM',
-    videoUrl: 'https://www.youtube.com/watch?v=SV7JP7y80UM',
-    title: "Mr. Olympia 2024 Men’s Open Prejudging Analysis",
-    source: 'ESPN Sports',
-    category: 'sports',
-    description: "Complete breakdown of the Sandow trophy race, stage comparisons, conditioning, and scorecards from Las Vegas.",
-    duration: '14:20',
-    thumbnail: 'https://i.ytimg.com/vi/SV7JP7y80UM/hqdefault.jpg',
-    published: new Date('2026-10-03T20:00:00.000Z')
+    id: 'FAGJU2hEpb4',
+    youtubeId: 'FAGJU2hEpb4',
+    videoUrl: 'https://www.youtube.com/watch?v=FAGJU2hEpb4',
+    title: 'Can Republicans SPEND their way to victory?',
+    source: 'MSNBC Politics',
+    category: 'politics',
+    description: 'Campaign finance analysis examining big-donor PAC ad buys and voter turnout initiatives across major battleground states.',
+    duration: 'Live Feed',
+    thumbnail: 'https://i.ytimg.com/vi/FAGJU2hEpb4/hqdefault.jpg',
+    published: new Date('2026-10-04T20:35:43.000Z')
   }
 ];
 
@@ -191,7 +137,7 @@ function extractYouTubeId(url: string): string | null {
 export default function VibeWatchSection({ accent = '#D35400' }: { accent?: string }) {
   const [videoList, setVideoList] = useState<VibeVideoClip[]>(DEFAULT_VIBE_CLIPS);
   const [selectedVideo, setSelectedVideo] = useState<VibeVideoClip | null>(DEFAULT_VIBE_CLIPS[0]);
-  const [filter, setFilter] = useState<'all' | 'originals' | 'news' | 'foxnews' | 'politics' | 'money' | 'sports'>('all');
+  const [filter, setFilter] = useState<'all' | 'news' | 'foxnews' | 'politics'>('all');
   const [isPlaying, setIsPlaying] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(false);
@@ -224,7 +170,7 @@ export default function VibeWatchSection({ accent = '#D35400' }: { accent?: stri
     return () => mq.removeEventListener('change', handler);
   }, []);
 
-  // Fetch dynamic YouTube RSS feeds & Supabase videos
+  // Fetch dynamic live news feeds
   useEffect(() => {
     let cancelled = false;
 
@@ -239,7 +185,7 @@ export default function VibeWatchSection({ accent = '#D35400' }: { accent?: stri
           const xml = parser.parseFromString(xmlText, 'text/xml');
           const entries = xml.getElementsByTagName('entry');
 
-          for (let i = 0; i < Math.min(entries.length, 6); i++) {
+          for (let i = 0; i < Math.min(entries.length, 10); i++) {
             const entry = entries[i];
             const id = entry.getElementsByTagName('yt:videoId')[0]?.textContent 
               || entry.getElementsByTagName('id')[0]?.textContent?.split(':').pop() 
@@ -274,151 +220,55 @@ export default function VibeWatchSection({ accent = '#D35400' }: { accent?: stri
         } catch {}
       };
 
-      // 1. Fetch live RSS channels in parallel with client-side fallback
+      // Fetch all live news channels in parallel
       const feedPromises = VIBE_FEEDS.map(async (feed) => {
-        const targetIds = [feed.channelId, (feed as any).altChannelId].filter(Boolean);
-        for (const cid of targetIds) {
-          try {
-            // First try internal serverless endpoint
-            const res = await fetch(`/api/yt-rss/${cid}`, { signal: AbortSignal.timeout(4000) });
-            if (res.ok) {
-              const xmlText = await res.text();
-              if (xmlText && xmlText.includes('<entry')) {
-                parseXmlEntries(xmlText, feed.key, CATEGORY_META[feed.key]?.label || 'Broadcast');
-                return;
-              }
-            }
-          } catch {}
-
-          try {
-            // Client fallback to rss2json proxy directly
-            const r2jUrl = `https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent('https://www.youtube.com/feeds/videos.xml?channel_id=' + cid)}`;
-            const r2jRes = await fetch(r2jUrl, { signal: AbortSignal.timeout(4000) });
-            if (r2jRes.ok) {
-              const json = await r2jRes.json();
-              if (json.status === 'ok' && Array.isArray(json.items)) {
-                for (let i = 0; i < Math.min(json.items.length, 6); i++) {
-                  const item = json.items[i];
-                  const id = item.guid?.replace(/^yt:video:/, '') || (item.link || '').match(/v=([^&]+)/)?.[1] || '';
-                  if (id && !seen.has(id)) {
-                    seen.add(id);
-                    dynamicClips.push({
-                      id,
-                      youtubeId: id,
-                      title: item.title || '',
-                      description: item.description || item.title || '',
-                      thumbnail: item.thumbnail || `https://i.ytimg.com/vi/${id}/hqdefault.jpg`,
-                      videoUrl: item.link || `https://www.youtube.com/watch?v=${id}`,
-                      duration: 'Live Feed',
-                      source: CATEGORY_META[feed.key]?.label || 'Broadcast',
-                      category: feed.key as any,
-                      published: item.pubDate ? new Date(item.pubDate) : new Date(0)
-                    });
-                  }
-                }
-                return;
-              }
-            }
-          } catch {}
-        }
-      });
-
-      // 2. Fetch Supabase videos and episodes tables concurrently
-      const dbPromise = (async () => {
         try {
-          if (!supabase) return;
-          const [videosRes, episodesRes] = await Promise.all([
-            supabase.from('videos').select('*').order('created_at', { ascending: false }).limit(25),
-            supabase.from('episodes').select('*').order('created_at', { ascending: false }).limit(25)
-          ]);
-
-          // Process videos table
-          if (videosRes.data) {
-            for (const v of videosRes.data) {
-              const id = String(v.id);
-              if (id && !seen.has(id) && v.video_url) {
-                seen.add(id);
-                const ytId = extractYouTubeId(v.video_url) || undefined;
-                const thumb = v.image_url || v.thumbnail_url || (ytId ? `https://i.ytimg.com/vi/${ytId}/hqdefault.jpg` : 'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?auto=format&fit=crop&q=80&w=800');
-                
-                const tagStr = (Array.isArray(v.tags) ? v.tags.join(' ') : String(v.tags || '')).toLowerCase();
-                const titleStr = (v.title || '').toLowerCase();
-                let cat: VibeVideoClip['category'] = 'originals';
-                if (tagStr.includes('sport') || tagStr.includes('olympia') || tagStr.includes('fitness') || titleStr.includes('olympia') || tagStr.includes('football')) {
-                  cat = 'sports';
-                } else if (tagStr.includes('money') || tagStr.includes('invest') || tagStr.includes('finance') || tagStr.includes('business')) {
-                  cat = 'money';
-                } else if (tagStr.includes('politic') || tagStr.includes('election') || tagStr.includes('congress')) {
-                  cat = 'politics';
-                } else if (tagStr.includes('music') || tagStr.includes('r&b') || tagStr.includes('b2k') || tagStr.includes('spades') || tagStr.includes('comedy')) {
-                  cat = 'entertainment';
-                } else if (tagStr.includes('fox')) {
-                  cat = 'foxnews';
-                } else if (tagStr.includes('news') || titleStr.includes('news')) {
-                  cat = 'news';
-                }
-
-                dynamicClips.push({
-                  id,
-                  youtubeId: ytId,
-                  title: v.title || 'Studio Broadcast',
-                  description: v.description || 'Recorded network broadcast streamed live from the Vibe production studios.',
-                  thumbnail: thumb,
-                  videoUrl: v.video_url,
-                  duration: v.duration ? `${Math.floor(v.duration / 60)}:${String(v.duration % 60).padStart(2, '0')}` : 'Studio Feed',
-                  source: v.source || 'Vibe Network',
-                  category: cat,
-                  published: v.created_at ? new Date(v.created_at) : new Date(0),
-                  isOriginal: true
-                });
-              }
+          // 1. Try serverless proxy endpoint
+          const res = await fetch(`/api/yt-rss/${feed.channelId}`, { signal: AbortSignal.timeout(4000) });
+          if (res.ok) {
+            const xmlText = await res.text();
+            if (xmlText && xmlText.includes('<entry')) {
+              parseXmlEntries(xmlText, feed.key, CATEGORY_META[feed.key]?.label || 'News');
+              return;
             }
           }
+        } catch {}
 
-          // Process episodes table
-          if (episodesRes.data) {
-            for (const ep of episodesRes.data) {
-              const id = String(ep.id);
-              if (id && !seen.has(id) && ep.video_url) {
-                seen.add(id);
-                const ytId = extractYouTubeId(ep.video_url) || undefined;
-                const thumb = ep.thumbnail_url || ep.image_url || (ytId ? `https://i.ytimg.com/vi/${ytId}/hqdefault.jpg` : 'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?auto=format&fit=crop&q=80&w=800');
-                
-                const genreStr = String(ep.genre || '').toLowerCase();
-                let cat: VibeVideoClip['category'] = 'originals';
-                if (genreStr.includes('sport') || genreStr.includes('fitness')) {
-                  cat = 'sports';
-                } else if (genreStr.includes('business') || genreStr.includes('money')) {
-                  cat = 'money';
-                } else if (genreStr.includes('politic')) {
-                  cat = 'politics';
-                } else if (genreStr.includes('comedy') || genreStr.includes('music') || genreStr.includes('entertainment')) {
-                  cat = 'entertainment';
+        try {
+          // 2. Direct client fallback via rss2json
+          const r2jUrl = `https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent('https://www.youtube.com/feeds/videos.xml?channel_id=' + feed.channelId)}`;
+          const r2jRes = await fetch(r2jUrl, { signal: AbortSignal.timeout(4000) });
+          if (r2jRes.ok) {
+            const json = await r2jRes.json();
+            if (json.status === 'ok' && Array.isArray(json.items)) {
+              for (let i = 0; i < Math.min(json.items.length, 10); i++) {
+                const item = json.items[i];
+                const id = item.guid?.replace(/^yt:video:/, '') || (item.link || '').match(/v=([^&]+)/)?.[1] || '';
+                if (id && !seen.has(id)) {
+                  seen.add(id);
+                  dynamicClips.push({
+                    id,
+                    youtubeId: id,
+                    title: item.title || '',
+                    description: item.description || item.title || '',
+                    thumbnail: item.thumbnail || `https://i.ytimg.com/vi/${id}/hqdefault.jpg`,
+                    videoUrl: item.link || `https://www.youtube.com/watch?v=${id}`,
+                    duration: 'Live Feed',
+                    source: CATEGORY_META[feed.key]?.label || 'News',
+                    category: feed.key as any,
+                    published: item.pubDate ? new Date(item.pubDate) : new Date(0)
+                  });
                 }
-
-                dynamicClips.push({
-                  id,
-                  youtubeId: ytId,
-                  title: ep.title || 'Creator Episode',
-                  description: ep.description || 'Featured creator broadcast published directly to the Vibe content network.',
-                  thumbnail: thumb,
-                  videoUrl: ep.video_url,
-                  duration: ep.length || 'Full Episode',
-                  source: 'Vibe Creator',
-                  category: cat,
-                  published: ep.created_at ? new Date(ep.created_at) : new Date(0),
-                  isOriginal: true
-                });
               }
             }
           }
         } catch {}
-      })();
+      });
 
-      await Promise.allSettled([...feedPromises, dbPromise]);
+      await Promise.allSettled(feedPromises);
 
       if (!cancelled) {
-        // Merge with static defaults for any missing items
+        // Merge with static news defaults for any items not already loaded
         for (const def of DEFAULT_VIBE_CLIPS) {
           if (!seen.has(def.id)) {
             seen.add(def.id);
@@ -426,7 +276,7 @@ export default function VibeWatchSection({ accent = '#D35400' }: { accent?: stri
           }
         }
 
-        // Sort by published descending so brand-new uploads are at the top
+        // Sort by published date descending so newest news reports are at top
         dynamicClips.sort((a, b) => (b.published?.getTime() || 0) - (a.published?.getTime() || 0));
 
         setVideoList(dynamicClips);
@@ -444,7 +294,7 @@ export default function VibeWatchSection({ accent = '#D35400' }: { accent?: stri
 
   const sidebarVideos = filteredVideos.filter(v => v.id !== currentVideo.id);
   const activeYtId = currentVideo.youtubeId || extractYouTubeId(currentVideo.videoUrl);
-  const activeCategoryMeta = CATEGORY_META[currentVideo.category] || { label: currentVideo.source, icon: '📺' };
+  const activeCategoryMeta = CATEGORY_META[currentVideo.category] || { label: currentVideo.source, icon: '📰' };
 
   return (
     <section
@@ -486,12 +336,12 @@ export default function VibeWatchSection({ accent = '#D35400' }: { accent?: stri
               </h2>
             </div>
             <p style={{ fontSize: '13px', color: 'var(--text-secondary, #999)', margin: '4px 0 0 0' }}>
-              Real-time broadcasts, prime-time news, cultural features, sports analysis & entertainment
+              Real-time news broadcasts, prime-time reporting & breaking headlines from CNN, Fox News, and MSNBC
             </p>
           </div>
         </div>
 
-        {/* Category Filter Pills */}
+        {/* News Category Filter Pills */}
         <div style={{ 
           display: 'flex', 
           gap: '8px', 
@@ -505,19 +355,16 @@ export default function VibeWatchSection({ accent = '#D35400' }: { accent?: stri
           maxWidth: '100%'
         } as React.CSSProperties}>
           {([
-            ['all', 'All Broadcasts'],
-            ['originals', '✨ Vibe Originals'],
+            ['all', 'All News Feeds'],
             ['news', '📰 CNN News'],
             ['foxnews', '🦊 Fox News'],
-            ['politics', '⚖️ MSNBC'],
-            ['money', '💵 CNBC'],
-            ['sports', '🏈 ESPN']
+            ['politics', '⚖️ MSNBC Politics']
           ] as const).map(([key, label]) => (
             <button
               key={key}
               onClick={() => setFilter(key)}
               style={{
-                padding: '7px 15px',
+                padding: '7px 16px',
                 borderRadius: '10px',
                 border: 'none',
                 background: filter === key ? accent : 'transparent',
@@ -577,7 +424,7 @@ export default function VibeWatchSection({ accent = '#D35400' }: { accent?: stri
                     inset: 0, 
                     cursor: 'pointer', 
                     overflow: 'hidden',
-                    backgroundImage: `url(${currentVideo.thumbnail || 'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?auto=format&fit=crop&q=80&w=800'})`,
+                    backgroundImage: `url(${currentVideo.thumbnail || 'https://images.unsplash.com/photo-1585829365295-ab7cd400c167?auto=format&fit=crop&q=80&w=800'})`,
                     backgroundSize: 'cover', 
                     backgroundPosition: 'center'
                   }}
@@ -646,7 +493,7 @@ export default function VibeWatchSection({ accent = '#D35400' }: { accent?: stri
                   textTransform: 'uppercase',
                   letterSpacing: '1px'
                 }}>
-                  {currentVideo.isOriginal ? '● Network Original' : '● High Definition Broadcast'}
+                  ● Live News Broadcast
                 </span>
               </div>
               <h3 style={{ fontSize: '18px', fontWeight: 800, color: '#fff', margin: '0 0 8px 0', lineHeight: 1.35 }}>
@@ -715,7 +562,7 @@ export default function VibeWatchSection({ accent = '#D35400' }: { accent?: stri
         }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', margin: '0 0 2px 0' }}>
             <p style={{ fontSize: '11px', fontWeight: 900, textTransform: 'uppercase', letterSpacing: '2px', color: '#666', margin: 0 }}>
-              Up Next — {sidebarVideos.length} Broadcasts
+              Live News — {sidebarVideos.length} Broadcasts
             </p>
             <span style={{ fontSize: '11px', color: accent, fontWeight: 700 }}>Auto-Synced</span>
           </div>
@@ -730,11 +577,11 @@ export default function VibeWatchSection({ accent = '#D35400' }: { accent?: stri
               borderRadius: '12px', 
               border: '1px solid rgba(255,255,255,0.05)' 
             }}>
-              No other broadcasts in this category.
+              No other news broadcasts in this channel.
             </div>
           ) : (
             sidebarVideos.map(video => {
-              const meta = CATEGORY_META[video.category] || { label: video.source, icon: '📺' };
+              const meta = CATEGORY_META[video.category] || { label: video.source, icon: '📰' };
               return (
                 <div
                   key={video.id}
@@ -769,10 +616,10 @@ export default function VibeWatchSection({ accent = '#D35400' }: { accent?: stri
                   {/* Thumbnail with overlay & duration */}
                   <div style={{ position: 'relative', width: '135px', flexShrink: 0, aspectRatio: '16/9' }}>
                     <img
-                      src={video.thumbnail || 'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?auto=format&fit=crop&q=80&w=800'}
+                      src={video.thumbnail || 'https://images.unsplash.com/photo-1585829365295-ab7cd400c167?auto=format&fit=crop&q=80&w=800'}
                       alt={video.title}
                       onError={(e) => {
-                        e.currentTarget.src = 'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?auto=format&fit=crop&q=80&w=800';
+                        e.currentTarget.src = 'https://images.unsplash.com/photo-1585829365295-ab7cd400c167?auto=format&fit=crop&q=80&w=800';
                       }}
                       style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
                     />
