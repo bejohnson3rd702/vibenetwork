@@ -5113,7 +5113,7 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
                   .concat(isNetworkLevel ? [
                     { id: 'community', label: 'Community', icon: <MessageCircle size={16} />, color: '#3399ff' }
                   ] : [])
-                  .concat((myNetworks.length > 0 && !isNetworkLevel) ? [{ id: 'networks', label: 'My Networks', icon: <Monitor size={16} />, color: '#ff007f' }] : [])
+                  // .concat((myNetworks.length > 0 && !isNetworkLevel) ? [{ id: 'networks', label: 'My Networks', icon: <Monitor size={16} />, color: '#ff007f' }] : [])
                   .map(tab => {
                     const isActive = tab.isToggle ? showCreatorPanel : activeTab === tab.id;
                     const tabColor = tab.color || wlConfig?.accent || '#ff4d85';
@@ -9214,8 +9214,8 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
            </motion.div>
         )}
 
-        {/* --- MY NETWORKS TAB --- */}
-        {activeTab === 'networks' && myNetworks.length > 0 && (
+        {/* --- MY NETWORKS TAB (COMMENTED OUT) --- */}
+        {/* {activeTab === 'networks' && myNetworks.length > 0 && (
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <h2 style={{ fontSize: '24px', margin: 0, color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '10px' }}>
@@ -9259,7 +9259,7 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
                 ))}
              </div>
           </motion.div>
-        )}
+        )} */}
 
         {/* --- WALLET SUBSCRIPTION & EARNINGS TAB --- */}
         {activeTab === 'wallet' && isOwnProfile && viewMode === 'edit' && (wlConfig?.theme?.creator_splits?.[profile?.id] ?? profile?.platform_fee_percentage ?? wlConfig?.platform_fee_percentage ?? 0) > 0 && (
