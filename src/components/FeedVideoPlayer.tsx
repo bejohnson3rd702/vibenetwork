@@ -412,7 +412,9 @@ export const FeedVideoPlayer: React.FC<FeedVideoPlayerProps> = ({
   const selectedLangObj = languages.find(l => l.code === selectedLang);
 
   const isYouTube = Boolean((activeSource || '').match(/(?:youtube\.com\/(?:[^\/\n\s]+\/\S+\/|(?:v|e(?:mbed)?|live|shorts)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/i));
-  const isCompact = containerWidth < 460;
+  // Covers all mobile phones and iPads/tablets (up to 840px container width)
+  const isCompact = containerWidth > 0 && containerWidth <= 840;
+  const isUltraCompact = containerWidth > 0 && containerWidth < 360;
 
   return (
     <div 
@@ -433,6 +435,17 @@ export const FeedVideoPlayer: React.FC<FeedVideoPlayerProps> = ({
         ...style
       }}
     >
+      {/* Suppress WebKit iPadOS native PiP and AirPlay overlay buttons that collide with custom controls */}
+      <style>{`
+        .feed-video-player-container video::-webkit-media-controls-picture-in-picture-button,
+        .feed-video-player-container video::-webkit-media-controls-wireless-playback-picker-button {
+          display: none !important;
+          opacity: 0 !important;
+          pointer-events: none !important;
+          width: 0 !important;
+          height: 0 !important;
+        }
+      `}</style>
       {/* ── Video Player Content (Native Video, YouTube, or Error State) ── */}
       {(() => {
         const ytMatch = (activeSource || '').match(/(?:youtube\.com\/(?:[^\/\n\s]+\/\S+\/|(?:v|e(?:mbed)?|live|shorts)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/i);
@@ -493,6 +506,10 @@ export const FeedVideoPlayer: React.FC<FeedVideoPlayerProps> = ({
             src={activeSource}
             controls
             playsInline
+            disablePictureInPicture
+            disableRemotePlayback
+            // @ts-ignore
+            x-webkit-airplay="deny"
             controlsList="nodownload noplaybackrate"
             onPlay={handlePlay}
             onPause={handlePause}
@@ -525,14 +542,15 @@ export const FeedVideoPlayer: React.FC<FeedVideoPlayerProps> = ({
       <div 
         style={{
           position: 'absolute',
-          top: isYouTube ? (isCompact ? '52px' : '58px') : (isCompact ? '8px' : '12px'),
+          top: isYouTube ? (isCompact ? '64px' : '72px') : (isCompact ? '8px' : '12px'),
           right: isCompact ? '8px' : '12px',
           display: 'flex',
           alignItems: 'center',
-          gap: isCompact ? '5px' : '8px',
+          gap: isCompact ? '4px' : '6px',
           zIndex: 25,
           maxWidth: 'calc(100% - 16px)',
-          pointerEvents: 'auto'
+          pointerEvents: 'auto',
+          flexWrap: 'nowrap'
         }}
       >
         {/* Captions Toggle Pill */}
@@ -543,19 +561,20 @@ export const FeedVideoPlayer: React.FC<FeedVideoPlayerProps> = ({
           style={{
             display: 'flex',
             alignItems: 'center',
-            gap: isCompact ? '4px' : '6px',
+            gap: isCompact ? '4px' : '5px',
             background: captionsEnabled ? 'rgba(0, 0, 0, 0.85)' : 'rgba(0, 0, 0, 0.5)',
             backdropFilter: 'blur(8px)',
             border: `1px solid ${captionsEnabled ? accent : 'rgba(255,255,255,0.25)'}`,
             borderRadius: '20px',
-            padding: isCompact ? '4px 8px' : '6px 12px',
+            padding: isCompact ? '4px 8px' : '5px 10px',
             color: captionsEnabled ? '#fff' : '#ccc',
             fontSize: isCompact ? '11px' : '12px',
             fontWeight: 700,
             cursor: 'pointer',
             transition: 'all 0.2s ease',
             whiteSpace: 'nowrap',
-            lineHeight: 1
+            lineHeight: 1,
+            flexShrink: 0
           }}
         >
           <Subtitles size={isCompact ? 13 : 14} color={captionsEnabled ? accent : '#aaa'} />
@@ -571,26 +590,25 @@ export const FeedVideoPlayer: React.FC<FeedVideoPlayerProps> = ({
           style={{
             display: 'flex',
             alignItems: 'center',
-            gap: isCompact ? '4px' : '6px',
+            gap: isCompact ? '4px' : '5px',
             background: selectedLang !== 'english-united-states' ? 'rgba(0, 0, 0, 0.9)' : 'rgba(0, 0, 0, 0.65)',
             backdropFilter: 'blur(8px)',
             border: `1px solid ${selectedLang !== 'english-united-states' ? accent : 'rgba(255,255,255,0.25)'}`,
             borderRadius: '20px',
-            padding: isCompact ? '4px 8px' : '6px 14px',
+            padding: isCompact ? '4px 8px' : '5px 10px',
             color: '#fff',
             fontSize: isCompact ? '11px' : '12px',
             fontWeight: 700,
             cursor: 'pointer',
             transition: 'all 0.2s ease',
             whiteSpace: 'nowrap',
-            lineHeight: 1
+            lineHeight: 1,
+            flexShrink: 0
           }}
         >
           <Globe size={isCompact ? 13 : 14} color={accent} />
           <span>
-            {isCompact
-              ? (selectedLangObj ? getShortLangCode(selectedLangObj.code) : 'EN')
-              : (selectedLangObj ? selectedLangObj.name.split(' ')[0] : 'Translate')}
+            {selectedLangObj ? getShortLangCode(selectedLangObj.code) : 'EN'}
           </span>
           {isTranslating && <Loader2 size={11} className="animate-spin" color={accent} />}
         </button>
@@ -622,8 +640,8 @@ export const FeedVideoPlayer: React.FC<FeedVideoPlayerProps> = ({
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              width: isCompact ? '26px' : '32px',
-              height: isCompact ? '26px' : '32px',
+              width: isCompact ? '26px' : '28px',
+              height: isCompact ? '26px' : '28px',
               background: !translationAudioMuted ? accent : 'rgba(0, 0, 0, 0.7)',
               backdropFilter: 'blur(8px)',
               border: `1px solid ${!translationAudioMuted ? accent : 'rgba(255,255,255,0.25)'}`,
@@ -634,7 +652,7 @@ export const FeedVideoPlayer: React.FC<FeedVideoPlayerProps> = ({
               flexShrink: 0
             }}
           >
-            {translationAudioMuted ? <VolumeX size={isCompact ? 13 : 15} /> : <Volume2 size={isCompact ? 13 : 15} />}
+            {translationAudioMuted ? <VolumeX size={isCompact ? 13 : 14} /> : <Volume2 size={isCompact ? 13 : 14} />}
           </button>
         )}
       </div>
@@ -645,7 +663,7 @@ export const FeedVideoPlayer: React.FC<FeedVideoPlayerProps> = ({
           ref={translateMenuRef}
           style={{
             position: 'absolute',
-            top: isYouTube ? (isCompact ? '86px' : '96px') : (isCompact ? '42px' : '50px'),
+            top: isYouTube ? (isCompact ? '98px' : '108px') : (isCompact ? '42px' : '48px'),
             right: isCompact ? '8px' : '12px',
             maxHeight: 'min(240px, 50vh)',
             width: isCompact ? '180px' : '210px',

@@ -937,12 +937,12 @@ export default function ChildNetworkFeeds({ parentId, accent = 'var(--accent-pri
         }
         @media (max-width: 1024px) {
           .child-feed-card {
-            width: calc(33.333% - 16px) !important;
+            width: clamp(280px, 38vw, 340px) !important;
           }
         }
         @media (max-width: 768px) {
           .child-feed-card {
-            width: calc(50% - 12px) !important;
+            width: clamp(280px, 60vw, 340px) !important;
           }
         }
         @media (max-width: 480px) {
