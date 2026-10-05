@@ -26,7 +26,7 @@ export interface DirectoryItem {
 const CATEGORY_TABS = [
   { id: 'all', label: 'All Channels & Networks' },
   { id: 'network', label: '🌐 Networks' },
-  { id: 'creator', label: '🎙️ Creators' },
+  { id: 'creator', label: '🎙️ Channels' },
   { id: 'college', label: '🎓 College NIL' },
   { id: 'fitness', label: '💪 Fitness & Olympia' },
   { id: 'comedy', label: '🎤 Comedy' },
@@ -256,14 +256,35 @@ export default function ChannelDirectory() {
         }
       }
 
-      // 2. Keyword Search Filter
+      // 2. Keyword Search Filter (channel = creator: if it's a channel and not a network it is a creator)
       if (searchQuery.trim()) {
         const q = searchQuery.toLowerCase().trim();
-        const matchesName = item.name.toLowerCase().includes(q);
-        const matchesUsername = (item.username || '').toLowerCase().includes(q);
-        const matchesBio = item.bio.toLowerCase().includes(q);
-        const matchesParent = (item.parentNetworkName || '').toLowerCase().includes(q);
-        if (!matchesName && !matchesUsername && !matchesBio && !matchesParent) {
+        const tokens = q.split(/\s+/).filter(Boolean);
+
+        const matchesAllTokens = tokens.every(token => {
+          // If search term is "channel" or "channels", a channel = a creator (non-network)
+          if (token === 'channel' || token === 'channels') {
+            return item.type === 'creator' || item.name.toLowerCase().includes(token) || item.bio.toLowerCase().includes(token);
+          }
+          // If search term is "creator" or "creators", it matches creators
+          if (token === 'creator' || token === 'creators') {
+            return item.type === 'creator' || item.name.toLowerCase().includes(token) || item.bio.toLowerCase().includes(token);
+          }
+          // If search term is "network" or "networks", it matches networks
+          if (token === 'network' || token === 'networks') {
+            return item.type === 'network' || item.name.toLowerCase().includes(token) || (item.parentNetworkName || '').toLowerCase().includes(token);
+          }
+
+          const inName = item.name.toLowerCase().includes(token);
+          const inUsername = (item.username || '').toLowerCase().includes(token);
+          const inBio = item.bio.toLowerCase().includes(token);
+          const inParent = (item.parentNetworkName || '').toLowerCase().includes(token);
+          const inCategory = item.category.toLowerCase().includes(token);
+          
+          return inName || inUsername || inBio || inParent || inCategory;
+        });
+
+        if (!matchesAllTokens) {
           return false;
         }
       }
@@ -425,7 +446,7 @@ export default function ChannelDirectory() {
           color: 'rgba(255,255,255,0.6)'
         }}>
           <div>
-            Showing <strong style={{ color: '#fff' }}>{filteredItems.length}</strong> channel{filteredItems.length === 1 ? '' : 's'} and network{filteredItems.length === 1 ? '' : 's'}
+            Showing <strong style={{ color: '#fff' }}>{filteredItems.length}</strong> {selectedCategory === 'network' ? 'network' : selectedCategory === 'creator' ? 'channel' : 'channel and network'}{filteredItems.length === 1 ? '' : 's'}
           </div>
           {searchQuery && (
             <div>
@@ -576,7 +597,7 @@ export default function ChannelDirectory() {
                           gap: '4px'
                         }}>
                           {isNetwork ? <Globe size={11} /> : <User size={11} />}
-                          {isNetwork ? 'Network' : 'Creator'}
+                          {isNetwork ? 'Network' : 'Channel'}
                         </span>
 
                         {item.parentNetworkName && (
