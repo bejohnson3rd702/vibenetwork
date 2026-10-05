@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { supabase } from '../supabaseClient';
 import { useWhiteLabel } from '../context/WhiteLabelContext';
-import { MessageSquare, Hash, Image as ImageIcon, Send, Lock, Unlock, Plus, Trash2, Settings, X } from 'lucide-react';
+import { MessageSquare, Hash, Image as ImageIcon, Send, Lock, Unlock, Plus, Trash2, Settings, X, Loader2 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { validateFileSafety } from '../lib/fileSecurity';
 import { FeedVideoPlayer } from '../components/FeedVideoPlayer';
@@ -23,6 +23,7 @@ export default function Community({ user, onAuthRequest }: CommunityProps) {
   const [userProfile, setUserProfile] = useState<any>(null);
   const [uploadingMedia, setUploadingMedia] = useState(false);
   const [pendingMediaUrl, setPendingMediaUrl] = useState<string | null>(null);
+  const [transcribingMedia, setTranscribingMedia] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [showAddChannel, setShowAddChannel] = useState(false);
   const [newChannelName, setNewChannelName] = useState('');
@@ -117,14 +118,17 @@ export default function Community({ user, onAuthRequest }: CommunityProps) {
       setPendingMediaUrl(mediaUrl);
 
       if (isVid) {
-        toast.success('Video ready -- hit send! Transcript is being generated...');
+        setTranscribingMedia(true);
+        toast.loading('AI speech engine extracting spoken dialogue...', { id: 'comm-video-trans' });
         transcribeUploadedVideo(file, {
           storagePath: filePath,
           speaker: user?.user_metadata?.username || activeChannel?.name || 'Community Member',
           onProgress: (msg) => toast.loading(`🎙️ ${msg}`, { id: 'comm-video-trans' })
         }).then(segments => {
-          toast.success(`✅ Video transcript ready! (${segments.length} segments)`, { id: 'comm-video-trans', duration: 4000 });
+          setTranscribingMedia(false);
+          toast.success(`✅ Video transcript ready (${segments.length} segments)! You can now post.`, { id: 'comm-video-trans', duration: 4000 });
         }).catch(err => {
+          setTranscribingMedia(false);
           console.warn('[Community] Video transcription notice:', err);
           toast.dismiss('comm-video-trans');
         });
@@ -139,6 +143,10 @@ export default function Community({ user, onAuthRequest }: CommunityProps) {
   };
 
   const handlePost = async () => {
+    if (transcribingMedia) {
+      toast.error('Please wait for video audio transcription to finish before posting!', { id: 'comm-wait-trans' });
+      return;
+    }
     if ((!newPostContent.trim() && !pendingMediaUrl) || !user || !activeChannel) return;
     const mediaToPost = pendingMediaUrl;
     const { error } = await supabase.from('network_posts').insert({
@@ -333,13 +341,42 @@ export default function Community({ user, onAuthRequest }: CommunityProps) {
                       </div>
                     )}
                     <div style={{ display: 'flex', alignItems: 'center', gap: '4px', padding: '4px 8px 4px 16px' }}>
-                      <input type="text" value={newPostContent} onChange={e => setNewPostContent(e.target.value)} onKeyDown={e => e.key === 'Enter' && !e.shiftKey && handlePost()} placeholder={activeChannel ? 'Message #' + activeChannel.name : 'Select a channel...'} disabled={!activeChannel} style={{ flex: 1, background: 'transparent', border: 'none', color: '#fff', fontSize: '14px', outline: 'none', padding: '9px 0' }} />
-                      <label title={uploadingMedia ? 'Uploading...' : 'Attach image or video'} style={{ cursor: uploadingMedia ? 'not-allowed' : 'pointer', padding: '7px', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '8px', opacity: uploadingMedia ? 0.5 : 1, transition: '0.15s', flexShrink: 0 }}>
-                        <input ref={fileInputRef} type="file" accept="image/*,video/*" onChange={handleMediaUpload} style={{ display: 'none' }} disabled={uploadingMedia} />
+                      <input 
+                        type="text" 
+                        value={newPostContent} 
+                        onChange={e => setNewPostContent(e.target.value)} 
+                        onKeyDown={e => e.key === 'Enter' && !e.shiftKey && handlePost()} 
+                        placeholder={transcribingMedia ? '🎙️ Transcribing video dialogue before sending...' : (activeChannel ? 'Message #' + activeChannel.name : 'Select a channel...')} 
+                        disabled={!activeChannel || transcribingMedia} 
+                        style={{ flex: 1, background: 'transparent', border: 'none', color: '#fff', fontSize: '14px', outline: 'none', padding: '9px 0' }} 
+                      />
+                      <label title={uploadingMedia || transcribingMedia ? 'Processing media...' : 'Attach image or video'} style={{ cursor: uploadingMedia || transcribingMedia ? 'not-allowed' : 'pointer', padding: '7px', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '8px', opacity: uploadingMedia || transcribingMedia ? 0.5 : 1, transition: '0.15s', flexShrink: 0 }}>
+                        <input ref={fileInputRef} type="file" accept="image/*,video/*" onChange={handleMediaUpload} style={{ display: 'none' }} disabled={uploadingMedia || transcribingMedia} />
                         <ImageIcon size={19} color={pendingMediaUrl ? accent : 'rgba(255,255,255,0.45)'} />
                       </label>
-                      <button onClick={handlePost} disabled={!newPostContent.trim() && !pendingMediaUrl} style={{ background: (newPostContent.trim() || pendingMediaUrl) ? accent : 'rgba(255,255,255,0.08)', border: 'none', borderRadius: '50%', width: '36px', height: '36px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: (newPostContent.trim() || pendingMediaUrl) ? 'pointer' : 'not-allowed', transition: '0.2s', flexShrink: 0 }}>
-                        <Send size={15} color={(newPostContent.trim() || pendingMediaUrl) ? '#000' : 'rgba(255,255,255,0.25)'} style={{ marginLeft: '2px' }} />
+                      <button 
+                        onClick={handlePost} 
+                        disabled={(!newPostContent.trim() && !pendingMediaUrl) || transcribingMedia} 
+                        title={transcribingMedia ? 'Transcribing video dialogue...' : 'Send post'}
+                        style={{ 
+                          background: (newPostContent.trim() || pendingMediaUrl) && !transcribingMedia ? accent : 'rgba(255,255,255,0.08)', 
+                          border: 'none', 
+                          borderRadius: '50%', 
+                          width: '36px', 
+                          height: '36px', 
+                          display: 'flex', 
+                          alignItems: 'center', 
+                          justifyContent: 'center', 
+                          cursor: (newPostContent.trim() || pendingMediaUrl) && !transcribingMedia ? 'pointer' : 'not-allowed', 
+                          transition: '0.2s', 
+                          flexShrink: 0 
+                        }}
+                      >
+                        {transcribingMedia ? (
+                          <Loader2 size={16} className="animate-spin" color={accent} />
+                        ) : (
+                          <Send size={15} color={(newPostContent.trim() || pendingMediaUrl) ? '#000' : 'rgba(255,255,255,0.25)'} style={{ marginLeft: '2px' }} />
+                        )}
                       </button>
                     </div>
                   </div>

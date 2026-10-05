@@ -1289,6 +1289,15 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
     previewSegments?: Array<{ time: string; text: string }>;
     showPreviewModal?: boolean;
   } | null>(null);
+
+  // Lock feed posting while video upload, optimization, or audio transcription is in progress
+  const isVideoTranscribing = Boolean(
+    videoProcessing && (
+      videoProcessing.stage === 'uploading' ||
+      videoProcessing.stage === 'optimizing' ||
+      videoProcessing.stage === 'transcribing'
+    )
+  );
   
   // Interactions
   const [commentTexts, setCommentTexts] = useState<Record<string, string>>({});
@@ -4148,6 +4157,14 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
   const handlePostSubmit = async (e: React.FormEvent, isLockedVal?: boolean) => {
     if (e && e.preventDefault) e.preventDefault();
     
+    if (isVideoTranscribing) {
+      toast.error('Please wait for video audio transcription to finish before publishing!', {
+        id: 'wait-transcribing',
+        duration: 5000
+      });
+      return;
+    }
+
     if (!postTitle.trim()) {
       toast.error('Please enter a description for your post!');
       return;
@@ -5991,38 +6008,70 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
                 </div>
 
                 {/* Submit button */}
-                <button 
-                  type="submit"
-                  disabled={uploadingPostMedia || !postTitle.trim()} 
-                  style={{ 
-                    display: 'flex', 
-                    alignItems: 'center', 
-                    gap: '8px', 
-                    padding: '12px 28px', 
-                    background: (uploadingPostMedia || !postTitle.trim()) ? 'rgba(255,255,255,0.1)' : (wlConfig?.accent || 'var(--accent-primary)'), 
-                    color: (uploadingPostMedia || !postTitle.trim()) ? 'rgba(255,255,255,0.3)' : '#fff', 
-                    border: 'none', 
-                    borderRadius: '24px', 
-                    fontWeight: 900, 
-                    cursor: (uploadingPostMedia || !postTitle.trim()) ? 'not-allowed' : 'pointer',
-                    transition: 'all 0.2s ease',
-                    boxShadow: (uploadingPostMedia || !postTitle.trim()) ? 'none' : `0 4px 15px ${(wlConfig?.accent || '#ff4d85')}44`
-                  }}
-                  onMouseOver={e => {
-                    if (!uploadingPostMedia && postTitle.trim()) {
-                      e.currentTarget.style.filter = 'brightness(1.1)';
-                      e.currentTarget.style.transform = 'translateY(-1px)';
-                    }
-                  }}
-                  onMouseOut={e => {
-                    if (!uploadingPostMedia && postTitle.trim()) {
-                      e.currentTarget.style.filter = 'none';
-                      e.currentTarget.style.transform = 'none';
-                    }
-                  }}
-                >
-                  Publish Feed
-                </button>
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '6px' }}>
+                  <button 
+                    type="submit"
+                    disabled={uploadingPostMedia || isVideoTranscribing || !postTitle.trim()} 
+                    style={{ 
+                      display: 'flex', 
+                      alignItems: 'center', 
+                      gap: '8px', 
+                      padding: '12px 28px', 
+                      background: (uploadingPostMedia || isVideoTranscribing || !postTitle.trim()) 
+                        ? 'rgba(255,255,255,0.1)' 
+                        : (wlConfig?.accent || 'var(--accent-primary)'), 
+                      color: (uploadingPostMedia || isVideoTranscribing || !postTitle.trim()) 
+                        ? 'rgba(255,255,255,0.35)' 
+                        : '#fff', 
+                      border: 'none', 
+                      borderRadius: '24px', 
+                      fontWeight: 900, 
+                      cursor: (uploadingPostMedia || isVideoTranscribing || !postTitle.trim()) ? 'not-allowed' : 'pointer',
+                      transition: 'all 0.2s ease',
+                      boxShadow: (uploadingPostMedia || isVideoTranscribing || !postTitle.trim()) ? 'none' : `0 4px 15px ${(wlConfig?.accent || '#ff4d85')}44`
+                    }}
+                    onMouseOver={e => {
+                      if (!uploadingPostMedia && !isVideoTranscribing && postTitle.trim()) {
+                        e.currentTarget.style.filter = 'brightness(1.1)';
+                        e.currentTarget.style.transform = 'translateY(-1px)';
+                      }
+                    }}
+                    onMouseOut={e => {
+                      if (!uploadingPostMedia && !isVideoTranscribing && postTitle.trim()) {
+                        e.currentTarget.style.filter = 'none';
+                        e.currentTarget.style.transform = 'none';
+                      }
+                    }}
+                  >
+                    {isVideoTranscribing ? (
+                      <>
+                        <Loader2 size={16} className="animate-spin" />
+                        <span>Transcribing Video ({videoProcessing?.progress || 65}%)...</span>
+                      </>
+                    ) : uploadingPostMedia ? (
+                      <>
+                        <Loader2 size={16} className="animate-spin" />
+                        <span>Uploading Video...</span>
+                      </>
+                    ) : (
+                      'Publish Feed'
+                    )}
+                  </button>
+
+                  {isVideoTranscribing && (
+                    <div style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '6px',
+                      fontSize: '11px',
+                      color: '#c084fc',
+                      fontWeight: 600
+                    }}>
+                      <Lock size={12} color="#c084fc" />
+                      <span>Publishing unlocked once speech transcription & translations finish.</span>
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
           </form>

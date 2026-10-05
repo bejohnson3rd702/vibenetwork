@@ -57,6 +57,7 @@ export const DashboardVideoControlCenter: React.FC<DashboardVideoControlCenterPr
   const [loadingYt, setLoadingYt] = useState(false);
   const [uploadingImage, setUploadingImage] = useState(false);
   const [uploadingVideo, setUploadingVideo] = useState(false);
+  const [transcribingVideo, setTranscribingVideo] = useState(false);
   const [uploadProgressMsg, setUploadProgressMsg] = useState('');
   const [publishing, setPublishing] = useState(false);
   const [successMsg, setSuccessMsg] = useState('');
@@ -288,6 +289,7 @@ export const DashboardVideoControlCenter: React.FC<DashboardVideoControlCenterPr
       if (uploaded?.publicUrl) {
         setVideoFileUrl(uploaded.publicUrl);
         setUploadProgressMsg(`Upload complete (${fileSizeMB} MB)! Transcribing video for translation software...`);
+        setTranscribingVideo(true);
 
         // Transcribe once at upload time (broadcasts/ folder requires an admin account)
         transcribeUploadedVideo(file, {
@@ -295,9 +297,11 @@ export const DashboardVideoControlCenter: React.FC<DashboardVideoControlCenterPr
           speaker: 'Channel Broadcast',
           onProgress: (status) => setUploadProgressMsg(`🎙️ ${status}`)
         }).then(segments => {
-          setUploadProgressMsg(`✅ Transcribed ${segments.length} segment${segments.length === 1 ? '' : 's'} for translation software!`);
+          setTranscribingVideo(false);
+          setUploadProgressMsg(`✅ Transcribed ${segments.length} segment${segments.length === 1 ? '' : 's'} for translation software! Ready to publish.`);
           setTranscript(prev => (prev.trim() ? prev : segments.map(s => s.text).join(' ')));
         }).catch(err => {
+          setTranscribingVideo(false);
           console.warn('[DashboardVideoControlCenter] Transcription notice:', err);
           setUploadProgressMsg('');
         });
@@ -342,6 +346,15 @@ export const DashboardVideoControlCenter: React.FC<DashboardVideoControlCenterPr
     setSuccessMsg('');
 
     const finalVideoUrl = mode === 'youtube' ? youtubeUrl : videoFileUrl;
+
+    if (transcribingVideo) {
+      setErrorMsg('Please wait for video audio transcription to finish before publishing.');
+      return;
+    }
+    if (uploadingVideo) {
+      setErrorMsg('Please wait for video upload to complete before publishing.');
+      return;
+    }
 
     if (!title.trim()) {
       setErrorMsg('Please enter a video title.');
@@ -973,12 +986,31 @@ export const DashboardVideoControlCenter: React.FC<DashboardVideoControlCenterPr
           </div>
 
           {/* Publish Action Button */}
+          {transcribingVideo && (
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+              padding: '10px 14px',
+              borderRadius: '12px',
+              background: 'rgba(138,43,226,0.15)',
+              border: '1px solid rgba(138,43,226,0.3)',
+              color: '#c084fc',
+              fontSize: '12px',
+              fontWeight: 600,
+              marginBottom: '4px'
+            }}>
+              <Loader2 size={14} className="animate-spin" />
+              <span>🔒 Publishing is locked until speech transcription and subtitles finish processing.</span>
+            </div>
+          )}
+
           <button
             type="submit"
-            disabled={publishing}
+            disabled={publishing || uploadingVideo || transcribingVideo}
             style={{
-              background: accent,
-              color: '#fff',
+              background: (publishing || uploadingVideo || transcribingVideo) ? 'rgba(255,255,255,0.1)' : accent,
+              color: (publishing || uploadingVideo || transcribingVideo) ? 'rgba(255,255,255,0.4)' : '#fff',
               border: 'none',
               padding: '16px',
               borderRadius: '16px',
@@ -986,18 +1018,37 @@ export const DashboardVideoControlCenter: React.FC<DashboardVideoControlCenterPr
               fontWeight: 900,
               letterSpacing: '1px',
               textTransform: 'uppercase',
-              cursor: publishing ? 'not-allowed' : 'pointer',
+              cursor: (publishing || uploadingVideo || transcribingVideo) ? 'not-allowed' : 'pointer',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
               gap: '10px',
               marginTop: '10px',
-              boxShadow: `0 6px 24px ${accent}66`,
+              boxShadow: (publishing || uploadingVideo || transcribingVideo) ? 'none' : `0 6px 24px ${accent}66`,
               transition: 'all 0.2s'
             }}
           >
-            {publishing ? <Loader2 className="animate-spin" size={18} /> : <CheckCircle2 size={18} />}
-            <span>{publishing ? 'Publishing Video...' : '🚀 Publish Video to Network'}</span>
+            {publishing ? (
+              <>
+                <Loader2 className="animate-spin" size={18} />
+                <span>Publishing Video...</span>
+              </>
+            ) : transcribingVideo ? (
+              <>
+                <Loader2 className="animate-spin" size={18} />
+                <span>Transcribing Video Audio...</span>
+              </>
+            ) : uploadingVideo ? (
+              <>
+                <Loader2 className="animate-spin" size={18} />
+                <span>Uploading Video File...</span>
+              </>
+            ) : (
+              <>
+                <CheckCircle2 size={18} />
+                <span>🚀 Publish Video to Network</span>
+              </>
+            )}
           </button>
         </form>
       </div>
