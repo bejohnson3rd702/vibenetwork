@@ -1,3 +1,4 @@
+import * as tus from 'tus-js-client';
 import { supabase, supabaseUrl, supabaseAnonKey } from '../supabaseClient';
 
 export interface StorageUploadProgress {
@@ -15,9 +16,26 @@ export interface StorageUploadResult {
   error: { message: string; statusCode?: string } | null;
 }
 
+// Supabase requires exactly 6 MB chunks for resumable uploads
+const TUS_CHUNK_SIZE = 6 * 1024 * 1024;
+
 /**
- * Uploads a file to Supabase Storage with real-time byte-for-byte progress tracking.
- * Prevents the UI from looking stuck during large video uploads.
+ * For large files Supabase recommends the direct storage hostname
+ * (https://<ref>.storage.supabase.co) instead of the API gateway.
+ */
+function resumableEndpoint(): string {
+  const match = supabaseUrl.match(/^https:\/\/([a-z0-9]+)\.supabase\.co\/?$/i);
+  if (match) return `https://${match[1]}.storage.supabase.co/storage/v1/upload/resumable`;
+  return `${supabaseUrl.replace(/\/+$/, '')}/storage/v1/upload/resumable`;
+}
+
+const toMB = (bytes: number) => (bytes / (1024 * 1024)).toFixed(1);
+
+/**
+ * Upload a file to Supabase Storage using the resumable (TUS) protocol.
+ * - Real byte-level progress
+ * - Automatic retry / resume after network drops
+ * - Supports files up to the bucket's file_size_limit (5 GB for `videos`)
  */
 export async function uploadToSupabaseWithProgress(
   bucket: string,
@@ -30,144 +48,102 @@ export async function uploadToSupabaseWithProgress(
   } = {}
 ): Promise<StorageUploadResult> {
   const { onProgress, upsert = true } = options;
-  const totalBytes = file.size;
-  const totalMB = (totalBytes / (1024 * 1024)).toFixed(1);
+  const cleanPath = filePath.replace(/^\/+/, '');
+  const contentType = options.contentType || (file as File).type || 'application/octet-stream';
+  const totalMB = toMB(file.size);
 
-  // If in browser environment with XMLHttpRequest, use XHR for precise progress events
-  if (typeof window !== 'undefined' && typeof XMLHttpRequest !== 'undefined') {
-    return new Promise((resolve) => {
-      try {
-        supabase!.auth.getSession().then(({ data }) => {
-          const token = data.session?.access_token || supabaseAnonKey;
-          const cleanPath = filePath.replace(/^\/+/, '');
-          const endpoint = `${supabaseUrl}/storage/v1/object/${bucket}/${cleanPath}`;
-
-          const formData = new FormData();
-          formData.append('cacheControl', '3600');
-          formData.append('', file);
-
-          const xhr = new XMLHttpRequest();
-          xhr.open('POST', endpoint, true);
-          xhr.setRequestHeader('Authorization', `Bearer ${token}`);
-          xhr.setRequestHeader('apikey', supabaseAnonKey);
-          if (upsert) {
-            xhr.setRequestHeader('x-upsert', 'true');
-          }
-
-          let lastTime = Date.now();
-          let lastLoaded = 0;
-
-          xhr.upload.onprogress = (e) => {
-            if (e.lengthComputable && onProgress) {
-              const now = Date.now();
-              const timeDiff = (now - lastTime) / 1000;
-              let speedStr = '';
-              if (timeDiff > 0.4) {
-                const bytesDiff = e.loaded - lastLoaded;
-                const speedMB = (bytesDiff / (1024 * 1024)) / timeDiff;
-                speedStr = `${speedMB.toFixed(1)} MB/s`;
-                lastTime = now;
-                lastLoaded = e.loaded;
-              }
-
-              const percent = Math.min(99, Math.round((e.loaded / e.total) * 100));
-              const loadedMB = (e.loaded / (1024 * 1024)).toFixed(1);
-
-              onProgress({
-                loaded: e.loaded,
-                total: e.total,
-                percent,
-                loadedMB,
-                totalMB,
-                speedMBs: speedStr,
-                message: `Uploading: ${loadedMB} MB of ${totalMB} MB (${percent}%)${speedStr ? ` • ${speedStr}` : ''}`
-              });
-            }
-          };
-
-          xhr.onload = () => {
-            if (xhr.status >= 200 && xhr.status < 300) {
-              const { data: pubData } = supabase!.storage.from(bucket).getPublicUrl(cleanPath);
-              if (onProgress) {
-                onProgress({
-                  loaded: totalBytes,
-                  total: totalBytes,
-                  percent: 100,
-                  loadedMB: totalMB,
-                  totalMB,
-                  message: `Upload complete (${totalMB} MB)! Verifying file...`
-                });
-              }
-              resolve({
-                data: {
-                  path: cleanPath,
-                  fullPath: `${bucket}/${cleanPath}`,
-                  publicUrl: pubData.publicUrl
-                },
-                error: null
-              });
-            } else {
-              let errorMsg = `Upload failed (Status ${xhr.status})`;
-              try {
-                const parsed = JSON.parse(xhr.responseText || '{}');
-                errorMsg = parsed.message || parsed.error || errorMsg;
-              } catch {}
-              resolve({
-                data: null,
-                error: { message: errorMsg, statusCode: String(xhr.status) }
-              });
-            }
-          };
-
-          xhr.onerror = () => {
-            resolve({
-              data: null,
-              error: { message: 'Network connection failed during upload. Please check your internet connection.', statusCode: '0' }
-            });
-          };
-
-          xhr.ontimeout = () => {
-            resolve({
-              data: null,
-              error: { message: 'Upload timed out. The file may be too large for your current connection speed.', statusCode: '408' }
-            });
-          };
-
-          // 10 minutes timeout for very large videos
-          xhr.timeout = 10 * 60 * 1000;
-
-          xhr.send(formData);
-        }).catch(err => {
-          resolve({ data: null, error: { message: err?.message || 'Authentication error before upload' } });
-        });
-      } catch (err: any) {
-        resolve({ data: null, error: { message: err?.message || 'Failed to start upload' } });
-      }
-    });
+  if (!supabase) {
+    return { data: null, error: { message: 'Supabase client unavailable' } };
   }
 
-  // Fallback to supabase SDK standard upload
-  try {
-    const res = await supabase!.storage.from(bucket).upload(filePath, file, {
-      contentType: (file as File).type || 'video/mp4',
-      cacheControl: '3600',
-      upsert
-    });
+  const { data: sessionData } = await supabase.auth.getSession();
+  const token = sessionData.session?.access_token;
+  if (!token) {
+    return { data: null, error: { message: 'Please sign in to upload files.', statusCode: '401' } };
+  }
 
-    if (res.error) {
-      return { data: null, error: { message: res.error.message } };
-    }
+  return new Promise<StorageUploadResult>((resolve) => {
+    let lastTime = Date.now();
+    let lastLoaded = 0;
+    let speedStr = '';
 
-    const { data: pubData } = supabase!.storage.from(bucket).getPublicUrl(filePath);
-    return {
-      data: {
-        path: filePath,
-        fullPath: `${bucket}/${filePath}`,
-        publicUrl: pubData.publicUrl
+    const upload = new tus.Upload(file, {
+      endpoint: resumableEndpoint(),
+      retryDelays: [0, 3000, 5000, 10000, 20000],
+      chunkSize: TUS_CHUNK_SIZE,
+      headers: {
+        authorization: `Bearer ${token}`,
+        apikey: supabaseAnonKey,
+        'x-upsert': upsert ? 'true' : 'false',
       },
-      error: null
-    };
-  } catch (err: any) {
-    return { data: null, error: { message: err?.message || 'Upload failed' } };
-  }
+      uploadDataDuringCreation: true,
+      removeFingerprintOnSuccess: true, // allow re-uploading the same file later
+      metadata: {
+        bucketName: bucket,
+        objectName: cleanPath,
+        contentType,
+        cacheControl: '3600',
+      },
+      onProgress: (loaded, total) => {
+        if (!onProgress) return;
+        const now = Date.now();
+        const dt = (now - lastTime) / 1000;
+        if (dt > 0.5) {
+          speedStr = `${((loaded - lastLoaded) / (1024 * 1024) / dt).toFixed(1)} MB/s`;
+          lastTime = now;
+          lastLoaded = loaded;
+        }
+        const percent = Math.min(99, Math.round((loaded / total) * 100));
+        const loadedMB = toMB(loaded);
+        onProgress({
+          loaded,
+          total,
+          percent,
+          loadedMB,
+          totalMB,
+          speedMBs: speedStr,
+          message: `Uploading: ${loadedMB} MB of ${totalMB} MB (${percent}%)${speedStr ? ` • ${speedStr}` : ''}`,
+        });
+      },
+      onSuccess: () => {
+        const { data: pub } = supabase!.storage.from(bucket).getPublicUrl(cleanPath);
+        onProgress?.({
+          loaded: file.size,
+          total: file.size,
+          percent: 100,
+          loadedMB: totalMB,
+          totalMB,
+          message: `Upload complete (${totalMB} MB)`,
+        });
+        resolve({
+          data: { path: cleanPath, fullPath: `${bucket}/${cleanPath}`, publicUrl: pub.publicUrl },
+          error: null,
+        });
+      },
+      onError: (err) => {
+        const status = (err as tus.DetailedError).originalResponse?.getStatus();
+        let message = err.message || 'Upload failed';
+        const body = (err as tus.DetailedError).originalResponse?.getBody();
+        if (body) {
+          try {
+            const parsed = JSON.parse(body);
+            message = parsed.message || parsed.error || message;
+          } catch {
+            /* non-JSON body */
+          }
+        }
+        if (status === 413) message = `File exceeds the storage size limit (${totalMB} MB).`;
+        resolve({ data: null, error: { message, statusCode: status ? String(status) : undefined } });
+      },
+    });
+
+    // Resume a previous interrupted upload of the same file if one exists
+    upload
+      .findPreviousUploads()
+      .then((previous) => {
+        if (previous.length > 0) upload.resumeFromPreviousUpload(previous[0]);
+        upload.start();
+      })
+      .catch(() => upload.start());
+  });
 }

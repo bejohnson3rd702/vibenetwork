@@ -1,271 +1,200 @@
-import { supabase } from '../supabaseClient';
-import { encode16kMonoWav, transcribeAudioBlob, type YouTubeCaptionSegment } from './wwtc';
+import { supabase, supabaseUrl } from '../supabaseClient';
+import { encode16kMonoWav, type YouTubeCaptionSegment } from './wwtc';
 import { getLocalTranscript } from './staticTranscripts';
+
+/**
+ * Video transcription pipeline
+ * ----------------------------
+ * 1. At upload time the browser decodes the video's audio (resampled to 16 kHz),
+ *    slices it into 30s WAV chunks, and sends each chunk to the
+ *    `transcribe-video` Supabase Edge Function.
+ * 2. The Edge Function calls WWTC Speech-to-Text with the server-side key and
+ *    merges each segment into `video_transcripts` using the service role.
+ * 3. Players only READ transcripts (see `fetchTranscriptForVideo`).
+ *
+ * Transcripts are keyed by storage path: "videos/<user_id>/<file>".
+ */
+
+const CHUNK_SECONDS = 30;
+// Decoding happens fully in memory; beyond this size the tab may run out of memory.
+const MAX_DECODE_BYTES = 1024 * 1024 * 1024; // 1 GB
+
+export interface TranscribeVideoOptions {
+  /** Storage path inside the `videos` bucket, e.g. "<uid>/post_video_123.mp4" (or a public URL). */
+  storagePath: string;
+  speaker?: string;
+  sourceLang?: string;
+  targetLang?: string;
+  onProgress?: (message: string, percent: number) => void;
+}
+
+/**
+ * Normalize a public storage URL, a "videos/..." key, or a bare "<uid>/<file>" path
+ * into the canonical transcript key "videos/<uid>/<file>". Returns null for
+ * non-storage URLs (YouTube, external links, etc.).
+ */
+export function transcriptKeyFor(urlOrPath: string): string | null {
+  if (!urlOrPath) return null;
+  const trimmed = urlOrPath.trim().split('?')[0].split('#')[0];
+
+  const publicPrefix = '/storage/v1/object/public/';
+  const idx = trimmed.indexOf(publicPrefix);
+  if (idx >= 0) {
+    if (!trimmed.startsWith(supabaseUrl) && !/\.supabase\.co\//.test(trimmed)) return null;
+    const rest = decodeURIComponent(trimmed.slice(idx + publicPrefix.length)); // "<bucket>/<uid>/<file>"
+    return rest.startsWith('videos/') ? rest : null;
+  }
+
+  if (/^https?:\/\//i.test(trimmed)) return null;
+  const clean = trimmed.replace(/^\/+/, '');
+  if (clean.startsWith('videos/')) return clean;
+  if (/^[^/]+\/[^/]+$/.test(clean)) return `videos/${clean}`;
+  return null;
+}
 
 function formatSecs(sec: number): string {
   const m = Math.floor(sec / 60);
   const s = Math.floor(sec % 60);
-  return `${m < 10 ? '0' : ''}${m}:${s < 10 ? '0' : ''}${s}`;
+  return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
 }
 
-export interface TranscribeVideoOptions {
-  videoUrl?: string;
-  postId?: string;
-  videoTitle?: string;
-  channelName?: string;
-  onProgress?: (progressMessage: string) => void;
+/** Decode a video/audio file's soundtrack, resampled to 16 kHz to keep memory low. */
+async function decodeAudio16k(file: File | Blob): Promise<AudioBuffer> {
+  const OfflineCtx = window.OfflineAudioContext || (window as any).webkitOfflineAudioContext;
+  if (!OfflineCtx) throw new Error('Web Audio API is not supported in this browser.');
+  // decodeAudioData resamples to the context's sample rate
+  const ctx = new OfflineCtx(1, 1, 16000);
+  const arrayBuffer = await file.arrayBuffer();
+  return await ctx.decodeAudioData(arrayBuffer);
 }
 
-/**
- * Transcribe video audio via backend speech recognition service (FFmpeg + Google Speech Recognition)
- */
-export async function transcribeVideoViaBackend(
-  videoUrl: string,
-  postId?: string,
-  speaker: string = 'Channel Speaker'
-): Promise<YouTubeCaptionSegment[]> {
-  try {
-    const res = await fetch('/api/transcribe-video', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ videoUrl, postId, speaker })
-    });
-
-    if (res.ok) {
-      const data = await res.json();
-      if (data.success && Array.isArray(data.segments) && data.segments.length > 0) {
-        // Save to Supabase using current authenticated user session
-        if (postId) {
-          saveVideoTranscript(postId, data.segments).catch(() => {});
-        }
-        saveVideoTranscript(videoUrl, data.segments).catch(() => {});
-        return data.segments;
-      }
-    }
-  } catch (err: any) {
-    console.warn('[VideoTranscription] Backend speech recognition note:', err.message);
-  }
-  return [];
-}
-
-/**
- * Extract audio track from an uploaded video file (MP4, WebM, MOV, etc.) and decode to an AudioBuffer
- */
-export async function extractAudioBufferFromFile(file: File | Blob): Promise<AudioBuffer> {
-  const AudioCtxClass = window.AudioContext || (window as any).webkitAudioContext;
-  if (!AudioCtxClass) {
-    throw new Error('Web Audio API is not supported in this browser environment.');
-  }
-  const audioCtx = new AudioCtxClass();
-  try {
-    const arrayBuffer = await file.arrayBuffer();
-    const audioBuffer = await audioCtx.decodeAudioData(arrayBuffer);
-    return audioBuffer;
-  } finally {
-    if (audioCtx.state !== 'closed') {
-      audioCtx.close().catch(() => {});
-    }
-  }
-}
-
-/**
- * Slice a portion of an AudioBuffer (from startSec to endSec)
- */
-function sliceAudioBuffer(
-  audioBuffer: AudioBuffer,
-  startSec: number,
-  endSec: number
-): AudioBuffer {
-  const sampleRate = audioBuffer.sampleRate;
-  const numChannels = audioBuffer.numberOfChannels;
+function sliceAudioBuffer(audioBuffer: AudioBuffer, startSec: number, endSec: number): AudioBuffer {
+  const { sampleRate, numberOfChannels } = audioBuffer;
   const startSample = Math.max(0, Math.floor(startSec * sampleRate));
   const endSample = Math.min(audioBuffer.length, Math.floor(endSec * sampleRate));
-  const frameCount = Math.max(1, endSample - startSample);
-
-  const subBuffer = new AudioBuffer({
-    numberOfChannels: numChannels,
-    length: frameCount,
-    sampleRate: sampleRate,
+  const sub = new AudioBuffer({
+    numberOfChannels,
+    length: Math.max(1, endSample - startSample),
+    sampleRate,
   });
-
-  for (let c = 0; c < numChannels; c++) {
-    const sourceData = audioBuffer.getChannelData(c);
-    const targetData = subBuffer.getChannelData(c);
-    targetData.set(sourceData.subarray(startSample, endSample));
+  for (let c = 0; c < numberOfChannels; c++) {
+    sub.getChannelData(c).set(audioBuffer.getChannelData(c).subarray(startSample, endSample));
   }
-
-  return subBuffer;
+  return sub;
 }
 
 /**
- * Transcribes any video uploaded to a channel or feed:
- * 1. Checks backend AI speech recognition first for fast server-side extraction.
- * 2. Falls back to browser Web Audio decoding if supported.
- * 3. Saves real spoken dialogue directly into Supabase video_transcripts table.
- * 4. NEVER substitutes the title as spoken speech.
+ * Transcribe an uploaded video. Runs in the uploader's browser tab; each chunk is
+ * persisted server-side as it completes, so partial progress survives a closed tab.
+ * Returns the segments recognized in this run.
  */
 export async function transcribeUploadedVideo(
   file: File,
-  options: TranscribeVideoOptions = {}
+  options: TranscribeVideoOptions
 ): Promise<YouTubeCaptionSegment[]> {
-  const { videoUrl, postId, videoTitle: _videoTitle, channelName = 'Channel Speaker', onProgress } = options;
+  const {
+    storagePath,
+    speaker = 'Channel Speaker',
+    sourceLang = 'english-united-states',
+    targetLang = 'spanish-international',
+    onProgress,
+  } = options;
 
-  onProgress?.('Extracting and transcribing dialogue for translation software...');
+  const videoKey = transcriptKeyFor(storagePath);
+  if (!videoKey) throw new Error(`Not a storage video path: ${storagePath}`);
+  if (!supabase) throw new Error('Supabase client unavailable');
 
-  // 1. If videoUrl is available, use fast backend speech recognition
-  if (videoUrl) {
-    const backendSegments = await transcribeVideoViaBackend(videoUrl, postId, channelName);
-    if (backendSegments && backendSegments.length > 0) {
-      onProgress?.(`✅ Transcribed ${backendSegments.length} dialogue segments for translation software!`);
-      return backendSegments;
-    }
+  if (file.size > MAX_DECODE_BYTES) {
+    onProgress?.('Video is too large to transcribe in the browser — skipping transcript.', 100);
+    return [];
   }
 
-  // 2. Client-side audio extraction fallback via Web Audio
-  let audioBuffer: AudioBuffer | null = null;
+  onProgress?.('Extracting audio for transcription...', 5);
+  let audioBuffer: AudioBuffer;
   try {
-    audioBuffer = await extractAudioBufferFromFile(file);
+    audioBuffer = await decodeAudio16k(file);
   } catch (err: any) {
-    console.warn('[VideoTranscription] Browser audio decode notice:', err.message);
+    console.warn('[VideoTranscription] Audio decode failed:', err?.message);
+    onProgress?.('This video format could not be decoded for transcription.', 100);
+    return [];
   }
 
+  const duration = audioBuffer.duration;
+  if (!duration || duration < 0.5) return [];
+
+  const totalChunks = Math.ceil(duration / CHUNK_SECONDS);
   const segments: YouTubeCaptionSegment[] = [];
 
-  if (audioBuffer && audioBuffer.duration > 0.5) {
-    const duration = audioBuffer.duration;
-    const chunkSize = 30;
-    const totalChunks = Math.max(1, Math.ceil(duration / chunkSize));
+  for (let i = 0; i < totalChunks; i++) {
+    const startSec = i * CHUNK_SECONDS;
+    const endSec = Math.min(duration, startSec + CHUNK_SECONDS);
+    const percent = Math.round(10 + (i / totalChunks) * 85);
+    onProgress?.(`Transcribing ${formatSecs(startSec)} / ${formatSecs(duration)}...`, percent);
 
-    for (let i = 0; i < totalChunks; i++) {
-      const startSec = i * chunkSize;
-      const endSec = Math.min(duration, (i + 1) * chunkSize);
-      const timeStr = formatSecs(startSec);
+    const wav = encode16kMonoWav(sliceAudioBuffer(audioBuffer, startSec, endSec));
+    const form = new FormData();
+    form.append('videoKey', videoKey);
+    form.append('startSec', String(startSec));
+    form.append('speaker', speaker);
+    form.append('sourceLang', sourceLang);
+    form.append('targetLang', targetLang);
+    form.append('reset', i === 0 ? 'true' : 'false');
+    form.append('audio', wav, `chunk_${i}.wav`);
 
-      try {
-        const chunkBuffer = sliceAudioBuffer(audioBuffer, startSec, endSec);
-        const wavBlob = encode16kMonoWav(chunkBuffer);
-
-        const res = await transcribeAudioBlob({
-          audioBlob: wavBlob,
-          sourceLang: 'english-united-states',
-          targetLang: 'spanish-international',
-        });
-
-        const recognizedText = (res.source_text || '').trim();
-        if (recognizedText && !recognizedText.toLowerCase().includes('error')) {
-          segments.push({
-            time: timeStr,
-            seconds: Math.round(startSec),
-            speaker: channelName,
-            text: recognizedText,
-            translatedText: res.translated_text || undefined,
-            isRecorded: true,
-          });
-        }
-      } catch (chunkErr: any) {
-        console.warn(`[VideoTranscription] Chunk ${i + 1} notice:`, chunkErr.message);
-      }
+    const { data, error } = await supabase.functions.invoke('transcribe-video', { body: form });
+    if (error) {
+      console.warn(`[VideoTranscription] Chunk ${i + 1}/${totalChunks} failed:`, error.message);
+      continue;
     }
+    if (data?.segment) segments.push(data.segment as YouTubeCaptionSegment);
   }
 
-  // 3. Save genuine spoken dialogue into Supabase (NEVER store the video title as spoken dialogue)
-  if (segments.length > 0) {
-    if (videoUrl) await saveVideoTranscript(videoUrl, segments);
-    if (postId) await saveVideoTranscript(postId, segments);
-    onProgress?.(`Transcription complete! (${segments.length} segment${segments.length > 1 ? 's' : ''} ready for translation)`);
-  }
-
+  onProgress?.(
+    segments.length > 0
+      ? `Transcription complete (${segments.length} segment${segments.length === 1 ? '' : 's'}).`
+      : 'No speech detected.',
+    100
+  );
   return segments;
 }
 
 /**
- * Save transcript directly to Supabase video_transcripts table so translation software can find it
- */
-export async function saveVideoTranscript(
-  videoIdOrUrl: string,
-  transcript: YouTubeCaptionSegment[]
-): Promise<boolean> {
-  if (!videoIdOrUrl || !transcript || transcript.length === 0 || !supabase) {
-    return false;
-  }
-
-  // Filter out any bogus placeholder entries that contain file names
-  const validSegments = transcript.filter(s => 
-    s.text && 
-    !s.isPlaceholder && 
-    !s.text.includes('_001_') && 
-    !s.text.includes('.mp4') &&
-    !s.text.includes('Did-Lush-')
-  );
-
-  if (validSegments.length === 0) return false;
-
-  try {
-    const { error } = await supabase
-      .from('video_transcripts')
-      .upsert(
-        {
-          video_id: videoIdOrUrl.trim(),
-          transcript: validSegments,
-          created_at: new Date().toISOString()
-        },
-        { onConflict: 'video_id' }
-      );
-
-    if (error) {
-      console.warn('[VideoTranscription] Supabase upsert notice:', error.message);
-      return false;
-    }
-    return true;
-  } catch (err: any) {
-    console.warn('[VideoTranscription] Failed to save transcript to Supabase:', err.message);
-    return false;
-  }
-}
-
-/**
- * Fetch video transcript by ID or URL from Supabase, filtering out obsolete dummy placeholders
+ * Read-only transcript lookup for players.
+ * Order: bundled static transcripts → canonical storage key → legacy keys (raw URL / post ID).
  */
 export async function fetchTranscriptForVideo(
-  videoIdOrUrl: string
+  videoUrl: string,
+  postId?: string | number
 ): Promise<YouTubeCaptionSegment[] | null> {
-  if (!videoIdOrUrl) return null;
+  if (!videoUrl && !postId) return null;
 
-  // 1. Check local static transcripts first (guarantees authentic dialogue without network delays)
-  const local = getLocalTranscript(videoIdOrUrl);
-  if (local && local.length > 0) {
-    return local;
-  }
+  const local = getLocalTranscript(videoUrl) || (postId ? getLocalTranscript(String(postId)) : null);
+  if (local && local.length > 0) return local;
 
   if (!supabase) return null;
+
+  const key = transcriptKeyFor(videoUrl);
+  // Legacy rows were saved under the raw URL or post ID
+  const candidates = [key, videoUrl?.trim(), postId != null ? String(postId) : null].filter(
+    (v): v is string => Boolean(v)
+  );
+  if (candidates.length === 0) return null;
 
   try {
     const { data } = await supabase
       .from('video_transcripts')
-      .select('transcript')
-      .eq('video_id', videoIdOrUrl.trim())
-      .maybeSingle();
+      .select('video_id, transcript')
+      .in('video_id', candidates);
 
-    if (data && Array.isArray(data.transcript) && data.transcript.length > 0) {
-      // Validate that this is authentic dialogue and not a placeholder containing the video title
-      const isPlaceholder = data.transcript.some((s: any) =>
-        s.isPlaceholder ||
-        s.isRecorded === false ||
-        s.text?.includes('_001_') ||
-        s.text?.includes('.mp4') ||
-        s.text?.includes('Did-Lush-') ||
-        s.text?.includes('Did-Lush-Purposely-Dodge-Wack')
-      );
-
-      if (!isPlaceholder) {
-        return data.transcript;
-      }
+    if (!data || data.length === 0) return null;
+    // Prefer the canonical key, then the order of candidates
+    const row = candidates.map(c => data.find(d => d.video_id === c)).find(Boolean);
+    const transcript = row?.transcript;
+    if (Array.isArray(transcript) && transcript.length > 0 && !transcript.some((s: any) => s.isPlaceholder || s.isRecorded === false)) {
+      return transcript as YouTubeCaptionSegment[];
     }
   } catch (err) {
-    console.warn('[VideoTranscription] Fetch transcript notice:', err);
+    console.warn('[VideoTranscription] Fetch transcript failed:', err);
   }
-
-  // 2. Final fallback to local transcript lookup
-  return getLocalTranscript(videoIdOrUrl);
+  return null;
 }
-

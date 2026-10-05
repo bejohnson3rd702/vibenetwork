@@ -13,7 +13,7 @@ import { BackgroundSettingsModal } from './BackgroundSettingsModal';
 import { SubscriptionSettingsModal } from './SubscriptionSettingsModal';
 import { VideoTranslationOverlay } from './VideoTranslationOverlay';
 import { FeedVideoPlayer } from './FeedVideoPlayer';
-import { transcribeUploadedVideo, saveVideoTranscript } from '../lib/videoTranscription';
+import { transcribeUploadedVideo } from '../lib/videoTranscription';
 import { uploadToSupabaseWithProgress } from '../lib/storageUpload';
 const LiveChat = React.lazy(() => import('./LiveChat'));
 const ShopifyStore = React.lazy(() => import('./ShopifyStore'));
@@ -135,7 +135,6 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
   const location = useLocation();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const pendingVideoTranscriptsRef = useRef<Record<string, any>>({});
-  const pendingTranscriptionPromisesRef = useRef<Record<string, Promise<any>>>({});
   const { wlConfig } = useWhiteLabel();
   const toast = useToast();
   
@@ -3482,35 +3481,48 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
         });
       };
 
-      // NOTE: client-side canvas compression was removed (produced sped-up/silent output).
-      // Large-file support will come from resumable (TUS) uploads + server-side transcoding.
       const fileToUpload = file;
 
       const durationSeconds = await detectVideoDuration(fileToUpload);
       const fileExt = fileToUpload.name.split('.').pop() || 'mp4';
-      const fileName = `video_${Math.random()}.${fileExt}`;
-      const filePath = `${user?.id}/${fileName}`;
+      const sessionUserId = (await supabase!.auth.getSession()).data.session?.user?.id || user?.id;
+      const filePath = `${sessionUserId}/video_${Date.now()}_${Math.random().toString(36).substring(2, 8)}.${fileExt}`;
 
-      const { error: uploadError } = await supabase!.storage.from('videos').upload(filePath, fileToUpload, {
-        cacheControl: '3600',
-        upsert: true
+      // Resumable (TUS) upload: large files, progress, auto-resume on network drops
+      const uploadRes = await uploadToSupabaseWithProgress('videos', filePath, fileToUpload, {
+        contentType: fileToUpload.type || 'video/mp4',
+        upsert: true,
+        onProgress: (p) => toast.loading(p.message, { id: 'episode-upload', title: 'Uploading Episode', progress: p.percent })
       });
-      if (uploadError) throw uploadError;
+      if (uploadRes.error) throw new Error(uploadRes.error.message);
 
-      const { data } = supabase!.storage.from('videos').getPublicUrl(filePath);
+      const publicUrl = uploadRes.data!.publicUrl!;
       const uploadedSizeMB = (fileToUpload.size / (1024 * 1024)).toFixed(1);
       setEditingEpisode((prev: any) => ({ 
         ...prev, 
-        video_url: data.publicUrl,
+        video_url: publicUrl,
         duration: durationSeconds > 0 ? durationSeconds : prev?.duration
       }));
       const durationFormatted = durationSeconds > 0 ? ` (${Math.floor(durationSeconds/60)}m ${durationSeconds%60}s)` : '';
-      toast.success(`Video uploaded successfully (${uploadedSizeMB} MB)!${durationFormatted}`);
+      toast.success(`Video uploaded successfully (${uploadedSizeMB} MB)!${durationFormatted}`, { id: 'episode-upload', duration: 5000 });
+
+      // Background transcription for translated captions / dubbing
+      void transcribeUploadedVideo(fileToUpload, {
+        storagePath: filePath,
+        speaker: profile?.username || 'Channel Host',
+        onProgress: (msg, pct) => toast.loading(msg, { id: 'episode-transcribe', title: 'Transcribing Episode', progress: pct })
+      })
+        .then(segs => toast.success(segs.length > 0 ? `Transcript ready (${segs.length} segments)` : 'No speech detected for transcript', { id: 'episode-transcribe', duration: 4000 }))
+        .catch(err => {
+          console.warn('[ProfileDashboard] Episode transcription failed:', err);
+          toast.dismiss('episode-transcribe');
+        });
     } catch (err: any) {
       console.error(err);
       const errMsg = err.message || '';
+      toast.dismiss('episode-upload');
       if (errMsg.includes('exceed') || errMsg.includes('size') || errMsg.includes('payload')) {
-        toast.error(`Upload blocked: File exceeds Supabase bucket size limit. Please run the 5GB bucket script or paste an external video link.`);
+        toast.error(`Upload blocked: ${errMsg || 'file exceeds the storage size limit'}. You can paste an external video link instead.`);
       } else {
         toast.error('Video upload failed: ' + (errMsg || 'Storage error'));
       }
@@ -3893,19 +3905,19 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
             progress: 65
           });
 
-          // Automatically generate transcript for the translation software
-          const transPromise = transcribeUploadedVideo(rawFile, {
-            videoUrl,
-            videoTitle: postTitle || rawFile.name.replace(/\.[^/.]+$/, ''),
-            channelName: profile?.username || 'Channel Host',
-            onProgress: (msg) => {
+          // Transcribe once at upload time (saved server-side, keyed by storage path)
+          void transcribeUploadedVideo(rawFile, {
+            storagePath: filePath,
+            speaker: profile?.username || 'Channel Host',
+            onProgress: (msg, pct) => {
+              const progress = Math.round(65 + (pct / 100) * 34);
               setVideoProcessing(prev => prev ? {
                 ...prev,
                 stage: 'transcribing',
                 stageText: msg,
-                progress: 80
+                progress
               } : null);
-              toast.loading(msg, { id: 'video-pipeline', title: 'Transcribing Audio', progress: 80 });
+              toast.loading(msg, { id: 'video-pipeline', title: 'Transcribing Audio', progress });
             }
           }).then(segments => {
             pendingVideoTranscriptsRef.current[videoUrl] = segments;
@@ -3942,7 +3954,6 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
             });
             return [];
           });
-          pendingTranscriptionPromisesRef.current[videoUrl] = transPromise;
         } else {
           // Images: run through the AI enhancer
           toast.loading(`Vibe is enhancing & auto-cropping media: ${rawFile.name}...`, { id: 'image-pipeline', title: 'Enhancing Image' });
@@ -4086,20 +4097,7 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
     const { data } = await supabase!.from('posts').insert([newPost]).select();
     
     if (data && data[0]) {
-      const createdPostId = String(data[0].id);
-      // Link any generated video transcripts to the new post ID for translation software
-      postMediaUrls.forEach(url => {
-        const segs = pendingVideoTranscriptsRef.current[url];
-        if (segs && segs.length > 0) {
-          saveVideoTranscript(createdPostId, segs).catch(() => {});
-        } else if (pendingTranscriptionPromisesRef.current[url]) {
-          pendingTranscriptionPromisesRef.current[url].then(resolvedSegs => {
-            if (resolvedSegs && resolvedSegs.length > 0) {
-              saveVideoTranscript(createdPostId, resolvedSegs).catch(() => {});
-            }
-          });
-        }
-      });
+      // Transcripts are keyed by the video's storage path, so no per-post linking is needed.
 
       const newPostItem = { 
         id: data[0].id, 
@@ -5389,10 +5387,10 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
                 <AlertCircle size={22} color="#ff4d85" style={{ flexShrink: 0, marginTop: '2px' }} />
                 <div style={{ flex: 1 }}>
                   <div style={{ fontWeight: 800, color: '#fff', fontSize: '14px', marginBottom: '4px' }}>
-                    Video Exceeds Storage Gateway Limit ({largeVideoWarning.sizeMB} MB)
+                    Video Exceeds Storage Limit ({largeVideoWarning.sizeMB} MB)
                   </div>
                   <div>
-                    Supabase's standard direct upload gateway caps individual file uploads at <strong>50 MB</strong>. To share this video without limits, paste a <strong>YouTube</strong>, <strong>Vimeo</strong>, or direct video link below and click <strong>Add Video</strong>!
+                    This file is larger than the video storage limit. To share it anyway, paste a <strong>YouTube</strong>, <strong>Vimeo</strong>, or direct video link below and click <strong>Add Video</strong>!
                   </div>
                 </div>
                 <button

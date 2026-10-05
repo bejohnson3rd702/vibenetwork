@@ -1,8 +1,6 @@
 import { defineConfig, loadEnv } from 'vite'
 import react from '@vitejs/plugin-react'
-import { execSync, execFile } from 'child_process'
-import path from 'path'
-import { existsSync } from 'fs'
+import { execSync } from 'child_process'
 import { createClient } from '@supabase/supabase-js'
 
 function youtubeTranscriptPlugin(env: Record<string, string>) {
@@ -127,63 +125,6 @@ function youtubeTranscriptPlugin(env: Record<string, string>) {
           res.setHeader('Content-Type', 'application/json');
           return res.end(JSON.stringify({ success: false, error: err?.message || 'Server error' }));
         }
-      });
-
-      server.middlewares.use('/api/transcribe-video', async (req: any, res: any) => {
-        if (req.method !== 'POST') {
-          res.statusCode = 405;
-          return res.end('Method Not Allowed');
-        }
-
-        let bodyStr = '';
-        req.on('data', (chunk: any) => { bodyStr += chunk; });
-        req.on('end', async () => {
-          try {
-            const body = JSON.parse(bodyStr || '{}');
-            const { videoUrl, postId, speaker = 'Channel Speaker' } = body;
-            if (!videoUrl || typeof videoUrl !== 'string') {
-              res.statusCode = 400;
-              res.setHeader('Content-Type', 'application/json');
-              return res.end(JSON.stringify({ error: 'Missing videoUrl' }));
-            }
-
-            // Only allow transcribing files hosted in this project's Supabase storage
-            const allowedOrigin = (env.VITE_SUPABASE_URL || 'https://fimzetmvrmbmdggvqzpr.supabase.co').replace(/\/+$/, '');
-            let parsedUrl: URL;
-            try {
-              parsedUrl = new URL(videoUrl);
-            } catch {
-              parsedUrl = new URL('invalid:');
-            }
-            if (parsedUrl.origin !== allowedOrigin || !parsedUrl.pathname.startsWith('/storage/v1/object/public/')) {
-              res.statusCode = 400;
-              res.setHeader('Content-Type', 'application/json');
-              return res.end(JSON.stringify({ error: 'videoUrl must point to project storage' }));
-            }
-
-            console.log(`[transcribe-video] Transcribing dialogue for: ${videoUrl}`);
-            const scriptPath = path.resolve(process.cwd(), 'scripts', 'transcribe_audio.py');
-            const pythonBin = process.env.PYTHON_BIN || (existsSync('/opt/homebrew/bin/python3') ? '/opt/homebrew/bin/python3' : 'python3');
-            // execFile: no shell, args passed as an array -> no injection; async -> doesn't block Vite
-            const stdout = await new Promise<string>((resolve, reject) => {
-              execFile(
-                pythonBin,
-                [scriptPath, parsedUrl.toString(), String(postId || ''), String(speaker).slice(0, 100)],
-                { encoding: 'utf8', maxBuffer: 20 * 1024 * 1024, timeout: 10 * 60 * 1000 },
-                (err, out) => (err ? reject(err) : resolve(out))
-              );
-            });
-
-            const parsed = JSON.parse(stdout.trim());
-            res.setHeader('Content-Type', 'application/json');
-            return res.end(JSON.stringify(parsed));
-          } catch (transErr: any) {
-            console.warn('[transcribe-video middleware] error:', transErr.message);
-            res.statusCode = 500;
-            res.setHeader('Content-Type', 'application/json');
-            return res.end(JSON.stringify({ error: 'Transcription failed' }));
-          }
-        });
       });
     }
   };

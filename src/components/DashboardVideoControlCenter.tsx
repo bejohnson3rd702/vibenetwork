@@ -6,7 +6,8 @@ import { extractYouTubeId } from './KpleAddVideoModal';
 import { validateFileSafety } from '../lib/fileSecurity';
 import { getChildNetworks } from '../lib/n2n';
 import { isKpleConfig } from '../lib/whitelabel';
-import { transcribeUploadedVideo, saveVideoTranscript } from '../lib/videoTranscription';
+import { transcribeUploadedVideo } from '../lib/videoTranscription';
+import { uploadToSupabaseWithProgress } from '../lib/storageUpload';
 
 const YoutubeIcon = ({ size = 20, color = "#FF0000" }: { size?: number, color?: string }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill={color}>
@@ -276,31 +277,29 @@ export const DashboardVideoControlCenter: React.FC<DashboardVideoControlCenterPr
       const fileName = `${Date.now()}_${Math.random().toString(36).substring(7)}.${fileExt}`;
       const filePath = `broadcasts/${fileName}`;
 
-      const { error: uploadErr } = await supabase.storage.from('videos').upload(filePath, file, {
-        cacheControl: '3600',
-        upsert: true
+      const { data: uploaded, error: uploadErr } = await uploadToSupabaseWithProgress('videos', filePath, file, {
+        contentType: file.type || 'video/mp4',
+        upsert: true,
+        onProgress: (p) => setUploadProgressMsg(p.message)
       });
 
-      if (uploadErr) throw uploadErr;
+      if (uploadErr) throw new Error(uploadErr.message);
 
-      const { data } = supabase.storage.from('videos').getPublicUrl(filePath);
-      if (data?.publicUrl) {
-        setVideoFileUrl(data.publicUrl);
+      if (uploaded?.publicUrl) {
+        setVideoFileUrl(uploaded.publicUrl);
         setUploadProgressMsg(`Upload complete (${fileSizeMB} MB)! Transcribing video for translation software...`);
 
-        // Automatically transcribe video audio for translation software
+        // Transcribe once at upload time (broadcasts/ folder requires an admin account)
         transcribeUploadedVideo(file, {
-          videoUrl: data.publicUrl,
-          videoTitle: title || file.name.replace(/\.[^/.]+$/, ''),
-          channelName: 'Channel Broadcast',
+          storagePath: filePath,
+          speaker: 'Channel Broadcast',
           onProgress: (status) => setUploadProgressMsg(`🎙️ ${status}`)
         }).then(segments => {
-          setUploadProgressMsg(`✅ Transcribed ${segments.length} segment${segments.length > 1 ? 's' : ''} for translation software!`);
-          if (!transcript.trim()) {
-            setTranscript(segments.map(s => s.text).join(' '));
-          }
+          setUploadProgressMsg(`✅ Transcribed ${segments.length} segment${segments.length === 1 ? '' : 's'} for translation software!`);
+          setTranscript(prev => (prev.trim() ? prev : segments.map(s => s.text).join(' ')));
         }).catch(err => {
           console.warn('[DashboardVideoControlCenter] Transcription notice:', err);
+          setUploadProgressMsg('');
         });
       }
     } catch (err: any) {

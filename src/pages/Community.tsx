@@ -5,7 +5,8 @@ import { MessageSquare, Hash, Image as ImageIcon, Send, Lock, Unlock, Plus, Tras
 import toast from 'react-hot-toast';
 import { validateFileSafety } from '../lib/fileSecurity';
 import { FeedVideoPlayer } from '../components/FeedVideoPlayer';
-import { transcribeUploadedVideo, saveVideoTranscript } from '../lib/videoTranscription';
+import { transcribeUploadedVideo } from '../lib/videoTranscription';
+import { uploadToSupabaseWithProgress } from '../lib/storageUpload';
 
 interface CommunityProps {
   user: any;
@@ -23,7 +24,6 @@ export default function Community({ user, onAuthRequest }: CommunityProps) {
   const [uploadingMedia, setUploadingMedia] = useState(false);
   const [pendingMediaUrl, setPendingMediaUrl] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const pendingVideoTranscriptsRef = useRef<Record<string, any>>({});
   const [showAddChannel, setShowAddChannel] = useState(false);
   const [newChannelName, setNewChannelName] = useState('');
   const [newChannelDesc, setNewChannelDesc] = useState('');
@@ -92,41 +92,38 @@ export default function Community({ user, onAuthRequest }: CommunityProps) {
       return;
     }
 
-    if (file.size > 50 * 1024 * 1024) { toast.error('File too large. Max 50MB.'); return; }
+    const isVid = file.type.startsWith('video/') || /\.(mp4|mov|webm|ogg|avi|mkv)$/i.test(file.name);
+    if (!isVid && file.size > 50 * 1024 * 1024) { toast.error('File too large. Max 50MB.'); return; }
     try {
       setUploadingMedia(true);
-      const isVid = file.type.startsWith('video/') || /\.(mp4|mov|webm|ogg|avi|mkv)$/i.test(file.name);
       const ext = file.name.split('.').pop() || (isVid ? 'mp4' : 'bin');
       const filePath = `${user.id}/community_${Date.now()}.${ext}`;
-      
-      let targetBucket = isVid ? 'videos' : 'images';
-      const uploadRes = await supabase!.storage.from(targetBucket).upload(filePath, file, { contentType: file.type });
-      
-      if (uploadRes.error && isVid) {
-        // Fallback to images bucket
-        const fallbackRes = await supabase!.storage.from('images').upload(filePath, file, { contentType: file.type });
-        if (fallbackRes.error) {
-          throw new Error(`Upload failed: ${uploadRes.error.message || fallbackRes.error.message}`);
-        }
-        targetBucket = 'images';
-      } else if (uploadRes.error) {
-        throw uploadRes.error;
-      }
 
-      const { data } = supabase!.storage.from(targetBucket).getPublicUrl(filePath);
-      const mediaUrl = data.publicUrl;
+      let mediaUrl: string;
+      if (isVid) {
+        // Resumable (TUS) upload for videos
+        const uploadRes = await uploadToSupabaseWithProgress('videos', filePath, file, {
+          contentType: file.type || 'video/mp4',
+          onProgress: (p) => toast.loading(p.message, { id: 'comm-video-upload' })
+        });
+        toast.dismiss('comm-video-upload');
+        if (uploadRes.error) throw new Error(uploadRes.error.message);
+        mediaUrl = uploadRes.data!.publicUrl!;
+      } else {
+        const { error } = await supabase!.storage.from('images').upload(filePath, file, { contentType: file.type });
+        if (error) throw error;
+        mediaUrl = supabase!.storage.from('images').getPublicUrl(filePath).data.publicUrl;
+      }
       setPendingMediaUrl(mediaUrl);
 
       if (isVid) {
-        toast.loading('🎙️ Generating video transcript for translation software...', { id: 'comm-video-trans' });
+        toast.success('Video ready -- hit send! Transcript is being generated...');
         transcribeUploadedVideo(file, {
-          videoUrl: mediaUrl,
-          videoTitle: newPostContent || file.name.replace(/\.[^/.]+$/, ''),
-          channelName: activeChannel?.name || 'Community Channel',
+          storagePath: filePath,
+          speaker: user?.user_metadata?.username || activeChannel?.name || 'Community Member',
           onProgress: (msg) => toast.loading(`🎙️ ${msg}`, { id: 'comm-video-trans' })
         }).then(segments => {
-          pendingVideoTranscriptsRef.current[mediaUrl] = segments;
-          toast.success(`✅ Video transcript ready for translation software! (${segments.length} segments)`, { id: 'comm-video-trans', duration: 4000 });
+          toast.success(`✅ Video transcript ready! (${segments.length} segments)`, { id: 'comm-video-trans', duration: 4000 });
         }).catch(err => {
           console.warn('[Community] Video transcription notice:', err);
           toast.dismiss('comm-video-trans');
@@ -144,17 +141,12 @@ export default function Community({ user, onAuthRequest }: CommunityProps) {
   const handlePost = async () => {
     if ((!newPostContent.trim() && !pendingMediaUrl) || !user || !activeChannel) return;
     const mediaToPost = pendingMediaUrl;
-    const { data: newPostData, error } = await supabase.from('network_posts').insert({
+    const { error } = await supabase.from('network_posts').insert({
       channel_id: activeChannel.id, author_id: user.id,
       content: newPostContent.trim() || '', media_url: mediaToPost || null,
-    }).select().single();
+    });
 
     if (error) { toast.error('Failed to post. Please try again.'); return; }
-
-    // Link video transcript to post ID if available
-    if (newPostData && mediaToPost && pendingVideoTranscriptsRef.current[mediaToPost]) {
-      saveVideoTranscript(String(newPostData.id), pendingVideoTranscriptsRef.current[mediaToPost]).catch(() => {});
-    }
 
     setNewPostContent(''); setPendingMediaUrl(null);
   };

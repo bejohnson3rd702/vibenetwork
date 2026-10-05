@@ -8,7 +8,7 @@ import {
   type YouTubeCaptionSegment 
 } from '../lib/wwtc';
 import { fetchTranscriptForVideo } from '../lib/videoTranscription';
-import { getLocalTranscript } from '../lib/staticTranscripts';
+
 
 
 interface FeedVideoPlayerProps {
@@ -66,44 +66,22 @@ export const FeedVideoPlayer: React.FC<FeedVideoPlayerProps> = ({
 
   const queryId = postId ? String(postId) : videoUrl;
 
-  // 1. Fetch transcript from Supabase video_transcripts table
+  // 1. Load transcript (read-only; transcription happens once at upload time)
   useEffect(() => {
     let isMounted = true;
     setLoadingTranscript(true);
+    setTranscript([]);
 
-    async function loadTranscript() {
-      // 1. Check bundled high-accuracy dialogue transcripts first (instant zero-latency)
-      let localData = getLocalTranscript(videoUrl);
-      if (!localData && postId) {
-        localData = getLocalTranscript(String(postId));
-      }
-      if (localData && localData.length > 0) {
-        if (isMounted) {
-          setTranscript(localData);
-          setLoadingTranscript(false);
-        }
-        return;
-      }
+    fetchTranscriptForVideo(videoUrl, postId)
+      .then(data => {
+        if (isMounted && data && data.length > 0) setTranscript(data);
+      })
+      .finally(() => {
+        if (isMounted) setLoadingTranscript(false);
+      });
 
-      // 2. Query Supabase video_transcripts table
-      let data = await fetchTranscriptForVideo(videoUrl);
-      if (!data && postId) {
-        data = await fetchTranscriptForVideo(String(postId));
-      }
-
-      if (isMounted) {
-        // Viewers only READ transcripts. Transcription happens once at upload time,
-        // never per-view (avoids N ffmpeg jobs per page load).
-        if (data && data.length > 0) {
-          setTranscript(data);
-        }
-        setLoadingTranscript(false);
-      }
-    }
-
-    loadTranscript();
     return () => { isMounted = false; };
-  }, [videoUrl, postId, title]);
+  }, [videoUrl, postId]);
 
   // 2. Fetch supported WWTC languages
   useEffect(() => {
