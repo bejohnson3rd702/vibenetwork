@@ -96,14 +96,17 @@ serve(async (req) => {
     }
 
     // ── WWTC Speech-to-Text ─────────────────────────────────────────────────
-    const wwtcForm = new FormData();
-    wwtcForm.append("audio", audio, "audio.wav");
+    // WWTC expects the raw WAV bytes as the request body (multipart returns "STT not available").
     const wwtcRes = await fetch(
       `${WWTC_API_BASE}/services/stt/${sourceLang}/${targetLang}`,
       {
         method: "POST",
-        headers: { accept: "application/json", "api-authorization": wwtcKey },
-        body: wwtcForm,
+        headers: {
+          accept: "application/json",
+          "api-authorization": wwtcKey,
+          "Content-Type": "audio/wav",
+        },
+        body: await audio.arrayBuffer(),
       },
     );
     if (!wwtcRes.ok) {

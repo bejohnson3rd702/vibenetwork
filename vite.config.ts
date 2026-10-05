@@ -325,17 +325,15 @@ function wwtcProxyPlugin(env: Record<string, string>) {
 
                 if (serviceCode === 'stt' && audioBase64) {
                   const audioBuffer = Buffer.from(audioBase64, 'base64');
-                  const formData = new FormData();
-                  const blob = new Blob([audioBuffer], { type: 'audio/wav' });
-                  formData.append('audio', blob, 'audio.wav');
-
+                  // WWTC expects raw WAV bytes as the body (multipart returns "STT not available")
                   const response = await fetch(url.toString(), {
                     method: 'POST',
                     headers: {
                       'accept': 'application/json',
                       'api-authorization': WWTC_API_KEY,
+                      'Content-Type': 'audio/wav',
                     },
-                    body: formData,
+                    body: audioBuffer,
                   });
 
                   if (!response.ok) {
