@@ -5939,7 +5939,7 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
               </div>
               
               {/* Privacy and Actions */}
-              <div style={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
+              <div style={{ display: 'flex', gap: '16px', alignItems: 'center', flexWrap: 'wrap' }}>
                 {/* Post Privacy Selector */}
                 <div style={{ display: 'flex', background: 'rgba(0,0,0,0.4)', borderRadius: '24px', padding: '4px', border: '1px solid rgba(255,255,255,0.08)' }}>
                   <button 
@@ -6083,7 +6083,7 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
               <div style={{ position: 'relative' }}>
                 <div style={{ transition: 'all 0.3s' }} id={`post-content-${post.id}`}>
                   {/* Post Content / Title */}
-                  <div style={{ padding: '0 20px 20px 20px', fontSize: '16px', lineHeight: 1.5 }}>
+                  <div style={{ padding: '0 20px 20px 20px', fontSize: '16px', lineHeight: 1.5, wordBreak: 'break-word', overflowWrap: 'anywhere' }}>
                     {post.title}
                   </div>
 
@@ -6102,12 +6102,12 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
                             />
                           </div>
                         ) : (
-                          <img src={post.imgs[0]} alt="Post content" loading="lazy" style={{ maxWidth: '100%', width: 'auto', height: 'auto', maxHeight: '550px', objectFit: 'contain', borderRadius: '12px', boxShadow: '0 10px 30px rgba(0,0,0,0.4)', padding: '0 16px' }} />
+                          <img src={post.imgs[0]} alt="Post content" loading="lazy" style={{ maxWidth: '100%', width: 'auto', height: 'auto', maxHeight: 'min(550px, 80vw)', objectFit: 'contain', borderRadius: '12px', boxShadow: '0 10px 30px rgba(0,0,0,0.4)', padding: '0 16px' }} />
                         )
                       ) : (
                         <div style={{ position: 'relative', width: '100%', maxWidth: '100%', padding: '0 16px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                           {/* Slide Container */}
-                          <div style={{ position: 'relative', width: '100%', height: '500px', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', borderRadius: '12px', background: 'rgba(0,0,0,0.2)' }}>
+                          <div style={{ position: 'relative', width: '100%', height: 'min(500px, 75vw)', minHeight: '260px', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', borderRadius: '12px', background: 'rgba(0,0,0,0.2)' }}>
                             {/\.(mp4|mov|webm|ogg|avi|mkv)(\?|$)/i.test(post.imgs[postImageIndexes[post.id] || 0]) ? (
                               <FeedVideoPlayer
                                 videoUrl={post.imgs[postImageIndexes[post.id] || 0]}
@@ -6127,23 +6127,24 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
                             onClick={(e) => { e.stopPropagation(); handlePrevImage(post.id, post.imgs.length); }}
                             style={{
                               position: 'absolute',
-                              left: '12px',
-                              background: 'rgba(0,0,0,0.5)',
-                              border: '1px solid rgba(255,255,255,0.15)',
+                              left: '10px',
+                              background: 'rgba(0,0,0,0.6)',
+                              border: '1px solid rgba(255,255,255,0.2)',
                               backdropFilter: 'blur(5px)',
                               color: '#fff',
-                              width: '32px',
-                              height: '32px',
+                              width: '36px',
+                              height: '36px',
                               borderRadius: '50%',
                               cursor: 'pointer',
                               display: 'flex',
                               alignItems: 'center',
                               justifyContent: 'center',
                               transition: 'all 0.2s',
-                              zIndex: 10
+                              zIndex: 10,
+                              touchAction: 'manipulation'
                             }}
                           >
-                            <ChevronLeft size={18} />
+                            <ChevronLeft size={20} />
                           </button>
 
                           {/* Right Arrow Button */}
@@ -6152,23 +6153,24 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
                             onClick={(e) => { e.stopPropagation(); handleNextImage(post.id, post.imgs.length); }}
                             style={{
                               position: 'absolute',
-                              right: '12px',
-                              background: 'rgba(0,0,0,0.5)',
-                              border: '1px solid rgba(255,255,255,0.15)',
+                              right: '10px',
+                              background: 'rgba(0,0,0,0.6)',
+                              border: '1px solid rgba(255,255,255,0.2)',
                               backdropFilter: 'blur(5px)',
                               color: '#fff',
-                              width: '32px',
-                              height: '32px',
+                              width: '36px',
+                              height: '36px',
                               borderRadius: '50%',
                               cursor: 'pointer',
                               display: 'flex',
                               alignItems: 'center',
                               justifyContent: 'center',
                               transition: 'all 0.2s',
-                              zIndex: 10
+                              zIndex: 10,
+                              touchAction: 'manipulation'
                             }}
                           >
-                            <ChevronRight size={18} />
+                            <ChevronRight size={20} />
                           </button>
 
                           {/* Pagination Dots Overlay */}
@@ -6194,27 +6196,73 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
               </div>
 
               {/* Engagement Section (Likes & Comments) */}
-              <div style={{ padding: '16px 20px', borderTop: '1px solid rgba(255,255,255,0.05)', background: 'rgba(0,0,0,0.2)' }}>
-                  <div style={{ display: 'flex', gap: '24px', marginBottom: '16px' }}>
+              <div style={{ padding: '14px 18px', borderTop: '1px solid rgba(255,255,255,0.05)', background: 'rgba(0,0,0,0.2)' }}>
+                  <div style={{ display: 'flex', gap: '10px', alignItems: 'center', flexWrap: 'wrap', marginBottom: '14px' }}>
                     <button 
                       onClick={() => handleLike(post.id)}
-                      style={{ background: 'none', border: 'none', color: post.hasLiked ? '#ff4d85' : 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontWeight: 'bold', fontSize: '15px', transition: 'transform 0.2s' }}
+                      style={{
+                        background: post.hasLiked ? 'rgba(255, 77, 133, 0.15)' : 'rgba(255, 255, 255, 0.04)',
+                        border: post.hasLiked ? '1px solid rgba(255, 77, 133, 0.35)' : '1px solid rgba(255, 255, 255, 0.08)',
+                        color: post.hasLiked ? '#ff4d85' : 'var(--text-muted)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '8px',
+                        cursor: 'pointer',
+                        fontWeight: 'bold',
+                        fontSize: '14px',
+                        padding: '8px 14px',
+                        borderRadius: '20px',
+                        transition: 'all 0.2s',
+                        touchAction: 'manipulation'
+                      }}
+                      onMouseOver={e => { if (!post.hasLiked) e.currentTarget.style.background = 'rgba(255,255,255,0.08)'; }}
+                      onMouseOut={e => { if (!post.hasLiked) e.currentTarget.style.background = 'rgba(255,255,255,0.04)'; }}
                     >
-                      <span style={{ fontSize: '18px' }}>{post.hasLiked ? '❤️' : '🤍'}</span> {post.likes || 0}
+                      <span style={{ fontSize: '16px' }}>{post.hasLiked ? '❤️' : '🤍'}</span> {post.likes || 0}
                     </button>
                     <button 
-                      style={{ background: 'none', border: 'none', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontWeight: 'bold', fontSize: '15px' }}
+                      style={{
+                        background: 'rgba(255, 255, 255, 0.04)',
+                        border: '1px solid rgba(255, 255, 255, 0.08)',
+                        color: 'var(--text-muted)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '8px',
+                        cursor: 'pointer',
+                        fontWeight: 'bold',
+                        fontSize: '14px',
+                        padding: '8px 14px',
+                        borderRadius: '20px',
+                        transition: 'all 0.2s',
+                        touchAction: 'manipulation'
+                      }}
+                      onMouseOver={e => e.currentTarget.style.background = 'rgba(255,255,255,0.08)'}
+                      onMouseOut={e => e.currentTarget.style.background = 'rgba(255,255,255,0.04)'}
                     >
-                      <span style={{ fontSize: '18px' }}>💬</span> {post.comments?.length || 0}
+                      <span style={{ fontSize: '16px' }}>💬</span> {post.comments?.length || 0}
                     </button>
                     <button 
                       onClick={() => handleSharePost(post)}
-                      style={{ background: 'none', border: 'none', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontWeight: 'bold', transition: 'color 0.2s' }}
-                      onMouseOver={e => e.currentTarget.style.color = '#fff'}
-                      onMouseOut={e => e.currentTarget.style.color = 'var(--text-muted)'}
+                      style={{
+                        background: 'rgba(255, 255, 255, 0.04)',
+                        border: '1px solid rgba(255, 255, 255, 0.08)',
+                        color: 'var(--text-muted)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '8px',
+                        cursor: 'pointer',
+                        fontWeight: 'bold',
+                        fontSize: '14px',
+                        padding: '8px 14px',
+                        borderRadius: '20px',
+                        transition: 'all 0.2s',
+                        touchAction: 'manipulation'
+                      }}
+                      onMouseOver={e => { e.currentTarget.style.color = '#fff'; e.currentTarget.style.background = 'rgba(255,255,255,0.08)'; }}
+                      onMouseOut={e => { e.currentTarget.style.color = 'var(--text-muted)'; e.currentTarget.style.background = 'rgba(255,255,255,0.04)'; }}
                       title="Share Post"
                     >
-                      <Share2 size={20} /> Share
+                      <Share2 size={16} /> Share
                     </button>
                   </div>
 
@@ -6223,8 +6271,8 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginBottom: '16px' }}>
                       {(expandedComments[post.id] ? post.comments : post.comments.slice(0, 2)).map((c: any) => (
                         <div key={c.id} style={{ display: 'flex', gap: '12px' }}>
-                          <img src={c.avatar || `https://ui-avatars.com/api/?name=${c.user}&background=random`} alt={c.user} loading="lazy" referrerPolicy="no-referrer" style={{ width: 28, height: 28, borderRadius: '50%' }} />
-                          <div style={{ background: 'rgba(255,255,255,0.05)', padding: '8px 12px', borderRadius: '12px', fontSize: '14px' }}>
+                          <img src={c.avatar || `https://ui-avatars.com/api/?name=${c.user}&background=random`} alt={c.user} loading="lazy" referrerPolicy="no-referrer" style={{ width: 28, height: 28, borderRadius: '50%', flexShrink: 0 }} />
+                          <div style={{ background: 'rgba(255,255,255,0.05)', padding: '8px 12px', borderRadius: '12px', fontSize: '14px', wordBreak: 'break-word', overflowWrap: 'anywhere' }}>
                             <strong style={{ display: 'block', color: '#fff', marginBottom: '2px', fontSize: '13px' }}>{c.user}</strong>
                             <span style={{ color: 'var(--text-muted)' }}>{c.text}</span>
                           </div>
@@ -6233,7 +6281,7 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
                       {post.comments.length > 2 && (
                         <button 
                           onClick={() => setExpandedComments(prev => ({ ...prev, [post.id]: !prev[post.id] }))}
-                          style={{ background: 'none', border: 'none', color: 'var(--text-muted)', fontSize: '13px', fontWeight: 'bold', cursor: 'pointer', textAlign: 'left', padding: '0 40px' }}
+                          style={{ background: 'none', border: 'none', color: 'var(--text-muted)', fontSize: '13px', fontWeight: 'bold', cursor: 'pointer', textAlign: 'left', padding: '0 40px', touchAction: 'manipulation' }}
                         >
                           {expandedComments[post.id] ? 'Hide comments' : `View all ${post.comments.length} comments`}
                         </button>
@@ -6242,9 +6290,9 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
                   )}
 
                   {/* Add Comment Input */}
-                  <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
-                    <img src={user?.user_metadata?.avatar_url || (user ? `https://ui-avatars.com/api/?name=${user.email?.charAt(0)}&background=random` : 'https://ui-avatars.com/api/?name=Guest')} alt="You" loading="lazy" style={{ width: 32, height: 32, borderRadius: '50%' }} />
-                    <div style={{ flex: 1, position: 'relative', display: 'flex', alignItems: 'center' }}>
+                  <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+                    <img src={user?.user_metadata?.avatar_url || (user ? `https://ui-avatars.com/api/?name=${user.email?.charAt(0)}&background=random` : 'https://ui-avatars.com/api/?name=Guest')} alt="You" loading="lazy" style={{ width: 32, height: 32, borderRadius: '50%', flexShrink: 0 }} />
+                    <div style={{ flex: 1, minWidth: 0, position: 'relative', display: 'flex', alignItems: 'center' }}>
                       <input 
                         type="text" 
                         placeholder="Add a comment..."
@@ -6253,9 +6301,9 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
                         onKeyDown={(e) => {
                           if (e.key === 'Enter') handleComment(post.id);
                         }}
-                        style={{ width: '100%', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', padding: '10px 16px', paddingRight: '80px', borderRadius: '20px', color: '#fff', outline: 'none' }}
+                        style={{ width: '100%', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', padding: '10px 16px', paddingRight: '76px', borderRadius: '20px', color: '#fff', outline: 'none', boxSizing: 'border-box' }}
                       />
-                      <div style={{ position: 'absolute', right: '8px', display: 'flex', gap: '4px' }}>
+                      <div style={{ position: 'absolute', right: '8px', display: 'flex', gap: '4px', alignItems: 'center' }}>
                         <EmojiPickerButton onSelect={(emoji) => setCommentTexts(prev => ({ ...prev, [post.id]: (prev[post.id] || '') + emoji }))} />
                         <DictationButton onResult={(text) => setCommentTexts(prev => ({ ...prev, [post.id]: (prev[post.id] || '') ? `${prev[post.id]} ${text}` : text }))} />
                       </div>
@@ -6263,7 +6311,7 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
                     <button 
                       onClick={() => handleComment(post.id)}
                       disabled={!commentTexts[post.id]?.trim()}
-                      style={{ background: commentTexts[post.id]?.trim() ? '#ff4d85' : 'rgba(255,255,255,0.1)', border: 'none', borderRadius: '50%', width: 36, height: 36, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', cursor: commentTexts[post.id]?.trim() ? 'pointer' : 'not-allowed', transition: 'background 0.2s', flexShrink: 0 }}
+                      style={{ background: commentTexts[post.id]?.trim() ? '#ff4d85' : 'rgba(255,255,255,0.1)', border: 'none', borderRadius: '50%', width: 36, height: 36, minWidth: 36, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', cursor: commentTexts[post.id]?.trim() ? 'pointer' : 'not-allowed', transition: 'background 0.2s', flexShrink: 0, touchAction: 'manipulation' }}
                     >
                       <ArrowUpRight size={18} />
                     </button>

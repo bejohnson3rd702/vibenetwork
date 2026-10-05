@@ -464,6 +464,13 @@ html[data-theme="light"] .btn-primary {
   .tablet-w-full {
     width: 100% !important;
   }
+  .slider-item-mobile {
+    width: 38vw !important;
+    min-width: 260px !important;
+    max-width: 340px !important;
+    flex-shrink: 0 !important;
+    scroll-snap-align: start !important;
+  }
 }
 
 /* Global Media Sizing Rule */
@@ -1217,7 +1224,12 @@ html, body, #root, .app-container {
 
 @media (max-width: 480px) {
   .creator-tools-list {
-    grid-template-columns: 1fr !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 6px !important;
+  }
+  .creator-tools-list button {
+    padding: 8px 6px !important;
+    font-size: 11px !important;
   }
 }
 
