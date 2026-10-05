@@ -108,13 +108,36 @@ export interface WwtcServiceResponse {
   audio?: string; // Base64 WAV (for TTS and STS)
 }
 
+async function blobToBase64(blob: Blob): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      const result = reader.result as string;
+      const base64 = result.includes(',') ? result.split(',')[1] : result;
+      resolve(base64);
+    };
+    reader.onerror = reject;
+    reader.readAsDataURL(blob);
+  });
+}
+
 /**
  * Execute WWTC Translation or Speech Synthesis Service via secure serverless proxy
  */
 export async function executeWwtcService(params: WwtcServiceRequest): Promise<WwtcServiceResponse> {
-  const { serviceCode, sourceLang, targetLang, text } = params;
+  const { serviceCode, sourceLang, targetLang, text, audioBlob } = params;
 
-  const response = await fetch(`${WWTC_PROXY_URL}?action=service`, {
+  let audioBase64: string | undefined;
+  if (audioBlob) {
+    try {
+      audioBase64 = await blobToBase64(audioBlob);
+    } catch (e) {
+      console.warn('[WWTC] Failed to encode audioBlob to base64:', e);
+    }
+  }
+
+  // All calls go through the server-side proxy so the WWTC API key never ships to the browser.
+  const response = await fetch(`${WWTC_PROXY_URL}?action=${serviceCode === 'stt' ? 'stt' : 'service'}`, {
     method: 'POST',
     headers: {
       'accept': 'application/json',
@@ -125,6 +148,7 @@ export async function executeWwtcService(params: WwtcServiceRequest): Promise<Ww
       sourceLang,
       targetLang,
       text,
+      audioBase64,
     }),
   });
 
@@ -208,23 +232,7 @@ export async function translateText(params: {
       return res;
     } catch (err: any) {
       console.warn(`[WWTC] translateText proxy notice for "${cleanText.slice(0, 30)}...":`, err.message);
-      // Direct WWTC API fallback
-      try {
-        const directUrl = new URL(`https://api.worldwidetechconnections.com/services/${normalizedService}/${sourceLang}/${targetLang}`);
-        directUrl.searchParams.set('text', cleanText.slice(0, 10000));
-        const directRes = await fetch(directUrl.toString(), {
-          method: 'POST',
-          headers: {
-            'accept': 'application/json',
-            'api-authorization': '95a35451.30ece979-c4bd-447b-8b1e-fd9a6c77418b'
-          }
-        });
-        if (directRes.ok) {
-          const directData = await directRes.json();
-          translationMemoryCache.set(cacheKey, directData);
-          return directData;
-        }
-      } catch (_) {}
+      // No direct-API fallback: calling WWTC from the browser would expose the API key.
 
       return {
         source_text: cleanText,
@@ -422,6 +430,8 @@ export interface YouTubeCaptionSegment {
   speaker: string;
   text: string;
   isRecorded?: boolean;
+  translatedText?: string;
+  isPlaceholder?: boolean;
 }
 
 async function fetchWithCorsProxy(targetUrl: string): Promise<string> {

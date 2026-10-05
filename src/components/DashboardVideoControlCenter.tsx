@@ -6,6 +6,7 @@ import { extractYouTubeId } from './KpleAddVideoModal';
 import { validateFileSafety } from '../lib/fileSecurity';
 import { getChildNetworks } from '../lib/n2n';
 import { isKpleConfig } from '../lib/whitelabel';
+import { transcribeUploadedVideo, saveVideoTranscript } from '../lib/videoTranscription';
 
 const YoutubeIcon = ({ size = 20, color = "#FF0000" }: { size?: number, color?: string }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill={color}>
@@ -285,7 +286,22 @@ export const DashboardVideoControlCenter: React.FC<DashboardVideoControlCenterPr
       const { data } = supabase.storage.from('videos').getPublicUrl(filePath);
       if (data?.publicUrl) {
         setVideoFileUrl(data.publicUrl);
-        setUploadProgressMsg(`Upload complete (${fileSizeMB} MB)!`);
+        setUploadProgressMsg(`Upload complete (${fileSizeMB} MB)! Transcribing video for translation software...`);
+
+        // Automatically transcribe video audio for translation software
+        transcribeUploadedVideo(file, {
+          videoUrl: data.publicUrl,
+          videoTitle: title || file.name.replace(/\.[^/.]+$/, ''),
+          channelName: 'Channel Broadcast',
+          onProgress: (status) => setUploadProgressMsg(`🎙️ ${status}`)
+        }).then(segments => {
+          setUploadProgressMsg(`✅ Transcribed ${segments.length} segment${segments.length > 1 ? 's' : ''} for translation software!`);
+          if (!transcript.trim()) {
+            setTranscript(segments.map(s => s.text).join(' '));
+          }
+        }).catch(err => {
+          console.warn('[DashboardVideoControlCenter] Transcription notice:', err);
+        });
       }
     } catch (err: any) {
       setErrorMsg(`Video upload notice: ${err.message}. Direct stream URLs or external links can also be used below.`);
@@ -556,6 +572,24 @@ export const DashboardVideoControlCenter: React.FC<DashboardVideoControlCenterPr
                   <input type="file" accept="video/*,video/quicktime,video/mov,.mov,.mp4" onChange={handleVideoFileUpload} style={{ display: 'none' }} />
                 </label>
               </div>
+              {uploadProgressMsg && (
+                <div style={{
+                  marginTop: '10px',
+                  padding: '10px 14px',
+                  borderRadius: '12px',
+                  background: uploadProgressMsg.includes('✅') ? 'rgba(0,255,136,0.1)' : 'rgba(138,43,226,0.15)',
+                  border: `1px solid ${uploadProgressMsg.includes('✅') ? 'rgba(0,255,136,0.3)' : 'rgba(138,43,226,0.3)'}`,
+                  color: uploadProgressMsg.includes('✅') ? '#00ff88' : '#c084fc',
+                  fontSize: '12px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  fontWeight: 600
+                }}>
+                  {!uploadProgressMsg.includes('✅') && <Loader2 size={14} className="animate-spin" />}
+                  <span>{uploadProgressMsg}</span>
+                </div>
+              )}
             </div>
           )}
 

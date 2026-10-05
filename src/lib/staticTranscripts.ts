@@ -8,6 +8,78 @@ export interface TranscriptSegment {
 }
 
 export const STATIC_TRANSCRIPTS: Record<string, TranscriptSegment[]> = {
+  "04da1617-f399-4b13-a6e0-b037e3a30cdb": [
+    { time: "00:00", seconds: 0, speaker: "People in LA", text: "call the show Revenge of the Nerds they used to be a gang member" },
+    { time: "00:40", seconds: 40, speaker: "People in LA", text: "If he if he active or not that's such and such son so do I think he was Associated Affiliated yeah but looking at how he is today I don't think his mind ever led him to actually gangbanged when he got off the car he had a blue flag in his back pocket" },
+    { time: "01:40", seconds: 100, speaker: "People in LA", text: "I like" },
+    { time: "02:00", seconds: 120, speaker: "People in LA", text: "woke up early it's usually like that 10 to 12 year run depending on how much time you did now if you didn't if you still in it like that like you was and you 4050 you still in it like you was it a teenager and you just a dummy you just got a name your brain has to mature to a point to where" },
+    { time: "02:20", seconds: 140, speaker: "People in LA", text: "you know that this ain't developer from Long Beach is about hustling and getting money cuz it used to be rolling 20 Hustlers it wasn't even crying so we ain't really was never really on that day today walking around out there trying to just fight and stuff so" },
+    { time: "02:40", seconds: 160, speaker: "People in LA", text: "go to school play football Long Beach gangbanging is embedded in sports culture so if you ever get a ride with my way home did you ever get it right with viral way something was going on yeah he went to fight that guy and then they didn't have them back they didn't have his back he said that they did" },
+    { time: "03:20", seconds: 200, speaker: "People in LA", text: "clean the concrete I seen that y'all arranged to go to it chicken weigh myself" },
+    { time: "03:40", seconds: 220, speaker: "People in LA", text: "can you out of no jumper I'm trying to remember the debate" }
+  ],
+  "post_video_1791158354420_k5bszj.mp4": [
+    { time: "00:00", seconds: 0, speaker: "People in LA", text: "call the show Revenge of the Nerds they used to be a gang member" },
+    { time: "00:40", seconds: 40, speaker: "People in LA", text: "If he if he active or not that's such and such son so do I think he was Associated Affiliated yeah but looking at how he is today I don't think his mind ever led him to actually gangbanged when he got off the car he had a blue flag in his back pocket" },
+    { time: "01:40", seconds: 100, speaker: "People in LA", text: "I like" },
+    { time: "02:00", seconds: 120, speaker: "People in LA", text: "woke up early it's usually like that 10 to 12 year run depending on how much time you did now if you didn't if you still in it like that like you was and you 4050 you still in it like you was it a teenager and you just a dummy you just got a name your brain has to mature to a point to where" },
+    { time: "02:20", seconds: 140, speaker: "People in LA", text: "you know that this ain't developer from Long Beach is about hustling and getting money cuz it used to be rolling 20 Hustlers it wasn't even crying so we ain't really was never really on that day today walking around out there trying to just fight and stuff so" },
+    { time: "02:40", seconds: 160, speaker: "People in LA", text: "go to school play football Long Beach gangbanging is embedded in sports culture so if you ever get a ride with my way home did you ever get it right with viral way something was going on yeah he went to fight that guy and then they didn't have them back they didn't have his back he said that they did" },
+    { time: "03:20", seconds: 200, speaker: "People in LA", text: "clean the concrete I seen that y'all arranged to go to it chicken weigh myself" },
+    { time: "03:40", seconds: 220, speaker: "People in LA", text: "can you out of no jumper I'm trying to remember the debate" }
+  ],
+  "https://fimzetmvrmbmdggvqzpr.supabase.co/storage/v1/object/public/videos/19a1f776-daa5-460b-8dc9-c89dd4cb4d06/post_video_1791158354420_k5bszj.mp4": [
+    { time: "00:00", seconds: 0, speaker: "People in LA", text: "call the show Revenge of the Nerds they used to be a gang member" },
+    { time: "00:40", seconds: 40, speaker: "People in LA", text: "If he if he active or not that's such and such son so do I think he was Associated Affiliated yeah but looking at how he is today I don't think his mind ever led him to actually gangbanged when he got off the car he had a blue flag in his back pocket" },
+    { time: "01:40", seconds: 100, speaker: "People in LA", text: "I like" },
+    { time: "02:00", seconds: 120, speaker: "People in LA", text: "woke up early it's usually like that 10 to 12 year run depending on how much time you did now if you didn't if you still in it like that like you was and you 4050 you still in it like you was it a teenager and you just a dummy you just got a name your brain has to mature to a point to where" },
+    { time: "02:20", seconds: 140, speaker: "People in LA", text: "you know that this ain't developer from Long Beach is about hustling and getting money cuz it used to be rolling 20 Hustlers it wasn't even crying so we ain't really was never really on that day today walking around out there trying to just fight and stuff so" },
+    { time: "02:40", seconds: 160, speaker: "People in LA", text: "go to school play football Long Beach gangbanging is embedded in sports culture so if you ever get a ride with my way home did you ever get it right with viral way something was going on yeah he went to fight that guy and then they didn't have them back they didn't have his back he said that they did" },
+    { time: "03:20", seconds: 200, speaker: "People in LA", text: "clean the concrete I seen that y'all arranged to go to it chicken weigh myself" },
+    { time: "03:40", seconds: 220, speaker: "People in LA", text: "can you out of no jumper I'm trying to remember the debate" }
+  ],
+  "2fe36567-2313-4d3f-bbb7-65d1d5b8713c": [
+    { time: "00:00", seconds: 0, speaker: "People in LA", text: "everyone wants to know about the huge the huge news you had come up yesterday 10 minutes before I came all right you guys get to hear the good news when the news comes but I will say this if I had known that work was going to be here I wouldn't have come to begin with why would I even want to be in the same vicinity I don't want to breathe the same air as him being the same zip code" },
+    { time: "00:20", seconds: 20, speaker: "People in LA", text: "I didn't know nobody told me what was coming I got sent on an assignment and dipped now was it a virgin tactic utilized by no jumper quite possibly but quite possibly quite possible" },
+    { time: "00:45", seconds: 45, speaker: "People in LA", text: "Listen to Crazy cuz it looked at all the perfect timing now it looks like crazy and it might have been scheduled that way for some reason yeah if I would have known that why would I want to be in the same place" },
+    { time: "01:15", seconds: 75, speaker: "People in LA", text: "white boys or black women so I hang out with black women and Mexicans and I'm a white boy so strike three I'm not coming around everybody" },
+    { time: "01:40", seconds: 100, speaker: "People in LA", text: "I've seen it I was like this is going to look crazy with Google" },
+    { time: "02:00", seconds: 120, speaker: "People in LA", text: "I got called out like you can see the whole thing I'm in the middle of the pot I get called out come back I'm like yo I'm feeling like the man cuz I'm like oh like this is about to be sickest this is awesome that I leave then apparently wax shows up I guess I do the Pod when you start getting messages I know I just like yeah I was like" },
+    { time: "02:20", seconds: 140, speaker: "People in LA", text: "people are showing up in my comments when I go on my stream they're like the Pod but no I'm not going to lie if I knew what was going to be here I wouldn't have come to begin with so it's not like I'm not but is that because you're scared well I mean like it's not because I'm scared I just don't want to be around I don't want to be in like a" },
+    { time: "02:40", seconds: 160, speaker: "People in LA", text: "pensions environment with somebody like that cuz I'm just going to say I don't think it's going to be nothing short of that" },
+    { time: "03:00", seconds: 180, speaker: "People in LA", text: "it wasn't like I wasn't even going yeah I mean that's kind of the point of this you got to get some stuff it wasn't like anything that I haven't said before" },
+    { time: "03:40", seconds: 220, speaker: "People in LA", text: "play like maybe make them feel comfortable by Rihanna and then just Mark him up so that's really what it is but now we have confirmation from the no jumper stuff" },
+    { time: "04:20", seconds: 260, speaker: "People in LA", text: "play vape pens and like but if you say something back then it's going down it has to be professional wrestling it can't be like no I get to its content over everything when I make fun of you and bully you and all that but if you take any shots back then all of a sudden like I'm going to hurt you you should be able" },
+    { time: "04:40", seconds: 280, speaker: "People in LA", text: "for sure and my whole thing was when I like my initial altercation with whack wasn't" }
+  ],
+  "post_video_1791155838677_gp433g.mp4": [
+    { time: "00:00", seconds: 0, speaker: "People in LA", text: "everyone wants to know about the huge the huge news you had come up yesterday 10 minutes before I came all right you guys get to hear the good news when the news comes but I will say this if I had known that work was going to be here I wouldn't have come to begin with why would I even want to be in the same vicinity I don't want to breathe the same air as him being the same zip code" },
+    { time: "00:20", seconds: 20, speaker: "People in LA", text: "I didn't know nobody told me what was coming I got sent on an assignment and dipped now was it a virgin tactic utilized by no jumper quite possibly but quite possibly quite possible" },
+    { time: "00:45", seconds: 45, speaker: "People in LA", text: "Listen to Crazy cuz it looked at all the perfect timing now it looks like crazy and it might have been scheduled that way for some reason yeah if I would have known that why would I want to be in the same place" },
+    { time: "01:15", seconds: 75, speaker: "People in LA", text: "white boys or black women so I hang out with black women and Mexicans and I'm a white boy so strike three I'm not coming around everybody" },
+    { time: "01:40", seconds: 100, speaker: "People in LA", text: "I've seen it I was like this is going to look crazy with Google" },
+    { time: "02:00", seconds: 120, speaker: "People in LA", text: "I got called out like you can see the whole thing I'm in the middle of the pot I get called out come back I'm like yo I'm feeling like the man cuz I'm like oh like this is about to be sickest this is awesome that I leave then apparently wax shows up I guess I do the Pod when you start getting messages I know I just like yeah I was like" },
+    { time: "02:20", seconds: 140, speaker: "People in LA", text: "people are showing up in my comments when I go on my stream they're like the Pod but no I'm not going to lie if I knew what was going to be here I wouldn't have come to begin with so it's not like I'm not but is that because you're scared well I mean like it's not because I'm scared I just don't want to be around I don't want to be in like a" },
+    { time: "02:40", seconds: 160, speaker: "People in LA", text: "pensions environment with somebody like that cuz I'm just going to say I don't think it's going to be nothing short of that" },
+    { time: "03:00", seconds: 180, speaker: "People in LA", text: "it wasn't like I wasn't even going yeah I mean that's kind of the point of this you got to get some stuff it wasn't like anything that I haven't said before" },
+    { time: "03:40", seconds: 220, speaker: "People in LA", text: "play like maybe make them feel comfortable by Rihanna and then just Mark him up so that's really what it is but now we have confirmation from the no jumper stuff" },
+    { time: "04:20", seconds: 260, speaker: "People in LA", text: "play vape pens and like but if you say something back then it's going down it has to be professional wrestling it can't be like no I get to its content over everything when I make fun of you and bully you and all that but if you take any shots back then all of a sudden like I'm going to hurt you you should be able" },
+    { time: "04:40", seconds: 280, speaker: "People in LA", text: "for sure and my whole thing was when I like my initial altercation with whack wasn't" }
+  ],
+  "https://fimzetmvrmbmdggvqzpr.supabase.co/storage/v1/object/public/videos/19a1f776-daa5-460b-8dc9-c89dd4cb4d06/post_video_1791155838677_gp433g.mp4": [
+    { time: "00:00", seconds: 0, speaker: "People in LA", text: "everyone wants to know about the huge the huge news you had come up yesterday 10 minutes before I came all right you guys get to hear the good news when the news comes but I will say this if I had known that work was going to be here I wouldn't have come to begin with why would I even want to be in the same vicinity I don't want to breathe the same air as him being the same zip code" },
+    { time: "00:20", seconds: 20, speaker: "People in LA", text: "I didn't know nobody told me what was coming I got sent on an assignment and dipped now was it a virgin tactic utilized by no jumper quite possibly but quite possibly quite possible" },
+    { time: "00:45", seconds: 45, speaker: "People in LA", text: "Listen to Crazy cuz it looked at all the perfect timing now it looks like crazy and it might have been scheduled that way for some reason yeah if I would have known that why would I want to be in the same place" },
+    { time: "01:15", seconds: 75, speaker: "People in LA", text: "white boys or black women so I hang out with black women and Mexicans and I'm a white boy so strike three I'm not coming around everybody" },
+    { time: "01:40", seconds: 100, speaker: "People in LA", text: "I've seen it I was like this is going to look crazy with Google" },
+    { time: "02:00", seconds: 120, speaker: "People in LA", text: "I got called out like you can see the whole thing I'm in the middle of the pot I get called out come back I'm like yo I'm feeling like the man cuz I'm like oh like this is about to be sickest this is awesome that I leave then apparently wax shows up I guess I do the Pod when you start getting messages I know I just like yeah I was like" },
+    { time: "02:20", seconds: 140, speaker: "People in LA", text: "people are showing up in my comments when I go on my stream they're like the Pod but no I'm not going to lie if I knew what was going to be here I wouldn't have come to begin with so it's not like I'm not but is that because you're scared well I mean like it's not because I'm scared I just don't want to be around I don't want to be in like a" },
+    { time: "02:40", seconds: 160, speaker: "People in LA", text: "pensions environment with somebody like that cuz I'm just going to say I don't think it's going to be nothing short of that" },
+    { time: "03:00", seconds: 180, speaker: "People in LA", text: "it wasn't like I wasn't even going yeah I mean that's kind of the point of this you got to get some stuff it wasn't like anything that I haven't said before" },
+    { time: "03:40", seconds: 220, speaker: "People in LA", text: "play like maybe make them feel comfortable by Rihanna and then just Mark him up so that's really what it is but now we have confirmation from the no jumper stuff" },
+    { time: "04:20", seconds: 260, speaker: "People in LA", text: "play vape pens and like but if you say something back then it's going down it has to be professional wrestling it can't be like no I get to its content over everything when I make fun of you and bully you and all that but if you take any shots back then all of a sudden like I'm going to hurt you you should be able" },
+    { time: "04:40", seconds: 280, speaker: "People in LA", text: "for sure and my whole thing was when I like my initial altercation with whack wasn't" }
+  ],
   "destinito-saba-passage": [
     { time: "00:00", seconds: 0, speaker: "Captain Julien", text: "All hands on deck! The swell off Mount Scenery is rising fast." },
     { time: "00:05", seconds: 5, speaker: "First Mate Maya", text: "Barometer is dropping rapidly, Captain. Saba Bank currents are pulling us west toward the reef." },
@@ -18686,7 +18758,52 @@ export const STATIC_TRANSCRIPTS: Record<string, TranscriptSegment[]> = {
 
 export function getLocalTranscript(videoId: string): TranscriptSegment[] | null {
   if (!videoId) return null;
-  const raw = STATIC_TRANSCRIPTS[videoId];
-  if (!raw) return null;
-  return raw.map(s => ({ ...s, isRecorded: true } as any));
+  const trimmed = videoId.trim();
+
+  // 1. Direct match
+  if (STATIC_TRANSCRIPTS[trimmed]) {
+    return STATIC_TRANSCRIPTS[trimmed].map(s => ({ ...s, isRecorded: true } as any));
+  }
+
+  // 2. Clean URL (remove query strings or hashes)
+  const cleanUrl = trimmed.split('?')[0].split('#')[0];
+  if (STATIC_TRANSCRIPTS[cleanUrl]) {
+    return STATIC_TRANSCRIPTS[cleanUrl].map(s => ({ ...s, isRecorded: true } as any));
+  }
+
+  // 3. Extract filename from URL/path
+  const filename = cleanUrl.split('/').pop() || '';
+  if (filename && STATIC_TRANSCRIPTS[filename]) {
+    return STATIC_TRANSCRIPTS[filename].map(s => ({ ...s, isRecorded: true } as any));
+  }
+
+  // 4. Match by filename without extension
+  const baseName = filename.replace(/\.[^/.]+$/, '');
+  if (baseName && STATIC_TRANSCRIPTS[baseName]) {
+    return STATIC_TRANSCRIPTS[baseName].map(s => ({ ...s, isRecorded: true } as any));
+  }
+
+  // 5. Check if any key is contained in or contains the identifier
+  for (const key of Object.keys(STATIC_TRANSCRIPTS)) {
+    if (key.length > 5) {
+      if (cleanUrl.includes(key) || (filename && key.includes(filename)) || (baseName && key.includes(baseName))) {
+        return STATIC_TRANSCRIPTS[key].map(s => ({ ...s, isRecorded: true } as any));
+      }
+    }
+  }
+
+  // 6. Explicit check for People in LA post/video
+  if (
+    trimmed.includes('2fe36567') || 
+    trimmed.includes('post_video_1791155838677') || 
+    trimmed.includes('Did-Lush')
+  ) {
+    const defaultPostTranscript = STATIC_TRANSCRIPTS['2fe36567-2313-4d3f-bbb7-65d1d5b8713c'];
+    if (defaultPostTranscript) {
+      return defaultPostTranscript.map(s => ({ ...s, isRecorded: true } as any));
+    }
+  }
+
+  return null;
 }
+

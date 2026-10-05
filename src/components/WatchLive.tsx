@@ -3729,13 +3729,31 @@ export default function WatchLive({ accent = '#D35400', isCourtneyBee = false, i
                         )}
 
                         {/* Hidden transcript container for external translation software */}
-                        {transcript && transcript.length > 0 && (
+                        {transcript && transcript.length > 0 && transcript.some((seg: any) => 
+                          seg.text && 
+                          !seg.isPlaceholder && 
+                          seg.isRecorded !== false &&
+                          !seg.text.includes('_001_') &&
+                          !seg.text.includes('.mp4') &&
+                          !seg.text.includes('Did-Lush-') &&
+                          (activeVideo.headline ? seg.text.trim().toLowerCase() !== activeVideo.headline.trim().toLowerCase() : true)
+                        ) && (
                           <div 
                             id="video-transcript" 
                             style={{ display: 'none' }}
                             data-video-id={activeVideo.id}
                           >
-                            {transcript.map((seg: any, idx: number) => (
+                            {transcript
+                              .filter((seg: any) => 
+                                seg.text && 
+                                !seg.isPlaceholder && 
+                                seg.isRecorded !== false &&
+                                !seg.text.includes('_001_') &&
+                                !seg.text.includes('.mp4') &&
+                                !seg.text.includes('Did-Lush-') &&
+                                (activeVideo.headline ? seg.text.trim().toLowerCase() !== activeVideo.headline.trim().toLowerCase() : true)
+                              )
+                              .map((seg: any, idx: number) => (
                               <div 
                                 key={`hidden-seg-${idx}`} 
                                 className="transcript-segment"

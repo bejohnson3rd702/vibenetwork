@@ -2,7 +2,7 @@ import React, { useEffect, useState, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { supabase } from '../supabaseClient';
 import { motion, AnimatePresence } from 'framer-motion';
-import { LogOut, Camera, Lock, Unlock, Image as ImageIcon, Star, ShieldCheck, Eye, Edit2, Trash2, Wand, Calendar, Edit3, Clock, CheckCircle, Heart, MessageCircle, Wallet, ArrowUpRight, ArrowDownLeft, Activity, Monitor, Settings, Video, DollarSign, Share2, Pin, ChevronLeft, ChevronRight, AlertCircle, Users, Folder, File as FileIcon, FileText, Download, UploadCloud, Search, Plus, X, XCircle, Globe, EyeOff, Copy, Play, Save, Tv } from 'lucide-react';
+import { LogOut, Camera, Lock, Unlock, Image as ImageIcon, Star, ShieldCheck, Eye, Edit2, Trash2, Wand, Calendar, Edit3, Clock, CheckCircle, Heart, MessageCircle, Wallet, ArrowUpRight, ArrowDownLeft, Activity, Monitor, Settings, Video, DollarSign, Share2, Pin, ChevronLeft, ChevronRight, AlertCircle, Users, Folder, File as FileIcon, FileText, Download, UploadCloud, Search, Plus, X, XCircle, Globe, EyeOff, Copy, Play, Save, Tv, Loader2, Sparkles } from 'lucide-react';
 import { DictationButton } from './DictationButton';
 import { EmojiPickerButton } from './EmojiPickerButton';
 import EndUserAuthModal from './EndUserAuthModal';
@@ -12,6 +12,9 @@ import { ErrorBoundary } from './ErrorBoundary';
 import { BackgroundSettingsModal } from './BackgroundSettingsModal';
 import { SubscriptionSettingsModal } from './SubscriptionSettingsModal';
 import { VideoTranslationOverlay } from './VideoTranslationOverlay';
+import { FeedVideoPlayer } from './FeedVideoPlayer';
+import { transcribeUploadedVideo, saveVideoTranscript } from '../lib/videoTranscription';
+import { uploadToSupabaseWithProgress } from '../lib/storageUpload';
 const LiveChat = React.lazy(() => import('./LiveChat'));
 const ShopifyStore = React.lazy(() => import('./ShopifyStore'));
 const AiReportTab = React.lazy(() => import('./admin/AiReportTab').then(m => ({ default: m.AiReportTab })));
@@ -131,6 +134,8 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
   const creatorId = creatorIdOverride || paramCreatorId;
   const location = useLocation();
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const pendingVideoTranscriptsRef = useRef<Record<string, any>>({});
+  const pendingTranscriptionPromisesRef = useRef<Record<string, Promise<any>>>({});
   const { wlConfig } = useWhiteLabel();
   const toast = useToast();
   
@@ -182,8 +187,15 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
 
   const [loading, setLoading] = useState(true);
   const [feed, setFeed] = useState<any[]>([]);
-  
-  // View Modes (public vs edit)
+
+  // Always keep pinned posts at the top of the feed
+  const sortedFeed = React.useMemo(() => {
+    if (!feed || feed.length === 0) return [];
+    const pinned = feed.filter(p => Boolean(p.is_pinned));
+    const unpinned = feed.filter(p => !p.is_pinned);
+    return [...pinned, ...unpinned];
+  }, [feed]);
+
   const [viewMode, setViewMode] = useState<'public' | 'edit'>('public');
   const initialViewModeSet = useRef(false);
 
@@ -1236,6 +1248,21 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
   const [postMediaUrls, setPostMediaUrls] = useState<string[]>([]);
   const [uploadingPostMedia, setUploadingPostMedia] = useState(false);
   const [postImageIndexes, setPostImageIndexes] = useState<Record<string | number, number>>({});
+  const [showVideoUrlInput, setShowVideoUrlInput] = useState(false);
+  const [videoUrlInput, setVideoUrlInput] = useState('');
+  const [largeVideoWarning, setLargeVideoWarning] = useState<{ sizeMB: string; name: string } | null>(null);
+  const [videoProcessing, setVideoProcessing] = useState<{
+    id: string;
+    fileName: string;
+    fileSizeMB: string;
+    videoUrl?: string;
+    stage: 'uploading' | 'optimizing' | 'transcribing' | 'ready' | 'error';
+    stageText: string;
+    segmentCount?: number;
+    progress?: number;
+    previewSegments?: Array<{ time: string; text: string }>;
+    showPreviewModal?: boolean;
+  } | null>(null);
   
   // Interactions
   const [commentTexts, setCommentTexts] = useState<Record<string, string>>({});
@@ -1634,7 +1661,7 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
         }
 
         if (postsData && postsData.length > 0) {
-          setFeed(postsData.map((p: any) => {
+          const mappedFeed = postsData.map((p: any) => {
             const creatorObj = Array.isArray(p.creator) ? p.creator[0] : p.creator;
             
             // Handle multiple images stored as JSON array string or comma separated
@@ -1669,9 +1696,14 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
               creator_id: p.creator_id,
               creator_username: creatorObj?.username,
               creator_avatar: creatorObj?.avatar_url,
-              is_pinned: p.is_pinned || false
+              is_pinned: Boolean(p.is_pinned)
             };
-          }));
+          });
+
+          // Sort pinned posts first
+          const pinned = mappedFeed.filter((p: any) => Boolean(p.is_pinned));
+          const unpinned = mappedFeed.filter((p: any) => !p.is_pinned);
+          setFeed([...pinned, ...unpinned]);
         } else if (loadedProfileId === 'courtney-bee-tenant-id' || wlConfig?.id === 'courtney-bee-tenant-id') {
           setFeed([
             {
@@ -3450,25 +3482,30 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
         });
       };
 
-      const durationSeconds = await detectVideoDuration(file);
-      const fileExt = file.name.split('.').pop() || 'mp4';
+      // NOTE: client-side canvas compression was removed (produced sped-up/silent output).
+      // Large-file support will come from resumable (TUS) uploads + server-side transcoding.
+      const fileToUpload = file;
+
+      const durationSeconds = await detectVideoDuration(fileToUpload);
+      const fileExt = fileToUpload.name.split('.').pop() || 'mp4';
       const fileName = `video_${Math.random()}.${fileExt}`;
       const filePath = `${user?.id}/${fileName}`;
 
-      const { error: uploadError } = await supabase!.storage.from('videos').upload(filePath, file, {
+      const { error: uploadError } = await supabase!.storage.from('videos').upload(filePath, fileToUpload, {
         cacheControl: '3600',
         upsert: true
       });
       if (uploadError) throw uploadError;
 
       const { data } = supabase!.storage.from('videos').getPublicUrl(filePath);
+      const uploadedSizeMB = (fileToUpload.size / (1024 * 1024)).toFixed(1);
       setEditingEpisode((prev: any) => ({ 
         ...prev, 
         video_url: data.publicUrl,
         duration: durationSeconds > 0 ? durationSeconds : prev?.duration
       }));
       const durationFormatted = durationSeconds > 0 ? ` (${Math.floor(durationSeconds/60)}m ${durationSeconds%60}s)` : '';
-      toast.success(`Video uploaded successfully (${sizeMB} MB)!${durationFormatted}`);
+      toast.success(`Video uploaded successfully (${uploadedSizeMB} MB)!${durationFormatted}`);
     } catch (err: any) {
       console.error(err);
       const errMsg = err.message || '';
@@ -3715,6 +3752,31 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
     }));
   };
 
+  const handleAddVideoUrl = () => {
+    const trimmed = videoUrlInput.trim();
+    if (!trimmed) return;
+    if (!/^https?:\/\//i.test(trimmed)) {
+      toast.error('Please enter a valid URL starting with https://');
+      return;
+    }
+    setPostMediaUrls(prev => [...prev, trimmed]);
+    setVideoUrlInput('');
+    setShowVideoUrlInput(false);
+    setLargeVideoWarning(null);
+    const isYt = /youtube\.com|youtu\.be/i.test(trimmed);
+    setVideoProcessing({
+      id: 'video-url-' + Date.now(),
+      fileName: isYt ? 'YouTube Video Stream' : (trimmed.split('/').pop()?.split('?')[0] || 'External Video'),
+      fileSizeMB: 'Stream',
+      videoUrl: trimmed,
+      stage: 'ready',
+      stageText: isYt ? 'YouTube video attached • Ready for feed playback and translation' : 'Video stream attached • Ready for playback',
+      progress: 100,
+      segmentCount: 0
+    });
+    toast.success('🎬 Video link attached to feed post!', { title: 'Video Link Added', duration: 4000 });
+  };
+
   const handlePostMediaUpload = async (eventOrFiles: React.ChangeEvent<HTMLInputElement> | FileList | File) => {
     try {
       let filesToUpload: File[] = [];
@@ -3738,31 +3800,165 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
       setUploadingPostMedia(true);
       
       const newUrls: string[] = [];
-      for (const file of filesToUpload) {
-        const isVideo = file.type.startsWith('video/');
+      for (const rawFile of filesToUpload) {
+        const isVideo = rawFile.type.startsWith('video/') || /\.(mp4|mov|webm|ogg|avi|mkv)$/i.test(rawFile.name);
         if (isVideo) {
-          // Videos: skip image processing, upload directly
-          toast.info(`🎬 Uploading video: ${file.name}...`);
-          const ext = file.name.split('.').pop() || 'mp4';
-          const filePath = `${user?.id}/post_video_${Math.random()}.${ext}`;
-          await supabase!.storage.from('images').upload(filePath, file, { contentType: file.type });
-          const { data } = supabase!.storage.from('images').getPublicUrl(filePath);
-          newUrls.push(data.publicUrl);
+          const rawSizeMB = (rawFile.size / (1024 * 1024)).toFixed(1);
+          setVideoProcessing({
+            id: 'video-' + Date.now(),
+            fileName: rawFile.name,
+            fileSizeMB: rawSizeMB,
+            stage: 'uploading',
+            stageText: `Preparing to upload ${rawFile.name} (${rawSizeMB} MB)...`,
+            progress: 5
+          });
+          toast.loading(`Uploading ${rawFile.name} (${rawSizeMB} MB)...`, {
+            id: 'video-pipeline',
+            title: 'Video Upload',
+            progress: 5
+          });
+
+          const ext = rawFile.name.split('.').pop() || 'mp4';
+          const sessionUser = (await supabase!.auth.getSession()).data.session?.user;
+          const uploadUserId = sessionUser?.id || user?.id || targetProfileId;
+          const filePath = `${uploadUserId}/post_video_${Date.now()}_${Math.random().toString(36).substring(7)}.${ext}`;
+
+          // Real-time byte-for-byte progress upload
+          const uploadRes = await uploadToSupabaseWithProgress('videos', filePath, rawFile, {
+            contentType: rawFile.type || 'video/mp4',
+            upsert: true,
+            onProgress: (p) => {
+              setVideoProcessing(prev => prev ? {
+                ...prev,
+                stage: 'uploading',
+                stageText: p.message,
+                progress: Math.max(5, Math.min(95, p.percent))
+              } : null);
+              toast.loading(p.message, {
+                id: 'video-pipeline',
+                title: 'Uploading Video',
+                progress: Math.max(5, Math.min(95, p.percent))
+              });
+            }
+          });
+
+          if (uploadRes.error) {
+            const errMsg = uploadRes.error.message || '';
+            console.warn('[ProfileDashboard] Video upload issue:', errMsg);
+
+            if (errMsg.includes('exceed') || errMsg.includes('size') || uploadRes.error.statusCode === '413') {
+              setLargeVideoWarning({ sizeMB: rawSizeMB, name: rawFile.name });
+              setShowVideoUrlInput(true);
+              setVideoProcessing(prev => prev ? {
+                ...prev,
+                stage: 'error',
+                stageText: `Video (${rawSizeMB} MB) hit storage limit. Paste YouTube or video link below!`,
+                progress: 0
+              } : null);
+              toast.error(`Video exceeds storage limit (${rawSizeMB} MB). Use "Video Link" option below!`, {
+                id: 'video-pipeline',
+                title: 'Upload Notice',
+                duration: 7000
+              });
+              continue;
+            } else {
+              setVideoProcessing(prev => prev ? {
+                ...prev,
+                stage: 'error',
+                stageText: `Upload issue: ${errMsg}. You can retry or use "Video Link" below.`,
+                progress: 0
+              } : null);
+              toast.error(`Upload error: ${errMsg}`, {
+                id: 'video-pipeline',
+                title: 'Upload Failed',
+                duration: 6000
+              });
+              continue;
+            }
+          }
+
+          const videoUrl = uploadRes.data?.publicUrl || supabase!.storage.from('videos').getPublicUrl(filePath).data.publicUrl;
+          newUrls.push(videoUrl);
+
+          setVideoProcessing(prev => prev ? {
+            ...prev,
+            videoUrl,
+            stage: 'transcribing',
+            stageText: 'AI Speech Engine is transcribing spoken dialogue for translation software...',
+            progress: 65
+          } : null);
+          toast.loading('AI speech engine extracting spoken dialogue for translation...', {
+            id: 'video-pipeline',
+            title: 'Transcribing Audio',
+            progress: 65
+          });
+
+          // Automatically generate transcript for the translation software
+          const transPromise = transcribeUploadedVideo(rawFile, {
+            videoUrl,
+            videoTitle: postTitle || rawFile.name.replace(/\.[^/.]+$/, ''),
+            channelName: profile?.username || 'Channel Host',
+            onProgress: (msg) => {
+              setVideoProcessing(prev => prev ? {
+                ...prev,
+                stage: 'transcribing',
+                stageText: msg,
+                progress: 80
+              } : null);
+              toast.loading(msg, { id: 'video-pipeline', title: 'Transcribing Audio', progress: 80 });
+            }
+          }).then(segments => {
+            pendingVideoTranscriptsRef.current[videoUrl] = segments;
+            const count = segments.length;
+            setVideoProcessing(prev => prev ? {
+              ...prev,
+              stage: 'ready',
+              stageText: `Spoken dialogue transcribed (${count} segment${count > 1 ? 's' : ''})! Ready for translation & dubbing.`,
+              progress: 100,
+              segmentCount: count,
+              previewSegments: segments
+            } : null);
+            toast.success(`Video ready! ${count} dialogue segment${count > 1 ? 's' : ''} transcribed for translation software.`, {
+              id: 'video-pipeline',
+              title: 'Translation Ready',
+              duration: 6000,
+              progress: 100
+            });
+            return segments;
+          }).catch(err => {
+            console.warn('[ProfileDashboard] Video transcription notice:', err);
+            setVideoProcessing(prev => prev ? {
+              ...prev,
+              stage: 'ready',
+              stageText: 'Video uploaded and ready for playback!',
+              progress: 100,
+              segmentCount: 0
+            } : null);
+            toast.success('Video uploaded successfully and ready for playback!', {
+              id: 'video-pipeline',
+              title: 'Upload Complete',
+              duration: 5000,
+              progress: 100
+            });
+            return [];
+          });
+          pendingTranscriptionPromisesRef.current[videoUrl] = transPromise;
         } else {
           // Images: run through the AI enhancer
-          toast.info(`✨ Vibe is enhancing and auto-cropping your post media: ${file.name}...`);
-          const enhancedFile = await processAndEnhanceImage(file, 'post');
+          toast.loading(`Vibe is enhancing & auto-cropping media: ${rawFile.name}...`, { id: 'image-pipeline', title: 'Enhancing Image' });
+          const enhancedFile = await processAndEnhanceImage(rawFile, 'post');
           const filePath = `${user?.id}/post_${Math.random()}.${enhancedFile.name.split('.').pop()}`;
           await supabase!.storage.from('images').upload(filePath, enhancedFile);
           const { data } = supabase!.storage.from('images').getPublicUrl(filePath);
           newUrls.push(data.publicUrl);
+          toast.success('Image enhanced & attached to post!', { id: 'image-pipeline', title: 'Media Ready', duration: 4000 });
         }
       }
       
       setPostMediaUrls(prev => [...prev, ...newUrls]);
     } catch (err: any) {
       console.error('Feed media upload failed:', err);
-      toast.error(`Upload failed: ${err?.message || err || 'Did you run the storage buckets script?'}`);
+      toast.error(err?.message || 'Upload failed');
     } finally {
       setUploadingPostMedia(false);
     }
@@ -3868,6 +4064,7 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
       content: postTitle,
       is_locked: lockedStatus,
       likes: 0,
+      is_pinned: false,
       image_url: postMediaUrls.length > 0 
         ? JSON.stringify(postMediaUrls) 
         : 'https://vibenetwork.tv/wp-content/uploads/2026/02/mukap-vibe-tv-networkk_11zon.png'
@@ -3888,25 +4085,68 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
     // Add to supabase
     const { data } = await supabase!.from('posts').insert([newPost]).select();
     
-     if (data && data[0]) {
-       setFeed([{ 
-         id: data[0].id, title: data[0].content || postTitle, locked: data[0].is_locked || lockedStatus, likes: 0, date: 'Just now', 
-         img: localImgs[0] || null,
-         imgs: localImgs,
-         is_pinned: false
-       }, ...feed]);
-     } else {
-       // Fallback local state if table doesn't exist yet
-       setFeed([{ 
-         id: Date.now(), title: postTitle, locked: lockedStatus, likes: 0, date: 'Just now', 
-         img: localImgs[0] || null,
-         imgs: localImgs,
-         is_pinned: false
-       }, ...feed]);
-     }
+    if (data && data[0]) {
+      const createdPostId = String(data[0].id);
+      // Link any generated video transcripts to the new post ID for translation software
+      postMediaUrls.forEach(url => {
+        const segs = pendingVideoTranscriptsRef.current[url];
+        if (segs && segs.length > 0) {
+          saveVideoTranscript(createdPostId, segs).catch(() => {});
+        } else if (pendingTranscriptionPromisesRef.current[url]) {
+          pendingTranscriptionPromisesRef.current[url].then(resolvedSegs => {
+            if (resolvedSegs && resolvedSegs.length > 0) {
+              saveVideoTranscript(createdPostId, resolvedSegs).catch(() => {});
+            }
+          });
+        }
+      });
+
+      const newPostItem = { 
+        id: data[0].id, 
+        title: data[0].content || postTitle, 
+        locked: data[0].is_locked || lockedStatus, 
+        likes: 0, 
+        date: 'Just now', 
+        img: localImgs[0] || null,
+        imgs: localImgs,
+        creator_id: data[0].creator_id || targetProfileId,
+        creator_username: profile?.username || user?.user_metadata?.username,
+        creator_avatar: profile?.avatar_url || user?.user_metadata?.avatar_url,
+        is_pinned: false
+      };
+
+      // Ensure pinned post remains at the very top of the feed
+      setFeed(prev => {
+        const pinned = prev.filter(p => Boolean(p.is_pinned));
+        const unpinned = prev.filter(p => !p.is_pinned);
+        return [...pinned, newPostItem, ...unpinned];
+      });
+    } else {
+      // Fallback local state if table doesn't exist yet
+      const newPostItem = { 
+        id: Date.now(), 
+        title: postTitle, 
+        locked: lockedStatus, 
+        likes: 0, 
+        date: 'Just now', 
+        img: localImgs[0] || null,
+        imgs: localImgs,
+        creator_id: targetProfileId,
+        creator_username: profile?.username || user?.user_metadata?.username,
+        creator_avatar: profile?.avatar_url || user?.user_metadata?.avatar_url,
+        is_pinned: false
+      };
+
+      setFeed(prev => {
+        const pinned = prev.filter(p => Boolean(p.is_pinned));
+        const unpinned = prev.filter(p => !p.is_pinned);
+        return [...pinned, newPostItem, ...unpinned];
+      });
+    }
     setPostTitle('');
     setPostMediaUrls([]);
-    toast.success('Content Published Successfully!');
+    setVideoProcessing(null);
+    toast.success('Post published to feed successfully!', { title: 'Feed Updated', duration: 4000 });
   };
 
   const copyToClipboardFallback = (text: string): Promise<void> => {
@@ -5130,6 +5370,355 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
                 </button>
               </div>
             </div>
+
+            {/* Large Video Warning Banner */}
+            {largeVideoWarning && (
+              <div style={{
+                marginTop: '16px',
+                padding: '14px 18px',
+                background: 'rgba(255, 77, 133, 0.12)',
+                border: '1px solid rgba(255, 77, 133, 0.35)',
+                borderRadius: '16px',
+                display: 'flex',
+                alignItems: 'flex-start',
+                gap: '12px',
+                color: '#ffb3c6',
+                fontSize: '13px',
+                lineHeight: 1.5
+              }}>
+                <AlertCircle size={22} color="#ff4d85" style={{ flexShrink: 0, marginTop: '2px' }} />
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontWeight: 800, color: '#fff', fontSize: '14px', marginBottom: '4px' }}>
+                    Video Exceeds Storage Gateway Limit ({largeVideoWarning.sizeMB} MB)
+                  </div>
+                  <div>
+                    Supabase's standard direct upload gateway caps individual file uploads at <strong>50 MB</strong>. To share this video without limits, paste a <strong>YouTube</strong>, <strong>Vimeo</strong>, or direct video link below and click <strong>Add Video</strong>!
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setLargeVideoWarning(null)}
+                  style={{
+                    background: 'none',
+                    border: 'none',
+                    color: '#fff',
+                    cursor: 'pointer',
+                    fontSize: '16px',
+                    lineHeight: 1,
+                    padding: '2px 6px',
+                    opacity: 0.7
+                  }}
+                >
+                  ✕
+                </button>
+              </div>
+            )}
+
+            {/* Video URL Input Row */}
+            {showVideoUrlInput && (
+              <div style={{ 
+                marginTop: '16px', 
+                padding: '12px 16px', 
+                background: 'rgba(0,0,0,0.5)', 
+                borderRadius: '16px', 
+                border: `1px solid ${wlConfig?.accent || '#ff4d85'}44`,
+                display: 'flex',
+                alignItems: 'center',
+                gap: '10px'
+              }}>
+                <Video size={18} color={wlConfig?.accent || '#ff4d85'} />
+                <input
+                  type="url"
+                  placeholder="Paste YouTube, Vimeo, or MP4/WebM video URL (e.g. https://youtu.be/...)..."
+                  value={videoUrlInput}
+                  onChange={(e) => setVideoUrlInput(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      e.preventDefault();
+                      handleAddVideoUrl();
+                    }
+                  }}
+                  style={{
+                    flex: 1,
+                    background: 'transparent',
+                    border: 'none',
+                    color: '#fff',
+                    fontSize: '14px',
+                    outline: 'none'
+                  }}
+                  autoFocus
+                />
+                <button
+                  type="button"
+                  onClick={handleAddVideoUrl}
+                  style={{
+                    background: wlConfig?.accent || '#00ff88',
+                    color: '#000',
+                    border: 'none',
+                    borderRadius: '10px',
+                    padding: '8px 16px',
+                    fontWeight: 'bold',
+                    fontSize: '13px',
+                    cursor: 'pointer'
+                  }}
+                >
+                  Add Video
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setShowVideoUrlInput(false)}
+                  style={{
+                    background: 'rgba(255,255,255,0.1)',
+                    color: '#aaa',
+                    border: 'none',
+                    borderRadius: '10px',
+                    padding: '8px 12px',
+                    fontSize: '13px',
+                    cursor: 'pointer'
+                  }}
+                >
+                  Cancel
+                </button>
+              </div>
+            )}
+
+            {/* Video Upload & Transcription Status Card */}
+            {videoProcessing && (
+              <motion.div
+                initial={{ opacity: 0, y: -8, scale: 0.98 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.96 }}
+                style={{
+                  marginTop: '16px',
+                  padding: '14px 18px',
+                  background: 'rgba(20, 20, 30, 0.85)',
+                  backdropFilter: 'blur(16px)',
+                  WebkitBackdropFilter: 'blur(16px)',
+                  border: `1.5px solid ${
+                    videoProcessing.stage === 'ready' 
+                      ? 'rgba(0, 255, 136, 0.4)' 
+                      : videoProcessing.stage === 'error'
+                      ? 'rgba(239, 68, 68, 0.4)'
+                      : videoProcessing.stage === 'uploading'
+                      ? 'rgba(59, 130, 246, 0.4)'
+                      : 'rgba(168, 85, 247, 0.4)'
+                  }`,
+                  borderRadius: '16px',
+                  boxShadow: videoProcessing.stage === 'ready'
+                    ? '0 10px 30px rgba(0, 255, 136, 0.12), 0 4px 12px rgba(0,0,0,0.4)'
+                    : '0 10px 30px rgba(0, 0, 0, 0.5)',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '12px'
+                }}
+              >
+                {/* Header row: Icon, Name + Size, Stage Pill, Dismiss */}
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px', minWidth: 0, flex: 1 }}>
+                    {/* Animated stage icon */}
+                    <div style={{
+                      width: '42px',
+                      height: '42px',
+                      borderRadius: '12px',
+                      background: videoProcessing.stage === 'ready'
+                        ? 'rgba(0, 255, 136, 0.15)'
+                        : videoProcessing.stage === 'error'
+                        ? 'rgba(239, 68, 68, 0.15)'
+                        : videoProcessing.stage === 'uploading'
+                        ? 'rgba(59, 130, 246, 0.18)'
+                        : 'rgba(168, 85, 247, 0.18)',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      flexShrink: 0
+                    }}>
+                      {videoProcessing.stage === 'ready' ? (
+                        <CheckCircle size={22} color="#00ff88" />
+                      ) : videoProcessing.stage === 'error' ? (
+                        <AlertCircle size={22} color="#ef4444" />
+                      ) : videoProcessing.stage === 'uploading' ? (
+                        <Loader2 size={22} color="#60a5fa" style={{ animation: 'spin 1.2s linear infinite' }} />
+                      ) : (
+                        <Loader2 size={22} color="#c084fc" style={{ animation: 'spin 1.2s linear infinite' }} />
+                      )}
+                    </div>
+
+                    <div style={{ minWidth: 0, flex: 1 }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                        <span style={{ fontWeight: 700, fontSize: '14px', color: '#fff', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '280px' }}>
+                          {videoProcessing.fileName}
+                        </span>
+                        <span style={{ fontSize: '11px', padding: '2px 8px', borderRadius: '12px', background: 'rgba(255,255,255,0.08)', color: '#bbb', fontWeight: 600 }}>
+                          {videoProcessing.fileSizeMB} {videoProcessing.fileSizeMB !== 'Stream' && videoProcessing.fileSizeMB !== 'External' ? 'MB' : ''}
+                        </span>
+                        {/* Stage Pill */}
+                        <span style={{
+                          fontSize: '11px',
+                          padding: '2px 9px',
+                          borderRadius: '12px',
+                          fontWeight: 700,
+                          textTransform: 'uppercase',
+                          letterSpacing: '0.4px',
+                          background: videoProcessing.stage === 'ready'
+                            ? 'rgba(0, 255, 136, 0.2)'
+                            : videoProcessing.stage === 'uploading'
+                            ? 'rgba(59, 130, 246, 0.2)'
+                            : videoProcessing.stage === 'optimizing'
+                            ? 'rgba(245, 158, 11, 0.2)'
+                            : videoProcessing.stage === 'error'
+                            ? 'rgba(239, 68, 68, 0.2)'
+                            : 'rgba(168, 85, 247, 0.2)',
+                          color: videoProcessing.stage === 'ready'
+                            ? '#00ff88'
+                            : videoProcessing.stage === 'uploading'
+                            ? '#60a5fa'
+                            : videoProcessing.stage === 'optimizing'
+                            ? '#fbbf24'
+                            : videoProcessing.stage === 'error'
+                            ? '#f87171'
+                            : '#c084fc'
+                        }}>
+                          {videoProcessing.stage === 'ready'
+                            ? '✓ Ready for Translation'
+                            : videoProcessing.stage === 'transcribing'
+                            ? '🎙️ AI Transcribing Audio'
+                            : videoProcessing.stage === 'optimizing'
+                            ? '⚡ Optimizing Video'
+                            : videoProcessing.stage === 'error'
+                            ? 'Upload Notice'
+                            : '🎬 Uploading Video'}
+                        </span>
+                      </div>
+                      <div style={{ fontSize: '12px', color: 'rgba(255,255,255,0.7)', marginTop: '2px', lineHeight: 1.4 }}>
+                        {videoProcessing.stageText}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Dismiss / Remove button */}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (videoProcessing.videoUrl) {
+                        setPostMediaUrls(prev => prev.filter(u => u !== videoProcessing.videoUrl));
+                      }
+                      setVideoProcessing(null);
+                    }}
+                    title="Remove video"
+                    style={{
+                      background: 'rgba(255, 255, 255, 0.08)',
+                      border: 'none',
+                      color: 'rgba(255, 255, 255, 0.6)',
+                      width: '28px',
+                      height: '28px',
+                      borderRadius: '50%',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      cursor: 'pointer',
+                      flexShrink: 0,
+                      transition: 'all 0.15s ease'
+                    }}
+                    onMouseOver={e => { e.currentTarget.style.color = '#fff'; e.currentTarget.style.background = 'rgba(255, 255, 255, 0.15)'; }}
+                    onMouseOut={e => { e.currentTarget.style.color = 'rgba(255, 255, 255, 0.6)'; e.currentTarget.style.background = 'rgba(255, 255, 255, 0.08)'; }}
+                  >
+                    <X size={15} />
+                  </button>
+                </div>
+
+                {/* Progress Bar (if still uploading, optimizing or transcribing) */}
+                {videoProcessing.stage !== 'ready' && videoProcessing.stage !== 'error' && (
+                  <div style={{ width: '100%', height: '5px', background: 'rgba(255,255,255,0.08)', borderRadius: '3px', overflow: 'hidden' }}>
+                    <motion.div
+                      initial={{ width: '15%' }}
+                      animate={{ width: `${videoProcessing.progress || 50}%` }}
+                      transition={{ duration: 0.35, ease: 'easeOut' }}
+                      style={{
+                        height: '100%',
+                        background: 'linear-gradient(90deg, #3b82f6, #a855f7, #00ff88)',
+                        borderRadius: '3px'
+                      }}
+                    />
+                  </div>
+                )}
+
+                {/* When ready: Translation badge & dialogue segment count preview */}
+                {videoProcessing.stage === 'ready' && (
+                  <div style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    flexWrap: 'wrap',
+                    gap: '10px',
+                    background: 'rgba(0, 255, 136, 0.08)',
+                    border: '1px solid rgba(0, 255, 136, 0.22)',
+                    borderRadius: '12px',
+                    padding: '9px 14px',
+                    fontSize: '12px',
+                    color: '#d1fae5'
+                  }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <Sparkles size={16} color="#00ff88" style={{ flexShrink: 0 }} />
+                      <span>
+                        {videoProcessing.segmentCount && videoProcessing.segmentCount > 0
+                          ? `${videoProcessing.segmentCount} spoken dialogue lines transcribed • Multilingual synthetic dubbing & subtitles enabled`
+                          : 'Spoken dialogue ready • Viewers can switch languages with synchronized audio dubbing'}
+                      </span>
+                    </div>
+
+                    {videoProcessing.previewSegments && videoProcessing.previewSegments.length > 0 && (
+                      <button
+                        type="button"
+                        onClick={() => setVideoProcessing(prev => prev ? { ...prev, showPreviewModal: !prev.showPreviewModal } : null)}
+                        style={{
+                          background: 'rgba(0, 255, 136, 0.16)',
+                          border: '1px solid rgba(0, 255, 136, 0.35)',
+                          borderRadius: '8px',
+                          padding: '4px 10px',
+                          color: '#00ff88',
+                          fontSize: '11px',
+                          fontWeight: 700,
+                          cursor: 'pointer',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '4px',
+                          transition: 'background 0.15s ease'
+                        }}
+                        onMouseOver={e => (e.currentTarget.style.background = 'rgba(0, 255, 136, 0.25)')}
+                        onMouseOut={e => (e.currentTarget.style.background = 'rgba(0, 255, 136, 0.16)')}
+                      >
+                        {videoProcessing.showPreviewModal ? 'Hide Dialogue' : 'View Dialogue Lines'}
+                      </button>
+                    )}
+                  </div>
+                )}
+
+                {/* Expanded dialogue segments preview */}
+                {videoProcessing.showPreviewModal && videoProcessing.previewSegments && videoProcessing.previewSegments.length > 0 && (
+                  <div style={{
+                    maxHeight: '160px',
+                    overflowY: 'auto',
+                    background: 'rgba(0, 0, 0, 0.55)',
+                    borderRadius: '10px',
+                    padding: '10px 14px',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: '6px',
+                    border: '1px solid rgba(255, 255, 255, 0.08)'
+                  }}>
+                    <div style={{ fontSize: '11px', fontWeight: 700, color: '#aaa', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                      Transcribed Spoken Dialogue ({videoProcessing.previewSegments.length} Segments):
+                    </div>
+                    {videoProcessing.previewSegments.map((s, idx) => (
+                      <div key={idx} style={{ fontSize: '12px', color: '#e2e8f0', display: 'flex', gap: '8px', lineHeight: 1.4 }}>
+                        <span style={{ color: '#00ff88', fontWeight: 700, flexShrink: 0 }}>[{s.time || '00:00'}]</span>
+                        <span style={{ fontStyle: 'italic', color: 'rgba(255, 255, 255, 0.88)' }}>"{s.text}"</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </motion.div>
+            )}
             
             {/* Footer Row */}
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '20px', paddingTop: '20px', borderTop: '1px solid rgba(255,255,255,0.05)', flexWrap: 'wrap', gap: '16px' }}>
@@ -5166,21 +5755,51 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
                   <input type="file" accept="image/*,video/*" multiple onChange={handlePostMediaUpload} style={{ display: 'none' }} disabled={uploadingPostMedia} />
                   <ImageIcon size={18} color={wlConfig?.accent || '#ff4d85'} /> {uploadingPostMedia ? 'Uploading...' : isDraggingPostMedia ? 'Drop Here!' : 'Attach Images/Video'}
                 </label>
+
+                <button
+                  type="button"
+                  onClick={() => setShowVideoUrlInput(prev => !prev)}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                    background: showVideoUrlInput ? `${wlConfig?.accent || '#ff4d85'}22` : 'rgba(255,255,255,0.04)',
+                    border: showVideoUrlInput ? `1px solid ${wlConfig?.accent || '#ff4d85'}` : '1px solid rgba(255,255,255,0.1)',
+                    padding: '10px 18px',
+                    borderRadius: '12px',
+                    color: showVideoUrlInput ? (wlConfig?.accent || '#ff4d85') : 'var(--text-primary)',
+                    fontSize: '14px',
+                    fontWeight: 'bold',
+                    cursor: 'pointer',
+                    transition: 'all 0.2s ease'
+                  }}
+                >
+                  <Video size={18} color={wlConfig?.accent || '#ff4d85'} /> Video Link
+                </button>
                 
                 {postMediaUrls.length > 0 && (
                   <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
                     {postMediaUrls.map((url, index) => {
                       const isVideoUrl = /\.(mp4|mov|webm|ogg|avi|mkv)(\?|$)/i.test(url);
+                      const isTranscriptReady = Boolean(pendingVideoTranscriptsRef.current[url]?.length > 0 || (videoProcessing?.videoUrl === url && videoProcessing.stage === 'ready'));
                       return (
                         <div key={`preview-${index}`} style={{ position: 'relative', width: '44px', height: '44px', borderRadius: '10px', overflow: 'hidden', border: '1.5px solid rgba(255,255,255,0.2)', background: 'rgba(0,0,0,0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                           {isVideoUrl ? (
-                            <Video size={20} color="#fff" />
+                            <>
+                              <Video size={20} color="#fff" />
+                              {isTranscriptReady && (
+                                <span title="Transcript ready for translation" style={{ position: 'absolute', bottom: 3, left: 3, width: '8px', height: '8px', borderRadius: '50%', background: '#00ff88', boxShadow: '0 0 6px #00ff88' }} />
+                              )}
+                            </>
                           ) : (
                             <img src={url} alt={`Preview ${index}`} loading="lazy" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                           )}
                           <button 
                             type="button" 
-                            onClick={() => setPostMediaUrls(prev => prev.filter((_, i) => i !== index))} 
+                            onClick={() => {
+                              setPostMediaUrls(prev => prev.filter((_, i) => i !== index));
+                              if (videoProcessing?.videoUrl === url) setVideoProcessing(null);
+                            }} 
                             style={{ 
                               position: 'absolute', top: 2, right: 2, 
                               background: 'rgba(0,0,0,0.8)', color: '#fff', 
@@ -5288,7 +5907,7 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
 
           <h2 style={{ fontSize: '20px', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '16px', marginTop: '10px' }}>Content Feed</h2>
 
-          {feed.map((post) => (
+          {sortedFeed.map((post) => (
             <motion.div id={`post-${post.id}`} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} key={post.id} style={{ background: 'rgba(15,15,15,0.8)', borderRadius: '20px', border: `1px solid ${wlConfig?.accent || '#00ff88'}22`, overflow: 'hidden' }}>
               {post.is_pinned && (
                 <div style={{
@@ -5353,7 +5972,15 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
                     <div style={{ width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', background: 'rgba(0,0,0,0.3)', padding: '20px 0', borderTop: '1px solid rgba(255,255,255,0.02)', borderBottom: '1px solid rgba(255,255,255,0.02)', position: 'relative' }}>
                       {post.imgs.length === 1 ? (
                         /\.(mp4|mov|webm|ogg|avi|mkv)(\?|$)/i.test(post.imgs[0]) ? (
-                          <video src={post.imgs[0]} controls playsInline style={{ maxWidth: '100%', width: 'auto', maxHeight: '550px', borderRadius: '12px', boxShadow: '0 10px 30px rgba(0,0,0,0.4)', padding: '0 16px', background: '#000' }} />
+                          <div style={{ width: '100%', maxWidth: '800px', padding: '0 16px' }}>
+                            <FeedVideoPlayer
+                              videoUrl={post.imgs[0]}
+                              postId={post.id}
+                              title={post.title}
+                              accent={wlConfig?.accent || '#00ff88'}
+                              maxHeight="550px"
+                            />
+                          </div>
                         ) : (
                           <img src={post.imgs[0]} alt="Post content" loading="lazy" style={{ maxWidth: '100%', width: 'auto', height: 'auto', maxHeight: '550px', objectFit: 'contain', borderRadius: '12px', boxShadow: '0 10px 30px rgba(0,0,0,0.4)', padding: '0 16px' }} />
                         )
@@ -5362,7 +5989,13 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
                           {/* Slide Container */}
                           <div style={{ position: 'relative', width: '100%', height: '500px', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', borderRadius: '12px', background: 'rgba(0,0,0,0.2)' }}>
                             {/\.(mp4|mov|webm|ogg|avi|mkv)(\?|$)/i.test(post.imgs[postImageIndexes[post.id] || 0]) ? (
-                              <video src={post.imgs[postImageIndexes[post.id] || 0]} controls playsInline style={{ maxWidth: '100%', maxHeight: '100%', borderRadius: '12px', background: '#000' }} />
+                              <FeedVideoPlayer
+                                videoUrl={post.imgs[postImageIndexes[post.id] || 0]}
+                                postId={post.id}
+                                title={post.title}
+                                accent={wlConfig?.accent || '#00ff88'}
+                                maxHeight="500px"
+                              />
                             ) : (
                               <img src={post.imgs[postImageIndexes[post.id] || 0]} alt={`Post content ${(postImageIndexes[post.id] || 0) + 1}`} loading="lazy" style={{ maxWidth: '100%', maxHeight: '100%', width: 'auto', height: 'auto', objectFit: 'contain', borderRadius: '12px', boxShadow: '0 10px 30px rgba(0,0,0,0.4)' }} />
                             )}

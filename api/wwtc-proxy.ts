@@ -45,9 +45,9 @@ export default async function handler(req: any, res: any) {
       return res.status(200).json(data);
     }
 
-    // 2. Translation or Synthesis Service (TTT, TTS, STT)
-    if (action === 'service') {
-      const { serviceCode, sourceLang, targetLang, text } = req.body || {};
+    // 2. Translation or Synthesis Service (TTT, TTS, STT, STS)
+    if (action === 'service' || action === 'stt') {
+      const { serviceCode = (action === 'stt' ? 'stt' : 'ttt'), sourceLang, targetLang, text, audioBase64 } = req.body || {};
 
       if (!serviceCode || !sourceLang || !targetLang) {
         return res.status(400).json({ error: 'Missing serviceCode, sourceLang, or targetLang' });
@@ -59,6 +59,36 @@ export default async function handler(req: any, res: any) {
       }
 
       const url = new URL(`${API_BASE_URL}/services/${serviceCode}/${sourceLang}/${targetLang}`);
+
+      if (serviceCode === 'stt' && audioBase64) {
+        // Speech-to-Text with uploaded audio
+        const audioBuffer = Buffer.from(audioBase64, 'base64');
+        const formData = new FormData();
+        const blob = new Blob([audioBuffer], { type: 'audio/wav' });
+        formData.append('audio', blob, 'audio.wav');
+
+        const response = await fetch(url.toString(), {
+          method: 'POST',
+          headers: {
+            'accept': 'application/json',
+            'api-authorization': WWTC_API_KEY,
+          },
+          body: formData,
+        });
+
+        if (!response.ok) {
+          let errDetails = `WWTC STT Error: ${response.statusText}`;
+          try {
+            const errJson = await response.json();
+            if (errJson?.error) errDetails = errJson.error;
+          } catch (_) {}
+          return res.status(response.status).json({ error: errDetails });
+        }
+
+        const result = await response.json();
+        return res.status(200).json(result);
+      }
+
       if (text) {
         url.searchParams.set('text', String(text).slice(0, 10000)); // Bound input length to protect against abuse
       }

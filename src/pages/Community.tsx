@@ -4,6 +4,8 @@ import { useWhiteLabel } from '../context/WhiteLabelContext';
 import { MessageSquare, Hash, Image as ImageIcon, Send, Lock, Unlock, Plus, Trash2, Settings, X } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { validateFileSafety } from '../lib/fileSecurity';
+import { FeedVideoPlayer } from '../components/FeedVideoPlayer';
+import { transcribeUploadedVideo, saveVideoTranscript } from '../lib/videoTranscription';
 
 interface CommunityProps {
   user: any;
@@ -21,6 +23,7 @@ export default function Community({ user, onAuthRequest }: CommunityProps) {
   const [uploadingMedia, setUploadingMedia] = useState(false);
   const [pendingMediaUrl, setPendingMediaUrl] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const pendingVideoTranscriptsRef = useRef<Record<string, any>>({});
   const [showAddChannel, setShowAddChannel] = useState(false);
   const [newChannelName, setNewChannelName] = useState('');
   const [newChannelDesc, setNewChannelDesc] = useState('');
@@ -92,13 +95,45 @@ export default function Community({ user, onAuthRequest }: CommunityProps) {
     if (file.size > 50 * 1024 * 1024) { toast.error('File too large. Max 50MB.'); return; }
     try {
       setUploadingMedia(true);
-      const ext = file.name.split('.').pop() || 'bin';
+      const isVid = file.type.startsWith('video/') || /\.(mp4|mov|webm|ogg|avi|mkv)$/i.test(file.name);
+      const ext = file.name.split('.').pop() || (isVid ? 'mp4' : 'bin');
       const filePath = `${user.id}/community_${Date.now()}.${ext}`;
-      const { error } = await supabase!.storage.from('images').upload(filePath, file, { contentType: file.type });
-      if (error) throw error;
-      const { data } = supabase!.storage.from('images').getPublicUrl(filePath);
-      setPendingMediaUrl(data.publicUrl);
-      toast.success('Media ready -- hit send!');
+      
+      let targetBucket = isVid ? 'videos' : 'images';
+      const uploadRes = await supabase!.storage.from(targetBucket).upload(filePath, file, { contentType: file.type });
+      
+      if (uploadRes.error && isVid) {
+        // Fallback to images bucket
+        const fallbackRes = await supabase!.storage.from('images').upload(filePath, file, { contentType: file.type });
+        if (fallbackRes.error) {
+          throw new Error(`Upload failed: ${uploadRes.error.message || fallbackRes.error.message}`);
+        }
+        targetBucket = 'images';
+      } else if (uploadRes.error) {
+        throw uploadRes.error;
+      }
+
+      const { data } = supabase!.storage.from(targetBucket).getPublicUrl(filePath);
+      const mediaUrl = data.publicUrl;
+      setPendingMediaUrl(mediaUrl);
+
+      if (isVid) {
+        toast.loading('🎙️ Generating video transcript for translation software...', { id: 'comm-video-trans' });
+        transcribeUploadedVideo(file, {
+          videoUrl: mediaUrl,
+          videoTitle: newPostContent || file.name.replace(/\.[^/.]+$/, ''),
+          channelName: activeChannel?.name || 'Community Channel',
+          onProgress: (msg) => toast.loading(`🎙️ ${msg}`, { id: 'comm-video-trans' })
+        }).then(segments => {
+          pendingVideoTranscriptsRef.current[mediaUrl] = segments;
+          toast.success(`✅ Video transcript ready for translation software! (${segments.length} segments)`, { id: 'comm-video-trans', duration: 4000 });
+        }).catch(err => {
+          console.warn('[Community] Video transcription notice:', err);
+          toast.dismiss('comm-video-trans');
+        });
+      } else {
+        toast.success('Media ready -- hit send!');
+      }
     } catch (err: any) {
       toast.error(`Upload failed: ${err?.message || 'Unknown error'}`);
     } finally {
@@ -108,11 +143,19 @@ export default function Community({ user, onAuthRequest }: CommunityProps) {
 
   const handlePost = async () => {
     if ((!newPostContent.trim() && !pendingMediaUrl) || !user || !activeChannel) return;
-    const { error } = await supabase.from('network_posts').insert({
+    const mediaToPost = pendingMediaUrl;
+    const { data: newPostData, error } = await supabase.from('network_posts').insert({
       channel_id: activeChannel.id, author_id: user.id,
-      content: newPostContent.trim() || '', media_url: pendingMediaUrl || null,
-    });
+      content: newPostContent.trim() || '', media_url: mediaToPost || null,
+    }).select().single();
+
     if (error) { toast.error('Failed to post. Please try again.'); return; }
+
+    // Link video transcript to post ID if available
+    if (newPostData && mediaToPost && pendingVideoTranscriptsRef.current[mediaToPost]) {
+      saveVideoTranscript(String(newPostData.id), pendingVideoTranscriptsRef.current[mediaToPost]).catch(() => {});
+    }
+
     setNewPostContent(''); setPendingMediaUrl(null);
   };
 
@@ -264,9 +307,15 @@ export default function Community({ user, onAuthRequest }: CommunityProps) {
                       </div>
                       {post.content && <div style={{ color: 'rgba(255,255,255,0.88)', fontSize: '14px', lineHeight: 1.65, wordBreak: 'break-word' }}>{post.content}</div>}
                       {post.media_url && (
-                        <div style={{ marginTop: '10px', borderRadius: '12px', overflow: 'hidden', maxWidth: '460px', border: '1px solid rgba(255,255,255,0.07)', background: 'rgba(0,0,0,0.3)' }}>
+                        <div style={{ marginTop: '10px', borderRadius: '12px', overflow: 'hidden', maxWidth: '520px', border: '1px solid rgba(255,255,255,0.07)', background: 'rgba(0,0,0,0.3)' }}>
                           {isVideo(post.media_url) ? (
-                            <video src={post.media_url} controls playsInline style={{ width: '100%', maxHeight: '300px', display: 'block' }} />
+                            <FeedVideoPlayer
+                              videoUrl={post.media_url}
+                              postId={post.id}
+                              title={post.content}
+                              accent={accent}
+                              maxHeight="320px"
+                            />
                           ) : (
                             <img src={post.media_url} alt="Post media" loading="lazy" style={{ width: '100%', maxHeight: '440px', objectFit: 'contain', display: 'block' }} />
                           )}

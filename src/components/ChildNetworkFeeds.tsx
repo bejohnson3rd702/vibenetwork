@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { Heart, MessageCircle, ArrowRight, ChevronLeft, ChevronRight, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from '../supabaseClient';
+import { FeedVideoPlayer } from './FeedVideoPlayer';
 
 interface WhitelabelTheme {
   accent?: string;
@@ -639,6 +640,28 @@ export default function ChildNetworkFeeds({ parentId, accent = 'var(--accent-pri
                     src = src.split(',')[0].trim();
                   }
                   if (!src) return null;
+
+                  const isVid = /\.(mp4|mov|webm|ogg|avi|mkv)(\?|$)/i.test(src);
+                  if (isVid) {
+                    return (
+                      <div style={{
+                        width: '100%',
+                        overflow: 'hidden',
+                        background: '#000',
+                        borderTop: '1px solid rgba(255,255,255,0.02)',
+                        borderBottom: '1px solid rgba(255,255,255,0.02)'
+                      }}>
+                        <FeedVideoPlayer
+                          videoUrl={src}
+                          postId={post.id}
+                          title={post.content}
+                          accent={accent}
+                          maxHeight="380px"
+                        />
+                      </div>
+                    );
+                  }
+
                   return (
                     <div style={{
                       width: '100%',

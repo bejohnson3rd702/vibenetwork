@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Eye, Heart, MessageSquare, ShieldCheck, Sparkles, ChevronDown, ChevronUp } from 'lucide-react';
 import { supabase } from '../supabaseClient';
 import { mergeQueryParams } from '../lib/n2n';
+import { FeedVideoPlayer } from './FeedVideoPlayer';
 
 interface Creator {
   id: string;
@@ -295,28 +296,44 @@ export default function TrendingFeed() {
                       {post.content}
                     </p>
 
-                    {/* Post Image */}
+                    {/* Post Image or Video */}
                     {post.imageUrl && (
-                      <div style={{
-                        width: '100%',
-                        aspectRatio: '16/10',
-                        borderRadius: '16px',
-                        overflow: 'hidden',
-                        marginBottom: '16px',
-                        background: 'rgba(0,0,0,0.2)'
-                      }}>
-                        <img 
-                          src={post.imageUrl} 
-                          alt="Post media" 
-                          style={{
-                            width: '100%',
-                            height: '100%',
-                            objectFit: 'cover',
-                            transition: 'transform 0.5s ease'
-                          }}
-                          onMouseOver={(e) => e.currentTarget.style.transform = 'scale(1.05)'}
-                          onMouseOut={(e) => e.currentTarget.style.transform = 'scale(1)'}
-                        />
+                      <div 
+                        style={{
+                          width: '100%',
+                          borderRadius: '16px',
+                          overflow: 'hidden',
+                          marginBottom: '16px',
+                          background: 'rgba(0,0,0,0.2)'
+                        }}
+                        onClick={(e) => {
+                          if (/\.(mp4|mov|webm|ogg|avi|mkv)(\?|$)/i.test(post.imageUrl || '')) {
+                            e.stopPropagation();
+                          }
+                        }}
+                      >
+                        {/\.(mp4|mov|webm|ogg|avi|mkv)(\?|$)/i.test(post.imageUrl) ? (
+                          <FeedVideoPlayer
+                            videoUrl={post.imageUrl}
+                            postId={post.id}
+                            title={post.content}
+                            maxHeight="260px"
+                          />
+                        ) : (
+                          <img 
+                            src={post.imageUrl} 
+                            alt="Post media" 
+                            style={{
+                              width: '100%',
+                              height: '100%',
+                              aspectRatio: '16/10',
+                              objectFit: 'cover',
+                              transition: 'transform 0.5s ease'
+                            }}
+                            onMouseOver={(e) => e.currentTarget.style.transform = 'scale(1.05)'}
+                            onMouseOut={(e) => e.currentTarget.style.transform = 'scale(1)'}
+                          />
+                        )}
                       </div>
                     )}
                   </div>
