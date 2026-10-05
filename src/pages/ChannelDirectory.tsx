@@ -108,6 +108,41 @@ export default function ChannelDirectory() {
             return;
           }
 
+          // Skip Courtney Bee spotlight creator profile here (injected at step 3)
+          if (wl.id === 'courtney-bee-tenant-id') {
+            return;
+          }
+
+          // Courtney Bee cast members are Channels (type: 'creator'), NOT Networks
+          const isWnoCast = wl.id.startsWith('wno-') || 
+                            ['d1000000-c08f-4260-8540-a0cc8bed4e11', 'd2000000-c08f-4260-8540-a0cc8bed4e11', 'd3000000-c08f-4260-8540-a0cc8bed4e11', 'd4000000-c08f-4260-8540-a0cc8bed4e11', 'd5000000-c08f-4260-8540-a0cc8bed4e11'].includes(wl.id) ||
+                            (wl.parent_network_id === 'cb000000-c08f-4260-8540-a0cc8bed4e11');
+
+          if (isWnoCast) {
+            let castAvatar = wl.logo || wl.theme?.logoImage || wl.theme?.heroImage;
+            if (nameLower.includes('dc young fly')) castAvatar = '/n2n/wno_dc_young_fly.jpg';
+            else if (nameLower.includes('conceited')) castAvatar = '/n2n/wno_conceited.jpg';
+            else if (nameLower.includes('chico bean')) castAvatar = '/n2n/wno_chico_bean.jpg';
+            else if (nameLower.includes('justina valentine')) castAvatar = '/n2n/wno_justina_valentine.jpg';
+            else if (nameLower.includes('timothy delaghetto')) castAvatar = '/n2n/wno_timothy_delaghetto.jpg';
+
+            allItems.push({
+              id: wl.id,
+              name: wl.name || 'Cast Channel',
+              username: wl.name ? `@${wl.name.toLowerCase().replace(/[^a-z0-9]/g, '')}` : undefined,
+              type: 'creator',
+              category: 'comedy',
+              avatar: castAvatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(wl.name || 'C')}&background=111&color=fff`,
+              banner: '/n2n/comedy_club_bg.jpg',
+              bio: wl.theme?.heroCopy || wl.heroCopy || `Official ${wl.name} Channel on Vibe Network.`,
+              parentNetworkName: 'The Real Courtney Bee Network',
+              linkUrl: `/profile/${wl.id}`,
+              accent: wl.accent || wl.theme?.accent || '#ff4d85',
+              verified: true
+            });
+            return;
+          }
+
           let category: DirectoryItem['category'] = 'network';
           if (nameLower.includes('olympia') || nameLower.includes('muscle') || nameLower.includes('fitness') || nameLower.includes('wings')) {
             category = 'fitness';
