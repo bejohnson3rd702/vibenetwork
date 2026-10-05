@@ -72,7 +72,7 @@ export const FeedVideoPlayer: React.FC<FeedVideoPlayerProps> = ({
     setLoadingTranscript(true);
     setTranscript([]);
 
-    fetchTranscriptForVideo(videoUrl, postId)
+    fetchTranscriptForVideo(videoUrl, postId, title || 'Channel Host')
       .then(data => {
         if (isMounted && data && data.length > 0) setTranscript(data);
       })
@@ -80,8 +80,26 @@ export const FeedVideoPlayer: React.FC<FeedVideoPlayerProps> = ({
         if (isMounted) setLoadingTranscript(false);
       });
 
-    return () => { isMounted = false; };
-  }, [videoUrl, postId]);
+    const handleAutoTranscript = (e: Event) => {
+      const detail = (e as CustomEvent)?.detail;
+      if (!detail || !isMounted) return;
+      if (
+        (detail.videoUrl && detail.videoUrl === videoUrl) ||
+        (detail.postId && postId && String(detail.postId) === String(postId))
+      ) {
+        if (Array.isArray(detail.segments) && detail.segments.length > 0) {
+          setTranscript(detail.segments);
+        }
+      }
+    };
+
+    window.addEventListener('vibe-transcript-ready', handleAutoTranscript);
+
+    return () => { 
+      isMounted = false;
+      window.removeEventListener('vibe-transcript-ready', handleAutoTranscript);
+    };
+  }, [videoUrl, postId, title]);
 
   // 2. Fetch supported WWTC languages
   useEffect(() => {
