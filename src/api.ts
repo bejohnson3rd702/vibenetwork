@@ -71,7 +71,7 @@ export async function getCategoriesWithVideos(tenantId?: string) {
     '074ac2e4-8ca2-486c-ab94-8537d0dc1fab', // Life is good LLC
   ];
 
-  const mappedNetworks = (whitelabels || []).filter((wl: any) => {
+  let mappedNetworks = (whitelabels || []).filter((wl: any) => {
     if (isWlDeactivated(wl)) return false;
 
     const domainLower = (wl.domain || '').toLowerCase();
@@ -162,20 +162,63 @@ export async function getCategoriesWithVideos(tenantId?: string) {
     }
   }
 
-  // Sort Bonaire Chamber of Commerce to top, VIBE 100 second, and Courtney Bee Network third
-  mappedNetworks.sort((a: any, b: any) => {
-    const bonaireId = 'wl_b0ea0000-c08f-4260-8540-a0cc8bed4e11';
-    const vibe100Id = 'wl_e5c100aa-c08f-4260-8540-a0cc8bed4e11';
-    const cbId = 'wl_cb000000-c08f-4260-8540-a0cc8bed4e11';
-    
-    const getOrder = (id: string) => {
-      if (id === bonaireId) return 1;
-      if (id === vibe100Id) return 2;
-      if (id === cbId || id.includes('courtney')) return 3;
-      return 99;
-    };
-    return getOrder(a.id) - getOrder(b.id);
-  });
+  // ── Vibe Homepage Admin Showcase Curation Check ──
+  let curatedNetworksList: string[] = [];
+  let curatedChannelsList: string[] = [];
+  const masterWl = (whitelabels || []).find((wl: any) =>
+    wl.id === 'adb92e36-5ebc-4dc3-ae96-429f3dc1bb30' ||
+    wl.id === 'master' ||
+    wl.domain === 'vibenetwork.tv' ||
+    wl.domain === 'vibenetwork.com'
+  );
+
+  if (masterWl?.theme?.homepage_featured_networks && Array.isArray(masterWl.theme.homepage_featured_networks) && masterWl.theme.homepage_featured_networks.length > 0) {
+    curatedNetworksList = masterWl.theme.homepage_featured_networks;
+  } else {
+    try {
+      const local = JSON.parse(localStorage.getItem('vibe_homepage_featured_networks') || '[]');
+      if (Array.isArray(local) && local.length > 0) curatedNetworksList = local;
+    } catch {}
+  }
+
+  if (masterWl?.theme?.homepage_featured_channels && Array.isArray(masterWl.theme.homepage_featured_channels) && masterWl.theme.homepage_featured_channels.length > 0) {
+    curatedChannelsList = masterWl.theme.homepage_featured_channels;
+  } else {
+    try {
+      const local = JSON.parse(localStorage.getItem('vibe_homepage_featured_channels') || '[]');
+      if (Array.isArray(local) && local.length > 0) curatedChannelsList = local;
+    } catch {}
+  }
+
+  if (!tenantId && curatedNetworksList.length > 0) {
+    // Admin has explicitly curated homepage networks
+    mappedNetworks = mappedNetworks.filter((n: any) => {
+      const rawId = n.id.startsWith('wl_') ? n.id.slice(3) : n.id;
+      return curatedNetworksList.includes(rawId) || curatedNetworksList.includes(n.id);
+    });
+    mappedNetworks.sort((a: any, b: any) => {
+      const rawA = a.id.startsWith('wl_') ? a.id.slice(3) : a.id;
+      const rawB = b.id.startsWith('wl_') ? b.id.slice(3) : b.id;
+      const idxA = curatedNetworksList.indexOf(rawA) > -1 ? curatedNetworksList.indexOf(rawA) : curatedNetworksList.indexOf(a.id);
+      const idxB = curatedNetworksList.indexOf(rawB) > -1 ? curatedNetworksList.indexOf(rawB) : curatedNetworksList.indexOf(b.id);
+      return (idxA === -1 ? 999 : idxA) - (idxB === -1 ? 999 : idxB);
+    });
+  } else {
+    // Default sorting: Bonaire Chamber of Commerce to top, VIBE 100 second, and Courtney Bee Network third
+    mappedNetworks.sort((a: any, b: any) => {
+      const bonaireId = 'wl_b0ea0000-c08f-4260-8540-a0cc8bed4e11';
+      const vibe100Id = 'wl_e5c100aa-c08f-4260-8540-a0cc8bed4e11';
+      const cbId = 'wl_cb000000-c08f-4260-8540-a0cc8bed4e11';
+      
+      const getOrder = (id: string) => {
+        if (id === bonaireId) return 1;
+        if (id === vibe100Id) return 2;
+        if (id === cbId || id.includes('courtney')) return 3;
+        return 99;
+      };
+      return getOrder(a.id) - getOrder(b.id);
+    });
+  }
 
   let mappedProfiles = (profiles || [])
     .filter((p: any) => {
@@ -210,6 +253,17 @@ export async function getCategoriesWithVideos(tenantId?: string) {
       } else {
         mappedProfiles.unshift(courtneyProfileItem);
       }
+    }
+
+    if (curatedChannelsList.length > 0) {
+      mappedProfiles = mappedProfiles.filter((p: any) => {
+        return curatedChannelsList.includes(p.id) || (p.id === 'courtney-bee-tenant-id' && curatedChannelsList.some(id => id.includes('courtney')));
+      });
+      mappedProfiles.sort((a: any, b: any) => {
+        const idxA = curatedChannelsList.indexOf(a.id) > -1 ? curatedChannelsList.indexOf(a.id) : (a.id === 'courtney-bee-tenant-id' ? curatedChannelsList.findIndex(id => id.includes('courtney')) : 999);
+        const idxB = curatedChannelsList.indexOf(b.id) > -1 ? curatedChannelsList.indexOf(b.id) : (b.id === 'courtney-bee-tenant-id' ? curatedChannelsList.findIndex(id => id.includes('courtney')) : 999);
+        return (idxA === -1 ? 999 : idxA) - (idxB === -1 ? 999 : idxB);
+      });
     }
   } else {
     mappedProfiles = mappedProfiles.filter((p: any) => p.id !== 'courtney-bee-tenant-id' && !(p.title || '').toLowerCase().includes('courtney bee'));

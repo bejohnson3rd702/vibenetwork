@@ -4,7 +4,7 @@ import {
   Globe, Users, Activity, Database, 
   ShieldAlert, Terminal, ChevronRight, BarChart3, 
   Network, Server, Play, StopCircle, CheckCircle, Wallet, AlertCircle, Mail, ShoppingBag,
-  Brain, Type, Menu, Languages
+  Brain, Type, Menu, Languages, Radio
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../supabaseClient';
@@ -13,6 +13,7 @@ import { BrandingTab } from './admin/BrandingTab';
 import { AnalyticsTab } from './admin/AnalyticsTab';
 import { EnterpriseAiTab } from './admin/EnterpriseAiTab';
 import { TranslationTab } from './admin/TranslationTab';
+import { HomepageCurationTab } from './admin/HomepageCurationTab';
 import { getChildNetworks, deleteChildNetwork, createChildNetwork } from '../lib/n2n';
 import LiveTelemetry from './LiveTelemetry';
 import { HeroEditorTab } from './admin/HeroEditorTab';
@@ -469,6 +470,7 @@ function MasterAdminDashboard() {
         <nav style={{ padding: '24px 12px', flex: 1, display: 'flex', flexDirection: 'column', gap: '8px' }}>
           {[
             { id: 'overview', icon: <Activity size={18} />, label: 'Pulse' },
+            { id: 'homepage-curation', icon: <Radio size={18} />, label: 'Homepage Showcase' },
             { id: 'live-now', icon: <Play size={18} />, label: 'Live Now TV' },
             { id: 'app-builder', icon: <ShoppingBag size={18} />, label: 'App Builder' },
             { id: 'branding', icon: <Globe size={18} />, label: 'Platform Branding' },
@@ -1131,6 +1133,19 @@ function MasterAdminDashboard() {
                     </button>
                  </div>
                </div>
+             </motion.div>
+          )}
+
+          {activeTab === 'homepage-curation' && (
+             <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} style={{ display: 'flex', flexDirection: 'column', gap: '30px' }}>
+               <HomepageCurationTab 
+                 isMobile={isMobile}
+                 whitelabelsList={whitelabelsList}
+                 usersList={usersList}
+                 supabase={supabase}
+                 showToast={showToast}
+                 logSystemEvent={logSystemEvent}
+               />
              </motion.div>
           )}
 

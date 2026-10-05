@@ -65,6 +65,8 @@ export default function Home({ categories, activeVideo, setActiveVideo, user }: 
               delay={index * 0.2}
               aspectRatio="16/9"
               sizeMultiplier={1}
+              onViewAll={() => { window.location.href = mergeQueryParams('/channels?filter=networks', window.location.search); }}
+              viewAllText="Explore All"
               onItemClick={(item) => {
                 if (item.linkUrl) {
                   const targetUrl = item.linkUrl.includes('?') 
@@ -92,6 +94,8 @@ export default function Home({ categories, activeVideo, setActiveVideo, user }: 
               title="AVO COLLEGES"
               items={avoColleges}
               aspectRatio="16/9"
+              onViewAll={() => { window.location.href = mergeQueryParams('/channels?filter=colleges', window.location.search); }}
+              viewAllText="All Colleges"
               onItemClick={(item) => {
                 if (item.linkUrl) {
                   const targetUrl = item.linkUrl.includes('?') 
@@ -123,6 +127,8 @@ export default function Home({ categories, activeVideo, setActiveVideo, user }: 
                     delay={index * 0.2}
                     aspectRatio={category.aspectRatio || ratio}
                     sizeMultiplier={multiplier}
+                    onViewAll={isNewProfiles ? () => { window.location.href = mergeQueryParams('/channels?filter=creators', window.location.search); } : undefined}
+                    viewAllText={isNewProfiles ? "Explore Channels" : undefined}
                     onItemClick={(item) => {
                       if (item.linkUrl) {
                         window.location.href = mergeQueryParams(item.linkUrl, window.location.search);

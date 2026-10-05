@@ -207,3 +207,5 @@ export function normalizeWlConfig(
 
   return base;
 }
+
+export { isWlDeactivated } from '../api';

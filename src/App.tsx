@@ -38,6 +38,7 @@ const WhiteLabelHome = lazy(() => import('./pages/WhiteLabelHome'));
 const N2NHome = lazy(() => import('./pages/N2NHome'));
 const AvoMarketplace = lazy(() => import('./components/AvoMarketplace'));
 const ShopifyStore = lazy(() => import('./components/ShopifyStore'));
+const ChannelDirectory = lazy(() => import('./pages/ChannelDirectory'));
 const BibleDrawer = lazy(() => import('./components/BibleDrawer'));
 const StripeConnectV2Demo = lazy(() => import('./components/StripeConnectV2Demo'));
 import { motion, AnimatePresence } from 'framer-motion';
@@ -841,6 +842,8 @@ function App() {
                    ? <N2NHome wlConfig={wlConfig} categories={categories} user={user} activeVideo={activeVideo} setActiveVideo={setActiveVideo} />
                    : <WhiteLabelHome wlConfig={wlConfig} categories={categories} user={user} activeVideo={activeVideo} setActiveVideo={setActiveVideo} />
               } />
+              <Route path="/channels" element={<ChannelDirectory />} />
+              <Route path="/explore" element={<ChannelDirectory />} />
               <Route path="/marketplace" element={<Marketplace />} />
               <Route path="/shop" element={
                 <div style={{ paddingTop: '80px', minHeight: '100vh', background: 'var(--bg-color)' }}>
@@ -962,6 +965,8 @@ function App() {
                   <Suspense fallback={<div style={{ height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-secondary)' }}>Loading interface...</div>}>
                     <Routes>
                       <Route path="/" element={<Home categories={categories} activeVideo={activeVideo} setActiveVideo={setActiveVideo} user={user} />} />
+                      <Route path="/channels" element={<ChannelDirectory />} />
+                      <Route path="/explore" element={<ChannelDirectory />} />
                       <Route path="/marketplace" element={<Marketplace />} />
                       <Route path="/product/:productId" element={<ProductPage />} />
                       <Route path="/about" element={<MoreInfo />} />

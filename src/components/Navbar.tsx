@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { User, Menu, Wallet, Settings, LogOut, Home as HomeIcon, ShoppingBag, Info, Tv, Mail, ArrowLeft, X } from 'lucide-react';
+import { User, Menu, Wallet, Settings, LogOut, Home as HomeIcon, ShoppingBag, Info, Tv, Mail, ArrowLeft, X, Search } from 'lucide-react';
 import { ASSETS } from '../data';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useWhiteLabel } from '../context/WhiteLabelContext';
@@ -142,6 +142,7 @@ const Navbar: React.FC<NavbarProps> = ({ user, onLoginClick, onAdminClick }) => 
 
   const navLinks = [
     { label: 'Home', path: '/', icon: <HomeIcon size={18} /> },
+    { label: 'Channels', path: '/channels', icon: <Search size={18} /> },
     { 
       label: 'Marketplace', 
       path: '/marketplace', 
@@ -315,7 +316,31 @@ const Navbar: React.FC<NavbarProps> = ({ user, onLoginClick, onAdminClick }) => 
         </ul>
 
         {/* Right Controls */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: isMobile ? '8px' : '20px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: isMobile ? '8px' : '16px' }}>
+          {/* Quick Search Button */}
+          <button
+            onClick={() => navigate('/channels' + window.location.search)}
+            title="Search Channels & Networks"
+            style={{
+              background: 'rgba(255,255,255,0.08)',
+              border: '1px solid rgba(255,255,255,0.15)',
+              borderRadius: '50%',
+              width: isMobile ? '32px' : '36px',
+              height: isMobile ? '32px' : '36px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              color: '#fff',
+              cursor: 'pointer',
+              transition: 'all 0.2s',
+              flexShrink: 0
+            }}
+            onMouseOver={e => e.currentTarget.style.background = 'rgba(255,255,255,0.18)'}
+            onMouseOut={e => e.currentTarget.style.background = 'rgba(255,255,255,0.08)'}
+          >
+            <Search size={isMobile ? 15 : 17} />
+          </button>
+
           {/* Desktop User Section */}
           <div className="hide-on-mobile hide-on-tablet" style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
             {user ? (
