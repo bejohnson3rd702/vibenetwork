@@ -141,9 +141,17 @@ export async function transcribeUploadedVideo(
     form.append('reset', i === 0 ? 'true' : 'false');
     form.append('audio', wav, `chunk_${i}.wav`);
 
-    const { data, error } = await supabase.functions.invoke('transcribe-video', { body: form });
-    if (error) {
-      console.warn(`[VideoTranscription] Chunk ${i + 1}/${totalChunks} failed:`, error.message);
+    // WWTC occasionally drops connections, so retry each chunk with backoff
+    let data: any = null;
+    let lastError: any = null;
+    for (let attempt = 0; attempt < 3; attempt++) {
+      const res = await supabase.functions.invoke('transcribe-video', { body: form });
+      if (!res.error) { data = res.data; lastError = null; break; }
+      lastError = res.error;
+      await new Promise(r => setTimeout(r, 1500 * (attempt + 1)));
+    }
+    if (lastError) {
+      console.warn(`[VideoTranscription] Chunk ${i + 1}/${totalChunks} failed:`, lastError.message);
       continue;
     }
     if (data?.segment) segments.push(data.segment as YouTubeCaptionSegment);
