@@ -270,7 +270,7 @@ export const HomepageCurationTab: React.FC<HomepageCurationTabProps> = ({
           }}
         >
           <User size={16} />
-          <span>Creator Channels Slider ({featuredChannels.length} Selected)</span>
+          <span>"New Profiles" Slider ({featuredChannels.length} Selected)</span>
         </button>
       </div>
 
@@ -451,7 +451,7 @@ export const HomepageCurationTab: React.FC<HomepageCurationTabProps> = ({
       {activeSection === 'channels' && (
         <div style={{ background: 'var(--bg-surface)', padding: '24px', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.05)' }}>
           <div style={{ marginBottom: '16px', fontSize: '13px', color: 'var(--text-muted)' }}>
-            Toggle creator channels to feature on the homepage "Creator Channels" carousel. Use the arrows to set their order.
+            Select and reorder which creator channels appear in the <strong>"New Profiles"</strong> slider on the Vibe homepage. Use the arrows to set their exact sequence.
           </div>
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
