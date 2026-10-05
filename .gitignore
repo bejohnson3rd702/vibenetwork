@@ -46,6 +46,7 @@ node-v*.tar.gz
 tmp/
 *.wav
 smoke_test_artifacts/
+supabase/.temp/cli-*
 
 # node binaries
 node-v*/
