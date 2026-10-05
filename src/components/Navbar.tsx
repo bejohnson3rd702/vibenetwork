@@ -107,24 +107,26 @@ const Navbar: React.FC<NavbarProps> = ({ user, onLoginClick, onAdminClick }) => 
   }, []);
 
   const [userAvatar, setUserAvatar] = useState<string | null>(null);
+  const [profileIsAdmin, setProfileIsAdmin] = useState(false);
 
   useEffect(() => {
     if (user?.id) {
       const metaAvatar = user.user_metadata?.avatar_url || user.avatar_url;
       if (metaAvatar) {
         setUserAvatar(metaAvatar);
-      } else {
-        supabase
-          .from('profiles')
-          .select('avatar_url')
-          .eq('id', user.id)
-          .single()
-          .then(({ data }) => {
-            if (data?.avatar_url) setUserAvatar(data.avatar_url);
-          });
       }
+      supabase
+        .from('profiles')
+        .select('avatar_url, is_admin, role')
+        .eq('id', user.id)
+        .single()
+        .then(({ data }) => {
+          if (data?.avatar_url && !metaAvatar) setUserAvatar(data.avatar_url);
+          if (data?.is_admin || data?.role === 'admin') setProfileIsAdmin(true);
+        });
     } else {
       setUserAvatar(null);
+      setProfileIsAdmin(false);
     }
   }, [user]);
 
@@ -181,6 +183,7 @@ const Navbar: React.FC<NavbarProps> = ({ user, onLoginClick, onAdminClick }) => 
   };
 
   const isUserAdmin = Boolean(
+    profileIsAdmin ||
     (wlConfig?.owner_id && user?.id === wlConfig?.owner_id) || 
     (!wlConfig?.owner_id && user?.user_metadata?.role === 'business') || 
     user?.email?.toLowerCase().includes('bennie') || 
@@ -388,6 +391,30 @@ const Navbar: React.FC<NavbarProps> = ({ user, onLoginClick, onAdminClick }) => 
               </button>
             )}
           </div>
+
+          {/* Quick Admin Dashboard Button for Mobile */}
+          {isUserAdmin && onAdminClick && (
+            <button
+              onClick={onAdminClick}
+              className="show-on-mobile"
+              style={{
+                display: 'none',
+                alignItems: 'center',
+                gap: '4px',
+                background: appAccent,
+                border: 'none',
+                color: '#fff',
+                padding: '6px 12px',
+                borderRadius: '8px',
+                fontSize: '11px',
+                fontWeight: 700,
+                cursor: 'pointer',
+                letterSpacing: '0.5px'
+              }}
+            >
+              Dashboard
+            </button>
+          )}
 
           {/* Quick Profile Avatar for Mobile */}
           {user && (
@@ -621,6 +648,26 @@ const Navbar: React.FC<NavbarProps> = ({ user, onLoginClick, onAdminClick }) => 
                       <span>{item.label}</span>
                     </button>
                   ))}
+                  {!user && (
+                    <Link
+                      to={`/admin-login${window.location.search}`}
+                      onClick={() => setIsMenuOpen(false)}
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '14px',
+                        padding: '13px 16px',
+                        borderRadius: '10px',
+                        color: 'rgba(255,255,255,0.7)',
+                        textDecoration: 'none',
+                        fontSize: '15px',
+                        fontWeight: 600,
+                        marginTop: '4px'
+                      }}
+                    >
+                      <Settings size={18} color="rgba(255,255,255,0.5)" /> Admin Portal
+                    </Link>
+                  )}
                 </div>
 
                 {/* User Channels & Settings */}
@@ -652,7 +699,7 @@ const Navbar: React.FC<NavbarProps> = ({ user, onLoginClick, onAdminClick }) => 
                             textAlign: 'left'
                           }}
                         >
-                          <Settings size={18} color={appAccent} /> Business Dashboard
+                          <Settings size={18} color={appAccent} /> {isMainVibeTenant ? 'Master Admin' : 'Business Dashboard'}
                         </button>
                       )}
 

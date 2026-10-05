@@ -30,6 +30,9 @@ const Footer: React.FC = () => {
         <Link to={`/contact${window.location.search}`} style={{ color: '#888', textDecoration: 'none', fontSize: '14px', transition: 'color 0.2s' }} onMouseOver={e => e.currentTarget.style.color='#fff'} onMouseOut={e => e.currentTarget.style.color='#888'}>
           Contact Support
         </Link>
+        <Link to={`/admin-login${window.location.search}`} style={{ color: 'rgba(255,255,255,0.4)', textDecoration: 'none', fontSize: '14px', transition: 'color 0.2s' }} onMouseOver={e => e.currentTarget.style.color='#fff'} onMouseOut={e => e.currentTarget.style.color='rgba(255,255,255,0.4)'}>
+          Admin Portal
+        </Link>
       </div>
       <div 
         className="px-mobile-sm" 
