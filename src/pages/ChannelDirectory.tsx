@@ -196,6 +196,24 @@ export default function ChannelDirectory() {
           });
         }
 
+        // 4. Inject Joe VIBE creator profile if not matched
+        if (!allItems.some(item => item.id === 'db7af833-2f7a-40b0-ad46-57ff8fbd4744' || item.name.toLowerCase().includes('joe vibe'))) {
+          allItems.push({
+            id: 'db7af833-2f7a-40b0-ad46-57ff8fbd4744',
+            name: 'Joe VIBE',
+            username: '@joevibe',
+            type: 'creator',
+            category: 'creator',
+            avatar: 'https://fimzetmvrmbmdggvqzpr.supabase.co/storage/v1/object/public/images/db7af833-2f7a-40b0-ad46-57ff8fbd4744/0.11923008118112288.jpeg',
+            banner: '/n2n/comedy_club_bg.jpg',
+            bio: 'Welcome to the official Joe VIBE channel.',
+            parentNetworkName: 'Vibe Originals',
+            linkUrl: '/profile/db7af833-2f7a-40b0-ad46-57ff8fbd4744',
+            accent: '#0055ff',
+            verified: true
+          });
+        }
+
         setItems(allItems);
       } catch (err) {
         console.error('Failed to load channel directory:', err);

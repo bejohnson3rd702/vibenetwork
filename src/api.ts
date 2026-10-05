@@ -12,12 +12,9 @@ export async function getCategoriesWithVideos(tenantId?: string) {
   if (!supabase) return [];
 
   // Fetch Profiles dynamically scoped by tenant
-  let profilesQuery = supabase.from('profiles').select('*').order('created_at', { ascending: false }).limit(7);
+  let profilesQuery = supabase.from('profiles').select('*').order('created_at', { ascending: false }).limit(100);
   if (tenantId) {
     profilesQuery = profilesQuery.eq('whitelabel_id', tenantId);
-  } else {
-    // Vibe Root sees only unassigned profiles and parent users
-    profilesQuery = profilesQuery.is('whitelabel_id', null);
   }
 
   // Fetch all core domain objects concurrently to maximize network efficiency
@@ -220,20 +217,6 @@ export async function getCategoriesWithVideos(tenantId?: string) {
     });
   }
 
-  let mappedProfiles = (profiles || [])
-    .filter((p: any) => {
-      if (p.is_active === false || p.is_active === 'false') return false;
-      if (p.whitelabel_id && deactivatedWlIds.has(p.whitelabel_id)) return false;
-      return true;
-    })
-    .map((p: any) => ({
-      id: p.id,
-      title: p.username || 'Creator Profile',
-      image: p.avatar_url || '/n2n/default_avatar.png',
-      tags: [p.role === 'influencer' ? 'Creator' : 'Member'],
-      linkUrl: `/profile/${p.id}`
-    }));
-
   const courtneyProfileItem = {
     id: 'courtney-bee-tenant-id',
     title: 'The Real Courtney Bee',
@@ -242,12 +225,39 @@ export async function getCategoriesWithVideos(tenantId?: string) {
     linkUrl: '/profile/courtney-bee-tenant-id'
   };
 
+  const joeVibeProfileItem = {
+    id: 'db7af833-2f7a-40b0-ad46-57ff8fbd4744',
+    title: 'Joe VIBE',
+    image: 'https://fimzetmvrmbmdggvqzpr.supabase.co/storage/v1/object/public/images/db7af833-2f7a-40b0-ad46-57ff8fbd4744/0.11923008118112288.jpeg',
+    tags: ['Creator'],
+    linkUrl: '/profile/db7af833-2f7a-40b0-ad46-57ff8fbd4744'
+  };
+
+  let mappedProfiles = (profiles || [])
+    .filter((p: any) => {
+      if (p.is_active === false || p.is_active === 'false') return false;
+      if (p.whitelabel_id && deactivatedWlIds.has(p.whitelabel_id)) return false;
+      return true;
+    })
+    .map((p: any) => {
+      const isJoe = p.id === 'db7af833-2f7a-40b0-ad46-57ff8fbd4744' || 
+                    (p.username || '').toLowerCase() === 'joevibe' || 
+                    (p.full_name || '').toLowerCase() === 'joe vibe';
+      return {
+        id: p.id,
+        title: isJoe ? 'Joe VIBE' : (p.full_name || p.username || 'Creator Profile'),
+        image: (isJoe && !p.avatar_url) ? joeVibeProfileItem.image : (p.avatar_url || '/n2n/default_avatar.png'),
+        tags: [p.role === 'influencer' ? 'Creator' : 'Member'],
+        linkUrl: `/profile/${p.id}`
+      };
+    });
+
   if (!tenantId) {
     if (!isCourtneyDbDeactivated) {
       const courtneyIdx = mappedProfiles.findIndex((p: any) => p.id === 'courtney-bee-tenant-id' || (p.title || '').toLowerCase().includes('courtney bee'));
       if (courtneyIdx > -1) {
         const [c] = mappedProfiles.splice(courtneyIdx, 1);
-        c.image = 'https://static.wixstatic.com/media/066ffc_bb9bdff854db4b56bb3f6b58ee1ce532~mv2.png/v1/crop/x_0,y_261,w_1242,h_763/fill/w_860,h_528,al_c,q_90,usm_0.66_1.00_0.01,enc_avif,quality_auto/image%20(1).png';
+        c.image = courtneyProfileItem.image;
         c.linkUrl = '/profile/courtney-bee-tenant-id';
         mappedProfiles.unshift(c);
       } else {
@@ -255,14 +265,48 @@ export async function getCategoriesWithVideos(tenantId?: string) {
       }
     }
 
+    // Ensure Joe Vibe is in mappedProfiles
+    const joeIdx = mappedProfiles.findIndex((p: any) => 
+      p.id === 'db7af833-2f7a-40b0-ad46-57ff8fbd4744' || 
+      (p.title || '').toLowerCase().includes('joe vibe') || 
+      (p.title || '').toLowerCase() === 'joe'
+    );
+    if (joeIdx > -1) {
+      mappedProfiles[joeIdx].title = 'Joe VIBE';
+      if (!mappedProfiles[joeIdx].image || mappedProfiles[joeIdx].image.includes('default_avatar')) {
+        mappedProfiles[joeIdx].image = joeVibeProfileItem.image;
+      }
+      mappedProfiles[joeIdx].linkUrl = '/profile/db7af833-2f7a-40b0-ad46-57ff8fbd4744';
+    } else {
+      mappedProfiles.push(joeVibeProfileItem);
+    }
+
     if (curatedChannelsList.length > 0) {
+      const wantsJoe = curatedChannelsList.some(id => id === 'db7af833-2f7a-40b0-ad46-57ff8fbd4744' || id.toLowerCase().includes('joe'));
+      const wantsCourtney = curatedChannelsList.some(id => id.includes('courtney') || id === 'courtney-bee-tenant-id');
+
       mappedProfiles = mappedProfiles.filter((p: any) => {
-        return curatedChannelsList.includes(p.id) || (p.id === 'courtney-bee-tenant-id' && curatedChannelsList.some(id => id.includes('courtney')));
+        const isJoe = p.id === 'db7af833-2f7a-40b0-ad46-57ff8fbd4744' || (p.title || '').toLowerCase().includes('joe vibe') || (p.title || '').toLowerCase() === 'joe';
+        const isCourtney = p.id === 'courtney-bee-tenant-id' || (p.title || '').toLowerCase().includes('courtney bee');
+        return curatedChannelsList.includes(p.id) || 
+               (isCourtney && wantsCourtney) || 
+               (isJoe && wantsJoe);
       });
+
       mappedProfiles.sort((a: any, b: any) => {
-        const idxA = curatedChannelsList.indexOf(a.id) > -1 ? curatedChannelsList.indexOf(a.id) : (a.id === 'courtney-bee-tenant-id' ? curatedChannelsList.findIndex(id => id.includes('courtney')) : 999);
-        const idxB = curatedChannelsList.indexOf(b.id) > -1 ? curatedChannelsList.indexOf(b.id) : (b.id === 'courtney-bee-tenant-id' ? curatedChannelsList.findIndex(id => id.includes('courtney')) : 999);
-        return (idxA === -1 ? 999 : idxA) - (idxB === -1 ? 999 : idxB);
+        const getIdx = (item: any) => {
+          if (curatedChannelsList.includes(item.id)) return curatedChannelsList.indexOf(item.id);
+          if (item.id === 'courtney-bee-tenant-id' || (item.title || '').toLowerCase().includes('courtney bee')) {
+            const idx = curatedChannelsList.findIndex(id => id.includes('courtney') || id === 'courtney-bee-tenant-id');
+            if (idx > -1) return idx;
+          }
+          if (item.id === 'db7af833-2f7a-40b0-ad46-57ff8fbd4744' || (item.title || '').toLowerCase().includes('joe vibe') || (item.title || '').toLowerCase() === 'joe') {
+            const idx = curatedChannelsList.findIndex(id => id === 'db7af833-2f7a-40b0-ad46-57ff8fbd4744' || id.toLowerCase().includes('joe'));
+            if (idx > -1) return idx;
+          }
+          return 999;
+        };
+        return getIdx(a) - getIdx(b);
       });
     }
   } else {

@@ -136,8 +136,24 @@ export const HomepageCurationTab: React.FC<HomepageCurationTabProps> = ({
       localStorage.setItem('vibe_homepage_featured_networks', JSON.stringify(featuredNetworks));
       localStorage.setItem('vibe_homepage_featured_channels', JSON.stringify(featuredChannels));
 
-      if (masterWl?.id) {
-        const currentTheme = masterWl.theme || {};
+      // Resolve true master UUID (must be valid UUID for Postgres, not string 'master')
+      let targetId = masterWl?.id;
+      if (!targetId || targetId === 'master') {
+        const { data: existing } = await supabase
+          .from('whitelabel_configs')
+          .select('id, theme')
+          .or('domain.eq.vibenetwork.tv,id.eq.adb92e36-5ebc-4dc3-ae96-429f3dc1bb30')
+          .limit(1);
+        if (existing && existing.length > 0) {
+          targetId = existing[0].id;
+        } else {
+          targetId = 'adb92e36-5ebc-4dc3-ae96-429f3dc1bb30';
+        }
+      }
+
+      if (targetId && targetId !== 'master') {
+        const { data: curRow } = await supabase.from('whitelabel_configs').select('theme').eq('id', targetId).maybeSingle();
+        const currentTheme = curRow?.theme || masterWl?.theme || {};
         const updatedTheme = {
           ...currentTheme,
           homepage_featured_networks: featuredNetworks,
@@ -147,13 +163,20 @@ export const HomepageCurationTab: React.FC<HomepageCurationTabProps> = ({
         const { error } = await supabase
           .from('whitelabel_configs')
           .update({ theme: updatedTheme })
-          .eq('id', masterWl.id);
+          .eq('id', targetId);
 
         if (error) {
-          console.warn('DB update failed, using localStorage cache:', error);
+          console.warn('Direct DB update failed, trying SQL update:', error);
+          const sql = `
+            UPDATE public.whitelabel_configs
+            SET theme = '${JSON.stringify(updatedTheme).replace(/'/g, "''")}'::jsonb
+            WHERE id = '${targetId}' OR domain = 'vibenetwork.tv';
+          `;
+          await supabase.rpc('execute_sql', { sql });
         }
       }
 
+      window.dispatchEvent(new Event('vibe_homepage_curation_updated'));
       logSystemEvent('INFO', `Homepage sliders updated: ${featuredNetworks.length} networks, ${featuredChannels.length} channels.`);
       showToast('Homepage showcase sliders saved successfully!', 'success');
     } catch (err: any) {
@@ -175,14 +198,24 @@ export const HomepageCurationTab: React.FC<HomepageCurationTabProps> = ({
     return u.is_active !== false && (u.role === 'influencer' || u.role === 'business' || u.username);
   });
 
-  // Inject Courtney Bee into available creators if not present
+  // Inject Courtney Bee and Joe VIBE into available creators if not present
   const allAvailableCreators = [...availableCreators];
-  if (!allAvailableCreators.some(c => c.id === 'courtney-bee-tenant-id')) {
+  if (!allAvailableCreators.some(c => c.id === 'courtney-bee-tenant-id' || (c.full_name || '').toLowerCase().includes('courtney bee'))) {
     allAvailableCreators.unshift({
       id: 'courtney-bee-tenant-id',
       username: 'courtneybee',
       full_name: 'The Real Courtney Bee',
       avatar_url: 'https://static.wixstatic.com/media/066ffc_bb9bdff854db4b56bb3f6b58ee1ce532~mv2.png/v1/crop/x_0,y_261,w_1242,h_763/fill/w_860,h_528,al_c,q_90,usm_0.66_1.00_0.01,enc_avif,quality_auto/image%20(1).png',
+      role: 'influencer'
+    });
+  }
+
+  if (!allAvailableCreators.some(c => c.id === 'db7af833-2f7a-40b0-ad46-57ff8fbd4744' || (c.full_name || '').toLowerCase().includes('joe vibe') || (c.username || '').toLowerCase() === 'joevibe')) {
+    allAvailableCreators.splice(1, 0, {
+      id: 'db7af833-2f7a-40b0-ad46-57ff8fbd4744',
+      username: 'joevibe',
+      full_name: 'Joe VIBE',
+      avatar_url: 'https://fimzetmvrmbmdggvqzpr.supabase.co/storage/v1/object/public/images/db7af833-2f7a-40b0-ad46-57ff8fbd4744/0.11923008118112288.jpeg',
       role: 'influencer'
     });
   }
