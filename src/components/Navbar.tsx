@@ -144,7 +144,6 @@ const Navbar: React.FC<NavbarProps> = ({ user, onLoginClick, onAdminClick }) => 
 
   const navLinks = [
     { label: 'Home', path: '/', icon: <HomeIcon size={18} /> },
-    { label: 'Channels', path: '/channels', icon: <Search size={18} /> },
     { 
       label: 'Marketplace', 
       path: '/marketplace', 
