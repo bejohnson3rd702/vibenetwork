@@ -128,6 +128,41 @@ const BookingRateInput: React.FC<{ value: string; onChange: (val: string) => voi
   );
 };
 
+const isUuid = (str: string) => Boolean(str && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(str));
+
+const getStoredLikedStatus = (postId: string | number, userId?: string): boolean | null => {
+  try {
+    const pid = String(postId);
+    if (userId) {
+      const specific = localStorage.getItem(`vibe_post_has_liked_${userId}_${pid}`);
+      if (specific !== null) return specific === 'true';
+      const userList = JSON.parse(localStorage.getItem(`vibe_liked_posts_${userId}`) || '[]');
+      if (Array.isArray(userList) && userList.includes(pid)) return true;
+    }
+    const guestSpecific = localStorage.getItem(`vibe_post_has_liked_guest_${pid}`);
+    if (guestSpecific !== null) return guestSpecific === 'true';
+    const globalList = JSON.parse(localStorage.getItem('vibe_liked_posts') || '[]');
+    if (Array.isArray(globalList) && globalList.includes(pid)) return true;
+  } catch {}
+  return null;
+};
+
+const getStoredLikeDelta = (postId: string | number): number => {
+  try {
+    const val = localStorage.getItem(`vibe_post_likes_delta_${postId}`);
+    if (val !== null) return parseInt(val, 10) || 0;
+  } catch {}
+  return 0;
+};
+
+const getStoredLikesCount = (postId: string | number): number | null => {
+  try {
+    const val = localStorage.getItem(`vibe_post_likes_count_${postId}`);
+    if (val !== null) return parseInt(val, 10);
+  } catch {}
+  return null;
+};
+
 const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetworkLevel?: boolean, onAuthRequest?: () => void }> = ({ user, creatorIdOverride, isNetworkLevel, onAuthRequest }) => {
   const navigate = useNavigate();
   const { creatorId: paramCreatorId } = useParams();
@@ -1679,12 +1714,34 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
               }
             }
 
+            const dbLikesCount = p.post_likes ? p.post_likes.length : (p.likes || 0);
+            const dbHasLiked = p.post_likes ? p.post_likes.some((l: any) => l.user_id === user?.id) : false;
+            
+            const storedLiked = getStoredLikedStatus(p.id, user?.id);
+            const hasLiked = storedLiked !== null ? storedLiked : dbHasLiked;
+            
+            let finalLikes = dbLikesCount;
+            const delta = getStoredLikeDelta(p.id);
+            const cachedCount = getStoredLikesCount(p.id);
+            
+            if (storedLiked !== null) {
+              if (storedLiked && !dbHasLiked) {
+                finalLikes = Math.max(dbLikesCount + 1, cachedCount !== null ? cachedCount : dbLikesCount + 1);
+              } else if (!storedLiked && dbHasLiked) {
+                finalLikes = Math.max(0, dbLikesCount - 1);
+              } else if (cachedCount !== null) {
+                finalLikes = Math.max(dbLikesCount, cachedCount);
+              }
+            } else if (delta !== 0) {
+              finalLikes = Math.max(0, dbLikesCount + delta);
+            }
+
             return {
               id: p.id,
               title: p.content || p.title,
               locked: p.is_locked || false,
-              likes: p.post_likes ? p.post_likes.length : (p.likes || 0),
-              hasLiked: p.post_likes ? p.post_likes.some((l: any) => l.user_id === user?.id) : false,
+              likes: finalLikes,
+              hasLiked: hasLiked,
               comments: p.post_comments ? p.post_comments.map((c: any) => {
                 const userObj = Array.isArray(c.user) ? c.user[0] : c.user;
                 return { id: c.id, text: c.content, user: userObj?.username || 'User', avatar: userObj?.avatar_url || '' };
@@ -1704,12 +1761,12 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
           const unpinned = mappedFeed.filter((p: any) => !p.is_pinned);
           setFeed([...pinned, ...unpinned]);
         } else if (loadedProfileId === 'courtney-bee-tenant-id' || wlConfig?.id === 'courtney-bee-tenant-id') {
-          setFeed([
+          const cbPosts = [
             {
               id: 'cb-post-1',
               title: '🔥 Wild \'N Out Season 18 Highlights! Catch all new episodes streaming on MTV & Paramount+!',
               locked: false,
-              likes: 428,
+              baseLikes: 428,
               date: '2 hours ago',
               img: 'https://static.wixstatic.com/media/066ffc_bb9bdff854db4b56bb3f6b58ee1ce532~mv2.png/v1/crop/x_0,y_261,w_1242,h_763/fill/w_860,h_528,al_c,q_90,usm_0.66_1.00_0.01,enc_avif,quality_auto/image%20(1).png',
               imgs: ['https://static.wixstatic.com/media/066ffc_bb9bdff854db4b56bb3f6b58ee1ce532~mv2.png/v1/crop/x_0,y_261,w_1242,h_763/fill/w_860,h_528,al_c,q_90,usm_0.66_1.00_0.01,enc_avif,quality_auto/image%20(1).png'],
@@ -1720,7 +1777,7 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
               id: 'cb-post-2',
               title: '“LADIES, YOU DON\'T OWE NO MAN A FLAT STOMACH!” — Live comedy special snippet from New York City!',
               locked: false,
-              likes: 312,
+              baseLikes: 312,
               date: 'Yesterday',
               img: 'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?auto=format&fit=crop&w=1920&q=80',
               imgs: ['https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?auto=format&fit=crop&w=1920&q=80'],
@@ -1731,14 +1788,33 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
               id: 'cb-post-3',
               title: '⭐ Featured on HBO Max on "That Damn Michael Che" show & opening for Michael Che and Dulcé Sloan nationwide tour!',
               locked: true,
-              likes: 589,
+              baseLikes: 589,
               date: '3 days ago',
               img: 'https://images.unsplash.com/photo-1585699324551-f6c309eedeca?auto=format&fit=crop&w=1200&q=80',
               imgs: ['https://images.unsplash.com/photo-1585699324551-f6c309eedeca?auto=format&fit=crop&w=1200&q=80'],
               creator_username: 'The Real Courtney Bee',
               is_pinned: false
             }
-          ]);
+          ];
+
+          const hydratedCbPosts = cbPosts.map(p => {
+            const storedLiked = getStoredLikedStatus(p.id, user?.id);
+            const hasLiked = storedLiked === true;
+            const delta = getStoredLikeDelta(p.id);
+            const cachedCount = getStoredLikesCount(p.id);
+            let finalLikes = p.baseLikes;
+            if (cachedCount !== null) {
+              finalLikes = cachedCount;
+            } else if (hasLiked) {
+              finalLikes = p.baseLikes + (delta || 1);
+            }
+            return {
+              ...p,
+              likes: finalLikes,
+              hasLiked
+            };
+          });
+          setFeed(hydratedCbPosts);
         } else {
           setFeed([]);
         }
@@ -4307,14 +4383,51 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
     const targetPost = feed.find(p => p.id === postId);
     if (!targetPost) return;
 
-    if (targetPost.hasLiked) {
-      // Unlike
-      setFeed(feed.map(p => p.id === postId ? { ...p, likes: Math.max(0, p.likes - 1), hasLiked: false } : p));
-      await supabase!.from('post_likes').delete().match({ post_id: postId, user_id: user.id }).catch(() => {});
-    } else {
-      // Like
-      setFeed(feed.map(p => p.id === postId ? { ...p, likes: p.likes + 1, hasLiked: true } : p));
-      await supabase!.from('post_likes').insert([{ post_id: postId, user_id: user.id }]).catch(() => {});
+    const newHasLiked = !targetPost.hasLiked;
+    const newLikesCount = newHasLiked
+      ? (targetPost.likes || 0) + 1
+      : Math.max(0, (targetPost.likes || 0) - 1);
+
+    // 1. Optimistic UI update in feed
+    setFeed(feed.map(p => p.id === postId ? { ...p, likes: newLikesCount, hasLiked: newHasLiked } : p));
+
+    // 2. Persist to localStorage immediately
+    try {
+      const pid = String(postId);
+      const userKey = `vibe_liked_posts_${user.id}`;
+      const userLiked: string[] = JSON.parse(localStorage.getItem(userKey) || '[]');
+      const updatedUserLiked = newHasLiked
+        ? Array.from(new Set([...userLiked, pid]))
+        : userLiked.filter(id => id !== pid);
+      localStorage.setItem(userKey, JSON.stringify(updatedUserLiked));
+
+      const globalLiked: string[] = JSON.parse(localStorage.getItem('vibe_liked_posts') || '[]');
+      const updatedGlobalLiked = newHasLiked
+        ? Array.from(new Set([...globalLiked, pid]))
+        : globalLiked.filter(id => id !== pid);
+      localStorage.setItem('vibe_liked_posts', JSON.stringify(updatedGlobalLiked));
+
+      localStorage.setItem(`vibe_post_has_liked_${user.id}_${pid}`, newHasLiked ? 'true' : 'false');
+      localStorage.setItem(`vibe_post_has_liked_guest_${pid}`, newHasLiked ? 'true' : 'false');
+      localStorage.setItem(`vibe_post_likes_delta_${pid}`, newHasLiked ? '1' : '0');
+      localStorage.setItem(`vibe_post_likes_count_${pid}`, String(newLikesCount));
+    } catch (e) {
+      console.warn('Failed to save like state to localStorage', e);
+    }
+
+    // 3. Persist to Database if post is a valid UUID
+    if (isUuid(postId) && supabase) {
+      try {
+        if (newHasLiked) {
+          await supabase.from('post_likes').upsert([{ post_id: postId, user_id: user.id }], { onConflict: 'post_id,user_id' });
+          await supabase.from('posts').update({ likes: newLikesCount }).eq('id', postId);
+        } else {
+          await supabase.from('post_likes').delete().match({ post_id: postId, user_id: user.id });
+          await supabase.from('posts').update({ likes: newLikesCount }).eq('id', postId);
+        }
+      } catch (err) {
+        console.warn('Database post_likes sync notice:', err);
+      }
     }
   };
 
