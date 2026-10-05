@@ -13,7 +13,7 @@ import { BackgroundSettingsModal } from './BackgroundSettingsModal';
 import { SubscriptionSettingsModal } from './SubscriptionSettingsModal';
 import { VideoTranslationOverlay } from './VideoTranslationOverlay';
 import { FeedVideoPlayer } from './FeedVideoPlayer';
-import { transcribeUploadedVideo } from '../lib/videoTranscription';
+import { transcribeUploadedVideo, saveTranscriptRow } from '../lib/videoTranscription';
 import { uploadToSupabaseWithProgress } from '../lib/storageUpload';
 const LiveChat = React.lazy(() => import('./LiveChat'));
 const ShopifyStore = React.lazy(() => import('./ShopifyStore'));
@@ -4182,7 +4182,13 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
     const { data } = await supabase!.from('posts').insert([newPost]).select();
     
     if (data && data[0]) {
-      // Transcripts are keyed by the video's storage path, so no per-post linking is needed.
+      // Link completed video transcripts to post ID for multi-key lookup
+      for (const url of postMediaUrls) {
+        const segs = pendingVideoTranscriptsRef.current[url];
+        if (Array.isArray(segs) && segs.length > 0) {
+          void saveTranscriptRow([String(data[0].id)], segs);
+        }
+      }
 
       const newPostItem = { 
         id: data[0].id, 
