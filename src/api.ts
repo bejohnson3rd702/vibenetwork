@@ -233,6 +233,14 @@ export async function getCategoriesWithVideos(tenantId?: string) {
     linkUrl: '/profile/db7af833-2f7a-40b0-ad46-57ff8fbd4744'
   };
 
+  const revBennieProfileItem = {
+    id: '8c409557-a48c-41d4-8133-9d9788aebe0d',
+    title: 'Rev Bennie Johnson',
+    image: 'https://fimzetmvrmbmdggvqzpr.supabase.co/storage/v1/object/public/images/whitelabel/kple_logo_1782369339776.png',
+    tags: ['Creator'],
+    linkUrl: '/profile/8c409557-a48c-41d4-8133-9d9788aebe0d'
+  };
+
   let mappedProfiles = (profiles || [])
     .filter((p: any) => {
       if (p.is_active === false || p.is_active === 'false') return false;
@@ -243,10 +251,13 @@ export async function getCategoriesWithVideos(tenantId?: string) {
       const isJoe = p.id === 'db7af833-2f7a-40b0-ad46-57ff8fbd4744' || 
                     (p.username || '').toLowerCase() === 'joevibe' || 
                     (p.full_name || '').toLowerCase() === 'joe vibe';
+      const isBennie = p.id === '8c409557-a48c-41d4-8133-9d9788aebe0d' ||
+                       (p.username || '').toLowerCase().includes('bennie') ||
+                       (p.full_name || '').toLowerCase().includes('bennie');
       return {
         id: p.id,
-        title: isJoe ? 'Joe VIBE' : (p.full_name || p.username || 'Creator Profile'),
-        image: (isJoe && !p.avatar_url) ? joeVibeProfileItem.image : (p.avatar_url || '/n2n/default_avatar.png'),
+        title: isJoe ? 'Joe VIBE' : (isBennie ? 'Rev Bennie Johnson' : (p.full_name || p.username || 'Creator Profile')),
+        image: (isJoe && !p.avatar_url) ? joeVibeProfileItem.image : ((isBennie && !p.avatar_url) ? revBennieProfileItem.image : (p.avatar_url || '/n2n/default_avatar.png')),
         tags: [p.role === 'influencer' ? 'Creator' : 'Member'],
         linkUrl: `/profile/${p.id}`
       };
@@ -281,16 +292,34 @@ export async function getCategoriesWithVideos(tenantId?: string) {
       mappedProfiles.push(joeVibeProfileItem);
     }
 
+    // Ensure Rev Bennie is in mappedProfiles
+    const bennieIdx = mappedProfiles.findIndex((p: any) => 
+      p.id === '8c409557-a48c-41d4-8133-9d9788aebe0d' || 
+      (p.title || '').toLowerCase().includes('bennie')
+    );
+    if (bennieIdx > -1) {
+      mappedProfiles[bennieIdx].title = 'Rev Bennie Johnson';
+      if (!mappedProfiles[bennieIdx].image || mappedProfiles[bennieIdx].image.includes('default_avatar')) {
+        mappedProfiles[bennieIdx].image = revBennieProfileItem.image;
+      }
+      mappedProfiles[bennieIdx].linkUrl = '/profile/8c409557-a48c-41d4-8133-9d9788aebe0d';
+    } else {
+      mappedProfiles.push(revBennieProfileItem);
+    }
+
     if (curatedChannelsList.length > 0) {
       const wantsJoe = curatedChannelsList.some(id => id === 'db7af833-2f7a-40b0-ad46-57ff8fbd4744' || id.toLowerCase().includes('joe'));
       const wantsCourtney = curatedChannelsList.some(id => id.includes('courtney') || id === 'courtney-bee-tenant-id');
+      const wantsBennie = curatedChannelsList.some(id => id === '8c409557-a48c-41d4-8133-9d9788aebe0d' || id.toLowerCase().includes('bennie'));
 
       mappedProfiles = mappedProfiles.filter((p: any) => {
         const isJoe = p.id === 'db7af833-2f7a-40b0-ad46-57ff8fbd4744' || (p.title || '').toLowerCase().includes('joe vibe') || (p.title || '').toLowerCase() === 'joe';
         const isCourtney = p.id === 'courtney-bee-tenant-id' || (p.title || '').toLowerCase().includes('courtney bee');
+        const isBennie = p.id === '8c409557-a48c-41d4-8133-9d9788aebe0d' || (p.title || '').toLowerCase().includes('bennie');
         return curatedChannelsList.includes(p.id) || 
                (isCourtney && wantsCourtney) || 
-               (isJoe && wantsJoe);
+               (isJoe && wantsJoe) ||
+               (isBennie && wantsBennie);
       });
 
       mappedProfiles.sort((a: any, b: any) => {
@@ -302,6 +331,10 @@ export async function getCategoriesWithVideos(tenantId?: string) {
           }
           if (item.id === 'db7af833-2f7a-40b0-ad46-57ff8fbd4744' || (item.title || '').toLowerCase().includes('joe vibe') || (item.title || '').toLowerCase() === 'joe') {
             const idx = curatedChannelsList.findIndex(id => id === 'db7af833-2f7a-40b0-ad46-57ff8fbd4744' || id.toLowerCase().includes('joe'));
+            if (idx > -1) return idx;
+          }
+          if (item.id === '8c409557-a48c-41d4-8133-9d9788aebe0d' || (item.title || '').toLowerCase().includes('bennie')) {
+            const idx = curatedChannelsList.findIndex(id => id === '8c409557-a48c-41d4-8133-9d9788aebe0d' || id.toLowerCase().includes('bennie'));
             if (idx > -1) return idx;
           }
           return 999;

@@ -214,6 +214,24 @@ export default function ChannelDirectory() {
           });
         }
 
+        // 5. Inject Rev Bennie Johnson creator profile if not matched
+        if (!allItems.some(item => item.id === '8c409557-a48c-41d4-8133-9d9788aebe0d' || item.name.toLowerCase().includes('bennie'))) {
+          allItems.push({
+            id: '8c409557-a48c-41d4-8133-9d9788aebe0d',
+            name: 'Rev Bennie Johnson',
+            username: '@revbennie',
+            type: 'creator',
+            category: 'faith',
+            avatar: 'https://fimzetmvrmbmdggvqzpr.supabase.co/storage/v1/object/public/images/whitelabel/kple_logo_1782369339776.png',
+            banner: '/n2n/comedy_club_bg.jpg',
+            bio: 'Welcome to the official Christian Revival Network stream.',
+            parentNetworkName: 'Christian Revival Network',
+            linkUrl: '/profile/8c409557-a48c-41d4-8133-9d9788aebe0d',
+            accent: '#00cc88',
+            verified: true
+          });
+        }
+
         setItems(allItems);
       } catch (err) {
         console.error('Failed to load channel directory:', err);

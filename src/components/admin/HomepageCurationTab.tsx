@@ -220,6 +220,16 @@ export const HomepageCurationTab: React.FC<HomepageCurationTabProps> = ({
     });
   }
 
+  if (!allAvailableCreators.some(c => c.id === '8c409557-a48c-41d4-8133-9d9788aebe0d' || (c.full_name || '').toLowerCase().includes('bennie'))) {
+    allAvailableCreators.splice(2, 0, {
+      id: '8c409557-a48c-41d4-8133-9d9788aebe0d',
+      username: 'revbennie',
+      full_name: 'Rev Bennie Johnson',
+      avatar_url: 'https://fimzetmvrmbmdggvqzpr.supabase.co/storage/v1/object/public/images/whitelabel/kple_logo_1782369339776.png',
+      role: 'influencer'
+    });
+  }
+
   return (
     <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
       {/* Top Header */}
