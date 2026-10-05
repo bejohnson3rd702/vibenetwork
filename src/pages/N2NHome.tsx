@@ -8,7 +8,7 @@ import { getChildNetworks, mergeQueryParams, OLYMPIA_CHAMPIONS, WINGS_ATHLETES, 
 import { getN2NCategories } from '../api';
 import type { Category, VideoItem, User } from '../types';
 import { supabase } from '../supabaseClient';
-import { isOlympianConfig, isMuscleFitnessConfig, isB2kConfig, isKpleConfig, isKpleOnlyConfig, isBonaireConfig, isCourtneyBeeConfig } from '../lib/whitelabel';
+import { isOlympianConfig, isMuscleFitnessConfig, isB2kConfig, isKpleConfig, isKpleOnlyConfig, isBonaireConfig, isCourtneyBeeConfig, isChannelConfig } from '../lib/whitelabel';
 import { KpleWatchPlayer } from '../components/KpleWatchPlayer';
 import { KpleInlineWatchSection } from '../components/KpleInlineWatchSection';
 import CourtneyBeeWatchSection from '../components/CourtneyBeeWatchSection';
@@ -171,7 +171,8 @@ export default function N2NHome({ wlConfig, categories, user, activeVideo, setAc
 
       setChildItems(
         children.map((child: any) => {
-          const isCourtneyChannel = child.id === 'courtney-bee-tenant-id' || child.id === 'c0071234-c08f-4260-8540-a0cc8bed4e11' || (child.name || '').toLowerCase().includes('courtney');
+          const isChannel = isChannelConfig(child);
+          const isCourtneyChannel = child.id === 'courtney-bee-tenant-id' || child.id === 'c0071234-c08f-4260-8540-a0cc8bed4e11';
           
           let castImage = '';
           const nameLower = (child.name || '').toLowerCase();
@@ -182,15 +183,12 @@ export default function N2NHome({ wlConfig, categories, user, activeVideo, setAc
           else if (nameLower.includes('timothy delaghetto')) castImage = '/n2n/wno_timothy_delaghetto.jpg';
           else if (isCourtneyChannel) castImage = 'https://static.wixstatic.com/media/066ffc_bb9bdff854db4b56bb3f6b58ee1ce532~mv2.png/v1/crop/x_0,y_261,w_1242,h_763/fill/w_860,h_528,al_c,q_90,usm_0.66_1.00_0.01,enc_avif,quality_auto/image%20(1).png';
 
-          const isWnoCast = child.id.startsWith('wno-') || 
-                            ['d1000000-c08f-4260-8540-a0cc8bed4e11', 'd2000000-c08f-4260-8540-a0cc8bed4e11', 'd3000000-c08f-4260-8540-a0cc8bed4e11', 'd4000000-c08f-4260-8540-a0cc8bed4e11', 'd5000000-c08f-4260-8540-a0cc8bed4e11'].includes(child.id);
-
           const isOlympiaChild = child.id === '7a017c4d-c08f-4260-8540-a0cc8bed4e12' || (child.name || '').toLowerCase().includes('olympia');
-          const isChildNetwork = !isWnoCast && !isCourtneyChannel && !isCourtneyBee && (isOlympiaChild || isMfFamily || (child.parent_network_id && child.parent_network_id !== 'cb000000-c08f-4260-8540-a0cc8bed4e11') || child.theme?.parent_network_id || child.domain);
+          const isChildNetwork = !isChannel && !isCourtneyBee && (isOlympiaChild || isMfFamily || (child.parent_network_id && child.parent_network_id !== 'cb000000-c08f-4260-8540-a0cc8bed4e11') || child.theme?.parent_network_id || child.domain);
 
           const targetLink = isCourtneyChannel 
             ? '/profile/courtney-bee-tenant-id' 
-            : (isWnoCast || isCourtneyBee ? `/profile/${child.id}` : (isChildNetwork ? `/?tenant=${child.id}` : `/profile/${child.id}`));
+            : (isChannel || isCourtneyBee ? `/profile/${child.id}` : (isChildNetwork ? `/?tenant=${child.id}` : `/profile/${child.id}`));
 
           return {
             id: child.id,

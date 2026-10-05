@@ -4,6 +4,7 @@ import { useToast } from '../../context/ToastContext';
 import { getChildNetworks, getN2NProfiles, updateChildFee, deleteChildNetwork, createChildNetwork } from '../../lib/n2n';
 import { supabase } from '../../supabaseClient';
 import { processAndEnhanceImage } from '../../lib/imageProcessor';
+import { isChannelConfig } from '../../lib/whitelabel';
 
 export const N2NFleetTab = ({ wlConfig }: { wlConfig: any }) => {
   const toast = useToast();
@@ -441,10 +442,13 @@ export const N2NFleetTab = ({ wlConfig }: { wlConfig: any }) => {
                         <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
                           <button
                             onClick={() => {
-                              const targetUrl = child.id ? `/?tenant=${child.id}` : (child.domain?.startsWith('http') ? child.domain : `https://${child.domain}`);
+                              const isChannel = isChannelConfig(child);
+                              const targetUrl = isChannel 
+                                ? `/profile/${child.id}`
+                                : (child.id ? `/?tenant=${child.id}` : (child.domain?.startsWith('http') ? child.domain : `https://${child.domain}`));
                               window.open(targetUrl, '_blank');
                             }}
-                            title="Open Network Tenant"
+                            title={isChannelConfig(child) ? "Open Creator Channel Profile" : "Open Network Tenant"}
                             style={{ padding: '6px 12px', borderRadius: '8px', background: `${accent}22`, border: `1px solid ${accent}44`, color: accent, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px', fontWeight: 'bold' }}
                           >
                             <ExternalLink size={14} /> Open

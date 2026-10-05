@@ -6,6 +6,7 @@ import { supabase } from '../supabaseClient';
 import { useWhiteLabel } from '../context/WhiteLabelContext';
 import { AVO_COLLEGE_NETWORKS } from '../lib/n2n';
 import { isWlDeactivated } from '../api';
+import { isChannelConfig } from '../lib/whitelabel';
 
 export interface DirectoryItem {
   id: string;
@@ -113,12 +114,10 @@ export default function ChannelDirectory() {
             return;
           }
 
-          // Courtney Bee cast members are Channels (type: 'creator'), NOT Networks
-          const isWnoCast = wl.id.startsWith('wno-') || 
-                            ['d1000000-c08f-4260-8540-a0cc8bed4e11', 'd2000000-c08f-4260-8540-a0cc8bed4e11', 'd3000000-c08f-4260-8540-a0cc8bed4e11', 'd4000000-c08f-4260-8540-a0cc8bed4e11', 'd5000000-c08f-4260-8540-a0cc8bed4e11'].includes(wl.id) ||
-                            (wl.parent_network_id === 'cb000000-c08f-4260-8540-a0cc8bed4e11');
+          // Channels / Creators are type: 'creator', NOT Networks
+          const isChannel = isChannelConfig(wl);
 
-          if (isWnoCast) {
+          if (isChannel) {
             let castAvatar = wl.logo || wl.theme?.logoImage || wl.theme?.heroImage;
             if (nameLower.includes('dc young fly')) castAvatar = '/n2n/wno_dc_young_fly.jpg';
             else if (nameLower.includes('conceited')) castAvatar = '/n2n/wno_conceited.jpg';
@@ -126,16 +125,24 @@ export default function ChannelDirectory() {
             else if (nameLower.includes('justina valentine')) castAvatar = '/n2n/wno_justina_valentine.jpg';
             else if (nameLower.includes('timothy delaghetto')) castAvatar = '/n2n/wno_timothy_delaghetto.jpg';
 
+            let cat: DirectoryItem['category'] = 'creator';
+            if (nameLower.includes('olympia') || nameLower.includes('muscle') || nameLower.includes('fitness')) cat = 'fitness';
+            else if (nameLower.includes('courtney') || domainLower.includes('courtney') || wl.id.startsWith('wno-') || wl.parent_network_id === 'cb000000-c08f-4260-8540-a0cc8bed4e11') cat = 'comedy';
+            else if (nameLower.includes('kple') || nameLower.includes('revival') || nameLower.includes('christian')) cat = 'faith';
+            else if (wl.parent_network_id === '3915f1e5-4c79-4b2a-ad41-7029ce8052d7') cat = 'college';
+
+            const parentName = wl.parent_network_id ? (wlMap.get(wl.parent_network_id) || (wl.parent_network_id === 'cb000000-c08f-4260-8540-a0cc8bed4e11' ? 'The Real Courtney Bee Network' : 'Network')) : undefined;
+
             allItems.push({
               id: wl.id,
               name: wl.name || 'Cast Channel',
               username: wl.name ? `@${wl.name.toLowerCase().replace(/[^a-z0-9]/g, '')}` : undefined,
               type: 'creator',
-              category: 'comedy',
+              category: cat,
               avatar: castAvatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(wl.name || 'C')}&background=111&color=fff`,
               banner: '/n2n/comedy_club_bg.jpg',
               bio: wl.theme?.heroCopy || wl.heroCopy || `Official ${wl.name} Channel on Vibe Network.`,
-              parentNetworkName: 'The Real Courtney Bee Network',
+              parentNetworkName: parentName,
               linkUrl: `/profile/${wl.id}`,
               accent: wl.accent || wl.theme?.accent || '#ff4d85',
               verified: true

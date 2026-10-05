@@ -68,6 +68,51 @@ export function isCourtneyBeeConfig(config: any): boolean {
          domain.includes('therealcourtneybee');
 }
 
+/**
+ * Detects if a configuration or entity represents an individual Channel / Creator,
+ * rather than a standalone media network.
+ */
+export function isChannelConfig(config: any): boolean {
+  if (!config) return false;
+  const id = (config.id || '').toLowerCase();
+  const name = (config.name || config.title || '').toLowerCase();
+  const role = (config.role || '').toLowerCase();
+  const type = (config.type || '').toLowerCase();
+
+  // Explicit type or role flags
+  if (type === 'creator' || role === 'influencer') return true;
+
+  // Wild 'N Out / Courtney Bee Cast Channels
+  if (
+    id.startsWith('wno-') ||
+    ['d1000000-c08f-4260-8540-a0cc8bed4e11', 'd2000000-c08f-4260-8540-a0cc8bed4e11', 'd3000000-c08f-4260-8540-a0cc8bed4e11', 'd4000000-c08f-4260-8540-a0cc8bed4e11', 'd5000000-c08f-4260-8540-a0cc8bed4e11'].includes(id) ||
+    name.includes('dc young fly') ||
+    name.includes('conceited') ||
+    name.includes('chico bean') ||
+    name.includes('justina valentine') ||
+    name.includes('timothy delaghetto')
+  ) {
+    return true;
+  }
+
+  // Courtney Bee Creator Channel Profile (NOT the network)
+  if (id === 'courtney-bee-tenant-id' || id === 'c0071234-c08f-4260-8540-a0cc8bed4e11') {
+    return true;
+  }
+
+  // Joe Vibe Channel
+  if (id === 'db7af833-2f7a-40b0-ad46-57ff8fbd4744' || name.includes('joe vibe')) {
+    return true;
+  }
+
+  // Rev Bennie Johnson Channel
+  if (id === '8c409557-a48c-41d4-8133-9d9788aebe0d' || name.includes('rev bennie')) {
+    return true;
+  }
+
+  return false;
+}
+
 export function isKpleConfig(config: any): boolean {
   if (!config) return false;
   const id = config.id || '';

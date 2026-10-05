@@ -1,5 +1,5 @@
 import { supabase } from './supabaseClient';
-import { normalizeWlConfig } from './lib/whitelabel';
+import { normalizeWlConfig, isChannelConfig } from './lib/whitelabel';
 
 export function isWlDeactivated(wl: any): boolean {
   if (!wl) return false;
@@ -70,6 +70,8 @@ export async function getCategoriesWithVideos(tenantId?: string) {
 
   let mappedNetworks = (whitelabels || []).filter((wl: any) => {
     if (isWlDeactivated(wl)) return false;
+    // Strictly exclude any Channel / Creator from appearing in Network lists
+    if (isChannelConfig(wl)) return false;
 
     const domainLower = (wl.domain || '').toLowerCase();
     const nameLower = (wl.name || '').toLowerCase();
@@ -106,7 +108,7 @@ export async function getCategoriesWithVideos(tenantId?: string) {
     const normalized = normalizeWlConfig(wl);
     const heroImg = normalized.theme?.heroImage || '';
     const isVibe100 = normalized.id === 'e5c100aa-c08f-4260-8540-a0cc8bed4e11';
-    const isCourtneyNetwork = normalized.id === 'cb000000-c08f-4260-8540-a0cc8bed4e11' || normalized.id === 'courtney-bee-tenant-id' || (normalized.name || '').toLowerCase().includes('courtney bee network');
+    const isCourtneyNetwork = normalized.id === 'cb000000-c08f-4260-8540-a0cc8bed4e11' || (normalized.name || '').toLowerCase().includes('courtney bee network');
     const isLogo = isVibe100 || isCourtneyNetwork || heroImg.includes('logo') || (normalized.logo && normalized.logo.includes('logo'));
     return {
       id: 'wl_' + normalized.id,
