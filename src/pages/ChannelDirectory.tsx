@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Search, Globe, User, ShieldCheck, Sparkles, Filter, ArrowRight, ExternalLink, X, Radio } from 'lucide-react';
+import { Search, Globe, User, ShieldCheck, Filter, ArrowRight, ExternalLink, X, Radio } from 'lucide-react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { supabase } from '../supabaseClient';
 import { useWhiteLabel } from '../context/WhiteLabelContext';
@@ -278,25 +278,6 @@ export default function ChannelDirectory() {
         
         {/* Header Hero */}
         <div style={{ textAlign: 'center', marginBottom: '40px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-          <div style={{ 
-            display: 'inline-flex', 
-            alignItems: 'center', 
-            gap: '8px', 
-            padding: '6px 16px', 
-            borderRadius: '30px', 
-            background: 'rgba(211, 84, 0, 0.15)', 
-            border: '1px solid rgba(211, 84, 0, 0.4)', 
-            color: '#D35400', 
-            fontSize: '13px', 
-            fontWeight: 800, 
-            textTransform: 'uppercase', 
-            letterSpacing: '1.5px',
-            marginBottom: '16px'
-          }}>
-            <Sparkles size={14} />
-            <span>Universal Discovery</span>
-          </div>
-
           <h1 style={{ 
             fontSize: 'clamp(32px, 5vw, 56px)', 
             fontWeight: 900, 
