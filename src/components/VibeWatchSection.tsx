@@ -8,7 +8,7 @@ export interface VibeVideoClip {
   videoUrl: string;
   title: string;
   source: string;
-  category: 'originals' | 'news' | 'foxnews' | 'politics' | 'entertainment' | 'money' | 'sports';
+  category: 'originals' | 'news' | 'foxnews' | 'politics' | 'money' | 'sports';
   description: string;
   duration: string;
   thumbnail: string;
@@ -21,7 +21,6 @@ const CATEGORY_META: Record<string, { label: string; icon: string }> = {
   news: { label: 'CNN News', icon: '📰' },
   foxnews: { label: 'Fox News', icon: '🦊' },
   politics: { label: 'MSNBC Politics', icon: '⚖️' },
-  entertainment: { label: 'People Weekly', icon: '🎭' },
   money: { label: 'CNBC Business', icon: '💵' },
   sports: { label: 'ESPN Sports', icon: '🏈' },
 };
@@ -30,7 +29,6 @@ const VIBE_FEEDS = [
   { key: 'news', label: '📰 CNN News', channelId: 'UCupvZG-5ko_eiXAupbDfxWw' },
   { key: 'foxnews', label: '🦊 Fox News', channelId: 'UCXIJgqnII2ZOINSWNOGFThA' },
   { key: 'politics', label: '⚖️ MSNBC Politics', channelId: 'UCaXkIU1QidjPwiAYu6GcHjg' },
-  { key: 'entertainment', label: '🎭 People Weekly', channelId: 'UCGbQJy-531_5vfphay-rChQ', altChannelId: 'UC8P0dc0Zn2gf8L6tJi_k6xg' },
   { key: 'money', label: '💵 CNBC Business', channelId: 'UCvJJ_dzjViJCoLf5uKUTwoA', altChannelId: 'UCIALMKvObZNtJ6AmdCLP7Lg' },
   { key: 'sports', label: '🏈 ESPN Sports', channelId: 'UCiWLfSweyRNmLpgEHekhoAg' },
 ];
@@ -137,24 +135,26 @@ const DEFAULT_VIBE_CLIPS: VibeVideoClip[] = [
     youtubeId: 'E_MKI9NQmQk',
     videoUrl: 'https://www.youtube.com/watch?v=E_MKI9NQmQk',
     title: '"I\'m Ovulating, Nick" with Tiffany Haddish | We Playin\' Spades',
-    source: 'People Weekly',
-    category: 'entertainment',
+    source: 'Vibe Network',
+    category: 'originals',
     description: 'Courtney Bee & Nick Cannon host Tiffany Haddish at the turquoise table for high-stakes Spades, trash talk, and uncensored stories.',
     duration: '27:30',
     thumbnail: 'https://i.ytimg.com/vi/E_MKI9NQmQk/hqdefault.jpg',
-    published: new Date('2026-10-04T18:00:00.000Z')
+    published: new Date('2026-10-04T18:00:00.000Z'),
+    isOriginal: true
   },
   {
     id: 'boAP0v2Kckk',
     youtubeId: 'boAP0v2Kckk',
     videoUrl: 'https://www.youtube.com/watch?v=boAP0v2Kckk',
     title: 'Raz-B - Exclusive No Jumper Interview',
-    source: 'People Weekly',
-    category: 'entertainment',
+    source: 'Vibe Network',
+    category: 'originals',
     description: 'Raz-B sits down for an intimate, tell-all interview discussing B2K history, the Millennium Tour, and new solo releases.',
     duration: '45:10',
     thumbnail: 'https://i.ytimg.com/vi/boAP0v2Kckk/hqdefault.jpg',
-    published: new Date('2026-10-03T12:00:00.000Z')
+    published: new Date('2026-10-03T12:00:00.000Z'),
+    isOriginal: true
   },
   {
     id: 'vyqy7PcDGLM',
@@ -191,7 +191,7 @@ function extractYouTubeId(url: string): string | null {
 export default function VibeWatchSection({ accent = '#D35400' }: { accent?: string }) {
   const [videoList, setVideoList] = useState<VibeVideoClip[]>(DEFAULT_VIBE_CLIPS);
   const [selectedVideo, setSelectedVideo] = useState<VibeVideoClip | null>(DEFAULT_VIBE_CLIPS[0]);
-  const [filter, setFilter] = useState<'all' | 'originals' | 'news' | 'foxnews' | 'politics' | 'entertainment' | 'money' | 'sports'>('all');
+  const [filter, setFilter] = useState<'all' | 'originals' | 'news' | 'foxnews' | 'politics' | 'money' | 'sports'>('all');
   const [isPlaying, setIsPlaying] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(false);
@@ -510,7 +510,6 @@ export default function VibeWatchSection({ accent = '#D35400' }: { accent?: stri
             ['news', '📰 CNN News'],
             ['foxnews', '🦊 Fox News'],
             ['politics', '⚖️ MSNBC'],
-            ['entertainment', '🎭 People'],
             ['money', '💵 CNBC'],
             ['sports', '🏈 ESPN']
           ] as const).map(([key, label]) => (
