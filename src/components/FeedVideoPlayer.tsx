@@ -21,6 +21,24 @@ interface FeedVideoPlayerProps {
   style?: React.CSSProperties;
 }
 
+function getShortLangCode(code: string): string {
+  if (!code) return 'EN';
+  if (code.startsWith('english')) return 'EN';
+  if (code.startsWith('spanish')) return 'ES';
+  if (code.startsWith('french')) return 'FR';
+  if (code.startsWith('german')) return 'DE';
+  if (code.startsWith('italian')) return 'IT';
+  if (code.startsWith('portuguese')) return 'PT';
+  if (code.startsWith('japanese')) return 'JA';
+  if (code.startsWith('korean')) return 'KO';
+  if (code.startsWith('chinese')) return 'ZH';
+  if (code.startsWith('dutch')) return 'NL';
+  if (code.startsWith('arabic')) return 'AR';
+  if (code.startsWith('russian')) return 'RU';
+  if (code.startsWith('hindi')) return 'HI';
+  return code.slice(0, 2).toUpperCase();
+}
+
 export const FeedVideoPlayer: React.FC<FeedVideoPlayerProps> = ({
   videoUrl,
   postId,
@@ -47,6 +65,56 @@ export const FeedVideoPlayer: React.FC<FeedVideoPlayerProps> = ({
   const ttsAudioRef = useRef<HTMLAudioElement | null>(null);
   const ttsAudioCacheRef = useRef<Record<string, string>>({});
   const lastPlayedSegmentRef = useRef<number>(-1);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const translateMenuRef = useRef<HTMLDivElement>(null);
+  const translateButtonRef = useRef<HTMLButtonElement>(null);
+  const [containerWidth, setContainerWidth] = useState<number>(600);
+
+  useEffect(() => {
+    if (!containerRef.current) return;
+    const updateWidth = () => {
+      if (containerRef.current) {
+        const w = containerRef.current.getBoundingClientRect().width;
+        if (w > 0) setContainerWidth(w);
+      }
+    };
+    updateWidth();
+    const observer = new ResizeObserver((entries) => {
+      for (const entry of entries) {
+        if (entry.contentRect && entry.contentRect.width > 0) {
+          setContainerWidth(entry.contentRect.width);
+        }
+      }
+    });
+    observer.observe(containerRef.current);
+    window.addEventListener('resize', updateWidth);
+    return () => {
+      observer.disconnect();
+      window.removeEventListener('resize', updateWidth);
+    };
+  }, []);
+
+  // Close translate dropdown when tapping outside
+  useEffect(() => {
+    if (!showTranslateMenu) return;
+    const handleClickOutside = (e: MouseEvent | TouchEvent) => {
+      const target = e.target as Node;
+      if (
+        translateMenuRef.current && 
+        !translateMenuRef.current.contains(target) &&
+        translateButtonRef.current &&
+        !translateButtonRef.current.contains(target)
+      ) {
+        setShowTranslateMenu(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    document.addEventListener('touchstart', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('touchstart', handleClickOutside);
+    };
+  }, [showTranslateMenu]);
 
   useEffect(() => {
     setActiveSource(videoUrl);
@@ -343,8 +411,12 @@ export const FeedVideoPlayer: React.FC<FeedVideoPlayerProps> = ({
 
   const selectedLangObj = languages.find(l => l.code === selectedLang);
 
+  const isYouTube = Boolean((activeSource || '').match(/(?:youtube\.com\/(?:[^\/\n\s]+\/\S+\/|(?:v|e(?:mbed)?|live|shorts)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/i));
+  const isCompact = containerWidth < 460;
+
   return (
     <div 
+      ref={containerRef}
       className={`feed-video-player-container ${className}`}
       style={{
         position: 'relative',
@@ -421,6 +493,7 @@ export const FeedVideoPlayer: React.FC<FeedVideoPlayerProps> = ({
             src={activeSource}
             controls
             playsInline
+            controlsList="nodownload noplaybackrate"
             onPlay={handlePlay}
             onPause={handlePause}
             onSeeked={handleSeeked}
@@ -452,12 +525,14 @@ export const FeedVideoPlayer: React.FC<FeedVideoPlayerProps> = ({
       <div 
         style={{
           position: 'absolute',
-          top: '12px',
-          right: '12px',
+          top: isYouTube ? (isCompact ? '52px' : '58px') : (isCompact ? '8px' : '12px'),
+          right: isCompact ? '8px' : '12px',
           display: 'flex',
           alignItems: 'center',
-          gap: '8px',
-          zIndex: 20
+          gap: isCompact ? '5px' : '8px',
+          zIndex: 25,
+          maxWidth: 'calc(100% - 16px)',
+          pointerEvents: 'auto'
         }}
       >
         {/* Captions Toggle Pill */}
@@ -468,46 +543,56 @@ export const FeedVideoPlayer: React.FC<FeedVideoPlayerProps> = ({
           style={{
             display: 'flex',
             alignItems: 'center',
-            gap: '6px',
-            background: captionsEnabled ? 'rgba(0, 0, 0, 0.75)' : 'rgba(0, 0, 0, 0.4)',
+            gap: isCompact ? '4px' : '6px',
+            background: captionsEnabled ? 'rgba(0, 0, 0, 0.85)' : 'rgba(0, 0, 0, 0.5)',
             backdropFilter: 'blur(8px)',
-            border: `1px solid ${captionsEnabled ? accent : 'rgba(255,255,255,0.2)'}`,
+            border: `1px solid ${captionsEnabled ? accent : 'rgba(255,255,255,0.25)'}`,
             borderRadius: '20px',
-            padding: '6px 12px',
-            color: captionsEnabled ? '#fff' : '#aaa',
-            fontSize: '12px',
+            padding: isCompact ? '4px 8px' : '6px 12px',
+            color: captionsEnabled ? '#fff' : '#ccc',
+            fontSize: isCompact ? '11px' : '12px',
             fontWeight: 700,
             cursor: 'pointer',
-            transition: 'all 0.2s ease'
+            transition: 'all 0.2s ease',
+            whiteSpace: 'nowrap',
+            lineHeight: 1
           }}
         >
-          <Subtitles size={14} color={captionsEnabled ? accent : '#aaa'} />
+          <Subtitles size={isCompact ? 13 : 14} color={captionsEnabled ? accent : '#aaa'} />
           <span>CC</span>
         </button>
 
         {/* Translation Language Selector Pill */}
         <button
+          ref={translateButtonRef}
           type="button"
           onClick={() => setShowTranslateMenu(!showTranslateMenu)}
+          title={`Language: ${selectedLangObj?.name || 'English'}`}
           style={{
             display: 'flex',
             alignItems: 'center',
-            gap: '6px',
-            background: selectedLang !== 'english-united-states' ? 'rgba(0, 0, 0, 0.85)' : 'rgba(0, 0, 0, 0.6)',
+            gap: isCompact ? '4px' : '6px',
+            background: selectedLang !== 'english-united-states' ? 'rgba(0, 0, 0, 0.9)' : 'rgba(0, 0, 0, 0.65)',
             backdropFilter: 'blur(8px)',
-            border: `1px solid ${selectedLang !== 'english-united-states' ? accent : 'rgba(255,255,255,0.2)'}`,
+            border: `1px solid ${selectedLang !== 'english-united-states' ? accent : 'rgba(255,255,255,0.25)'}`,
             borderRadius: '20px',
-            padding: '6px 14px',
+            padding: isCompact ? '4px 8px' : '6px 14px',
             color: '#fff',
-            fontSize: '12px',
+            fontSize: isCompact ? '11px' : '12px',
             fontWeight: 700,
             cursor: 'pointer',
-            transition: 'all 0.2s ease'
+            transition: 'all 0.2s ease',
+            whiteSpace: 'nowrap',
+            lineHeight: 1
           }}
         >
-          <Globe size={14} color={accent} />
-          <span>{selectedLangObj ? selectedLangObj.name.split(' ')[0] : 'Translate'}</span>
-          {isTranslating && <Loader2 size={12} className="animate-spin" color={accent} />}
+          <Globe size={isCompact ? 13 : 14} color={accent} />
+          <span>
+            {isCompact
+              ? (selectedLangObj ? getShortLangCode(selectedLangObj.code) : 'EN')
+              : (selectedLangObj ? selectedLangObj.name.split(' ')[0] : 'Translate')}
+          </span>
+          {isTranslating && <Loader2 size={11} className="animate-spin" color={accent} />}
         </button>
 
         {/* Audio TTS Voiceover Unmute / Mute Button */}
@@ -537,18 +622,19 @@ export const FeedVideoPlayer: React.FC<FeedVideoPlayerProps> = ({
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              width: '32px',
-              height: '32px',
-              background: !translationAudioMuted ? accent : 'rgba(0, 0, 0, 0.6)',
+              width: isCompact ? '26px' : '32px',
+              height: isCompact ? '26px' : '32px',
+              background: !translationAudioMuted ? accent : 'rgba(0, 0, 0, 0.7)',
               backdropFilter: 'blur(8px)',
-              border: `1px solid ${!translationAudioMuted ? accent : 'rgba(255,255,255,0.2)'}`,
+              border: `1px solid ${!translationAudioMuted ? accent : 'rgba(255,255,255,0.25)'}`,
               borderRadius: '50%',
               color: !translationAudioMuted ? '#000' : '#fff',
               cursor: 'pointer',
-              transition: 'all 0.2s ease'
+              transition: 'all 0.2s ease',
+              flexShrink: 0
             }}
           >
-            {translationAudioMuted ? <VolumeX size={15} /> : <Volume2 size={15} />}
+            {translationAudioMuted ? <VolumeX size={isCompact ? 13 : 15} /> : <Volume2 size={isCompact ? 13 : 15} />}
           </button>
         )}
       </div>
@@ -556,23 +642,24 @@ export const FeedVideoPlayer: React.FC<FeedVideoPlayerProps> = ({
       {/* ── Language Dropdown Menu ───────────────────────────────────── */}
       {showTranslateMenu && (
         <div
+          ref={translateMenuRef}
           style={{
             position: 'absolute',
-            top: '52px',
-            right: '12px',
-            maxHeight: '260px',
-            width: '210px',
+            top: isYouTube ? (isCompact ? '86px' : '96px') : (isCompact ? '42px' : '50px'),
+            right: isCompact ? '8px' : '12px',
+            maxHeight: 'min(240px, 50vh)',
+            width: isCompact ? '180px' : '210px',
             overflowY: 'auto',
-            background: 'rgba(15, 15, 15, 0.95)',
+            background: 'rgba(15, 15, 15, 0.96)',
             backdropFilter: 'blur(16px)',
             border: `1px solid ${accent}44`,
             borderRadius: '14px',
-            padding: '8px',
-            boxShadow: '0 12px 30px rgba(0,0,0,0.8)',
-            zIndex: 30,
+            padding: '6px',
+            boxShadow: '0 12px 30px rgba(0,0,0,0.85)',
+            zIndex: 35,
             display: 'flex',
             flexDirection: 'column',
-            gap: '4px'
+            gap: '3px'
           }}
         >
           <div style={{ padding: '6px 8px', fontSize: '11px', fontWeight: 800, color: 'var(--text-muted, #888)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
