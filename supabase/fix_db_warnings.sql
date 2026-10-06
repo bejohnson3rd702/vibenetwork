@@ -54,13 +54,15 @@ DROP FUNCTION IF EXISTS public.query_sql(text);
 CREATE OR REPLACE FUNCTION public.execute_sql(sql text)
 RETURNS text
 LANGUAGE plpgsql
-SECURITY INVOKER
+SECURITY DEFINER
+SET search_path = public, auth, pg_temp
 AS $$
 BEGIN
   EXECUTE sql;
   RETURN 'Success';
 END;
 $$;
+
 
 -- 4. CONSOLIDATE PERMISSIVE & WRITE POLICIES
 
