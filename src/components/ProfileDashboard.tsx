@@ -3976,7 +3976,34 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
           const uploadUserId = sessionUser?.id || user?.id || targetProfileId;
           const filePath = `${uploadUserId}/post_video_${Date.now()}_${Math.random().toString(36).substring(7)}.${ext}`;
 
-          // Real-time byte-for-byte progress upload
+          // ── Start BOTH storage upload and speech transcription simultaneously in parallel ──
+          let transcriptionSegments: any[] = [];
+          let isTranscribeDone = false;
+
+          const transcribePromise = transcribeUploadedVideo(rawFile, {
+            storagePath: filePath,
+            speaker: profile?.username || 'Channel Host',
+            onProgress: (msg, pct) => {
+              setVideoProcessing(prev => {
+                if (!prev) return null;
+                if (prev.stage === 'transcribing') {
+                  const progress = Math.round(70 + (pct / 100) * 29);
+                  return { ...prev, stageText: msg, progress };
+                }
+                return prev;
+              });
+            }
+          }).then(segments => {
+            transcriptionSegments = segments;
+            isTranscribeDone = true;
+            return segments;
+          }).catch(err => {
+            console.warn('[ProfileDashboard] Video transcription notice:', err);
+            isTranscribeDone = true;
+            return [];
+          });
+
+          // High-speed upload with real-time byte progress
           const uploadRes = await uploadToSupabaseWithProgress('videos', filePath, rawFile, {
             contentType: rawFile.type || 'video/mp4',
             upsert: true,
@@ -3985,12 +4012,12 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
                 ...prev,
                 stage: 'uploading',
                 stageText: p.message,
-                progress: Math.max(5, Math.min(95, p.percent))
+                progress: Math.max(5, Math.min(85, Math.round(p.percent * 0.85)))
               } : null);
               toast.loading(p.message, {
                 id: 'video-pipeline',
                 title: 'Uploading Video',
-                progress: Math.max(5, Math.min(95, p.percent))
+                progress: Math.max(5, Math.min(85, Math.round(p.percent * 0.85)))
               });
             }
           });
@@ -4033,67 +4060,34 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
           const videoUrl = uploadRes.data?.publicUrl || supabase!.storage.from('videos').getPublicUrl(filePath).data.publicUrl;
           newUrls.push(videoUrl);
 
+          // If transcription is still finalizing in the background, wait for it smoothly
+          if (!isTranscribeDone) {
+            setVideoProcessing(prev => prev ? {
+              ...prev,
+              videoUrl,
+              stage: 'transcribing',
+              stageText: 'AI Speech Engine is finalizing multilingual subtitles & dubbing...',
+              progress: 88
+            } : null);
+            await transcribePromise;
+          }
+
+          pendingVideoTranscriptsRef.current[videoUrl] = transcriptionSegments;
+          const count = transcriptionSegments.length;
           setVideoProcessing(prev => prev ? {
             ...prev,
             videoUrl,
-            stage: 'transcribing',
-            stageText: 'AI Speech Engine is transcribing spoken dialogue for translation software...',
-            progress: 65
+            stage: 'ready',
+            stageText: `Spoken dialogue transcribed (${count} segment${count > 1 ? 's' : ''})! Ready for translation & dubbing.`,
+            progress: 100,
+            segmentCount: count,
+            previewSegments: transcriptionSegments
           } : null);
-          toast.loading('AI speech engine extracting spoken dialogue for translation...', {
+          toast.success(`Video ready! ${count} dialogue segment${count > 1 ? 's' : ''} transcribed for translation software.`, {
             id: 'video-pipeline',
-            title: 'Transcribing Audio',
-            progress: 65
-          });
-
-          // Transcribe once at upload time (saved server-side, keyed by storage path)
-          void transcribeUploadedVideo(rawFile, {
-            storagePath: filePath,
-            speaker: profile?.username || 'Channel Host',
-            onProgress: (msg, pct) => {
-              const progress = Math.round(65 + (pct / 100) * 34);
-              setVideoProcessing(prev => prev ? {
-                ...prev,
-                stage: 'transcribing',
-                stageText: msg,
-                progress
-              } : null);
-              toast.loading(msg, { id: 'video-pipeline', title: 'Transcribing Audio', progress });
-            }
-          }).then(segments => {
-            pendingVideoTranscriptsRef.current[videoUrl] = segments;
-            const count = segments.length;
-            setVideoProcessing(prev => prev ? {
-              ...prev,
-              stage: 'ready',
-              stageText: `Spoken dialogue transcribed (${count} segment${count > 1 ? 's' : ''})! Ready for translation & dubbing.`,
-              progress: 100,
-              segmentCount: count,
-              previewSegments: segments
-            } : null);
-            toast.success(`Video ready! ${count} dialogue segment${count > 1 ? 's' : ''} transcribed for translation software.`, {
-              id: 'video-pipeline',
-              title: 'Translation Ready',
-              duration: 6000,
-              progress: 100
-            });
-            return segments;
-          }).catch(err => {
-            console.warn('[ProfileDashboard] Video transcription notice:', err);
-            setVideoProcessing(prev => prev ? {
-              ...prev,
-              stage: 'ready',
-              stageText: 'Video uploaded and ready for playback!',
-              progress: 100,
-              segmentCount: 0
-            } : null);
-            toast.success('Video uploaded successfully and ready for playback!', {
-              id: 'video-pipeline',
-              title: 'Upload Complete',
-              duration: 5000,
-              progress: 100
-            });
-            return [];
+            title: 'Translation Ready',
+            duration: 6000,
+            progress: 100
           });
         } else {
           // Images: run through the AI enhancer

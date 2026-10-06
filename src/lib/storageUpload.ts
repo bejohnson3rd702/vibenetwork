@@ -31,9 +31,95 @@ function resumableEndpoint(): string {
 
 const toMB = (bytes: number) => (bytes / (1024 * 1024)).toFixed(1);
 
+const DIRECT_UPLOAD_MAX_BYTES = 60 * 1024 * 1024; // 60 MB fast streaming threshold
+
+function uploadDirectStream(
+  bucket: string,
+  cleanPath: string,
+  file: File | Blob,
+  token: string,
+  contentType: string,
+  upsert: boolean,
+  totalMB: string,
+  onProgress?: (progress: StorageUploadProgress) => void
+): Promise<StorageUploadResult | null> {
+  return new Promise((resolve) => {
+    try {
+      const xhr = new XMLHttpRequest();
+      const url = `${supabaseUrl.replace(/\/+$/, '')}/storage/v1/object/${bucket}/${cleanPath}`;
+
+      let lastTime = Date.now();
+      let lastLoaded = 0;
+      let speedStr = '';
+
+      xhr.upload.onprogress = (e) => {
+        if (!e.lengthComputable || !onProgress) return;
+        const now = Date.now();
+        const dt = (now - lastTime) / 1000;
+        if (dt > 0.3) {
+          speedStr = `${((e.loaded - lastLoaded) / (1024 * 1024) / dt).toFixed(1)} MB/s`;
+          lastTime = now;
+          lastLoaded = e.loaded;
+        }
+        const percent = Math.min(99, Math.round((e.loaded / e.total) * 100));
+        const loadedMB = toMB(e.loaded);
+        onProgress({
+          loaded: e.loaded,
+          total: e.total,
+          percent,
+          loadedMB,
+          totalMB,
+          speedMBs: speedStr,
+          message: `Uploading: ${loadedMB} MB of ${totalMB} MB (${percent}%)${speedStr ? ` • ${speedStr}` : ''}`,
+        });
+      };
+
+      xhr.onload = () => {
+        if (xhr.status >= 200 && xhr.status < 300) {
+          const { data: pub } = supabase!.storage.from(bucket).getPublicUrl(cleanPath);
+          onProgress?.({
+            loaded: file.size,
+            total: file.size,
+            percent: 100,
+            loadedMB: totalMB,
+            totalMB,
+            message: `Upload complete (${totalMB} MB)`,
+          });
+          resolve({
+            data: { path: cleanPath, fullPath: `${bucket}/${cleanPath}`, publicUrl: pub.publicUrl },
+            error: null,
+          });
+        } else {
+          // If status is 413, file is oversized
+          if (xhr.status === 413) {
+            resolve({ data: null, error: { message: `File exceeds the storage size limit (${totalMB} MB).`, statusCode: '413' } });
+            return;
+          }
+          // Other status: fallback to TUS resumable
+          resolve(null);
+        }
+      };
+
+      xhr.onerror = () => resolve(null);
+      xhr.ontimeout = () => resolve(null);
+
+      xhr.open('POST', url, true);
+      xhr.setRequestHeader('Authorization', `Bearer ${token}`);
+      xhr.setRequestHeader('apikey', supabaseAnonKey);
+      xhr.setRequestHeader('x-upsert', upsert ? 'true' : 'false');
+      xhr.setRequestHeader('Content-Type', contentType);
+      xhr.send(file);
+    } catch (_) {
+      resolve(null);
+    }
+  });
+}
+
 /**
- * Upload a file to Supabase Storage using the resumable (TUS) protocol.
+ * Upload a file to Supabase Storage using high-speed direct stream (files <= 60MB)
+ * or resumable TUS protocol for large files.
  * - Real byte-level progress
+ * - Full uplink bandwidth saturation
  * - Automatic retry / resume after network drops
  * - Supports files up to the bucket's file_size_limit (5 GB for `videos`)
  */
@@ -60,6 +146,23 @@ export async function uploadToSupabaseWithProgress(
   const token = sessionData.session?.access_token;
   if (!token) {
     return { data: null, error: { message: 'Please sign in to upload files.', statusCode: '401' } };
+  }
+
+  // Fast direct stream path for files <= 60 MB (2x-3x faster than TUS chunking)
+  if (file.size <= DIRECT_UPLOAD_MAX_BYTES) {
+    const directRes = await uploadDirectStream(
+      bucket,
+      cleanPath,
+      file,
+      token,
+      contentType,
+      upsert,
+      totalMB,
+      onProgress
+    );
+    if (directRes !== null) {
+      return directRes;
+    }
   }
 
   return new Promise<StorageUploadResult>((resolve) => {

@@ -278,6 +278,25 @@ export const DashboardVideoControlCenter: React.FC<DashboardVideoControlCenterPr
       const fileName = `${Date.now()}_${Math.random().toString(36).substring(7)}.${fileExt}`;
       const filePath = `broadcasts/${fileName}`;
 
+      setTranscribingVideo(true);
+      let transcribedSegments: any[] = [];
+      let isTranscribeDone = false;
+
+      // Start transcription simultaneously in parallel with upload
+      const transcribePromise = transcribeUploadedVideo(file, {
+        storagePath: filePath,
+        speaker: 'Channel Broadcast',
+        onProgress: (status) => setUploadProgressMsg(`🎙️ ${status}`)
+      }).then(segments => {
+        transcribedSegments = segments;
+        isTranscribeDone = true;
+        return segments;
+      }).catch(err => {
+        console.warn('[DashboardVideoControlCenter] Transcription notice:', err);
+        isTranscribeDone = true;
+        return [];
+      });
+
       const { data: uploaded, error: uploadErr } = await uploadToSupabaseWithProgress('videos', filePath, file, {
         contentType: file.type || 'video/mp4',
         upsert: true,
@@ -288,23 +307,13 @@ export const DashboardVideoControlCenter: React.FC<DashboardVideoControlCenterPr
 
       if (uploaded?.publicUrl) {
         setVideoFileUrl(uploaded.publicUrl);
-        setUploadProgressMsg(`Upload complete (${fileSizeMB} MB)! Transcribing video for translation software...`);
-        setTranscribingVideo(true);
-
-        // Transcribe once at upload time (broadcasts/ folder requires an admin account)
-        transcribeUploadedVideo(file, {
-          storagePath: filePath,
-          speaker: 'Channel Broadcast',
-          onProgress: (status) => setUploadProgressMsg(`🎙️ ${status}`)
-        }).then(segments => {
-          setTranscribingVideo(false);
-          setUploadProgressMsg(`✅ Transcribed ${segments.length} segment${segments.length === 1 ? '' : 's'} for translation software! Ready to publish.`);
-          setTranscript(prev => (prev.trim() ? prev : segments.map(s => s.text).join(' ')));
-        }).catch(err => {
-          setTranscribingVideo(false);
-          console.warn('[DashboardVideoControlCenter] Transcription notice:', err);
-          setUploadProgressMsg('');
-        });
+        if (!isTranscribeDone) {
+          setUploadProgressMsg('Finalizing speech transcription & translation subtitles...');
+          await transcribePromise;
+        }
+        setTranscribingVideo(false);
+        setUploadProgressMsg(`✅ Transcribed ${transcribedSegments.length} segment${transcribedSegments.length === 1 ? '' : 's'} for translation software! Ready to publish.`);
+        setTranscript(prev => (prev.trim() ? prev : transcribedSegments.map(s => s.text).join(' ')));
       }
     } catch (err: any) {
       setErrorMsg(`Video upload notice: ${err.message}. Direct stream URLs or external links can also be used below.`);
