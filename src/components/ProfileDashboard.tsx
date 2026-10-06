@@ -1395,18 +1395,52 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
       });
       return;
     }
-    const isUploading = uploadingPostMedia || uploadingProductImg || uploadingVideo || uploadingSeriesImg || uploadingEpisodeImg || saving;
-    if (!isUploading) {
-      setShowUploadLoader(false);
+    const isBusy = uploadingPostMedia || 
+                   isVideoTranscribing || 
+                   uploadingProductImg || 
+                   uploadingVideo || 
+                   uploadingSeriesImg || 
+                   uploadingEpisodeImg || 
+                   uploadingDigitalFile || 
+                   uploadingDriveFile || 
+                   uploadingEditSeriesImg ||
+                   uploadingEditEpisodeImg ||
+                   uploadingEditEpisodeVideo ||
+                   saving;
+
+    if (!isBusy) {
+      // Allow brief smooth completion pause so user sees 100% completion before overlay closes
+      const closeTimer = setTimeout(() => {
+        setShowUploadLoader(false);
+      }, 700);
+      return () => clearTimeout(closeTimer);
+    }
+
+    // Instantly show loader when uploading media or transcribing video (zero delay)
+    if (uploadingPostMedia || isVideoTranscribing || uploadingVideo || uploadingEpisodeVideo || uploadingEditEpisodeVideo) {
+      setShowUploadLoader(true);
       return;
     }
 
     const timer = setTimeout(() => {
       setShowUploadLoader(true);
-    }, 2000);
+    }, 1000);
 
     return () => clearTimeout(timer);
-  }, [uploadingPostMedia, uploadingProductImg, uploadingVideo, uploadingSeriesImg, uploadingEpisodeImg, saving]);
+  }, [
+    uploadingPostMedia, 
+    isVideoTranscribing,
+    uploadingProductImg, 
+    uploadingVideo, 
+    uploadingSeriesImg, 
+    uploadingEpisodeImg, 
+    uploadingDigitalFile,
+    uploadingDriveFile,
+    uploadingEditSeriesImg,
+    uploadingEditEpisodeImg,
+    uploadingEditEpisodeVideo,
+    saving
+  ]);
 
   // Deep linking shared post scroll effect (Top-level Hook)
   useEffect(() => {
@@ -11797,6 +11831,8 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
                   ? '⚡ Optimizing Video Bitrates...'
                   : videoProcessing?.stage === 'uploading'
                   ? '🚀 Uploading Ultra-HD Media...'
+                  : videoProcessing?.stage === 'ready'
+                  ? '✅ Processing Complete & Ready!'
                   : '🚀 Processing Media Upload...'}
               </h3>
 
