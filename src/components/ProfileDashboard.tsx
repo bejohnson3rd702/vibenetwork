@@ -2,7 +2,7 @@ import React, { useEffect, useState, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { supabase } from '../supabaseClient';
 import { motion, AnimatePresence } from 'framer-motion';
-import { LogOut, Camera, Lock, Unlock, Image as ImageIcon, Star, ShieldCheck, Eye, Edit2, Trash2, Wand, Calendar, Edit3, Clock, CheckCircle, Heart, MessageCircle, Wallet, ArrowUpRight, ArrowDownLeft, Activity, Monitor, Settings, Video, DollarSign, Share2, Pin, ChevronLeft, ChevronRight, AlertCircle, Users, Folder, File as FileIcon, FileText, Download, UploadCloud, Search, Plus, X, XCircle, Globe, EyeOff, Copy, Play, Save, Tv, Loader2, Sparkles } from 'lucide-react';
+import { LogOut, Camera, Lock, Unlock, Image as ImageIcon, Star, ShieldCheck, Eye, Edit2, Trash2, Wand, Calendar, Edit3, Clock, CheckCircle, Heart, MessageCircle, Wallet, ArrowUpRight, ArrowDownLeft, Activity, Monitor, Settings, Video, DollarSign, Share2, Pin, ChevronLeft, ChevronRight, AlertCircle, Users, Folder, File as FileIcon, FileText, Download, UploadCloud, Search, Plus, X, XCircle, Globe, EyeOff, Copy, Play, Save, Tv, Loader2, Sparkles, Zap } from 'lucide-react';
 import { DictationButton } from './DictationButton';
 import { EmojiPickerButton } from './EmojiPickerButton';
 import EndUserAuthModal from './EndUserAuthModal';
@@ -1379,9 +1379,22 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
   }, [seriesList.length]);
 
   // Slow Upload Loader State & Effect
-  const [showUploadLoader, setShowUploadLoader] = useState(false);
+  const [showUploadLoader, setShowUploadLoader] = useState(
+    typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('testLoader') === '1'
+  );
 
   useEffect(() => {
+    if (typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('testLoader') === '1') {
+      setVideoProcessing({
+        id: 'test-vid-1',
+        fileName: 'vibe_exclusive_broadcast_4k.mov',
+        fileSizeMB: '68.4',
+        stage: 'transcribing',
+        stageText: 'AI Speech Engine extracting dialogue & generating multilingual subtitles...',
+        progress: 68
+      });
+      return;
+    }
     const isUploading = uploadingPostMedia || uploadingProductImg || uploadingVideo || uploadingSeriesImg || uploadingEpisodeImg || saving;
     if (!isUploading) {
       setShowUploadLoader(false);
@@ -11524,105 +11537,386 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
       document.body
     )}
 
-      {/* Uploading progress indicator overlay */}
-      <AnimatePresence>
-        {showUploadLoader && (
-          <motion.div
+      {/* Uploading progress indicator overlay (Cyber Holographic HUD & Particle Reactor) */}
+      {typeof document !== 'undefined' && createPortal(
+        <AnimatePresence>
+          {showUploadLoader && (
+            <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             style={{
               position: 'fixed',
               inset: 0,
-              background: 'rgba(5, 5, 8, 0.85)',
-              backdropFilter: 'blur(16px)',
+              background: 'radial-gradient(ellipse 90% 80% at 50% 45%, rgba(45, 15, 75, 0.45) 0%, rgba(10, 12, 22, 0.94) 55%, rgba(3, 4, 10, 0.98) 100%)',
+              backdropFilter: 'blur(25px)',
+              WebkitBackdropFilter: 'blur(25px)',
               display: 'flex',
               flexDirection: 'column',
               alignItems: 'center',
               justifyContent: 'center',
-              zIndex: 99999
+              zIndex: 999999,
+              padding: '20px',
+              overflow: 'hidden'
             }}
           >
-            {/* Concentric rotating loaders */}
-            <div style={{ position: 'relative', width: '120px', height: '120px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              {/* Outer Halo ring */}
+            {/* Ambient Rotating Radar Sweep & Grid */}
+            <motion.div
+              animate={{ rotate: 360 }}
+              transition={{ repeat: Infinity, duration: 12, ease: 'linear' }}
+              style={{
+                position: 'absolute',
+                width: '560px',
+                height: '560px',
+                borderRadius: '50%',
+                background: 'conic-gradient(from 0deg, transparent 0deg, transparent 270deg, rgba(0, 240, 255, 0.08) 360deg)',
+                pointerEvents: 'none'
+              }}
+            />
+
+            {/* Faint Cyber HUD Crosshair Lines */}
+            <div style={{ position: 'absolute', width: '500px', height: '1px', background: 'linear-gradient(90deg, transparent, rgba(0, 240, 255, 0.15), transparent)', pointerEvents: 'none' }} />
+            <div style={{ position: 'absolute', height: '500px', width: '1px', background: 'linear-gradient(180deg, transparent, rgba(0, 240, 255, 0.15), transparent)', pointerEvents: 'none' }} />
+
+            {/* Concentric HUD Range Rings */}
+            <div style={{ position: 'absolute', width: '320px', height: '320px', borderRadius: '50%', border: '1px dashed rgba(255, 255, 255, 0.05)', pointerEvents: 'none' }} />
+            <div style={{ position: 'absolute', width: '460px', height: '460px', borderRadius: '50%', border: '1px dashed rgba(0, 240, 255, 0.04)', pointerEvents: 'none' }} />
+
+            {/* ═══ The Holographic Gyro Reactor Core ═══ */}
+            <div style={{ position: 'relative', width: '220px', height: '220px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              
+              {/* Outer Ring 1: Holographic Gyro with Orbiting Photons */}
               <motion.div
                 animate={{ rotate: 360 }}
-                transition={{ repeat: Infinity, duration: 1.5, ease: 'linear' }}
+                transition={{ repeat: Infinity, duration: 14, ease: 'linear' }}
                 style={{
                   position: 'absolute',
-                  width: '100%',
-                  height: '100%',
+                  width: '210px',
+                  height: '210px',
                   borderRadius: '50%',
-                  border: '4px solid transparent',
-                  borderTopColor: '#ff4d85',
-                  borderBottomColor: '#8A2BE2'
+                  border: '2px dashed rgba(0, 240, 255, 0.4)',
+                  boxShadow: '0 0 25px rgba(0, 240, 255, 0.15), inset 0 0 25px rgba(0, 240, 255, 0.1)'
                 }}
-              />
+              >
+                {/* Orbiting Cyan Photon Spark */}
+                <div style={{
+                  position: 'absolute',
+                  top: '-6px',
+                  left: 'calc(50% - 6px)',
+                  width: '12px',
+                  height: '12px',
+                  borderRadius: '50%',
+                  background: '#00f0ff',
+                  boxShadow: '0 0 16px #00f0ff, 0 0 32px #00f0ff'
+                }} />
+                {/* Orbiting Magenta Photon Spark */}
+                <div style={{
+                  position: 'absolute',
+                  bottom: '-5px',
+                  left: 'calc(50% - 5px)',
+                  width: '10px',
+                  height: '10px',
+                  borderRadius: '50%',
+                  background: '#ff007f',
+                  boxShadow: '0 0 14px #ff007f, 0 0 24px #ff007f'
+                }} />
+              </motion.div>
 
-              {/* Middle Inner ring */}
+              {/* Middle Ring 2: Counter-Rotating Neon Shield Brackets */}
               <motion.div
                 animate={{ rotate: -360 }}
-                transition={{ repeat: Infinity, duration: 2, ease: 'linear' }}
+                transition={{ repeat: Infinity, duration: 9, ease: 'linear' }}
                 style={{
                   position: 'absolute',
-                  width: '75%',
-                  height: '75%',
+                  width: '165px',
+                  height: '165px',
                   borderRadius: '50%',
-                  border: '4px solid transparent',
-                  borderLeftColor: '#00ff88',
-                  borderRightColor: '#00bbff'
+                  border: '3px solid transparent',
+                  borderTopColor: '#00ff88',
+                  borderBottomColor: '#00b4d8',
+                  boxShadow: '0 0 20px rgba(0, 255, 136, 0.2)'
+                }}
+              >
+                {/* Orbiting Mint Energy Node */}
+                <div style={{
+                  position: 'absolute',
+                  right: '-5px',
+                  top: 'calc(50% - 5px)',
+                  width: '10px',
+                  height: '10px',
+                  borderRadius: '50%',
+                  background: '#00ff88',
+                  boxShadow: '0 0 14px #00ff88'
+                }} />
+              </motion.div>
+
+              {/* Inner Ring 3: Fast Ultraviolet Frequency Ring */}
+              <motion.div
+                animate={{ rotate: 360 }}
+                transition={{ repeat: Infinity, duration: 4.5, ease: 'linear' }}
+                style={{
+                  position: 'absolute',
+                  width: '120px',
+                  height: '120px',
+                  borderRadius: '50%',
+                  border: '2px solid transparent',
+                  borderLeftColor: '#8A2BE2',
+                  borderRightColor: '#ff4d85',
+                  boxShadow: '0 0 18px rgba(138, 43, 226, 0.3)'
                 }}
               />
 
-              {/* Center glowing core */}
+              {/* Central Pulsing 3D Plasma Sphere */}
               <motion.div
-                animate={{ scale: [1, 1.2, 1] }}
-                transition={{ repeat: Infinity, duration: 1.5, ease: 'easeInOut' }}
-                style={{
-                  width: '24px',
-                  height: '24px',
-                  borderRadius: '50%',
-                  background: 'linear-gradient(135deg, #ff4d85, #8A2BE2)',
-                  boxShadow: '0 0 20px #ff4d85'
+                animate={{ 
+                  scale: [0.93, 1.08, 0.93],
+                  boxShadow: [
+                    '0 0 35px rgba(255, 0, 127, 0.7), 0 0 70px rgba(138, 43, 226, 0.5), inset 0 0 20px #ffffff',
+                    '0 0 55px rgba(0, 240, 255, 0.9), 0 0 95px rgba(255, 0, 127, 0.7), inset 0 0 25px #ffffff',
+                    '0 0 35px rgba(255, 0, 127, 0.7), 0 0 70px rgba(138, 43, 226, 0.5), inset 0 0 20px #ffffff'
+                  ]
                 }}
-              />
+                transition={{ repeat: Infinity, duration: 2, ease: 'easeInOut' }}
+                style={{
+                  position: 'relative',
+                  width: '68px',
+                  height: '68px',
+                  borderRadius: '50%',
+                  background: 'radial-gradient(circle at 35% 35%, #ffffff 0%, #ff007f 40%, #8A2BE2 75%, #4a00e0 100%)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '3px',
+                  zIndex: 2
+                }}
+              >
+                {/* 5 Dynamic Micro Audio / Frequency Equalizer Bars */}
+                {[0, 1, 2, 3, 4].map(i => {
+                  const barHeights = [
+                    [6, 18, 10, 22, 6],
+                    [10, 24, 14, 26, 10],
+                    [14, 28, 18, 30, 14],
+                    [10, 22, 12, 24, 10],
+                    [6, 16, 8, 20, 6]
+                  ][i];
+                  return (
+                    <motion.div
+                      key={i}
+                      animate={{ height: barHeights }}
+                      transition={{
+                        repeat: Infinity,
+                        duration: 0.9 + i * 0.15,
+                        repeatType: 'reverse',
+                        ease: 'easeInOut'
+                      }}
+                      style={{
+                        width: '3px',
+                        borderRadius: '3px',
+                        background: '#ffffff',
+                        boxShadow: '0 0 6px #00f0ff'
+                      }}
+                    />
+                  );
+                })}
+              </motion.div>
             </div>
 
-            {/* Message & Status */}
-            <motion.h3
-              initial={{ opacity: 0, y: 10 }}
+            {/* ═══ Floating Glassmorphic HUD Console Card ═══ */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.2 }}
+              transition={{ delay: 0.15 }}
               style={{
-                marginTop: '24px',
-                fontSize: '20px',
-                fontWeight: 'bold',
-                color: '#fff',
-                letterSpacing: '0.5px'
-              }}
-            >
-              Processing Upload...
-            </motion.h3>
-
-            <motion.p
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.4 }}
-              style={{
-                marginTop: '8px',
-                fontSize: '14px',
-                color: '#888',
-                maxWidth: '280px',
+                marginTop: '30px',
+                width: '92%',
+                maxWidth: '460px',
+                background: 'rgba(14, 16, 28, 0.85)',
+                backdropFilter: 'blur(24px)',
+                WebkitBackdropFilter: 'blur(24px)',
+                border: '1px solid rgba(255, 255, 255, 0.12)',
+                borderRadius: '24px',
+                padding: '24px 28px',
+                boxShadow: '0 24px 70px rgba(0, 0, 0, 0.85), 0 0 40px rgba(138, 43, 226, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.15)',
+                position: 'relative',
+                overflow: 'hidden',
                 textAlign: 'center',
-                lineHeight: 1.5
+                zIndex: 3
               }}
             >
-              Encoding and storing your media files. Please keep this page open.
-            </motion.p>
+              {/* Glowing Top Rainbow / Cyber Accent Line */}
+              <div style={{
+                position: 'absolute',
+                top: 0,
+                left: '10%',
+                right: '10%',
+                height: '2px',
+                background: 'linear-gradient(90deg, transparent, #00f0ff, #8A2BE2, #ff007f, transparent)',
+                boxShadow: '0 0 10px #00f0ff'
+              }} />
+
+              {/* Header Pill / System Row */}
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '14px' }}>
+                <div style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  padding: '4px 10px',
+                  borderRadius: '20px',
+                  background: 'rgba(0, 255, 136, 0.1)',
+                  border: '1px solid rgba(0, 255, 136, 0.25)'
+                }}>
+                  <motion.span
+                    animate={{ opacity: [1, 0.3, 1] }}
+                    transition={{ repeat: Infinity, duration: 1.2, ease: 'easeInOut' }}
+                    style={{ width: '7px', height: '7px', borderRadius: '50%', background: '#00ff88', boxShadow: '0 0 8px #00ff88' }}
+                  />
+                  <span style={{ fontSize: '10px', fontWeight: 800, letterSpacing: '1px', color: '#00ff88', textTransform: 'uppercase' }}>
+                    PIPELINE ACTIVE
+                  </span>
+                </div>
+
+                <div style={{ display: 'flex', alignItems: 'center', gap: '5px', fontSize: '10px', fontWeight: 700, letterSpacing: '1px', color: 'rgba(255, 255, 255, 0.4)', textTransform: 'uppercase' }}>
+                  <Zap size={11} color="#00f0ff" />
+                  <span>VIBE NEURAL ENCODER</span>
+                </div>
+              </div>
+
+              {/* Dynamic Headline */}
+              <h3 style={{
+                fontSize: '21px',
+                fontWeight: 900,
+                margin: '0 0 6px 0',
+                letterSpacing: '0.2px',
+                background: 'linear-gradient(135deg, #ffffff 20%, #d8b4fe 65%, #f472b6 100%)',
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent'
+              }}>
+                {videoProcessing?.stage === 'transcribing'
+                  ? '🎙️ Transcribing Dialogue & Dubs...'
+                  : videoProcessing?.stage === 'optimizing'
+                  ? '⚡ Optimizing Video Bitrates...'
+                  : videoProcessing?.stage === 'uploading'
+                  ? '🚀 Uploading Ultra-HD Media...'
+                  : '🚀 Processing Media Upload...'}
+              </h3>
+
+              {/* Stage Message */}
+              <p style={{
+                margin: '0 0 16px 0',
+                fontSize: '13px',
+                color: 'rgba(255, 255, 255, 0.65)',
+                lineHeight: 1.5
+              }}>
+                {videoProcessing?.stageText || 'Encoding, storing and syncing your media files across the VIBE high-speed cloud.'}
+              </p>
+
+              {/* File Metadata Pill if available */}
+              {videoProcessing?.fileName && (
+                <div style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  maxWidth: '100%',
+                  padding: '6px 14px',
+                  borderRadius: '12px',
+                  background: 'rgba(255, 255, 255, 0.05)',
+                  border: '1px solid rgba(255, 255, 255, 0.08)',
+                  marginBottom: '16px',
+                  fontSize: '12px',
+                  color: '#fff',
+                  boxSizing: 'border-box'
+                }}>
+                  <Video size={13} color="#c084fc" />
+                  <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '240px', fontWeight: 600 }}>
+                    {videoProcessing.fileName}
+                  </span>
+                  {videoProcessing.fileSizeMB && videoProcessing.fileSizeMB !== 'Stream' && (
+                    <span style={{ fontSize: '11px', color: '#00ff88', fontWeight: 700, paddingLeft: '4px', borderLeft: '1px solid rgba(255, 255, 255, 0.15)' }}>
+                      {videoProcessing.fileSizeMB} MB
+                    </span>
+                  )}
+                </div>
+              )}
+
+              {/* Laser Progress Meter */}
+              <div style={{ marginBottom: '16px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px', fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.8px' }}>
+                  <span style={{ color: 'rgba(255, 255, 255, 0.5)' }}>ENCODING BUFFER</span>
+                  <span style={{ color: '#00f0ff', fontFamily: 'monospace', fontWeight: 800 }}>
+                    {videoProcessing?.progress ? `${videoProcessing.progress}%` : 'STREAMING'}
+                  </span>
+                </div>
+
+                <div style={{
+                  height: '8px',
+                  background: 'rgba(255, 255, 255, 0.06)',
+                  borderRadius: '6px',
+                  overflow: 'hidden',
+                  border: '1px solid rgba(255, 255, 255, 0.1)',
+                  position: 'relative'
+                }}>
+                  {videoProcessing?.progress ? (
+                    <motion.div
+                      initial={{ width: '10%' }}
+                      animate={{ width: `${Math.max(10, videoProcessing.progress)}%` }}
+                      transition={{ duration: 0.3, ease: 'easeOut' }}
+                      style={{
+                        height: '100%',
+                        borderRadius: '6px',
+                        background: 'linear-gradient(90deg, #8A2BE2 0%, #ff007f 50%, #00f0ff 100%)',
+                        boxShadow: '0 0 14px rgba(0, 240, 255, 0.6)',
+                        position: 'relative'
+                      }}
+                    >
+                      {/* Leading laser spark */}
+                      <div style={{
+                        position: 'absolute',
+                        right: 0,
+                        top: '-2px',
+                        bottom: '-2px',
+                        width: '6px',
+                        background: '#ffffff',
+                        borderRadius: '3px',
+                        boxShadow: '0 0 10px #ffffff, 0 0 20px #00f0ff'
+                      }} />
+                    </motion.div>
+                  ) : (
+                    /* Sweeping laser shimmer for indeterminate upload */
+                    <motion.div
+                      animate={{ x: ['-100%', '200%'] }}
+                      transition={{ repeat: Infinity, duration: 1.8, ease: 'easeInOut' }}
+                      style={{
+                        position: 'absolute',
+                        inset: 0,
+                        width: '50%',
+                        borderRadius: '6px',
+                        background: 'linear-gradient(90deg, transparent, #8A2BE2, #ff007f, #00f0ff, transparent)',
+                        boxShadow: '0 0 16px rgba(0, 240, 255, 0.8)'
+                      }}
+                    />
+                  )}
+                </div>
+              </div>
+
+              {/* Bottom Safety Assurance Badge */}
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '6px',
+                fontSize: '12px',
+                color: 'rgba(255, 255, 255, 0.45)',
+                fontWeight: 500
+              }}>
+                <ShieldCheck size={13} color="#00ff88" />
+                <span>Safe Pipeline • Please keep this page open</span>
+              </div>
+            </motion.div>
           </motion.div>
         )}
-      </AnimatePresence>
+      </AnimatePresence>,
+      document.body
+    )}
 
       {/* ── Edit Series Modal Dialog (Request #7) ── */}
       <AnimatePresence>
