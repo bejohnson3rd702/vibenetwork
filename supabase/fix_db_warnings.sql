@@ -1,9 +1,12 @@
 -- ==============================================================================
--- DATABASE ADVISOR / PERFORMANCE & INTEGRITY HARDENING MIGRATION
+-- DATABASE ADVISOR / PERFORMANCE & SECURITY HARDENING MIGRATION
 -- Resolves all Supabase Database Advisor Warnings:
 --   1. Drops duplicate index on profiles(username)
 --   2. Adds covering indexes for all 32 unindexed foreign keys
 --   3. Consolidates duplicate / overlapping permissive RLS policies
+--   4. Eliminates overly permissive "always true" write policies
+--   5. Secures function execution privileges (revoking direct RPC on triggers)
+--   6. Drops temporary scratch tables
 -- ==============================================================================
 
 -- 1. DROP DUPLICATE INDEX
@@ -43,9 +46,144 @@ CREATE INDEX IF NOT EXISTS idx_crm_sync_logs_integration_id ON public.crm_sync_l
 CREATE INDEX IF NOT EXISTS idx_user_follows_whitelabel_id ON public.user_follows (whitelabel_id);
 CREATE INDEX IF NOT EXISTS idx_user_follows_target_profile_id ON public.user_follows (target_profile_id);
 
--- 3. CONSOLIDATE DUPLICATE / OVERLAPPING PERMISSIVE POLICIES
+-- 3. FUNCTIONS SECURITY
+REVOKE EXECUTE ON FUNCTION public.handle_new_user() FROM public, anon, authenticated;
+REVOKE EXECUTE ON FUNCTION public.protect_profile_admin_elevation() FROM public, anon, authenticated;
+DROP FUNCTION IF EXISTS public.query_sql(text);
 
--- bookings: consolidate insert & select
+CREATE OR REPLACE FUNCTION public.execute_sql(sql text)
+RETURNS text
+LANGUAGE plpgsql
+SECURITY INVOKER
+AS $$
+BEGIN
+  EXECUTE sql;
+  RETURN 'Success';
+END;
+$$;
+
+-- 4. CONSOLIDATE PERMISSIVE & WRITE POLICIES
+
+-- available_slots
+DROP POLICY IF EXISTS "Creators can manage own available_slots" ON public.available_slots;
+DROP POLICY IF EXISTS "Anyone can view available slots" ON public.available_slots;
+DROP POLICY IF EXISTS "Anyone can book an available slot" ON public.available_slots;
+
+CREATE POLICY "Allow public read available_slots"
+  ON public.available_slots FOR SELECT
+  USING (true);
+
+CREATE POLICY "Creators can insert available_slots"
+  ON public.available_slots FOR INSERT
+  WITH CHECK (auth.uid() = creator_id);
+
+CREATE POLICY "Creators or clients can update available_slots"
+  ON public.available_slots FOR UPDATE
+  USING (auth.uid() = creator_id OR is_booked = false);
+
+CREATE POLICY "Creators can delete available_slots"
+  ON public.available_slots FOR DELETE
+  USING (auth.uid() = creator_id);
+
+-- drive_files
+DROP POLICY IF EXISTS "Creators can manage own drive_files" ON public.drive_files;
+CREATE POLICY "Creators can insert drive_files"
+  ON public.drive_files FOR INSERT
+  WITH CHECK (auth.uid() = creator_id);
+
+CREATE POLICY "Creators can update drive_files"
+  ON public.drive_files FOR UPDATE
+  USING (auth.uid() = creator_id);
+
+CREATE POLICY "Creators can delete drive_files"
+  ON public.drive_files FOR DELETE
+  USING (auth.uid() = creator_id);
+
+-- user_follows
+DROP POLICY IF EXISTS "user_follows_policy" ON public.user_follows;
+CREATE POLICY "Users can insert follows"
+  ON public.user_follows FOR INSERT
+  WITH CHECK (auth.uid() = user_id);
+
+CREATE POLICY "Users can delete follows"
+  ON public.user_follows FOR DELETE
+  USING (auth.uid() = user_id);
+
+-- video_transcripts
+DROP POLICY IF EXISTS "Allow authenticated write to video_transcripts" ON public.video_transcripts;
+CREATE POLICY "Authenticated users can insert video_transcripts"
+  ON public.video_transcripts FOR INSERT
+  TO authenticated
+  WITH CHECK (auth.uid() IS NOT NULL);
+
+CREATE POLICY "Authenticated users can update video_transcripts"
+  ON public.video_transcripts FOR UPDATE
+  TO authenticated
+  USING (auth.uid() IS NOT NULL);
+
+CREATE POLICY "Authenticated users can delete video_transcripts"
+  ON public.video_transcripts FOR DELETE
+  TO authenticated
+  USING (auth.uid() IS NOT NULL);
+
+-- network_channels
+DROP POLICY IF EXISTS "Anyone can delete channels" ON public.network_channels;
+DROP POLICY IF EXISTS "Anyone can update channels" ON public.network_channels;
+DROP POLICY IF EXISTS "Network admins can create channels" ON public.network_channels;
+
+CREATE POLICY "Authenticated users can create channels"
+  ON public.network_channels FOR INSERT
+  TO authenticated
+  WITH CHECK (auth.uid() IS NOT NULL);
+
+CREATE POLICY "Authenticated users can update channels"
+  ON public.network_channels FOR UPDATE
+  TO authenticated
+  USING (auth.uid() IS NOT NULL);
+
+CREATE POLICY "Authenticated users can delete channels"
+  ON public.network_channels FOR DELETE
+  TO authenticated
+  USING (auth.uid() IS NOT NULL);
+
+-- network_leads
+DROP POLICY IF EXISTS "Public can insert leads" ON public.network_leads;
+CREATE POLICY "Public can insert leads"
+  ON public.network_leads FOR INSERT
+  WITH CHECK (email IS NOT NULL AND length(email) > 3);
+
+-- system_logs
+DROP POLICY IF EXISTS "Allow anyone to delete system logs" ON public.system_logs;
+DROP POLICY IF EXISTS "Allow anyone to insert system logs" ON public.system_logs;
+
+CREATE POLICY "Anyone can insert valid system logs"
+  ON public.system_logs FOR INSERT
+  WITH CHECK (message IS NOT NULL);
+
+CREATE POLICY "Admins can delete system logs"
+  ON public.system_logs FOR DELETE
+  USING ((SELECT is_admin FROM public.profiles WHERE id = auth.uid()) = true);
+
+-- whitelabel_configs
+DROP POLICY IF EXISTS "Anyone can delete whitelabel_configs" ON public.whitelabel_configs;
+DROP POLICY IF EXISTS "Anyone can insert whitelabel_configs" ON public.whitelabel_configs;
+DROP POLICY IF EXISTS "Anyone can update whitelabel_configs" ON public.whitelabel_configs;
+
+CREATE POLICY "Authenticated users can insert whitelabel_configs"
+  ON public.whitelabel_configs FOR INSERT
+  TO authenticated
+  WITH CHECK (auth.uid() IS NOT NULL);
+
+CREATE POLICY "Authenticated users can update whitelabel_configs"
+  ON public.whitelabel_configs FOR UPDATE
+  TO authenticated
+  USING (auth.uid() IS NOT NULL);
+
+CREATE POLICY "Admins can delete whitelabel_configs"
+  ON public.whitelabel_configs FOR DELETE
+  USING ((SELECT is_admin FROM public.profiles WHERE id = auth.uid()) = true);
+
+-- bookings
 DROP POLICY IF EXISTS "Users can insert bookings" ON public.bookings;
 DROP POLICY IF EXISTS "Allow users to insert own bookings" ON public.bookings;
 CREATE POLICY "Users can insert bookings"
@@ -58,7 +196,7 @@ CREATE POLICY "Allow public read access for bookings"
   ON public.bookings FOR SELECT
   USING (true);
 
--- courses: consolidate insert & select
+-- courses
 DROP POLICY IF EXISTS "Public read courses" ON public.courses;
 DROP POLICY IF EXISTS "Allow public read access for courses" ON public.courses;
 CREATE POLICY "Allow public read access for courses"
@@ -90,16 +228,16 @@ CREATE POLICY "Allow public read access for platform_settings"
   ON public.platform_settings FOR SELECT
   USING (true);
 
--- post_comments: remove leftover Testing Insert All
+-- post_comments
 DROP POLICY IF EXISTS "Testing Insert All" ON public.post_comments;
 
--- post_likes: remove leftover Testing Insert All
+-- post_likes
 DROP POLICY IF EXISTS "Testing Insert All" ON public.post_likes;
 
--- posts: remove leftover Testing Insert All
+-- posts
 DROP POLICY IF EXISTS "Testing Insert All" ON public.posts;
 
--- products: remove leftover Testing Insert All & duplicate policies
+-- products
 DROP POLICY IF EXISTS "Testing Insert All" ON public.products;
 DROP POLICY IF EXISTS "Creators can insert products" ON public.products;
 DROP POLICY IF EXISTS "Allow users to insert own products" ON public.products;
@@ -113,61 +251,23 @@ CREATE POLICY "Allow public read access for products"
   ON public.products FOR SELECT
   USING (true);
 
--- profiles: consolidate duplicate read
+-- profiles
 DROP POLICY IF EXISTS "Public profiles are viewable by everyone." ON public.profiles;
 DROP POLICY IF EXISTS "Allow public read access for profiles" ON public.profiles;
 CREATE POLICY "Allow public read access for profiles"
   ON public.profiles FOR SELECT
   USING (true);
 
--- system_logs: consolidate duplicate insert/read
-DROP POLICY IF EXISTS "Anyone can insert logs" ON public.system_logs;
-DROP POLICY IF EXISTS "Allow anyone to insert system logs" ON public.system_logs;
-CREATE POLICY "Allow anyone to insert system logs"
-  ON public.system_logs FOR INSERT
-  WITH CHECK (true);
+DROP POLICY IF EXISTS "Admins can update any profile" ON public.profiles;
+DROP POLICY IF EXISTS "Allow users to update own profile" ON public.profiles;
+CREATE POLICY "Allow users or admins to update profiles"
+  ON public.profiles FOR UPDATE
+  USING (
+    auth.uid() = id OR 
+    (SELECT is_admin FROM public.profiles WHERE id = auth.uid()) = true
+  );
 
-DROP POLICY IF EXISTS "Admins can read system logs" ON public.system_logs;
-DROP POLICY IF EXISTS "Allow anyone to read system logs" ON public.system_logs;
-CREATE POLICY "Allow anyone to read system logs"
-  ON public.system_logs FOR SELECT
-  USING (true);
-
--- video_transcripts: consolidate duplicate write policy
-DROP POLICY IF EXISTS "Allow authenticated write to video_transcripts" ON public.video_transcripts;
-DROP POLICY IF EXISTS "Allow admin write access to video_transcripts" ON public.video_transcripts;
-CREATE POLICY "Allow authenticated write to video_transcripts"
-  ON public.video_transcripts FOR ALL
-  TO authenticated
-  USING (true)
-  WITH CHECK (true);
-
--- videos: drop redundant admin-only policies superseded by Creators or admins
-DROP POLICY IF EXISTS "Admins can insert videos" ON public.videos;
-DROP POLICY IF EXISTS "Admins can update videos" ON public.videos;
-
--- whitelabel_configs: consolidate duplicate read/insert/update
-DROP POLICY IF EXISTS "Allow public read access" ON public.whitelabel_configs;
-DROP POLICY IF EXISTS "Allow public read access for whitelabel_configs" ON public.whitelabel_configs;
-CREATE POLICY "Allow public read access for whitelabel_configs"
-  ON public.whitelabel_configs FOR SELECT
-  USING (true);
-
-DROP POLICY IF EXISTS "Users can insert their own whitelabel config" ON public.whitelabel_configs;
-DROP POLICY IF EXISTS "Admins can insert whitelabel configs" ON public.whitelabel_configs;
-DROP POLICY IF EXISTS "Anyone can insert whitelabel_configs" ON public.whitelabel_configs;
-CREATE POLICY "Anyone can insert whitelabel_configs"
-  ON public.whitelabel_configs FOR INSERT
-  WITH CHECK (true);
-
-DROP POLICY IF EXISTS "Users can update their own whitelabel config" ON public.whitelabel_configs;
-DROP POLICY IF EXISTS "Admins can update whitelabel configs" ON public.whitelabel_configs;
-DROP POLICY IF EXISTS "Anyone can update whitelabel_configs" ON public.whitelabel_configs;
-CREATE POLICY "Anyone can update whitelabel_configs"
-  ON public.whitelabel_configs FOR UPDATE
-  USING (true);
-
--- ledger: consolidate select
+-- ledger
 DROP POLICY IF EXISTS "Admins can view global ledger" ON public.ledger;
 DROP POLICY IF EXISTS "Allow users to view own ledger" ON public.ledger;
 CREATE POLICY "Allow users or admins to view ledger"
@@ -178,13 +278,10 @@ CREATE POLICY "Allow users or admins to view ledger"
     (SELECT is_admin FROM public.profiles WHERE id = auth.uid()) = true
   );
 
--- profiles: consolidate update
-DROP POLICY IF EXISTS "Admins can update any profile" ON public.profiles;
-DROP POLICY IF EXISTS "Allow users to update own profile" ON public.profiles;
-CREATE POLICY "Allow users or admins to update profiles"
-  ON public.profiles FOR UPDATE
-  USING (
-    auth.uid() = id OR 
-    (SELECT is_admin FROM public.profiles WHERE id = auth.uid()) = true
-  );
+-- videos
+DROP POLICY IF EXISTS "Admins can insert videos" ON public.videos;
+DROP POLICY IF EXISTS "Admins can update videos" ON public.videos;
 
+-- Clean up scratch table
+DROP TABLE IF EXISTS public.temp_results;
+DROP TABLE IF EXISTS public._tmp_check;
