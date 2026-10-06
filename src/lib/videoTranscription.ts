@@ -17,8 +17,8 @@ import { getLocalTranscript } from './staticTranscripts';
  *    in the background without user intervention.
  */
 
-const CHUNK_SECONDS = 30; // 30-second chunks (halves HTTP roundtrips, optimal STT window)
-const MAX_CONCURRENT_CHUNKS = 3; // Process 3 chunks concurrently in parallel for 3x-5x speedup
+const CHUNK_SECONDS = 45; // 45-second chunks (drastically minimizes HTTP requests)
+const MAX_CONCURRENT_CHUNKS = 6; // Up to 6 chunks processed in parallel simultaneously
 const MAX_DECODE_BYTES = 1024 * 1024 * 1024; // 1 GB
 
 export interface TranscribeVideoOptions {
@@ -57,6 +57,22 @@ function formatSecs(sec: number): string {
   const m = Math.floor(sec / 60);
   const s = Math.floor(sec % 60);
   return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+}
+
+/** Fast Voice Activity Detection (VAD): skips silent audio slices in 0ms */
+function hasAudioEnergy(audioBuffer: AudioBuffer, threshold = 0.002): boolean {
+  if (!audioBuffer || audioBuffer.length === 0) return false;
+  const channelData = audioBuffer.getChannelData(0);
+  const step = Math.max(1, Math.floor(channelData.length / 800)); // Sample 800 points
+  let sumSquares = 0;
+  let count = 0;
+  for (let i = 0; i < channelData.length; i += step) {
+    const val = channelData[i];
+    sumSquares += val * val;
+    count++;
+  }
+  const rms = Math.sqrt(sumSquares / Math.max(1, count));
+  return rms >= threshold;
 }
 
 /** Convert Blob to Base64 string */
@@ -161,7 +177,7 @@ export async function saveTranscriptRow(keys: string[], segments: YouTubeCaption
 
 /**
  * Transcribe an uploaded video. Runs automatically in the background.
- * Uses 30-second slices and concurrent parallel processing for ultra-fast performance.
+ * Uses 45-second slices, VAD silence skipping, and parallel 6-worker concurrency for blazing-fast speed.
  */
 export async function transcribeUploadedVideo(
   file: File | Blob,
@@ -201,85 +217,80 @@ export async function transcribeUploadedVideo(
   const results: (YouTubeCaptionSegment | null)[] = new Array(totalChunks).fill(null);
   let completedCount = 0;
 
-  // Track if Edge Function is active or failing to avoid repeated timeout latency
-  let useEdgeFunction = true;
-
   async function processChunk(i: number): Promise<void> {
     const startSec = i * CHUNK_SECONDS;
     const endSec = Math.min(duration, startSec + CHUNK_SECONDS);
 
-    const wavBlob = encode16kMonoWav(sliceAudioBuffer(audioBuffer, startSec, endSec));
-    let segmentData: YouTubeCaptionSegment | null = null;
+    const slice = sliceAudioBuffer(audioBuffer, startSec, endSec);
 
-    // Strategy A: Try Supabase Edge Function (only if not previously failed/disabled)
-    if (useEdgeFunction) {
-      const form = new FormData();
-      form.append('videoKey', videoKey);
-      form.append('startSec', String(startSec));
-      form.append('speaker', speaker);
-      form.append('sourceLang', sourceLang);
-      form.append('targetLang', targetLang);
-      form.append('reset', i === 0 ? 'true' : 'false');
-      form.append('audio', wavBlob, `chunk_${i}.wav`);
-
-      try {
-        const timeoutPromise = new Promise<{ error: Error }>((_, reject) => 
-          setTimeout(() => reject(new Error('Edge function timeout')), 4000)
-        );
-        const invokePromise = supabase!.functions.invoke('transcribe-video', { body: form });
-        const res: any = await Promise.race([invokePromise, timeoutPromise]);
-
-        if (!res.error && res.data?.segment) {
-          segmentData = res.data.segment as YouTubeCaptionSegment;
-        } else {
-          // If edge function returned an error on chunk 0 or early, fallback to proxy for remaining
-          if (i === 0) useEdgeFunction = false;
-        }
-      } catch (_) {
-        if (i === 0) useEdgeFunction = false;
-      }
+    // Fast VAD: If the chunk is completely silent, skip sending to WWTC in 0ms!
+    if (!hasAudioEnergy(slice)) {
+      completedCount++;
+      const percent = Math.min(96, Math.round(15 + (completedCount / totalChunks) * 80));
+      onProgress?.(`Extracting dialogue (${completedCount}/${totalChunks} segments ready)...`, percent);
+      return;
     }
 
-    // Strategy B: Direct high-speed /api/wwtc-proxy STT
+    const wavBlob = encode16kMonoWav(slice);
+    let segmentData: YouTubeCaptionSegment | null = null;
+
+    // Strategy 1 (Primary): Direct high-speed /api/wwtc-proxy STT
+    try {
+      const audioBase64 = await blobToBase64(wavBlob);
+      const proxyRes = await fetch('/api/wwtc-proxy?action=stt', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          serviceCode: 'stt',
+          sourceLang,
+          targetLang,
+          audioBase64
+        })
+      });
+
+      if (proxyRes.ok) {
+        const stt = await proxyRes.json();
+        if (stt?.source_text && stt.source_text.trim()) {
+          segmentData = {
+            time: formatSecs(startSec),
+            seconds: startSec,
+            speaker,
+            text: stt.source_text.trim(),
+            translatedText: stt.translated_text || undefined,
+            isRecorded: true,
+          };
+        }
+      }
+    } catch (proxyErr) {
+      console.warn(`[VideoTranscription] Primary STT notice for chunk ${i}:`, proxyErr);
+    }
+
+    // Strategy 2 (Fallback): Supabase Edge Function
     if (!segmentData) {
       try {
-        const audioBase64 = await blobToBase64(wavBlob);
-        const proxyRes = await fetch('/api/wwtc-proxy?action=stt', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            serviceCode: 'stt',
-            sourceLang,
-            targetLang,
-            audioBase64
-          })
-        });
+        const form = new FormData();
+        form.append('videoKey', videoKey);
+        form.append('startSec', String(startSec));
+        form.append('speaker', speaker);
+        form.append('sourceLang', sourceLang);
+        form.append('targetLang', targetLang);
+        form.append('reset', 'false');
+        form.append('audio', wavBlob, `chunk_${i}.wav`);
 
-        if (proxyRes.ok) {
-          const stt = await proxyRes.json();
-          if (stt?.source_text && stt.source_text.trim()) {
-            segmentData = {
-              time: formatSecs(startSec),
-              seconds: startSec,
-              speaker,
-              text: stt.source_text.trim(),
-              translatedText: stt.translated_text || undefined,
-              isRecorded: true,
-            };
-          }
+        const res = await supabase!.functions.invoke('transcribe-video', { body: form });
+        if (!res.error && res.data?.segment) {
+          segmentData = res.data.segment as YouTubeCaptionSegment;
         }
-      } catch (proxyErr) {
-        console.warn(`[VideoTranscription] Fallback STT notice for chunk ${i}:`, proxyErr);
-      }
+      } catch (_) {}
     }
 
     results[i] = segmentData;
     completedCount++;
     const percent = Math.min(96, Math.round(15 + (completedCount / totalChunks) * 80));
-    onProgress?.(`Transcribing spoken dialogue (${completedCount}/${totalChunks} chunks complete)...`, percent);
+    onProgress?.(`Extracting dialogue (${completedCount}/${totalChunks} segments ready)...`, percent);
   }
 
-  // Run in parallel with concurrency pool (MAX_CONCURRENT_CHUNKS in flight simultaneously)
+  // Run all chunks concurrently in parallel (up to MAX_CONCURRENT_CHUNKS simultaneous)
   const pool: Promise<void>[] = [];
   for (let i = 0; i < totalChunks; i++) {
     const p: Promise<void> = processChunk(i).then(() => {
