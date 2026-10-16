@@ -1,6 +1,13 @@
 import { supabase, supabaseUrl } from '../supabaseClient';
 import { encode16kMonoWav, type YouTubeCaptionSegment } from './wwtc';
 import { getLocalTranscript } from './staticTranscripts';
+import { 
+  isVoiceCloningEnabled, 
+  getElevenLabsApiKey, 
+  cloneVoiceFromAudio, 
+  setCachedVoiceId, 
+  getCachedVoiceId 
+} from './elevenlabs';
 
 /**
  * Video transcription pipeline (Fully Automated)
@@ -93,7 +100,7 @@ async function blobToBase64(blob: Blob): Promise<string> {
  * Resilient multi-tier audio decoder for .mov, .mp4, and all mobile/desktop video containers.
  * Clones the ArrayBuffer so retries are never blocked by detached memory buffers.
  */
-async function decodeAudio16k(file: File | Blob): Promise<AudioBuffer> {
+export async function decodeAudio16k(file: File | Blob): Promise<AudioBuffer> {
   const arrayBuffer = await file.arrayBuffer();
 
   // Tier 1: Try OfflineAudioContext with direct 16kHz resampling
@@ -127,7 +134,7 @@ async function decodeAudio16k(file: File | Blob): Promise<AudioBuffer> {
   throw new Error('This video audio format could not be decoded in the current browser.');
 }
 
-function sliceAudioBuffer(audioBuffer: AudioBuffer, startSec: number, endSec: number): AudioBuffer {
+export function sliceAudioBuffer(audioBuffer: AudioBuffer, startSec: number, endSec: number): AudioBuffer {
   const { sampleRate, numberOfChannels } = audioBuffer;
   const startSample = Math.max(0, Math.floor(startSec * sampleRate));
   const endSample = Math.min(audioBuffer.length, Math.floor(endSec * sampleRate));
@@ -217,6 +224,54 @@ export async function transcribeUploadedVideo(
   const results: (YouTubeCaptionSegment | null)[] = new Array(totalChunks).fill(null);
   let completedCount = 0;
 
+  // ── AUTOMATIC VOICE CLONING (ELEVENLABS) ───────────────────────────
+  // Clones the authentic voice of the creator directly from the video soundtrack
+  let autoClonedVoiceId: string | null = getCachedVoiceId(videoKey) || (storagePath ? getCachedVoiceId(storagePath) : null);
+  const voiceClonePromise = (async () => {
+    if (autoClonedVoiceId || !isVoiceCloningEnabled() || !getElevenLabsApiKey()) return;
+    try {
+      const candidateDuration = Math.min(12, Math.max(4, duration));
+      let sampleSlice: AudioBuffer | null = null;
+      for (let t = 0; t < Math.min(60, duration - candidateDuration); t += 3) {
+        const testSlice = sliceAudioBuffer(audioBuffer, t, t + candidateDuration);
+        if (hasAudioEnergy(testSlice, 0.005)) {
+          sampleSlice = testSlice;
+          break;
+        }
+      }
+      if (!sampleSlice) {
+        sampleSlice = sliceAudioBuffer(audioBuffer, 0, candidateDuration);
+      }
+
+      if (hasAudioEnergy(sampleSlice, 0.001)) {
+        const sampleWav = encode16kMonoWav(sampleSlice);
+        const voiceName = speaker && speaker !== 'Channel Speaker' 
+          ? `${speaker} (Voice Clone)` 
+          : `Creator (${videoKey.split('/').pop()?.slice(0, 16) || 'Video'})`;
+
+        const cloneRes = await cloneVoiceFromAudio({
+          name: voiceName,
+          audioBlob: sampleWav,
+          creatorId: videoKey,
+        });
+
+        if (cloneRes?.voice_id) {
+          autoClonedVoiceId = cloneRes.voice_id;
+          setCachedVoiceId(videoKey, cloneRes.voice_id);
+          if (storagePath) setCachedVoiceId(storagePath, cloneRes.voice_id);
+          console.log(`[VideoTranscription] Cloned voice automatically for ${videoKey}: ${cloneRes.voice_id}`);
+          if (typeof window !== 'undefined') {
+            window.dispatchEvent(new CustomEvent('vibe-voice-cloned', {
+              detail: { videoKey, storagePath, voiceId: cloneRes.voice_id, name: voiceName }
+            }));
+          }
+        }
+      }
+    } catch (cloneErr: any) {
+      console.warn('[VideoTranscription] Automatic voice cloning notice:', cloneErr.message);
+    }
+  })();
+
   async function processChunk(i: number): Promise<void> {
     const startSec = i * CHUNK_SECONDS;
     const endSec = Math.min(duration, startSec + CHUNK_SECONDS);
@@ -304,12 +359,20 @@ export async function transcribeUploadedVideo(
   }
   await Promise.all(pool);
 
+  // Await voice clone job if in progress
+  try {
+    await voiceClonePromise;
+  } catch (_) {}
+
   const segments = results.filter((s): s is YouTubeCaptionSegment => Boolean(s));
 
   if (segments.length > 0) {
+    if (autoClonedVoiceId) {
+      (segments[0] as any).voice_id = autoClonedVoiceId;
+    }
     // Save to canonical storage key and full path
     await saveTranscriptRow([videoKey, storagePath], segments);
-    onProgress?.(`Transcription complete (${segments.length} segments).`, 100);
+    onProgress?.(`Transcription & Voice Cloning complete (${segments.length} segments).`, 100);
   } else {
     onProgress?.('No speech detected in audio.', 100);
   }
@@ -352,6 +415,10 @@ export async function fetchTranscriptForVideo(
       const row = candidates.map(c => data.find(d => d.video_id === c)).find(Boolean);
       const transcript = row?.transcript;
       if (Array.isArray(transcript) && transcript.length > 0 && !transcript.some((s: any) => s.isPlaceholder || s.isRecorded === false)) {
+        const storedVoiceId = (transcript[0] as any)?.voice_id;
+        if (storedVoiceId) {
+          candidates.forEach(c => setCachedVoiceId(c, storedVoiceId));
+        }
         return transcript as YouTubeCaptionSegment[];
       }
     }

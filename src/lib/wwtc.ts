@@ -1,5 +1,7 @@
 import { supabase } from '../supabaseClient';
 import { getLocalTranscript } from './staticTranscripts';
+import { synthesizeClonedVoice, isVoiceCloningEnabled, getAudioDataUri } from './elevenlabs';
+export { getAudioDataUri };
 
 // WWTC API proxy route (runs server-side to keep WWTC_API_KEY secure)
 const WWTC_PROXY_URL = '/api/wwtc-proxy';
@@ -47,6 +49,87 @@ export function supportsTTS(lang: WwtcLanguage | string): boolean {
 
 export function supportsSTS(lang: WwtcLanguage | string): boolean {
   return parseLanguageCapabilities(lang).sts;
+}
+
+/**
+ * Translation Software Tier Configuration:
+ * - Active tier languages (Freemium): English + 5 key languages:
+ *   Spanish, French, Mandarin Chinese, Portuguese, Hindi.
+ * - All other languages are reserved for the upcoming Freemium/Paid upgrade tier.
+ */
+export const ACTIVE_TRANSLATION_LANG_CODES = [
+  'english-united-states',
+  'spanish-international',
+  'french-france',
+  'chinese-mandarin',
+  'portuguese-brazil',
+  'hindi',
+] as const;
+
+export const ACTIVE_FOREIGN_LANGUAGES = [
+  'spanish-international',
+  'french-france',
+  'chinese-mandarin',
+  'portuguese-brazil',
+  'hindi',
+] as const;
+
+export const DEFAULT_ACTIVE_LANGUAGES: WwtcLanguage[] = [
+  { code: 'english-united-states', name: 'English (US)', services: 'stt-ttt-tts', flag: '' },
+  { code: 'spanish-international', name: 'Spanish', services: 'stt-ttt-tts', flag: '' },
+  { code: 'french-france', name: 'French', services: 'stt-ttt-tts', flag: '' },
+  { code: 'chinese-mandarin', name: 'Mandarin Chinese', services: 'x-ttt-tts', flag: '' },
+  { code: 'portuguese-brazil', name: 'Portuguese', services: 'stt-ttt-tts', flag: '' },
+  { code: 'hindi', name: 'Hindi', services: 'x-ttt-tts', flag: '' },
+];
+
+/**
+ * Filter a language list to only the 5 active translation languages plus English.
+ */
+export function filterActiveLanguages(allLanguages: WwtcLanguage[]): WwtcLanguage[] {
+  if (!Array.isArray(allLanguages) || allLanguages.length === 0) {
+    return DEFAULT_ACTIVE_LANGUAGES;
+  }
+
+  const findLang = (matcher: (l: WwtcLanguage) => boolean, fallback: WwtcLanguage) =>
+    allLanguages.find(matcher) || fallback;
+
+  const english = findLang(
+    l => l.code === 'english-united-states' || l.code.startsWith('english') || l.name.toLowerCase().includes('english'),
+    DEFAULT_ACTIVE_LANGUAGES[0]
+  );
+  const spanish = findLang(
+    l => l.code === 'spanish-international' || l.code.startsWith('spanish') || l.name.toLowerCase().includes('spanish'),
+    DEFAULT_ACTIVE_LANGUAGES[1]
+  );
+  const french = findLang(
+    l => l.code === 'french-france' || l.code.startsWith('french') || l.name.toLowerCase().includes('french'),
+    DEFAULT_ACTIVE_LANGUAGES[2]
+  );
+  const mandarin = findLang(
+    l => l.code === 'chinese-mandarin' || l.code.includes('chinese') || l.code.includes('mandarin') || l.name.toLowerCase().includes('mandarin') || l.name.toLowerCase().includes('chinese'),
+    DEFAULT_ACTIVE_LANGUAGES[3]
+  );
+  const portuguese = findLang(
+    l => l.code === 'portuguese-brazil' || l.code.startsWith('portuguese') || l.name.toLowerCase().includes('portuguese'),
+    DEFAULT_ACTIVE_LANGUAGES[4]
+  );
+  const hindi = findLang(
+    l => l.code === 'hindi' || l.code.startsWith('hindi') || l.name.toLowerCase().includes('hindi'),
+    DEFAULT_ACTIVE_LANGUAGES[5]
+  );
+
+  return [english, spanish, french, mandarin, portuguese, hindi];
+}
+
+/**
+ * Get the languages reserved for the upcoming Premium / Paid version.
+ */
+export function getReservedPremiumLanguages(allLanguages: WwtcLanguage[]): WwtcLanguage[] {
+  if (!Array.isArray(allLanguages)) return [];
+  const activeList = filterActiveLanguages(allLanguages);
+  const activeCodes = new Set(activeList.map(l => l.code));
+  return allLanguages.filter(l => !activeCodes.has(l.code));
 }
 
 const CACHE_KEY = 'wwtc_languages_cache_v1';
@@ -105,7 +188,8 @@ export interface WwtcServiceRequest {
 export interface WwtcServiceResponse {
   source_text: string;
   translated_text: string;
-  audio?: string; // Base64 WAV (for TTS and STS)
+  audio?: string; // Base64 WAV or MP3 (for TTS, STS, and cloned voice)
+  voice_id?: string;
 }
 
 async function blobToBase64(blob: Blob): Promise<string> {
@@ -177,16 +261,134 @@ export async function executeWwtcService(params: WwtcServiceRequest): Promise<Ww
 const translationMemoryCache = new Map<string, WwtcServiceResponse>();
 const inFlightTranslations = new Map<string, Promise<WwtcServiceResponse>>();
 
+const SESSION_CACHE_PREFIX = 'wwtc_v1_';
+
+function getSessionCached(key: string): WwtcServiceResponse | null {
+  try {
+    const raw = sessionStorage.getItem(SESSION_CACHE_PREFIX + key);
+    if (raw) return JSON.parse(raw);
+  } catch (_) {}
+  return null;
+}
+
+function setSessionCached(key: string, res: WwtcServiceResponse): void {
+  try {
+    sessionStorage.setItem(SESSION_CACHE_PREFIX + key, JSON.stringify(res));
+  } catch (_) {
+    // If storage quota exceeded, purge older WWTC entries
+    try {
+      let evicted = 0;
+      for (let i = sessionStorage.length - 1; i >= 0 && evicted < 12; i--) {
+        const k = sessionStorage.key(i);
+        if (k && k.startsWith(SESSION_CACHE_PREFIX)) {
+          sessionStorage.removeItem(k);
+          evicted++;
+        }
+      }
+    } catch (_) {}
+  }
+}
+
 /**
- * Send text for translation service (TTT or TTS) with high-speed in-memory caching and coalescing
+ * Check synchronously if a translation (especially TTS audio) is already cached in memory or session
+ */
+export function isTranslationCached(params: {
+  text: string;
+  sourceLang?: string;
+  targetLang: string;
+  serviceCode?: 'sts' | 'ttt' | 'stt' | 'tts';
+  useVoiceCloning?: boolean;
+  voiceId?: string;
+}): boolean {
+  const { text, sourceLang = 'english-united-states', targetLang, serviceCode = 'tts', useVoiceCloning = true, voiceId } = params;
+  const cleanText = (text || '').trim();
+  if (!cleanText || sourceLang === targetLang) return true;
+
+  const normalizedService = serviceCode === 'sts' ? 'tts' : serviceCode;
+  const cloneKeyTag = (normalizedService === 'tts' && useVoiceCloning && isVoiceCloningEnabled()) ? `:cloned:${voiceId || 'default'}` : '';
+  const cacheKey = `${normalizedService}:${sourceLang}:${targetLang}:${cleanText}${cloneKeyTag}`;
+
+  if (translationMemoryCache.has(cacheKey)) return true;
+  if (getSessionCached(cacheKey)) return true;
+
+  // Fallback checks (e.g. if cached with default clone or generic key)
+  if (cloneKeyTag) {
+    const defaultTag = `:cloned:default`;
+    const defaultKey = `${normalizedService}:${sourceLang}:${targetLang}:${cleanText}${defaultTag}`;
+    if (translationMemoryCache.has(defaultKey) || getSessionCached(defaultKey)) return true;
+
+    const baseKey = `${normalizedService}:${sourceLang}:${targetLang}:${cleanText}`;
+    if (translationMemoryCache.has(baseKey) || getSessionCached(baseKey)) return true;
+  }
+
+  return false;
+}
+
+/**
+ * Retrieve cached translation response synchronously if available (0ms instant hit)
+ */
+export function getCachedTranslation(params: {
+  text: string;
+  sourceLang?: string;
+  targetLang: string;
+  serviceCode?: 'sts' | 'ttt' | 'stt' | 'tts';
+  useVoiceCloning?: boolean;
+  voiceId?: string;
+}): WwtcServiceResponse | null {
+  const { text, sourceLang = 'english-united-states', targetLang, serviceCode = 'tts', useVoiceCloning = true, voiceId } = params;
+  const cleanText = (text || '').trim();
+  if (!cleanText) return null;
+  if (sourceLang === targetLang) {
+    return { source_text: cleanText, translated_text: cleanText, audio: '' };
+  }
+
+  const normalizedService = serviceCode === 'sts' ? 'tts' : serviceCode;
+  const cloneKeyTag = (normalizedService === 'tts' && useVoiceCloning && isVoiceCloningEnabled()) ? `:cloned:${voiceId || 'default'}` : '';
+  const cacheKey = `${normalizedService}:${sourceLang}:${targetLang}:${cleanText}${cloneKeyTag}`;
+
+  if (translationMemoryCache.has(cacheKey)) {
+    return translationMemoryCache.get(cacheKey)!;
+  }
+  const sessionItem = getSessionCached(cacheKey);
+  if (sessionItem) {
+    translationMemoryCache.set(cacheKey, sessionItem);
+    return sessionItem;
+  }
+
+  // Fallback: check with default cloned voice or base key
+  if (cloneKeyTag) {
+    const defaultKey = `${normalizedService}:${sourceLang}:${targetLang}:${cleanText}:cloned:default`;
+    if (translationMemoryCache.has(defaultKey)) return translationMemoryCache.get(defaultKey)!;
+    const defaultSession = getSessionCached(defaultKey);
+    if (defaultSession) {
+      translationMemoryCache.set(defaultKey, defaultSession);
+      return defaultSession;
+    }
+
+    const baseKey = `${normalizedService}:${sourceLang}:${targetLang}:${cleanText}`;
+    if (translationMemoryCache.has(baseKey)) return translationMemoryCache.get(baseKey)!;
+    const baseSession = getSessionCached(baseKey);
+    if (baseSession) {
+      translationMemoryCache.set(baseKey, baseSession);
+      return baseSession;
+    }
+  }
+
+  return null;
+}
+
+/**
+ * Send text for translation service (TTT or TTS) with high-speed in-memory & session caching and coalescing
  */
 export async function translateText(params: {
   text: string;
   sourceLang: string; // e.g., 'english-united-states'
   targetLang: string; // e.g., 'spanish-international'
   serviceCode?: 'sts' | 'ttt' | 'stt' | 'tts';
+  useVoiceCloning?: boolean;
+  voiceId?: string;
 }): Promise<WwtcServiceResponse> {
-  const { text, sourceLang, targetLang, serviceCode = 'tts' } = params;
+  const { text, sourceLang, targetLang, serviceCode = 'tts', useVoiceCloning = true, voiceId } = params;
   const cleanText = (text || '').trim();
 
   if (!cleanText) {
@@ -199,20 +401,65 @@ export async function translateText(params: {
   }
 
   const normalizedService = serviceCode === 'sts' ? 'tts' : serviceCode;
-  const cacheKey = `${normalizedService}:${sourceLang}:${targetLang}:${cleanText}`;
+  const cloneKeyTag = (normalizedService === 'tts' && useVoiceCloning && isVoiceCloningEnabled()) ? `:cloned:${voiceId || 'default'}` : '';
+  const cacheKey = `${normalizedService}:${sourceLang}:${targetLang}:${cleanText}${cloneKeyTag}`;
 
-  // 1. Instant Cache Hit (0ms)
+  // 1. Instant In-Memory Cache Hit (0ms)
   if (translationMemoryCache.has(cacheKey)) {
     return translationMemoryCache.get(cacheKey)!;
   }
 
-  // 2. Coalesce with any identical in-flight request
+  // 2. Instant Session Storage Hit (0ms)
+  const sessionCached = getSessionCached(cacheKey);
+  if (sessionCached) {
+    translationMemoryCache.set(cacheKey, sessionCached);
+    return sessionCached;
+  }
+
+  // 3. Coalesce with any identical in-flight request
   if (inFlightTranslations.has(cacheKey)) {
     return inFlightTranslations.get(cacheKey)!;
   }
 
   const requestPromise = (async () => {
     try {
+      // If voice cloning is requested and active, synthesize speech using ElevenLabs Multilingual V2 / Flash
+      if (normalizedService === 'tts' && useVoiceCloning && isVoiceCloningEnabled()) {
+        try {
+          // 1. Translate the text first (using fast TTT)
+          const textRes = await translateText({
+            text: cleanText,
+            sourceLang,
+            targetLang,
+            serviceCode: 'ttt',
+            useVoiceCloning: false,
+          });
+
+          const translatedScript = textRes.translated_text || cleanText;
+
+          // 2. Synthesize using ElevenLabs cloned voice
+          const clonedRes = await synthesizeClonedVoice({
+            text: translatedScript,
+            voiceId,
+            targetLang,
+          });
+
+          if (clonedRes?.audio) {
+            const finalRes: WwtcServiceResponse = {
+              source_text: cleanText,
+              translated_text: translatedScript,
+              audio: clonedRes.audio,
+              voice_id: clonedRes.voiceId,
+            };
+            translationMemoryCache.set(cacheKey, finalRes);
+            setSessionCached(cacheKey, finalRes);
+            return finalRes;
+          }
+        } catch (cloneErr: any) {
+          console.warn('[translateText] ElevenLabs voice clone notice, using standard TTS:', cloneErr.message);
+        }
+      }
+
       const res = await executeWwtcService({
         serviceCode: normalizedService,
         sourceLang,
@@ -220,8 +467,9 @@ export async function translateText(params: {
         text: cleanText,
       });
 
-      // Cache successful response
+      // Cache successful response in memory and session storage
       translationMemoryCache.set(cacheKey, res);
+      setSessionCached(cacheKey, res);
 
       // LRU cache bounding (max 2500 entries)
       if (translationMemoryCache.size > 2500) {
@@ -246,6 +494,236 @@ export async function translateText(params: {
 
   inFlightTranslations.set(cacheKey, requestPromise);
   return requestPromise;
+}
+
+/**
+ * Pre-warm translation voiceover (TTS) in the background for active foreign languages.
+ * Safe to fire and forget; coalesces identical requests and caches in memory & sessionStorage.
+ */
+export function prewarmActiveLanguagesTTS(
+  text: string,
+  targetLangs: readonly string[] = ACTIVE_FOREIGN_LANGUAGES,
+  voiceId?: string
+): void {
+  const clean = (text || '').trim();
+  if (!clean) return;
+
+  targetLangs.forEach((lang, idx) => {
+    if (lang === 'english-united-states') return;
+
+    // 1. Prewarm text translation (TTT) immediately (staggered slightly to avoid browser thread lock)
+    const tttKey = `ttt:english-united-states:${lang}:${clean}`;
+    if (!translationMemoryCache.has(tttKey) && !inFlightTranslations.has(tttKey)) {
+      setTimeout(() => {
+        translateText({
+          text: clean,
+          sourceLang: 'english-united-states',
+          targetLang: lang,
+          serviceCode: 'ttt',
+          useVoiceCloning: false,
+        }).catch(() => {});
+      }, idx * 25);
+    }
+
+    // 2. Prewarm speech audio (TTS) with voiceId
+    const isCloning = isVoiceCloningEnabled();
+    const cloneKeyTag = isCloning ? `:cloned:${voiceId || 'default'}` : '';
+    const ttsKey = `tts:english-united-states:${lang}:${clean}${cloneKeyTag}`;
+    if (!translationMemoryCache.has(ttsKey) && !inFlightTranslations.has(ttsKey)) {
+      // Prioritize Spanish (starts within 40ms); stagger other languages
+      const delay = lang.startsWith('spanish') ? 40 : 120 + idx * 120;
+      setTimeout(() => {
+        translateText({
+          text: clean,
+          sourceLang: 'english-united-states',
+          targetLang: lang,
+          serviceCode: 'tts',
+          voiceId,
+        }).catch(() => {});
+      }, delay);
+    }
+  });
+}
+
+/**
+ * Pre-warms the entire video dialogue text (TTT) and the initial segments' audio (TTS)
+ * for immediate 0ms language switching when viewing videos in the feed.
+ */
+export function prewarmVideoDialogue(
+  segments: YouTubeCaptionSegment[],
+  voiceId?: string,
+  targetLangs: readonly string[] = ACTIVE_FOREIGN_LANGUAGES
+): void {
+  if (!Array.isArray(segments) || segments.length === 0) return;
+
+  // 1. Prewarm text translation (TTT) for all segments across active languages in background
+  const texts = segments.map(s => s.text).filter(Boolean);
+  targetLangs.forEach(lang => {
+    if (lang === 'english-united-states') return;
+    batchPrefetchTranslations({
+      texts,
+      sourceLang: 'english-united-states',
+      targetLang: lang,
+      serviceCode: 'ttt',
+      concurrency: 4,
+    }).catch(() => {});
+  });
+
+  // 2. Prewarm TTS for first 3 segments immediately for Spanish + other active languages
+  const initialSegments = segments.slice(0, 3);
+  initialSegments.forEach((seg, segIdx) => {
+    if (seg?.text) {
+      setTimeout(() => {
+        prewarmActiveLanguagesTTS(seg.text, targetLangs, voiceId);
+      }, segIdx * 80);
+    }
+  });
+}
+
+/**
+ * Splits caption text into readable 1-to-2 sentence chunks (or 10-18 words max).
+ * Handles punctuated text, run-on unpunctuated STT transcripts, and multi-language scripts.
+ */
+export function splitIntoSentenceSlices(
+  text: string,
+  maxSentences = 2,
+  maxWords = 16
+): string[] {
+  const clean = (text || '').trim();
+  if (!clean) return [];
+
+  // Check CJK characters (Chinese / Japanese)
+  const isCjk = /[\u4e00-\u9fa5\u3040-\u30ff]/.test(clean) && !clean.includes(' ');
+  if (isCjk) {
+    const cjkParts = clean.split(/([。！？\n]+)/).filter(Boolean);
+    const slices: string[] = [];
+    let cur = '';
+    for (let i = 0; i < cjkParts.length; i++) {
+      cur += cjkParts[i];
+      if (cur.length >= 22 || /[。！？]/.test(cjkParts[i])) {
+        slices.push(cur.trim());
+        cur = '';
+      }
+    }
+    if (cur.trim()) slices.push(cur.trim());
+    return slices.length > 0 ? slices : [clean];
+  }
+
+  // 1. Split on sentence boundaries: (. ! ? or Hindi danda । or newline)
+  const sentenceRegex = /[^.!?\n।]+(?:[.!?\n।]+|$)/g;
+  const rawSentences = clean.match(sentenceRegex) || [clean];
+  const processedSentences: string[] = [];
+
+  for (const raw of rawSentences) {
+    const s = raw.trim();
+    if (!s) continue;
+    const words = s.split(/\s+/);
+    if (words.length > maxWords) {
+      // Split on punctuation (comma, semicolon, dash) or major coordinating conjunctions
+      const clauseParts = s.split(/([,;:\-–—]+|\s+(?:and|but|or|so|because|y|pero|o|porque|et|mais|ou|e|mas)\s+)/i);
+      let chunk = '';
+      for (let i = 0; i < clauseParts.length; i++) {
+        const part = clauseParts[i];
+        if (!part) continue;
+        const testChunk = chunk ? `${chunk} ${part}`.replace(/\s+/g, ' ') : part;
+        const testWords = testChunk.trim().split(/\s+/).length;
+        if (testWords > maxWords && chunk.trim()) {
+          processedSentences.push(chunk.replace(/\s+([,;:!?.])/g, '$1').trim());
+          chunk = part.trim();
+        } else {
+          chunk = testChunk;
+        }
+      }
+      if (chunk.trim()) {
+        const remainingWords = chunk.trim().split(/\s+/);
+        if (remainingWords.length > maxWords) {
+          for (let w = 0; w < remainingWords.length; w += maxWords) {
+            processedSentences.push(remainingWords.slice(w, w + maxWords).join(' '));
+          }
+        } else {
+          processedSentences.push(chunk.replace(/\s+([,;:!?.])/g, '$1').trim());
+        }
+      }
+    } else {
+      processedSentences.push(s);
+    }
+  }
+
+  // Clean boundary punctuation and group into 1 or 2 sentences per slice
+  const slices: string[] = [];
+  let currentSlice: string[] = [];
+  let currentSliceWords = 0;
+
+  for (const rawSent of processedSentences) {
+    const sent = rawSent.replace(/^[,;:\s]+/, '').trim();
+    if (!sent) continue;
+    const sentWords = sent.split(/\s+/).length;
+    if (currentSlice.length >= maxSentences || (currentSlice.length > 0 && currentSliceWords + sentWords > 18)) {
+      slices.push(currentSlice.join(' ').replace(/\s+([,;:!?.])/g, '$1'));
+      currentSlice = [sent];
+      currentSliceWords = sentWords;
+    } else {
+      currentSlice.push(sent);
+      currentSliceWords += sentWords;
+    }
+  }
+  if (currentSlice.length > 0) {
+    slices.push(currentSlice.join(' ').replace(/\s+([,;:!?.])/g, '$1'));
+  }
+  return slices;
+}
+
+/**
+ * Returns the active 1-to-2 sentence subtitle slice corresponding to the current playback time.
+ * Dynamically computes slice duration based on text length to avoid displaying whole paragraphs.
+ */
+export function getActiveCaptionSlice(params: {
+  fullText: string;
+  currentTime: number;
+  segmentStart: number;
+  segmentEnd?: number;
+  videoDuration?: number;
+  maxSentences?: number;
+  maxWords?: number;
+}): string {
+  const {
+    fullText,
+    currentTime,
+    segmentStart,
+    segmentEnd,
+    videoDuration = 0,
+    maxSentences = 2,
+    maxWords = 16,
+  } = params;
+
+  if (!fullText || !fullText.trim()) return '';
+  const slices = splitIntoSentenceSlices(fullText, maxSentences, maxWords);
+  if (slices.length <= 1) return fullText.trim();
+
+  let totalDuration = 0;
+  if (segmentEnd && segmentEnd > segmentStart) {
+    totalDuration = segmentEnd - segmentStart;
+  } else if (videoDuration > segmentStart) {
+    totalDuration = videoDuration - segmentStart;
+  } else {
+    const totalWords = fullText.trim().split(/\s+/).length;
+    totalDuration = Math.max(3, totalWords * 0.35);
+  }
+
+  const weights = slices.map(s => Math.max(1, s.trim().split(/\s+/).length));
+  const totalWeight = weights.reduce((sum, w) => sum + w, 0);
+  const elapsed = Math.max(0, currentTime - segmentStart);
+  let accumulatedTime = 0;
+
+  for (let i = 0; i < slices.length; i++) {
+    const sliceDuration = totalDuration * (weights[i] / totalWeight);
+    if (elapsed < accumulatedTime + sliceDuration || i === slices.length - 1) {
+      return slices[i];
+    }
+    accumulatedTime += sliceDuration;
+  }
+
+  return slices[slices.length - 1];
 }
 
 /**

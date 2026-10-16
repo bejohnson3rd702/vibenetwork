@@ -295,13 +295,14 @@ function wwtcProxyPlugin(env: Record<string, string>) {
               { code: 'english-united-states', name: 'English (US)', services: 'x-ttt-tts' },
               { code: 'spanish-international', name: 'Spanish (International)', services: 'x-ttt-tts' },
               { code: 'french-france', name: 'French', services: 'x-ttt-tts' },
+              { code: 'chinese-mandarin', name: 'Chinese (Mandarin)', services: 'x-ttt-tts' },
+              { code: 'portuguese-brazil', name: 'Portuguese (Brazil)', services: 'x-ttt-tts' },
+              { code: 'hindi', name: 'Hindi', services: 'x-ttt-tts' },
               { code: 'dutch-netherlands', name: 'Dutch', services: 'x-ttt-tts' },
               { code: 'german-germany', name: 'German', services: 'x-ttt-tts' },
               { code: 'italian-italy', name: 'Italian', services: 'x-ttt-tts' },
-              { code: 'portuguese-brazil', name: 'Portuguese (Brazil)', services: 'x-ttt-tts' },
               { code: 'japanese', name: 'Japanese', services: 'x-ttt-tts' },
-              { code: 'korean', name: 'Korean', services: 'x-ttt-tts' },
-              { code: 'chinese-mandarin', name: 'Chinese (Mandarin)', services: 'x-ttt-tts' }
+              { code: 'korean', name: 'Korean', services: 'x-ttt-tts' }
             ];
             res.setHeader('Content-Type', 'application/json');
             return res.end(JSON.stringify(fallbackLangs));
@@ -400,12 +401,206 @@ function wwtcProxyPlugin(env: Record<string, string>) {
   };
 }
 
+function elevenlabsProxyPlugin(env: Record<string, string>) {
+  const ELEVENLABS_BASE_URL = 'https://api.elevenlabs.io/v1';
+
+  return {
+    name: 'elevenlabs-proxy-middleware',
+    configureServer(server: any) {
+      server.middlewares.use('/api/elevenlabs-proxy', async (req: any, res: any) => {
+        res.setHeader('Access-Control-Allow-Origin', '*');
+        res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+        res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, xi-api-key');
+
+        if (req.method === 'OPTIONS') {
+          res.statusCode = 200;
+          return res.end();
+        }
+
+        try {
+          const urlObj = new URL(req.url, 'http://localhost:5173');
+          const action = urlObj.searchParams.get('action') || 'status';
+
+          let bodyStr = '';
+          req.on('data', (chunk: any) => { bodyStr += chunk; });
+          req.on('end', async () => {
+            try {
+              const body = JSON.parse(bodyStr || '{}');
+              const apiKey = (
+                body.apiKey ||
+                req.headers['xi-api-key'] ||
+                env.ELEVENLABS_API_KEY ||
+                env.VITE_ELEVENLABS_API_KEY ||
+                ''
+              ).trim();
+
+              if (action === 'status') {
+                if (!apiKey) {
+                  res.setHeader('Content-Type', 'application/json');
+                  return res.end(JSON.stringify({ hasKey: false, message: 'ELEVENLABS_API_KEY not configured' }));
+                }
+
+                try {
+                  const checkRes = await fetch(`${ELEVENLABS_BASE_URL}/voices`, {
+                    headers: { 'xi-api-key': apiKey, 'accept': 'application/json' },
+                  });
+                  if (!checkRes.ok) {
+                    let errMsg = checkRes.statusText;
+                    try {
+                      const errData = await checkRes.json();
+                      if (errData?.detail?.message) errMsg = errData.detail.message;
+                      else if (typeof errData?.detail === 'string') errMsg = errData.detail;
+                    } catch (_) {}
+                    res.statusCode = 200;
+                    res.setHeader('Content-Type', 'application/json');
+                    return res.end(JSON.stringify({ hasKey: false, error: errMsg }));
+                  }
+                  const data = await checkRes.json();
+                  res.setHeader('Content-Type', 'application/json');
+                  return res.end(JSON.stringify({
+                    hasKey: true,
+                    voicesCount: Array.isArray(data.voices) ? data.voices.length : 0,
+                  }));
+                } catch (err: any) {
+                  res.statusCode = 500;
+                  res.setHeader('Content-Type', 'application/json');
+                  return res.end(JSON.stringify({ hasKey: false, error: err.message }));
+                }
+              }
+
+              if (!apiKey) {
+                res.statusCode = 401;
+                res.setHeader('Content-Type', 'application/json');
+                return res.end(JSON.stringify({ error: 'Missing ELEVENLABS_API_KEY' }));
+              }
+
+              if (action === 'voices') {
+                try {
+                  const checkRes = await fetch(`${ELEVENLABS_BASE_URL}/voices`, {
+                    headers: { 'xi-api-key': apiKey, 'accept': 'application/json' },
+                  });
+                  const data = await checkRes.json();
+                  res.statusCode = checkRes.status;
+                  res.setHeader('Content-Type', 'application/json');
+                  return res.end(JSON.stringify(data));
+                } catch (err: any) {
+                  res.statusCode = 500;
+                  res.setHeader('Content-Type', 'application/json');
+                  return res.end(JSON.stringify({ error: err.message }));
+                }
+              }
+
+              if (action === 'subscription') {
+                try {
+                  const subRes = await fetch(`${ELEVENLABS_BASE_URL}/user/subscription`, {
+                    headers: { 'xi-api-key': apiKey, 'accept': 'application/json' },
+                  });
+                  const data = await subRes.json();
+                  res.statusCode = subRes.status;
+                  res.setHeader('Content-Type', 'application/json');
+                  return res.end(JSON.stringify(data));
+                } catch (err: any) {
+                  res.statusCode = 500;
+                  res.setHeader('Content-Type', 'application/json');
+                  return res.end(JSON.stringify({ error: err.message }));
+                }
+              }
+
+              if (action === 'clone') {
+                const { name = 'Creator Voice', audioBase64, description = 'Cloned from Vibe Network' } = body;
+                if (!audioBase64) {
+                  res.statusCode = 400;
+                  res.setHeader('Content-Type', 'application/json');
+                  return res.end(JSON.stringify({ error: 'Missing audioBase64' }));
+                }
+
+                const audioBuffer = Buffer.from(audioBase64, 'base64');
+                const formData = new FormData();
+                formData.append('name', name);
+                formData.append('description', description);
+                const isWav = audioBuffer.length >= 4 && audioBuffer.toString('utf8', 0, 4) === 'RIFF';
+                const mimeType = isWav ? 'audio/wav' : 'audio/mpeg';
+                const filename = isWav ? 'sample.wav' : 'sample.mp3';
+                const audioBlob = new Blob([audioBuffer], { type: mimeType });
+                formData.append('files', audioBlob, filename);
+
+                const cloneRes = await fetch(`${ELEVENLABS_BASE_URL}/voices/add`, {
+                  method: 'POST',
+                  headers: { 'xi-api-key': apiKey },
+                  body: formData,
+                });
+
+                const data = await cloneRes.json();
+                res.statusCode = cloneRes.status;
+                res.setHeader('Content-Type', 'application/json');
+                return res.end(JSON.stringify(data));
+              }
+
+              if (action === 'tts') {
+                const { voiceId = 'pNInz6obpgDQGcFmaJgB', text } = body;
+                if (!text) {
+                  res.statusCode = 400;
+                  res.setHeader('Content-Type', 'application/json');
+                  return res.end(JSON.stringify({ error: 'Missing text' }));
+                }
+
+                const ttsRes = await fetch(`${ELEVENLABS_BASE_URL}/text-to-speech/${voiceId}?output_format=mp3_44100_128`, {
+                  method: 'POST',
+                  headers: {
+                    'accept': 'audio/mpeg',
+                    'Content-Type': 'application/json',
+                    'xi-api-key': apiKey,
+                  },
+                  body: JSON.stringify({
+                    text,
+                    model_id: body.model_id || 'eleven_flash_v2_5',
+                    voice_settings: {
+                      stability: 0.5,
+                      similarity_boost: 0.85,
+                      style: 0.0,
+                      use_speaker_boost: true,
+                    },
+                  }),
+                });
+
+                if (!ttsRes.ok) {
+                  const errText = await ttsRes.text();
+                  res.statusCode = ttsRes.status;
+                  res.setHeader('Content-Type', 'application/json');
+                  return res.end(JSON.stringify({ error: errText }));
+                }
+
+                const arrayBuffer = await ttsRes.arrayBuffer();
+                const base64Audio = Buffer.from(arrayBuffer).toString('base64');
+                res.setHeader('Content-Type', 'application/json');
+                return res.end(JSON.stringify({ audio: base64Audio, format: 'audio/mp3', voice_id: voiceId }));
+              }
+
+              res.statusCode = 400;
+              res.setHeader('Content-Type', 'application/json');
+              res.end(JSON.stringify({ error: `Unsupported action: ${action}` }));
+            } catch (innerErr: any) {
+              res.statusCode = 500;
+              res.setHeader('Content-Type', 'application/json');
+              res.end(JSON.stringify({ error: innerErr.message }));
+            }
+          });
+        } catch (err: any) {
+          res.statusCode = 500;
+          res.setHeader('Content-Type', 'application/json');
+          res.end(JSON.stringify({ error: err.message }));
+        }
+      });
+    }
+  };
+}
+
 // https://vite.dev/config/
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), '');
 
   return {
-    plugins: [react(), stripeStagingPlugin(env), youtubeTranscriptPlugin(env), wwtcProxyPlugin(env)],
+    plugins: [react(), stripeStagingPlugin(env), youtubeTranscriptPlugin(env), wwtcProxyPlugin(env), elevenlabsProxyPlugin(env)],
     server: {
       host: true,
       allowedHosts: true,

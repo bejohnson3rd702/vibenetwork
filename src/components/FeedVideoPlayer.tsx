@@ -1,13 +1,30 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Globe, Volume2, VolumeX, Sparkles, Loader2, Subtitles, Check, AlertCircle } from 'lucide-react';
+import { Globe, Volume2, VolumeX, Sparkles, Loader2, Subtitles, Check, AlertCircle, Lock } from 'lucide-react';
 import { 
   getWwtcLanguages, 
+  filterActiveLanguages,
+  getReservedPremiumLanguages,
   translateText, 
   supportsTTS, 
+  prewarmActiveLanguagesTTS,
+  prewarmVideoDialogue,
+  isTranslationCached,
+  getCachedTranslation,
+  getActiveCaptionSlice,
+  encode16kMonoWav,
+  ACTIVE_FOREIGN_LANGUAGES,
   type WwtcLanguage, 
   type YouTubeCaptionSegment 
 } from '../lib/wwtc';
-import { fetchTranscriptForVideo } from '../lib/videoTranscription';
+import { fetchTranscriptForVideo, decodeAudio16k, sliceAudioBuffer, saveTranscriptRow } from '../lib/videoTranscription';
+import { 
+  isVoiceCloningEnabled, 
+  getAudioDataUri, 
+  getCachedVoiceId, 
+  setCachedVoiceId, 
+  getDefaultVoiceId, 
+  cloneVoiceFromAudio 
+} from '../lib/elevenlabs';
 
 
 
@@ -64,11 +81,25 @@ export const FeedVideoPlayer: React.FC<FeedVideoPlayerProps> = ({
   const [isTranslating, setIsTranslating] = useState(false);
   const ttsAudioRef = useRef<HTMLAudioElement | null>(null);
   const ttsAudioCacheRef = useRef<Record<string, string>>({});
+  const preloadedAudioElementsRef = useRef<Map<string, HTMLAudioElement>>(new Map());
   const lastPlayedSegmentRef = useRef<number>(-1);
+  const selectedLangRef = useRef<string>(selectedLang);
+  selectedLangRef.current = selectedLang;
+  const activeSegmentIndexRef = useRef<number>(0);
   const containerRef = useRef<HTMLDivElement>(null);
   const translateMenuRef = useRef<HTMLDivElement>(null);
   const translateButtonRef = useRef<HTMLButtonElement>(null);
   const [containerWidth, setContainerWidth] = useState<number>(600);
+
+  const getOrCreateAudioElement = (cacheKey: string, base64: string): HTMLAudioElement => {
+    let audio = preloadedAudioElementsRef.current.get(cacheKey);
+    if (!audio) {
+      audio = new Audio(getAudioDataUri(base64));
+      audio.preload = 'auto';
+      preloadedAudioElementsRef.current.set(cacheKey, audio);
+    }
+    return audio;
+  };
 
   useEffect(() => {
     if (!containerRef.current) return;
@@ -134,6 +165,55 @@ export const FeedVideoPlayer: React.FC<FeedVideoPlayerProps> = ({
 
   const queryId = postId ? String(postId) : videoUrl;
 
+  const [clonedVoiceId, setClonedVoiceId] = useState<string | undefined>(() => {
+    return getCachedVoiceId(queryId) || getDefaultVoiceId() || undefined;
+  });
+  const clonedVoiceIdRef = useRef(clonedVoiceId);
+  clonedVoiceIdRef.current = clonedVoiceId;
+  const isCloningRef = useRef(false);
+
+  // Auto-clone creator voice from video audio if voice cloning is active
+  useEffect(() => {
+    if (clonedVoiceId || isCloningRef.current || !isVoiceCloningEnabled()) return;
+    if (!videoUrl || videoUrl.includes('youtube.com') || videoUrl.includes('youtu.be')) return;
+
+    isCloningRef.current = true;
+    fetch(videoUrl, { mode: 'cors' })
+      .then(res => {
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        return res.blob();
+      })
+      .then(async (blob) => {
+        const decoded = await decodeAudio16k(blob);
+        if (decoded && decoded.duration > 1) {
+          const sampleDuration = Math.min(10, decoded.duration);
+          const slice = sliceAudioBuffer(decoded, 0, sampleDuration);
+          const wavBlob = encode16kMonoWav(slice);
+          const res = await cloneVoiceFromAudio({
+            name: title || `Creator Voice ${postId || Date.now()}`,
+            audioBlob: wavBlob,
+            creatorId: queryId,
+          });
+          if (res?.voice_id) {
+            setClonedVoiceId(res.voice_id);
+            setCachedVoiceId(queryId, res.voice_id);
+            if (videoUrl) setCachedVoiceId(videoUrl, res.voice_id);
+            if (transcript && transcript.length > 0) {
+              const updated = [...transcript];
+              (updated[0] as any).voice_id = res.voice_id;
+              saveTranscriptRow([queryId, videoUrl], updated).catch(() => {});
+            }
+          }
+        }
+      })
+      .catch(err => {
+        console.warn('[FeedVideoPlayer] Auto voice clone fallback notice:', err.message);
+      })
+      .finally(() => {
+        isCloningRef.current = false;
+      });
+  }, [videoUrl, queryId, clonedVoiceId, title]);
+
   // 1. Load transcript (read-only; transcription happens once at upload time)
   useEffect(() => {
     let isMounted = true;
@@ -142,7 +222,23 @@ export const FeedVideoPlayer: React.FC<FeedVideoPlayerProps> = ({
 
     fetchTranscriptForVideo(videoUrl, postId, title || 'Channel Host')
       .then(data => {
-        if (isMounted && data && data.length > 0) setTranscript(data);
+        if (isMounted && data && data.length > 0) {
+          setTranscript(data);
+          const vId = (data[0] as any)?.voice_id || clonedVoiceId;
+          if ((data[0] as any)?.voice_id && (data[0] as any).voice_id !== clonedVoiceId) {
+            setClonedVoiceId((data[0] as any).voice_id);
+          }
+          const seeded: Record<string, string> = {};
+          data.forEach(seg => {
+            if (seg.text && seg.translatedText) {
+              seeded[`spanish-international:${seg.text}`] = seg.translatedText;
+            }
+          });
+          if (Object.keys(seeded).length > 0) {
+            setTranslatedSegments(prev => ({ ...prev, ...seeded }));
+          }
+          prewarmVideoDialogue(data, vId);
+        }
       })
       .finally(() => {
         if (isMounted) setLoadingTranscript(false);
@@ -157,17 +253,50 @@ export const FeedVideoPlayer: React.FC<FeedVideoPlayerProps> = ({
       ) {
         if (Array.isArray(detail.segments) && detail.segments.length > 0) {
           setTranscript(detail.segments);
+          const vId = (detail.segments[0] as any)?.voice_id || clonedVoiceId;
+          if ((detail.segments[0] as any)?.voice_id && (detail.segments[0] as any).voice_id !== clonedVoiceId) {
+            setClonedVoiceId((detail.segments[0] as any).voice_id);
+          }
+          const seeded: Record<string, string> = {};
+          detail.segments.forEach((seg: any) => {
+            if (seg.text && seg.translatedText) {
+              seeded[`spanish-international:${seg.text}`] = seg.translatedText;
+            }
+          });
+          if (Object.keys(seeded).length > 0) {
+            setTranslatedSegments(prev => ({ ...prev, ...seeded }));
+          }
+          prewarmVideoDialogue(detail.segments, vId);
         }
       }
     };
 
     window.addEventListener('vibe-transcript-ready', handleAutoTranscript);
 
+    const handleVoiceCloned = (e: Event) => {
+      const detail = (e as CustomEvent)?.detail;
+      if (!detail || !isMounted) return;
+      if (
+        (detail.storagePath && detail.storagePath === videoUrl) ||
+        (detail.videoKey && (detail.videoKey === videoUrl || detail.videoKey === queryId))
+      ) {
+        if (detail.voiceId) {
+          setClonedVoiceId(detail.voiceId);
+          setCachedVoiceId(queryId, detail.voiceId);
+          if (transcript && transcript.length > 0) {
+            prewarmVideoDialogue(transcript, detail.voiceId);
+          }
+        }
+      }
+    };
+    window.addEventListener('vibe-voice-cloned', handleVoiceCloned);
+
     return () => { 
       isMounted = false;
       window.removeEventListener('vibe-transcript-ready', handleAutoTranscript);
+      window.removeEventListener('vibe-voice-cloned', handleVoiceCloned);
     };
-  }, [videoUrl, postId, title]);
+  }, [videoUrl, postId, title, queryId]);
 
   // 2. Fetch supported WWTC languages
   useEffect(() => {
@@ -184,6 +313,7 @@ export const FeedVideoPlayer: React.FC<FeedVideoPlayerProps> = ({
   const handleTimeUpdate = () => {
     if (videoRef.current) {
       setCurrentTime(videoRef.current.currentTime);
+      activeSegmentIndexRef.current = activeSegmentIndex;
     }
   };
 
@@ -204,6 +334,54 @@ export const FeedVideoPlayer: React.FC<FeedVideoPlayerProps> = ({
   }, [transcript, currentTime]);
 
   const activeSegment = activeSegmentIndex >= 0 ? transcript[activeSegmentIndex] : null;
+
+  // 4b. Pre-warm upcoming dialogue lines for active languages as playback progresses
+  useEffect(() => {
+    if (!transcript || transcript.length === 0 || activeSegmentIndex < 0) return;
+    activeSegmentIndexRef.current = activeSegmentIndex;
+    const next1 = transcript[activeSegmentIndex + 1];
+    const next2 = transcript[activeSegmentIndex + 2];
+    const effectiveVoiceId = clonedVoiceIdRef.current || getDefaultVoiceId() || undefined;
+    if (next1?.text) prewarmActiveLanguagesTTS(next1.text, ACTIVE_FOREIGN_LANGUAGES, effectiveVoiceId);
+    if (next2?.text) prewarmActiveLanguagesTTS(next2.text, ACTIVE_FOREIGN_LANGUAGES, effectiveVoiceId);
+  }, [activeSegmentIndex, transcript]);
+
+  // Pre-warm current and next lines when menu is hovered or opened
+  const handleOpenOrHoverMenu = () => {
+    if (!transcript || transcript.length === 0 || activeSegmentIndex < 0) return;
+    const current = transcript[activeSegmentIndex];
+    const next1 = transcript[activeSegmentIndex + 1];
+    const next2 = transcript[activeSegmentIndex + 2];
+    const effectiveVoiceId = clonedVoiceId || getDefaultVoiceId() || undefined;
+    [current, next1, next2].forEach(seg => {
+      if (seg?.text) prewarmActiveLanguagesTTS(seg.text, ACTIVE_FOREIGN_LANGUAGES, effectiveVoiceId);
+    });
+  };
+
+  // Pre-warm a specific language when cursor hovers over its menu row
+  const handleHoverLanguage = (langCode: string) => {
+    if (langCode === 'english-united-states' || !transcript || activeSegmentIndex < 0) return;
+    const current = transcript[activeSegmentIndex];
+    const next1 = transcript[activeSegmentIndex + 1];
+    const effectiveVoiceId = clonedVoiceId || getDefaultVoiceId() || undefined;
+    [current, next1].forEach(seg => {
+      if (seg?.text) {
+        translateText({
+          text: seg.text,
+          sourceLang: 'english-united-states',
+          targetLang: langCode,
+          serviceCode: 'tts',
+          voiceId: effectiveVoiceId,
+        }).then(res => {
+          if (res.audio) {
+            const cacheKey = `${langCode}:${seg.text}`;
+            ttsAudioCacheRef.current[cacheKey] = res.audio;
+            getOrCreateAudioElement(cacheKey, res.audio);
+          }
+        }).catch(() => {});
+      }
+    });
+  };
 
   // 5. Translate active segment when target language is selected
   useEffect(() => {
@@ -245,7 +423,22 @@ export const FeedVideoPlayer: React.FC<FeedVideoPlayerProps> = ({
     return translatedSegments[cacheKey] || activeSegment.translatedText || activeSegment.text;
   }, [activeSegment, selectedLang, translatedSegments]);
 
-  // 6. Play translation voiceover (TTS) in selected language
+  // 1-2 sentence subtitle slice synchronized with currentTime (replaces paragraph dumps)
+  const displayedCaptionText = React.useMemo(() => {
+    if (!currentSubtitleText || !activeSegment) return '';
+    const nextSeg = transcript[activeSegmentIndex + 1];
+    return getActiveCaptionSlice({
+      fullText: currentSubtitleText,
+      currentTime,
+      segmentStart: activeSegment.seconds,
+      segmentEnd: nextSeg ? nextSeg.seconds : undefined,
+      videoDuration: videoRef.current?.duration,
+      maxSentences: 2,
+      maxWords: 16,
+    });
+  }, [currentSubtitleText, activeSegment, activeSegmentIndex, transcript, currentTime]);
+
+  // 6. Play translation voiceover (TTS) in selected language (with 0ms instant playback cache)
   const playSegmentVoiceover = async (segmentIndex: number, targetLang = selectedLang) => {
     if (!transcript || segmentIndex < 0 || segmentIndex >= transcript.length) return;
     if (targetLang === 'english-united-states' || translationAudioMuted) return;
@@ -253,8 +446,25 @@ export const FeedVideoPlayer: React.FC<FeedVideoPlayerProps> = ({
     const seg = transcript[segmentIndex];
     if (!seg || !seg.text || (seg as any).isPlaceholder) return;
 
+    const effectiveVoiceId = clonedVoiceId || getDefaultVoiceId() || undefined;
     const cacheKey = `${targetLang}:${seg.text}`;
     let audioBase64 = ttsAudioCacheRef.current[cacheKey];
+
+    // Synchronous memory/session cache check (instant 0ms hit)
+    if (!audioBase64) {
+      const cached = getCachedTranslation({
+        text: seg.text,
+        sourceLang: 'english-united-states',
+        targetLang: targetLang,
+        serviceCode: 'tts',
+        voiceId: effectiveVoiceId,
+      });
+      if (cached?.audio) {
+        audioBase64 = cached.audio;
+        ttsAudioCacheRef.current[cacheKey] = cached.audio;
+        getOrCreateAudioElement(cacheKey, cached.audio);
+      }
+    }
 
     if (!audioBase64) {
       try {
@@ -263,7 +473,8 @@ export const FeedVideoPlayer: React.FC<FeedVideoPlayerProps> = ({
           text: seg.text,
           sourceLang: 'english-united-states',
           targetLang: targetLang,
-          serviceCode: 'tts'
+          serviceCode: 'tts',
+          voiceId: effectiveVoiceId,
         });
         if (res.translated_text) {
           setTranslatedSegments(prev => ({
@@ -274,6 +485,7 @@ export const FeedVideoPlayer: React.FC<FeedVideoPlayerProps> = ({
         if (res.audio) {
           audioBase64 = res.audio;
           ttsAudioCacheRef.current[cacheKey] = res.audio;
+          getOrCreateAudioElement(cacheKey, res.audio);
         }
       } catch (err) {
         console.warn('[FeedVideoPlayer] Voiceover fetch error:', err);
@@ -282,65 +494,110 @@ export const FeedVideoPlayer: React.FC<FeedVideoPlayerProps> = ({
       }
     }
 
-    // Play translation audio if still matching current segment, not muted, and video is active
-    if (audioBase64 && !translationAudioMuted && videoRef.current && !videoRef.current.paused) {
-      if (ttsAudioRef.current) {
-        try { ttsAudioRef.current.pause(); } catch (_) {}
+    // Play translation audio immediately if still on this segment, matching language, not muted, and video is playing
+    if (
+      audioBase64 && 
+      !translationAudioMuted && 
+      videoRef.current && 
+      !videoRef.current.paused &&
+      selectedLangRef.current === targetLang
+    ) {
+      // If playback head is still in or near this segment, play immediately!
+      if (activeSegmentIndexRef.current === segmentIndex || activeSegmentIndexRef.current === segmentIndex - 1) {
+        if (ttsAudioRef.current) {
+          try { ttsAudioRef.current.pause(); } catch (_) {}
+        }
+        const audio = getOrCreateAudioElement(cacheKey, audioBase64);
+        ttsAudioRef.current = audio;
+        setTtsPlaying(true);
+        audio.currentTime = 0;
+        audio.onended = () => setTtsPlaying(false);
+        audio.onerror = () => setTtsPlaying(false);
+        audio.play().catch(e => console.warn('[FeedVideoPlayer] Translation audio play notice:', e));
+      } else if (activeSegmentIndexRef.current > segmentIndex) {
+        // Video already moved to next segment while audio was downloading; catch up seamlessly!
+        playSegmentVoiceover(activeSegmentIndexRef.current, targetLang);
       }
-      const audio = new Audio(`data:audio/wav;base64,${audioBase64}`);
-      ttsAudioRef.current = audio;
-      setTtsPlaying(true);
-      audio.onended = () => setTtsPlaying(false);
-      audio.onerror = () => setTtsPlaying(false);
-      audio.play().catch(e => console.warn('[FeedVideoPlayer] Translation audio play notice:', e));
     }
 
-    // Prefetch next segment voiceover for seamless gapless playback
-    const nextIndex = segmentIndex + 1;
-    if (nextIndex < transcript.length) {
-      const nextSeg = transcript[nextIndex];
-      if (nextSeg && nextSeg.text && !(nextSeg as any).isPlaceholder) {
-        const nextCacheKey = `${targetLang}:${nextSeg.text}`;
-        if (!ttsAudioCacheRef.current[nextCacheKey]) {
-          translateText({
-            text: nextSeg.text,
-            sourceLang: 'english-united-states',
-            targetLang: targetLang,
-            serviceCode: 'tts'
-          }).then(res => {
-            if (res.translated_text) {
-              setTranslatedSegments(prev => ({ ...prev, [nextCacheKey]: res.translated_text }));
-            }
-            if (res.audio) {
-              ttsAudioCacheRef.current[nextCacheKey] = res.audio;
-            }
-          }).catch(() => {});
+    // Prefetch upcoming segments voiceover for seamless gapless playback
+    [segmentIndex + 1, segmentIndex + 2].forEach(nextIndex => {
+      if (nextIndex < transcript.length) {
+        const nextSeg = transcript[nextIndex];
+        if (nextSeg && nextSeg.text && !(nextSeg as any).isPlaceholder) {
+          const nextCacheKey = `${targetLang}:${nextSeg.text}`;
+          if (!ttsAudioCacheRef.current[nextCacheKey]) {
+            translateText({
+              text: nextSeg.text,
+              sourceLang: 'english-united-states',
+              targetLang: targetLang,
+              serviceCode: 'tts',
+              voiceId: effectiveVoiceId,
+            }).then(res => {
+              if (res.translated_text) {
+                setTranslatedSegments(prev => ({ ...prev, [nextCacheKey]: res.translated_text }));
+              }
+              if (res.audio) {
+                ttsAudioCacheRef.current[nextCacheKey] = res.audio;
+                getOrCreateAudioElement(nextCacheKey, res.audio);
+              }
+            }).catch(() => {});
+          }
         }
       }
-    }
+    });
   };
 
-  // 7. Language selection: mutes original audio, unmutes translation audio
-  const handleSelectLanguage = (langCode: string) => {
+  // 7. Language selection: 0ms instant switch when cached; zero dead-air ducking when downloading
+  const handleSelectLanguage = async (langCode: string) => {
     setSelectedLang(langCode);
+    selectedLangRef.current = langCode;
     setShowTranslateMenu(false);
 
     if (langCode !== 'english-united-states') {
-      // 1. Mute original video audio
-      if (videoRef.current) {
-        videoRef.current.muted = true;
-      }
-      // 2. Unmute translation audio
       setTranslationAudioMuted(false);
 
-      // 3. Immediately play translation audio if video is playing
       if (videoRef.current && !videoRef.current.paused && activeSegmentIndex >= 0) {
         lastPlayedSegmentRef.current = activeSegmentIndex;
-        playSegmentVoiceover(activeSegmentIndex, langCode);
+        const currentSeg = transcript[activeSegmentIndex];
+        const cacheKey = `${langCode}:${currentSeg?.text || ''}`;
+        const effectiveVoiceId = clonedVoiceId || getDefaultVoiceId() || undefined;
+
+        const isReady = Boolean(ttsAudioCacheRef.current[cacheKey]) ||
+          isTranslationCached({
+            text: currentSeg?.text || '',
+            sourceLang: 'english-united-states',
+            targetLang: langCode,
+            serviceCode: 'tts',
+            voiceId: effectiveVoiceId,
+          });
+
+        if (isReady) {
+          // Instant switch (0ms delay): audio is in cache!
+          if (videoRef.current) {
+            videoRef.current.muted = true;
+          }
+          playSegmentVoiceover(activeSegmentIndex, langCode);
+        } else {
+          // Smooth transition: duck original video volume so there is NO dead silence
+          if (videoRef.current) {
+            videoRef.current.volume = 0.3;
+            videoRef.current.muted = false;
+          }
+          playSegmentVoiceover(activeSegmentIndex, langCode).then(() => {
+            if (videoRef.current && selectedLangRef.current === langCode) {
+              videoRef.current.muted = true;
+              videoRef.current.volume = 1.0;
+            }
+          });
+        }
+      } else if (videoRef.current) {
+        videoRef.current.muted = true;
       }
     } else {
-      // Switched back to original English: unmute original video, stop translation audio
+      // Switched back to original English: restore original video audio, stop voiceover
       if (videoRef.current) {
+        videoRef.current.volume = 1.0;
         videoRef.current.muted = false;
       }
       if (ttsAudioRef.current) {
@@ -585,7 +842,11 @@ export const FeedVideoPlayer: React.FC<FeedVideoPlayerProps> = ({
         <button
           ref={translateButtonRef}
           type="button"
-          onClick={() => setShowTranslateMenu(!showTranslateMenu)}
+          onClick={() => {
+            handleOpenOrHoverMenu();
+            setShowTranslateMenu(!showTranslateMenu);
+          }}
+          onMouseEnter={handleOpenOrHoverMenu}
           title={`Language: ${selectedLangObj?.name || 'English'}`}
           style={{
             display: 'flex',
@@ -610,7 +871,15 @@ export const FeedVideoPlayer: React.FC<FeedVideoPlayerProps> = ({
           <span>
             {selectedLangObj ? getShortLangCode(selectedLangObj.code) : 'EN'}
           </span>
-          {isTranslating && <Loader2 size={11} className="animate-spin" color={accent} />}
+          {isTranslating ? (
+            <Loader2 size={11} className="animate-spin" color={accent} />
+          ) : (
+            selectedLang !== 'english-united-states' && isVoiceCloningEnabled() && (
+              <span title="ElevenLabs AI Voice Clone Active" style={{ display: 'flex', alignItems: 'center' }}>
+                <Sparkles size={11} color="#ffaa00" />
+              </span>
+            )
+          )}
         </button>
 
         {/* Audio TTS Voiceover Unmute / Mute Button */}
@@ -658,95 +927,140 @@ export const FeedVideoPlayer: React.FC<FeedVideoPlayerProps> = ({
       </div>
 
       {/* ── Language Dropdown Menu ───────────────────────────────────── */}
-      {showTranslateMenu && (
-        <div
-          ref={translateMenuRef}
-          style={{
-            position: 'absolute',
-            top: isYouTube ? (isCompact ? '98px' : '108px') : (isCompact ? '42px' : '48px'),
-            right: isCompact ? '8px' : '12px',
-            maxHeight: 'min(240px, 50vh)',
-            width: isCompact ? '180px' : '210px',
-            overflowY: 'auto',
-            background: 'rgba(15, 15, 15, 0.96)',
-            backdropFilter: 'blur(16px)',
-            border: `1px solid ${accent}44`,
-            borderRadius: '14px',
-            padding: '6px',
-            boxShadow: '0 12px 30px rgba(0,0,0,0.85)',
-            zIndex: 35,
-            display: 'flex',
-            flexDirection: 'column',
-            gap: '3px'
-          }}
-        >
-          <div style={{ padding: '6px 8px', fontSize: '11px', fontWeight: 800, color: 'var(--text-muted, #888)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-            Translate Audio & Captions
-          </div>
-          {languages.map(lang => {
-            const isSelected = selectedLang === lang.code;
-            return (
-              <button
-                key={lang.code}
-                type="button"
-                onClick={() => handleSelectLanguage(lang.code)}
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'space-between',
-                  padding: '8px 10px',
-                  borderRadius: '8px',
-                  background: isSelected ? `${accent}22` : 'transparent',
-                  border: isSelected ? `1px solid ${accent}66` : '1px solid transparent',
-                  color: isSelected ? accent : '#fff',
-                  fontSize: '13px',
-                  fontWeight: isSelected ? 700 : 500,
-                  cursor: 'pointer',
-                  textAlign: 'left',
-                  transition: 'background 0.15s ease'
-                }}
-                onMouseOver={e => { if (!isSelected) e.currentTarget.style.background = 'rgba(255,255,255,0.06)'; }}
-                onMouseOut={e => { if (!isSelected) e.currentTarget.style.background = 'transparent'; }}
-              >
-                <span>{lang.name}</span>
-                {isSelected && <Check size={14} color={accent} />}
-              </button>
-            );
-          })}
-        </div>
-      )}
+      {showTranslateMenu && (() => {
+        const activeLanguages = filterActiveLanguages(languages);
+        const reservedLanguages = getReservedPremiumLanguages(languages);
 
-      {/* ── Active Synchronized Caption Overlay ───────────────────────── */}
-      {captionsEnabled && currentSubtitleText && (
+        return (
+          <div
+            ref={translateMenuRef}
+            style={{
+              position: 'absolute',
+              top: isYouTube ? (isCompact ? '98px' : '108px') : (isCompact ? '42px' : '48px'),
+              right: isCompact ? '8px' : '12px',
+              maxHeight: 'min(320px, 60vh)',
+              width: isCompact ? '200px' : '230px',
+              overflowY: 'auto',
+              background: 'rgba(15, 15, 15, 0.96)',
+              backdropFilter: 'blur(16px)',
+              border: `1px solid ${accent}44`,
+              borderRadius: '14px',
+              padding: '6px',
+              boxShadow: '0 12px 30px rgba(0,0,0,0.85)',
+              zIndex: 35,
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '3px'
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '6px 8px', fontSize: '11px', fontWeight: 800, color: 'var(--text-muted, #888)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+              <span>Available Languages</span>
+              <span style={{ fontSize: '9px', background: `${accent}22`, color: accent, padding: '2px 6px', borderRadius: '4px', fontWeight: 700 }}>Active</span>
+            </div>
+
+            {/* 5 Active Languages + English */}
+            {activeLanguages.map(lang => {
+              const isSelected = selectedLang === lang.code;
+              return (
+                <button
+                  key={lang.code}
+                  type="button"
+                  onClick={() => handleSelectLanguage(lang.code)}
+                  onMouseEnter={() => handleHoverLanguage(lang.code)}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    padding: '8px 10px',
+                    borderRadius: '8px',
+                    background: isSelected ? `${accent}22` : 'transparent',
+                    border: isSelected ? `1px solid ${accent}66` : '1px solid transparent',
+                    color: isSelected ? accent : '#fff',
+                    fontSize: '13px',
+                    fontWeight: isSelected ? 700 : 500,
+                    cursor: 'pointer',
+                    textAlign: 'left',
+                    transition: 'background 0.15s ease'
+                  }}
+                  onMouseOver={e => { if (!isSelected) e.currentTarget.style.background = 'rgba(255,255,255,0.06)'; }}
+                  onMouseOut={e => { if (!isSelected) e.currentTarget.style.background = 'transparent'; }}
+                >
+                  <span>{lang.name}</span>
+                  {isSelected && <Check size={14} color={accent} />}
+                </button>
+              );
+            })}
+
+            {/* Reserved / Premium Tier Section */}
+            {reservedLanguages.length > 0 && (
+              <div style={{ marginTop: '8px', paddingTop: '8px', borderTop: '1px solid rgba(255,255,255,0.08)' }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '4px 8px 6px', fontSize: '10px', fontWeight: 800, color: '#aaa', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                  <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                    <Lock size={10} color="#ffaa00" /> Premium Tier
+                  </span>
+                  <span style={{ fontSize: '9px', background: 'rgba(255, 170, 0, 0.15)', color: '#ffaa00', padding: '1px 5px', borderRadius: '4px', fontWeight: 700 }}>Soon</span>
+                </div>
+                <div style={{ padding: '0 4px', maxHeight: '110px', overflowY: 'auto' }}>
+                  {reservedLanguages.map(lang => (
+                    <div
+                      key={`res-${lang.code}`}
+                      title={`${lang.name} - Reserved for Premium Tier`}
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        padding: '6px 8px',
+                        borderRadius: '6px',
+                        color: 'rgba(255,255,255,0.4)',
+                        fontSize: '12px',
+                        cursor: 'not-allowed',
+                        userSelect: 'none'
+                      }}
+                    >
+                      <span>{lang.name}</span>
+                      <Lock size={11} color="rgba(255,255,255,0.3)" />
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        );
+      })()}
+
+      {/* ── Active Synchronized Caption Overlay (1-2 sentences at a time) ─ */}
+      {captionsEnabled && displayedCaptionText && (
         <div
           style={{
             position: 'absolute',
             bottom: '50px',
             left: '50%',
             transform: 'translateX(-50%)',
-            maxWidth: '85%',
-            background: 'rgba(0, 0, 0, 0.82)',
-            backdropFilter: 'blur(8px)',
+            maxWidth: '90%',
+            minWidth: '220px',
+            background: 'rgba(0, 0, 0, 0.86)',
+            backdropFilter: 'blur(10px)',
             color: '#ffffff',
-            padding: '8px 16px',
-            borderRadius: '10px',
-            fontSize: '14px',
+            padding: '8px 18px',
+            borderRadius: '12px',
+            fontSize: isCompact ? '13px' : '15px',
             fontWeight: 600,
-            lineHeight: 1.4,
+            lineHeight: 1.45,
             textAlign: 'center',
-            textShadow: '0 2px 4px rgba(0,0,0,0.8)',
-            border: '1px solid rgba(255,255,255,0.12)',
+            textShadow: '0 2px 4px rgba(0,0,0,0.9)',
+            border: `1px solid ${selectedLang !== 'english-united-states' ? `${accent}44` : 'rgba(255,255,255,0.16)'}`,
+            boxShadow: '0 6px 20px rgba(0,0,0,0.65)',
             pointerEvents: 'none',
             zIndex: 15,
-            transition: 'opacity 0.2s ease'
+            transition: 'all 0.15s ease'
           }}
         >
           {selectedLang !== 'english-united-states' && (
-            <span style={{ color: accent, fontSize: '11px', fontWeight: 800, textTransform: 'uppercase', display: 'block', marginBottom: '2px' }}>
-              {selectedLangObj?.name || 'Translated'} Subtitle:
+            <span style={{ color: accent, fontSize: '10px', fontWeight: 800, textTransform: 'uppercase', display: 'block', marginBottom: '3px', letterSpacing: '0.5px' }}>
+              {selectedLangObj?.name || 'Translated'} CC
             </span>
           )}
-          {currentSubtitleText}
+          {displayedCaptionText}
         </div>
       )}
 

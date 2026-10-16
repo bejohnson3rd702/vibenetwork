@@ -4,7 +4,7 @@ import { Play, Tv, X, ChevronLeft, ChevronRight, Clock, ExternalLink, Video, Vid
 import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from '../supabaseClient';
 import { isOlympianConfig, isMuscleFitnessConfig, isB2kConfig, isKpleConfig, isBonaireConfig } from '../lib/whitelabel';
-import { getWwtcLanguages, translateText, transcribeAudioBlob, encode16kMonoWav, fetchYouTubeCaptions, transcribeAudioFile } from '../lib/wwtc';
+import { getWwtcLanguages, filterActiveLanguages, getReservedPremiumLanguages, translateText, prewarmActiveLanguagesTTS, transcribeAudioBlob, encode16kMonoWav, fetchYouTubeCaptions, transcribeAudioFile } from '../lib/wwtc';
 import { getLocalTranscript } from '../lib/staticTranscripts';
 import { useWhiteLabel } from '../context/WhiteLabelContext';
 
@@ -3517,6 +3517,9 @@ export default function WatchLive({ accent = '#D35400', isCourtneyBee = false, i
                               transition: 'all 0.2s',
                               boxShadow: '0 4px 12px rgba(0,0,0,0.3)',
                             }}
+                            onMouseEnter={() => {
+                              if (activeVideo?.headline) prewarmActiveLanguagesTTS(activeVideo.headline);
+                            }}
                             onMouseOver={e => e.currentTarget.style.background = 'rgba(0,0,0,0.8)'}
                             onMouseOut={e => e.currentTarget.style.background = 'rgba(0,0,0,0.6)'}
                             title="Translate Video Info"
@@ -3542,38 +3545,87 @@ export default function WatchLive({ accent = '#D35400', isCourtneyBee = false, i
                               backdropFilter: 'blur(20px)',
                             }}>
                               {wwtcLanguages.length === 0 ? (
-                                <div style={{ padding: '8px', fontSize: '11px', color: '#666' }}>Loading languages...</div>
-                              ) : (
-                                wwtcLanguages.map(l => (
-                                  <button
-                                    key={`player-lang-${l.code}`}
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      handleTranslateVideoInfo(l.code);
-                                      setShowInfoLangDropdown(false);
-                                    }}
-                                    style={{
-                                      width: '100%',
-                                      padding: '8px 10px',
-                                      background: 'none',
-                                      border: 'none',
-                                      color: '#fff',
-                                      fontSize: '12px',
-                                      textAlign: 'left',
-                                      borderRadius: '6px',
-                                      cursor: 'pointer',
-                                      display: 'flex',
-                                      alignItems: 'center',
-                                      gap: '8px',
-                                    }}
-                                    onMouseOver={e => e.currentTarget.style.background = `${accent}22`}
-                                    onMouseOut={e => e.currentTarget.style.background = 'none'}
-                                  >
-                                    {l.flag && <img src={l.flag} alt="" style={{ width: '16px', height: '11px', borderRadius: '2px', objectFit: 'cover' }} />}
-                                    <span>{l.name}</span>
-                                  </button>
-                                ))
-                              )}
+                                <div style={{ padding: "8px", fontSize: "11px", color: "#666" }}>Loading languages...</div>
+                              ) : (() => {
+                                const activeLangs = filterActiveLanguages(wwtcLanguages);
+                                const reservedLangs = getReservedPremiumLanguages(wwtcLanguages);
+
+                                return (
+                                  <>
+                                    <div style={{ padding: "4px 8px", fontSize: "10px", fontWeight: 800, color: "var(--text-muted, #888)", textTransform: "uppercase", letterSpacing: "0.5px" }}>
+                                      Active Languages
+                                    </div>
+                                    {activeLangs.map(l => (
+                                      <button
+                                        key={`player-lang-${l.code}`}
+                                        onMouseEnter={() => {
+                                          if (activeVideo?.headline) {
+                                            translateText({ text: activeVideo.headline, sourceLang: 'english-united-states', targetLang: l.code, serviceCode: 'ttt' }).catch(() => {});
+                                          }
+                                        }}
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          handleTranslateVideoInfo(l.code);
+                                          setShowInfoLangDropdown(false);
+                                        }}
+                                        style={{
+                                          width: "100%",
+                                          padding: "8px 10px",
+                                          background: "none",
+                                          border: "none",
+                                          color: "#fff",
+                                          fontSize: "12px",
+                                          textAlign: "left",
+                                          borderRadius: "6px",
+                                          cursor: "pointer",
+                                          display: "flex",
+                                          alignItems: "center",
+                                          gap: "8px",
+                                        }}
+                                        onMouseOver={e => e.currentTarget.style.background = `${accent}22`}
+                                        onMouseOut={e => e.currentTarget.style.background = "none"}
+                                      >
+                                        {l.flag && <img src={l.flag} alt="" style={{ width: "16px", height: "11px", borderRadius: "2px", objectFit: "cover" }} />}
+                                        <span>{l.name}</span>
+                                      </button>
+                                    ))}
+
+                                    {reservedLangs.length > 0 && (
+                                      <div style={{ marginTop: "8px", paddingTop: "8px", borderTop: "1px solid rgba(255,255,255,0.08)" }}>
+                                        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "4px 8px 6px", fontSize: "10px", fontWeight: 800, color: "#aaa", textTransform: "uppercase", letterSpacing: "0.5px" }}>
+                                          <span style={{ display: "flex", alignItems: "center", gap: "4px" }}>
+                                            <Lock size={10} color="#ffaa00" /> Premium Tier
+                                          </span>
+                                          <span style={{ fontSize: "9px", background: "rgba(255, 170, 0, 0.15)", color: "#ffaa00", padding: "1px 5px", borderRadius: "4px", fontWeight: 700 }}>Soon</span>
+                                        </div>
+                                        {reservedLangs.map(l => (
+                                          <div
+                                            key={`player-res-${l.code}`}
+                                            title={`${l.name} - Reserved for Premium Tier`}
+                                            style={{
+                                              width: "100%",
+                                              padding: "6px 10px",
+                                              color: "rgba(255,255,255,0.4)",
+                                              fontSize: "11px",
+                                              display: "flex",
+                                              alignItems: "center",
+                                              justifyContent: "space-between",
+                                              cursor: "not-allowed",
+                                              userSelect: "none"
+                                            }}
+                                          >
+                                            <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                                              {l.flag && <img src={l.flag} alt="" style={{ width: "16px", height: "11px", borderRadius: "2px", objectFit: "cover", opacity: 0.5 }} />}
+                                              <span>{l.name}</span>
+                                            </div>
+                                            <Lock size={10} color="rgba(255,255,255,0.3)" />
+                                          </div>
+                                        ))}
+                                      </div>
+                                    )}
+                                  </>
+                                );
+                              })()}
                             </div>
                           )}
                         </div>
@@ -4189,27 +4241,45 @@ export default function WatchLive({ accent = '#D35400', isCourtneyBee = false, i
                           {/* Chat Language Selector */}
                           <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginLeft: 'auto', marginRight: '10px' }}>
                             <Globe size={12} color="var(--text-muted)" />
-                            <select
-                              value={preferredLang}
-                              onChange={(e) => setPreferredLang(e.target.value)}
-                              style={{
-                                background: 'rgba(255,255,255,0.05)',
-                                border: '1px solid rgba(255,255,255,0.1)',
-                                borderRadius: '6px',
-                                color: '#fff',
-                                fontSize: '10px',
-                                padding: '2px 4px',
-                                cursor: 'pointer',
-                                outline: 'none',
-                                maxWidth: '100px',
-                              }}
-                            >
-                              {wwtcLanguages.map(l => (
-                                <option key={`pref-lang-${l.code}`} value={l.code} style={{ background: '#111', color: '#fff' }}>
-                                  {l.name}
-                                </option>
-                              ))}
-                            </select>
+                            {(() => {
+                              const activeLangs = filterActiveLanguages(wwtcLanguages);
+                              const reservedLangs = getReservedPremiumLanguages(wwtcLanguages);
+
+                              return (
+                                <select
+                                  value={preferredLang}
+                                  onChange={(e) => setPreferredLang(e.target.value)}
+                                  style={{
+                                    background: 'rgba(255,255,255,0.05)',
+                                    border: '1px solid rgba(255,255,255,0.1)',
+                                    borderRadius: '6px',
+                                    color: '#fff',
+                                    fontSize: '10px',
+                                    padding: '2px 4px',
+                                    cursor: 'pointer',
+                                    outline: 'none',
+                                    maxWidth: '120px',
+                                  }}
+                                >
+                                  <optgroup label="Active (Free)" style={{ background: '#111', color: accent, fontWeight: 'bold' }}>
+                                    {activeLangs.map(l => (
+                                      <option key={`pref-act-${l.code}`} value={l.code} style={{ background: '#111', color: '#fff' }}>
+                                        {l.name}
+                                      </option>
+                                    ))}
+                                  </optgroup>
+                                  {reservedLangs.length > 0 && (
+                                    <optgroup label="🔒 Premium Tier (Soon)" style={{ background: '#111', color: '#ffaa00', fontWeight: 'bold' }}>
+                                      {reservedLangs.map(l => (
+                                        <option key={`pref-res-${l.code}`} value={l.code} disabled style={{ background: '#111', color: '#666' }}>
+                                          🔒 {l.name}
+                                        </option>
+                                      ))}
+                                    </optgroup>
+                                  )}
+                                </select>
+                              );
+                            })()}
                           </div>
                           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                             <button
