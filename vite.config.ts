@@ -431,7 +431,7 @@ function elevenlabsProxyPlugin(env: Record<string, string>) {
                 req.headers['xi-api-key'] ||
                 env.ELEVENLABS_API_KEY ||
                 env.VITE_ELEVENLABS_API_KEY ||
-                ''
+                'sk_d4e661d70401864ba64053e82ec364d73e7609f7259efef9'
               ).trim();
 
               if (action === 'status') {

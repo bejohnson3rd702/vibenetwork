@@ -18,7 +18,7 @@ export default async function handler(req: any, res: any) {
     req.headers['xi-api-key'] ||
     process.env.ELEVENLABS_API_KEY ||
     process.env.VITE_ELEVENLABS_API_KEY ||
-    ''
+    'sk_d4e661d70401864ba64053e82ec364d73e7609f7259efef9'
   ).trim();
 
   // 1. Status Check

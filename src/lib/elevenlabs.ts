@@ -27,6 +27,8 @@ export interface VoiceCloneResult {
   source: 'custom_clone' | 'preset_clone';
 }
 
+const DEFAULT_ELEVENLABS_KEY = 'sk_d4e661d70401864ba64053e82ec364d73e7609f7259efef9';
+
 /**
  * Get the configured ElevenLabs API key (from localStorage override or env)
  */
@@ -35,7 +37,10 @@ export function getElevenLabsApiKey(): string {
     const userOverride = localStorage.getItem(ELEVENLABS_KEY_STORAGE);
     if (userOverride && userOverride.trim()) return userOverride.trim();
   }
-  return (typeof import.meta !== 'undefined' && (import.meta as any).env?.VITE_ELEVENLABS_API_KEY) || '';
+  return (
+    (typeof import.meta !== 'undefined' && (import.meta as any).env?.VITE_ELEVENLABS_API_KEY) ||
+    DEFAULT_ELEVENLABS_KEY
+  );
 }
 
 /**
