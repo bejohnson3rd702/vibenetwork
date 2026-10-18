@@ -638,6 +638,11 @@ export const FeedVideoPlayer: React.FC<FeedVideoPlayerProps> = ({
           playSegmentVoiceover(activeSegmentIndex);
         }
       }
+    } else {
+      if (videoRef.current) {
+        videoRef.current.muted = false;
+        videoRef.current.volume = 1.0;
+      }
     }
   };
 
@@ -847,7 +852,7 @@ export const FeedVideoPlayer: React.FC<FeedVideoPlayerProps> = ({
             setShowTranslateMenu(!showTranslateMenu);
           }}
           onMouseEnter={handleOpenOrHoverMenu}
-          title={`Language: ${selectedLangObj?.name || 'English'}`}
+          title={`Audio: ${selectedLang === 'english-united-states' ? 'Original Sound' : (selectedLangObj?.name || 'Translated Audio')}`}
           style={{
             display: 'flex',
             alignItems: 'center',
@@ -867,9 +872,9 @@ export const FeedVideoPlayer: React.FC<FeedVideoPlayerProps> = ({
             flexShrink: 0
           }}
         >
-          <Globe size={isCompact ? 13 : 14} color={accent} />
+          <Globe size={isCompact ? 13 : 14} color={selectedLang !== 'english-united-states' ? accent : '#aaa'} />
           <span>
-            {selectedLangObj ? getShortLangCode(selectedLangObj.code) : 'EN'}
+            {selectedLang === 'english-united-states' ? 'ORIGINAL' : (selectedLangObj ? getShortLangCode(selectedLangObj.code) : 'ORIGINAL')}
           </span>
           {isTranslating ? (
             <Loader2 size={11} className="animate-spin" color={accent} />
@@ -958,9 +963,11 @@ export const FeedVideoPlayer: React.FC<FeedVideoPlayerProps> = ({
               <span style={{ fontSize: '9px', background: `${accent}22`, color: accent, padding: '2px 6px', borderRadius: '4px', fontWeight: 700 }}>Active</span>
             </div>
 
-            {/* 5 Active Languages + English */}
+            {/* 5 Active Languages + Original Sound (English) */}
             {activeLanguages.map(lang => {
               const isSelected = selectedLang === lang.code;
+              const isOriginal = lang.code.startsWith('english');
+              const displayName = isOriginal ? 'Original Sound (English)' : lang.name;
               return (
                 <button
                   key={lang.code}
@@ -985,7 +992,10 @@ export const FeedVideoPlayer: React.FC<FeedVideoPlayerProps> = ({
                   onMouseOver={e => { if (!isSelected) e.currentTarget.style.background = 'rgba(255,255,255,0.06)'; }}
                   onMouseOut={e => { if (!isSelected) e.currentTarget.style.background = 'transparent'; }}
                 >
-                  <span>{lang.name}</span>
+                  <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    {isOriginal && <Volume2 size={13} color={isSelected ? accent : '#aaa'} />}
+                    {displayName}
+                  </span>
                   {isSelected && <Check size={14} color={accent} />}
                 </button>
               );

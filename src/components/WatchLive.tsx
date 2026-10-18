@@ -1702,6 +1702,17 @@ export default function WatchLive({ accent = '#D35400', isCourtneyBee = false, i
   const handleTranslateVideoInfo = async (targetLanguage: string) => {
     if (!activeVideo || isTranslatingRef.current) return;
 
+    if (targetLanguage === 'english-united-states') {
+      stopAllTranslatedAudio();
+      setTranslatedInfo(null);
+      setInfoAudioBase64(null);
+      setIsPlayingInfoAudio(false);
+      setTranslatedTranscript(null);
+      setIsTranslatingInfo(false);
+      setPreferredLang('english-united-states');
+      return;
+    }
+
     const cacheKey = `${activeVideo.id}_${targetLanguage}`;
     if (translationCacheRef.current.has(cacheKey)) {
       const cached = translationCacheRef.current.get(cacheKey)!;
@@ -3586,7 +3597,7 @@ export default function WatchLive({ accent = '#D35400', isCourtneyBee = false, i
                                         onMouseOut={e => e.currentTarget.style.background = "none"}
                                       >
                                         {l.flag && <img src={l.flag} alt="" style={{ width: "16px", height: "11px", borderRadius: "2px", objectFit: "cover" }} />}
-                                        <span>{l.name}</span>
+                                        <span>{l.code.startsWith('english') ? 'Original Sound (English)' : l.name}</span>
                                       </button>
                                     ))}
 
@@ -4264,7 +4275,7 @@ export default function WatchLive({ accent = '#D35400', isCourtneyBee = false, i
                                   <optgroup label="Active (Free)" style={{ background: '#111', color: accent, fontWeight: 'bold' }}>
                                     {activeLangs.map(l => (
                                       <option key={`pref-act-${l.code}`} value={l.code} style={{ background: '#111', color: '#fff' }}>
-                                        {l.name}
+                                        {l.code.startsWith('english') ? 'Original Sound (English)' : l.name}
                                       </option>
                                     ))}
                                   </optgroup>

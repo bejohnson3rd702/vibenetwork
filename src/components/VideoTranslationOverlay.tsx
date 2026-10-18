@@ -476,7 +476,7 @@ export const VideoTranslationOverlay: React.FC<VideoTranslationOverlayProps> = (
               <optgroup label="Active Languages (Free)" style={{ background: '#18181b', color: accent, fontWeight: 'bold' }}>
                 {activeLanguages.map(l => (
                   <option key={`act-${l.code}`} value={l.code} style={{ background: '#111', color: '#fff' }}>
-                    {l.code.startsWith('english') ? 'Original (English)' : l.name}
+                    {l.code.startsWith('english') ? 'Original Sound (English)' : l.name}
                   </option>
                 ))}
               </optgroup>
