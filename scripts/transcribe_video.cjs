@@ -65,7 +65,7 @@ async function saveTranscript(keys, segments) {
   }
 }
 
-async function transcribeVideo(videoInput, customSpeaker = 'Channel Speaker') {
+async function transcribeVideo(videoInput, customSpeaker = 'Channel Speaker', extraPostId = '') {
   const isDirect = isDirectVideoUrl(videoInput);
   const ytId = !isDirect ? getYouTubeId(videoInput) : '';
 
@@ -165,8 +165,12 @@ async function transcribeVideo(videoInput, customSpeaker = 'Channel Speaker') {
       if (idx >= 0) {
         const canonicalKey = decodeURIComponent(videoInput.slice(idx + publicPrefix.length));
         keysToSave.push(canonicalKey);
+        if (canonicalKey.startsWith('videos/')) {
+          keysToSave.push(canonicalKey.replace(/^videos\//, ''));
+        }
       }
     }
+    if (extraPostId) keysToSave.push(String(extraPostId));
 
     await saveTranscript(keysToSave, segments);
     console.log('🎉 Transcribing and translating complete!');
@@ -182,8 +186,8 @@ async function transcribeVideo(videoInput, customSpeaker = 'Channel Speaker') {
 
 const args = process.argv.slice(2);
 if (args.length === 0) {
-  console.log('Usage: npm run transcribe <video_url_or_id> [speaker_name]');
+  console.log('Usage: npm run transcribe <video_url_or_id> [speaker_name] [post_id]');
   process.exit(0);
 }
 
-transcribeVideo(args[0], args[1] || 'Channel Host');
+transcribeVideo(args[0], args[1] || 'Channel Host', args[2]);

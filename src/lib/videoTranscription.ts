@@ -24,13 +24,15 @@ import {
  *    in the background without user intervention.
  */
 
-const CHUNK_SECONDS = 45; // 45-second chunks (drastically minimizes HTTP requests)
+const CHUNK_SECONDS = 15; // 15-second chunks (ensures instant STT processing < 2.5s and prevents gateway timeouts)
 const MAX_CONCURRENT_CHUNKS = 6; // Up to 6 chunks processed in parallel simultaneously
 const MAX_DECODE_BYTES = 1024 * 1024 * 1024; // 1 GB
 
 export interface TranscribeVideoOptions {
   /** Storage path inside the `videos` bucket, e.g. "<uid>/post_video_123.mp4" (or a public URL). */
   storagePath: string;
+  videoUrl?: string;
+  postId?: string | number;
   speaker?: string;
   sourceLang?: string;
   targetLang?: string;
@@ -183,8 +185,57 @@ export async function saveTranscriptRow(keys: string[], segments: YouTubeCaption
 }
 
 /**
+ * Server-side video transcription fallback.
+ * Uses /api/transcribe-video to extract audio with ffmpeg directly from the storage URL.
+ * Works universally on .mov, .mp4, and high-bitrate containers even when client browser decoders fail.
+ */
+export async function transcribeOnServer(
+  storagePath: string,
+  options: TranscribeVideoOptions
+): Promise<YouTubeCaptionSegment[]> {
+  const { videoUrl, speaker = 'Channel Speaker', sourceLang = 'english-united-states', targetLang = 'spanish-international', postId, onProgress } = options;
+
+  const publicUrl = videoUrl || (storagePath.startsWith('http')
+    ? storagePath
+    : `${supabaseUrl}/storage/v1/object/public/videos/${storagePath.replace(/^videos\//, '')}`);
+
+  onProgress?.('Extracting and transcribing audio via server pipeline...', 35);
+
+  try {
+    const res = await fetch('/api/transcribe-video', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        videoUrl: publicUrl,
+        storagePath,
+        speaker,
+        sourceLang,
+        targetLang,
+        postId
+      })
+    });
+
+    if (res.ok) {
+      const data = await res.json();
+      if (data?.segments && Array.isArray(data.segments) && data.segments.length > 0) {
+        onProgress?.(`Transcription complete (${data.segments.length} segments).`, 100);
+        return data.segments as YouTubeCaptionSegment[];
+      }
+    } else {
+      const errText = await res.text();
+      console.warn('[VideoTranscription] Server transcribe fallback returned non-200:', res.status, errText);
+    }
+  } catch (err: any) {
+    console.warn('[VideoTranscription] Server transcribe fallback notice:', err?.message);
+  }
+
+  return [];
+}
+
+/**
  * Transcribe an uploaded video. Runs automatically in the background.
- * Uses 45-second slices, VAD silence skipping, and parallel 6-worker concurrency for blazing-fast speed.
+ * Uses 15-second slices, VAD silence skipping, and parallel 6-worker concurrency for blazing-fast speed.
+ * Automatically falls back to server-side ffmpeg extraction if the browser cannot decode .mov or large videos.
  */
 export async function transcribeUploadedVideo(
   file: File | Blob,
@@ -203,17 +254,27 @@ export async function transcribeUploadedVideo(
   if (!supabase) throw new Error('Supabase client unavailable');
 
   if (file.size > MAX_DECODE_BYTES) {
-    onProgress?.('Video is too large to transcribe in the browser — skipping transcript.', 100);
-    return [];
+    onProgress?.('Large video detected. Delegating to server transcriber...', 20);
+    return await transcribeOnServer(storagePath, options);
   }
 
   onProgress?.('Extracting audio soundtrack for translation...', 5);
-  let audioBuffer: AudioBuffer;
+  let audioBuffer: AudioBuffer | null = null;
   try {
     audioBuffer = await decodeAudio16k(file);
   } catch (err: any) {
-    console.warn('[VideoTranscription] Audio decode failed:', err?.message);
-    onProgress?.('This video format could not be decoded for transcription.', 100);
+    console.warn('[VideoTranscription] Local browser audio decode failed, falling back to server-side transcriber:', err?.message);
+  }
+
+  // If browser audio decode fails (e.g. unsupported .mov container or high-RAM video),
+  // fall back immediately to server-side transcriber!
+  if (!audioBuffer) {
+    onProgress?.('Browser audio decoder bypassed. Processing with server transcriber...', 25);
+    const serverSegs = await transcribeOnServer(storagePath, options);
+    if (serverSegs && serverSegs.length > 0) {
+      return serverSegs;
+    }
+    onProgress?.('Speech transcription could not be completed for this video format.', 100);
     return [];
   }
 
@@ -370,10 +431,24 @@ export async function transcribeUploadedVideo(
     if (autoClonedVoiceId) {
       (segments[0] as any).voice_id = autoClonedVoiceId;
     }
-    // Save to canonical storage key and full path
-    await saveTranscriptRow([videoKey, storagePath], segments);
+    // Save to canonical storage key, relative path, public URL, and postId
+    const keysToSave = new Set<string>();
+    keysToSave.add(videoKey);
+    keysToSave.add(storagePath);
+    keysToSave.add(storagePath.replace(/^videos\//, ''));
+    if (options.videoUrl) keysToSave.add(options.videoUrl);
+    if (options.postId) keysToSave.add(String(options.postId));
+    const publicUrl = `${supabaseUrl}/storage/v1/object/public/videos/${storagePath.replace(/^videos\//, '')}`;
+    keysToSave.add(publicUrl);
+
+    await saveTranscriptRow(Array.from(keysToSave), segments);
     onProgress?.(`Transcription & Voice Cloning complete (${segments.length} segments).`, 100);
   } else {
+    // If browser-side segmentation yielded no speech or timed out, attempt server-side fallback
+    const serverSegs = await transcribeOnServer(storagePath, options);
+    if (serverSegs && serverSegs.length > 0) {
+      return serverSegs;
+    }
     onProgress?.('No speech detected in audio.', 100);
   }
 
@@ -438,10 +513,20 @@ export async function fetchTranscriptForVideo(
         const resp = await fetch(videoUrl);
         if (!resp.ok) return;
         const blob = await resp.blob();
-        const segments = await transcribeUploadedVideo(blob, {
+        let segments = await transcribeUploadedVideo(blob, {
           storagePath: videoUrl,
+          videoUrl,
+          postId,
           speaker
         });
+        if (!segments || segments.length === 0) {
+          segments = await transcribeOnServer(videoUrl, {
+            storagePath: videoUrl,
+            videoUrl,
+            postId,
+            speaker
+          });
+        }
         if (segments && segments.length > 0) {
           // Notify any active player components on the page
           window.dispatchEvent(new CustomEvent('vibe-transcript-ready', {

@@ -281,10 +281,12 @@ export const DashboardVideoControlCenter: React.FC<DashboardVideoControlCenterPr
       setTranscribingVideo(true);
       let transcribedSegments: any[] = [];
       let isTranscribeDone = false;
+      const initialVideoUrl = supabase!.storage.from('videos').getPublicUrl(filePath).data.publicUrl;
 
       // Start transcription simultaneously in parallel with upload
       const transcribePromise = transcribeUploadedVideo(file, {
         storagePath: filePath,
+        videoUrl: initialVideoUrl,
         speaker: 'Channel Broadcast',
         onProgress: (status) => setUploadProgressMsg(`🎙️ ${status}`)
       }).then(segments => {

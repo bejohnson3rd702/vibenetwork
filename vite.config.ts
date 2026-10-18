@@ -595,12 +595,32 @@ function elevenlabsProxyPlugin(env: Record<string, string>) {
   };
 }
 
+function transcribeVideoPlugin(env: Record<string, string>) {
+  return {
+    name: 'transcribe-video-middleware',
+    configureServer(server: any) {
+      server.middlewares.use('/api/transcribe-video', async (req: any, res: any) => {
+        try {
+          const mod = await server.ssrLoadModule('./api/transcribe-video.ts');
+          const handler = mod.default || mod;
+          return await handler(req, res);
+        } catch (err: any) {
+          console.error('[vite:transcribe-video] error:', err);
+          res.statusCode = 500;
+          res.setHeader('Content-Type', 'application/json');
+          res.end(JSON.stringify({ error: err.message }));
+        }
+      });
+    }
+  };
+}
+
 // https://vite.dev/config/
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), '');
 
   return {
-    plugins: [react(), stripeStagingPlugin(env), youtubeTranscriptPlugin(env), wwtcProxyPlugin(env), elevenlabsProxyPlugin(env)],
+    plugins: [react(), stripeStagingPlugin(env), youtubeTranscriptPlugin(env), wwtcProxyPlugin(env), elevenlabsProxyPlugin(env), transcribeVideoPlugin(env)],
     server: {
       host: true,
       allowedHosts: true,

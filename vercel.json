@@ -33,6 +33,14 @@
       "destination": "/api/wwtc-proxy"
     },
     {
+      "source": "/api/transcribe-video",
+      "destination": "/api/transcribe-video"
+    },
+    {
+      "source": "/api/elevenlabs-proxy",
+      "destination": "/api/elevenlabs-proxy"
+    },
+    {
       "source": "/(.*)",
       "destination": "/index.html"
     }

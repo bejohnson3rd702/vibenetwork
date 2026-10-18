@@ -3650,6 +3650,7 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
       // Background transcription for translated captions / dubbing
       void transcribeUploadedVideo(fileToUpload, {
         storagePath: filePath,
+        videoUrl: publicUrl,
         speaker: profile?.username || 'Channel Host',
         onProgress: (msg, pct) => toast.loading(msg, { id: 'episode-transcribe', title: 'Transcribing Episode', progress: pct })
       })
@@ -3975,6 +3976,7 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
           const sessionUser = (await supabase!.auth.getSession()).data.session?.user;
           const uploadUserId = sessionUser?.id || user?.id || targetProfileId;
           const filePath = `${uploadUserId}/post_video_${Date.now()}_${Math.random().toString(36).substring(7)}.${ext}`;
+          const initialVideoUrl = supabase!.storage.from('videos').getPublicUrl(filePath).data.publicUrl;
 
           // ── Start BOTH storage upload and speech transcription simultaneously in parallel ──
           let transcriptionSegments: any[] = [];
@@ -3982,6 +3984,7 @@ const ProfileDashboard: React.FC<{ user: any, creatorIdOverride?: string, isNetw
 
           const transcribePromise = transcribeUploadedVideo(rawFile, {
             storagePath: filePath,
+            videoUrl: initialVideoUrl,
             speaker: profile?.username || 'Channel Host',
             onProgress: (msg, pct) => {
               setVideoProcessing(prev => {
