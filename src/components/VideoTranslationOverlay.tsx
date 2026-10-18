@@ -13,6 +13,7 @@ import {
   isTranslationCached,
   getAudioDataUri,
   getActiveCaptionSlice,
+  isOriginalSound,
   type WwtcLanguage, 
   type YouTubeCaptionSegment 
 } from '../lib/wwtc';
@@ -303,7 +304,7 @@ export const VideoTranslationOverlay: React.FC<VideoTranslationOverlayProps> = (
 
   // 4. Instant Voiceover Playback using preloaded audio (0ms latency, zero dead air)
   useEffect(() => {
-    const isTranslated = selectedLang !== 'english-united-states';
+    const isTranslated = !isOriginalSound(selectedLang);
 
     if (!isTranslated || !enableVoiceover || !activeSegment) {
       if (voiceoverAudioRef.current) {
@@ -467,8 +468,10 @@ export const VideoTranslationOverlay: React.FC<VideoTranslationOverlayProps> = (
                 }
                 playedSegmentIndices.current.clear();
                 lastSegmentIndex.current = -1;
-                setSelectedLang(nextLang);
-                if (nextLang === 'english-united-states') {
+                const isOrig = isOriginalSound(nextLang);
+                const effectiveLang = isOrig ? 'english-united-states' : nextLang;
+                setSelectedLang(effectiveLang);
+                if (isOrig) {
                   if (onMuteVideo) onMuteVideo(false);
                 } else {
                   if (onMuteVideo) onMuteVideo(true);
@@ -488,11 +491,14 @@ export const VideoTranslationOverlay: React.FC<VideoTranslationOverlayProps> = (
               }}
             >
               <optgroup label="Active Languages (Free)" style={{ background: '#18181b', color: accent, fontWeight: 'bold' }}>
-                {activeLanguages.map(l => (
-                  <option key={`act-${l.code}`} value={l.code} style={{ background: '#111', color: '#fff' }}>
-                    {l.code.startsWith('english') ? 'Original Sound (English)' : l.name}
-                  </option>
-                ))}
+                {activeLanguages.map(l => {
+                  const isOrig = isOriginalSound(l.code);
+                  return (
+                    <option key={`act-${l.code}`} value={isOrig ? 'english-united-states' : l.code} style={{ background: '#111', color: '#fff' }}>
+                      {isOrig ? 'Original Sound (English)' : l.name}
+                    </option>
+                  );
+                })}
               </optgroup>
               {reservedLanguages.length > 0 && (
                 <optgroup label="🔒 Premium Tier (Coming Soon)" style={{ background: '#18181b', color: '#ffaa00', fontWeight: 'bold' }}>

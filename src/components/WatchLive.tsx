@@ -4,7 +4,7 @@ import { Play, Tv, X, ChevronLeft, ChevronRight, Clock, ExternalLink, Video, Vid
 import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from '../supabaseClient';
 import { isOlympianConfig, isMuscleFitnessConfig, isB2kConfig, isKpleConfig, isBonaireConfig } from '../lib/whitelabel';
-import { getWwtcLanguages, filterActiveLanguages, getReservedPremiumLanguages, translateText, prewarmActiveLanguagesTTS, transcribeAudioBlob, encode16kMonoWav, fetchYouTubeCaptions, transcribeAudioFile } from '../lib/wwtc';
+import { getWwtcLanguages, filterActiveLanguages, getReservedPremiumLanguages, translateText, prewarmActiveLanguagesTTS, transcribeAudioBlob, encode16kMonoWav, fetchYouTubeCaptions, transcribeAudioFile, isOriginalSound } from '../lib/wwtc';
 import { getLocalTranscript } from '../lib/staticTranscripts';
 import { useWhiteLabel } from '../context/WhiteLabelContext';
 
@@ -1705,7 +1705,7 @@ export default function WatchLive({ accent = '#D35400', isCourtneyBee = false, i
     // Immediately stop and mute any currently playing audio
     stopAllTranslatedAudio();
 
-    if (targetLanguage === 'english-united-states') {
+    if (isOriginalSound(targetLanguage)) {
       setTranslatedInfo(null);
       setInfoAudioBase64(null);
       setIsPlayingInfoAudio(false);
@@ -3579,7 +3579,7 @@ export default function WatchLive({ accent = '#D35400', isCourtneyBee = false, i
                                         }}
                                         onClick={(e) => {
                                           e.stopPropagation();
-                                          handleTranslateVideoInfo(l.code);
+                                          handleTranslateVideoInfo(isOriginalSound(l.code) ? 'english-united-states' : l.code);
                                           setShowInfoLangDropdown(false);
                                         }}
                                         style={{
@@ -3600,7 +3600,7 @@ export default function WatchLive({ accent = '#D35400', isCourtneyBee = false, i
                                         onMouseOut={e => e.currentTarget.style.background = "none"}
                                       >
                                         {l.flag && <img src={l.flag} alt="" style={{ width: "16px", height: "11px", borderRadius: "2px", objectFit: "cover" }} />}
-                                        <span>{l.code.startsWith('english') ? 'Original Sound (English)' : l.name}</span>
+                                        <span>{isOriginalSound(l.code) ? 'Original Sound (English)' : l.name}</span>
                                       </button>
                                     ))}
 
@@ -4264,7 +4264,8 @@ export default function WatchLive({ accent = '#D35400', isCourtneyBee = false, i
                                   value={preferredLang}
                                   onChange={(e) => {
                                     stopAllTranslatedAudio();
-                                    setPreferredLang(e.target.value);
+                                    const next = isOriginalSound(e.target.value) ? 'english-united-states' : e.target.value;
+                                    setPreferredLang(next);
                                   }}
                                   style={{
                                     background: 'rgba(255,255,255,0.05)',
@@ -4279,11 +4280,14 @@ export default function WatchLive({ accent = '#D35400', isCourtneyBee = false, i
                                   }}
                                 >
                                   <optgroup label="Active (Free)" style={{ background: '#111', color: accent, fontWeight: 'bold' }}>
-                                    {activeLangs.map(l => (
-                                      <option key={`pref-act-${l.code}`} value={l.code} style={{ background: '#111', color: '#fff' }}>
-                                        {l.code.startsWith('english') ? 'Original Sound (English)' : l.name}
-                                      </option>
-                                    ))}
+                                    {activeLangs.map(l => {
+                                      const isOrig = isOriginalSound(l.code);
+                                      return (
+                                        <option key={`pref-act-${l.code}`} value={isOrig ? 'english-united-states' : l.code} style={{ background: '#111', color: '#fff' }}>
+                                          {isOrig ? 'Original Sound (English)' : l.name}
+                                        </option>
+                                      );
+                                    })}
                                   </optgroup>
                                   {reservedLangs.length > 0 && (
                                     <optgroup label="🔒 Premium Tier (Soon)" style={{ background: '#111', color: '#ffaa00', fontWeight: 'bold' }}>

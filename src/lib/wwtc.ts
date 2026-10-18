@@ -84,6 +84,22 @@ export const DEFAULT_ACTIVE_LANGUAGES: WwtcLanguage[] = [
 ];
 
 /**
+ * Helper to determine if a language code represents the original native sound (English)
+ */
+export function isOriginalSound(langCode: string | null | undefined): boolean {
+  if (!langCode) return true;
+  const lower = langCode.toLowerCase().trim();
+  return (
+    lower === 'english-united-states' ||
+    lower === 'english-us' ||
+    lower.startsWith('english') ||
+    lower === 'en' ||
+    lower === 'original' ||
+    lower.includes('original')
+  );
+}
+
+/**
  * Filter a language list to only the 5 active translation languages plus English.
  */
 export function filterActiveLanguages(allLanguages: WwtcLanguage[]): WwtcLanguage[] {
@@ -94,10 +110,18 @@ export function filterActiveLanguages(allLanguages: WwtcLanguage[]): WwtcLanguag
   const findLang = (matcher: (l: WwtcLanguage) => boolean, fallback: WwtcLanguage) =>
     allLanguages.find(matcher) || fallback;
 
-  const english = findLang(
-    l => l.code === 'english-united-states' || l.code.startsWith('english') || l.name.toLowerCase().includes('english'),
-    DEFAULT_ACTIVE_LANGUAGES[0]
-  );
+  // Always force English to be canonical Original Sound (English) with code 'english-united-states'
+  const rawEnglish =
+    allLanguages.find(l => l.code === 'english-united-states') ||
+    allLanguages.find(l => l.code === 'english-us') ||
+    allLanguages.find(l => l.name.toLowerCase().includes('united states')) ||
+    DEFAULT_ACTIVE_LANGUAGES[0];
+
+  const english: WwtcLanguage = {
+    ...rawEnglish,
+    code: 'english-united-states',
+    name: 'Original Sound (English)',
+  };
   const spanish = findLang(
     l => l.code === 'spanish-international' || l.code.startsWith('spanish') || l.name.toLowerCase().includes('spanish'),
     DEFAULT_ACTIVE_LANGUAGES[1]

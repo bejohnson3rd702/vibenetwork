@@ -12,6 +12,7 @@ import {
   getCachedTranslation,
   getActiveCaptionSlice,
   encode16kMonoWav,
+  isOriginalSound,
   ACTIVE_FOREIGN_LANGUAGES,
   type WwtcLanguage, 
   type YouTubeCaptionSegment 
@@ -363,7 +364,7 @@ export const FeedVideoPlayer: React.FC<FeedVideoPlayerProps> = ({
 
   // Pre-warm a specific language when cursor hovers over its menu row
   const handleHoverLanguage = (langCode: string) => {
-    if (langCode === 'english-united-states' || !transcript || activeSegmentIndex < 0) return;
+    if (isOriginalSound(langCode) || !transcript || activeSegmentIndex < 0) return;
     const current = transcript[activeSegmentIndex];
     const next1 = transcript[activeSegmentIndex + 1];
     const effectiveVoiceId = clonedVoiceId || getDefaultVoiceId() || undefined;
@@ -388,7 +389,7 @@ export const FeedVideoPlayer: React.FC<FeedVideoPlayerProps> = ({
 
   // 5. Translate active segment when target language is selected
   useEffect(() => {
-    if (!activeSegment || selectedLang === 'english-united-states') return;
+    if (!activeSegment || isOriginalSound(selectedLang)) return;
 
     const cacheKey = `${selectedLang}:${activeSegment.text}`;
     if (translatedSegments[cacheKey]) return;
@@ -421,7 +422,7 @@ export const FeedVideoPlayer: React.FC<FeedVideoPlayerProps> = ({
   // Display text: either translated or original
   const currentSubtitleText = React.useMemo(() => {
     if (!activeSegment) return '';
-    if (selectedLang === 'english-united-states') return activeSegment.text;
+    if (isOriginalSound(selectedLang)) return activeSegment.text;
     const cacheKey = `${selectedLang}:${activeSegment.text}`;
     return translatedSegments[cacheKey] || activeSegment.translatedText || activeSegment.text;
   }, [activeSegment, selectedLang, translatedSegments]);
@@ -444,7 +445,7 @@ export const FeedVideoPlayer: React.FC<FeedVideoPlayerProps> = ({
   // 6. Play translation voiceover (TTS) in selected language (with 0ms instant playback cache)
   const playSegmentVoiceover = async (segmentIndex: number, targetLang = selectedLangRef.current, forcePlay = false) => {
     if (!transcript || segmentIndex < 0 || segmentIndex >= transcript.length) return;
-    if (targetLang === 'english-united-states') return;
+    if (isOriginalSound(targetLang)) return;
     if (!forcePlay && translationAudioMutedRef.current) return;
 
     const seg = transcript[segmentIndex];
@@ -558,10 +559,6 @@ export const FeedVideoPlayer: React.FC<FeedVideoPlayerProps> = ({
 
   // 7. Language selection: instantly mute current audio and switch to new language immediately
   const handleSelectLanguage = async (langCode: string) => {
-    setSelectedLang(langCode);
-    selectedLangRef.current = langCode;
-    setShowTranslateMenu(false);
-
     // 1. Instantly stop and mute any currently playing translated voiceover
     if (ttsAudioRef.current) {
       try {
@@ -572,16 +569,27 @@ export const FeedVideoPlayer: React.FC<FeedVideoPlayerProps> = ({
     }
     setTtsPlaying(false);
 
-    if (langCode === 'english-united-states') {
+    if (isOriginalSound(langCode)) {
       // Switched back to original English (Original Sound):
+      setSelectedLang('english-united-states');
+      selectedLangRef.current = 'english-united-states';
+      setShowTranslateMenu(false);
+
       // Mute translated audio and immediately unmute original video track at full volume
       translationAudioMutedRef.current = true;
       setTranslationAudioMuted(true);
       if (videoRef.current) {
         videoRef.current.muted = false;
         videoRef.current.volume = 1.0;
+        if (!videoRef.current.paused) {
+          videoRef.current.play().catch(() => {});
+        }
       }
     } else {
+      setSelectedLang(langCode);
+      selectedLangRef.current = langCode;
+      setShowTranslateMenu(false);
+
       // Switched to a foreign language:
       // Instantly mute the original video audio so no English or previous audio bleeds through
       translationAudioMutedRef.current = false;
@@ -602,7 +610,7 @@ export const FeedVideoPlayer: React.FC<FeedVideoPlayerProps> = ({
     if (
       activeSegmentIndex >= 0 &&
       activeSegmentIndex !== lastPlayedSegmentRef.current &&
-      selectedLang !== 'english-united-states' &&
+      !isOriginalSound(selectedLang) &&
       !translationAudioMuted &&
       videoRef.current &&
       !videoRef.current.paused
@@ -614,7 +622,7 @@ export const FeedVideoPlayer: React.FC<FeedVideoPlayerProps> = ({
 
   // 9. Sync translation audio with native video player events
   const handlePlay = () => {
-    if (selectedLangRef.current !== 'english-united-states') {
+    if (!isOriginalSound(selectedLangRef.current)) {
       if (videoRef.current) {
         videoRef.current.muted = true;
       }
@@ -652,7 +660,7 @@ export const FeedVideoPlayer: React.FC<FeedVideoPlayerProps> = ({
       setTtsPlaying(false);
     }
     if (
-      selectedLangRef.current !== 'english-united-states' && 
+      !isOriginalSound(selectedLangRef.current) && 
       !translationAudioMutedRef.current && 
       videoRef.current && 
       !videoRef.current.paused &&
@@ -845,14 +853,14 @@ export const FeedVideoPlayer: React.FC<FeedVideoPlayerProps> = ({
             setShowTranslateMenu(!showTranslateMenu);
           }}
           onMouseEnter={handleOpenOrHoverMenu}
-          title={`Audio: ${selectedLang === 'english-united-states' ? 'Original Sound' : (selectedLangObj?.name || 'Translated Audio')}`}
+          title={`Audio: ${isOriginalSound(selectedLang) ? 'Original Sound' : (selectedLangObj?.name || 'Translated Audio')}`}
           style={{
             display: 'flex',
             alignItems: 'center',
             gap: isCompact ? '4px' : '5px',
-            background: selectedLang !== 'english-united-states' ? 'rgba(0, 0, 0, 0.9)' : 'rgba(0, 0, 0, 0.65)',
+            background: !isOriginalSound(selectedLang) ? 'rgba(0, 0, 0, 0.9)' : 'rgba(0, 0, 0, 0.65)',
             backdropFilter: 'blur(8px)',
-            border: `1px solid ${selectedLang !== 'english-united-states' ? accent : 'rgba(255,255,255,0.25)'}`,
+            border: `1px solid ${!isOriginalSound(selectedLang) ? accent : 'rgba(255,255,255,0.25)'}`,
             borderRadius: '20px',
             padding: isCompact ? '4px 8px' : '5px 10px',
             color: '#fff',
@@ -865,14 +873,14 @@ export const FeedVideoPlayer: React.FC<FeedVideoPlayerProps> = ({
             flexShrink: 0
           }}
         >
-          <Globe size={isCompact ? 13 : 14} color={selectedLang !== 'english-united-states' ? accent : '#aaa'} />
+          <Globe size={isCompact ? 13 : 14} color={!isOriginalSound(selectedLang) ? accent : '#aaa'} />
           <span>
-            {selectedLang === 'english-united-states' ? 'ORIGINAL' : (selectedLangObj ? getShortLangCode(selectedLangObj.code) : 'ORIGINAL')}
+            {isOriginalSound(selectedLang) ? 'ORIGINAL' : (selectedLangObj ? getShortLangCode(selectedLangObj.code) : 'ORIGINAL')}
           </span>
           {isTranslating ? (
             <Loader2 size={11} className="animate-spin" color={accent} />
           ) : (
-            selectedLang !== 'english-united-states' && isVoiceCloningEnabled() && (
+            !isOriginalSound(selectedLang) && isVoiceCloningEnabled() && (
               <span title="ElevenLabs AI Voice Clone Active" style={{ display: 'flex', alignItems: 'center' }}>
                 <Sparkles size={11} color="#ffaa00" />
               </span>
@@ -881,7 +889,7 @@ export const FeedVideoPlayer: React.FC<FeedVideoPlayerProps> = ({
         </button>
 
         {/* Audio TTS Voiceover Unmute / Mute Button */}
-        {selectedLang !== 'english-united-states' && (
+        {!isOriginalSound(selectedLang) && (
           <button
             type="button"
             onClick={() => {
@@ -964,14 +972,16 @@ export const FeedVideoPlayer: React.FC<FeedVideoPlayerProps> = ({
 
             {/* 5 Active Languages + Original Sound (English) */}
             {activeLanguages.map(lang => {
-              const isSelected = selectedLang === lang.code;
-              const isOriginal = lang.code.startsWith('english');
+              const isOriginal = isOriginalSound(lang.code);
+              const isSelected = isOriginal
+                ? isOriginalSound(selectedLang)
+                : selectedLang === lang.code;
               const displayName = isOriginal ? 'Original Sound (English)' : lang.name;
               return (
                 <button
                   key={lang.code}
                   type="button"
-                  onClick={() => handleSelectLanguage(lang.code)}
+                  onClick={() => handleSelectLanguage(isOriginal ? 'english-united-states' : lang.code)}
                   onMouseEnter={() => handleHoverLanguage(lang.code)}
                   style={{
                     display: 'flex',
@@ -1057,14 +1067,14 @@ export const FeedVideoPlayer: React.FC<FeedVideoPlayerProps> = ({
             lineHeight: 1.45,
             textAlign: 'center',
             textShadow: '0 2px 4px rgba(0,0,0,0.9)',
-            border: `1px solid ${selectedLang !== 'english-united-states' ? `${accent}44` : 'rgba(255,255,255,0.16)'}`,
+            border: `1px solid ${!isOriginalSound(selectedLang) ? `${accent}44` : 'rgba(255,255,255,0.16)'}`,
             boxShadow: '0 6px 20px rgba(0,0,0,0.65)',
             pointerEvents: 'none',
             zIndex: 15,
             transition: 'all 0.15s ease'
           }}
         >
-          {selectedLang !== 'english-united-states' && (
+          {!isOriginalSound(selectedLang) && (
             <span style={{ color: accent, fontSize: '10px', fontWeight: 800, textTransform: 'uppercase', display: 'block', marginBottom: '3px', letterSpacing: '0.5px' }}>
               {selectedLangObj?.name || 'Translated'} CC
             </span>
@@ -1109,7 +1119,7 @@ export const FeedVideoPlayer: React.FC<FeedVideoPlayerProps> = ({
       )}
 
       {/* 2. Translated Transcript Container */}
-      {selectedLang !== 'english-united-states' && transcript && transcript.length > 0 && (
+      {!isOriginalSound(selectedLang) && transcript && transcript.length > 0 && (
         <div
           id="video-translated-transcript"
           className={`feed-video-translated-transcript video-translated-container video-translated-transcript-${postId || 'active'}`}
