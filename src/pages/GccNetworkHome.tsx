@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Ticket, 
@@ -10,11 +10,24 @@ import {
   ChevronDown, 
   ChevronUp, 
   Play, 
+  Pause,
+  Volume2, 
+  VolumeX, 
+  Maximize, 
   Check, 
   ShieldCheck, 
   ExternalLink,
   Menu,
-  X
+  X,
+  Radio,
+  Sparkles,
+  CreditCard,
+  QrCode,
+  Download,
+  Info,
+  Clock,
+  MapPin,
+  Flame
 } from 'lucide-react';
 import type { WlConfig } from '../lib/whitelabel';
 
@@ -22,12 +35,116 @@ interface GccNetworkHomeProps {
   wlConfig?: WlConfig;
 }
 
+interface TicketTier {
+  id: string;
+  name: string;
+  price: number;
+  badge: string;
+  description: string;
+  features: string[];
+  popular?: boolean;
+}
+
+const TICKET_TIERS: TicketTier[] = [
+  {
+    id: 'ringside-vip',
+    name: 'Ringside VIP Experience',
+    price: 499,
+    badge: 'EXCLUSIVE ACCESS',
+    description: 'The ultimate combat sports experience. Sit feet from the canvas and feel every punch.',
+    features: [
+      'Rows 1-3 direct ringside seating',
+      'VIP lounge access with complimentary catering',
+      'Fighter walkout tunnel proximity',
+      'Official GCC commemorative laminate & event poster',
+      'Dedicated VIP express entrance'
+    ],
+    popular: true
+  },
+  {
+    id: 'lower-bowl',
+    name: 'Lower Bowl Premier',
+    price: 179,
+    badge: 'BEST VALUE',
+    description: 'Elevated center-arena sightlines with unmatched views of the ring and walkout stage.',
+    features: [
+      'Lower bowl center ring alignment',
+      'Padded arena stadium seating',
+      'Fast-track concourse entry lanes',
+      'Official GCC event program included'
+    ]
+  },
+  {
+    id: 'general-admission',
+    name: 'General Admission Bleachers',
+    price: 69,
+    badge: 'FAN FAVORITE',
+    description: 'Immerse yourself in the high-voltage arena atmosphere with full concourse access.',
+    features: [
+      'Unobstructed upper tier arena seating',
+      'Full concourse and merchandise pavilion access',
+      'Live arena jumbotron feed and commentary'
+    ]
+  }
+];
+
 export default function GccNetworkHome({ wlConfig }: GccNetworkHomeProps) {
   const accent = '#00E5FF';
-  const [activeTab, setActiveTab] = useState<'home' | 'events' | 'watch' | 'about' | 'contact'>('home');
+  const [activeTab, setActiveTab] = useState<'home' | 'events' | 'watch' | 'tickets' | 'about' | 'contact'>('home');
   const [selectedEventModal, setSelectedEventModal] = useState<any | null>(null);
   const [openFaqIndex, setOpenFaqIndex] = useState<number | null>(null);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+  // ─── Live Player State ───
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const [isPlaying, setIsPlaying] = useState(true);
+  const [isMuted, setIsMuted] = useState(true);
+  const [activeCam, setActiveCam] = useState<'main' | 'corner' | 'overhead'>('main');
+  const [viewerCount, setViewerCount] = useState(28490);
+  const [hasPpvAccess, setHasPpvAccess] = useState(false);
+
+  // Periodic viewer count fluctuation for authentic live feel
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setViewerCount(prev => prev + Math.floor(Math.random() * 21) - 10);
+    }, 4000);
+    return () => clearInterval(interval);
+  }, []);
+
+  const togglePlay = () => {
+    if (videoRef.current) {
+      if (videoRef.current.paused) {
+        videoRef.current.play();
+        setIsPlaying(true);
+      } else {
+        videoRef.current.pause();
+        setIsPlaying(false);
+      }
+    }
+  };
+
+  const toggleMute = () => {
+    if (videoRef.current) {
+      videoRef.current.muted = !videoRef.current.muted;
+      setIsMuted(videoRef.current.muted);
+    }
+  };
+
+  const handleFullscreen = () => {
+    if (videoRef.current) {
+      if (videoRef.current.requestFullscreen) {
+        videoRef.current.requestFullscreen();
+      }
+    }
+  };
+
+  // ─── Ticket Purchasing State ───
+  const [selectedTier, setSelectedTier] = useState<TicketTier>(TICKET_TIERS[0]);
+  const [ticketQuantity, setTicketQuantity] = useState(2);
+  const [checkoutModalOpen, setCheckoutModalOpen] = useState(false);
+  const [checkoutCompleted, setCheckoutCompleted] = useState(false);
+  const [customerName, setCustomerName] = useState('Alex Morgan');
+  const [customerEmail, setCustomerEmail] = useState('alex.morgan@example.com');
 
   // Contact form state
   const [formName, setFormName] = useState('');
@@ -50,11 +167,16 @@ export default function GccNetworkHome({ wlConfig }: GccNetworkHomeProps) {
 
   const navItems = [
     { id: 'home', label: 'Home' },
+    { id: 'watch', label: 'Watch Live / PPV' },
     { id: 'events', label: 'Events' },
-    { id: 'watch', label: 'Watch / PPV' },
+    { id: 'tickets', label: 'Buy Tickets' },
     { id: 'about', label: 'About' },
     { id: 'contact', label: 'Contact' }
   ] as const;
+
+  const subtotal = selectedTier.price * ticketQuantity;
+  const facilityFee = 12.50;
+  const totalAmount = subtotal + facilityFee;
 
   return (
     <div style={{ background: '#090C12', color: '#F1F5F9', minHeight: '100vh', fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif' }}>
@@ -65,13 +187,13 @@ export default function GccNetworkHome({ wlConfig }: GccNetworkHomeProps) {
           position: 'sticky',
           top: 0,
           zIndex: 50,
-          background: 'rgba(9, 12, 18, 0.95)',
+          background: 'rgba(9, 12, 18, 0.96)',
           backdropFilter: 'blur(16px)',
           borderBottom: '1px solid rgba(255, 255, 255, 0.08)',
-          padding: '14px 24px'
+          padding: '12px 24px'
         }}
       >
-        <div style={{ maxWidth: '1280px', margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '20px' }}>
+        <div style={{ maxWidth: '1280px', margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '16px' }}>
           
           {/* Logo / Brand */}
           <div 
@@ -79,8 +201,8 @@ export default function GccNetworkHome({ wlConfig }: GccNetworkHomeProps) {
             style={{ display: 'flex', alignItems: 'center', gap: '12px', cursor: 'pointer' }}
           >
             <div style={{
-              width: '42px',
-              height: '42px',
+              width: '40px',
+              height: '40px',
               borderRadius: '50%',
               border: `2px solid ${accent}`,
               display: 'flex',
@@ -107,7 +229,7 @@ export default function GccNetworkHome({ wlConfig }: GccNetworkHomeProps) {
 
           {/* Desktop Navigation Tabs */}
           <nav style={{ display: 'none' }} className="md:flex" id="gcc-desktop-nav">
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', background: 'rgba(255, 255, 255, 0.03)', padding: '4px', borderRadius: '10px', border: '1px solid rgba(255, 255, 255, 0.06)' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', background: 'rgba(255, 255, 255, 0.03)', padding: '4px', borderRadius: '10px', border: '1px solid rgba(255, 255, 255, 0.06)' }}>
               {navItems.map((item) => (
                 <button
                   key={item.id}
@@ -116,13 +238,15 @@ export default function GccNetworkHome({ wlConfig }: GccNetworkHomeProps) {
                     background: activeTab === item.id ? 'rgba(0, 229, 255, 0.12)' : 'transparent',
                     color: activeTab === item.id ? accent : '#94A3B8',
                     border: activeTab === item.id ? `1px solid ${accent}40` : '1px solid transparent',
-                    padding: '8px 18px',
-                    borderRadius: '8px',
+                    padding: '7px 16px',
+                    borderRadius: '7px',
                     fontSize: '13px',
                     fontWeight: 700,
                     cursor: 'pointer',
                     transition: 'all 0.2s ease',
-                    textDecoration: 'none'
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '6px'
                   }}
                   onMouseEnter={(e) => {
                     if (activeTab !== item.id) e.currentTarget.style.color = '#FFFFFF';
@@ -131,39 +255,66 @@ export default function GccNetworkHome({ wlConfig }: GccNetworkHomeProps) {
                     if (activeTab !== item.id) e.currentTarget.style.color = '#94A3B8';
                   }}
                 >
+                  {item.id === 'watch' && (
+                    <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#EF4444', display: 'inline-block' }} />
+                  )}
                   {item.label}
                 </button>
               ))}
             </div>
           </nav>
 
-          {/* CTA & Mobile Toggle */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+          {/* Quick Action CTAs */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
             <button
               onClick={() => {
-                setActiveTab('events');
-                window.scrollTo({ top: 300, behavior: 'smooth' });
+                setActiveTab('watch');
+                window.scrollTo({ top: 0, behavior: 'smooth' });
               }}
               style={{
                 display: 'inline-flex',
                 alignItems: 'center',
-                gap: '8px',
+                gap: '6px',
+                background: 'rgba(239, 68, 68, 0.15)',
+                color: '#F87171',
+                border: '1px solid rgba(239, 68, 68, 0.3)',
+                padding: '8px 14px',
+                borderRadius: '8px',
+                fontSize: '12.5px',
+                fontWeight: 800,
+                cursor: 'pointer',
+                transition: 'all 0.2s ease'
+              }}
+            >
+              <Radio size={14} className="animate-pulse" />
+              Watch Live
+            </button>
+
+            <button
+              onClick={() => {
+                setActiveTab('tickets');
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+              }}
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '6px',
                 background: accent,
                 color: '#04060A',
-                padding: '9px 20px',
+                padding: '8px 18px',
                 borderRadius: '8px',
                 fontSize: '13px',
                 fontWeight: 900,
                 letterSpacing: '0.5px',
                 border: 'none',
                 cursor: 'pointer',
-                boxShadow: `0 0 20px ${accent}50`,
+                boxShadow: `0 0 16px ${accent}40`,
                 transition: 'all 0.2s ease'
               }}
               onMouseEnter={(e) => (e.currentTarget.style.filter = 'brightness(1.15)')}
               onMouseLeave={(e) => (e.currentTarget.style.filter = 'brightness(1.0)')}
             >
-              <Ticket size={15} />
+              <Ticket size={14} />
               Buy Tickets
             </button>
 
@@ -215,7 +366,10 @@ export default function GccNetworkHome({ wlConfig }: GccNetworkHomeProps) {
                       fontSize: '14px',
                       fontWeight: 700,
                       textAlign: 'left',
-                      cursor: 'pointer'
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '8px'
                     }}
                   >
                     {item.label}
@@ -227,11 +381,11 @@ export default function GccNetworkHome({ wlConfig }: GccNetworkHomeProps) {
         </AnimatePresence>
       </header>
 
-      {/* ── Main Tab Content ── */}
+      {/* ── Main Tab Views ── */}
       <main style={{ minHeight: 'calc(100vh - 180px)' }}>
 
         {/* ══════════════════════════════════════════════════════════════
-            TAB 1: HOME (Pages 2 & 3 of PDF)
+            TAB 1: HOME (Includes Live Watch & Ticket Box Office)
         ══════════════════════════════════════════════════════════════ */}
         {activeTab === 'home' && (
           <div>
@@ -244,7 +398,6 @@ export default function GccNetworkHome({ wlConfig }: GccNetworkHomeProps) {
               overflow: 'hidden',
               background: '#04060A'
             }}>
-              {/* Background Combat Fighter Image */}
               <div style={{
                 position: 'absolute',
                 inset: 0,
@@ -255,7 +408,6 @@ export default function GccNetworkHome({ wlConfig }: GccNetworkHomeProps) {
                 filter: 'contrast(1.2) grayscale(20%)'
               }} />
 
-              {/* Gradient overlays for cinematic atmosphere */}
               <div style={{
                 position: 'absolute',
                 inset: 0,
@@ -268,7 +420,7 @@ export default function GccNetworkHome({ wlConfig }: GccNetworkHomeProps) {
               }} />
 
               {/* Hero Content */}
-              <div style={{ maxWidth: '1280px', margin: '0 auto', padding: '60px 24px', position: 'relative', zIndex: 10, width: '100%' }}>
+              <div style={{ maxWidth: '1280px', margin: '0 auto', padding: '60px 24px 100px 24px', position: 'relative', zIndex: 10, width: '100%' }}>
                 <motion.div
                   initial={{ opacity: 0, y: 25 }}
                   animate={{ opacity: 1, y: 0 }}
@@ -276,7 +428,9 @@ export default function GccNetworkHome({ wlConfig }: GccNetworkHomeProps) {
                   style={{ maxWidth: '640px' }}
                 >
                   <div style={{ 
-                    display: 'inline-block', 
+                    display: 'inline-flex', 
+                    alignItems: 'center',
+                    gap: '8px',
                     color: accent, 
                     fontSize: '12px', 
                     fontWeight: 900, 
@@ -284,6 +438,7 @@ export default function GccNetworkHome({ wlConfig }: GccNetworkHomeProps) {
                     textTransform: 'uppercase',
                     marginBottom: '16px' 
                   }}>
+                    <Flame size={14} color={accent} />
                     FEATURED EVENT
                   </div>
 
@@ -309,8 +464,10 @@ export default function GccNetworkHome({ wlConfig }: GccNetworkHomeProps) {
                     alignItems: 'center',
                     gap: '8px'
                   }}>
+                    <Calendar size={16} color={accent} />
                     <span>June 27, 2025</span>
                     <span>•</span>
+                    <MapPin size={16} color={accent} />
                     <span>Koch Arena</span>
                   </p>
                   <p style={{ fontSize: '15px', color: '#94A3B8', margin: '0 0 28px 0' }}>
@@ -320,35 +477,42 @@ export default function GccNetworkHome({ wlConfig }: GccNetworkHomeProps) {
                   <div style={{ display: 'flex', alignItems: 'center', gap: '14px', flexWrap: 'wrap', marginBottom: '20px' }}>
                     <button
                       onClick={() => {
-                        setSelectedEventModal({
-                          name: 'GCC Championship: Wilder vs. Herndon',
-                          fighterA: 'Deontay Wilder',
-                          fighterB: 'Robert Herndon',
-                          date: 'June 27, 2025',
-                          venue: 'Koch Arena',
-                          location: 'Wichita, Kansas',
-                          doors: '7:00 PM CST',
-                          broadcast: '8:00 PM EST'
-                        });
+                        const ticketsSection = document.getElementById('gcc-tickets-section');
+                        if (ticketsSection) {
+                          ticketsSection.scrollIntoView({ behavior: 'smooth' });
+                        } else {
+                          setActiveTab('tickets');
+                        }
                       }}
                       style={{
                         background: accent,
                         color: '#04060A',
-                        padding: '13px 28px',
+                        padding: '13px 30px',
                         borderRadius: '8px',
                         fontSize: '14px',
                         fontWeight: 900,
                         letterSpacing: '0.5px',
                         border: 'none',
                         cursor: 'pointer',
-                        boxShadow: `0 4px 20px ${accent}40`
+                        boxShadow: `0 4px 20px ${accent}40`,
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '8px'
                       }}
                     >
+                      <Ticket size={16} />
                       Buy Tickets
                     </button>
 
                     <button
-                      onClick={() => setActiveTab('watch')}
+                      onClick={() => {
+                        const watchSection = document.getElementById('gcc-watch-section');
+                        if (watchSection) {
+                          watchSection.scrollIntoView({ behavior: 'smooth' });
+                        } else {
+                          setActiveTab('watch');
+                        }
+                      }}
                       style={{
                         background: 'transparent',
                         color: '#FFFFFF',
@@ -357,12 +521,16 @@ export default function GccNetworkHome({ wlConfig }: GccNetworkHomeProps) {
                         borderRadius: '8px',
                         fontSize: '14px',
                         fontWeight: 700,
-                        cursor: 'pointer'
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '8px'
                       }}
                       onMouseEnter={(e) => (e.currentTarget.style.borderColor = accent)}
                       onMouseLeave={(e) => (e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.3)')}
                     >
-                      Buy PPV
+                      <Tv size={16} color={accent} />
+                      Watch Live Stream
                     </button>
                   </div>
 
@@ -400,8 +568,512 @@ export default function GccNetworkHome({ wlConfig }: GccNetworkHomeProps) {
               </div>
             </section>
 
+            {/* ══════════════════════════════════════════════════════════════
+                SECTION 1: WATCH LIVE EVENT / COMBAT STREAM
+            ══════════════════════════════════════════════════════════════ */}
+            <section id="gcc-watch-section" style={{ background: '#07090E', borderBottom: '1px solid rgba(255, 255, 255, 0.08)', padding: '80px 24px' }}>
+              <div style={{ maxWidth: '1280px', margin: '0 auto' }}>
+                
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', flexWrap: 'wrap', gap: '16px', marginBottom: '28px' }}>
+                  <div>
+                    <div style={{ 
+                      display: 'inline-flex', 
+                      alignItems: 'center', 
+                      gap: '8px', 
+                      background: 'rgba(239, 68, 68, 0.15)', 
+                      border: '1px solid rgba(239, 68, 68, 0.3)',
+                      color: '#EF4444', 
+                      fontSize: '11px', 
+                      fontWeight: 900, 
+                      letterSpacing: '1.5px', 
+                      textTransform: 'uppercase',
+                      padding: '4px 10px',
+                      borderRadius: '4px',
+                      marginBottom: '10px'
+                    }}>
+                      <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#EF4444' }} className="animate-pulse" />
+                      LIVE COMBAT BROADCAST
+                    </div>
+                    <h2 style={{ fontSize: '36px', fontWeight: 900, color: '#FFFFFF', margin: 0, letterSpacing: '-0.5px' }}>
+                      Watch Live Event
+                    </h2>
+                    <p style={{ fontSize: '15px', color: '#94A3B8', margin: '6px 0 0 0' }}>
+                      Official high-fidelity live stream feed direct from the arena floor.
+                    </p>
+                  </div>
+
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                    <div style={{ 
+                      display: 'flex', 
+                      alignItems: 'center', 
+                      gap: '6px', 
+                      background: 'rgba(255, 255, 255, 0.04)', 
+                      border: '1px solid rgba(255, 255, 255, 0.08)',
+                      padding: '8px 14px',
+                      borderRadius: '8px',
+                      fontSize: '13px',
+                      color: '#94A3B8'
+                    }}>
+                      <Users size={14} color={accent} />
+                      <strong style={{ color: '#FFFFFF' }}>{viewerCount.toLocaleString()}</strong> watching live
+                    </div>
+                  </div>
+                </div>
+
+                {/* ── Real Interactive Live Video Stream Container ── */}
+                <div style={{
+                  background: '#020306',
+                  borderRadius: '16px',
+                  border: '1px solid rgba(255, 255, 255, 0.12)',
+                  overflow: 'hidden',
+                  boxShadow: '0 24px 60px rgba(0, 0, 0, 0.8)',
+                  position: 'relative'
+                }}>
+                  {/* Video Player */}
+                  <div style={{ position: 'relative', width: '100%', height: 'clamp(320px, 52vw, 640px)', background: '#000000' }}>
+                    
+                    <video
+                      ref={videoRef}
+                      src="https://assets.mixkit.co/videos/preview/mixkit-boxer-training-in-a-boxing-ring-41617-large.mp4"
+                      autoPlay
+                      loop
+                      muted={isMuted}
+                      playsInline
+                      style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                    />
+
+                    {/* Live Match Overlay Header */}
+                    <div style={{
+                      position: 'absolute',
+                      top: '16px',
+                      left: '16px',
+                      right: '16px',
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'center',
+                      pointerEvents: 'none',
+                      zIndex: 20
+                    }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                        <div style={{
+                          background: 'rgba(239, 68, 68, 0.95)',
+                          color: '#FFFFFF',
+                          fontSize: '11px',
+                          fontWeight: 900,
+                          letterSpacing: '1px',
+                          padding: '4px 10px',
+                          borderRadius: '4px',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '6px'
+                        }}>
+                          <Radio size={12} /> LIVE
+                        </div>
+                        <div style={{
+                          background: 'rgba(0, 0, 0, 0.75)',
+                          backdropFilter: 'blur(8px)',
+                          padding: '5px 12px',
+                          borderRadius: '6px',
+                          border: '1px solid rgba(255, 255, 255, 0.1)',
+                          fontSize: '12px',
+                          fontWeight: 700,
+                          color: '#FFFFFF'
+                        }}>
+                          GCC CHAMPIONSHIP • ROUND 8 OF 12
+                        </div>
+                      </div>
+
+                      <div style={{
+                        background: 'rgba(0, 0, 0, 0.75)',
+                        backdropFilter: 'blur(8px)',
+                        padding: '4px 10px',
+                        borderRadius: '6px',
+                        border: '1px solid rgba(255, 255, 255, 0.1)',
+                        fontSize: '11px',
+                        color: accent,
+                        fontWeight: 700
+                      }}>
+                        1080P60 ULTRA HD
+                      </div>
+                    </div>
+
+                    {/* Bottom Stream Controls Bar */}
+                    <div style={{
+                      position: 'absolute',
+                      bottom: 0,
+                      left: 0,
+                      right: 0,
+                      background: 'linear-gradient(0deg, rgba(0,0,0,0.9) 0%, transparent 100%)',
+                      padding: '24px 20px 16px 20px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      zIndex: 20
+                    }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+                        <button
+                          onClick={togglePlay}
+                          style={{
+                            background: accent,
+                            border: 'none',
+                            color: '#04060A',
+                            width: '38px',
+                            height: '38px',
+                            borderRadius: '50%',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            cursor: 'pointer',
+                            boxShadow: `0 0 12px ${accent}60`
+                          }}
+                        >
+                          {isPlaying ? <Pause size={18} fill="#04060A" /> : <Play size={18} fill="#04060A" />}
+                        </button>
+
+                        <button
+                          onClick={toggleMute}
+                          style={{
+                            background: 'rgba(255, 255, 255, 0.12)',
+                            border: 'none',
+                            color: '#FFFFFF',
+                            width: '38px',
+                            height: '38px',
+                            borderRadius: '50%',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            cursor: 'pointer'
+                          }}
+                        >
+                          {isMuted ? <VolumeX size={18} /> : <Volume2 size={18} />}
+                        </button>
+
+                        <span style={{ fontSize: '13px', color: '#E2E8F0', fontWeight: 600 }}>
+                          {isMuted ? 'Click to Unmute Audio' : 'Live Commentary (English)'}
+                        </span>
+                      </div>
+
+                      {/* Multi-Camera Angle Selector */}
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <span style={{ fontSize: '11px', color: '#94A3B8', fontWeight: 700, textTransform: 'uppercase', display: 'none' }} className="sm:inline">
+                          Camera Angle:
+                        </span>
+                        {(['main', 'corner', 'overhead'] as const).map(cam => (
+                          <button
+                            key={cam}
+                            onClick={() => setActiveCam(cam)}
+                            style={{
+                              background: activeCam === cam ? accent : 'rgba(255, 255, 255, 0.1)',
+                              color: activeCam === cam ? '#04060A' : '#FFFFFF',
+                              border: 'none',
+                              padding: '4px 10px',
+                              borderRadius: '4px',
+                              fontSize: '11px',
+                              fontWeight: 800,
+                              cursor: 'pointer',
+                              textTransform: 'uppercase'
+                            }}
+                          >
+                            {cam === 'main' ? 'Ring 1' : cam === 'corner' ? 'Corner' : 'Arena'}
+                          </button>
+                        ))}
+
+                        <button
+                          onClick={handleFullscreen}
+                          style={{
+                            background: 'rgba(255, 255, 255, 0.12)',
+                            border: 'none',
+                            color: '#FFFFFF',
+                            width: '34px',
+                            height: '34px',
+                            borderRadius: '6px',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            cursor: 'pointer',
+                            marginLeft: '8px'
+                          }}
+                        >
+                          <Maximize size={15} />
+                        </button>
+                      </div>
+
+                    </div>
+                  </div>
+
+                  {/* Stream Matchup Info & PPV Unlock Strip */}
+                  <div style={{
+                    background: 'rgba(14, 20, 34, 0.95)',
+                    padding: '18px 24px',
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    gap: '20px',
+                    flexWrap: 'wrap',
+                    borderTop: '1px solid rgba(255, 255, 255, 0.08)'
+                  }}>
+                    <div>
+                      <div style={{ fontSize: '16px', fontWeight: 900, color: '#FFFFFF' }}>
+                        Wilder vs. Herndon: Live World Championship
+                      </div>
+                      <div style={{ fontSize: '13px', color: '#94A3B8' }}>
+                        Official PPV Stream • Instant High-Definition Access
+                      </div>
+                    </div>
+
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                      {hasPpvAccess ? (
+                        <div style={{ 
+                          display: 'flex', 
+                          alignItems: 'center', 
+                          gap: '6px', 
+                          background: 'rgba(16, 185, 129, 0.15)', 
+                          border: '1px solid rgba(16, 185, 129, 0.4)',
+                          color: '#10B981', 
+                          padding: '8px 16px', 
+                          borderRadius: '8px', 
+                          fontSize: '13px', 
+                          fontWeight: 700 
+                        }}>
+                          <Check size={16} /> PPV PASS ACTIVE
+                        </div>
+                      ) : (
+                        <button
+                          onClick={() => {
+                            setHasPpvAccess(true);
+                            setIsMuted(false);
+                            if (videoRef.current) videoRef.current.muted = false;
+                          }}
+                          style={{
+                            background: accent,
+                            color: '#04060A',
+                            border: 'none',
+                            padding: '10px 22px',
+                            borderRadius: '8px',
+                            fontSize: '13px',
+                            fontWeight: 900,
+                            letterSpacing: '0.5px',
+                            cursor: 'pointer',
+                            boxShadow: `0 2px 14px ${accent}50`
+                          }}
+                        >
+                          Unlock HD Full Access ($39.99)
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                </div>
+
+              </div>
+            </section>
+
+            {/* ══════════════════════════════════════════════════════════════
+                SECTION 2: TICKET BOX OFFICE / BUY TICKETS
+            ══════════════════════════════════════════════════════════════ */}
+            <section id="gcc-tickets-section" style={{ maxWidth: '1280px', margin: '0 auto', padding: '80px 24px' }}>
+              <div style={{ textAlign: 'center', maxWidth: '720px', margin: '0 auto 48px auto' }}>
+                <div style={{ 
+                  display: 'inline-flex', 
+                  alignItems: 'center', 
+                  gap: '6px', 
+                  color: accent, 
+                  fontSize: '12px', 
+                  fontWeight: 900, 
+                  letterSpacing: '2px', 
+                  textTransform: 'uppercase',
+                  marginBottom: '10px' 
+                }}>
+                  <Ticket size={14} /> OFFICIAL GCC BOX OFFICE
+                </div>
+                <h2 style={{ fontSize: '38px', fontWeight: 900, color: '#FFFFFF', margin: '0 0 14px 0', letterSpacing: '-0.5px' }}>
+                  Buy Tickets For An Event
+                </h2>
+                <p style={{ fontSize: '16px', color: '#94A3B8', lineHeight: 1.6, margin: 0 }}>
+                  Choose your arena seating tier below for <strong>Wilder vs. Herndon: Legacy Reloaded</strong> at Koch Arena (Wichita, KS). Instant mobile pass confirmation.
+                </p>
+              </div>
+
+              {/* Ticket Tier Cards Grid */}
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '24px', marginBottom: '40px' }}>
+                {TICKET_TIERS.map(tier => {
+                  const isSelected = selectedTier.id === tier.id;
+                  return (
+                    <motion.div
+                      key={tier.id}
+                      whileHover={{ y: -4 }}
+                      onClick={() => setSelectedTier(tier)}
+                      style={{
+                        background: isSelected ? 'rgba(0, 229, 255, 0.05)' : 'rgba(14, 20, 34, 0.65)',
+                        border: isSelected ? `2px solid ${accent}` : '1px solid rgba(255, 255, 255, 0.08)',
+                        borderRadius: '16px',
+                        padding: '32px 28px',
+                        cursor: 'pointer',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        justifyContent: 'space-between',
+                        position: 'relative',
+                        boxShadow: isSelected ? `0 12px 32px rgba(0, 229, 255, 0.15)` : 'none',
+                        transition: 'all 0.2s ease'
+                      }}
+                    >
+                      {tier.popular && (
+                        <div style={{
+                          position: 'absolute',
+                          top: '-12px',
+                          right: '24px',
+                          background: accent,
+                          color: '#04060A',
+                          fontSize: '10px',
+                          fontWeight: 900,
+                          letterSpacing: '1px',
+                          padding: '4px 10px',
+                          borderRadius: '20px',
+                          textTransform: 'uppercase'
+                        }}>
+                          {tier.badge}
+                        </div>
+                      )}
+
+                      <div>
+                        <div style={{ fontSize: '13px', fontWeight: 800, color: isSelected ? accent : '#64748B', letterSpacing: '1px', textTransform: 'uppercase', marginBottom: '8px' }}>
+                          {tier.badge}
+                        </div>
+                        <h3 style={{ fontSize: '22px', fontWeight: 900, color: '#FFFFFF', margin: '0 0 10px 0' }}>
+                          {tier.name}
+                        </h3>
+                        <p style={{ fontSize: '13.5px', color: '#94A3B8', lineHeight: 1.6, margin: '0 0 20px 0' }}>
+                          {tier.description}
+                        </p>
+
+                        <div style={{ display: 'flex', alignItems: 'baseline', gap: '4px', marginBottom: '24px' }}>
+                          <span style={{ fontSize: '36px', fontWeight: 900, color: '#FFFFFF' }}>
+                            ${tier.price}
+                          </span>
+                          <span style={{ fontSize: '13px', color: '#64748B' }}>/ ticket</span>
+                        </div>
+
+                        {/* Features list */}
+                        <div style={{ borderTop: '1px solid rgba(255, 255, 255, 0.06)', paddingTop: '20px', marginBottom: '24px' }}>
+                          {tier.features.map((feat, i) => (
+                            <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '10px', fontSize: '13px', color: '#CBD5E1' }}>
+                              <Check size={14} color={accent} style={{ flexShrink: 0 }} />
+                              <span>{feat}</span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setSelectedTier(tier);
+                          setCheckoutModalOpen(true);
+                        }}
+                        style={{
+                          width: '100%',
+                          background: isSelected ? accent : 'rgba(255, 255, 255, 0.08)',
+                          color: isSelected ? '#04060A' : '#FFFFFF',
+                          border: isSelected ? 'none' : '1px solid rgba(255, 255, 255, 0.15)',
+                          padding: '12px 20px',
+                          borderRadius: '8px',
+                          fontSize: '13.5px',
+                          fontWeight: 900,
+                          cursor: 'pointer',
+                          transition: 'all 0.2s ease',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          gap: '6px'
+                        }}
+                      >
+                        <Ticket size={15} />
+                        {isSelected ? 'Proceed with This Tier' : 'Select Tier'}
+                      </button>
+                    </motion.div>
+                  );
+                })}
+              </div>
+
+              {/* Sticky Ticket Calculator & Checkout Bar */}
+              <div style={{
+                background: 'rgba(14, 20, 34, 0.95)',
+                border: `1px solid ${accent}40`,
+                borderRadius: '16px',
+                padding: '24px 32px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                gap: '24px',
+                flexWrap: 'wrap',
+                boxShadow: '0 8px 30px rgba(0, 0, 0, 0.6)'
+              }}>
+                <div>
+                  <div style={{ fontSize: '11px', fontWeight: 800, color: accent, letterSpacing: '1px', textTransform: 'uppercase' }}>
+                    SELECTED ARENA SEATING
+                  </div>
+                  <div style={{ fontSize: '20px', fontWeight: 900, color: '#FFFFFF' }}>
+                    {selectedTier.name} (${selectedTier.price} each)
+                  </div>
+                  <div style={{ fontSize: '13px', color: '#94A3B8' }}>
+                    June 27, 2025 • Koch Arena, Wichita, KS
+                  </div>
+                </div>
+
+                {/* Quantity Controls */}
+                <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px', background: 'rgba(0, 0, 0, 0.6)', padding: '6px 14px', borderRadius: '8px', border: '1px solid rgba(255, 255, 255, 0.1)' }}>
+                    <span style={{ fontSize: '12px', color: '#94A3B8', fontWeight: 700 }}>QTY:</span>
+                    <button
+                      onClick={() => setTicketQuantity(Math.max(1, ticketQuantity - 1))}
+                      style={{ background: 'none', border: 'none', color: '#FFFFFF', fontSize: '18px', fontWeight: 900, cursor: 'pointer', padding: '0 4px' }}
+                    >
+                      -
+                    </button>
+                    <span style={{ fontSize: '16px', fontWeight: 900, color: '#FFFFFF', minWidth: '20px', textAlign: 'center' }}>
+                      {ticketQuantity}
+                    </span>
+                    <button
+                      onClick={() => setTicketQuantity(Math.min(10, ticketQuantity + 1))}
+                      style={{ background: 'none', border: 'none', color: '#FFFFFF', fontSize: '18px', fontWeight: 900, cursor: 'pointer', padding: '0 4px' }}
+                    >
+                      +
+                    </button>
+                  </div>
+
+                  <div style={{ textAlign: 'right' }}>
+                    <div style={{ fontSize: '11px', color: '#64748B', textTransform: 'uppercase', fontWeight: 700 }}>Total (incl. fees)</div>
+                    <div style={{ fontSize: '24px', fontWeight: 900, color: '#FFFFFF' }}>
+                      ${totalAmount.toFixed(2)}
+                    </div>
+                  </div>
+
+                  <button
+                    onClick={() => setCheckoutModalOpen(true)}
+                    style={{
+                      background: accent,
+                      color: '#04060A',
+                      padding: '13px 32px',
+                      borderRadius: '8px',
+                      fontSize: '14px',
+                      fontWeight: 900,
+                      letterSpacing: '0.5px',
+                      border: 'none',
+                      cursor: 'pointer',
+                      boxShadow: `0 4px 20px ${accent}50`,
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '8px'
+                    }}
+                  >
+                    <CreditCard size={16} />
+                    Buy Tickets Now
+                  </button>
+                </div>
+              </div>
+            </section>
+
             {/* ── Below The Fold: About GCC & Latest Highlights ── */}
-            <section style={{ maxWidth: '1280px', margin: '0 auto', padding: '80px 24px' }}>
+            <section style={{ maxWidth: '1280px', margin: '0 auto', padding: '40px 24px 80px 24px' }}>
               
               {/* "Built around the fighters" Block */}
               <div style={{ 
@@ -464,7 +1136,6 @@ export default function GccNetworkHome({ wlConfig }: GccNetworkHomeProps) {
                 </h3>
 
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '24px' }}>
-                  {/* Highlight 1 */}
                   <div 
                     onClick={() => setActiveTab('watch')}
                     style={{
@@ -472,16 +1143,7 @@ export default function GccNetworkHome({ wlConfig }: GccNetworkHomeProps) {
                       border: '1px solid rgba(255, 255, 255, 0.08)',
                       borderRadius: '12px',
                       overflow: 'hidden',
-                      cursor: 'pointer',
-                      transition: 'transform 0.2s ease, border-color 0.2s ease'
-                    }}
-                    onMouseEnter={(e) => {
-                      e.currentTarget.style.transform = 'translateY(-4px)';
-                      e.currentTarget.style.borderColor = `${accent}80`;
-                    }}
-                    onMouseLeave={(e) => {
-                      e.currentTarget.style.transform = 'translateY(0)';
-                      e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.08)';
+                      cursor: 'pointer'
                     }}
                   >
                     <div style={{ height: '180px', position: 'relative' }}>
@@ -491,7 +1153,7 @@ export default function GccNetworkHome({ wlConfig }: GccNetworkHomeProps) {
                         style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                       />
                       <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                        <div style={{ width: '44px', height: '44px', borderRadius: '50%', background: 'rgba(0, 229, 255, 0.9)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#04060A' }}>
+                        <div style={{ width: '44px', height: '44px', borderRadius: '50%', background: accent, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#04060A' }}>
                           <Play size={20} fill="#04060A" />
                         </div>
                       </div>
@@ -506,7 +1168,6 @@ export default function GccNetworkHome({ wlConfig }: GccNetworkHomeProps) {
                     </div>
                   </div>
 
-                  {/* Highlight 2 */}
                   <div 
                     onClick={() => setActiveTab('watch')}
                     style={{
@@ -514,16 +1175,7 @@ export default function GccNetworkHome({ wlConfig }: GccNetworkHomeProps) {
                       border: '1px solid rgba(255, 255, 255, 0.08)',
                       borderRadius: '12px',
                       overflow: 'hidden',
-                      cursor: 'pointer',
-                      transition: 'transform 0.2s ease, border-color 0.2s ease'
-                    }}
-                    onMouseEnter={(e) => {
-                      e.currentTarget.style.transform = 'translateY(-4px)';
-                      e.currentTarget.style.borderColor = `${accent}80`;
-                    }}
-                    onMouseLeave={(e) => {
-                      e.currentTarget.style.transform = 'translateY(0)';
-                      e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.08)';
+                      cursor: 'pointer'
                     }}
                   >
                     <div style={{ height: '180px', position: 'relative' }}>
@@ -533,7 +1185,7 @@ export default function GccNetworkHome({ wlConfig }: GccNetworkHomeProps) {
                         style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                       />
                       <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                        <div style={{ width: '44px', height: '44px', borderRadius: '50%', background: 'rgba(0, 229, 255, 0.9)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#04060A' }}>
+                        <div style={{ width: '44px', height: '44px', borderRadius: '50%', background: accent, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#04060A' }}>
                           <Play size={20} fill="#04060A" />
                         </div>
                       </div>
@@ -548,7 +1200,6 @@ export default function GccNetworkHome({ wlConfig }: GccNetworkHomeProps) {
                     </div>
                   </div>
 
-                  {/* Highlight 3 */}
                   <div 
                     onClick={() => setActiveTab('watch')}
                     style={{
@@ -556,16 +1207,7 @@ export default function GccNetworkHome({ wlConfig }: GccNetworkHomeProps) {
                       border: '1px solid rgba(255, 255, 255, 0.08)',
                       borderRadius: '12px',
                       overflow: 'hidden',
-                      cursor: 'pointer',
-                      transition: 'transform 0.2s ease, border-color 0.2s ease'
-                    }}
-                    onMouseEnter={(e) => {
-                      e.currentTarget.style.transform = 'translateY(-4px)';
-                      e.currentTarget.style.borderColor = `${accent}80`;
-                    }}
-                    onMouseLeave={(e) => {
-                      e.currentTarget.style.transform = 'translateY(0)';
-                      e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.08)';
+                      cursor: 'pointer'
                     }}
                   >
                     <div style={{ height: '180px', position: 'relative' }}>
@@ -575,7 +1217,7 @@ export default function GccNetworkHome({ wlConfig }: GccNetworkHomeProps) {
                         style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                       />
                       <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                        <div style={{ width: '44px', height: '44px', borderRadius: '50%', background: 'rgba(0, 229, 255, 0.9)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#04060A' }}>
+                        <div style={{ width: '44px', height: '44px', borderRadius: '50%', background: accent, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#04060A' }}>
                           <Play size={20} fill="#04060A" />
                         </div>
                       </div>
@@ -597,7 +1239,135 @@ export default function GccNetworkHome({ wlConfig }: GccNetworkHomeProps) {
         )}
 
         {/* ══════════════════════════════════════════════════════════════
-            TAB 2: EVENTS (Pages 4 & 5 of PDF)
+            TAB: WATCH LIVE / PPV (Page 6 of PDF)
+        ══════════════════════════════════════════════════════════════ */}
+        {activeTab === 'watch' && (
+          <section style={{ maxWidth: '1280px', margin: '0 auto', padding: '60px 24px' }}>
+            <div style={{ color: accent, fontSize: '12px', fontWeight: 900, letterSpacing: '2px', textTransform: 'uppercase', marginBottom: '8px' }}>
+              LIVE BROADCASTS
+            </div>
+            <h1 style={{ fontSize: '42px', fontWeight: 900, color: '#FFFFFF', margin: '0 0 12px 0', letterSpacing: '-1px' }}>
+              Watch GCC Live
+            </h1>
+            <p style={{ fontSize: '16px', color: '#94A3B8', margin: '0 0 40px 0', maxWidth: '680px' }}>
+              Purchase access through the official provider and watch from wherever you are.
+            </p>
+
+            {/* PPV Main Feature Card */}
+            <div style={{
+              background: 'rgba(14, 20, 34, 0.85)',
+              border: `1px solid ${accent}40`,
+              borderRadius: '16px',
+              overflow: 'hidden',
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))',
+              gap: '32px',
+              padding: '36px',
+              marginBottom: '64px',
+              boxShadow: `0 12px 40px rgba(0, 229, 255, 0.12)`
+            }}>
+              <div style={{ borderRadius: '12px', overflow: 'hidden', position: 'relative', height: '280px' }}>
+                <img 
+                  src="https://images.unsplash.com/photo-1517838277536-f5f99be501cd?auto=format&fit=crop&q=80&w=800" 
+                  alt="PPV Stream Preview"
+                  style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                />
+                <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <div style={{ width: '56px', height: '56px', borderRadius: '50%', background: accent, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <Play size={24} fill="#04060A" color="#04060A" />
+                  </div>
+                </div>
+              </div>
+
+              <div>
+                <span style={{ 
+                  background: 'rgba(0, 229, 255, 0.15)', 
+                  color: accent, 
+                  fontSize: '11px', 
+                  fontWeight: 900, 
+                  letterSpacing: '1px', 
+                  padding: '4px 10px', 
+                  borderRadius: '4px',
+                  textTransform: 'uppercase'
+                }}>
+                  PAY-PER-VIEW
+                </span>
+
+                <h2 style={{ fontSize: '32px', fontWeight: 900, color: '#FFFFFF', margin: '14px 0 10px 0' }}>
+                  WILDER vs. HERNDON: LIVE PPV
+                </h2>
+                <div style={{ fontSize: '15px', color: '#CBD5E1', marginBottom: '6px' }}>
+                  June 27, 2025 at 8:00 PM EST / 5:00 PM PST
+                </div>
+                <div style={{ fontSize: '14px', color: '#94A3B8', marginBottom: '8px' }}>
+                  Available on Official Global Combat PPV Stream
+                </div>
+                <div style={{ fontSize: '18px', fontWeight: 800, color: '#38BDF8', marginBottom: '24px' }}>
+                  $39.99 / Available Worldwide
+                </div>
+
+                <button
+                  onClick={() => {
+                    setHasPpvAccess(true);
+                    setActiveTab('home');
+                    setTimeout(() => {
+                      const watchSec = document.getElementById('gcc-watch-section');
+                      if (watchSec) watchSec.scrollIntoView({ behavior: 'smooth' });
+                    }, 100);
+                  }}
+                  style={{
+                    background: accent,
+                    color: '#04060A',
+                    padding: '13px 32px',
+                    borderRadius: '8px',
+                    fontSize: '14px',
+                    fontWeight: 900,
+                    border: 'none',
+                    cursor: 'pointer',
+                    boxShadow: `0 4px 16px ${accent}40`,
+                    marginBottom: '10px'
+                  }}
+                >
+                  Buy PPV on Global Combat
+                </button>
+                <div style={{ fontSize: '12px', color: '#64748B' }}>
+                  You'll continue to the provider's secure purchase page.
+                </div>
+              </div>
+            </div>
+
+            {/* How To Watch 3 Steps */}
+            <div>
+              <h2 style={{ fontSize: '24px', fontWeight: 900, color: '#FFFFFF', margin: '0 0 24px 0' }}>
+                How to watch
+              </h2>
+
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '24px' }}>
+                <div style={{ background: 'rgba(14, 20, 34, 0.6)', border: '1px solid rgba(255, 255, 255, 0.08)', borderRadius: '12px', padding: '24px' }}>
+                  <div style={{ fontSize: '24px', fontWeight: 900, color: accent, marginBottom: '8px' }}>01</div>
+                  <div style={{ fontSize: '16px', fontWeight: 700, color: '#FFFFFF', marginBottom: '6px' }}>Purchase access</div>
+                  <div style={{ fontSize: '13.5px', color: '#94A3B8', lineHeight: 1.6 }}>Open the official event purchase link.</div>
+                </div>
+
+                <div style={{ background: 'rgba(14, 20, 34, 0.6)', border: '1px solid rgba(255, 255, 255, 0.08)', borderRadius: '12px', padding: '24px' }}>
+                  <div style={{ fontSize: '24px', fontWeight: 900, color: accent, marginBottom: '8px' }}>02</div>
+                  <div style={{ fontSize: '16px', fontWeight: 700, color: '#FFFFFF', marginBottom: '6px' }}>Follow provider instructions</div>
+                  <div style={{ fontSize: '13.5px', color: '#94A3B8', lineHeight: 1.6 }}>Use its sign-in and viewing guidance.</div>
+                </div>
+
+                <div style={{ background: 'rgba(14, 20, 34, 0.6)', border: '1px solid rgba(255, 255, 255, 0.08)', borderRadius: '12px', padding: '24px' }}>
+                  <div style={{ fontSize: '24px', fontWeight: 900, color: accent, marginBottom: '8px' }}>03</div>
+                  <div style={{ fontSize: '16px', fontWeight: 700, color: '#FFFFFF', marginBottom: '6px' }}>Watch live</div>
+                  <div style={{ fontSize: '13.5px', color: '#94A3B8', lineHeight: 1.6 }}>Tune in at the listed broadcast time.</div>
+                </div>
+              </div>
+            </div>
+
+          </section>
+        )}
+
+        {/* ══════════════════════════════════════════════════════════════
+            TAB: EVENTS (Schedule & Past Events)
         ══════════════════════════════════════════════════════════════ */}
         {activeTab === 'events' && (
           <section style={{ maxWidth: '1280px', margin: '0 auto', padding: '60px 24px' }}>
@@ -618,8 +1388,7 @@ export default function GccNetworkHome({ wlConfig }: GccNetworkHomeProps) {
               gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))',
               gap: '32px',
               padding: '36px',
-              marginBottom: '64px',
-              boxShadow: `0 8px 32px rgba(0, 229, 255, 0.1)`
+              marginBottom: '64px'
             }}>
               <div>
                 <span style={{ 
@@ -673,7 +1442,7 @@ export default function GccNetworkHome({ wlConfig }: GccNetworkHomeProps) {
                   </button>
 
                   <button
-                    onClick={() => setActiveTab('watch')}
+                    onClick={() => setActiveTab('tickets')}
                     style={{
                       background: 'transparent',
                       color: '#FFFFFF',
@@ -685,7 +1454,7 @@ export default function GccNetworkHome({ wlConfig }: GccNetworkHomeProps) {
                       cursor: 'pointer'
                     }}
                   >
-                    Buy PPV Access
+                    Buy Arena Tickets
                   </button>
                 </div>
               </div>
@@ -699,13 +1468,12 @@ export default function GccNetworkHome({ wlConfig }: GccNetworkHomeProps) {
               </div>
             </div>
 
-            {/* Past Events Section */}
+            {/* Past Events */}
             <h2 style={{ fontSize: '28px', fontWeight: 900, color: '#FFFFFF', margin: '0 0 24px 0', letterSpacing: '-0.5px' }}>
               Past events
             </h2>
 
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '24px' }}>
-              {/* Past Event 1 */}
               <div style={{
                 background: 'rgba(14, 20, 34, 0.6)',
                 border: '1px solid rgba(255, 255, 255, 0.08)',
@@ -747,7 +1515,6 @@ export default function GccNetworkHome({ wlConfig }: GccNetworkHomeProps) {
                 </button>
               </div>
 
-              {/* Past Event 2 */}
               <div style={{
                 background: 'rgba(14, 20, 34, 0.6)',
                 border: '1px solid rgba(255, 255, 255, 0.08)',
@@ -793,133 +1560,102 @@ export default function GccNetworkHome({ wlConfig }: GccNetworkHomeProps) {
         )}
 
         {/* ══════════════════════════════════════════════════════════════
-            TAB 3: WATCH / PPV (Page 6 of PDF)
+            TAB: BUY TICKETS (Dedicated Full Page)
         ══════════════════════════════════════════════════════════════ */}
-        {activeTab === 'watch' && (
+        {activeTab === 'tickets' && (
           <section style={{ maxWidth: '1280px', margin: '0 auto', padding: '60px 24px' }}>
-            <div style={{ color: accent, fontSize: '12px', fontWeight: 900, letterSpacing: '2px', textTransform: 'uppercase', marginBottom: '8px' }}>
-              LIVE BROADCASTS
+            <div style={{ textAlign: 'center', maxWidth: '720px', margin: '0 auto 48px auto' }}>
+              <div style={{ color: accent, fontSize: '12px', fontWeight: 900, letterSpacing: '2px', textTransform: 'uppercase', marginBottom: '10px' }}>
+                TICKETING & RESERVATIONS
+              </div>
+              <h1 style={{ fontSize: '42px', fontWeight: 900, color: '#FFFFFF', margin: '0 0 14px 0', letterSpacing: '-1px' }}>
+                Buy Event Tickets
+              </h1>
+              <p style={{ fontSize: '16px', color: '#94A3B8', margin: 0 }}>
+                Select your seating section for <strong>Wilder vs. Herndon: Legacy Reloaded</strong>.
+              </p>
             </div>
-            <h1 style={{ fontSize: '42px', fontWeight: 900, color: '#FFFFFF', margin: '0 0 12px 0', letterSpacing: '-1px' }}>
-              Watch GCC live
-            </h1>
-            <p style={{ fontSize: '16px', color: '#94A3B8', margin: '0 0 40px 0', maxWidth: '680px' }}>
-              Purchase access through the official provider and watch from wherever you are.
-            </p>
 
-            {/* PPV Main Feature Card */}
-            <div style={{
-              background: 'rgba(14, 20, 34, 0.85)',
-              border: `1px solid ${accent}40`,
-              borderRadius: '16px',
-              overflow: 'hidden',
-              display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))',
-              gap: '32px',
-              padding: '36px',
-              marginBottom: '64px',
-              boxShadow: `0 12px 40px rgba(0, 229, 255, 0.12)`
-            }}>
-              <div style={{ borderRadius: '12px', overflow: 'hidden', position: 'relative', height: '260px' }}>
-                <img 
-                  src="https://images.unsplash.com/photo-1517838277536-f5f99be501cd?auto=format&fit=crop&q=80&w=800" 
-                  alt="PPV Stream Preview"
-                  style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                />
-                <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  <div style={{ width: '56px', height: '56px', borderRadius: '50%', background: accent, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                    <Play size={24} fill="#04060A" color="#04060A" />
+            {/* Ticket Tier Cards Grid */}
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '24px', marginBottom: '40px' }}>
+              {TICKET_TIERS.map(tier => {
+                const isSelected = selectedTier.id === tier.id;
+                return (
+                  <div
+                    key={tier.id}
+                    onClick={() => setSelectedTier(tier)}
+                    style={{
+                      background: isSelected ? 'rgba(0, 229, 255, 0.05)' : 'rgba(14, 20, 34, 0.65)',
+                      border: isSelected ? `2px solid ${accent}` : '1px solid rgba(255, 255, 255, 0.08)',
+                      borderRadius: '16px',
+                      padding: '32px 28px',
+                      cursor: 'pointer',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      justifyContent: 'space-between',
+                      boxShadow: isSelected ? `0 12px 32px rgba(0, 229, 255, 0.15)` : 'none'
+                    }}
+                  >
+                    <div>
+                      <div style={{ fontSize: '12px', fontWeight: 800, color: isSelected ? accent : '#64748B', letterSpacing: '1px', textTransform: 'uppercase', marginBottom: '8px' }}>
+                        {tier.badge}
+                      </div>
+                      <h3 style={{ fontSize: '22px', fontWeight: 900, color: '#FFFFFF', margin: '0 0 10px 0' }}>
+                        {tier.name}
+                      </h3>
+                      <p style={{ fontSize: '13.5px', color: '#94A3B8', lineHeight: 1.6, margin: '0 0 20px 0' }}>
+                        {tier.description}
+                      </p>
+
+                      <div style={{ display: 'flex', alignItems: 'baseline', gap: '4px', marginBottom: '24px' }}>
+                        <span style={{ fontSize: '36px', fontWeight: 900, color: '#FFFFFF' }}>
+                          ${tier.price}
+                        </span>
+                        <span style={{ fontSize: '13px', color: '#64748B' }}>/ ticket</span>
+                      </div>
+
+                      <div style={{ borderTop: '1px solid rgba(255, 255, 255, 0.06)', paddingTop: '20px', marginBottom: '24px' }}>
+                        {tier.features.map((feat, i) => (
+                          <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '10px', fontSize: '13px', color: '#CBD5E1' }}>
+                            <Check size={14} color={accent} style={{ flexShrink: 0 }} />
+                            <span>{feat}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setSelectedTier(tier);
+                        setCheckoutModalOpen(true);
+                      }}
+                      style={{
+                        width: '100%',
+                        background: isSelected ? accent : 'rgba(255, 255, 255, 0.08)',
+                        color: isSelected ? '#04060A' : '#FFFFFF',
+                        border: isSelected ? 'none' : '1px solid rgba(255, 255, 255, 0.15)',
+                        padding: '12px 20px',
+                        borderRadius: '8px',
+                        fontSize: '13.5px',
+                        fontWeight: 900,
+                        cursor: 'pointer'
+                      }}
+                    >
+                      {isSelected ? 'Proceed to Checkout' : 'Select Tier'}
+                    </button>
                   </div>
-                </div>
-              </div>
-
-              <div>
-                <span style={{ 
-                  background: 'rgba(0, 229, 255, 0.15)', 
-                  color: accent, 
-                  fontSize: '11px', 
-                  fontWeight: 900, 
-                  letterSpacing: '1px', 
-                  padding: '4px 10px', 
-                  borderRadius: '4px',
-                  textTransform: 'uppercase'
-                }}>
-                  PAY-PER-VIEW
-                </span>
-
-                <h2 style={{ fontSize: '32px', fontWeight: 900, color: '#FFFFFF', margin: '14px 0 10px 0' }}>
-                  WILDER vs. HERNDON: LIVE PPV
-                </h2>
-                <div style={{ fontSize: '15px', color: '#CBD5E1', marginBottom: '6px' }}>
-                  June 27, 2025 at 8:00 PM EST / 5:00 PM PST
-                </div>
-                <div style={{ fontSize: '14px', color: '#94A3B8', marginBottom: '8px' }}>
-                  Available on Official Global Combat PPV Stream
-                </div>
-                <div style={{ fontSize: '16px', fontWeight: 700, color: '#38BDF8', marginBottom: '24px' }}>
-                  $39.99 / Available Worldwide
-                </div>
-
-                <button
-                  onClick={() => alert('Redirecting to official GCC PPV purchase portal...')}
-                  style={{
-                    background: accent,
-                    color: '#04060A',
-                    padding: '12px 28px',
-                    borderRadius: '8px',
-                    fontSize: '14px',
-                    fontWeight: 900,
-                    border: 'none',
-                    cursor: 'pointer',
-                    boxShadow: `0 4px 16px ${accent}40`,
-                    marginBottom: '10px'
-                  }}
-                >
-                  Buy PPV on Global Combat
-                </button>
-                <div style={{ fontSize: '12px', color: '#64748B' }}>
-                  You'll continue to the provider's secure purchase page.
-                </div>
-              </div>
+                );
+              })}
             </div>
-
-            {/* How To Watch 3 Steps */}
-            <div>
-              <h2 style={{ fontSize: '24px', fontWeight: 900, color: '#FFFFFF', margin: '0 0 24px 0' }}>
-                How to watch
-              </h2>
-
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '24px' }}>
-                <div style={{ background: 'rgba(14, 20, 34, 0.6)', border: '1px solid rgba(255, 255, 255, 0.08)', borderRadius: '12px', padding: '24px' }}>
-                  <div style={{ fontSize: '24px', fontWeight: 900, color: accent, marginBottom: '8px' }}>01</div>
-                  <div style={{ fontSize: '16px', fontWeight: 700, color: '#FFFFFF', marginBottom: '6px' }}>Purchase access</div>
-                  <div style={{ fontSize: '13.5px', color: '#94A3B8', lineHeight: 1.6 }}>Open the official event purchase link.</div>
-                </div>
-
-                <div style={{ background: 'rgba(14, 20, 34, 0.6)', border: '1px solid rgba(255, 255, 255, 0.08)', borderRadius: '12px', padding: '24px' }}>
-                  <div style={{ fontSize: '24px', fontWeight: 900, color: accent, marginBottom: '8px' }}>02</div>
-                  <div style={{ fontSize: '16px', fontWeight: 700, color: '#FFFFFF', marginBottom: '6px' }}>Follow provider instructions</div>
-                  <div style={{ fontSize: '13.5px', color: '#94A3B8', lineHeight: 1.6 }}>Use its sign-in and viewing guidance.</div>
-                </div>
-
-                <div style={{ background: 'rgba(14, 20, 34, 0.6)', border: '1px solid rgba(255, 255, 255, 0.08)', borderRadius: '12px', padding: '24px' }}>
-                  <div style={{ fontSize: '24px', fontWeight: 900, color: accent, marginBottom: '8px' }}>03</div>
-                  <div style={{ fontSize: '16px', fontWeight: 700, color: '#FFFFFF', marginBottom: '6px' }}>Watch live</div>
-                  <div style={{ fontSize: '13.5px', color: '#94A3B8', lineHeight: 1.6 }}>Tune in at the listed broadcast time.</div>
-                </div>
-              </div>
-            </div>
-
           </section>
         )}
 
         {/* ══════════════════════════════════════════════════════════════
-            TAB 4: ABOUT GCC & LEADERSHIP (Pages 7 & 8 of PDF)
+            TAB: ABOUT (Company & Leadership)
         ══════════════════════════════════════════════════════════════ */}
         {activeTab === 'about' && (
           <section style={{ maxWidth: '1280px', margin: '0 auto', padding: '60px 24px' }}>
-            
-            {/* Overview */}
             <div style={{ 
               display: 'grid', 
               gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', 
@@ -963,24 +1699,8 @@ export default function GccNetworkHome({ wlConfig }: GccNetworkHomeProps) {
               </h2>
 
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '28px' }}>
-                
-                {/* 1. Nelson Lopez Jr. */}
-                <div style={{ 
-                  background: 'rgba(14, 20, 34, 0.7)', 
-                  border: '1px solid rgba(255, 255, 255, 0.08)', 
-                  borderRadius: '14px', 
-                  padding: '28px',
-                  display: 'flex',
-                  flexDirection: 'column'
-                }}>
-                  <div style={{ 
-                    width: '100%', 
-                    height: '240px', 
-                    borderRadius: '10px', 
-                    overflow: 'hidden', 
-                    marginBottom: '20px',
-                    background: '#151C2C'
-                  }}>
+                <div style={{ background: 'rgba(14, 20, 34, 0.7)', border: '1px solid rgba(255, 255, 255, 0.08)', borderRadius: '14px', padding: '28px' }}>
+                  <div style={{ width: '100%', height: '240px', borderRadius: '10px', overflow: 'hidden', marginBottom: '20px', background: '#151C2C' }}>
                     <img 
                       src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=600" 
                       alt="Nelson Lopez Jr." 
@@ -1000,23 +1720,8 @@ export default function GccNetworkHome({ wlConfig }: GccNetworkHomeProps) {
                   </p>
                 </div>
 
-                {/* 2. Joshua Chasse */}
-                <div style={{ 
-                  background: 'rgba(14, 20, 34, 0.7)', 
-                  border: '1px solid rgba(255, 255, 255, 0.08)', 
-                  borderRadius: '14px', 
-                  padding: '28px',
-                  display: 'flex',
-                  flexDirection: 'column'
-                }}>
-                  <div style={{ 
-                    width: '100%', 
-                    height: '240px', 
-                    borderRadius: '10px', 
-                    overflow: 'hidden', 
-                    marginBottom: '20px',
-                    background: '#151C2C'
-                  }}>
+                <div style={{ background: 'rgba(14, 20, 34, 0.7)', border: '1px solid rgba(255, 255, 255, 0.08)', borderRadius: '14px', padding: '28px' }}>
+                  <div style={{ width: '100%', height: '240px', borderRadius: '10px', overflow: 'hidden', marginBottom: '20px', background: '#151C2C' }}>
                     <img 
                       src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&q=80&w=600" 
                       alt="Joshua Chasse" 
@@ -1036,23 +1741,8 @@ export default function GccNetworkHome({ wlConfig }: GccNetworkHomeProps) {
                   </p>
                 </div>
 
-                {/* 3. Zab Judah */}
-                <div style={{ 
-                  background: 'rgba(14, 20, 34, 0.7)', 
-                  border: '1px solid rgba(255, 255, 255, 0.08)', 
-                  borderRadius: '14px', 
-                  padding: '28px',
-                  display: 'flex',
-                  flexDirection: 'column'
-                }}>
-                  <div style={{ 
-                    width: '100%', 
-                    height: '240px', 
-                    borderRadius: '10px', 
-                    overflow: 'hidden', 
-                    marginBottom: '20px',
-                    background: '#151C2C'
-                  }}>
+                <div style={{ background: 'rgba(14, 20, 34, 0.7)', border: '1px solid rgba(255, 255, 255, 0.08)', borderRadius: '14px', padding: '28px' }}>
+                  <div style={{ width: '100%', height: '240px', borderRadius: '10px', overflow: 'hidden', marginBottom: '20px', background: '#151C2C' }}>
                     <img 
                       src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=600" 
                       alt="Zab Judah" 
@@ -1071,15 +1761,13 @@ export default function GccNetworkHome({ wlConfig }: GccNetworkHomeProps) {
                     athletes and its focus on fighter opportunity.
                   </p>
                 </div>
-
               </div>
             </div>
-
           </section>
         )}
 
         {/* ══════════════════════════════════════════════════════════════
-            TAB 5: CONTACT (Page 9 of PDF)
+            TAB: CONTACT (Page 9 of PDF)
         ══════════════════════════════════════════════════════════════ */}
         {activeTab === 'contact' && (
           <section style={{ maxWidth: '1100px', margin: '0 auto', padding: '60px 24px' }}>
@@ -1089,8 +1777,6 @@ export default function GccNetworkHome({ wlConfig }: GccNetworkHomeProps) {
               gap: '48px',
               alignItems: 'flex-start'
             }}>
-              
-              {/* Left Column: Context & Support info */}
               <div>
                 <div style={{ color: accent, fontSize: '12px', fontWeight: 900, letterSpacing: '2px', textTransform: 'uppercase', marginBottom: '8px' }}>
                   LET'S CONNECT
@@ -1102,13 +1788,7 @@ export default function GccNetworkHome({ wlConfig }: GccNetworkHomeProps) {
                   Questions about an event? Interested in sponsorship or media access? Contact the GCC team.
                 </p>
 
-                <div style={{ 
-                  background: 'rgba(14, 20, 34, 0.6)', 
-                  border: '1px solid rgba(255, 255, 255, 0.08)', 
-                  borderRadius: '12px', 
-                  padding: '20px',
-                  marginBottom: '28px'
-                }}>
+                <div style={{ background: 'rgba(14, 20, 34, 0.6)', border: '1px solid rgba(255, 255, 255, 0.08)', borderRadius: '12px', padding: '20px', marginBottom: '28px' }}>
                   <div style={{ fontSize: '12px', fontWeight: 800, color: '#64748B', textTransform: 'uppercase', marginBottom: '4px' }}>
                     DIRECT EMAIL
                   </div>
@@ -1117,12 +1797,7 @@ export default function GccNetworkHome({ wlConfig }: GccNetworkHomeProps) {
                   </a>
                 </div>
 
-                <div style={{ 
-                  background: 'rgba(14, 20, 34, 0.6)', 
-                  border: '1px solid rgba(255, 255, 255, 0.08)', 
-                  borderRadius: '12px', 
-                  padding: '20px'
-                }}>
+                <div style={{ background: 'rgba(14, 20, 34, 0.6)', border: '1px solid rgba(255, 255, 255, 0.08)', borderRadius: '12px', padding: '20px' }}>
                   <h3 style={{ fontSize: '16px', fontWeight: 800, color: '#FFFFFF', margin: '0 0 8px 0' }}>
                     Ticket or PPV support
                   </h3>
@@ -1132,31 +1807,13 @@ export default function GccNetworkHome({ wlConfig }: GccNetworkHomeProps) {
                   <div style={{ display: 'flex', gap: '12px' }}>
                     <button 
                       onClick={() => alert('Support guidance: Check your order confirmation email from the ticket provider.')}
-                      style={{
-                        background: 'rgba(255, 255, 255, 0.05)',
-                        border: '1px solid rgba(255, 255, 255, 0.15)',
-                        color: '#FFFFFF',
-                        padding: '6px 14px',
-                        borderRadius: '6px',
-                        fontSize: '12px',
-                        fontWeight: 700,
-                        cursor: 'pointer'
-                      }}
+                      style={{ background: 'rgba(255, 255, 255, 0.05)', border: '1px solid rgba(255, 255, 255, 0.15)', color: '#FFFFFF', padding: '6px 14px', borderRadius: '6px', fontSize: '12px', fontWeight: 700, cursor: 'pointer' }}
                     >
                       Ticket support
                     </button>
                     <button 
                       onClick={() => alert('Support guidance: Sign into your streaming provider account to restore PPV access.')}
-                      style={{
-                        background: 'rgba(255, 255, 255, 0.05)',
-                        border: '1px solid rgba(255, 255, 255, 0.15)',
-                        color: '#FFFFFF',
-                        padding: '6px 14px',
-                        borderRadius: '6px',
-                        fontSize: '12px',
-                        fontWeight: 700,
-                        cursor: 'pointer'
-                      }}
+                      style={{ background: 'rgba(255, 255, 255, 0.05)', border: '1px solid rgba(255, 255, 255, 0.15)', color: '#FFFFFF', padding: '6px 14px', borderRadius: '6px', fontSize: '12px', fontWeight: 700, cursor: 'pointer' }}
                     >
                       PPV support
                     </button>
@@ -1164,13 +1821,8 @@ export default function GccNetworkHome({ wlConfig }: GccNetworkHomeProps) {
                 </div>
               </div>
 
-              {/* Right Column: Contact Form */}
-              <div style={{ 
-                background: 'rgba(14, 20, 34, 0.85)', 
-                border: '1px solid rgba(255, 255, 255, 0.1)', 
-                borderRadius: '16px', 
-                padding: '36px' 
-              }}>
+              {/* Contact Form */}
+              <div style={{ background: 'rgba(14, 20, 34, 0.85)', border: '1px solid rgba(255, 255, 255, 0.1)', borderRadius: '16px', padding: '36px' }}>
                 {formSubmitted ? (
                   <div style={{ textAlign: 'center', padding: '40px 20px' }}>
                     <div style={{ width: '48px', height: '48px', borderRadius: '50%', background: 'rgba(0, 229, 255, 0.15)', color: accent, display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px auto' }}>
@@ -1195,17 +1847,7 @@ export default function GccNetworkHome({ wlConfig }: GccNetworkHomeProps) {
                         value={formName}
                         onChange={(e) => setFormName(e.target.value)}
                         placeholder="Your name"
-                        style={{
-                          width: '100%',
-                          background: 'rgba(4, 6, 10, 0.7)',
-                          border: '1px solid rgba(255, 255, 255, 0.12)',
-                          borderRadius: '8px',
-                          padding: '12px 16px',
-                          color: '#FFFFFF',
-                          fontSize: '14px',
-                          outline: 'none',
-                          boxSizing: 'border-box'
-                        }}
+                        style={{ width: '100%', background: 'rgba(4, 6, 10, 0.7)', border: '1px solid rgba(255, 255, 255, 0.12)', borderRadius: '8px', padding: '12px 16px', color: '#FFFFFF', fontSize: '14px', outline: 'none', boxSizing: 'border-box' }}
                       />
                     </div>
 
@@ -1219,17 +1861,7 @@ export default function GccNetworkHome({ wlConfig }: GccNetworkHomeProps) {
                         value={formEmail}
                         onChange={(e) => setFormEmail(e.target.value)}
                         placeholder="you@example.com"
-                        style={{
-                          width: '100%',
-                          background: 'rgba(4, 6, 10, 0.7)',
-                          border: '1px solid rgba(255, 255, 255, 0.12)',
-                          borderRadius: '8px',
-                          padding: '12px 16px',
-                          color: '#FFFFFF',
-                          fontSize: '14px',
-                          outline: 'none',
-                          boxSizing: 'border-box'
-                        }}
+                        style={{ width: '100%', background: 'rgba(4, 6, 10, 0.7)', border: '1px solid rgba(255, 255, 255, 0.12)', borderRadius: '8px', padding: '12px 16px', color: '#FFFFFF', fontSize: '14px', outline: 'none', boxSizing: 'border-box' }}
                       />
                     </div>
 
@@ -1240,17 +1872,7 @@ export default function GccNetworkHome({ wlConfig }: GccNetworkHomeProps) {
                       <select
                         value={formType}
                         onChange={(e) => setFormType(e.target.value)}
-                        style={{
-                          width: '100%',
-                          background: 'rgba(4, 6, 10, 0.7)',
-                          border: '1px solid rgba(255, 255, 255, 0.12)',
-                          borderRadius: '8px',
-                          padding: '12px 16px',
-                          color: '#FFFFFF',
-                          fontSize: '14px',
-                          outline: 'none',
-                          boxSizing: 'border-box'
-                        }}
+                        style={{ width: '100%', background: 'rgba(4, 6, 10, 0.7)', border: '1px solid rgba(255, 255, 255, 0.12)', borderRadius: '8px', padding: '12px 16px', color: '#FFFFFF', fontSize: '14px', outline: 'none', boxSizing: 'border-box' }}
                       >
                         <option value="General">General Inquiry</option>
                         <option value="Sponsorship">Sponsorship & Commercial</option>
@@ -1268,47 +1890,242 @@ export default function GccNetworkHome({ wlConfig }: GccNetworkHomeProps) {
                         value={formMessage}
                         onChange={(e) => setFormMessage(e.target.value)}
                         placeholder="How can we help?"
-                        style={{
-                          width: '100%',
-                          background: 'rgba(4, 6, 10, 0.7)',
-                          border: '1px solid rgba(255, 255, 255, 0.12)',
-                          borderRadius: '8px',
-                          padding: '12px 16px',
-                          color: '#FFFFFF',
-                          fontSize: '14px',
-                          outline: 'none',
-                          boxSizing: 'border-box',
-                          resize: 'vertical'
-                        }}
+                        style={{ width: '100%', background: 'rgba(4, 6, 10, 0.7)', border: '1px solid rgba(255, 255, 255, 0.12)', borderRadius: '8px', padding: '12px 16px', color: '#FFFFFF', fontSize: '14px', outline: 'none', boxSizing: 'border-box', resize: 'vertical' }}
                       />
                     </div>
 
                     <button
                       type="submit"
-                      style={{
-                        width: '100%',
-                        background: accent,
-                        color: '#04060A',
-                        padding: '13px 20px',
-                        borderRadius: '8px',
-                        fontSize: '14px',
-                        fontWeight: 900,
-                        border: 'none',
-                        cursor: 'pointer',
-                        boxShadow: `0 4px 16px ${accent}40`
-                      }}
+                      style={{ width: '100%', background: accent, color: '#04060A', padding: '13px 20px', borderRadius: '8px', fontSize: '14px', fontWeight: 900, border: 'none', cursor: 'pointer', boxShadow: `0 4px 16px ${accent}40` }}
                     >
                       Send Inquiry
                     </button>
                   </form>
                 )}
               </div>
-
             </div>
           </section>
         )}
 
       </main>
+
+      {/* ── Ticket Checkout Modal (Interactive Ticket Buying) ── */}
+      <AnimatePresence>
+        {checkoutModalOpen && (
+          <div style={{
+            position: 'fixed',
+            inset: 0,
+            zIndex: 110,
+            background: 'rgba(0, 0, 0, 0.85)',
+            backdropFilter: 'blur(10px)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: '20px'
+          }}>
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              style={{
+                background: '#0D111A',
+                border: `1px solid ${accent}50`,
+                borderRadius: '20px',
+                maxWidth: '600px',
+                width: '100%',
+                maxHeight: '92vh',
+                overflowY: 'auto',
+                padding: '36px',
+                position: 'relative',
+                boxShadow: `0 20px 60px rgba(0, 229, 255, 0.2)`
+              }}
+            >
+              <button
+                onClick={() => {
+                  setCheckoutModalOpen(false);
+                  setCheckoutCompleted(false);
+                }}
+                style={{
+                  position: 'absolute',
+                  top: '20px',
+                  right: '20px',
+                  background: 'rgba(255, 255, 255, 0.08)',
+                  border: 'none',
+                  color: '#FFFFFF',
+                  padding: '8px',
+                  borderRadius: '50%',
+                  cursor: 'pointer'
+                }}
+              >
+                <X size={18} />
+              </button>
+
+              {checkoutCompleted ? (
+                /* Ticket Confirmation / QR Pass */
+                <div style={{ textAlign: 'center' }}>
+                  <div style={{ width: '56px', height: '56px', borderRadius: '50%', background: 'rgba(16, 185, 129, 0.15)', color: '#10B981', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px auto' }}>
+                    <Check size={32} />
+                  </div>
+                  <h3 style={{ fontSize: '26px', fontWeight: 900, color: '#FFFFFF', margin: '0 0 8px 0' }}>
+                    Tickets Confirmed!
+                  </h3>
+                  <p style={{ fontSize: '14px', color: '#94A3B8', margin: '0 0 24px 0' }}>
+                    A confirmation receipt has been sent to <strong>{customerEmail}</strong>.
+                  </p>
+
+                  {/* Digital Arena Pass */}
+                  <div style={{
+                    background: '#04060A',
+                    border: `1.5px dashed ${accent}60`,
+                    borderRadius: '16px',
+                    padding: '24px',
+                    marginBottom: '24px',
+                    textAlign: 'left'
+                  }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid rgba(255, 255, 255, 0.08)', paddingBottom: '14px', marginBottom: '14px' }}>
+                      <div>
+                        <div style={{ fontSize: '11px', fontWeight: 900, color: accent, letterSpacing: '1px' }}>GLOBAL COMBAT COLLECTIVE</div>
+                        <div style={{ fontSize: '16px', fontWeight: 900, color: '#FFFFFF' }}>WILDER vs. HERNDON</div>
+                      </div>
+                      <div style={{ fontSize: '12px', color: '#94A3B8', textAlign: 'right' }}>
+                        SEC: 104 • ROW: A<br />
+                        QTY: {ticketQuantity} SEATS
+                      </div>
+                    </div>
+
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '16px' }}>
+                      <div>
+                        <div style={{ fontSize: '12px', color: '#64748B' }}>Tier:</div>
+                        <div style={{ fontSize: '14px', fontWeight: 700, color: '#FFFFFF' }}>{selectedTier.name}</div>
+                        <div style={{ fontSize: '12px', color: '#94A3B8', marginTop: '4px' }}>June 27, 2025 • Doors 7:00 PM CST</div>
+                        <div style={{ fontSize: '12px', color: '#94A3B8' }}>Koch Arena, Wichita, KS</div>
+                      </div>
+
+                      {/* Barcode/QR Code Graphic */}
+                      <div style={{ background: '#FFFFFF', padding: '10px', borderRadius: '8px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                        <QrCode size={64} color="#000000" />
+                        <span style={{ fontSize: '8px', color: '#000000', fontWeight: 800, marginTop: '2px' }}>SCAN AT GATE</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div style={{ display: 'flex', gap: '12px', justifyContent: 'center' }}>
+                    <button
+                      onClick={() => alert('Digital Wallet Pass (.pkpass) downloaded!')}
+                      style={{
+                        background: accent,
+                        color: '#04060A',
+                        padding: '12px 24px',
+                        borderRadius: '8px',
+                        fontSize: '13px',
+                        fontWeight: 900,
+                        border: 'none',
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '6px'
+                      }}
+                    >
+                      <Download size={14} />
+                      Save to Mobile Wallet
+                    </button>
+                    <button
+                      onClick={() => setCheckoutModalOpen(false)}
+                      style={{
+                        background: 'rgba(255, 255, 255, 0.08)',
+                        color: '#FFFFFF',
+                        padding: '12px 20px',
+                        borderRadius: '8px',
+                        fontSize: '13px',
+                        fontWeight: 700,
+                        border: 'none',
+                        cursor: 'pointer'
+                      }}
+                    >
+                      Done
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                /* Ticket Checkout Form */
+                <div>
+                  <div style={{ color: accent, fontSize: '11px', fontWeight: 900, letterSpacing: '1.5px', textTransform: 'uppercase', marginBottom: '8px' }}>
+                    ARENA TICKET CHECKOUT
+                  </div>
+                  <h3 style={{ fontSize: '24px', fontWeight: 900, color: '#FFFFFF', margin: '0 0 16px 0' }}>
+                    Complete Ticket Purchase
+                  </h3>
+
+                  {/* Summary Box */}
+                  <div style={{ background: 'rgba(4, 6, 10, 0.6)', border: '1px solid rgba(255, 255, 255, 0.08)', borderRadius: '12px', padding: '16px', marginBottom: '24px' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
+                      <span style={{ color: '#94A3B8', fontSize: '14px' }}>Event:</span>
+                      <strong style={{ color: '#FFFFFF', fontSize: '14px' }}>Wilder vs. Herndon</strong>
+                    </div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
+                      <span style={{ color: '#94A3B8', fontSize: '14px' }}>Tier:</span>
+                      <strong style={{ color: accent, fontSize: '14px' }}>{selectedTier.name}</strong>
+                    </div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
+                      <span style={{ color: '#94A3B8', fontSize: '14px' }}>Quantity:</span>
+                      <span style={{ color: '#FFFFFF', fontSize: '14px' }}>{ticketQuantity} Tickets (${selectedTier.price} ea)</span>
+                    </div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', borderTop: '1px solid rgba(255, 255, 255, 0.06)', paddingTop: '8px', marginTop: '8px' }}>
+                      <span style={{ color: '#FFFFFF', fontWeight: 800, fontSize: '15px' }}>Total Amount:</span>
+                      <strong style={{ color: '#38BDF8', fontSize: '18px' }}>${totalAmount.toFixed(2)}</strong>
+                    </div>
+                  </div>
+
+                  {/* Customer Information */}
+                  <div style={{ marginBottom: '18px' }}>
+                    <label style={{ display: 'block', fontSize: '13px', fontWeight: 700, color: '#CBD5E1', marginBottom: '6px' }}>
+                      Ticket Holder Name
+                    </label>
+                    <input 
+                      type="text"
+                      value={customerName}
+                      onChange={(e) => setCustomerName(e.target.value)}
+                      style={{ width: '100%', background: 'rgba(4, 6, 10, 0.7)', border: '1px solid rgba(255, 255, 255, 0.12)', borderRadius: '8px', padding: '11px 14px', color: '#FFFFFF', fontSize: '14px', outline: 'none', boxSizing: 'border-box' }}
+                    />
+                  </div>
+
+                  <div style={{ marginBottom: '24px' }}>
+                    <label style={{ display: 'block', fontSize: '13px', fontWeight: 700, color: '#CBD5E1', marginBottom: '6px' }}>
+                      Email for Mobile Tickets
+                    </label>
+                    <input 
+                      type="email"
+                      value={customerEmail}
+                      onChange={(e) => setCustomerEmail(e.target.value)}
+                      style={{ width: '100%', background: 'rgba(4, 6, 10, 0.7)', border: '1px solid rgba(255, 255, 255, 0.12)', borderRadius: '8px', padding: '11px 14px', color: '#FFFFFF', fontSize: '14px', outline: 'none', boxSizing: 'border-box' }}
+                    />
+                  </div>
+
+                  <button
+                    onClick={() => setCheckoutCompleted(true)}
+                    style={{
+                      width: '100%',
+                      background: accent,
+                      color: '#04060A',
+                      padding: '14px 20px',
+                      borderRadius: '8px',
+                      fontSize: '14px',
+                      fontWeight: 900,
+                      letterSpacing: '0.5px',
+                      border: 'none',
+                      cursor: 'pointer',
+                      boxShadow: `0 4px 20px ${accent}40`
+                    }}
+                  >
+                    Confirm & Authorize ${totalAmount.toFixed(2)}
+                  </button>
+                </div>
+              )}
+
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
 
       {/* ── Event Detail Modal (Page 5 Mockup) ── */}
       <AnimatePresence>
@@ -1393,7 +2210,10 @@ export default function GccNetworkHome({ wlConfig }: GccNetworkHomeProps) {
 
               <div style={{ display: 'flex', gap: '12px', marginBottom: '32px' }}>
                 <button
-                  onClick={() => alert('Opening ticket provider...')}
+                  onClick={() => {
+                    setSelectedEventModal(null);
+                    setCheckoutModalOpen(true);
+                  }}
                   style={{
                     background: accent,
                     color: '#04060A',
