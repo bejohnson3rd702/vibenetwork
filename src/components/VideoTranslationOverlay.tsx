@@ -351,7 +351,8 @@ export const VideoTranslationOverlay: React.FC<VideoTranslationOverlayProps> = (
           preloadedAudioRef.current.set(key, audio);
           audio.play().catch(e => console.warn('[VideoTranslationOverlay] Audio autoplay notice:', e));
         } else {
-          // Fallback on-demand TTS without muting to dead silence until audio arrives
+          // Fallback on-demand TTS: mute native video immediately so it does not overlap
+          if (onMuteVideo) onMuteVideo(true);
           translateText({
             text: activeSegment.text,
             sourceLang: 'english-united-states',
@@ -456,9 +457,22 @@ export const VideoTranslationOverlay: React.FC<VideoTranslationOverlayProps> = (
                 }
               }}
               onChange={e => {
-                setSelectedLang(e.target.value);
+                const nextLang = e.target.value;
+                if (voiceoverAudioRef.current) {
+                  try {
+                    voiceoverAudioRef.current.pause();
+                    voiceoverAudioRef.current.currentTime = 0;
+                  } catch (_) {}
+                  voiceoverAudioRef.current = null;
+                }
                 playedSegmentIndices.current.clear();
                 lastSegmentIndex.current = -1;
+                setSelectedLang(nextLang);
+                if (nextLang === 'english-united-states') {
+                  if (onMuteVideo) onMuteVideo(false);
+                } else {
+                  if (onMuteVideo) onMuteVideo(true);
+                }
               }}
               style={{
                 background: 'rgba(255, 255, 255, 0.08)',

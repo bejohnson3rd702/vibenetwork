@@ -76,6 +76,8 @@ export const FeedVideoPlayer: React.FC<FeedVideoPlayerProps> = ({
   const [showTranslateMenu, setShowTranslateMenu] = useState(false);
   const [captionsEnabled, setCaptionsEnabled] = useState(false); // Default CC to OFF as requested
   const [translationAudioMuted, setTranslationAudioMuted] = useState(false);
+  const translationAudioMutedRef = useRef(translationAudioMuted);
+  translationAudioMutedRef.current = translationAudioMuted;
   const [ttsPlaying, setTtsPlaying] = useState(false);
   const [loadingTranscript, setLoadingTranscript] = useState(false);
   const [isTranslating, setIsTranslating] = useState(false);
@@ -334,6 +336,7 @@ export const FeedVideoPlayer: React.FC<FeedVideoPlayerProps> = ({
   }, [transcript, currentTime]);
 
   const activeSegment = activeSegmentIndex >= 0 ? transcript[activeSegmentIndex] : null;
+  activeSegmentIndexRef.current = activeSegmentIndex;
 
   // 4b. Pre-warm upcoming dialogue lines for active languages as playback progresses
   useEffect(() => {
@@ -439,14 +442,15 @@ export const FeedVideoPlayer: React.FC<FeedVideoPlayerProps> = ({
   }, [currentSubtitleText, activeSegment, activeSegmentIndex, transcript, currentTime]);
 
   // 6. Play translation voiceover (TTS) in selected language (with 0ms instant playback cache)
-  const playSegmentVoiceover = async (segmentIndex: number, targetLang = selectedLang) => {
+  const playSegmentVoiceover = async (segmentIndex: number, targetLang = selectedLangRef.current, forcePlay = false) => {
     if (!transcript || segmentIndex < 0 || segmentIndex >= transcript.length) return;
-    if (targetLang === 'english-united-states' || translationAudioMuted) return;
+    if (targetLang === 'english-united-states') return;
+    if (!forcePlay && translationAudioMutedRef.current) return;
 
     const seg = transcript[segmentIndex];
     if (!seg || !seg.text || (seg as any).isPlaceholder) return;
 
-    const effectiveVoiceId = clonedVoiceId || getDefaultVoiceId() || undefined;
+    const effectiveVoiceId = clonedVoiceIdRef.current || clonedVoiceId || getDefaultVoiceId() || undefined;
     const cacheKey = `${targetLang}:${seg.text}`;
     let audioBase64 = ttsAudioCacheRef.current[cacheKey];
 
@@ -497,20 +501,24 @@ export const FeedVideoPlayer: React.FC<FeedVideoPlayerProps> = ({
     // Play translation audio immediately if still on this segment, matching language, not muted, and video is playing
     if (
       audioBase64 && 
-      !translationAudioMuted && 
+      (forcePlay || !translationAudioMutedRef.current) && 
       videoRef.current && 
       !videoRef.current.paused &&
       selectedLangRef.current === targetLang
     ) {
-      // If playback head is still in or near this segment, play immediately!
-      if (activeSegmentIndexRef.current === segmentIndex || activeSegmentIndexRef.current === segmentIndex - 1) {
+      // If playback head is still in or near this segment, or forcePlay is true, play immediately!
+      if (forcePlay || activeSegmentIndexRef.current === segmentIndex || activeSegmentIndexRef.current === segmentIndex - 1) {
         if (ttsAudioRef.current) {
-          try { ttsAudioRef.current.pause(); } catch (_) {}
+          try {
+            ttsAudioRef.current.pause();
+            ttsAudioRef.current.currentTime = 0;
+          } catch (_) {}
         }
         const audio = getOrCreateAudioElement(cacheKey, audioBase64);
         ttsAudioRef.current = audio;
         setTtsPlaying(true);
         audio.currentTime = 0;
+        audio.volume = 1.0;
         audio.onended = () => setTtsPlaying(false);
         audio.onerror = () => setTtsPlaying(false);
         audio.play().catch(e => console.warn('[FeedVideoPlayer] Translation audio play notice:', e));
@@ -548,63 +556,44 @@ export const FeedVideoPlayer: React.FC<FeedVideoPlayerProps> = ({
     });
   };
 
-  // 7. Language selection: 0ms instant switch when cached; zero dead-air ducking when downloading
+  // 7. Language selection: instantly mute current audio and switch to new language immediately
   const handleSelectLanguage = async (langCode: string) => {
     setSelectedLang(langCode);
     selectedLangRef.current = langCode;
     setShowTranslateMenu(false);
 
-    if (langCode !== 'english-united-states') {
-      setTranslationAudioMuted(false);
+    // 1. Instantly stop and mute any currently playing translated voiceover
+    if (ttsAudioRef.current) {
+      try {
+        ttsAudioRef.current.pause();
+        ttsAudioRef.current.currentTime = 0;
+      } catch (_) {}
+      ttsAudioRef.current = null;
+    }
+    setTtsPlaying(false);
 
-      if (videoRef.current && !videoRef.current.paused && activeSegmentIndex >= 0) {
-        lastPlayedSegmentRef.current = activeSegmentIndex;
-        const currentSeg = transcript[activeSegmentIndex];
-        const cacheKey = `${langCode}:${currentSeg?.text || ''}`;
-        const effectiveVoiceId = clonedVoiceId || getDefaultVoiceId() || undefined;
-
-        const isReady = Boolean(ttsAudioCacheRef.current[cacheKey]) ||
-          isTranslationCached({
-            text: currentSeg?.text || '',
-            sourceLang: 'english-united-states',
-            targetLang: langCode,
-            serviceCode: 'tts',
-            voiceId: effectiveVoiceId,
-          });
-
-        if (isReady) {
-          // Instant switch (0ms delay): audio is in cache!
-          if (videoRef.current) {
-            videoRef.current.muted = true;
-          }
-          playSegmentVoiceover(activeSegmentIndex, langCode);
-        } else {
-          // Smooth transition: duck original video volume so there is NO dead silence
-          if (videoRef.current) {
-            videoRef.current.volume = 0.3;
-            videoRef.current.muted = false;
-          }
-          playSegmentVoiceover(activeSegmentIndex, langCode).then(() => {
-            if (videoRef.current && selectedLangRef.current === langCode) {
-              videoRef.current.muted = true;
-              videoRef.current.volume = 1.0;
-            }
-          });
-        }
-      } else if (videoRef.current) {
-        videoRef.current.muted = true;
+    if (langCode === 'english-united-states') {
+      // Switched back to original English (Original Sound):
+      // Mute translated audio and immediately unmute original video track at full volume
+      translationAudioMutedRef.current = true;
+      setTranslationAudioMuted(true);
+      if (videoRef.current) {
+        videoRef.current.muted = false;
+        videoRef.current.volume = 1.0;
       }
     } else {
-      // Switched back to original English: restore original video audio, stop voiceover
+      // Switched to a foreign language:
+      // Instantly mute the original video audio so no English or previous audio bleeds through
+      translationAudioMutedRef.current = false;
+      setTranslationAudioMuted(false);
       if (videoRef.current) {
-        videoRef.current.volume = 1.0;
-        videoRef.current.muted = false;
+        videoRef.current.muted = true;
       }
-      if (ttsAudioRef.current) {
-        try { ttsAudioRef.current.pause(); } catch (_) {}
-      }
-      setTtsPlaying(false);
-      setTranslationAudioMuted(true);
+
+      // Immediately trigger playback for the current segment
+      const segIndex = activeSegmentIndex >= 0 ? activeSegmentIndex : 0;
+      lastPlayedSegmentRef.current = segIndex;
+      playSegmentVoiceover(segIndex, langCode, true);
     }
   };
 
@@ -619,23 +608,23 @@ export const FeedVideoPlayer: React.FC<FeedVideoPlayerProps> = ({
       !videoRef.current.paused
     ) {
       lastPlayedSegmentRef.current = activeSegmentIndex;
-      playSegmentVoiceover(activeSegmentIndex);
+      playSegmentVoiceover(activeSegmentIndex, selectedLang);
     }
   }, [activeSegmentIndex, selectedLang, translationAudioMuted]);
 
   // 9. Sync translation audio with native video player events
   const handlePlay = () => {
-    if (selectedLang !== 'english-united-states') {
+    if (selectedLangRef.current !== 'english-united-states') {
       if (videoRef.current) {
         videoRef.current.muted = true;
       }
-      if (!translationAudioMuted && activeSegmentIndex >= 0) {
+      if (!translationAudioMutedRef.current && activeSegmentIndex >= 0) {
         if (ttsAudioRef.current && ttsAudioRef.current.paused && !ttsAudioRef.current.ended) {
           ttsAudioRef.current.play().catch(() => {});
           setTtsPlaying(true);
         } else {
           lastPlayedSegmentRef.current = activeSegmentIndex;
-          playSegmentVoiceover(activeSegmentIndex);
+          playSegmentVoiceover(activeSegmentIndex, selectedLangRef.current);
         }
       }
     } else {
@@ -655,18 +644,22 @@ export const FeedVideoPlayer: React.FC<FeedVideoPlayerProps> = ({
 
   const handleSeeked = () => {
     if (ttsAudioRef.current) {
-      try { ttsAudioRef.current.pause(); } catch (_) {}
+      try {
+        ttsAudioRef.current.pause();
+        ttsAudioRef.current.currentTime = 0;
+      } catch (_) {}
+      ttsAudioRef.current = null;
       setTtsPlaying(false);
     }
     if (
-      selectedLang !== 'english-united-states' && 
-      !translationAudioMuted && 
+      selectedLangRef.current !== 'english-united-states' && 
+      !translationAudioMutedRef.current && 
       videoRef.current && 
       !videoRef.current.paused &&
       activeSegmentIndex >= 0
     ) {
       lastPlayedSegmentRef.current = activeSegmentIndex;
-      playSegmentVoiceover(activeSegmentIndex);
+      playSegmentVoiceover(activeSegmentIndex, selectedLangRef.current, true);
     }
   };
 
@@ -892,19 +885,25 @@ export const FeedVideoPlayer: React.FC<FeedVideoPlayerProps> = ({
           <button
             type="button"
             onClick={() => {
-              if (translationAudioMuted) {
+              if (translationAudioMutedRef.current) {
                 // Unmute translation audio and ensure native video stays muted
+                translationAudioMutedRef.current = false;
                 setTranslationAudioMuted(false);
                 if (videoRef.current) videoRef.current.muted = true;
                 if (activeSegmentIndex >= 0) {
                   lastPlayedSegmentRef.current = activeSegmentIndex;
-                  playSegmentVoiceover(activeSegmentIndex);
+                  playSegmentVoiceover(activeSegmentIndex, selectedLangRef.current, true);
                 }
               } else {
                 // Mute translation audio
+                translationAudioMutedRef.current = true;
                 setTranslationAudioMuted(true);
                 if (ttsAudioRef.current) {
-                  try { ttsAudioRef.current.pause(); } catch (_) {}
+                  try {
+                    ttsAudioRef.current.pause();
+                    ttsAudioRef.current.currentTime = 0;
+                  } catch (_) {}
+                  ttsAudioRef.current = null;
                 }
                 setTtsPlaying(false);
               }

@@ -1700,10 +1700,12 @@ export default function WatchLive({ accent = '#D35400', isCourtneyBee = false, i
 
   // Translate active video title, description, and transcript segments
   const handleTranslateVideoInfo = async (targetLanguage: string) => {
-    if (!activeVideo || isTranslatingRef.current) return;
+    if (!activeVideo) return;
+
+    // Immediately stop and mute any currently playing audio
+    stopAllTranslatedAudio();
 
     if (targetLanguage === 'english-united-states') {
-      stopAllTranslatedAudio();
       setTranslatedInfo(null);
       setInfoAudioBase64(null);
       setIsPlayingInfoAudio(false);
@@ -1712,6 +1714,8 @@ export default function WatchLive({ accent = '#D35400', isCourtneyBee = false, i
       setPreferredLang('english-united-states');
       return;
     }
+
+    setPreferredLang(targetLanguage);
 
     const cacheKey = `${activeVideo.id}_${targetLanguage}`;
     if (translationCacheRef.current.has(cacheKey)) {
@@ -1724,7 +1728,6 @@ export default function WatchLive({ accent = '#D35400', isCourtneyBee = false, i
     }
 
     isTranslatingRef.current = true;
-    stopAllTranslatedAudio();
 
     setIsTranslatingInfo(true);
     setTranslatedInfo(null);
@@ -4259,7 +4262,10 @@ export default function WatchLive({ accent = '#D35400', isCourtneyBee = false, i
                               return (
                                 <select
                                   value={preferredLang}
-                                  onChange={(e) => setPreferredLang(e.target.value)}
+                                  onChange={(e) => {
+                                    stopAllTranslatedAudio();
+                                    setPreferredLang(e.target.value);
+                                  }}
                                   style={{
                                     background: 'rgba(255,255,255,0.05)',
                                     border: '1px solid rgba(255,255,255,0.1)',
