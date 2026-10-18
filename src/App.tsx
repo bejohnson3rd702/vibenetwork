@@ -32,11 +32,12 @@ import { WhiteLabelContext } from './context/WhiteLabelContext';
 import { supabase, storageKey } from './supabaseClient';
 import { MASTER_DOMAIN, DEFAULT_PLATFORM_NAME } from './constants';
 const Home = lazy(() => import('./pages/Home'));
-import { normalizeWlConfig, isOlympianConfig, isMuscleFitnessConfig, isKpleConfig, isBonaireConfig, isDigitalBroadcastingConfig } from './lib/whitelabel';
+import { normalizeWlConfig, isOlympianConfig, isMuscleFitnessConfig, isKpleConfig, isBonaireConfig, isDigitalBroadcastingConfig, isGccConfig } from './lib/whitelabel';
 import { AVO_COLLEGE_NETWORKS } from './lib/n2n';
 const WhiteLabelHome = lazy(() => import('./pages/WhiteLabelHome'));
 const N2NHome = lazy(() => import('./pages/N2NHome'));
 const DigitalBroadcastingHome = lazy(() => import('./pages/DigitalBroadcastingHome'));
+const GccNetworkHome = lazy(() => import('./pages/GccNetworkHome'));
 const AvoMarketplace = lazy(() => import('./components/AvoMarketplace'));
 const ShopifyStore = lazy(() => import('./components/ShopifyStore'));
 const ChannelDirectory = lazy(() => import('./pages/ChannelDirectory'));
@@ -639,6 +640,36 @@ function App() {
             loadedConfig = dbMatch ? normalizeWlConfig({ ...matchedCollege, ...dbMatch, theme: { ...matchedCollege.theme, ...dbMatch.theme } }) : matchedCollege;
           }
         } else if (
+          activeTenantId === 'gcc-network-tenant-id' || 
+          activeTenantId === 'gcc' || 
+          activeTenantId === 'global-combat-collective' || 
+          activeTenantId === 'globalcombatcollective' || 
+          hostname.includes('globalcombatcollective') ||
+          (hostname.includes('gcc.') && !hostname.includes('google'))
+        ) {
+          loadedTenantId = 'gcc-network-tenant-id';
+          loadedConfig = normalizeWlConfig({
+            id: 'gcc-network-tenant-id',
+            name: 'Global Combat Collective',
+            domain: 'globalcombatcollective.com',
+            logo: '/favicon.svg',
+            parent_network_id: 'adb92e36-5ebc-4dc3-ae96-429f3dc1bb30',
+            platform_fee_percentage: 30,
+            is_active: true,
+            n2n_enabled: true,
+            accent: '#00E5FF',
+            theme: {
+              accent: '#00E5FF',
+              heroCopy: 'Fight night starts here — Global Combat Collective brings fighters and fans together through professional combat sports events, live broadcasts, and original content.',
+              heroImage: 'https://images.unsplash.com/photo-1549719386-74dfcbf7dbed?auto=format&fit=crop&q=80&w=1800',
+              logoImage: '/favicon.svg',
+              enableBooking: false,
+              heroLayoutMode: 'verbiage',
+              enableWatchLive: true,
+              parent_network_id: 'adb92e36-5ebc-4dc3-ae96-429f3dc1bb30'
+            }
+          });
+        } else if (
           activeTenantId === 'digital-broadcasting-tenant-id' || 
           activeTenantId === 'digital-broadcasting' || 
           activeTenantId === 'broadcasting' || 
@@ -855,7 +886,9 @@ function App() {
           <Suspense fallback={<div style={{ height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-secondary)' }}>Loading interface...</div>}>
             <Routes>
               <Route path="/" element={
-                 isDigitalBroadcastingConfig(wlConfig)
+                 isGccConfig(wlConfig)
+                   ? <GccNetworkHome wlConfig={wlConfig} />
+                   : isDigitalBroadcastingConfig(wlConfig)
                    ? <DigitalBroadcastingHome wlConfig={wlConfig} />
                    : (wlConfig?.n2n_enabled || 
                    isKpleConfig(wlConfig) ||
@@ -1017,6 +1050,8 @@ function App() {
                       <Route path="/translation" element={<div style={{ padding: '40px', maxWidth: '1200px', margin: '0 auto', paddingTop: '100px' }}><TranslationTab wlConfig={{ accent: '#ff4d85', name: 'Vibe' }} /></div>} />
                       <Route path="/whitepaper" element={<DigitalBroadcastingHome wlConfig={normalizeWlConfig({ id: 'digital-broadcasting-tenant-id', name: 'The Power of Digital Broadcasting', accent: '#0066FF' })} />} />
                       <Route path="/digital-broadcasting" element={<DigitalBroadcastingHome wlConfig={normalizeWlConfig({ id: 'digital-broadcasting-tenant-id', name: 'The Power of Digital Broadcasting', accent: '#0066FF' })} />} />
+                      <Route path="/gcc" element={<GccNetworkHome />} />
+                      <Route path="/global-combat-collective" element={<GccNetworkHome />} />
                     </Routes>
                   </Suspense>
                 </>

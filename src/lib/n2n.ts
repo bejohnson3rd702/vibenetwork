@@ -819,6 +819,36 @@ export async function getChildNetworks(parentId: string, includeInactive: boolea
       });
     }
 
+    const hasGcc = data.some((row: any) => 
+      row.id === 'gcc-network-tenant-id' || 
+      row.domain?.includes('globalcombatcollective') || 
+      row.name?.toLowerCase().includes('global combat collective') ||
+      row.name?.toLowerCase() === 'gcc'
+    );
+    if (!hasGcc) {
+      data.push({
+        id: 'gcc-network-tenant-id',
+        name: 'Global Combat Collective',
+        domain: 'globalcombatcollective.com',
+        logo: '/favicon.svg',
+        parent_network_id: 'adb92e36-5ebc-4dc3-ae96-429f3dc1bb30',
+        platform_fee_percentage: 30,
+        is_active: true,
+        n2n_enabled: true,
+        accent: '#00E5FF',
+        theme: {
+          accent: '#00E5FF',
+          heroCopy: 'Fight night starts here — Global Combat Collective brings fighters and fans together through professional combat sports events, live broadcasts, and original content.',
+          heroImage: 'https://images.unsplash.com/photo-1549719386-74dfcbf7dbed?auto=format&fit=crop&q=80&w=1800',
+          logoImage: '/favicon.svg',
+          enableBooking: false,
+          heroLayoutMode: 'verbiage',
+          enableWatchLive: true,
+          parent_network_id: 'adb92e36-5ebc-4dc3-ae96-429f3dc1bb30'
+        }
+      });
+    }
+
     const hasCourtney = data.some((row: any) => row.id === 'courtney-bee-tenant-id' || row.domain?.includes('therealcourtneybee') || row.name?.toLowerCase().includes('courtney bee'));
     if (!hasCourtney) {
       data.push({

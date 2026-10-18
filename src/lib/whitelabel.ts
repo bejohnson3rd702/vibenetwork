@@ -85,6 +85,23 @@ export function isDigitalBroadcastingConfig(config: any): boolean {
   );
 }
 
+export function isGccConfig(config: any): boolean {
+  if (!config) return false;
+  const id = (config.id || '').toLowerCase();
+  const name = (config.name || '').toLowerCase();
+  const domain = (config.domain || '').toLowerCase();
+  return (
+    id === 'gcc-network-tenant-id' ||
+    id === 'gcc' ||
+    id === 'global-combat-collective' ||
+    id === 'globalcombatcollective' ||
+    name.includes('global combat collective') ||
+    name === 'gcc' ||
+    domain.includes('globalcombatcollective') ||
+    domain.includes('gcc')
+  );
+}
+
 /**
  * Detects if a configuration or entity represents an individual Channel / Creator,
  * rather than a standalone media network.
