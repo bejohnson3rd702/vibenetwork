@@ -68,6 +68,23 @@ export function isCourtneyBeeConfig(config: any): boolean {
          domain.includes('therealcourtneybee');
 }
 
+export function isDigitalBroadcastingConfig(config: any): boolean {
+  if (!config) return false;
+  const id = (config.id || '').toLowerCase();
+  const name = (config.name || '').toLowerCase();
+  const domain = (config.domain || '').toLowerCase();
+  return (
+    id === 'digital-broadcasting-tenant-id' ||
+    id === 'digital-broadcasting' ||
+    id === 'broadcasting' ||
+    id === 'whitepaper' ||
+    id === 'strategic-whitepaper' ||
+    name.includes('digital broadcasting') ||
+    domain.includes('broadcasting.vibenetwork.tv') ||
+    domain.includes('broadcasting')
+  );
+}
+
 /**
  * Detects if a configuration or entity represents an individual Channel / Creator,
  * rather than a standalone media network.

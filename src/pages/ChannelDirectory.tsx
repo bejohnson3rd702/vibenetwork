@@ -99,6 +99,30 @@ export default function ChannelDirectory() {
           }
         });
 
+        if (!combinedWls.some(w => w.id === 'digital-broadcasting-tenant-id')) {
+          combinedWls.push({
+            id: 'digital-broadcasting-tenant-id',
+            name: 'The Power of Digital Broadcasting',
+            domain: 'broadcasting.vibenetwork.tv',
+            logo: '/favicon.svg',
+            parent_network_id: 'adb92e36-5ebc-4dc3-ae96-429f3dc1bb30',
+            platform_fee_percentage: 30,
+            is_active: true,
+            n2n_enabled: true,
+            accent: '#0066FF',
+            theme: {
+              accent: '#0066FF',
+              heroCopy: 'Strategic Business Whitepaper: Owning a Channel vs. Owning a Network on the Vibe Platform.',
+              heroImage: '',
+              logoImage: '/favicon.svg',
+              enableBooking: false,
+              heroLayoutMode: 'verbiage',
+              enableWatchLive: false,
+              parent_network_id: 'adb92e36-5ebc-4dc3-ae96-429f3dc1bb30'
+            }
+          });
+        }
+
         combinedWls.forEach((wl: any) => {
           if (isWlDeactivated(wl)) return;
           const nameLower = (wl.name || '').toLowerCase();
@@ -161,7 +185,7 @@ export default function ChannelDirectory() {
             category = 'college';
           }
 
-          const parentName = wl.parent_network_id ? (wlMap.get(wl.parent_network_id) || (wl.parent_network_id === '3915f1e5-4c79-4b2a-ad41-7029ce8052d7' ? 'AVO Network' : 'Network')) : undefined;
+          const parentName = wl.parent_network_id ? (wlMap.get(wl.parent_network_id) || (wl.parent_network_id === '3915f1e5-4c79-4b2a-ad41-7029ce8052d7' ? 'AVO Network' : (wl.parent_network_id === 'adb92e36-5ebc-4dc3-ae96-429f3dc1bb30' ? 'Vibe Network' : 'Network'))) : undefined;
 
           allItems.push({
             id: wl.id,

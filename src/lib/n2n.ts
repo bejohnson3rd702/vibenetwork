@@ -784,12 +784,41 @@ export async function getChildNetworks(parentId: string, includeInactive: boolea
     ];
   }
 
-  // Dynamically append The Real Courtney Bee under Vibe parent network only
+  // Dynamically append The Real Courtney Bee and The Power of Digital Broadcasting under Vibe parent network only
   const isVibeParent = parentId === 'adb92e36-5ebc-4dc3-ae96-429f3dc1bb30' || 
                        parentId === 'vibe-network-tenant-id' || 
                        parentId === 'master' || 
                        parentId === 'vibe';
   if (isVibeParent) {
+    const hasBroadcasting = data.some((row: any) => 
+      row.id === 'digital-broadcasting-tenant-id' || 
+      row.domain?.includes('broadcasting') || 
+      row.name?.toLowerCase().includes('digital broadcasting')
+    );
+    if (!hasBroadcasting) {
+      data.push({
+        id: 'digital-broadcasting-tenant-id',
+        name: 'The Power of Digital Broadcasting',
+        domain: 'broadcasting.vibenetwork.tv',
+        logo: '/favicon.svg',
+        parent_network_id: 'adb92e36-5ebc-4dc3-ae96-429f3dc1bb30',
+        platform_fee_percentage: 30,
+        is_active: true,
+        n2n_enabled: true,
+        accent: '#0066FF',
+        theme: {
+          accent: '#0066FF',
+          heroCopy: 'Strategic Business Whitepaper: Owning a Channel vs. Owning a Network on the Vibe Platform.',
+          heroImage: '',
+          logoImage: '/favicon.svg',
+          enableBooking: false,
+          heroLayoutMode: 'verbiage',
+          enableWatchLive: false,
+          parent_network_id: 'adb92e36-5ebc-4dc3-ae96-429f3dc1bb30'
+        }
+      });
+    }
+
     const hasCourtney = data.some((row: any) => row.id === 'courtney-bee-tenant-id' || row.domain?.includes('therealcourtneybee') || row.name?.toLowerCase().includes('courtney bee'));
     if (!hasCourtney) {
       data.push({

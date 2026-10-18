@@ -32,10 +32,11 @@ import { WhiteLabelContext } from './context/WhiteLabelContext';
 import { supabase, storageKey } from './supabaseClient';
 import { MASTER_DOMAIN, DEFAULT_PLATFORM_NAME } from './constants';
 const Home = lazy(() => import('./pages/Home'));
-import { normalizeWlConfig, isOlympianConfig, isMuscleFitnessConfig, isKpleConfig, isBonaireConfig } from './lib/whitelabel';
+import { normalizeWlConfig, isOlympianConfig, isMuscleFitnessConfig, isKpleConfig, isBonaireConfig, isDigitalBroadcastingConfig } from './lib/whitelabel';
 import { AVO_COLLEGE_NETWORKS } from './lib/n2n';
 const WhiteLabelHome = lazy(() => import('./pages/WhiteLabelHome'));
 const N2NHome = lazy(() => import('./pages/N2NHome'));
+const DigitalBroadcastingHome = lazy(() => import('./pages/DigitalBroadcastingHome'));
 const AvoMarketplace = lazy(() => import('./components/AvoMarketplace'));
 const ShopifyStore = lazy(() => import('./components/ShopifyStore'));
 const ChannelDirectory = lazy(() => import('./pages/ChannelDirectory'));
@@ -637,6 +638,37 @@ function App() {
             loadedTenantId = matchedCollege.id;
             loadedConfig = dbMatch ? normalizeWlConfig({ ...matchedCollege, ...dbMatch, theme: { ...matchedCollege.theme, ...dbMatch.theme } }) : matchedCollege;
           }
+        } else if (
+          activeTenantId === 'digital-broadcasting-tenant-id' || 
+          activeTenantId === 'digital-broadcasting' || 
+          activeTenantId === 'broadcasting' || 
+          activeTenantId === 'whitepaper' || 
+          activeTenantId === 'strategic-whitepaper' ||
+          activeTenantId === 'broadcasting.vibenetwork.tv' ||
+          hostname.includes('broadcasting')
+        ) {
+          loadedTenantId = 'digital-broadcasting-tenant-id';
+          loadedConfig = normalizeWlConfig({
+            id: 'digital-broadcasting-tenant-id',
+            name: 'The Power of Digital Broadcasting',
+            domain: 'broadcasting.vibenetwork.tv',
+            logo: '/favicon.svg',
+            parent_network_id: 'adb92e36-5ebc-4dc3-ae96-429f3dc1bb30',
+            platform_fee_percentage: 30,
+            is_active: true,
+            n2n_enabled: true,
+            accent: '#0066FF',
+            theme: {
+              accent: '#0066FF',
+              heroCopy: 'Strategic Business Whitepaper: Owning a Channel vs. Owning a Network on the Vibe Platform.',
+              heroImage: '',
+              logoImage: '/favicon.svg',
+              enableBooking: false,
+              heroLayoutMode: 'verbiage',
+              enableWatchLive: false,
+              parent_network_id: 'adb92e36-5ebc-4dc3-ae96-429f3dc1bb30'
+            }
+          });
         } else if (dbTenantData && dbTenantData.length > 0) {
           const dbConf = dbTenantData[0];
           loadedTenantId = dbConf.id;
@@ -823,7 +855,9 @@ function App() {
           <Suspense fallback={<div style={{ height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-secondary)' }}>Loading interface...</div>}>
             <Routes>
               <Route path="/" element={
-                 (wlConfig?.n2n_enabled || 
+                 isDigitalBroadcastingConfig(wlConfig)
+                   ? <DigitalBroadcastingHome wlConfig={wlConfig} />
+                   : (wlConfig?.n2n_enabled || 
                    isKpleConfig(wlConfig) ||
                    isBonaireConfig(wlConfig) ||
                    wlConfig?.id === '3915f1e5-4c79-4b2a-ad41-7029ce8052d7' ||
@@ -981,6 +1015,8 @@ function App() {
                       <Route path="/reset-password" element={<ResetPassword />} />
                       <Route path="/stripe-connect-v2" element={<StripeConnectV2Demo />} />
                       <Route path="/translation" element={<div style={{ padding: '40px', maxWidth: '1200px', margin: '0 auto', paddingTop: '100px' }}><TranslationTab wlConfig={{ accent: '#ff4d85', name: 'Vibe' }} /></div>} />
+                      <Route path="/whitepaper" element={<DigitalBroadcastingHome wlConfig={normalizeWlConfig({ id: 'digital-broadcasting-tenant-id', name: 'The Power of Digital Broadcasting', accent: '#0066FF' })} />} />
+                      <Route path="/digital-broadcasting" element={<DigitalBroadcastingHome wlConfig={normalizeWlConfig({ id: 'digital-broadcasting-tenant-id', name: 'The Power of Digital Broadcasting', accent: '#0066FF' })} />} />
                     </Routes>
                   </Suspense>
                 </>
