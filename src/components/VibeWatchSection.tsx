@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { Play, Tv, ChevronDown, ChevronUp } from 'lucide-react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { Play, Tv, ChevronDown, ChevronUp, RotateCw } from 'lucide-react';
 
 export interface VibeVideoClip {
   id: string;
@@ -26,105 +26,96 @@ const VIBE_FEEDS = [
   { key: 'politics', label: '⚖️ MSNBC Politics', channelId: 'UCaXkIU1QidjPwiAYu6GcHjg' },
 ];
 
+function formatTimeAgo(date?: Date): string {
+  if (!date || isNaN(date.getTime()) || date.getTime() === 0) return 'Recent';
+  const diffMs = Date.now() - date.getTime();
+  const diffSec = Math.floor(diffMs / 1000);
+  if (diffSec < 60) return 'Just now';
+  const diffMin = Math.floor(diffSec / 60);
+  if (diffMin < 60) return `${diffMin}m ago`;
+  const diffHours = Math.floor(diffMin / 60);
+  if (diffHours < 24) return `${diffHours}h ago`;
+  const diffDays = Math.floor(diffHours / 24);
+  if (diffDays === 1) return 'Yesterday';
+  if (diffDays < 7) return `${diffDays}d ago`;
+  return date.toLocaleDateString([], { month: 'short', day: 'numeric' });
+}
+
 const DEFAULT_VIBE_CLIPS: VibeVideoClip[] = [
-  // --- CNN NEWS ---
-  {
-    id: '_mbBBOOWaxg',
-    youtubeId: '_mbBBOOWaxg',
-    videoUrl: 'https://www.youtube.com/watch?v=_mbBBOOWaxg',
-    title: 'Yemen announces military action against Iran-backed Houthis',
-    source: 'CNN News',
-    category: 'news',
-    description: 'The Saudi-led Coalition to Support Legitimacy in Yemen pledged full support as Yemen’s internationally recognized government announced a military offensive. CNN’s Nic Robertson reports.',
-    duration: 'Live Feed',
-    thumbnail: 'https://i.ytimg.com/vi/_mbBBOOWaxg/hqdefault.jpg',
-    published: new Date('2026-10-05T01:03:44.000Z')
-  },
-  {
-    id: '8DFsWxJVV_o',
-    youtubeId: '8DFsWxJVV_o',
-    videoUrl: 'https://www.youtube.com/watch?v=8DFsWxJVV_o',
-    title: "'The warning was there': Inside Flydubai's aviation security systems",
-    source: 'CNN News',
-    category: 'news',
-    description: "An in-depth investigation into flight safety, emergency response protocols, and security procedures across international airspace.",
-    duration: 'Live Feed',
-    thumbnail: 'https://i.ytimg.com/vi/8DFsWxJVV_o/hqdefault.jpg',
-    published: new Date('2026-10-04T22:00:00.000Z')
-  },
   // --- FOX NEWS ---
   {
-    id: 'rufMKA2FPxc',
-    youtubeId: 'rufMKA2FPxc',
-    videoUrl: 'https://www.youtube.com/watch?v=rufMKA2FPxc',
-    title: "Questions MOUNT over FlyDubai's vetting of hijacking suspect",
+    id: 'R1flHmd_hMA',
+    youtubeId: 'R1flHmd_hMA',
+    videoUrl: 'https://www.youtube.com/watch?v=R1flHmd_hMA',
+    title: 'WATCH LIVE: Trump, Vance announce $25M fraud whistleblower incentive program',
     source: 'Fox News',
     category: 'foxnews',
-    description: "Federal authorities and international aviation experts examine security clearance breakdowns following the attempted hijacking incident.",
+    description: 'Fox News live coverage of the press briefing and national policy addresses from Washington.',
     duration: 'Live Feed',
-    thumbnail: 'https://i.ytimg.com/vi/rufMKA2FPxc/hqdefault.jpg',
-    published: new Date('2026-10-04T20:30:36.000Z')
+    thumbnail: 'https://i.ytimg.com/vi/R1flHmd_hMA/hqdefault.jpg',
+    published: new Date('2026-10-20T12:30:56.000Z')
   },
   {
-    id: 'aaEM5VTjUmM',
-    youtubeId: 'aaEM5VTjUmM',
-    videoUrl: 'https://www.youtube.com/watch?v=aaEM5VTjUmM',
-    title: "AG Blanche FIRES BACK at 'fearmongering' over election monitors",
+    id: '-mw4oUPVUvI',
+    youtubeId: '-mw4oUPVUvI',
+    videoUrl: 'https://www.youtube.com/watch?v=-mw4oUPVUvI',
+    title: 'DEVELOPING: DOJ sends grand jury subpoenas to Philadelphia DA',
     source: 'Fox News',
     category: 'foxnews',
-    description: "Attorney General addresses reporters regarding voting oversight regulations, armed agents, and election integrity measures.",
+    description: 'Federal authorities issue grand jury subpoenas in ongoing accountability and jurisdiction investigation.',
     duration: 'Live Feed',
-    thumbnail: 'https://i.ytimg.com/vi/aaEM5VTjUmM/hqdefault.jpg',
-    published: new Date('2026-10-04T18:45:33.000Z')
+    thumbnail: 'https://i.ytimg.com/vi/-mw4oUPVUvI/hqdefault.jpg',
+    published: new Date('2026-10-20T18:15:38.000Z')
+  },
+  // --- CNN NEWS ---
+  {
+    id: 'ykFqelzbAGU',
+    youtubeId: 'ykFqelzbAGU',
+    videoUrl: 'https://www.youtube.com/watch?v=ykFqelzbAGU',
+    title: 'Russian drone kills toddler and her mother in Ukrainian park',
+    source: 'CNN News',
+    category: 'news',
+    description: 'CNN reports on the latest conflict developments, international reactions, and emergency response operations.',
+    duration: 'Live Feed',
+    thumbnail: 'https://i.ytimg.com/vi/ykFqelzbAGU/hqdefault.jpg',
+    published: new Date('2026-10-20T17:33:34.000Z')
   },
   {
-    id: 'ZdCzZmsmzv8',
-    youtubeId: 'ZdCzZmsmzv8',
-    videoUrl: 'https://www.youtube.com/watch?v=ZdCzZmsmzv8',
-    title: "Hijacking attempt suspect used 'crash ax' in attempted terror attack, UAE says",
-    source: 'Fox News',
-    category: 'foxnews',
-    description: "New details emerge from Dubai authorities on the thwarted commercial airline hijacking and suspect background.",
+    id: 'KLAQxEyJ5C0',
+    youtubeId: 'KLAQxEyJ5C0',
+    videoUrl: 'https://www.youtube.com/watch?v=KLAQxEyJ5C0',
+    title: 'Trump remarks on campaign trail and political landscape',
+    source: 'CNN News',
+    category: 'news',
+    description: 'Key moments and policy analysis from speeches and rallies across key battleground districts.',
     duration: 'Live Feed',
-    thumbnail: 'https://i.ytimg.com/vi/ZdCzZmsmzv8/hqdefault.jpg',
-    published: new Date('2026-10-04T16:30:18.000Z')
+    thumbnail: 'https://i.ytimg.com/vi/KLAQxEyJ5C0/hqdefault.jpg',
+    published: new Date('2026-10-20T17:01:21.000Z')
   },
   // --- MSNBC POLITICS ---
   {
-    id: 'ph8Hrzqfu8Q',
-    youtubeId: 'ph8Hrzqfu8Q',
-    videoUrl: 'https://www.youtube.com/watch?v=ph8Hrzqfu8Q',
-    title: "What Rachel Maddow wants you to know about fighting for America's democracy",
+    id: 'nMnO3AYCYVE',
+    youtubeId: 'nMnO3AYCYVE',
+    videoUrl: 'https://www.youtube.com/watch?v=nMnO3AYCYVE',
+    title: 'LIVE: President Trump and VP Vance announce fraud whistleblower program as midterms loom',
     source: 'MSNBC Politics',
     category: 'politics',
-    description: "Rachel Maddow breaks down the constitutional precedents, civil liberties, and legislative battlegrounds shaping the political landscape.",
+    description: 'Special political report and panel discussion analyzing executive announcements and legislative impact.',
     duration: 'Live Feed',
-    thumbnail: 'https://i.ytimg.com/vi/ph8Hrzqfu8Q/hqdefault.jpg',
-    published: new Date('2026-10-04T21:00:24.000Z')
+    thumbnail: 'https://i.ytimg.com/vi/nMnO3AYCYVE/hqdefault.jpg',
+    published: new Date('2026-10-20T16:35:36.000Z')
   },
   {
-    id: 'XLMotnp3iBk',
-    youtubeId: 'XLMotnp3iBk',
-    videoUrl: 'https://www.youtube.com/watch?v=XLMotnp3iBk',
-    title: "They hate both parties. These voters could decide Congress.",
+    id: 'Be5Udi94Bk0',
+    youtubeId: 'Be5Udi94Bk0',
+    videoUrl: 'https://www.youtube.com/watch?v=Be5Udi94Bk0',
+    title: "Why would Putin stop? He 'has every incentive' to press his advantage: Fmr. Deputy NSA",
     source: 'MSNBC Politics',
     category: 'politics',
-    description: "A nationwide look at independent and undecided voters in key swing districts ahead of the upcoming congressional elections.",
+    description: 'National security analysis on foreign policy strategies, global alliances, and regional stability.',
     duration: 'Live Feed',
-    thumbnail: 'https://i.ytimg.com/vi/XLMotnp3iBk/hqdefault.jpg',
-    published: new Date('2026-10-04T20:46:51.000Z')
-  },
-  {
-    id: 'FAGJU2hEpb4',
-    youtubeId: 'FAGJU2hEpb4',
-    videoUrl: 'https://www.youtube.com/watch?v=FAGJU2hEpb4',
-    title: 'Can Republicans SPEND their way to victory?',
-    source: 'MSNBC Politics',
-    category: 'politics',
-    description: 'Campaign finance analysis examining big-donor PAC ad buys and voter turnout initiatives across major battleground states.',
-    duration: 'Live Feed',
-    thumbnail: 'https://i.ytimg.com/vi/FAGJU2hEpb4/hqdefault.jpg',
-    published: new Date('2026-10-04T20:35:43.000Z')
+    thumbnail: 'https://i.ytimg.com/vi/Be5Udi94Bk0/hqdefault.jpg',
+    published: new Date('2026-10-20T17:05:33.000Z')
   }
 ];
 
@@ -142,6 +133,9 @@ export default function VibeWatchSection({ accent = '#D35400' }: { accent?: stri
   const [isMobile, setIsMobile] = useState(false);
   const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(false);
   const [hasMore, setHasMore] = useState(false);
+  const [lastRefreshed, setLastRefreshed] = useState<Date>(new Date());
+  const [isRefreshing, setIsRefreshing] = useState<boolean>(false);
+  const userSelectedVideoIdRef = useRef<string | null>(null);
   const descRef = useRef<HTMLParagraphElement>(null);
 
   const filteredVideos = videoList.filter(v =>
@@ -171,122 +165,130 @@ export default function VibeWatchSection({ accent = '#D35400' }: { accent?: stri
   }, []);
 
   // Fetch dynamic live news feeds
-  useEffect(() => {
-    let cancelled = false;
+  const loadDynamicFeeds = useCallback(async (isManual: boolean = false) => {
+    setIsRefreshing(true);
+    const dynamicClips: VibeVideoClip[] = [];
+    const seen = new Set<string>();
 
-    async function loadDynamicFeeds() {
-      const dynamicClips: VibeVideoClip[] = [];
-      const seen = new Set<string>();
+    // Helper to parse XML feed text into video clips
+    const parseXmlEntries = (xmlText: string, feedKey: string, feedLabel: string) => {
+      try {
+        const parser = new DOMParser();
+        const xml = parser.parseFromString(xmlText, 'text/xml');
+        const entries = xml.getElementsByTagName('entry');
 
-      // Helper to parse XML feed text into video clips
-      const parseXmlEntries = (xmlText: string, feedKey: string, feedLabel: string) => {
-        try {
-          const parser = new DOMParser();
-          const xml = parser.parseFromString(xmlText, 'text/xml');
-          const entries = xml.getElementsByTagName('entry');
+        for (let i = 0; i < Math.min(entries.length, 12); i++) {
+          const entry = entries[i];
+          const id = entry.getElementsByTagName('yt:videoId')[0]?.textContent 
+            || entry.getElementsByTagName('id')[0]?.textContent?.split(':').pop() 
+            || '';
+          const title = entry.getElementsByTagName('title')[0]?.textContent || '';
+          const mediaGroup = entry.getElementsByTagName('media:group')[0];
+          const description = mediaGroup?.getElementsByTagName('media:description')[0]?.textContent 
+            || entry.getElementsByTagName('summary')[0]?.textContent 
+            || '';
+          const thumbnail = mediaGroup?.getElementsByTagName('media:thumbnail')[0]?.getAttribute('url')
+            || (id ? `https://i.ytimg.com/vi/${id}/hqdefault.jpg` : '');
+          const videoUrl = `https://www.youtube.com/watch?v=${id}`;
+          const publishedText = entry.getElementsByTagName('published')[0]?.textContent || '';
+          const published = publishedText ? new Date(publishedText) : new Date(0);
 
-          for (let i = 0; i < Math.min(entries.length, 10); i++) {
-            const entry = entries[i];
-            const id = entry.getElementsByTagName('yt:videoId')[0]?.textContent 
-              || entry.getElementsByTagName('id')[0]?.textContent?.split(':').pop() 
-              || '';
-            const title = entry.getElementsByTagName('title')[0]?.textContent || '';
-            const mediaGroup = entry.getElementsByTagName('media:group')[0];
-            const description = mediaGroup?.getElementsByTagName('media:description')[0]?.textContent 
-              || entry.getElementsByTagName('summary')[0]?.textContent 
-              || '';
-            const thumbnail = mediaGroup?.getElementsByTagName('media:thumbnail')[0]?.getAttribute('url')
-              || (id ? `https://i.ytimg.com/vi/${id}/hqdefault.jpg` : '');
-            const videoUrl = `https://www.youtube.com/watch?v=${id}`;
-            const publishedText = entry.getElementsByTagName('published')[0]?.textContent || '';
-            const published = publishedText ? new Date(publishedText) : new Date(0);
-
-            if (id && !seen.has(id)) {
-              seen.add(id);
-              dynamicClips.push({
-                id,
-                youtubeId: id,
-                title,
-                description,
-                thumbnail,
-                videoUrl,
-                duration: 'Live Feed',
-                source: feedLabel,
-                category: feedKey as any,
-                published
-              });
-            }
+          if (id && !seen.has(id)) {
+            seen.add(id);
+            dynamicClips.push({
+              id,
+              youtubeId: id,
+              title,
+              description,
+              thumbnail,
+              videoUrl,
+              duration: 'Live Feed',
+              source: feedLabel,
+              category: feedKey as any,
+              published
+            });
           }
-        } catch {}
-      };
+        }
+      } catch (err) {
+        console.warn('Error parsing XML entry:', err);
+      }
+    };
 
-      // Fetch all live news channels in parallel
-      const feedPromises = VIBE_FEEDS.map(async (feed) => {
-        try {
-          // 1. Try serverless proxy endpoint
-          const res = await fetch(`/api/yt-rss/${feed.channelId}`, { signal: AbortSignal.timeout(4000) });
-          if (res.ok) {
-            const xmlText = await res.text();
-            if (xmlText && xmlText.includes('<entry')) {
-              parseXmlEntries(xmlText, feed.key, CATEGORY_META[feed.key]?.label || 'News');
-              return;
-            }
+    // Fetch all live news channels in parallel
+    const feedPromises = VIBE_FEEDS.map(async (feed) => {
+      try {
+        // 1. Try serverless proxy endpoint
+        const res = await fetch(`/api/yt-rss/${feed.channelId}`, { signal: AbortSignal.timeout(5000) });
+        if (res.ok) {
+          const xmlText = await res.text();
+          if (xmlText && xmlText.includes('<entry')) {
+            parseXmlEntries(xmlText, feed.key, CATEGORY_META[feed.key]?.label || 'News');
+            return;
           }
-        } catch {}
+        }
+      } catch {}
 
-        try {
-          // 2. Direct client fallback via rss2json
-          const r2jUrl = `https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent('https://www.youtube.com/feeds/videos.xml?channel_id=' + feed.channelId)}`;
-          const r2jRes = await fetch(r2jUrl, { signal: AbortSignal.timeout(4000) });
-          if (r2jRes.ok) {
-            const json = await r2jRes.json();
-            if (json.status === 'ok' && Array.isArray(json.items)) {
-              for (let i = 0; i < Math.min(json.items.length, 10); i++) {
-                const item = json.items[i];
-                const id = item.guid?.replace(/^yt:video:/, '') || (item.link || '').match(/v=([^&]+)/)?.[1] || '';
-                if (id && !seen.has(id)) {
-                  seen.add(id);
-                  dynamicClips.push({
-                    id,
-                    youtubeId: id,
-                    title: item.title || '',
-                    description: item.description || item.title || '',
-                    thumbnail: item.thumbnail || `https://i.ytimg.com/vi/${id}/hqdefault.jpg`,
-                    videoUrl: item.link || `https://www.youtube.com/watch?v=${id}`,
-                    duration: 'Live Feed',
-                    source: CATEGORY_META[feed.key]?.label || 'News',
-                    category: feed.key as any,
-                    published: item.pubDate ? new Date(item.pubDate) : new Date(0)
-                  });
-                }
+      try {
+        // 2. Direct client fallback via rss2json
+        const r2jUrl = `https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent('https://www.youtube.com/feeds/videos.xml?channel_id=' + feed.channelId)}`;
+        const r2jRes = await fetch(r2jUrl, { signal: AbortSignal.timeout(5000) });
+        if (r2jRes.ok) {
+          const json = await r2jRes.json();
+          if (json.status === 'ok' && Array.isArray(json.items)) {
+            for (let i = 0; i < Math.min(json.items.length, 12); i++) {
+              const item = json.items[i];
+              const id = item.guid?.replace(/^yt:video:/, '') || (item.link || '').match(/v=([^&]+)/)?.[1] || '';
+              if (id && !seen.has(id)) {
+                seen.add(id);
+                dynamicClips.push({
+                  id,
+                  youtubeId: id,
+                  title: item.title || '',
+                  description: item.description || item.title || '',
+                  thumbnail: item.thumbnail || `https://i.ytimg.com/vi/${id}/hqdefault.jpg`,
+                  videoUrl: item.link || `https://www.youtube.com/watch?v=${id}`,
+                  duration: 'Live Feed',
+                  source: CATEGORY_META[feed.key]?.label || 'News',
+                  category: feed.key as any,
+                  published: item.pubDate ? new Date(item.pubDate) : new Date(0)
+                });
               }
             }
           }
-        } catch {}
-      });
-
-      await Promise.allSettled(feedPromises);
-
-      if (!cancelled) {
-        // Merge with static news defaults for any items not already loaded
-        for (const def of DEFAULT_VIBE_CLIPS) {
-          if (!seen.has(def.id)) {
-            seen.add(def.id);
-            dynamicClips.push(def);
-          }
         }
+      } catch {}
+    });
 
-        // Sort by published date descending so newest news reports are at top
-        dynamicClips.sort((a, b) => (b.published?.getTime() || 0) - (a.published?.getTime() || 0));
+    await Promise.allSettled(feedPromises);
 
-        setVideoList(dynamicClips);
-        setSelectedVideo(prev => prev ? (dynamicClips.find(v => v.id === prev.id) || dynamicClips[0]) : dynamicClips[0]);
-      }
+    if (dynamicClips.length > 0) {
+      // Sort newest broadcasts first
+      dynamicClips.sort((a, b) => (b.published?.getTime() || 0) - (a.published?.getTime() || 0));
+      setVideoList(dynamicClips);
+
+      // If user has explicitly clicked a video, preserve it if still in list;
+      // otherwise, promote the freshest breaking news video to the cinema player!
+      setSelectedVideo(prev => {
+        if (userSelectedVideoIdRef.current) {
+          const found = dynamicClips.find(v => v.id === userSelectedVideoIdRef.current);
+          if (found) return found;
+        }
+        return dynamicClips[0];
+      });
     }
 
-    loadDynamicFeeds();
-    return () => { cancelled = true; };
+    setLastRefreshed(new Date());
+    setIsRefreshing(false);
   }, []);
+
+  useEffect(() => {
+    loadDynamicFeeds(false);
+    // Auto-refresh every 5 minutes so breaking broadcasts stay live
+    const interval = setInterval(() => {
+      loadDynamicFeeds(false);
+    }, 300000);
+    return () => clearInterval(interval);
+  }, [loadDynamicFeeds]);
 
   if (!currentVideo || videoList.length === 0) {
     return null;
@@ -362,7 +364,14 @@ export default function VibeWatchSection({ accent = '#D35400' }: { accent?: stri
           ] as const).map(([key, label]) => (
             <button
               key={key}
-              onClick={() => setFilter(key)}
+              onClick={() => {
+                setFilter(key);
+                userSelectedVideoIdRef.current = null;
+                const matches = key === 'all' ? videoList : videoList.filter(v => v.category === key);
+                if (matches.length > 0) {
+                  setSelectedVideo(matches[0]);
+                }
+              }}
               style={{
                 padding: '7px 16px',
                 borderRadius: '10px',
@@ -479,8 +488,8 @@ export default function VibeWatchSection({ accent = '#D35400' }: { accent?: stri
                 }}>
                   {activeCategoryMeta.icon} {activeCategoryMeta.label}
                 </span>
-                <span style={{ fontSize: '12px', color: '#888', fontWeight: 600 }}>
-                  {currentVideo.duration}
+                <span style={{ fontSize: '12px', color: '#aaa', fontWeight: 600 }}>
+                  {formatTimeAgo(currentVideo.published)}
                 </span>
                 <span style={{ 
                   fontSize: '10px', 
@@ -491,9 +500,13 @@ export default function VibeWatchSection({ accent = '#D35400' }: { accent?: stri
                   padding: '3px 8px', 
                   borderRadius: '6px',
                   textTransform: 'uppercase',
-                  letterSpacing: '1px'
+                  letterSpacing: '1px',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '5px'
                 }}>
-                  ● Live News Broadcast
+                  <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#00ff88', display: 'inline-block' }} />
+                  Live Broadcast
                 </span>
               </div>
               <h3 style={{ fontSize: '18px', fontWeight: 800, color: '#fff', margin: '0 0 8px 0', lineHeight: 1.35 }}>
@@ -560,11 +573,38 @@ export default function VibeWatchSection({ accent = '#D35400' }: { accent?: stri
           scrollbarWidth: 'thin',
           scrollbarColor: `${accent}44 transparent`
         }}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', margin: '0 0 2px 0' }}>
-            <p style={{ fontSize: '11px', fontWeight: 900, textTransform: 'uppercase', letterSpacing: '2px', color: '#666', margin: 0 }}>
-              Live News — {sidebarVideos.length} Broadcasts
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', margin: '0 0 6px 0', gap: '8px' }}>
+            <p style={{ fontSize: '11px', fontWeight: 900, textTransform: 'uppercase', letterSpacing: '1.5px', color: '#888', margin: 0 }}>
+              Live News — {filteredVideos.length} Broadcasts
             </p>
-            <span style={{ fontSize: '11px', color: accent, fontWeight: 700 }}>Auto-Synced</span>
+            <button
+              onClick={() => loadDynamicFeeds(true)}
+              disabled={isRefreshing}
+              title="Refresh live news feeds"
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '5px',
+                background: 'rgba(255,255,255,0.06)',
+                border: '1px solid rgba(255,255,255,0.12)',
+                borderRadius: '8px',
+                padding: '4px 10px',
+                fontSize: '11px',
+                color: accent,
+                fontWeight: 800,
+                cursor: isRefreshing ? 'wait' : 'pointer',
+                transition: 'all 0.2s',
+                outline: 'none'
+              }}
+              onMouseOver={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.12)'; }}
+              onMouseOut={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.06)'; }}
+            >
+              <RotateCw size={11} className={isRefreshing ? 'animate-spin' : ''} />
+              <span>{isRefreshing ? 'Syncing...' : 'Sync Live'}</span>
+              <span style={{ fontSize: '10px', color: '#999', fontWeight: 500 }}>
+                {lastRefreshed ? `· ${lastRefreshed.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}` : ''}
+              </span>
+            </button>
           </div>
 
           {sidebarVideos.length === 0 ? (
@@ -586,6 +626,7 @@ export default function VibeWatchSection({ accent = '#D35400' }: { accent?: stri
                 <div
                   key={video.id}
                   onClick={() => {
+                    userSelectedVideoIdRef.current = video.id;
                     setSelectedVideo(video);
                     setIsPlaying(true);
                     if (isMobile) {
@@ -654,14 +695,17 @@ export default function VibeWatchSection({ accent = '#D35400' }: { accent?: stri
                       fontWeight: 800,
                       color: '#fff'
                     }}>
-                      {video.duration}
+                      {formatTimeAgo(video.published)}
                     </span>
                   </div>
 
                   {/* Text details */}
                   <div style={{ padding: '8px 10px 8px 0', flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
-                    <div style={{ fontSize: '10px', fontWeight: 900, color: accent, textTransform: 'uppercase', letterSpacing: '0.8px', marginBottom: '4px' }}>
-                      {meta.icon} {meta.label}
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '6px', fontSize: '10px', fontWeight: 800, color: accent, textTransform: 'uppercase', letterSpacing: '0.8px', marginBottom: '4px' }}>
+                      <span>{meta.icon} {meta.label}</span>
+                      <span style={{ fontSize: '9px', color: '#888', fontWeight: 600, textTransform: 'none' }}>
+                        {formatTimeAgo(video.published)}
+                      </span>
                     </div>
                     <p style={{
                       fontSize: '12px',
