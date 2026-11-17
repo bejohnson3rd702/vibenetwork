@@ -142,7 +142,7 @@ export default function Home({ categories, activeVideo, setActiveVideo, user }: 
                   {isNewProfiles && (
                     <>
                       {/* ── Mr. Olympia Call to Action Banner ── */}
-                      <section style={{ maxWidth: '1400px', margin: '40px auto', padding: '0 40px' }}>
+                      <section className="px-mobile-sm" style={{ maxWidth: '1400px', margin: '40px auto', padding: '0 40px' }}>
                         <div className="banner-flex-container" style={{
                           position: 'relative', overflow: 'hidden',
                           display: 'flex', minHeight: '340px',
@@ -241,7 +241,7 @@ export default function Home({ categories, activeVideo, setActiveVideo, user }: 
         </div>
 
         {/* ── AVO Summer Concert Tour Banner ── */}
-        <section style={{ maxWidth: '1400px', margin: '40px auto', padding: '0 40px' }}>
+        <section className="px-mobile-sm" style={{ maxWidth: '1400px', margin: '40px auto', padding: '0 40px' }}>
           <div style={{
             position: 'relative', overflow: 'hidden',
             border: '1px solid rgba(255,255,255,0.06)',
@@ -322,7 +322,7 @@ export default function Home({ categories, activeVideo, setActiveVideo, user }: 
         </Suspense> */}
 
         {/* New content section below sliders */}
-        <section style={{ maxWidth: '1400px', margin: '40px auto 40px', padding: '0 40px' }}>
+        <section className="px-mobile-sm" style={{ maxWidth: '1400px', margin: '40px auto 40px', padding: '0 40px' }}>
           <div style={{ position: 'relative', borderRadius: '24px', overflow: 'hidden' }}>
             <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to right, rgba(0,0,0,0.95) 0%, rgba(0,0,0,0.4) 100%)', zIndex: 1 }} />
             <div style={{ position: 'absolute', inset: 0, backgroundImage: 'url("https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?auto=format&fit=crop&q=80&w=2500")', backgroundSize: 'cover', backgroundPosition: 'center', opacity: 0.6, filter: 'brightness(0.7) contrast(1.2)', zIndex: 0 }} />

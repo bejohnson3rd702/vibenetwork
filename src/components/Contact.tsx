@@ -105,7 +105,7 @@ const Contact: React.FC = () => {
     </div>
   ) : (
     <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-      <div style={{ display: 'flex', gap: '20px' }}>
+      <div className="flex-col-mobile" style={{ display: 'flex', gap: '20px' }}>
         <div style={{ flex: 1 }}>
           <label style={{ display: 'block', fontSize: '13px', fontWeight: 600, color: 'var(--text-muted)', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '1px' }}>Full Name</label>
           <input required type="text" value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} style={{ width: '100%', padding: '16px', background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px', color: 'var(--text-primary)', fontSize: '16px', outline: 'none', transition: 'border 0.2s' }} onFocus={e => e.target.style.borderColor = accentColor} onBlur={e => e.target.style.borderColor = 'rgba(255,255,255,0.1)'} placeholder="John Doe" />
@@ -263,7 +263,7 @@ const Contact: React.FC = () => {
               initial={{ opacity: 0, x: 40 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 0.3 }}
-              style={{ background: 'var(--bg-surface)', padding: '40px', borderRadius: '24px', border: '1px solid var(--bg-surface-hover)', flex: 1.5 }}
+              style={{ background: 'var(--bg-surface)', padding: 'clamp(20px, 4vw, 40px)', borderRadius: '24px', border: '1px solid var(--bg-surface-hover)', flex: 1.5 }}
             >
               {formContent}
             </motion.div>

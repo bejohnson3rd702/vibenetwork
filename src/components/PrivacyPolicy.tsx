@@ -12,18 +12,18 @@ const PrivacyPolicy: React.FC = () => {
     <div style={{ 
       minHeight: '100vh', 
       background: 'var(--bg-color)', 
-      paddingTop: '120px', 
-      paddingBottom: '80px',
+      paddingTop: 'clamp(90px, 12vw, 120px)', 
+      paddingBottom: '60px',
       color: 'var(--text-primary)',
       display: 'flex',
       flexDirection: 'column',
       alignItems: 'center'
     }}>
-      <div style={{ maxWidth: '800px', width: '100%', padding: '0 40px' }}>
+      <div className="px-mobile-sm" style={{ maxWidth: '800px', width: '100%', padding: '0 40px' }}>
         <motion.h1 
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          style={{ fontSize: '42px', fontWeight: 900, marginBottom: '16px', letterSpacing: '-1px' }}
+          style={{ fontSize: 'clamp(28px, 6vw, 42px)', fontWeight: 900, marginBottom: '16px', letterSpacing: '-1px' }}
         >
           Privacy Policy
         </motion.h1>
