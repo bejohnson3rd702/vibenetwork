@@ -20,10 +20,14 @@ const Contact: React.FC = () => {
   const isOlympian = isOlympianConfig(wlConfig);
   const isTenant = wlConfig && 
                    wlConfig.id !== 'master' && 
+                   wlConfig.id !== 'adb92e36-5ebc-4dc3-ae96-429f3dc1bb30' &&
                    wlConfig.domain !== 'vibenetwork.tv' && 
                    wlConfig.domain !== 'vibenetwork.com' && 
                    wlConfig.domain !== 'vibenetwork.vercel.app' && 
                    !wlConfig.domain?.includes('vercel.app');
+
+  const displayPhone = (isTenant && wlConfig?.contactPhone) ? wlConfig.contactPhone : '702-575-2633';
+  const customAddress = (isTenant && wlConfig?.contactAddress) ? wlConfig.contactAddress : '';
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -232,7 +236,9 @@ const Contact: React.FC = () => {
                   </div>
                   <div>
                     <div style={{ fontSize: '12px', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '4px' }}>Call Us</div>
-                    <div style={{ fontSize: '16px', fontWeight: 600 }}>{wlConfig?.contactPhone || '+1 (800) 555-VIBE'}</div>
+                    <div style={{ fontSize: '16px', fontWeight: 600 }}>
+                      <a href={`tel:${displayPhone.replace(/[^+\d]/g, '')}`} style={{ color: 'inherit', textDecoration: 'none' }}>{displayPhone}</a>
+                    </div>
                   </div>
                 </div>
                 
@@ -242,7 +248,11 @@ const Contact: React.FC = () => {
                   </div>
                   <div>
                     <div style={{ fontSize: '12px', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '4px' }}>Headquarters</div>
-                    <div style={{ fontSize: '16px', fontWeight: 600 }}>{wlConfig?.contactAddress ? wlConfig.contactAddress.split('\n').map((line: string, i: number) => <React.Fragment key={i}>{line}<br/></React.Fragment>) : <React.Fragment>1200 Tech Ave, Suite 400<br/>San Francisco, CA 94107</React.Fragment>}</div>
+                    <div style={{ fontSize: '16px', fontWeight: 600 }}>
+                      {customAddress
+                        ? customAddress.split('\n').map((line: string, i: number) => <React.Fragment key={i}>{line}<br/></React.Fragment>)
+                        : <React.Fragment>10161 W Park Run Dr<br/>Suite 150<br/>Las Vegas, NV 89145</React.Fragment>}
+                    </div>
                   </div>
                 </div>
               </div>

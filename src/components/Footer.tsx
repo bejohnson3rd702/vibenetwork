@@ -1,8 +1,13 @@
 import React from 'react';
 import { useWhiteLabel } from '../context/WhiteLabelContext';
 import { Link } from 'react-router-dom';
+import { MapPin, Phone } from 'lucide-react';
 
-const Footer: React.FC = () => {
+interface FooterProps {
+  showContactInfo?: boolean;
+}
+
+const Footer: React.FC<FooterProps> = ({ showContactInfo = false }) => {
   const { wlConfig } = useWhiteLabel();
   const platformName = wlConfig?.name || 'Vibe Network';
   const year = new Date().getFullYear();
@@ -34,6 +39,42 @@ const Footer: React.FC = () => {
           Admin Portal
         </Link>
       </div>
+
+      {showContactInfo && (
+        <div style={{
+          display: 'flex',
+          flexWrap: 'wrap',
+          justifyContent: 'center',
+          alignItems: 'center',
+          gap: '12px 24px',
+          color: 'rgba(255,255,255,0.55)',
+          fontSize: '13px',
+          textAlign: 'center',
+          padding: '4px 16px'
+        }}>
+          <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
+            <MapPin size={14} style={{ color: 'var(--accent-primary, #D35400)', flexShrink: 0 }} />
+            <span>10161 W Park Run Dr, Suite 150, Las Vegas, NV 89145</span>
+          </div>
+          <a
+            href="tel:7025752633"
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '8px',
+              color: 'rgba(255,255,255,0.55)',
+              textDecoration: 'none',
+              transition: 'color 0.2s'
+            }}
+            onMouseOver={e => e.currentTarget.style.color = '#fff'}
+            onMouseOut={e => e.currentTarget.style.color = 'rgba(255,255,255,0.55)'}
+          >
+            <Phone size={14} style={{ color: 'var(--accent-primary, #D35400)', flexShrink: 0 }} />
+            <span>Phone: 702-575-2633</span>
+          </a>
+        </div>
+      )}
+
       <div 
         className="px-mobile-sm" 
         style={{ 

@@ -1060,7 +1060,7 @@ function App() {
           </Suspense>
 
           <Suspense fallback={null}>
-             <Footer />
+             <Footer showContactInfo={location.pathname === '/'} />
              <CookieConsent />
           </Suspense>
 
