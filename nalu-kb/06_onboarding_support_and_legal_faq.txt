@@ -1,0 +1,66 @@
+================================================================================
+VIBE NETWORK KNOWLEDGE BASE — DOCUMENT 06
+TITLE: Account Onboarding, Troubleshooting, Admin Portal & Legal Policies FAQ
+================================================================================
+
+SECTION 1: ACCOUNT SIGN-UP, LOGIN & PASSWORD RECOVERY
+--------------------------------------------------------------------------------
+Q: How do I create an account on Vibe Network?
+A: Click "Sign In" in the top-right corner of the navigation bar, then click "Sign Up" at the bottom of the modal. Enter a Username, Email Address, and Password, choose either "Viewer" (to watch, follow, chat, and shop) or "Creator" (to stream, upload videos, post, and sell), and click "Create Profile."
+
+Q: I forgot my password or username. How do I log back in?
+A: You only need your email address to sign in—no username is required at login. If you forgot your password, click "Sign In," click "Forgot Password?", enter your email address, and click "Send Reset Link." Open the link emailed to you (which directs to /reset-password) to set a new password.
+
+Q: Why did I get the error "Access Denied: Your account is restricted to a different network domain"?
+A: Vibe Network enforces strict multi-tenant account isolation so each white-label network's user base stays private and secure. If you registered your account on a specific white-label tenant network, use that network's URL to sign in—or create a separate account on the main Vibe Network portal (vibenetwork.tv). Global administrators can sign in across all domains.
+
+Q: When I am visiting a child network or creator channel, how do I get back to the main Vibe Network homepage?
+A: Click the "Back to Vibe Network" (or parent network) button in the top-left area of the navigation bar to return to the parent network or main Vibe portal.
+
+
+SECTION 2: AUTOMATED BUSINESS / WHITE-LABEL NETWORK SETUP WIZARD
+--------------------------------------------------------------------------------
+When onboarding a new Business / White-Label Network, Vibe's interactive Setup Architect guides owners step-by-step:
+1. Organization Name: Sets your network title across headers and browser tabs.
+2. Brand Logo: Paste a logo URL or type "skip" to upload later in the Admin Dashboard. Vibe automatically provisions an isolated subdomain (e.g., yourbrand.vibenetwork.tv), and custom domains can be mapped anytime.
+3. Brand Colors: Specify color names (e.g., "Black and Gold", "Purple and Cyan") or exact hex codes for background and accent colors.
+4. Homepage Sliders: Choose how many video/image content carousels to display on your homepage.
+5. Modular Sections: Select optional modules such as About Us, Contact Us Form, Engineering Blog, or Featured Merch.
+6. Hero Headline & Background Image: Enter your main Hero banner copy and paste a background image URL (or skip for later).
+7. Deployment: Type "I AGREE" to confirm and boot directly into your Business Admin Operations Dashboard.
+
+
+SECTION 3: ADMIN PORTAL GUIDE
+--------------------------------------------------------------------------------
+Q: How do Network Owners and Admins access their dashboard?
+A: Sign in with your network owner or admin account and click the Admin / Dashboard icon in the navigation bar, or sign in via the "Admin Portal" link (/admin-login) in the website footer.
+
+Q: What can a Network Owner manage inside the Business Admin Dashboard?
+A: Depending on your network configuration, you can manage:
+- Analytics & Live Telemetry (viewer stats, engagement, and performance)
+- Hero Section Editor (banner video/image, headlines, call-to-action buttons)
+- Global Branding (logos, favicons, colors, contact details, custom domains)
+- Videos & Playlists (upload, categorize, and curate VODs and live streams)
+- Monetization CRM & Wallet (revenue splits, creator fee percentages, ledger transactions, CRM contacts, and Stripe payouts)
+- N2N Command Center (for N2N-enabled parent networks: Child Network Fleet, Network Users, Network Ledger, and Child Branding Editor)
+
+
+SECTION 4: LEGAL POLICIES, PRIVACY, DMCA & REFUNDS
+--------------------------------------------------------------------------------
+1. Terms of Service (/terms):
+   - Users are solely responsible for all video, audio, and text content they upload or broadcast. Illegal content, privacy violations, and intellectual property infringement are strictly prohibited, and Vibe Network reserves the right to remove violating content.
+
+2. Payments & Refund Policy:
+   - Payments are processed securely through third-party payment processors (Stripe). Vibe Network never stores raw credit card numbers on its servers.
+   - All digital transactions (subscriptions, tips, PPV unlocks, and bookings) are final and non-refundable unless otherwise required by applicable law or an individual creator's stated refund policy.
+
+3. DMCA & Copyright Takedowns:
+   - Vibe Network respects intellectual property rights. Copyright holders can submit a DMCA takedown notice with their contact details and identification of the infringed work to legal@vibenetwork.tv (or the specific white-label network's designated legal contact).
+
+4. Privacy Policy & Right to Data Deletion (/privacy):
+   - Vibe collects account registration info (name, email, username), transaction metadata (via payment processors), and basic streaming usage telemetry to operate the platform.
+   - Cookie preferences can be managed anytime via the Cookie Consent banner or browser settings.
+   - Right to be Forgotten: Users can request deletion of their personal data at any time by emailing privacy@vibenetwork.tv.
+
+5. Urgent Support or Enterprise Help:
+   - Visit /contact, email Info@vibenetwork.tv or enterprise@vibenetwork.tv, or call Vibe Network Headquarters in Las Vegas at 702-575-2633.

@@ -1,0 +1,141 @@
+================================================================================
+VIBE NETWORK KNOWLEDGE BASE — DOCUMENT 07
+TITLE: Complete Active Networks, Child Networks & AVO 21-University NIL Catalog
+================================================================================
+
+SECTION 1: AVO NETWORK & ALL 21 LICENSED COLLEGIATE NIL NETWORKS
+--------------------------------------------------------------------------------
+Parent Network: AVO Network (Domain: shopavo.la | Vibe Route: /?tenant=3915f1e5-4c79-4b2a-ad41-7029ce8052d7 | Directory: /channels?filter=colleges)
+NIL Mission: 20% of every AVO order is donated directly to the university's female student-athlete NIL (Name, Image, and Likeness) fund.
+
+Licensed University Child Networks on Vibe (21 Schools):
+1. Alabama (Crimson Tide) — Subdomain: alabama.shopavo.la | Store: https://shopavo.la/pages/avo-x-bama | Roll Tide! Official Alabama Crimson Tide Apparel & NIL Gear by AVO.
+2. Arkansas (Razorbacks) — Subdomain: arkansas.shopavo.la | Store: https://shopavo.la/collections/arkansas | Woo Pig Sooie! Official Arkansas Razorbacks Apparel & NIL Collection by AVO.
+3. Auburn (Tigers) — Subdomain: auburn.shopavo.la | Store: https://shopavo.la/collections/auburn | War Eagle! Official Auburn Tigers Apparel & Tailgate Collection by AVO.
+4. Baylor (Bears) — Subdomain: baylor.shopavo.la | Store: https://shopavo.la/collections/baylor | Sic 'Em Bears! Official Baylor Bears Campus Apparel & NIL Gear by AVO.
+5. Colorado (Buffaloes) — Subdomain: colorado.shopavo.la | Store: https://shopavo.la/collections/colorado | Sko Buffs! Official Colorado Buffaloes Campus Apparel & Lifestyle Gear by AVO.
+6. Georgia (Bulldogs) — Subdomain: georgia.shopavo.la | Store: https://shopavo.la/collections/georgia | Go Dawgs! Official Georgia Bulldogs Red & Black Tailgate Collection by AVO.
+7. Georgia Tech (Yellow Jackets) — Subdomain: gatech.shopavo.la | Store: https://shopavo.la/collections/georgia-tech | Go Jackets! Official Georgia Tech Yellow Jackets Apparel & NIL Gear by AVO.
+8. Indiana (Hoosiers) — Subdomain: indiana.shopavo.la | Store: https://shopavo.la/collections/indiana | Go Hoosiers! Official Indiana Hoosiers Cream & Crimson Collection by AVO.
+9. LSU (Tigers) — Subdomain: lsu.shopavo.la | Store: https://shopavo.la/collections/lsu | Geaux Tigers! Official LSU Tigers Purple & Gold Game Day Apparel by AVO.
+10. Mississippi State (Bulldogs) — Subdomain: mississippistate.shopavo.la | Store: https://shopavo.la/collections/mississippi-state | Hail State! Official Mississippi State Bulldogs Maroon & White Apparel by AVO.
+11. Missouri (Tigers) — Subdomain: missouri.shopavo.la | Store: https://shopavo.la/collections/missouri | Mizzou! Official Missouri Tigers Black & Gold Campus Collection by AVO.
+12. Nebraska (Cornhuskers) — Subdomain: nebraska.shopavo.la | Store: https://shopavo.la/collections/nebraska | Go Big Red! Official Nebraska Cornhuskers Scarlet & Cream Collection by AVO.
+13. Ole Miss (Rebels) — Subdomain: olemiss.shopavo.la | Store: https://shopavo.la/collections/ole-miss | Hotty Toddy! Official Ole Miss Rebels Oxford-Inspired Campus Apparel by AVO.
+14. Penn State (Nittany Lions) — Subdomain: pennstate.shopavo.la | Store: https://shopavo.la/collections/penn-state | We Are! Official Penn State Nittany Lions Happy Valley Gear by AVO.
+15. Rutgers (Scarlet Knights) — Subdomain: rutgers.shopavo.la | Store: https://shopavo.la/collections/rutgers | Scarlet Knights! Official Rutgers University Apparel & NIL Collection by AVO.
+16. TCU (Horned Frogs) — Subdomain: tcu.shopavo.la | Store: https://shopavo.la/collections/tcu | Go Frogs! Official TCU Horned Frogs Purple & White Collection by AVO.
+17. Texas A&M (Aggies) — Subdomain: texasam.shopavo.la | Store: https://shopavo.la/collections/texas-am | Gig 'Em Aggies! Official Texas A&M Maroon & White Apparel by AVO.
+18. Vanderbilt (Commodores) — Subdomain: vanderbilt.shopavo.la | Store: https://shopavo.la/collections/vanderbilt | Anchor Down! Official Vanderbilt Commodores Campus Wear by AVO.
+19. Virginia (Cavaliers) — Subdomain: virginia.shopavo.la | Store: https://shopavo.la/collections/virginia | Wahoowa! Official Virginia Cavaliers Navy & Orange Collection by AVO.
+20. Virginia Tech (Hokies) — Subdomain: virginiatech.shopavo.la | Store: https://shopavo.la/collections/virginia-tech | Hokie Nation! Official Virginia Tech Hokies Maroon & Orange Apparel by AVO.
+21. Wake Forest (Demon Deacons) — Subdomain: wakeforest.shopavo.la | Store: https://shopavo.la/collections/wake-forest | Go Deacs! Official Wake Forest Demon Deacons Old Gold & Black Collection by AVO.
+
+
+SECTION 2: MUSCLE & FITNESS / MR. OLYMPIA N2N ECOSYSTEM
+--------------------------------------------------------------------------------
+Parent Network: Muscle & Fitness (Domain: muscleandfitness.com | Vibe Route: /?tenant=7a017c4d-c08f-4260-8540-a0cc8bed4e11)
+Child & Partner Networks Hosted Under Muscle & Fitness:
+- Mr. Olympia (mrolympia.com | /?tenant=7a017c4d-c08f-4260-8540-a0cc8bed4e12): Joe Weider's Mr. Olympia Fitness & Performance Weekend — The Pinnacle of Bodybuilding.
+- Wings of Strength (wingsofstrength.net | /?tenant=wings-of-strength-tenant-id): Premier global promoter for elite female bodybuilding and professional strength sports, featuring the Alina Popa Classic (IFBB Pro League), Rising Phoenix Arizona Women's Pro, and Phoenix Iron Games (IFBB Pro & NPC Amateur).
+- M&F Hers (muscleandfitness.com/hers | /?tenant=mf-hers-tenant-id): Workouts, nutrition, tips, and guides tailored for active women.
+- Flex Online (muscleandfitness.com/flexonline | /?tenant=flex-online-tenant-id): Hardcore bodybuilding, athlete contests, and classic strength coaching (including Dorian Yates & Mike Mentzer Maximum Results training).
+- Gold's Gym (golds.avoclothing.com | /?tenant=ad821853-9f01-4645-89dc-18bf828e1790): Iconic strength & bodybuilding partner network.
+- Gaspari Nutrition (gaspari.avoclothing.com | /?tenant=58f06680-2308-4ea3-b290-db8564f2b875): Sports nutrition partner network.
+- Rogue Fitness (rogue.avoclothing.com | /?tenant=d5a15986-a473-4935-a43a-ce4c467e555d): Strength equipment & training partner network.
+- Redcon1 (redcon1.avoclothing.com | /?tenant=62c698d8-fc87-4fc5-96a0-9940d9e8f607): High-performance sports supplement partner network.
+- Gymshark (gymshark.avoclothing.com | /?tenant=b59515ac-e997-47ab-b0b2-e25cff596d97): Fitness apparel & athlete community partner network.
+
+
+SECTION 3: B2K R&B NETWORK & SOLO MEMBER NETWORKS
+--------------------------------------------------------------------------------
+Parent Network: B2K Network (b2k.vibenetwork.tv | /?tenant=4d16dae7-518d-440e-bb21-b6f3a7cfcd64)
+Syndicated Artist Child Networks:
+- Omarion Network (omarion.vibenetwork.tv | /?tenant=f8ffc4d8-b0b0-4e27-ab16-6d9e804542aa)
+- Lil Fizz Network (fizz.vibenetwork.tv | /?tenant=8b60e724-a9a6-4180-9d94-413b01f3e6a6)
+- J-Boog Network (jboog.vibenetwork.tv | /?tenant=87bb46a5-80b0-4f4e-bc8d-4e32d277217c)
+- Raz-B Network (razb.vibenetwork.tv | /?tenant=698afd65-1722-4146-a876-d94c2acedf41)
+
+
+SECTION 4: BONAIRE CHAMBER OF COMMERCE (KvK BONAIRE) & ISLAND MERCHANTS
+--------------------------------------------------------------------------------
+Parent Network: Bonaire Chamber of Commerce (/?tenant=b0ea0000-c08f-4260-8540-a0cc8bed4e11)
+Syndicated Island Merchant Networks:
+- Bonaire Dive Gear (bonairedive.vibenetwork.tv): Reef-safe dive rashguards, snorkeling sets, and ocean dry bags.
+- Flamingo Eco Tours (bonairetours.vibenetwork.tv): Guided mangrove snorkeling tours and sustainable eco-souvenirs.
+- Cadushy Distillery Shop (cadushyshop.vibenetwork.tv): Rom Rincon aged rum, Cadushy cactus liqueur gift sets, and distillery merch.
+- Bonaire Salt Shop (bonairesalt.vibenetwork.tv): Gourmet Caribbean sea salt, lavender bath salt crystals, and wooden salt mills.
+
+
+SECTION 5: CHRISTIAN REVIVAL NETWORK (KPLE-TV) & FAITH CHANNELS
+--------------------------------------------------------------------------------
+Parent Network: Christian Revival Network / KPLE-TV (kple.kpletv.org | /?tenant=33742e2f-430b-4c2d-9cba-42507891ef02)
+- Broadcast Location: 502 E. Elms Rd., Killeen, Texas (Toll-Free: 877-640-5673).
+- Killeen Healing Rooms Schedule: Open at the KPLE-TV building (502 E. Elms Rd., Killeen) on the 2nd Saturday of each month from 9:30 AM – 11:30 AM and the last Tuesday of each month from 6:45 PM – 8:00 PM, with prayer teams available based on Mark 16:17–18.
+- Local Community Events Calendar: Non-profits and community ministries can submit plain-text event announcements via email at least two weeks in advance.
+- Featured Faith Sub-Network: Doc Wales Diaries (docwales.kpletv.org) — Medical mission documentaries hosted by Dr. Steve "Doc Wales" Price.
+
+
+SECTION 6: ENTERTAINMENT, COMBAT, TATTOO & SPECIALTY NETWORKS ON VIBE
+--------------------------------------------------------------------------------
+- Global Combat Collective / GCC (/gcc or /global-combat-collective | globalcombatcollective.com): Live multi-camera combat sports PPV & arena ticketing network.
+- The Real Courtney Bee Network (therealcourtneybee.com | /?tenant=cb000000-c08f-4260-8540-a0cc8bed4e11): Comedy & culture network hosting *We Playin' Spades* (with Nick Cannon), stand-up comedy, and Wild 'N Out cast channels (DC Young Fly, Conceited, Chico Bean, Justina Valentine, Timothy DeLaGhetto).
+- Sacred Serpent Network (/?tenant=c8c4084d-56b4-4c45-94f6-e4b1821dad75): Tattoo artistry collective featuring resident tattoo creators and booking portfolios.
+- Vibe 100 Broadcast Hub (/?tenant=e5c100aa-c08f-4260-8540-a0cc8bed4e11): Curated 24/7 cross-network showcase featuring AVO Channel, Muscle & Fitness Channel, B2K Channel, and Christian Revival Channel.
+- Destinito Cinema: Boutique Caribbean resort & island cinema catalog featuring 4K Dolby Atmos films and documentaries with multilingual audio/subtitles (English, Spanish, French, Dutch, Papiamento).
+- Las Vegas Food Truck Hub (/food-truck): Live location tracker & order-ahead menu in Las Vegas (Fremont Street Experience near the Mantis, 8:00 PM – 2:00 AM; First Friday Arts District 5:00 PM – 11:00 PM; featuring Birria Tacos $14 and Loaded Asada Fries $16).
+
+Full Active Supabase White-Label Network Records (52 verified active tenants):
+- Alabama | Domain: alabama.shopavo.la | Route: /?tenant=be124de3-82be-4017-b6d0-58b0132f5550 | Parent: AVO NETWORK | Summary: Roll Tide! Official Alabama Crimson Tide Apparel & NIL Gear by AVO.
+- Georgia Tech | Domain: gatech.shopavo.la | Route: /?tenant=a7000003-c08f-4260-8540-a0cc8bed4e11 | Parent: AVO NETWORK | Summary: Go Jackets! Official Georgia Tech Yellow Jackets Apparel & NIL Gear by AVO.
+- Mississippi State | Domain: mississippistate.shopavo.la | Route: /?tenant=b7f74446-403b-4f9b-8be1-1bd2df35df54 | Parent: AVO NETWORK | Summary: Hail State! Official Mississippi State Bulldogs Maroon & White Apparel by AVO.
+- Ole Miss | Domain: olemiss.shopavo.la | Route: /?tenant=eb2428a2-87e2-46ed-b7c5-c1f5e6c4cf1b | Parent: AVO NETWORK | Summary: Hotty Toddy! Official Ole Miss Rebels Oxford-Inspired Campus Apparel by AVO.
+- Penn State | Domain: pennstate.shopavo.la | Route: /?tenant=16e37654-6a62-490c-bb55-aee61558eee4 | Parent: AVO NETWORK | Summary: We Are! Official Penn State Nittany Lions Happy Valley Gear by AVO.
+- Vanderbilt | Domain: vanderbilt.shopavo.la | Route: /?tenant=6b797710-bec0-4887-8336-d1eaf76cd307 | Parent: AVO NETWORK | Summary: Anchor Down! Official Vanderbilt Commodores Campus Wear by AVO.
+- Gymshark | Domain: gymshark.avoclothing.com | Route: /?tenant=b59515ac-e997-47ab-b0b2-e25cff596d97 | Parent: Muscle & Fitness | Summary: Gymshark — Be a Visionary
+- Gaspari Nutrition | Domain: gaspari.avoclothing.com | Route: /?tenant=58f06680-2308-4ea3-b290-db8564f2b875 | Parent: Muscle & Fitness | Summary: Gaspari Nutrition — Engineered for Champions
+- Lil Fizz Network | Domain: fizz.vibenetwork.tv | Route: /?tenant=8b60e724-a9a6-4180-9d94-413b01f3e6a6 | Parent: B2K Network | Summary: Lil' Fizz — Music Production & Beats
+- Omarion Network | Domain: omarion.vibenetwork.tv | Route: /?tenant=f8ffc4d8-b0b0-4e27-ab16-6d9e804542aa | Parent: B2K Network | Summary: Omarion — New Album 'O2' & Solo Music
+- Muscle & Fitness | Domain: muscleandfitness.com | Route: /?tenant=7a017c4d-c08f-4260-8540-a0cc8bed4e11 | Summary: Muscle & Fitness — Your Ultimate Guide to Workouts, Nutrition, Gear, and Athlete Interviews.
+- Georgia | Domain: georgia.shopavo.la | Route: /?tenant=83b21eac-0f37-4b66-b7e0-1320105e82f1 | Parent: AVO NETWORK | Summary: Go Dawgs! Official Georgia Bulldogs Red & Black Tailgate Collection by AVO.
+- Indiana | Domain: indiana.shopavo.la | Route: /?tenant=a7000004-c08f-4260-8540-a0cc8bed4e11 | Parent: AVO NETWORK | Summary: Go Hoosiers! Official Indiana Hoosiers Cream & Crimson Collection by AVO.
+- Gold's Gym | Domain: golds.avoclothing.com | Route: /?tenant=ad821853-9f01-4645-89dc-18bf828e1790 | Parent: Muscle & Fitness | Summary: The Mecca of Bodybuilding — Official Gold's Gear
+- Baylor | Domain: baylor.shopavo.la | Route: /?tenant=e86c5900-0d27-420b-98f7-922213540ec2 | Parent: AVO NETWORK | Summary: Sic 'Em Bears! Official Baylor Bears Campus Apparel & NIL Gear by AVO.
+- Colorado | Domain: colorado.shopavo.la | Route: /?tenant=d0fd9b57-d8af-474b-a011-aa8babeadb34 | Parent: AVO NETWORK | Summary: Sko Buffs! Official Colorado Buffaloes Campus Apparel & Lifestyle Gear by AVO.
+- Vibe Network | Domain: vibenetwork.tv | Route: /?tenant=adb92e36-5ebc-4dc3-ae96-429f3dc1bb30 | Summary: Built for brands, creators, and enterprise teams that demand instant performance, premium quality, and infrastructure that scales without compromise.
+- Rogue Fitness | Domain: rogue.avoclothing.com | Route: /?tenant=d5a15986-a473-4935-a43a-ce4c467e555d | Parent: Muscle & Fitness | Summary: Rogue Fitness — High Performance Training Gear
+- Redcon1 | Domain: redcon1.avoclothing.com | Route: /?tenant=62c698d8-fc87-4fc5-96a0-9940d9e8f607 | Parent: Muscle & Fitness | Summary: Redcon1 — Highest State of Readiness
+- AVO NETWORK | Domain: shopavo.la | Route: /?tenant=3915f1e5-4c79-4b2a-ad41-7029ce8052d7 | Summary: AVO NETWORK — The Future of College Apparel
+- J-Boog Network | Domain: jboog.vibenetwork.tv | Route: /?tenant=87bb46a5-80b0-4f4e-bc8d-4e32d277217c | Parent: B2K Network | Summary: J-Boog — Reggae Vibes & Brightside Tour
+- Raz-B Network | Domain: razb.vibenetwork.tv | Route: /?tenant=698afd65-1722-4146-a876-d94c2acedf41 | Parent: B2K Network | Summary: Raz-B — Acting, Solo Projects & Live Streams
+- LSU | Domain: lsu.shopavo.la | Route: /?tenant=a7000005-c08f-4260-8540-a0cc8bed4e11 | Parent: AVO NETWORK | Summary: Geaux Tigers! Official LSU Tigers Purple & Gold Game Day Apparel by AVO.
+- B2K Network | Domain: b2k.vibenetwork.tv | Route: /?tenant=4d16dae7-518d-440e-bb21-b6f3a7cfcd64 | Summary: B2K — THE BOYS 4 LIFE TOUR
+- Christian Revival Channel | Domain: v100-kple.vibenetwork.tv | Route: /?tenant=100d0000-c08f-4260-8540-a0cc8bed4e11 | Parent: VIBE 100 | Summary: Christian Revival Channel — Faith, Hope & Gospel Broadcasts
+- The Real Courtney Bee | Domain: courtneybee.network | Route: /?tenant=cb000000-c08f-4260-8540-a0cc8bed4e11 | Summary: Official Courtney Bee Stream
+- Nebraska | Domain: nebraska.shopavo.la | Route: /?tenant=a7000007-c08f-4260-8540-a0cc8bed4e11 | Parent: AVO NETWORK | Summary: Go Big Red! Official Nebraska Cornhuskers Scarlet & Cream Collection by AVO.
+- TCU | Domain: tcu.shopavo.la | Route: /?tenant=a7000009-c08f-4260-8540-a0cc8bed4e11 | Parent: AVO NETWORK | Summary: Go Frogs! Official TCU Horned Frogs Purple & White Collection by AVO.
+- AVO Channel | Domain: v100-avo.vibenetwork.tv | Route: /?tenant=100a0000-c08f-4260-8540-a0cc8bed4e11 | Parent: VIBE 100 | Summary: AVO — Premium College Lifestyle & Gameday Apparel
+- B2K Channel | Domain: v100-b2k.vibenetwork.tv | Route: /?tenant=100c0000-c08f-4260-8540-a0cc8bed4e11 | Parent: VIBE 100 | Summary: B2K — Millennium R&B Grooves, Reunion Tours & Videos
+- Muscle & Fitness Channel | Domain: v100-olympia.vibenetwork.tv | Route: /?tenant=100b0000-c08f-4260-8540-a0cc8bed4e11 | Parent: VIBE 100 | Summary: Muscle & Fitness — Bodybuilding Legends & Champion Apparel
+- The Real Courtney Bee | Domain: therealcourtneybee.com | Route: /?tenant=c0071234-c08f-4260-8540-a0cc8bed4e11 | Parent: The Real Courtney Bee | Summary: Welcome to The Real Courtney Bee — Official Media, Broadcasts & Culture Stream.
+- Mr. Olympia | Domain: mrolympia.com | Route: /?tenant=7a017c4d-c08f-4260-8540-a0cc8bed4e12 | Parent: Muscle & Fitness | Summary: Mr. Olympia — The World's Ultimate Bodybuilding Stage and Showcase
+- DC Young Fly | Domain: dcyoungfly.wildnout.vibenetwork.tv | Route: /?tenant=d1000000-c08f-4260-8540-a0cc8bed4e11 | Parent: The Real Courtney Bee | Summary: DC Young Fly — Atlanta's funniest, wildest rapper-comedian.
+- Chico Bean | Domain: chicobean.wildnout.vibenetwork.tv | Route: /?tenant=d3000000-c08f-4260-8540-a0cc8bed4e11 | Parent: The Real Courtney Bee | Summary: Chico Bean — The king of Wildstyle.
+- Conceited | Domain: conceited.wildnout.vibenetwork.tv | Route: /?tenant=d2000000-c08f-4260-8540-a0cc8bed4e11 | Parent: The Real Courtney Bee | Summary: Conceited — New York's sharpest battle rapper.
+- Timothy DeLaGhetto | Domain: timothydelaghetto.wildnout.vibenetwork.tv | Route: /?tenant=d5000000-c08f-4260-8540-a0cc8bed4e11 | Parent: The Real Courtney Bee | Summary: Timothy DeLaGhetto — YouTube legend turned Wild 'N Out OG.
+- Justina Valentine | Domain: justinavalentine.wildnout.vibenetwork.tv | Route: /?tenant=d4000000-c08f-4260-8540-a0cc8bed4e11 | Parent: The Real Courtney Bee | Summary: Justina Valentine — Rapper, singer, and Wild 'N Out fan favorite.
+- Texas A&M | Domain: texasam.shopavo.la | Route: /?tenant=a7000010-c08f-4260-8540-a0cc8bed4e11 | Parent: AVO NETWORK | Summary: Gig 'Em Aggies! Official Texas A&M Maroon & White Apparel by AVO.
+- KPLE-TV | Domain: kple.kpletv.org | Route: /?tenant=100d0000-c08f-4260-8540-a0cc8bed4e01 | Parent: Christian Revival Network | Summary: Welcome to KPLE-TV, your local source for faith,
+family, and community-centered programming.
+- Virginia | Domain: virginia.shopavo.la | Route: /?tenant=a7000011-c08f-4260-8540-a0cc8bed4e11 | Parent: AVO NETWORK | Summary: Wahoowa! Official Virginia Cavaliers Navy & Orange Collection by AVO.
+- Bonaire Dive Gear | Domain: bonairedive.vibenetwork.tv | Route: /?tenant=b0ea0002-c08f-4260-8540-a0cc8bed4e11 | Parent: Bonaire Chamber of Commerce | Summary: Dive into adventure with Bonaire's premier dive gear and ocean apparel. Sun-protection rashguards, dry bags, and premium snorkeling equipment.
+- Flamingo Eco Tours | Domain: bonairetours.vibenetwork.tv | Route: /?tenant=b0ea0003-c08f-4260-8540-a0cc8bed4e11 | Parent: Bonaire Chamber of Commerce | Summary: Explore the wonders of Bonaire's pristine national parks, salt flats, and flamingo sanctuaries. Book guided eco-tours and buy eco-friendly souvenirs.
+- Cadushy Distillery Shop | Domain: cadushyshop.vibenetwork.tv | Route: /?tenant=b0ea0004-c08f-4260-8540-a0cc8bed4e11 | Parent: Bonaire Chamber of Commerce | Summary: Home of the Cadushy Distillery in Rincon. Order authentic cactus liqueurs, award-winning rum, vodka, and Cadushy merchandise shipped worldwide.
+- Bonaire Salt Shop | Domain: bonairesalt.vibenetwork.tv | Route: /?tenant=b0ea0001-c08f-4260-8540-a0cc8bed4e11 | Parent: Bonaire Chamber of Commerce | Summary: Experience the purity of Bonaire. Hand-harvested gourmet sea salts, relaxing bath salts, and unique coral-infused gifts straight from the Caribbean.
+- Wake Forest | Domain: wakeforest.shopavo.la | Route: /?tenant=a7000013-c08f-4260-8540-a0cc8bed4e11 | Parent: AVO NETWORK | Summary: Go Deacs! Official Wake Forest Demon Deacons Old Gold & Black Collection by AVO.
+- Arkansas | Domain: arkansas.shopavo.la | Route: /?tenant=a7000001-c08f-4260-8540-a0cc8bed4e11 | Parent: AVO NETWORK | Summary: Woo Pig Sooie! Official Arkansas Razorbacks Apparel & NIL Collection by AVO.
+- Virginia Tech | Domain: virginiatech.shopavo.la | Route: /?tenant=a7000012-c08f-4260-8540-a0cc8bed4e11 | Parent: AVO NETWORK | Summary: Hokie Nation! Official Virginia Tech Hokies Maroon & Orange Apparel by AVO.
+- Doc Wales Diaries | Domain: docwales.kpletv.org | Route: /?tenant=a0f7c22e-a3ab-4e3f-a3cf-e06cf0cb0bb0 | Parent: KPLE-TV | Summary: Doc Wales Diaries follows missionary doctor Steve Price as he shares powerful stories of faith, compassion, and hope from medical missions in crisis zones around the world.
+- Auburn | Domain: auburn.shopavo.la | Route: /?tenant=a7000002-c08f-4260-8540-a0cc8bed4e11 | Parent: AVO NETWORK | Summary: War Eagle! Official Auburn Tigers Apparel & Tailgate Collection by AVO.
+- Missouri | Domain: missouri.shopavo.la | Route: /?tenant=a7000006-c08f-4260-8540-a0cc8bed4e11 | Parent: AVO NETWORK | Summary: Mizzou! Official Missouri Tigers Black & Gold Campus Collection by AVO.
+- Rutgers | Domain: rutgers.shopavo.la | Route: /?tenant=a7000008-c08f-4260-8540-a0cc8bed4e11 | Parent: AVO NETWORK | Summary: Scarlet Knights! Official Rutgers University Apparel & NIL Collection by AVO.

@@ -1,0 +1,86 @@
+================================================================================
+VIBE NETWORK KNOWLEDGE BASE — DOCUMENT 03
+TITLE: Creator Features, Live Streaming, Monetization, Payouts & Affiliate Program
+================================================================================
+
+SECTION 1: CREATOR STUDIO, LIVE STREAMING & CONTENT MANAGEMENT
+--------------------------------------------------------------------------------
+Creators manage their entire channel directly from their Profile Dashboard (/profile):
+
+1. Live Broadcasting (Go Live):
+   - Creators can broadcast live directly from the browser or streaming studio via their Profile Dashboard and Watch Live controls.
+   - Schedule upcoming broadcasts so fans know when to tune in.
+   - Viewers automatically see the newest active live broadcast in the Watch Live player, accompanied by live viewer telemetry and real-time chat.
+
+2. Video-on-Demand (VOD) & Pay-Per-View (PPV):
+   - Upload high-definition video files directly to Vibe with resumable cloud uploads and transcoding.
+   - Organize content by categories, playlists, and tags.
+   - Set any video as Free ($0.00) or Paid Pay-Per-View (custom USD price). Paid videos support a configurable free preview window (90 seconds by default) before prompting viewers to unlock full access.
+   - Uploaded videos can be automatically transcribed for searchable captions and multi-language translation overlays.
+
+3. Community Feed & Exclusive Fan Posts:
+   - Publish text updates, photos, and media posts to your channel's Community Feed.
+   - Toggle posts between Public (visible to everyone) and Locked/VIP (exclusively visible to paid channel subscribers).
+   - Showcase visual portfolios with profile cover art and interactive image flipbooks.
+
+4. Vibe Drive:
+   - Manage uploaded media assets, documents, and channel files inside your personal creator storage workspace.
+
+
+SECTION 2: FIVE WAYS CREATORS MONETIZE ON VIBE NETWORK
+--------------------------------------------------------------------------------
+1. Monthly Channel Subscriptions:
+   - Creators can toggle their channel between "Free" and "Subscription" inside Subscription Settings on their Profile Dashboard.
+   - Set any custom monthly USD price (for example, $4.99/month, $9.99/month, or higher).
+   - Subscribers unlock subscriber-only videos, locked community feed posts, and VIP channel perks.
+
+2. Live Chat Tipping:
+   - Viewers can send instant monetary tips during live streams and on creator profiles to support their favorite hosts and highlight messages.
+
+3. 1-on-1 Virtual Call & Consultation Bookings:
+   - Creators, coaches, athletes, and consultants can enable Bookings on their profile, set a custom Hourly Rate (in USD), and publish available calendar time slots.
+   - Fans book and pay directly through the Booking Modal, receive automated meeting reminders, and join a private browser-based video session with the creator at /call/:callId—no third-party Zoom link required.
+
+4. Merchandise & E-Commerce Storefronts (/marketplace & /shop):
+   - Sell physical apparel, gear, digital downloads, or event passes directly on your channel and in the global Vibe Marketplace.
+   - Supports both Vibe's native product manager (with size/color variants and photos) and embedded Shopify store integration for established e-commerce brands.
+
+5. Pay-Per-View (PPV) Videos & Live Events:
+   - Charge one-time ticket or PPV access fees for special broadcasts, concerts, combat sports events, courses, or premium films.
+
+
+SECTION 3: WALLET, STRIPE CONNECT PAYOUTS, LEDGER & BUILT-IN CRM
+--------------------------------------------------------------------------------
+- Creator Wallet & Transparent Ledger:
+  Every tip, subscription, product sale, PPV unlock, booking, and affiliate commission is logged in real time in the Creator Wallet & Ledger, displaying both gross transaction value and the creator's net payout share.
+- Revenue Share:
+  On standard Vibe channels, the default platform fee is 15% (meaning creators retain 85% net share), unless a custom split is configured under a specific White-Label Parent Network agreement.
+- Stripe Connect Payouts:
+  Creators and networks connect their bank account via Stripe Connect onboarding to receive secure payouts and process major credit/debit cards and digital wallets.
+- Built-In Monetization CRM:
+  When fans sign up on a network or submit a contact inquiry, Vibe automatically creates a contact record in the creator/network's CRM directory (with optional external CRM webhook sync) so you always own your audience list.
+
+
+SECTION 4: THE VIBE AFFILIATE PROGRAM (5% REFERRAL COMMISSIONS)
+--------------------------------------------------------------------------------
+Anyone with a Vibe account can earn passive income by sharing Vibe channels, streams, and products:
+- How It Works: Share any Vibe URL with your referral parameter attached: ?ref=YOUR_USER_ID
+- Commission Rate: 5% flat commission on qualifying purchases made by referred buyers.
+- Eligible Purchase Types: Monthly channel subscriptions, store/merchandise products, 1-on-1 bookings, and tips.
+- Attribution Cookie Window: 30 days from the visitor's click. Every qualifying purchase within those 30 days credits your wallet automatically.
+- Rules: Self-referrals (buying with your own referral link) are automatically excluded.
+
+
+SECTION 5: FREQUENTLY ASKED QUESTIONS — CREATORS & MONETIZATION
+--------------------------------------------------------------------------------
+Q: How do I become a Creator on Vibe Network?
+A: Click "Sign In" in the top navigation bar, switch to "Sign Up," enter your username, email, and password, and select "Creator" as your Account Type. Once signed in, go to /profile to customize your channel, upload videos, set up your store, or go live.
+
+Q: Can I make my channel free and still earn money?
+A: Yes! Many creators keep their channel free to maximize audience reach while monetizing through live chat tips, individual pay-per-view videos, merchandise sales, 1-on-1 virtual call bookings, and the 5% Vibe Affiliate Program. You can switch between Free and Monthly Subscription mode at any time.
+
+Q: How do 1-on-1 Bookings work?
+A: Creators set their hourly rate and available time slots in their Profile Dashboard. When a fan books a session, payment is processed upfront and both parties receive access to Vibe's built-in Virtual Call Room (/call/:callId) at the scheduled time.
+
+Q: How does the Vibe Affiliate Program pay me?
+A: When someone visits Vibe using your ?ref= link, a 30-day referral tag is saved. Any subscription, product purchase, booking, or tip they complete within 30 days automatically credits a 5% referral commission directly to your Vibe Wallet.

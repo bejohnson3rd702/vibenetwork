@@ -1,0 +1,58 @@
+================================================================================
+VIBE NETWORK KNOWLEDGE BASE — DOCUMENT 05
+TITLE: Flagship Networks & Partner Ecosystems Hosted on Vibe Network
+================================================================================
+
+Because Ask Nalu assists visitors across Vibe Network's main portal as well as featured partner networks, below is the authoritative directory of major networks hosted on the Vibe Network-to-Network (N2N) ecosystem.
+
+--------------------------------------------------------------------------------
+1. AVO NETWORK & AVO COLLEGES
+--------------------------------------------------------------------------------
+- Overview: AVO is a direct-to-consumer apparel and collegiate media network built on the belief that high-quality, American-made garments should be sold at fair prices without traditional retail markups ("have your avocado toast and eat it too").
+- Supporting Female Student Athletes (NIL Mission): 20% of every AVO order is donated directly to the university's female student-athlete NIL (Name, Image, and Likeness) fund.
+- Collegiate N2N Ecosystem: AVO syndicates dedicated child networks for university athletic communities (accessible via the "AVO Colleges" slider on the homepage or /channels?filter=colleges), complete with school-branded apparel stores, live college sports news tickers, and campus ambassador features.
+- Live Events: Hosts the AVO Summer Concert Tour, bringing live bands and artists to collegiate campus parks nationwide.
+
+--------------------------------------------------------------------------------
+2. CHRISTIAN REVIVAL NETWORK (CRN / FORMERLY KPLE-TV)
+--------------------------------------------------------------------------------
+- Overview: Operated by the Killeen Christian Broadcasting Corporation, a 501(c)(3) not-for-profit media mission broadcasting from Killeen / Ft. Hood, Texas since 1993.
+- Programming: 24/7/365 inspirational faith-based and family programming in both English and Spanish, syndicated globally with multi-language reach across 100+ languages.
+- Where to Watch: Available online via Vibe Network as well as on Roku, iOS, Google Play Store, Amazon Fire TV, and Apple TV.
+- Community Mission: Supports non-profit organizations throughout Bell County, Texas via its Local Events Calendar, broadcast announcements, and public program interviews.
+- Leadership: Co-founded by Catherine Mason (1927–2022), who led the station for nearly 30 years; General Manager is Chaplain (COL) Ken Sorenson (Retired U.S. Army Chaplain with 33 years of military service).
+- Toll-Free Contact: (877) 640-5673.
+
+--------------------------------------------------------------------------------
+3. MUSCLE & FITNESS / MR. & MRS. OLYMPIA NETWORK
+--------------------------------------------------------------------------------
+- Overview: A premier bodybuilding, strength, and fitness Network-to-Network (N2N) hub celebrating athletic discipline, iconic physiques, and championship fitness culture.
+- Partner Brands & Sub-Networks: Connects fans with media clips, RSS fitness news feeds, workout schedules, champion athlete profiles, and gear from partner brands including Gold's Gym, Gaspari Nutrition, Rogue Fitness, Redcon1, Gymshark, Wings of Strength, Muscle & Fitness Hers, and Flex Online.
+- Official Merchandise: Fans can shop the Muscle & Fitness "Official Weekend Gear & Wear" collection (hoodies, workout shirts, and accessories) at /marketplace?network=muscle.
+
+--------------------------------------------------------------------------------
+4. GLOBAL COMBAT COLLECTIVE (GCC)
+--------------------------------------------------------------------------------
+- Overview: Official N2N Combat Sports Network (/gcc or /global-combat-collective) built around fighters and fans, delivering professional boxing and combat sports events, athlete development stories, live pay-per-view (PPV) broadcasts, and arena ticketing.
+- Multi-Camera Live & PPV Viewing: Viewers can purchase an instant stream pass under the "Watch Live / PPV" tab and switch live between Main Broadcast, Fighter Corner Cam, and Overhead Ring Cam views.
+- Live Arena Ticketing: Fans can purchase official event tickets directly on the GCC portal across three tiers:
+  * Ringside VIP Experience ($499 — Rows 1–3 ringside, VIP lounge & catering, walkout tunnel proximity, express entry).
+  * Lower Bowl Premier ($179 — Elevated center-ring padded stadium seating, fast-track entry, official program).
+  * General Admission Bleachers ($69 — Upper-tier arena seating and full concourse/merch pavilion access).
+- Contact: contact@globalcombatcollective.com.
+
+--------------------------------------------------------------------------------
+5. B2K NETWORK
+--------------------------------------------------------------------------------
+- Overview: Official Network-to-Network (N2N) destination for iconic 2000s R&B group B2K (formed in 1998) celebrating their 25th+ anniversary and the Boys 4 Life Tour.
+- Artist Child Networks: Aggregates exclusive music pre-orders, tour updates, behind-the-scenes streams, and official merch from B2K as well as the individual channels of all four members: Omarion, Lil' Fizz, J-Boog, and Raz-B.
+
+--------------------------------------------------------------------------------
+6. BONAIRE CHAMBER OF COMMERCE (KvK BONAIRE)
+--------------------------------------------------------------------------------
+- Overview: The official digital Network-to-Network portal for Kamer van Koophandel Bonaire (established in 1974), connecting local Caribbean island merchants, dive shops, artisanal distillers, and ecotour operators with customers worldwide.
+
+--------------------------------------------------------------------------------
+7. FEATURED ENTERTAINMENT & CREATOR CHANNELS
+--------------------------------------------------------------------------------
+- Vibe Network also hosts entertainment and comedy networks (such as Courtney Bee Network and cast creator channels), specialty hubs (such as /food-truck and Destinito Cinema), and dozens of independent influencer, music, coaching, and lifestyle channels discoverable at /channels.

@@ -19,6 +19,9 @@ export interface WlConfig {
   enableWatchLive: boolean;
   enableBooking: boolean;
   enableWhatsApp: boolean;
+  enableNaluAsk?: boolean;
+  naluWidgetKey?: string;
+  naluPortalKey?: string;
   heroLayoutMode: string;
   heroVideoUrl: string;
   heroVideoTitle: string;
@@ -257,6 +260,9 @@ export function normalizeWlConfig(
     enableWatchLive: theme.enableWatchLive !== undefined ? theme.enableWatchLive : (raw?.enableWatchLive !== undefined ? raw.enableWatchLive : true),
     enableBooking: theme.enableBooking !== undefined ? theme.enableBooking : (raw?.enableBooking !== undefined ? raw.enableBooking : true),
     enableWhatsApp: theme.enableWhatsApp !== undefined ? theme.enableWhatsApp : (raw?.enableWhatsApp !== undefined ? raw.enableWhatsApp : false),
+    enableNaluAsk: theme.enableNaluAsk !== undefined ? theme.enableNaluAsk : (raw?.enableNaluAsk !== undefined ? raw.enableNaluAsk : true),
+    naluWidgetKey: theme.naluWidgetKey || raw?.naluWidgetKey || 'vbn_k_2026_vibenetwork',
+    naluPortalKey: theme.naluPortalKey || raw?.naluPortalKey || '',
     heroLayoutMode: theme.heroLayoutMode || raw?.heroLayoutMode || 'verbiage',
     heroVideoUrl: theme.heroVideoUrl || raw?.heroVideoUrl || '',
     heroVideoTitle: theme.heroVideoTitle || raw?.heroVideoTitle || '',

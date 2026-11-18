@@ -1,0 +1,90 @@
+================================================================================
+VIBE NETWORK KNOWLEDGE BASE — DOCUMENT 01
+TITLE: Vibe Network Platform Overview, Architecture & Official Contact Directory
+DOMAIN: https://vibenetwork.tv
+================================================================================
+
+SECTION 1: WHAT IS VIBE NETWORK?
+--------------------------------------------------------------------------------
+Vibe Network (vibenetwork.tv) is an enterprise-grade, decentralized white-label digital media ecosystem and "Network-of-Networks" (N2N) operating system.
+
+Vibe Network empowers individual creators, influencers, sports leagues, collegiate athletic programs, faith-based broadcasters, music groups, chambers of commerce, and corporate enterprises to launch their own fully customized streaming channels and multi-tenant media networks—complete with direct audience engagement and native monetization.
+
+Core Philosophy — Digital Media Sovereignty:
+Traditional centralized social and video platforms control creator visibility through opaque algorithms, sudden policy changes, competing sidebar ads, and restrictive revenue cuts. Vibe Network gives creators and organizations digital media sovereignty:
+- Own your brand identity, custom domain, logos, colors, and layout.
+- Own 100% of your audience's attention without competing creator recommendations.
+- Own your first-party customer and fan data via Vibe's built-in CRM.
+- Monetize directly through subscriptions, live tipping, pay-per-view (PPV), 1-on-1 virtual bookings, e-commerce merch stores, and affiliate referrals.
+
+
+SECTION 2: CORE PLATFORM CAPABILITIES
+--------------------------------------------------------------------------------
+1. Dynamic White-Label Tenancy:
+   - Launch on an instant Vibe subdomain (e.g., yourbrand.vibenetwork.tv) or connect a custom domain.
+   - Customize brand accent colors, dark/custom backgrounds, hero video or banner imagery, custom typography, favicons, and modular homepage carousels.
+
+2. Network-to-Network (N2N) Multi-Tenant Syndication:
+   - Parent networks can create, host, and manage unlimited child networks and creator channels from a single unified Command Center.
+   - Each child network gets its own branding, storefront, live stream, and feed while rolling up into the parent network's directory, analytics, and revenue ledger.
+
+3. High-Fidelity Live Streaming & Video-on-Demand (VOD):
+   - Ultra-low latency live video broadcasting with automatic live stream detection and broadcast scheduling.
+   - Full VOD library management with categories, playlists, RSS feed syndication, 90-second free previews for paid videos, and Vibe Drive cloud media storage.
+
+4. Interactive Live Engagement Overlays:
+   - Real-time WebSocket live chat with emoji reactions and voice dictation.
+   - Instant live tipping, appointment booking calendars, and integrated product shopping without leaving the stream.
+
+5. Native Monetization, Wallet & CRM:
+   - Recurring monthly channel subscriptions, pay-per-view VODs, live tips, paid 1-on-1 virtual video consultations, Shopify/native merchandise stores, and a built-in 5% Affiliate Referral Program.
+   - Automated CRM lead and fan capture synced directly from sign-ups and contact forms, paired with Stripe Connect payouts and transparent ledger tracking.
+
+6. Enterprise AI & Global Translation:
+   - Ask Nalu (NaluAsk) AI assistant widget embedded across the platform to answer visitor and fan questions 24/7.
+   - WWTC multi-language translation across 100+ languages (Text-to-Speech, Speech-to-Text, Speech-to-Speech, and Text-to-Text), translated video captions, and ElevenLabs AI voice cloning.
+
+
+SECTION 3: MAIN SITE NAVIGATION & KEY PAGES
+--------------------------------------------------------------------------------
+- Home (/): Featured networks slider, Live Watch section, AVO Colleges, creator channels, featured collections, and trending community feed.
+- Explore / Channel Directory (/channels or /explore): Browse all active Networks, Creator Channels, and Collegiate Channels (supports filters such as /channels?filter=networks, /channels?filter=creators, and /channels?filter=colleges).
+- Marketplace & Shop (/marketplace and /shop): Browse physical and digital merchandise across Vibe Network and partner storefronts.
+- About Vibe (/about or /more-info): Mission, vision, core architecture features, and network-specific "About Us" background.
+- Strategic Whitepaper (/whitepaper or /digital-broadcasting): Interactive and downloadable PDF guide titled "The Power of Digital Broadcasting: Owning a Channel vs. Owning a Network on the Vibe Platform."
+- AI Translation Studio (/translation): Real-time multilingual translation and voice synthesis tool.
+- Creator Profile & Dashboard (/profile and /profile/:creatorId): Public creator channel hub and logged-in creator control center for going live, uploading videos, managing store items, setting subscription prices, and viewing wallet earnings.
+- Contact Support (/contact): Direct inquiry form and enterprise support contact details.
+- Terms of Service (/terms) & Privacy Policy (/privacy): Platform legal terms, DMCA policy, and data privacy rights.
+- Admin Portal (/admin-login): Dedicated login portal for Network Administrators and Master Admins.
+
+
+SECTION 4: OFFICIAL VIBE NETWORK CONTACT INFORMATION
+--------------------------------------------------------------------------------
+- Company Name: Vibe Network
+- Website: https://vibenetwork.tv
+- Corporate Headquarters: 10161 W Park Run Dr, Suite 150, Las Vegas, NV 89145
+- Phone Number: 702-575-2633
+- General Inquiries Email: Info@vibenetwork.tv
+- Enterprise & Custom Deployment Email: enterprise@vibenetwork.tv
+- Legal & DMCA Email: legal@vibenetwork.tv
+- Privacy & Data Requests Email: privacy@vibenetwork.tv
+- Support Response Time: Inquiries submitted via /contact or email typically receive a response within 24 hours.
+
+
+SECTION 5: FREQUENTLY ASKED QUESTIONS — GENERAL & PLATFORM OVERVIEW
+--------------------------------------------------------------------------------
+Q: What is Vibe Network?
+A: Vibe Network is an enterprise-grade white-label streaming and digital media platform that lets creators, brands, sports organizations, and businesses launch their own independent TV channels and multi-channel networks with built-in live streaming, video-on-demand, e-commerce, bookings, and subscriptions.
+
+Q: How is Vibe Network different from YouTube, Twitch, or Kick?
+A: Unlike centralized platforms that control your reach with algorithms, show competitor ads on your videos, and keep a large share of your revenue and audience data, Vibe Network gives you digital media sovereignty. You get your own branded environment (including custom domains for networks), direct ownership of your fan/CRM relationships, zero competing creator sidebars on your channel, and built-in direct-to-consumer monetization.
+
+Q: Where is Vibe Network located and how can I contact the team?
+A: Vibe Network is headquartered at 10161 W Park Run Dr, Suite 150, Las Vegas, NV 89145. You can call us at 702-575-2633, email Info@vibenetwork.tv (or enterprise@vibenetwork.tv for enterprise deployments), or fill out the contact form at /contact. Our team responds within 24 hours.
+
+Q: Can I watch Vibe Network for free?
+A: Yes! Browsing Vibe Network, watching free live broadcasts, viewing free VOD content, and participating in public community feeds is completely free. Individual creators or networks may also offer optional paid monthly subscriptions, pay-per-view events, 1-on-1 virtual bookings, or official merchandise.
+
+Q: What devices are supported on Vibe Network?
+A: Vibe Network works directly in any modern desktop, tablet, or mobile web browser (iOS Safari, Chrome, Edge, Firefox) with no app download required. Select partner broadcast networks on Vibe (such as Christian Revival Network) also syndicate to connected TV platforms including Roku, Fire TV, Apple TV, iOS, and Google Play.

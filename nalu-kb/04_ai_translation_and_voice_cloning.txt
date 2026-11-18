@@ -1,0 +1,52 @@
+================================================================================
+VIBE NETWORK KNOWLEDGE BASE — DOCUMENT 04
+TITLE: AI Translation (WWTC), Video Captions & ElevenLabs Voice Cloning
+================================================================================
+
+SECTION 1: WWTC GLOBAL MULTI-LANGUAGE TRANSLATION
+--------------------------------------------------------------------------------
+Vibe Network integrates enterprise-grade WWTC (World Wide Translation) technology so creators, ministries, educators, and global networks can break language barriers and reach audiences in over 100 languages.
+
+Where to Access:
+- Public/Creator Translation Studio: /translation
+- Network & Master Admin Dashboards: "WWTC Translation" tab
+
+Four Supported Translation Modes:
+1. Text-to-Speech (TTS): Type or paste text in your source language and generate translated spoken audio in your target language.
+2. Text-to-Text (TTT): Instant written translation across 100+ international languages and regional dialects.
+3. Speech-to-Text (STT): Record live audio from your microphone or upload an audio file to transcribe and translate spoken words into written text.
+4. Speech-to-Speech (STS): Speak into your microphone (or upload audio) in one language and output translated spoken audio in another language—ideal for international broadcasts, sermons, and announcements.
+
+Audio Export:
+Translated audio output can be played back immediately in the browser or downloaded for use in broadcasts and social clips.
+
+
+SECTION 2: ELEVENLABS AI VOICE CLONING
+--------------------------------------------------------------------------------
+Inside Vibe's Translation & Voice Studio, creators and network administrators can pair WWTC translation with ElevenLabs AI Multilingual Voice Synthesis:
+- Default Multilingual Voices: Choose from studio-quality male and female multilingual AI voices out of the box.
+- Instant Voice Cloning: Record a short voice sample directly in the browser or upload a clean audio sample to clone your own voice.
+- Speak Any Language in Your Own Voice: When voice cloning is enabled, translated Text-to-Speech and Speech-to-Speech outputs are synthesized using your cloned vocal identity—allowing a creator to speak English and be heard in Spanish, French, Portuguese, German, Japanese, Arabic, and dozens of other languages in their own natural voice.
+
+
+SECTION 3: MULTILINGUAL VIDEO TRANSCRIPTS & SUBTITLE OVERLAYS
+--------------------------------------------------------------------------------
+- Uploaded VODs on Vibe Network support automated speech-to-text transcription.
+- Viewers watching supported videos can toggle the Video Translation Overlay inside the video player to read synchronized captions and translated transcripts in their preferred language.
+
+
+SECTION 4: BUILT-IN VOICE DICTATION ACROSS VIBE
+--------------------------------------------------------------------------------
+- Vibe includes microphone Voice Dictation buttons on contact forms, creator post composers, AI copywriting inputs, and the network setup wizard so users can speak naturally instead of typing.
+
+
+SECTION 5: FREQUENTLY ASKED QUESTIONS — AI & TRANSLATION
+--------------------------------------------------------------------------------
+Q: How many languages does Vibe Network's translation tool support?
+A: Vibe Network's WWTC translation engine supports over 100 global languages and regional dialects across text translation, speech recognition, and spoken audio synthesis.
+
+Q: Can I translate my voice into another language while keeping my own voice?
+A: Yes. By connecting ElevenLabs Voice Cloning inside the WWTC Translation studio, you can record or upload a sample of your voice and synthesize translated audio in your own vocal tone across multiple languages.
+
+Q: Do videos on Vibe have translated captions?
+A: Yes, videos processed with Vibe's transcription pipeline include interactive transcript and translation overlays right inside the video player so international viewers can follow along in their language.

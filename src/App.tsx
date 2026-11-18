@@ -124,31 +124,39 @@ function App() {
     return () => window.removeEventListener('open_auth', handleOpenAuth);
   }, []);
 
-  // Load NaluAsk Widget Script dynamically with dynamic branding accent (only on tenant change to prevent chat state resets)
+  // Load NaluAsk Widget Script dynamically with per-tenant client key & branding accent
+  const naluEnabled = wlConfig?.enableNaluAsk !== false && wlConfig?.theme?.enableNaluAsk !== false;
+  const activeNaluWidgetKey = wlConfig?.naluWidgetKey || wlConfig?.theme?.naluWidgetKey || 'vbn_k_2026_vibenetwork';
+
   useEffect(() => {
-    if (!wlConfig?.id) return;
+    const cleanupNalu = () => {
+      const bubble = document.getElementById('nalu-bubble');
+      if (bubble) bubble.remove();
+      const container = document.getElementById('nalu-container');
+      if (container) container.remove();
+      const scripts = document.querySelectorAll('script[src*="naluask.com/widget.js"]');
+      scripts.forEach(s => s.remove());
+    };
+
+    if (!wlConfig?.id || !naluEnabled) {
+      cleanupNalu();
+      return;
+    }
 
     let timeoutId: any;
     let observer: MutationObserver | null = null;
 
     const loadNalu = () => {
       // 1. Remove existing NaluAsk elements to prevent duplicates
-      const existingBubble = document.getElementById('nalu-bubble');
-      if (existingBubble) existingBubble.remove();
-      
-      const existingContainer = document.getElementById('nalu-container');
-      if (existingContainer) existingContainer.remove();
+      cleanupNalu();
 
-      const existingScripts = document.querySelectorAll('script[src*="naluask.com/widget.js"]');
-      existingScripts.forEach(s => s.remove());
-
-      // 2. Append new script with dynamic color
+      // 2. Append new script with dynamic color and tenant widget key
       const script = document.createElement('script');
       const accentColor = wlConfig.accent || '#D35400';
       
-      // Use a color-specific query parameter to force browser to re-execute the widget script
-      script.src = `https://naluask.com/widget.js?color=${encodeURIComponent(accentColor)}`;
-      script.setAttribute('data-client-key', 'vbn_k_2026_vibenetwork');
+      // Use color & key query parameters to force browser to re-execute widget script on tenant switch
+      script.src = `https://naluask.com/widget.js?color=${encodeURIComponent(accentColor)}&key=${encodeURIComponent(activeNaluWidgetKey)}`;
+      script.setAttribute('data-client-key', activeNaluWidgetKey);
       script.setAttribute('data-color', accentColor);
       script.defer = true;
       document.body.appendChild(script);
@@ -185,15 +193,9 @@ function App() {
       if (observer) {
         observer.disconnect();
       }
-      const bubble = document.getElementById('nalu-bubble');
-      if (bubble) bubble.remove();
-      const container = document.getElementById('nalu-container');
-      if (container) container.remove();
-      // Remove any scripts created during this lifecycle
-      const scripts = document.querySelectorAll('script[src*="naluask.com/widget.js"]');
-      scripts.forEach(s => s.remove());
+      cleanupNalu();
     };
-  }, [wlConfig?.id]);
+  }, [wlConfig?.id, naluEnabled, activeNaluWidgetKey]);
 
   // Dynamically update Nalu bubble background color when accent changes, without re-injecting the script
   useEffect(() => {

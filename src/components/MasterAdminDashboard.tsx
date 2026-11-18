@@ -1440,7 +1440,7 @@ function MasterAdminDashboard() {
 
           {activeTab === 'enterprise-ai' && (
              <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
-                <EnterpriseAiTab wlConfig={{ name: 'Vibe Master', accent: '#0055ff' }} />
+                <EnterpriseAiTab wlConfig={{ id: 'adb92e36-5ebc-4dc3-ae96-429f3dc1bb30', name: 'Vibe Master', domain: 'vibenetwork.tv', accent: '#0055ff' }} isMasterAdmin />
              </motion.div>
           )}
 

@@ -1,0 +1,183 @@
+================================================================================
+VIBE NETWORK KNOWLEDGE BASE — DOCUMENT 08
+TITLE: Complete Creator Channels, Pro Athletes, Campus Ambassadors & Artists
+DIRECTORY ROUTE: /channels (or /profile/:creatorId)
+================================================================================
+
+SECTION 1: MR. & MS. OLYMPIA CHAMPION CHANNELS (MUSCLE & FITNESS N2N)
+--------------------------------------------------------------------------------
+- Samson Dauda (2024 Mr. Olympia Champion) — Profile: /profile/84071a35-5f73-4927-a0a7-828800245096 | Monthly Subscription: $4.99 | Bio: 2024 Mr. Olympia Champion. The Nigerian Lion.
+- Derek Lunsford (2023 Mr. Olympia Champion (First 2-Division Olympia Winner)) — Profile: /profile/c88adb24-5d9e-4886-9be0-e79f03f3d79e | Monthly Subscription: $4.99 | Bio: 2023 Mr. Olympia Champion. First ever 212 and Open Olympia Champion.
+- Hadi Choopan (2022 Mr. Olympia Champion ("The Persian Wolf")) — Profile: /profile/b4537110-f393-4fde-9f94-6885391589d8 | Monthly Subscription: $4.99 | Bio: 2022 Mr. Olympia Champion. The Persian Wolf.
+- Chris Bumstead (CBum) (6x Classic Physique Olympia Champion) — Profile: /profile/7fb2a325-d877-4daf-a308-bd0089d888f1 | Monthly Subscription: $4.99 | Bio: 6x Classic Physique Mr. Olympia Champion. Push past your limits and achieve greatness.
+- Big Ramy (Mamdouh Elssbiay) (2x Mr. Olympia Champion (2020, 2021)) — Profile: /profile/f92fad9e-ab7e-44d6-818c-0527000810eb | Monthly Subscription: $4.99 | Bio: 2x Mr. Olympia Champion (2020, 2021).
+- Brandon Curry (2019 Mr. Olympia Champion) — Profile: /profile/6d0b723d-c5ba-4991-8a89-b1466ed3b3ef | Monthly Subscription: $4.99 | Bio: 2019 Mr. Olympia Champion.
+- Shawn Rhoden (2018 Mr. Olympia Champion) — Profile: /profile/59e9f92c-c712-4676-bb07-40a4c394dfab | Monthly Subscription: $4.99 | Bio: 2018 Mr. Olympia Champion. Rest in peace.
+- Phil Heath (7x Mr. Olympia Champion ("The Gift")) — Profile: /profile/b6013ed0-5bd4-412d-9a42-d256a5ba9fc3 | Monthly Subscription: $4.99 | Bio: 7x Mr. Olympia Champion.
+- Andrea Shaw (6x Ms. Olympia Champion) — Profile: /profile/a7f353ba-6281-4b33-aff4-977325a1ebe8 | Monthly Subscription: $4.99 | Bio: 6x Ms. Olympia Champion.
+- Iris Kyle (10x Ms. Olympia Champion (All-Time Record Holder)) — Profile: /profile/0efb86ee-ab84-4e95-8d27-51c7368915e3 | Monthly Subscription: $4.99 | Bio: 10x Ms. Olympia Champion.
+
+
+SECTION 2: WINGS OF STRENGTH PRO ATHLETES & HALL OF FAME LEGENDS
+--------------------------------------------------------------------------------
+Wings of Strength Featured Pro Athletes:
+- Aisling Hickey, Alana Shipp, Amanda Aivaliotis, Amanda Machado, Amanda Ptak, Amanda Slinker, Amanda Smith, Amberly Plaski, Anastasia Korableva, Anca Ioana Bergen
+
+Wings of Strength Bodybuilding Legends & Ms. Olympia Icons:
+- Alina Popa (Hall of Fame), Andrulla Blanchette (Ms. Olympia), Carla Dunlap (Ms. Olympia), Dayana Cadeau (Ms. Olympia), Helle Trevino (Rising Phoenix Champion), Iris Kyle (10x Ms. Olympia), Kike Elomaa (Ms. Olympia), Lenda Murray (8x Ms. Olympia), Margie Martin (Rising Phoenix Champion), Yaxeni Oriquen (Ms. Olympia)
+
+
+SECTION 3: COMEDY & WILD 'N OUT CREATOR CHANNELS
+--------------------------------------------------------------------------------
+- The Real Courtney Bee (@courtneybee | /profile/courtney-bee-tenant-id): Wild 'N Out star, HBO Max comedian, live stand-up headliner, and co-host of *We Playin' Spades* alongside Nick Cannon.
+- DC Young Fly (/profile/wno-dc-young-fly | dcyoungfly.wildnout.vibenetwork.tv): Atlanta rapper-comedian, Wild 'N Out veteran, actor, and stand-up star. (Full channel catalog also indexed in Ask Nalu.)
+- Conceited (/profile/wno-conceited | conceited.wildnout.vibenetwork.tv): New York battle rap icon and Wild 'N Out Wildstyle champion. (Full channel catalog also indexed in Ask Nalu.)
+- Chico Bean (/profile/wno-chico-bean | chicobean.wildnout.vibenetwork.tv): King of Wildstyle, stand-up comedian, and 85 South Show co-creator. (Full channel catalog also indexed in Ask Nalu.)
+- Justina Valentine (/profile/wno-justina-valentine | justinavalentine.wildnout.vibenetwork.tv): Singer, freestyler, and Wild 'N Out fan favorite. (Full channel catalog also indexed in Ask Nalu.)
+- Timothy DeLaGhetto (/profile/wno-timothy-delaghetto | timothydelaghetto.wildnout.vibenetwork.tv): YouTube comedy pioneer and Wild 'N Out OG. (Full channel catalog also indexed in Ask Nalu.)
+
+
+SECTION 4: ALL ACTIVE VIBE CREATOR, ARTIST & CAMPUS AMBASSADOR PROFILES (90 Channels)
+--------------------------------------------------------------------------------
+- clara_thorne (@clara_thorne) — Profile: /profile/42d4302a-221b-4ef9-b5d3-b180540e5a8f | Network: Ole Miss | Sub: $4.99/mo | Bio: Ole Miss tennis star. SEC singles player of the year. Repping AVO Ole Miss.
+- Doc Wales Diaries (@Doc Wales Diaries) — Profile: /profile/84041c46-5152-44d9-b071-25efcf2484a0 | Network: Doc Wales Diaries | Sub: $4.99/mo | Bio: Doc Wales Diaries is a compelling series that follows Dr. Steve Price, a missionary doctor, as he shares real-life stories from his global medical missions. Through powerful testimonies of faith, compassion, and resilien...
+- Bennie (BJ) (@Bennie (BJ)) — Profile: /profile/8c409557-a48c-41d4-8133-9d9788aebe0d | Network: Christian Revival Network | Sub: Free | Bio: 🔥 🔥 🔥 ✨ 🔥 Welcome to the stream! High-energy original streams, exclusive content drops, and culture in real time. Follow & Subscribe for VIP access!. Premium broadcasts, exclusive digital releases, and live community...
+  Recent Channel Posts: "Check out my new content, streaming live soon! 🎮🎧" | "testing the tester"
+- brandon_cole (@brandon_cole) — Profile: /profile/b3fac7f3-f32b-45e7-85aa-1758aa455c24 | Network: Vanderbilt | Sub: $4.99/mo | Bio: Vanderbilt Commodores baseball pitcher. Fastball specialist. Repping AVO Vanderbilt.
+- jalen_ross (@jalen_ross) — Profile: /profile/d43d4880-3ace-4ace-9a4f-9cae3f20225e | Network: Alabama | Sub: $4.99/mo | Bio: Alabama Crimson Tide wide receiver. Speedster. Repping AVO Alabama.
+- B2K (@B2K) — Profile: /profile/40ae2257-51ad-4598-ac52-8f92c787858a | Network: B2K Network | Sub: $4.99/mo
+  Recent Channel Posts: "✨ EXCLUSIVE: HE "BOYS OF THE NEW MILLENNIUM" ARE BACK AS B2K—OMARION, LIL FIZZ, J-BOOG, AND RAZ-B—REUNITE WITH BOW WOW FOR THE 28-CITY "BOYS 4 LIFE" TOUR, LAUNCHING TODAY, MARCH 6, 2026. THIS MASSIVE Y2K HOMECOMING MARKS THE GROUP'S FIRST TIME TOURING TOGETHER 💥"
+- Samson_Dauda (@Samson_Dauda) — Profile: /profile/84071a35-5f73-4927-a0a7-828800245096 | Network: Muscle & Fitness | Sub: $4.99/mo | Bio: 2024 Mr. Olympia Champion. The Nigerian Lion.
+  Recent Channel Posts: "Pinnacle of bodybuilding! Winning the Sandow was just the beginning. The Nigerian Lion is ready for the next chapter. 🦁🏆"
+- derek_vance (@derek_vance) — Profile: /profile/1d69db71-9915-4917-8cbe-a1f772cf9d01 | Network: Penn State | Sub: $4.99/mo | Bio: Penn State Nittany Lions wrestler. All-American contender. Repping AVO Penn State.
+- Brandon_Curry (@Brandon_Curry) — Profile: /profile/6d0b723d-c5ba-4991-8a89-b1466ed3b3ef | Network: Muscle & Fitness | Sub: $4.99/mo | Bio: 2019 Mr. Olympia Champion.
+  Recent Channel Posts: "Consistency is key. Every single day, brick by brick, build your legacy. 🧱"
+- elena_vance (@elena_vance) — Profile: /profile/9f53b793-a5dc-4f88-a628-a81df557302f | Network: Colorado | Sub: $4.99/mo | Bio: Colorado skiers champion. Slope-style athlete. Repping AVO Colorado.
+- devon_carter (@devon_carter) — Profile: /profile/eb3d3daa-fab0-4857-8b80-2edd201b9008 | Network: Baylor | Sub: $4.99/mo | Bio: Baylor track & field sprinter. 100m & 200m dash specialist. Repping AVO Baylor.
+- marcus_miller (@marcus_miller) — Profile: /profile/4f87aad1-12cd-489e-810b-223d3a01147d | Network: Georgia | Sub: $4.99/mo | Bio: Georgia Bulldogs defensive back. National Championship contender. Repping AVO Georgia.
+- Iris_Kyle (@Iris_Kyle) — Profile: /profile/0efb86ee-ab84-4e95-8d27-51c7368915e3 | Network: Muscle & Fitness | Sub: $4.99/mo | Bio: 10x Ms. Olympia Champion.
+  Recent Channel Posts: "10x Ms. Olympia. Dedication, sacrifice, and the heart of a champion. Keep pushing your limits! 🏆"
+- emily_nittany (@emily_nittany) — Profile: /profile/7330b985-cd48-457e-a7a1-b9ce20799d6e | Network: Penn State | Sub: $4.99/mo | Bio: Track & Field athlete at PSU. Passionate about fitness, fashion, and gameday style! 👟✨
+  Recent Channel Posts: "Styling the new blue and white AVO hoodie for the big game! This material is incredibly soft. 💙🏈 #WeAre #gamedaystyle" | "Morning track workout done, now time to study! Wearing the activewear line from AVO. 👟☀️ #studentathlete"
+- SacredSerpent (@SacredSerpent) — Profile: /profile/d77161d0-53af-4cc7-97c3-4dd9efbe2f02 | Network: Sacred Serpent | Sub: $4.99/mo
+  Recent Channel Posts: "Welcome to Sacred Serpant Tattoos!!"
+- GoldsGym_Official (@GoldsGym_Official) — Profile: /profile/3ea1223c-f18b-482e-a9b1-e2fb0a3fc890 | Network: Gold's Gym | Sub: $4.99/mo | Bio: Official Gold's Gym Partner Profile
+  Recent Channel Posts: "Back at the Mecca! Arnold's favorite chest day routine is live. No shortcuts, just pure dedication. #GoldsGym #MeccaOfBodybuilding"
+- Gaspari_Official (@Gaspari_Official) — Profile: /profile/619a15e4-3795-40d3-8f82-52de368e5ada | Network: Gaspari Nutrition | Sub: $4.99/mo | Bio: Official Gaspari Nutrition Partner Profile
+  Recent Channel Posts: "Fueling the legends. Rich Gaspari's original formula for maximum power and recovery. Get yours at GaspariNutrition.com. #Gaspari #SizeOn"
+- Rogue_Official (@Rogue_Official) — Profile: /profile/7a91c093-8673-4d80-871f-64748eb51810 | Network: Rogue Fitness | Sub: $4.99/mo | Bio: Official Rogue Fitness Partner Profile
+  Recent Channel Posts: "Built to last. The official barbell of the Mr. Olympia prep. Quality steel, engineered for the strongest athletes on earth. #RogueFitness #RogueStandard"
+- Redcon1_Official (@Redcon1_Official) — Profile: /profile/d941c6e8-5950-4268-9769-cc314e77c973 | Network: Redcon1 | Sub: $4.99/mo | Bio: Official Redcon1 Partner Profile
+  Recent Channel Posts: "Highest State of Readiness. Pre-workout stack that hits different. Power through your limits today. #Redcon1 #TotalWar"
+- Gymshark_Official (@Gymshark_Official) — Profile: /profile/8a481649-e53c-4248-ba8d-780591bf6f08 | Network: Gymshark | Sub: $4.99/mo | Bio: Official Gymshark Partner Profile
+  Recent Channel Posts: "Unleash your vision. Gymshark Apex collection engineered for seamless performance and zero distractions. #Gymshark #BeAVisionary"
+- Derek_Lunsford (@Derek_Lunsford) — Profile: /profile/c88adb24-5d9e-4886-9be0-e79f03f3d79e | Network: Muscle & Fitness | Sub: $4.99/mo | Bio: 2023 Mr. Olympia Champion. First ever 212 and Open Olympia Champion.
+  Recent Channel Posts: "Champions aren't made in the light; they are made in the dark hours of absolute grit. Grateful for the journey! 💪"
+- Hadi_Choopan (@Hadi_Choopan) — Profile: /profile/b4537110-f393-4fde-9f94-6885391589d8 | Network: Muscle & Fitness | Sub: $4.99/mo | Bio: 2022 Mr. Olympia Champion. The Persian Wolf.
+  Recent Channel Posts: "To my fans around the world, thank you for your endless love. I do this for you. 🐺"
+- chloe_psu (@chloe_psu) — Profile: /profile/ffd77ba4-60f6-4204-ab88-6efee11d5548 | Network: Penn State | Sub: $4.99/mo | Bio: Penn State senior. Here to show off the best blue and white fits. 💙🏈
+  Recent Channel Posts: "Gameday countdown is on! Ready for the whiteout. Check out my selection of custom fits from AVO! 🤍✨" | "Fall vibes on campus. Loving the cozy feel of these new crewnecks. 🍂🍁"
+- dawg_madison (@dawg_madison) — Profile: /profile/d2688ecc-3ec3-4e4f-a03a-67040919d888 | Network: Georgia | Sub: $4.99/mo | Bio: UGA Gymnast. Championing fitness, lifestyle, and gameday looks. 🤸‍♀️❤️
+  Recent Channel Posts: "Gym session finished! Testing the new high-performance AVO active wear line. Verdict: 10/10. 🤸‍♀️✨" | "Nothing matches the energy of Sanford Stadium! Red and black always. 🏟️🐶"
+- bears_lily (@bears_lily) — Profile: /profile/35604d76-e6a3-4e51-8401-009a75822002 | Network: Baylor | Sub: $4.99/mo | Bio: Baylor tennis player. Sharing my court fits and gameday gear. 🎾💚
+  Recent Channel Posts: "Warm-up style in green and gold! Tennis season is looking bright. 🎾🐻 #SicEm" | "Post-training cooling down. This activewear fit from AVO is super light and breathable! 👟💪"
+- bama_sarah (@bama_sarah) — Profile: /profile/5b22a16b-de3c-4704-9dc4-f782a612972c | Network: Alabama | Sub: $4.99/mo | Bio: Bama girl living in a Crimson world. Roll Tide! 🐘❤️
+  Recent Channel Posts: "Roll Tide! Tailgating in style with my crimson AVO crop top. Let's get this W! 🐘🏈" | "Strolling through the Quad on a sunny afternoon. Loving this weather and this fit. ☀️❤️"
+- roll_tide_jenna (@roll_tide_jenna) — Profile: /profile/66802aae-352b-45a6-a594-77719bb5b7e3 | Network: Alabama | Sub: $4.99/mo | Bio: Cheerleader at UA. Outfits, workouts, and campus vibes. 📣✨
+  Recent Channel Posts: "Pre-game practice vibes! Ready to lead the crowd today. Crimson styling rules. 📣🏈" | "Living for the energy in Bryant-Denny Stadium! Can't wait for kickoff! 🏟️🙌"
+- rebel_taylor (@rebel_taylor) — Profile: /profile/c6c09c0e-6096-4949-a341-9a69f52102dd | Network: Ole Miss | Sub: $4.99/mo | Bio: Ole Miss lifestyle, fashion, and gameday tailgates. Hotty Toddy! ❤️💙
+  Recent Channel Posts: "The Grove is looking beautiful today! Gameday outfit checklist: red dress, boots, and AVO accessories. 👗✨ #HottyToddy" | "Oxford weekends are the absolute best. Exploring the square in my casual AVO sweatshirt! ☕️💙"
+- olemiss_brooke (@olemiss_brooke) — Profile: /profile/314a3b41-a38f-4860-bb99-318718c4a1c5 | Network: Ole Miss | Sub: $4.99/mo | Bio: Marketing major & Rebels fan. Styling Ole Miss style guides! 👗✨
+  Recent Channel Posts: "Sharing my custom styling guide for this season's tailgate line. Hit the link in bio to shop! 🛍️❤️" | "Nothing compares to gameday Saturdays in Mississippi! Let's go Rebels! 🏈💙"
+- vandy_sophia (@vandy_sophia) — Profile: /profile/fe000cec-d7b2-4073-ac8e-fb402b61c32f | Network: Vanderbilt | Sub: $4.99/mo | Bio: Vandy student sharing chic campus style & game day outfits in Nashville. ⚓️🖤💛
+  Recent Channel Posts: "Anchor Down! Styling black and gold for the weekend. This AVO knit top is a staple. ⚓️💛" | "Perfect day for a walk around campus! Wearing my favorite comfy AVO shorts. 🌳📚"
+- uga_olivia (@uga_olivia) — Profile: /profile/1a142537-f1fa-4e45-bbe8-24d4e24b6b23 | Network: Georgia | Sub: $4.99/mo | Bio: Athens native, Bulldog forever. Styling classic red and black fits. 🐶❤️
+  Recent Channel Posts: "How 'bout them Dawgs! Rocking this vintage style AVO sweatshirt in Athens today. ❤️🐶" | "Athens afternoons call for coffee and cozy layers. Loving this look! ☕️🍂"
+- hail_state_hannah (@hail_state_hannah) — Profile: /profile/ecfc58c7-60e2-423f-9fcc-34a4f9ab0447 | Network: Mississippi State | Sub: $4.99/mo | Bio: MS State cheerleader. Bring the cowbell & the best maroon fits! 🔔🐮
+  Recent Channel Posts: "Hail State! Cowbell ready, maroon outfit on point. Ready for cheering on our Bulldogs! 🔔🏈 #HailState" | "Vibe check in Starkville! Loving the new AVO collection for this gameday. 🐶❤️"
+- msstate_charlotte (@msstate_charlotte) — Profile: /profile/777f527b-c06e-4d60-b87f-02f4842f9172 | Network: Mississippi State | Sub: $4.99/mo | Bio: Miss State student. Lover of tailgates, Southern style, and sports! 🏈🐕
+  Recent Channel Posts: "Southern style meets gameday spirit. Obsessed with this maroon matching set! 👗📣" | "Best season of the year! Mississippi tailgates are unmatched. 🏟️✨"
+- baylor_bella (@baylor_bella) — Profile: /profile/eaabf057-8e81-4e0e-b3ef-835697d080b6 | Network: Baylor | Sub: $4.99/mo | Bio: Baylor Bears fan. Green & gold looks, college fashion, and Waco spots! 🐻💚
+  Recent Channel Posts: "Sic 'Em Bears! Green and gold has never looked better. Check out my AVO custom edit! 🐻💛" | "Beautiful day in Waco! Grabbing a Dr Pepper and enjoying the sun. ☀️🐻"
+- buffs_zoe (@buffs_zoe) — Profile: /profile/669613da-1ba1-4f61-b33b-0662f94ee2f6 | Network: Colorado | Sub: $4.99/mo | Bio: Boulder native & Buffs fan. Gameday fits, hiking, and activewear style. 🦬🏔️
+  Recent Channel Posts: "Shoulder-season hiking in Boulder! Staying warm and stylish with the new AVO windbreaker. 🏔️🖤💛 #GoBuffs" | "Sko Buffs! Ready to cheer on Colorado in black and gold this weekend. 🦬✨"
+- colorado_mia (@colorado_mia) — Profile: /profile/4cf74563-5300-4fcb-8f01-3b3bcf971da0 | Network: Colorado | Sub: $4.99/mo | Bio: CU Boulder senior. Keeping it cozy & stylish in black and gold. 💛🖤
+  Recent Channel Posts: "Cozy campus style. Loving the oversized AVO crewneck for early lectures. 🍂🎒" | "Fall sunset in Boulder is something else. Golden hour with the golden fits. ☀️🦬"
+- lauren_anchored (@lauren_anchored) — Profile: /profile/483be608-6395-4ecb-ba49-3edafe993cb0 | Network: Vanderbilt | Sub: $4.99/mo | Bio: Soccer player at Vanderbilt. Living the student-athlete life. ⚽️⚓️
+  Recent Channel Posts: "Big match tonight! Post-practice fits sponsored by AVO. Let's get it! ⚽️🖤" | "Work hard, play hard. Ready for the gameday weekend at Vanderbilt! ⚓️🏟️"
+- ChloeBennett (@ChloeBennett) — Profile: /profile/f8dc42f4-be1b-453e-8dee-4a0d57b54ebc | Network: Vibe Network | Sub: $4.99/mo | Bio: Wealth Advisor
+- bjohnson3rd (@bjohnson3rd) — Profile: /profile/cbdbc5b9-68a3-4143-b738-3d45926d4712 | Network: Jamie's Girls | Sub: $4.99/mo
+  Recent Channel Posts: "Just setting up my new profile! Welcome to the Vibe Network! 🔥 #vibe" | "Check out my new content, streaming live soon! 🎮🎧"
+- InkMaster_Jay (@InkMaster_Jay) — Profile: /profile/fca27adf-5903-42a9-9612-de354d387ae2 | Network: Sacred Serpent | Sub: $4.99/mo | Bio: Specializing in traditional Japanese irezumi and bold linework.
+- Sarah_Tattoos (@Sarah_Tattoos) — Profile: /profile/7c2ad16d-d258-4f14-9dd5-7cda9abbdb66 | Network: Sacred Serpent | Sub: $4.99/mo | Bio: Fine-line and botanical tattoo artist.
+- DarkArt_Dom (@DarkArt_Dom) — Profile: /profile/77f6de33-b8af-4541-9e54-ea4102686b97 | Network: Sacred Serpent | Sub: $4.99/mo | Bio: Blackwork and dark surrealism specialist.
+- NeoTraditional_Kat (@NeoTraditional_Kat) — Profile: /profile/1767cf5e-df67-48bb-a22b-df2015407814 | Network: Sacred Serpent | Sub: $4.99/mo | Bio: Neo-traditional and vibrant color work.
+- Geometric_Leo (@Geometric_Leo) — Profile: /profile/319e13f5-339b-41c8-b187-65f7223d7172 | Network: Sacred Serpent | Sub: $4.99/mo | Bio: Sacred geometry and dotwork mandala master.
+- Realistic_Ray (@Realistic_Ray) — Profile: /profile/dfab96e9-2f37-45a0-833a-94fef159c934 | Network: Sacred Serpent | Sub: $4.99/mo | Bio: Award-winning photo-realism and portrait tattoos.
+- Baylor University (@Baylor University) — Profile: /profile/46e5b2ac-0a36-4a78-983d-e9cf575587c4 | Network: Baylor | Sub: $4.99/mo | Bio: Official Baylor University Network Profile
+  Recent Channel Posts: "🔥 Baylor University FIT CHECK CONTEST is HERE! Show us your best game day outfit. Tag @AVO and post your look — the top-voted fit wins exclusive merch from the AVO collection! 👟🏆 Free entry. Let's see what you got!"
+- University of Colorado (@University of Colorado) — Profile: /profile/5a5f5f18-b2a5-4221-affa-95c7b1539e72 | Network: Colorado | Sub: $4.99/mo | Bio: Official University of Colorado Network Profile
+  Recent Channel Posts: "🔥 University of Colorado FIT CHECK CONTEST is HERE! Show us your best game day outfit. Tag @AVO and post your look — the top-voted fit wins exclusive merch from the AVO collection! 👟🏆 Free entry. Let's see what you got!"
+- University of Georgia (@University of Georgia) — Profile: /profile/fada2698-396f-4d0c-99fd-8e4bda6fa3c7 | Network: Georgia | Sub: $4.99/mo | Bio: Official University of Georgia Network Profile
+  Recent Channel Posts: "🔥 University of Georgia FIT CHECK CONTEST is HERE! Show us your best game day outfit. Tag @AVO and post your look — the top-voted fit wins exclusive merch from the AVO collection! 👟🏆 Free entry. Let's see what you got!"
+- Mississippi State University (@Mississippi State University) — Profile: /profile/f61e801d-427d-45ff-aa38-80d85819c867 | Network: Mississippi State | Sub: $4.99/mo | Bio: Official Mississippi State University Network Profile
+  Recent Channel Posts: "🔥 Mississippi State University FIT CHECK CONTEST is HERE! Show us your best game day outfit. Tag @AVO and post your look — the top-voted fit wins exclusive merch from the AVO collection! 👟🏆 Free entry. Let's see what you got!"
+- University of Alabama (@University of Alabama) — Profile: /profile/29aa7bbc-9847-41ad-9020-8cba8415356f | Network: Alabama | Sub: $4.99/mo | Bio: Official University of Alabama Network Profile
+  Recent Channel Posts: "🔥 University of Alabama FIT CHECK CONTEST is HERE! Show us your best game day outfit. Tag @AVO and post your look — the top-voted fit wins exclusive merch from the AVO collection! 👟🏆 Free entry. Let's see what you got!"
+- Ole Miss University (@Ole Miss University) — Profile: /profile/79c017b3-28b9-48b8-b647-8c3d78ec509d | Network: Ole Miss | Sub: $4.99/mo | Bio: Official Ole Miss University Network Profile
+  Recent Channel Posts: "🔥 Ole Miss University FIT CHECK CONTEST is HERE! Show us your best game day outfit. Tag @AVO and post your look — the top-voted fit wins exclusive merch from the AVO collection! 👟🏆 Free entry. Let's see what you got!"
+- Vanderbilt University (@Vanderbilt University) — Profile: /profile/b4565393-5b2a-411a-b91d-d851855012fa | Network: Vanderbilt | Sub: $4.99/mo | Bio: Official Vanderbilt University Network Profile
+  Recent Channel Posts: "🔥 Vanderbilt University FIT CHECK CONTEST is HERE! Show us your best game day outfit. Tag @AVO and post your look — the top-voted fit wins exclusive merch from the AVO collection! 👟🏆 Free entry. Let's see what you got!"
+- Penn State University (@Penn State University) — Profile: /profile/8b413f93-c7f9-405b-8323-0a8663d3f6a8 | Network: Penn State | Sub: $4.99/mo | Bio: Official Penn State University Network Profile
+  Recent Channel Posts: "🔥 Penn State University FIT CHECK CONTEST is HERE! Show us your best game day outfit. Tag @AVO and post your look — the top-voted fit wins exclusive merch from the AVO collection! 👟🏆 Free entry. Let's see what you got!"
+- JonathanTPG (@JonathanTPG) — Profile: /profile/a4b2598d-6bba-4a2d-8e1d-9b683ab7838c | Network: Vibe Network | Sub: $4.99/mo
+- Lil_Fizz (@Lil_Fizz) — Profile: /profile/cd6b49a4-a46f-4972-b0f3-a4247009b28b | Network: Lil Fizz Network | Sub: $4.99/mo | Bio: Lil' Fizz — Rapper, Producer, and B2K member. Check out my new beat kits and tour apparel.
+  Recent Channel Posts: "Back in the studio cooking up beats for the Boys 4 Life album. The Millennium Tour is going to be legendary! 🎤🔥"
+- Shawn_Rhoden (@Shawn_Rhoden) — Profile: /profile/59e9f92c-c712-4676-bb07-40a4c394dfab | Network: Muscle & Fitness | Sub: $4.99/mo | Bio: 2018 Mr. Olympia Champion. Rest in peace.
+  Recent Channel Posts: "Outwork everyone, stay humble, and let your results speak for themselves. Rest in peace, champ. 🕊️"
+- J-Boog (@J-Boog) — Profile: /profile/f06df6d3-90b9-4ee3-9125-c4bb0be007b2 | Network: J-Boog Network | Sub: $4.99/mo | Bio: J-Boog — B2K member and Solo Reggae artist. Touring worldwide.
+  Recent Channel Posts: "Blessed to be back on stage with my brothers for our 25th anniversary. Opening night in Columbia was absolute fire!"
+- Raz-B (@Raz-B) — Profile: /profile/5132bf66-b3bc-4ef1-a492-bb6573a09efd | Network: Raz-B Network | Sub: $4.99/mo | Bio: Raz-B — Singer, Actor, and Entertainer. Rep the legacy of the millennium.
+  Recent Channel Posts: "Nothing stops the brotherhood. The Boys 4 Life 2026 Tour is going strong. Love to all the supporters who showed out!"
+- Big_Ramy (@Big_Ramy) — Profile: /profile/f92fad9e-ab7e-44d6-818c-0527000810eb | Network: Muscle & Fitness | Sub: $4.99/mo | Bio: 2x Mr. Olympia Champion (2020, 2021).
+  Recent Channel Posts: "Winter is coming! Stay focused, work hard, and never stop believing in your dreams. Yalla! ❄️"
+- Omarion (@Omarion) — Profile: /profile/ac444890-4e85-4697-bb51-116740ca30af | Network: Omarion Network | Sub: $4.99/mo | Bio: Omarion — Lead Singer of B2K and Solo Artist. Catch the new album O2.
+  Recent Channel Posts: "The O2 album is finally out! Incredibly grateful for the fans who have walked this path with me since day one. Full Circle."
+- Phil_Heath (@Phil_Heath) — Profile: /profile/b6013ed0-5bd4-412d-9a42-d256a5ba9fc3 | Network: Muscle & Fitness | Sub: $4.99/mo | Bio: 7x Mr. Olympia Champion.
+  Recent Channel Posts: "7 Sandows later, the fire still burns. Thank you to everyone who supported the dream. 🏆"
+- Andrea_Shaw (@Andrea_Shaw) — Profile: /profile/a7f353ba-6281-4b33-aff4-977325a1ebe8 | Network: Muscle & Fitness | Sub: $4.99/mo | Bio: 6x Ms. Olympia Champion.
+  Recent Channel Posts: "6 years consecutive! Unbelievably honored to represent the division and push boundaries. 🥇"
+- The Real Courtney Bee (@The Real Courtney Bee) — Profile: /profile/5d54709a-969e-4fca-a745-118af5cc501d | Network: KPLE-TV | Sub: Free | Bio: ✨ Courtney Bee is a star on the NYC comedy scene (Wild 'N Out Season 18, HBO Max "That Damn Michael Che"). With her hometown Detroit roots, aggressive punchlines, and hilarious wit, she opens for Michael Che and Dulcé Sl...
+- People in la (@People in la) — Profile: /profile/19a1f776-daa5-460b-8dc9-c89dd4cb4d06 | Network: Vibe Network | Sub: Free | Bio: Welcome to the official Christian Revival Network stream.
+  Recent Channel Posts: "Did Lush Duck Wack 100?" | "Brandon Hates Hellkat!!"
+- CRN_V100_Host (@CRN_V100_Host) — Profile: /profile/09a1ac4e-0b11-4e98-806a-9f435c592ce2 | Network: Christian Revival Channel | Sub: $4.99/mo | Bio: Official Host for Christian Revival Channel on VIBE 100. Faith and encouragement.
+- v100_host (@v100_host) — Profile: /profile/349b894d-52b8-4e41-b58f-f2a4f443ec6e | Network: Vibe Network | Sub: $4.99/mo | Bio: Official Host on VIBE 100. Build wealth and change your future.
+- sarah_jenkins (@sarah_jenkins) — Profile: /profile/26385535-f909-4ffc-8c41-fafcd4f64c5b | Network: Mississippi State | Sub: $4.99/mo | Bio: Mississippi State soccer goalkeeper. SEC All-Freshman team. Repping AVO Miss State.
+- Canitv (@Canitv) — Profile: /profile/0fcf78b3-6ba1-49dc-8bb0-574223761d00 | Network: Vibe Network | Sub: $4.99/mo
+- AVO_V100_Host (@AVO_V100_Host) — Profile: /profile/d9e7df32-9263-4765-99f1-427ae6776e37 | Network: AVO Channel | Sub: $4.99/mo | Bio: Official Host for AVO Channel on VIBE 100. Rep your school colors!
+- Olympia_V100_Host (@Olympia_V100_Host) — Profile: /profile/27430c8f-dc32-4788-b687-57aa387fc620 | Network: Muscle & Fitness Channel | Sub: $4.99/mo | Bio: Official Host for Mr. Olympia Channel on VIBE 100. The Legacy of Champions.
+- B2K_V100_Host (@B2K_V100_Host) — Profile: /profile/c78c683f-7732-44d9-829d-134d1081e48b | Network: B2K Channel | Sub: $4.99/mo | Bio: Official Host for B2K Channel on VIBE 100. Smooth Millennium R&B Vibes.
+- SarahSterling (@SarahSterling) — Profile: /profile/89847427-338d-4faf-baea-efdb1c4b9fa7 | Network: Vibe Network | Sub: $4.99/mo | Bio: Chief Financial Officer
+- MarcusVance (@MarcusVance) — Profile: /profile/001d9856-42df-402a-8415-db4b386d20b8 | Network: Vibe Network | Sub: $4.99/mo | Bio: VP of Operations
+- ElenaRossi (@ElenaRossi) — Profile: /profile/1876574d-983f-42ca-abf0-acaa4dd8b0dd | Network: Vibe Network | Sub: $4.99/mo | Bio: Head of Capital Markets
+- DavidChen (@DavidChen) — Profile: /profile/49eb2b72-d761-4b33-93bc-fc3ba20e1329 | Network: Vibe Network | Sub: $4.99/mo | Bio: Director of Strategy
+- RachelPierce (@RachelPierce) — Profile: /profile/77f38b65-50ed-4c2d-9b56-85cb846ed033 | Network: Vibe Network | Sub: $4.99/mo | Bio: Principal Investor
+- JamesThorne (@JamesThorne) — Profile: /profile/e14fe4a4-47c5-4e1b-8321-f96ae921a102 | Network: Vibe Network | Sub: $4.99/mo | Bio: Senior Analyst
+- OliviaVance (@OliviaVance) — Profile: /profile/bc7b3d42-ac53-4c90-ad72-7b296a044a67 | Network: Vibe Network | Sub: $4.99/mo | Bio: Compliance Officer
+- MichaelHayes (@MichaelHayes) — Profile: /profile/1855050c-57ac-4a67-9c2f-15ed4fbfbb9b | Network: Vibe Network | Sub: $4.99/mo | Bio: Regional Director
+- kple (@kple) — Profile: /profile/0e8af0cd-24f0-4c62-b36f-907fda95ee6a | Network: Christian Revival Network | Sub: Free | Bio: KPLE-TV is the preferred choice for television viewing that reveals the Love of Jesus Christ to every home in Central Texas and the World.
+- Joe VIBE (@Joe VIBE) — Profile: /profile/db7af833-2f7a-40b0-ad46-57ff8fbd4744 | Network: Christian Revival Network | Sub: Free | Bio: 🔥 Hello World! High-energy original streams, exclusive content drops, and culture in real time. Follow & Subscribe for VIP access!
+- Chris Bumstead (@Chris Bumstead) — Profile: /profile/7fb2a325-d877-4daf-a308-bd0089d888f1 | Network: Mr. Olympia | Sub: $4.99/mo | Bio: 6x Classic Physique Mr. Olympia Champion. Push past your limits and achieve greatness.
+- Alvino (@Alvino) — Profile: /profile/f6675e7d-ee37-45f0-9772-561429867749 | Network: Vibe Network | Sub: Free | Bio: Welcome to my official channel!
+- Bonaire_Salt_Shop_Manager (@Bonaire_Salt_Shop_Manager) — Profile: /profile/b0ea1001-c08f-4260-8540-a0cc8bed4e11 | Network: Bonaire Salt Shop | Sub: $4.99/mo | Bio: Managing Director of the Bonaire Salt Shop. Curating handcrafted gourmet and bath salts harvested from the salt pans.
+  Recent Channel Posts: "Fresh batch of our gourmet coarse sea salt has just been hand-harvested from the southern salt pans of Bonaire! Perfect for curing, cooking, and adding a touch of Caribbean magic to your table."
+- Bonaire_Dive_Gear_Manager (@Bonaire_Dive_Gear_Manager) — Profile: /profile/b0ea1002-c08f-4260-8540-a0cc8bed4e11 | Network: Bonaire Dive Gear | Sub: $4.99/mo | Bio: Head Instructor & Operator at Bonaire Dive Gear & Apparel.
+  Recent Channel Posts: "Keep our oceans clean and protect our reefs! STINAPA-certified decontamination stations are now set up at Bonaire Dive Gear. Stop by to disinfect your equipment and get our new eco-friendly snorkel mask set."
+- Bonaire_Eco_Tours_Manager (@Bonaire_Eco_Tours_Manager) — Profile: /profile/b0ea1003-c08f-4260-8540-a0cc8bed4e11 | Network: Flamingo Eco Tours | Sub: $4.99/mo | Bio: Biologist & Naturalist Guide at Flamingo Eco Tours Bonaire.
+  Recent Channel Posts: "Morning views from our Pekelmeer Flamingo Sanctuary tour. Today we spotted a flock of over 200 Caribbean flamingos! Book your guided eco-tour online and help us support conservation programs."
+- Bonaire_Cadushy_Distiller (@Bonaire_Cadushy_Distiller) — Profile: /profile/b0ea1004-c08f-4260-8540-a0cc8bed4e11 | Network: Cadushy Distillery Shop | Sub: $4.99/mo | Bio: Master Distiller at The Cadushy Distillery, Rincon, Bonaire.
+  Recent Channel Posts: "Distilling another batch of our world-famous Cadushy Cactus Liqueur in Rincon. Made from real local kadushi cacti, it brings the authentic flavor of the island to your glass. Come by for a free tasting!"
+- bennie2 (@bennie2) — Profile: /profile/4091ae42-bcff-47da-8b0e-8bfb78c7000d | Network: Vibe Network | Sub: $4.99/mo | Bio: Welcome to my official channel!
+- Bernardus (@Bernardus) — Profile: /profile/ea5a9611-1535-4ab5-9a59-1ad19d003ad0 | Network: Vibe Network | Sub: $4.99/mo | Bio: Let us make this work!
+  Recent Channel Posts: "God is my Guide" | "Beautiful Bonaire" | "Nou ik denk van alles nu. dan toch"
+- choko12 (@choko12) — Profile: /profile/e4201c08-9b9d-4093-984c-a02a71007620 | Network: Vibe Network | Sub: $4.99/mo

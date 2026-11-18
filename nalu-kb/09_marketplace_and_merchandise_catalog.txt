@@ -1,0 +1,129 @@
+================================================================================
+VIBE NETWORK KNOWLEDGE BASE — DOCUMENT 09
+TITLE: Complete Vibe Marketplace, Creator Merch, Tickets & Store Catalog
+MARKETPLACE ROUTES: /marketplace and /shop (Individual items: /product/:productId)
+================================================================================
+
+Visitors can shop official merchandise, digital downloads, vinyl records, fitness equipment, Caribbean artisanal goods, and live event VIP passes at /marketplace (or /shop on any white-label network).
+
+SECTION 1: DIRECT STORE CATALOG BY NETWORK & CREATOR (65 Verified Products)
+--------------------------------------------------------------------------------
+### Omarion Network — Omarion
+  * Omarion 'O2' Limited Vinyl LP — Price: $34.99 USD | Type: physical | Link: /product/08e34754-8e28-466e-8d17-3a6ca2fc4f1e
+  * Omarion Signature Embroidered Sweatshirt — Price: $59.99 USD | Type: apparel | Link: /product/32c0dd84-db63-4f08-85fb-51e66516ebd5
+
+### Lil Fizz Network — Lil_Fizz
+  * Fizz Signature R&B Drum Kit (WAV) — Price: $29.99 USD | Type: digital | Link: /product/17bdd046-53b7-4dca-ac3f-3d5b9960b10a
+
+### Raz-B Network — Raz-B
+  * Raz-B Tour Meet & Greet VIP Pass — Price: $150.00 USD | Type: tickets | Link: /product/d5b25fef-c4e5-44d6-95b2-325149125ae4
+
+### Flamingo Eco Tours — Bonaire_Eco_Tours_Manager
+  * Aluminum Island Refillable Water Bottle — Price: $18.50 USD | Type: physical | Link: /product/3d4add1e-cc98-480f-a06e-b6f320d3b8ef
+  * Guided Mangrove Snorkeling Tour Ticket — Price: $75.00 USD | Type: physical | Link: /product/e4c73423-811b-44fd-8b35-f0a57dfea3a0
+  * Flamingo Eco Plush Toy (Organic) — Price: $14.99 USD | Type: physical | Link: /product/d0270235-e10c-4f81-9046-06f60db05b49
+
+### Muscle & Fitness — Phil_Heath
+  * Olympia Sweat Short — Price: $65.00 USD | Type: physical | Link: /product/df47387a-7e61-412b-afe6-8c042365d975
+  * Olympia Cropped Varsity Jacket — Price: $245.00 USD | Type: physical | Link: /product/28913ed2-6d0f-4e43-b1e0-c005b29723dd
+  * Gymreapers x Olympia Tee — Price: $50.00 USD | Type: physical | Link: /product/d355b8a6-c915-40b3-83da-2bc58634596c
+  * Raw Hem Olympia Stringer — Price: $35.00 USD | Type: physical | Link: /product/835103e7-dec2-4186-ac36-593d173ebd3c
+
+### Muscle & Fitness — Andrea_Shaw
+  * Raw Hem Olympia Training Stringer — Price: $35.00 USD | Type: physical | Link: /product/0bcf0e63-6f28-4930-923a-7aa7fc820eaa
+  * Bound Edge Classic Olympia Stringer — Price: $35.00 USD | Type: physical | Link: /product/d1b05a31-c362-4a8a-86f5-422a6cc8f399
+  * Olympia Varsity Jacket Electric Skull — Price: $295.00 USD | Type: physical | Link: /product/cb1e45d7-fe40-4a5c-8c7f-0450f570947e
+  * Olympia Crest Cut Off — Price: $45.00 USD | Type: physical | Link: /product/685f3857-3193-484c-bef9-5f1d06f9d7bf
+
+### Muscle & Fitness — Iris_Kyle
+  * 7MM Bodybuilding Belt — Price: $100.00 USD | Type: physical | Link: /product/66bf2d07-51d5-4050-9fce-29ee7b43b297
+  * Olympia Gold Shoulder Tee — Price: $50.00 USD | Type: physical | Link: /product/f272469f-3da7-4cc7-b6c8-ff4258195d49
+  * Gymreapers x Olympia Varsity Jacket — Price: $295.00 USD | Type: physical | Link: /product/47723b3f-a2f5-4387-81ca-3eced7dcb9b8
+  * Olympia Wreath Straight Leg Jogger — Price: $85.00 USD | Type: physical | Link: /product/a5a11b13-7c84-4a9a-a259-442643e1e5df
+
+### Muscle & Fitness — Samson_Dauda
+  * 18" Olympia Wrist Wraps — Price: $30.00 USD | Type: physical | Link: /product/99f07f36-99ff-4d19-9947-7ae269853061
+  * Olympia Lifting Club Basic Tee — Price: $40.00 USD | Type: physical | Link: /product/50060e9b-b882-4538-a9a1-dea401b33a31
+  * GRxO USA Varsity Jacket — Price: $295.00 USD | Type: physical | Link: /product/8b13ca4b-267c-4b0c-8721-d6166b2a919e
+  * Olympia Basic Tee — Price: $40.00 USD | Type: physical | Link: /product/7e0e2daa-b40b-45a7-9ee0-877b859ec94f
+  * Olympia Lifting Department Tee — Price: $40.00 USD | Type: physical | Link: /product/fac34402-db8e-4576-b637-80d991a091aa
+
+### Muscle & Fitness — Derek_Lunsford
+  * Olympia Ribbed Knit Beanie — Price: $29.99 USD | Type: physical | Link: /product/53b1757b-8e9b-4284-a895-a603360e26ec
+  * Olympia Lifting Straps — Price: $20.00 USD | Type: physical | Link: /product/7b0d0f79-0e7e-48b7-84ac-18170ad35c84
+  * Olympia Full Length Training Tank — Price: $40.00 USD | Type: physical | Link: /product/9ba1faf3-57fa-422a-818e-cbf48d0ef2dd
+  * Olympia Champions Made Varsity Jacket — Price: $295.00 USD | Type: physical | Link: /product/0ef3c305-72e9-4855-a622-902878ade578
+  * Olympia 4" Training Shorts — Price: $40.00 USD | Type: physical | Link: /product/f739767a-1c3c-4545-bb8a-877fba1f358d
+
+### Muscle & Fitness — Hadi_Choopan
+  * Olympia Hoodie — Price: $95.00 USD | Type: physical | Link: /product/9be45814-abf3-4c8d-9c9a-432552d128c7
+  * 1965 Vintage Olympia Tee — Price: $50.00 USD | Type: physical | Link: /product/4248898a-78be-4479-89f2-13798f99e852
+  * Olympia Cropped Bomber Jacket — Price: $175.00 USD | Type: physical | Link: /product/faf5c9f0-d8d7-45db-bda1-76ac9c089604
+  * Olympia 29" Training Legging — Price: $70.00 USD | Type: physical | Link: /product/e77a6bc5-f732-4e7f-ae00-d1657e565ac0
+  * Royal Olympia Varsity Jacket — Price: $295.00 USD | Type: physical | Link: /product/e0d488b2-01d3-4891-b6a4-5247b0f4b00b
+
+### Muscle & Fitness — Big_Ramy
+  * Olympia The O Varsity Jacket — Price: $295.00 USD | Type: physical | Link: /product/3e760c58-2f66-4882-835e-2ed25bdd7684
+  * Olympia Joe Bomber Jacket — Price: $195.00 USD | Type: physical | Link: /product/79b29015-f1e7-4835-b62c-e2a1902921e1
+  * Olympia Harmony Bra — Price: $40.00 USD | Type: physical | Link: /product/659d842a-a005-487a-9c34-82b87b66cc13
+  * GRxO Racing Team Varsity Jacket — Price: $295.00 USD | Type: physical | Link: /product/6ae1ed4b-4d89-454a-a055-8c4abbd4a23c
+  * Olympia Crest Long Sleeve Shirt — Price: $55.00 USD | Type: physical | Link: /product/6c004a0c-a324-45c0-9d8a-181670a65174
+
+### Muscle & Fitness — Brandon_Curry
+  * Olympia Lifting Club Varsity Jacket — Price: $295.00 USD | Type: physical | Link: /product/b1bae028-3e8b-4c1d-8820-5206851498cc
+  * Olympia Racer Back Tank Top — Price: $40.00 USD | Type: physical | Link: /product/4b661362-33d9-40de-b2bf-d50efa7db67b
+  * Olympia O Mesh Shorts — Price: $50.00 USD | Type: physical | Link: /product/71ad3ed6-83c9-4fac-8475-7c1f74d86568
+  * Olympia Mr. O Varsity Jacket — Price: $295.00 USD | Type: physical | Link: /product/b2093b60-4d0d-45cb-95a6-557eac4e369f
+  * Olympia Jogger — Price: $85.00 USD | Type: physical | Link: /product/d74f7d74-7bc4-443e-857a-24406bf98375
+
+### Muscle & Fitness — Shawn_Rhoden
+  * GRxO Lifting Club Tee — Price: $50.00 USD | Type: physical | Link: /product/40206843-ce73-4704-99a3-bb3141610b91
+  * Classic Olympia Varsity Jacket — Price: $295.00 USD | Type: physical | Link: /product/7f6ea48b-f541-496f-be66-3a23e39ac645
+  * Olympia Script Cropped Hoodie — Price: $75.00 USD | Type: physical | Link: /product/430a26eb-96fe-48f1-8a0f-13ae8e189f6f
+  * Olympia Patches — Price: $6.99 USD | Type: physical | Link: /product/7826f822-1758-417c-b452-d75d525bdccd
+  * Olympia Distressed Basic Tee — Price: $40.00 USD | Type: physical | Link: /product/8a309bd0-5830-4bb0-b808-06ba5e0c05e6
+
+### Cadushy Distillery Shop — Bonaire_Cadushy_Distiller
+  * Rom Rincon 12-Year Aged Rum (750ml) — Price: $59.99 USD | Type: physical | Link: /product/469c609c-cf11-41b1-be6e-979ccd36a486
+  * The Cadushy Distillery Branded Apron — Price: $22.00 USD | Type: physical | Link: /product/0991fe99-b261-4ad2-812d-e471bfefb1cb
+  * Cadushy Cactus Liqueur Gift Set — Price: $29.99 USD | Type: physical | Link: /product/e67abca0-4923-4785-82db-008ae619abbb
+
+### J-Boog Network — J-Boog
+  * Brightside Reggae Tour Tee — Price: $24.99 USD | Type: apparel | Link: /product/84314276-53ff-447d-bd2a-515167a6dbf8
+
+### Bonaire Salt Shop — Bonaire_Salt_Shop_Manager
+  * Gourmet Coarse Sea Salt (250g) — Price: $8.99 USD | Type: physical | Link: /product/e18a72b3-cff7-4ab6-b66a-7592faad9822
+  * Lavender Bath Salt Crystals (500g) — Price: $12.50 USD | Type: physical | Link: /product/e727e283-79fa-4f29-b0b3-f69dc8225074
+  * Artisanal Wooden Salt Mill — Price: $24.99 USD | Type: physical | Link: /product/fa628efd-902a-485f-ba2a-33b1ec60182e
+
+### The Real Courtney Bee Network — The Real Courtney Bee
+  * Old English O Long Sleeve Shirt — Price: $55.00 USD | Type: physical | Link: /product/25c2c7d6-1360-4e5c-b5e2-1d052963715c
+  * Ring of Fire Zip-Up — Price: $95.00 USD | Type: physical | Link: /product/9ca9f12c-9562-477c-b535-48c5c1f34849
+
+### B2K Network — B2K
+  * B2K and Bow Wow Announce 2026 ‘Boys 4 Life Tour’ Dates — Price: $49.99 USD | Type: digital | Link: /product/32fbefb7-7fc8-477b-8633-3c453c9f6c52
+  * B2K Tour 2026 T-Shirt, Bow Wow Boys 4 Life Concert Graphic Tee, Retro 2000s Hip Hop Fan Shirt, Unisex Music Lover Top — Price: $45.99 USD | Type: physical | Link: /product/73fadab6-e758-432d-97a8-462bfa85bfa5
+
+### Bonaire Dive Gear — Bonaire_Dive_Gear_Manager
+  * UV-Protection Long-Sleeve Rashguard — Price: $34.99 USD | Type: physical | Link: /product/972ebcec-dbeb-4808-87eb-136975f0ea0d
+  * Premium Snorkeling Mask & Snorkel Set — Price: $49.99 USD | Type: physical | Link: /product/8d04a256-b64a-49c2-8de2-f1496a33822c
+  * Waterproof Ocean Dry Bag (20L) — Price: $19.99 USD | Type: physical | Link: /product/5d5ada89-5034-4b23-825f-542b81cf9f5e
+
+### Christian Revival Network — Pastor John
+  * PURPOSE AND POWER OF THE HOLY SPIRIT God's Government on Earth By Myles Munroe — Price: $19.99 USD | Type: digital | Link: /product/2c7335a9-1b36-408f-aa1e-e18f52168d98
+
+### Christian Revival Network — Joe VIBE
+  * POD cast pass — Price: $100.00 USD | Type: digital | Link: /product/833fd5b0-f671-4a3e-b90d-190132eab058
+
+
+SECTION 2: AVO COLLEGIATE SHOPIFY STOREFRONTS (21 UNIVERSITIES)
+--------------------------------------------------------------------------------
+Every AVO Collegiate Network (/shop or /marketplace?network=avo) syncs live licensed campus apparel (hoodies, baby tees, crewnecks, tailgate tops, sweatpants, hats) from shopavo.la across all 21 partner schools (Alabama, Arkansas, Auburn, Baylor, Colorado, Georgia, Georgia Tech, Indiana, LSU, Mississippi State, Missouri, Nebraska, Ole Miss, Penn State, Rutgers, TCU, Texas A&M, Vanderbilt, Virginia, Virginia Tech, Wake Forest), donating 20% of every order to that school's female student-athlete NIL fund.
+
+
+SECTION 3: GLOBAL COMBAT COLLECTIVE (GCC) LIVE EVENT TICKET TIERS (/gcc)
+--------------------------------------------------------------------------------
+- Ringside VIP Experience: $499 USD (Rows 1–3 direct ringside seating, VIP lounge & complimentary catering, fighter walkout tunnel proximity, commemorative laminate & poster, dedicated VIP express entrance).
+- Lower Bowl Premier: $179 USD (Lower bowl center-ring padded stadium seating, fast-track concourse entry, official GCC event program).
+- General Admission Bleachers: $69 USD (Upper-tier unobstructed arena seating, full concourse & merchandise pavilion access, live jumbotron commentary).
+(Standard $12.50 arena facility fee applies at ticket checkout.)
