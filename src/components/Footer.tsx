@@ -1,7 +1,7 @@
 import React from 'react';
 import { useWhiteLabel } from '../context/WhiteLabelContext';
 import { Link } from 'react-router-dom';
-import { MapPin, Phone } from 'lucide-react';
+import { MapPin, Phone, Mail } from 'lucide-react';
 
 interface FooterProps {
   showContactInfo?: boolean;
@@ -71,6 +71,22 @@ const Footer: React.FC<FooterProps> = ({ showContactInfo = false }) => {
           >
             <Phone size={14} style={{ color: 'var(--accent-primary, #D35400)', flexShrink: 0 }} />
             <span>Phone: 702-575-2633</span>
+          </a>
+          <a
+            href="mailto:Info@vibenetwork.tv"
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '8px',
+              color: 'rgba(255,255,255,0.55)',
+              textDecoration: 'none',
+              transition: 'color 0.2s'
+            }}
+            onMouseOver={e => e.currentTarget.style.color = '#fff'}
+            onMouseOut={e => e.currentTarget.style.color = 'rgba(255,255,255,0.55)'}
+          >
+            <Mail size={14} style={{ color: 'var(--accent-primary, #D35400)', flexShrink: 0 }} />
+            <span>Info@vibenetwork.tv</span>
           </a>
         </div>
       )}
